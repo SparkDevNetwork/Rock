@@ -91,6 +91,15 @@ namespace Rock.Model
         public string Segments { get; set; }
 
         /// <summary>
+        /// Gets or sets the personalization segments that list is being filtered to.
+        /// </summary>
+        /// <value>
+        /// The comma-delimited list of <see cref="PersonalizationSegment"/> ids.
+        /// </value>
+        [DataMember]
+        public string PersonalizationSegments { get; set; }
+
+        /// <summary>
         /// Gets or sets if communication is targeted to people in all selected segments or any selected segments.
         /// </summary>
         /// <value>
@@ -290,6 +299,12 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string MessageMetaData { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication topic defined value.
+        /// </summary>
+        [DataMember]
+        public int? CommunicationTopicValueId { get; set; }
 
         #endregion
 
@@ -601,6 +616,12 @@ namespace Rock.Model
         /// <inheritdoc cref="SystemCommunicationId"/>
         [DataMember]
         public virtual SystemCommunication SystemCommunication { get; set;  }
+        
+        /// <summary>
+        /// Gets or sets the communication topic defined value.
+        /// </summary>
+        [DataMember]
+        public virtual DefinedValue CommunicationTopicValue { get; set; }
 
         #endregion
     }

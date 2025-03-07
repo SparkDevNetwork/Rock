@@ -23,32 +23,23 @@
 
 /** The role of a chat individual, to be synchronized with the external chat system. */
 export const ChatRole = {
-    /**
-     * Represents a rock_user role in the external chat system. Individuals of this role will be able to
-     * participate in chat channels in which they're members.
-     */
+    /** Represents a rock_user role in the external chat system. */
     User: 0,
 
-    /**
-     * Represents a rock_moderator role in the external chat system. Individuals of this role will be able to
-     * participate in and moderate chat channels in which they're members.
-     */
+    /** Represents a rock_moderator role in the external chat system. */
     Moderator: 1,
 
-    /**
-     * Represents a rock_admin role in the external chat system. Individuals of this role be able to participate
-     * in and moderate all chat channels, whether they're a member of a given channel or not.
-     */
-    Administrator: 3
+    /** Represents a rock_admin role in the external chat system. */
+    Administrator: 2
 } as const;
 
 /** The role of a chat individual, to be synchronized with the external chat system. */
 export const ChatRoleDescription: Record<number, string> = {
-    0: "User",
+    0: "rock_user",
 
-    1: "Moderator",
+    1: "rock_moderator",
 
-    3: "Administrator"
+    2: "rock_admin"
 };
 
 /** The role of a chat individual, to be synchronized with the external chat system. */

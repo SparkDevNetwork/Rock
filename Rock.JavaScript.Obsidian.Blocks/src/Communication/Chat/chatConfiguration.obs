@@ -47,9 +47,10 @@
                 </div>
                 <div class="col-md-6">
                     <DataViewPicker v-model="chatBadgeDataViews"
-                                    label="Badge Data Views"
-                                    help="The Data Views that will be used to populate badges within the external chat application."
+                                    label="Badge Persisted Data Views"
+                                    help="The Persisted Data Views that will be used to populate badges within the external chat application."
                                     :entityTypeGuid="EntityType.Person"
+                                    :displayPersistedOnly="true"
                                     :multiple="true"
                                     :enhanceForLongLists="true"
                                     :disabled="isSaving" />

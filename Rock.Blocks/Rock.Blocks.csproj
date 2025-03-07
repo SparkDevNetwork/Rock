@@ -58,6 +58,9 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Diagnostics.DiagnosticSource, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.8.0.0\lib\net462\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
     <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
     </Reference>
@@ -111,8 +114,11 @@
     <Compile Include="Cms\LavaShortcodeList.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
+    <Compile Include="Cms\PersonalizationSegmentList.cs" />
     <Compile Include="Cms\ThemeDetail.cs" />
     <Compile Include="Communication\Chat\ChatConfiguration.cs" />
+    <Compile Include="Communication\Chat\GeneralChat.cs" />
+    <Compile Include="Communication\CommunicationEntryWizard.cs" />
     <Compile Include="Communication\CommunicationEntry\ValidationContext.cs" />
     <Compile Include="Communication\CommunicationEntry\ValidationContextExtensions.cs" />
     <Compile Include="Cms\LogSettings.cs" />
@@ -125,9 +131,9 @@
     <Compile Include="Event\RegistrationInstanceActiveList.cs" />
     <Compile Include="Core\ScheduleCategoryExclusionList.cs" />
     <Compile Include="Core\ScheduledJobHistoryList.cs" />
-    <Compile Include="Lms\LearningActivityCompletionDetail.cs" />
-    <Compile Include="Lms\LearningActivityCompletionList.cs" />
-    <Compile Include="Lms\LearningActivityDetail.cs" />
+    <Compile Include="Lms\LearningClassActivityCompletionDetail.cs" />
+    <Compile Include="Lms\LearningClassActivityCompletionList.cs" />
+    <Compile Include="Lms\LearningClassActivityDetail.cs" />
     <Compile Include="Lms\LearningClassContentPageDetail.cs" />
     <Compile Include="Lms\LearningClassAnnouncementDetail.cs" />
     <Compile Include="Lms\LearningClassDetail.cs" />
@@ -144,6 +150,8 @@
     <Compile Include="Lms\Public\PublicLearningCourseDetail.cs" />
     <Compile Include="Lms\Public\PublicLearningCourseList.cs" />
     <Compile Include="Lms\Public\PublicLearningProgramList.cs" />
+    <Compile Include="Administration\PageProperties.cs" />
+    <Compile Include="Finance\FinancialPersonSavedAccountDetail.cs" />
     <Compile Include="Mobile\CheckIn\CheckIn.cs" />
     <Compile Include="Security\Oidc\AuthClientDetail.cs" />
     <Compile Include="Tv\AppleTvPageList.cs" />
@@ -152,7 +160,6 @@
     <Compile Include="Cms\PageShortLinkList.cs" />
     <Compile Include="Cms\BlockList.cs" />
     <Compile Include="Cms\PageShortLinkDialog.cs" />
-    <Compile Include="Administration\PageProperties.cs" />
     <Compile Include="Tv\RokuApplicationDetail.cs" />
     <Compile Include="Cms\LayoutList.cs" />
     <Compile Include="Cms\PersistedDatasetList.cs" />

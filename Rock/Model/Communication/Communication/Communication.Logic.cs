@@ -215,46 +215,91 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<GroupMember> GetCommunicationListMembers( RockContext rockContext, int? listGroupId, SegmentCriteria segmentCriteria, List<int> segmentDataViewIds )
         {
-            IQueryable<GroupMember> groupMemberQuery = null;
             if ( listGroupId.HasValue )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
-                var personService = new PersonService( rockContext );
+                var groupMemberQuery = groupMemberService.Queryable()
+                    .Where( a => a.GroupId == listGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+
                 var dataViewService = new DataViewService( rockContext );
+                var segmentDataViews = dataViewService.GetByIds( segmentDataViewIds ).AsNoTracking();
 
-                groupMemberQuery = groupMemberService.Queryable().Where( a => a.GroupId == listGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+                return GetCommunicationListMembersInternal( rockContext, groupMemberQuery, segmentCriteria, segmentDataViews );
+            }
+            else
+            {
+                return null;
+            }
+        }
 
-                Expression segmentExpression = null;
-                ParameterExpression paramExpression = personService.ParameterExpression;
-                var segmentDataViewList = dataViewService.GetByIds( segmentDataViewIds ).AsNoTracking().ToList();
-                foreach ( var segmentDataView in segmentDataViewList )
+        /// <summary>
+        /// Gets the communication list members.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="listGroupGuid">The group unique identifier.</param>
+        /// <param name="segmentCriteria">The segment criteria.</param>
+        /// <param name="segmentDataViewGuids">The segment data view unique identifiers.</param>
+        /// <returns></returns>
+        public static IQueryable<GroupMember> GetCommunicationListMembers( RockContext rockContext, Guid? listGroupGuid, SegmentCriteria segmentCriteria, List<Guid> segmentDataViewGuids )
+        {
+            if ( listGroupGuid.HasValue )
+            {
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupMemberQuery = groupMemberService.Queryable()
+                    .Where( a => a.Group.Guid == listGroupGuid.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+
+                var dataViewService = new DataViewService( rockContext );
+                var segmentDataViews = dataViewService.GetByGuids( segmentDataViewGuids ).AsNoTracking();
+
+                return GetCommunicationListMembersInternal( rockContext, groupMemberQuery, segmentCriteria, segmentDataViews );
+            }
+            else
+            {
+                return Enumerable.Empty<GroupMember>().AsQueryable();
+            }
+        }
+
+        /// <summary>
+        /// Gets the communication list members.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="groupMemberQuery">The group member query.</param>
+        /// <param name="segmentCriteria">The segment criteria.</param>
+        /// <param name="segmentDataViews">The segment data views.</param>
+        /// <returns></returns>
+        private static IQueryable<GroupMember> GetCommunicationListMembersInternal( RockContext rockContext, IQueryable<GroupMember> groupMemberQuery, SegmentCriteria segmentCriteria, IQueryable<DataView> segmentDataViews )
+        {
+            var personService = new PersonService( rockContext );
+
+            Expression segmentExpression = null;
+            ParameterExpression paramExpression = personService.ParameterExpression;
+            foreach ( var segmentDataView in segmentDataViews )
+            {
+                var exp = segmentDataView.GetExpression( personService, paramExpression );
+                if ( exp != null )
                 {
-                    var exp = segmentDataView.GetExpression( personService, paramExpression );
-                    if ( exp != null )
+                    if ( segmentExpression == null )
                     {
-                        if ( segmentExpression == null )
+                        segmentExpression = exp;
+                    }
+                    else
+                    {
+                        if ( segmentCriteria == SegmentCriteria.All )
                         {
-                            segmentExpression = exp;
+                            segmentExpression = Expression.AndAlso( segmentExpression, exp );
                         }
                         else
                         {
-                            if ( segmentCriteria == SegmentCriteria.All )
-                            {
-                                segmentExpression = Expression.AndAlso( segmentExpression, exp );
-                            }
-                            else
-                            {
-                                segmentExpression = Expression.OrElse( segmentExpression, exp );
-                            }
+                            segmentExpression = Expression.OrElse( segmentExpression, exp );
                         }
                     }
                 }
+            }
 
-                if ( segmentExpression != null )
-                {
-                    var personQry = personService.Get( paramExpression, segmentExpression );
-                    groupMemberQuery = groupMemberQuery.Where( a => personQry.Any( p => p.Id == a.PersonId ) );
-                }
+            if ( segmentExpression != null )
+            {
+                var personQry = personService.Get( paramExpression, segmentExpression );
+                groupMemberQuery = groupMemberQuery.Join( personQry, g => g.PersonId, p => p.Id, ( g, p ) => g );
             }
 
             return groupMemberQuery;
@@ -578,6 +623,60 @@ INNER JOIN @DuplicateRecipients dr
         }
 
         /// <summary>
+        /// Retrieves an <see cref="IQueryable{GroupMember}"/> of communication list members
+        /// who match the specified personalization segment filters.
+        /// </summary>
+        /// <param name="rockContext">The database context.</param>
+        /// <param name="communicationListGroupId">The ID of the communication list (group).</param>
+        /// <param name="segmentCriteria">
+        /// The matching criteria:
+        /// <list type="bullet">
+        /// <item><description><see cref="SegmentCriteria.Any"/> - Matches members with at least one of the specified segments.</description></item>
+        /// <item><description><see cref="SegmentCriteria.All"/> - Matches members with all specified segments.</description></item>
+        /// </list>
+        /// </param>
+        /// <param name="personalizationSegmentIds">A list of personalization segment IDs to filter by.</param>
+        /// <returns>
+        /// An <see cref="IQueryable{GroupMember}"/> containing group members who meet the specified criteria.
+        /// </returns>
+        private static IQueryable<GroupMember> GetPersonalizedCommunicationListMembersQuery( RockContext rockContext, int communicationListGroupId, SegmentCriteria segmentCriteria, List<int> personalizationSegmentIds )
+        {
+            var groupMemberQuery = new GroupMemberService( rockContext ).Queryable();
+            var personAliasQuery = new PersonAliasService( rockContext ).Queryable();
+            var personAliasPersonalizationQuery = new PersonalizationSegmentService( rockContext ).GetPersonAliasPersonalizationSegmentQuery();
+
+            return groupMemberQuery
+                .Where( gm => gm.GroupId == communicationListGroupId && gm.GroupMemberStatus == GroupMemberStatus.Active && gm.Person.PrimaryAliasId.HasValue )
+                .Where( gm =>
+                    !personalizationSegmentIds.Any()
+                    || (
+                        segmentCriteria == SegmentCriteria.Any
+                        && personAliasQuery.Any( pa =>
+                            pa.PersonId == gm.PersonId
+                            && personAliasPersonalizationQuery.Any( pap =>
+                                pa.Id == pap.PersonAliasId
+                                && personalizationSegmentIds.Contains( pap.PersonalizationEntityId )
+                            )
+                        )
+                    )
+                    || (
+                        segmentCriteria == SegmentCriteria.All
+                        && personAliasQuery.Where( pa =>
+                            pa.PersonId == gm.PersonId
+                        ).SelectMany( pa =>
+                            personAliasPersonalizationQuery.Where( pap =>
+                                pa.Id == pap.PersonAliasId
+                                && personalizationSegmentIds.Contains( pap.PersonalizationEntityId )
+                            )
+                            .Select( pap => pap.PersonalizationEntityId )
+                        )
+                        .Distinct()
+                        .Count() == personalizationSegmentIds.Count
+                    )
+                );
+        }
+
+        /// <summary>
         /// Refresh the recipients list.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -591,10 +690,21 @@ INNER JOIN @DuplicateRecipients dr
 
             using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Prepare Recipient List > Refresh Communication Recipient List" ) )
             {
-                var segmentDataViewGuids = this.Segments.SplitDelimitedValues().AsGuidList();
-                var segmentDataViewIds = new DataViewService( rockContext ).GetByGuids( segmentDataViewGuids ).Select( a => a.Id ).ToList();
+                IQueryable<GroupMember> qryCommunicationListMembers;
 
-                var qryCommunicationListMembers = GetCommunicationListMembers( rockContext, ListGroupId, this.SegmentCriteria, segmentDataViewIds );
+                var personalizationSegmentIds = this.PersonalizationSegments.SplitDelimitedValues().AsIntegerList();
+
+                if ( personalizationSegmentIds.Any() )
+                {
+                    qryCommunicationListMembers = GetPersonalizedCommunicationListMembersQuery( rockContext, this.ListGroupId.Value, this.SegmentCriteria, personalizationSegmentIds );
+                }
+                else
+                {
+                    var segmentDataViewGuids = this.Segments.SplitDelimitedValues().AsGuidList();
+                    var segmentDataViewIds = new DataViewService( rockContext ).GetByGuids( segmentDataViewGuids ).Select( a => a.Id ).ToList();
+
+                    qryCommunicationListMembers = GetCommunicationListMembers( rockContext, ListGroupId, this.SegmentCriteria, segmentDataViewIds );
+                }
 
                 // NOTE: If this is a scheduled communication, don't include Members that were added after the scheduled FutureSendDateTime.
                 // However, don't exclude if the date added can't be determined or they will never be sent a scheduled communication.

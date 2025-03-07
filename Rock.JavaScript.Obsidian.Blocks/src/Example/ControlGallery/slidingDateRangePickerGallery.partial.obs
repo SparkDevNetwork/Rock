@@ -1,0 +1,69 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <SlidingDateRangePicker v-model="value"
+                                label="Sliding Date Range"
+                                :enabledSlidingDateRangeUnits="rangeTypes"
+                                :previewLocation="previewLocation" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <DropDownList v-model="rangeTypeStrings" :items="rangeTypeOptions" multiple showBlankItem label="Available Range Types" />
+                </div>
+                <div class="col-md-4">
+                    <DropDownList v-model="previewLocation" :items="previewLocationOptions" showBlankItem label="Date Preview Location" />
+                </div>
+            </div>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { SlidingDateRange, rangeTypeOptions, RangeType } from "@Obsidian/Utility/slidingDateRange";
+
+    const value = ref<SlidingDateRange | null>(null);
+    const rangeTypeNameHash = Object.fromEntries(rangeTypeOptions.map(rt => [rt.value, rt.text]));
+    const rangeTypeStrings = ref<string[]>([]);
+    const rangeTypes = computed(() => {
+        return rangeTypeStrings.value.map(rt => parseInt(rt, 10) as RangeType);
+    });
+
+    const rangeTypeNames = computed(() => {
+        return rangeTypeStrings.value.map(rt => `RangeType.${rangeTypeNameHash[rt]}`);
+    });
+
+    const previewLocation = ref<"Right" | "Top" | "None">("Top");
+
+    const exampleCode = computed(() => {
+        const rangeTypeProp = rangeTypes.value.length > 0 ? `, :enabledSlidingDateRangeUnits="[${rangeTypeNames.value.join(", ")}]"` : "";
+        return `<SlidingDateRangePicker v-model="value" label="Sliding Date Range"${rangeTypeProp} previewLocation="${previewLocation.value}" />`;
+    });
+
+    const previewLocationOptions = [
+        {
+            text: "Top (Default)",
+            value: "Top"
+        },
+        {
+            text: "Right",
+            value: "Right"
+        },
+        {
+            text: "None",
+            value: "None"
+        },
+    ];
+    const importCode = getSfcControlImportPath("slidingDateRangePicker") +
+        "\n// If Customizing Date Range Types" +
+        "\nimport { RangeType } from \"@Obsidian/Utility/slidingDateRange\";";
+</script>

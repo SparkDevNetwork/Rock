@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,18 +25,19 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Net;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Description( "Filter people on whether they are in the specified group, groups or child groups, with specific roles, status and dates" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Group(s) Filter (Advanced)" )]
-    [Rock.SystemGuid.EntityTypeGuid( "A40B4BD4-FA17-4A82-97CC-2C71805F9D7C")]
+    [Rock.SystemGuid.EntityTypeGuid( "A40B4BD4-FA17-4A82-97CC-2C71805F9D7C" )]
     public class InGroupFilter : DataFilterComponent
     {
         #region Properties
@@ -63,6 +64,129 @@ namespace Rock.Reporting.DataFilter.Person
             get { return "Additional Filters"; }
         }
 
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => null;//"~/Obsidian/Reporting/DataFilters/Person/inGroupFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = selection.Split( '|' );
+
+            List<ListItemBag> groups = new List<ListItemBag>();
+            List<int> groupIds = new List<int>();
+
+            if ( selectionValues.Length > 0 )
+            {
+                var groupGuids = selectionValues[0]
+                    .SplitDelimitedValues()
+                    .AsGuidList();
+
+                if ( groupGuids.Any() )
+                {
+                    var groupData = new GroupService( rockContext )
+                        .GetByGuids( groupGuids )
+                        .Select( g => new
+                        {
+                            g.Id,
+                            g.Guid,
+                            g.Name
+                        } )
+                        .ToList();
+
+                    groups = groupData
+                        .Select( g => new ListItemBag
+                        {
+                            Value = g.Guid.ToString(),
+                            Text = g.Name
+                        } )
+                        .ToList();
+
+                    groupIds = groupData.Select( g => g.Id ).ToList();
+                }
+            }
+
+            var data = new Dictionary<string, string>
+            {
+                ["groups"] = groups.ToCamelCaseJson( false, false ),
+                ["groupMemberRoles"] = selectionValues.Length > 1
+                    ? selectionValues[1]
+                    : string.Empty,
+                ["includeChildGroups"] = selectionValues.Length > 2
+                    ? selectionValues[2]
+                    : false.ToString(),
+                ["groupMemberStatus"] = selectionValues.Length > 3
+                    ? selectionValues[3]
+                    : string.Empty,
+                ["includeSelectedGroups"] = selectionValues.Length > 4
+                    ? selectionValues[4]
+                    : false.ToString(),
+                ["includeAllDescendants"] = selectionValues.Length > 5
+                    ? selectionValues[5]
+                    : false.ToString(),
+                ["includeInactiveGroups"] = selectionValues.Length > 6
+                    ? selectionValues[6]
+                    : false.ToString(),
+                ["dateAdded"] = selectionValues.Length > 7
+                    ? selectionValues[7].Replace( ',', '|' )
+                    : string.Empty,
+                ["firstAttendance"] = selectionValues.Length > 8
+                    ? selectionValues[8].Replace( ',', '|' )
+                    : string.Empty,
+                ["lastAttendance"] = selectionValues.Length > 9
+                    ? selectionValues[9].Replace( ',', '|' )
+                    : string.Empty,
+            };
+
+            // Add some data that is only required during first paint of the UI.
+            data["groupMemberRoleItems"] = GetGroupTypeRolesForSelectedGroups( groupIds,
+                data["includeChildGroups"].AsBoolean(),
+                data["includeSelectedGroups"].AsBoolean(),
+                data["includeAllDescendants"].AsBoolean(),
+                data["includeInactiveGroups"].AsBoolean(),
+                rockContext )
+                .ToCamelCaseJson( false, false );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selections = new List<string>( 10 );
+
+            if ( data.TryGetValue( "groups", out var groupsJson ) )
+            {
+                var groupGuids = groupsJson.FromJsonOrNull<List<ListItemBag>>()
+                    ?.Select( g => g.Value )
+                    .JoinStrings( "," )
+                    ?? string.Empty;
+
+                selections.Add( groupGuids );
+            }
+            else
+            {
+                selections.Add( string.Empty );
+            }
+
+            // Use .AsBoolean().ToString() on boolean values to force empty
+            // strings to become "False".
+            selections.Add( data.GetValueOrDefault( "groupMemberRoles", string.Empty ) );
+            selections.Add( data.GetValueOrDefault( "includeChildGroups", string.Empty ).AsBoolean().ToString() );
+            selections.Add( data.GetValueOrDefault( "groupMemberStatus", string.Empty ) );
+            selections.Add( data.GetValueOrDefault( "includeSelectedGroups", string.Empty ).AsBoolean().ToString() );
+            selections.Add( data.GetValueOrDefault( "includeAllDescendants", string.Empty ).AsBoolean().ToString() );
+            selections.Add( data.GetValueOrDefault( "includeInactiveGroups", string.Empty ).AsBoolean().ToString() );
+            selections.Add( data.GetValueOrDefault( "dateAdded", string.Empty ).Replace( '|', ',' ) );
+            selections.Add( data.GetValueOrDefault( "firstAttendance", string.Empty ).Replace( '|', ',' ) );
+            selections.Add( data.GetValueOrDefault( "lastAttendance", string.Empty ).Replace( '|', ',' ) );
+
+            return selections.JoinStrings( "|" );
+        }
+
         #endregion
 
         #region Public Methods
@@ -83,7 +207,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
         /// <value>
@@ -234,6 +358,101 @@ namespace Rock.Reporting.DataFilter.Person
         }
 
         /// <summary>
+        /// Gets a list of group type roles that should be available for
+        /// selection in the filter settings UI.
+        /// </summary>
+        /// <param name="groupIds">The integer identifiers of the selected groups.</param>
+        /// <param name="includeChildGroups">If <c>true</c> then child groups will be included when determining which group types to include.</param>
+        /// <param name="includeSelectedGroups">If <paramref name="includeChildGroups"/> and this are <c>true</c> then the originally selected groups will be included along with the child groups when determining the group types.</param>
+        /// <param name="includeAllDescendants">If <paramref name="includeChildGroups"/> and this are <c>true</c> then all descendant groups will be included when determining the group types.</param>
+        /// <param name="includeInactiveGroups">If <paramref name="includeChildGroups"/> and this are <c>true</c> then inactive groups will be included when determining the group types.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A list of <see cref="ListItemBag"/> objects that represent the options to display to the individual.</returns>
+        private List<ListItemBag> GetGroupTypeRolesForSelectedGroups( List<int> groupIds, bool includeChildGroups, bool includeSelectedGroups, bool includeAllDescendants, bool includeInactiveGroups, RockContext rockContext )
+        {
+            var groupService = new GroupService( rockContext );
+            var groupTypeRoleService = new GroupTypeRoleService( rockContext );
+            var qryGroupTypeRoles = groupTypeRoleService.Queryable();
+
+            var selectedGroups = groupService.GetByIds( groupIds )
+                .Select( s => new
+                {
+                    s.Id,
+                    s.GroupTypeId
+                } )
+                .ToList();
+
+            var selectedGroupTypeIds = selectedGroups.Select( a => a.GroupTypeId )
+                .Distinct()
+                .ToList();
+
+            if ( includeChildGroups )
+            {
+                var childGroupTypeIds = new List<int>();
+
+                foreach ( var groupId in selectedGroups.Select( a => a.Id ).ToList() )
+                {
+                    if ( includeAllDescendants )
+                    {
+                        // Get all children and descendants of the selected group(s).
+                        var descendantGroupTypes = groupService.GetAllDescendentsGroupTypes( groupId, includeInactiveGroups );
+
+                        childGroupTypeIds.AddRange( descendantGroupTypes.Select( a => a.Id ).ToList() );
+                    }
+                    else
+                    {
+                        // Get only immediate children of the selected group(s).
+                        var childGroups = groupService.Queryable().Where( a => a.ParentGroupId == groupId );
+
+                        if ( !includeInactiveGroups )
+                        {
+                            childGroups = childGroups.Where( a => a.IsActive == true );
+                        }
+
+                        childGroupTypeIds.AddRange( childGroups.Select( a => a.GroupTypeId ).Distinct().ToList() );
+                    }
+                }
+
+                childGroupTypeIds = childGroupTypeIds.Distinct().ToList();
+
+                if ( includeSelectedGroups )
+                {
+                    qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue
+                        && ( selectedGroupTypeIds.Contains( a.GroupTypeId.Value ) || childGroupTypeIds.Contains( a.GroupTypeId.Value ) ) );
+                }
+                else
+                {
+                    qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue
+                        && childGroupTypeIds.Contains( a.GroupTypeId.Value ) );
+                }
+            }
+            else
+            {
+                qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue
+                    && selectedGroupTypeIds.Contains( a.GroupTypeId.Value ) );
+            }
+
+            return qryGroupTypeRoles.OrderBy( a => a.GroupType.Order )
+                .ThenBy( a => a.GroupType.Name )
+                .ThenBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => new
+                {
+                    a.Guid,
+                    a.Name,
+                    GroupTypeName = a.GroupType.Name
+                } )
+                .ToList()
+                .Select( a => new ListItemBag
+                {
+                    Value = a.Guid.ToString(),
+                    Text = $"{a.Name} ({a.GroupTypeName})"
+                } )
+                .ToList();
+        }
+
+#if WEBFORMS
+        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
@@ -346,68 +565,21 @@ namespace Rock.Reporting.DataFilter.Person
             var groupIdList = groupPicker.SelectedValues.AsIntegerList();
             var groupService = new GroupService( rockContext );
 
-            var selectedGroups = groupService.GetByIds( groupIdList ).Select( s => new { s.Id, s.GroupTypeId } ).ToList();
+            var roles = GetGroupTypeRolesForSelectedGroups( groupIdList,
+                cbChildGroups.Checked,
+                cbIncludeSelectedGroup.Checked,
+                cbChildGroupsPlusDescendants.Checked,
+                cbIncludeInactiveGroups.Checked, rockContext );
 
-            if ( selectedGroups.Any() )
+            if ( roles.Any() )
             {
-                var groupTypeRoleService = new GroupTypeRoleService( rockContext );
-                var qryGroupTypeRoles = groupTypeRoleService.Queryable();
-                List<int> selectedGroupTypeIds = selectedGroups.Select( a => a.GroupTypeId ).Distinct().ToList();
-
-                if ( cbChildGroups.Checked )
-                {
-                    List<int> childGroupTypeIds = new List<int>();
-                    foreach ( var groupId in selectedGroups.Select( a => a.Id ).ToList() )
-                    {
-                        if ( cbChildGroupsPlusDescendants.Checked )
-                        {
-                            // get all children and descendants of the selected group(s)
-                            var descendantGroupTypes = groupService.GetAllDescendentsGroupTypes( groupId, cbIncludeInactiveGroups.Checked );
-
-                            childGroupTypeIds.AddRange( descendantGroupTypes.Select( a => a.Id ).ToList() );
-                        }
-                        else
-                        {
-                            // get only immediate children of the selected group(s)
-                            var childGroups = groupService.Queryable().Where( a => a.ParentGroupId == groupId );
-                            if ( !cbIncludeInactiveGroups.Checked )
-                            {
-                                childGroups = childGroups.Where( a => a.IsActive == true );
-                            }
-
-                            childGroupTypeIds.AddRange( childGroups.Select( a => a.GroupTypeId ).Distinct().ToList() );
-                        }
-                    }
-
-                    childGroupTypeIds = childGroupTypeIds.Distinct().ToList();
-
-                    if ( cbIncludeSelectedGroup.Checked )
-                    {
-                        qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue && ( selectedGroupTypeIds.Contains( a.GroupTypeId.Value ) || childGroupTypeIds.Contains( a.GroupTypeId.Value ) ) );
-                    }
-                    else
-                    {
-                        qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue && childGroupTypeIds.Contains( a.GroupTypeId.Value ) );
-                    }
-                }
-                else
-                {
-                    qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue && selectedGroupTypeIds.Contains( a.GroupTypeId.Value ) );
-                }
-
-                var list = qryGroupTypeRoles.OrderBy( a => a.GroupType.Order ).ThenBy( a => a.GroupType.Name ).ThenBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new
-                {
-                    a.Name,
-                    GroupTypeName = a.GroupType.Name,
-                    a.Guid
-                } ).ToList();
                 cblRoles.Items.Clear();
-                foreach ( var item in list )
+                foreach ( var item in roles )
                 {
-                    cblRoles.Items.Add( new ListItem( string.Format( "{0} ({1})", item.Name, item.GroupTypeName ), item.Guid.ToString() ) );
+                    cblRoles.Items.Add( new ListItem( item.Text, item.Value ) );
                 }
 
-                cblRoles.Visible = list.Count > 0;
+                cblRoles.Visible = roles.Count > 0;
             }
             else
             {
@@ -622,6 +794,7 @@ namespace Rock.Reporting.DataFilter.Person
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.
@@ -863,8 +1036,12 @@ namespace Rock.Reporting.DataFilter.Person
             return null;
         }
 
+        #endregion
+
+        #region Support Classes
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class PersonIdFirstAttendance
         {
@@ -886,7 +1063,7 @@ namespace Rock.Reporting.DataFilter.Person
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class PersonIdLastAttendance
         {

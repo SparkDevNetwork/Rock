@@ -58,7 +58,7 @@
          * file.
          */
         modelValue: {
-            type: Object as PropType<ListItemBag | null>,
+            type: Object as PropType<ListItemBag | null | undefined>,
             required: false
         },
 
@@ -119,7 +119,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: ListItemBag | undefined): void;
+        (e: "update:modelValue", value: ListItemBag | null | undefined): void;
         (e: "imageUploaded"): void;
         (e: "imageRemoved"): void;
     }>();
@@ -245,6 +245,11 @@
     function onRemoveFileClick(): void {
         internalValue.value = null;
         emit("imageRemoved");
+
+        if (fileInputElement.value) {
+            // Clear the last file(s) from the underlying input.
+            fileInputElement.value.value = "";
+        }
     }
 
     /**
@@ -272,6 +277,11 @@
         }
 
         internalValue.value = null;
+
+        if (fileInputElement.value) {
+            // Clear the last file(s) from the underlying input.
+            fileInputElement.value.value = "";
+        }
     }
 
     // Watch for the drop zone element to become available. Once we have it

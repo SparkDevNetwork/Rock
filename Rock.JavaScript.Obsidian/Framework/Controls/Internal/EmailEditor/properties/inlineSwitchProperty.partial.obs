@@ -1,0 +1,59 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <InlineSwitch v-model="internalValue"
+                  v-bind="$attrs"
+                  :label="label"
+                  @update:modelValue="onSwitchToggled" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { ValueProvider } from "../types.partial";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+
+    const props = defineProps({
+        label: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        valueProvider: {
+            type: Object as PropType<ValueProvider<boolean | null | undefined>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "on");
+        (e: "off");
+        (e: "toggle", value: boolean);
+    }>();
+
+    // #region Computed Props
+
+    const internalValue = computed<boolean>({
+        get(): boolean {
+            return props.valueProvider.value ?? false;
+        },
+        set(value: boolean): void {
+            props.valueProvider.value = value;
+        }
+    });
+
+    // #endregion Computed Props
+
+    // #region Event Handlers
+
+    function onSwitchToggled(value: boolean): void {
+        if (value) {
+            emit("on");
+        }
+        else {
+            emit("off");
+        }
+
+        emit("toggle", value);
+    }
+
+    // #endregion Event Handlers
+</script>

@@ -129,7 +129,7 @@
 
 <script setup lang="ts">
     import Panel from "@Obsidian/Controls/panel.obs";
-    import { PropType, ref, watch } from "vue";
+    import { PropType, ref, watch, onMounted, onUnmounted } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -169,6 +169,14 @@
         (e: "propertyChanged", value: string): void
     }>();
 
+    onMounted(() => {
+        document.body.classList.add("temp-is-edit");
+    });
+
+    onUnmounted(() => {
+        document.body.classList.remove("temp-is-edit");
+    });
+
     // #region Values
     const defaultConfigurationMode = ConfigurationMode.OnDemandLearning.toString();
 
@@ -187,7 +195,7 @@
     const completionWorkflowType = propertyRef(props.modelValue.bag?.completionWorkflowType ?? {}, "CompletionWorkflowType");
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
     const summary = propertyRef(props.modelValue.bag?.summary ?? "", "Summary");
-    const configurationMode = propertyRef(props.modelValue.bag?.configurationMode?.toString() ?? undefined, "ConfigurationMode");
+    const configurationMode = propertyRef(props.modelValue.bag?.configurationMode?.toString() ?? defaultConfigurationMode, "ConfigurationMode");
     const highlightColor = propertyRef(props.modelValue.bag?.highlightColor ?? "", "HighlightColor");
     const iconCssClass = propertyRef(props.modelValue.bag?.iconCssClass ?? "", "IconCssClass");
     const isCompletionStatusTracked = propertyRef(props.modelValue.bag?.isCompletionStatusTracked ?? false, "TrackProgramStatus");
@@ -247,7 +255,7 @@
         updateRefValue(name, props.modelValue.bag?.name ?? "");
         updateRefValue(publicName, props.modelValue.bag?.name ?? "");
         updateRefValue(summary, props.modelValue.bag?.summary ?? "");
-        updateRefValue(configurationMode, props.modelValue.bag?.configurationMode?.toString() ?? undefined);
+        updateRefValue(configurationMode, props.modelValue.bag?.configurationMode?.toString() ?? defaultConfigurationMode);
         updateRefValue(systemCommunicationValue, props.modelValue.bag?.systemCommunication?.value ?? "");
         updateRefValue(category, props.modelValue.bag?.category ?? null);
         updateRefValue(highlightColor, props.modelValue.bag?.highlightColor ?? "");

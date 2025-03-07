@@ -1,0 +1,35 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <InlineRangeSlider v-model="value" :step="step" :min="min" :max="max" :showValueBar="showValue" />
+
+        <template #settings>
+            <div class="row">
+                <CheckBox formGroupClasses="col-md-3" label="Show Value" v-model="showValue" />
+                <NumberBox formGroupClasses="col-md-3" label="Step Value" v-model="step" help="Leave blank or set to zero to have no step" />
+                <NumberBox formGroupClasses="col-md-3" label="Minimum Value" v-model="min" />
+                <NumberBox formGroupClasses="col-md-3" label="Maximum Value" v-model="max" />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import InlineRangeSlider from "@Obsidian/Controls/inlineRangeSlider.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref(10);
+    const step = ref(0);
+    const min = ref(0);
+    const max = ref(100);
+    const showValue = ref(false);
+    const importCode = getSfcControlImportPath("inlineRangeSlider");
+    const exampleCode = `<InlineRangeSlider v-model="value" :step="1" :min="min" :max="max" :showValueBar="showValue" />`;
+</script>

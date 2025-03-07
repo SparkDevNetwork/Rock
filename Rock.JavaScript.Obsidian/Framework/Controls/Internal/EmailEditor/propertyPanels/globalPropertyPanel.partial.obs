@@ -1,0 +1,353 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <FlatPanel :hasPaddedBody="false"
+               title="Styles">
+        <AccordionGroup>
+            <Accordion title="Body Settings">
+                <CommunicationTemplateProperty v-if="communicationTemplates"
+                                               v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
+                                               :communicationTemplates="communicationTemplates" />
+
+                <RangeSliderProperty label="Body Width"
+                                     :min="480"
+                                     :max="900"
+                                     :showValueBar="true"
+                                     :valueProvider="getGlobalBodyWidthProvider(document)"
+                                     valueSuffix="px" />
+
+                <ColorPickerProperty label="Body Color"
+                                     :valueProvider="getGlobalBodyBackgroundColorProvider(document)" />
+
+                <DropDownListProperty label="Body Alignment"
+                                      :items="[
+                                          {
+                                              text: 'Left',
+                                              value: 'left'
+                                          },
+                                          {
+                                              text: 'Center',
+                                              value: 'center'
+                                          },
+                                          {
+                                              text: 'Right',
+                                              value: 'right'
+                                          }
+                                      ]"
+                                      :showBlankItem="false"
+                                      :valueProvider="getGlobalBodyAlignmentProvider(document)" />
+
+                <BorderPropertyGroup :element="document.body"
+                                     :styleSheetMode="{
+                                         styleCssClass: RockStylesCssClass,
+                                         rulesetCssSelector: GlobalStylesCssSelectors.bodyBorderStyling
+                                     }" />
+
+                <PaddingProperty :element="document.body"
+                                 label="Margin"
+                                 :styleSheetMode="{
+                                     styleCssClass: RockStylesCssClass,
+                                     rulesetCssSelector: GlobalStylesCssSelectors.bodyMargin
+                                 }" />
+
+                <PaddingProperty :element="document.body"
+                                 :styleSheetMode="{
+                                     styleCssClass: RockStylesCssClass,
+                                     rulesetCssSelector: GlobalStylesCssSelectors.bodyPadding
+                                 }" />
+            </Accordion>
+
+            <Accordion title="Background Settings">
+
+                <ColorPickerProperty label="Background Color"
+                                     :valueProvider="getGlobalBackgroundColorProvider(document)" />
+
+                <BackgroundImagePropertyGroup :element="document.body.querySelector(`.${EmailWrapperCssClass}`)!" />
+            </Accordion>
+
+            <Accordion title="Text Styling" removeBottomPadding removeTopPadding>
+                <AccordionGroup>
+                    <Accordion accordionType="link"
+                               title="Global">
+                        <FontPropertyGroup :element="document.body"
+                                           :styleSheetMode="{
+                                               styleCssClass: RockStylesCssClass,
+                                               rulesetCssSelector: GlobalStylesCssSelectors.globalTextStyling
+                                           }" />
+                    </Accordion>
+
+                    <Accordion accordionType="link"
+                               title="Heading 1">
+                        <FontPropertyGroup :element="document.body"
+                                           :styleSheetMode="{
+                                               styleCssClass: RockStylesCssClass,
+                                               rulesetCssSelector: GlobalStylesCssSelectors.heading1TextStyling
+                                           }" />
+
+                        <MarginProperty :element="document.body"
+                                        :styleSheetMode="{
+                                            styleCssClass: RockStylesCssClass,
+                                            rulesetCssSelector: GlobalStylesCssSelectors.heading1Margin
+                                        }" />
+
+                        <PaddingProperty :element="document.body"
+                                         :styleSheetMode="{
+                                             styleCssClass: RockStylesCssClass,
+                                             rulesetCssSelector: GlobalStylesCssSelectors.heading1Padding
+                                         }" />
+
+                        <BorderPropertyGroup :element="document.body"
+                                             :styleSheetMode="{
+                                                 styleCssClass: RockStylesCssClass,
+                                                 rulesetCssSelector: GlobalStylesCssSelectors.heading1BorderStyling
+                                             }" />
+                    </Accordion>
+
+                    <Accordion accordionType="link"
+                               title="Heading 2">
+                        <FontPropertyGroup :element="document.body"
+                                           :styleSheetMode="{
+                                               styleCssClass: RockStylesCssClass,
+                                               rulesetCssSelector: GlobalStylesCssSelectors.heading2TextStyling
+                                           }" />
+
+                        <MarginProperty :element="document.body"
+                                        :styleSheetMode="{
+                                            styleCssClass: RockStylesCssClass,
+                                            rulesetCssSelector: GlobalStylesCssSelectors.heading2Margin
+                                        }" />
+
+                        <PaddingProperty :element="document.body"
+                                         :styleSheetMode="{
+                                             styleCssClass: RockStylesCssClass,
+                                             rulesetCssSelector: GlobalStylesCssSelectors.heading2Padding
+                                         }" />
+
+                        <BorderPropertyGroup :element="document.body"
+                                             :styleSheetMode="{
+                                                 styleCssClass: RockStylesCssClass,
+                                                 rulesetCssSelector: GlobalStylesCssSelectors.heading2BorderStyling
+                                             }" />
+                    </Accordion>
+
+                    <Accordion accordionType="link"
+                               title="Heading 3">
+                        <FontPropertyGroup :element="document.body"
+                                           :styleSheetMode="{
+                                               styleCssClass: RockStylesCssClass,
+                                               rulesetCssSelector: GlobalStylesCssSelectors.heading3TextStyling
+                                           }" />
+
+                        <MarginProperty :element="document.body"
+                                        :styleSheetMode="{
+                                            styleCssClass: RockStylesCssClass,
+                                            rulesetCssSelector: GlobalStylesCssSelectors.heading3Margin
+                                        }" />
+
+                        <PaddingProperty :element="document.body"
+                                         :styleSheetMode="{
+                                             styleCssClass: RockStylesCssClass,
+                                             rulesetCssSelector: GlobalStylesCssSelectors.heading3Padding
+                                         }" />
+
+                        <BorderPropertyGroup :element="document.body"
+                                             :styleSheetMode="{
+                                                 styleCssClass: RockStylesCssClass,
+                                                 rulesetCssSelector: GlobalStylesCssSelectors.heading3BorderStyling
+                                             }" />
+                    </Accordion>
+
+                    <Accordion accordionType="link"
+                               title="Paragraph">
+                        <FontPropertyGroup :element="document.body"
+                                           :styleSheetMode="{
+                                               styleCssClass: RockStylesCssClass,
+                                               rulesetCssSelector: GlobalStylesCssSelectors.paragraphTextStyling
+                                           }"
+                                           :visibilityOptions="{
+                                               isJustifyTextHidden: true
+                                           }" />
+
+                        <MarginProperty :element="document.body"
+                                        :styleSheetMode="{
+                                            styleCssClass: RockStylesCssClass,
+                                            rulesetCssSelector: GlobalStylesCssSelectors.paragraphMargin
+                                        }" />
+                    </Accordion>
+                </AccordionGroup>
+            </Accordion>
+
+            <Accordion title="Button Styling">
+                <BackgroundColorProperty :element="document.body"
+                                         :styleSheetMode="{
+                                             styleCssClass: RockStylesCssClass,
+                                             rulesetCssSelector: GlobalStylesCssSelectors.buttonBackgroundColor
+                                         }" />
+
+                <FontPropertyGroup :element="document.body"
+                                   :styleSheetMode="{
+                                       styleCssClass: RockStylesCssClass,
+                                       rulesetCssSelector: GlobalStylesCssSelectors.buttonTextStyling
+                                   }"
+                                   :visibilityOptions="{
+                                       isJustifyTextHidden: true
+                                   }" />
+
+                <BorderPropertyGroup :element="document.body"
+                                     label="Button Border"
+                                     :styleSheetMode="{
+                                         styleCssClass: RockStylesCssClass,
+                                         rulesetCssSelector: GlobalStylesCssSelectors.buttonBorderStyling
+                                     }" />
+
+                <BorderRadiusProperty :element="document.body"
+                                      label="Corner Radius"
+                                      :styleSheetMode="{
+                                          styleCssClass: RockStylesCssClass,
+                                          rulesetCssSelector: GlobalStylesCssSelectors.buttonCornerRadius
+                                      }" />
+
+                <ButtonWidthProperty v-if="getGlobalButtonWidthValuesProvider(document)"
+                                     :showBlankItem="false"
+                                     :valueProvider="getGlobalButtonWidthValuesProvider(document)!" />
+
+                <PaddingProperty :element="document.body"
+                                 label="Margin"
+                                 :styleSheetMode="{
+                                     styleCssClass: RockStylesCssClass,
+                                     rulesetCssSelector: GlobalStylesCssSelectors.buttonMargin
+                                 }" />
+
+                <PaddingProperty :element="document.body"
+                                 :styleSheetMode="{
+                                     styleCssClass: RockStylesCssClass,
+                                     rulesetCssSelector: GlobalStylesCssSelectors.buttonPadding
+                                 }" />
+            </Accordion>
+
+            <Accordion title="Divider Styling">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <DividerStyleProperty :element="document.body"
+                                              label="Style"
+                                              :styleSheetMode="{
+                                                  styleCssClass: RockStylesCssClass,
+                                                  rulesetCssSelector: GlobalStylesCssSelectors.dividerStyle
+                                              }" />
+                    </div>
+
+                    <div class="col-sm-6 pl-0">
+                        <DividerThicknessProperty :element="document.body"
+                                                  label="Thickness"
+                                                  :styleSheetMode="{
+                                                      styleCssClass: RockStylesCssClass,
+                                                      rulesetCssSelector: GlobalStylesCssSelectors.dividerThickness
+                                                  }" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-8">
+                        <DividerColorProperty :element="document.body"
+                                              label="Color"
+                                              :styleSheetMode="{
+                                                  styleCssClass: RockStylesCssClass,
+                                                  rulesetCssSelector: GlobalStylesCssSelectors.dividerColor
+                                              }" />
+                    </div>
+                </div>
+
+                <WidthProperty :element="document.body"
+                               label="Divider Width"
+                               :min="5"
+                               :max="100"
+                               :styleSheetMode="{
+                                   styleCssClass: RockStylesCssClass,
+                                   rulesetCssSelector: GlobalStylesCssSelectors.dividerWidth
+                               }"
+                               valueType="percentage" />
+
+                <HorizontalAlignmentMarginProperty :element="document.body"
+                                                   label="Horizontal Alignment"
+                                                   :styleSheetMode="{
+                                                       styleCssClass: RockStylesCssClass,
+                                                       rulesetCssSelector: GlobalStylesCssSelectors.dividerHorizontalAlignment
+                                                   }" />
+
+                <MarginProperty :element="document.body"
+                                label="Padding"
+                                :styleSheetMode="{
+                                    styleCssClass: RockStylesCssClass,
+                                    rulesetCssSelector: GlobalStylesCssSelectors.dividerPadding
+                                }" />
+            </Accordion>
+        </AccordionGroup>
+    </FlatPanel>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import Accordion from "../accordion.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
+    import FlatPanel from "../flatPanel.partial.obs";
+    import BackgroundImagePropertyGroup from "../properties/backgroundImagePropertyGroup.partial.obs";
+    import BackgroundColorProperty from "../properties/backgroundColorProperty.partial.obs";
+    import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
+    import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
+    import ButtonWidthProperty from "../properties/buttonWidthProperty.partial.obs";
+    import ColorPickerProperty from "../properties/colorPickerProperty.partial.obs";
+    import CommunicationTemplateProperty from "../properties/communicationTemplateProperty.partial.obs";
+    import DividerColorProperty from "../properties/dividerColorProperty.partial.obs";
+    import DividerStyleProperty from "../properties/dividerStyleProperty.partial.obs";
+    import DividerThicknessProperty from "../properties/dividerThicknessProperty.partial.obs";
+    import DropDownListProperty from "../properties/dropDownListProperty.partial.obs";
+    import FontPropertyGroup from "../properties/fontPropertyGroup.partial.obs";
+    import HorizontalAlignmentMarginProperty from "../properties/horizontalAlignmentMarginProperty.partial.obs";
+    import MarginProperty from "../properties/marginProperty.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import RangeSliderProperty from "../properties/rangeSliderProperty.partial.obs";
+    import {
+        getGlobalBodyAlignmentProvider,
+        getGlobalBodyBackgroundColorProvider,
+        getGlobalBodyWidthProvider,
+        getGlobalBackgroundColorProvider,
+        getGlobalButtonWidthValuesProvider
+    } from "../providers.partial";
+    import {
+        EmailWrapperCssClass,
+        GlobalStylesCssSelectors,
+        RockStylesCssClass
+    } from "../utils.partial";
+    import WidthProperty from "../properties/widthProperty.partial.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        document: {
+            type: Object as PropType<Document>,
+            required: true
+        },
+
+        communicationTemplateGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            required: false
+        },
+
+        communicationTemplates: {
+            type: Object as PropType<ListItemBag[] | null | undefined>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "complete"): void;
+        (e: "delete"): void;
+        (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
+    }>();
+
+    // #region Values
+
+    const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
+
+    // #endregion Values
+</script>

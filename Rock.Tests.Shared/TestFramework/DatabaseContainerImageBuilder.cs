@@ -178,6 +178,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
             // which is roughly 30% of the database.
             using ( var cmd = connection.CreateCommand() )
             {
+                cmd.CommandTimeout = 180;
                 cmd.CommandText = "DELETE FROM [IdentityVerificationCode]";
 
                 await cmd.ExecuteNonQueryAsync();
@@ -188,6 +189,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
             // so we want these as small as possible.
             using ( var cmd = connection.CreateCommand() )
             {
+                cmd.CommandTimeout = 180;
                 cmd.CommandText = $"DBCC SHRINKDATABASE({dbName})";
 
                 await cmd.ExecuteNonQueryAsync();

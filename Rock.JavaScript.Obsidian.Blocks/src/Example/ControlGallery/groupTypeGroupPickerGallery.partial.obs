@@ -1,0 +1,39 @@
+<template>
+    <GalleryAndResult :value="{ value, groupType }"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      hasMultipleValues
+                      enableReflection>
+
+        <GroupTypeGroupPicker label="Group Type and Group" :groupLabel="glabel" v-model="value" v-model:groupType="groupType" :rules="required ? 'required' : ''" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <TextBox label="Group Label" v-model="glabel" help="The label for the 2nd dropdown. The label for the first dropdown is not customizable" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Required" v-model="required" />
+                </div>
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref(null);
+    const groupType = ref(null);
+    const required = ref(false);
+    const glabel = ref("Group");
+    const importCode = getSfcControlImportPath("groupTypeGroupPicker");
+    const exampleCode = `<GroupTypeGroupPicker label="Group Type and Group" groupLabel="Group" v-model="value" v-model:groupType="groupType" />`;
+</script>

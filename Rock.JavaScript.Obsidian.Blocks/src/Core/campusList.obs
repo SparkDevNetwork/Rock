@@ -41,11 +41,21 @@
                     :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
-        <TextColumn name="campusStatus"
-                    title="Campus Status"
-                    field="campusStatus"
-                    :filter="pickExistingValueFilter"
-                    visiblePriority="md" />
+        <Column name="campusStatus"
+                title="Campus Status"
+                field="campusStatus"
+                :filter="pickExistingValueFilter"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div v-if="row.campusStatus" :class="'label label-' + (campusStatusLabelColors[row.campusStatusGuid] ?? 'default')">
+                    {{ row.campusStatus }}
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
 
         <BooleanColumn name="isActive"
                        title="Is Active"
@@ -66,7 +76,8 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import Grid, { AttributeColumns, BooleanColumn, Column, PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { CampusListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusList/campusListOptionsBag";
@@ -81,6 +92,11 @@
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+
+    const campusStatusLabelColors = ref<Record<string, string>>({
+        [DefinedValue.CampusStatusOpen]: "info",
+        [DefinedValue.CampusStatusPending]: "warning"
+    });
 
     // #endregion
 

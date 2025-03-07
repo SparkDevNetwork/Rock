@@ -1,0 +1,30 @@
+<template>
+    <GalleryAndResult :value="phoneNumber"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <RockForm v-model:submit="submit">
+            <PhoneNumberBox label="Phone Number" v-model="phoneNumber" />
+            <RockButton @click="submit = true">Validate</RockButton>
+        </RockForm>
+
+        <template #settings>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const phoneNumber = ref<string>();
+    const submit = ref(false);
+    const importCode = getSfcControlImportPath("phoneNumberBox");
+    const exampleCode = `<PhoneNumberBox label="Phone Number" v-model="phoneNumber" />`;
+</script>

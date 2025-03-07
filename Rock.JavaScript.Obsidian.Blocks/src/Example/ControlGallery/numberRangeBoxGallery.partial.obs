@@ -1,0 +1,24 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <NumberRangeBox label="Number Range" v-model="value" />
+
+        <template #settings>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import NumberRangeBox from "@Obsidian/Controls/numberRangeBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref({ lower: 0, upper: 100 });
+    const importCode = getSfcControlImportPath("numberRangeBox");
+    const exampleCode = `<NumberRangeBox label="Number Range" v-model="value" />`;
+</script>

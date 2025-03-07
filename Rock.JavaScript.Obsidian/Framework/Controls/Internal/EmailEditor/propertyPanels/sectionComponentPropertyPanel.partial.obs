@@ -1,0 +1,321 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ComponentPropertyPanelBase v-bind="$attrs"
+                                :componentElement="componentElement"
+                                title="Layout"
+                                :isCloneDisabled="isCloneDisabled"
+                                :isSaveButtonShown="true"
+                                @save="onShowSaveSectionModal"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')">
+        <AccordionGroup>
+            <Accordion title="Columns">
+                <SectionColumnsPropertyGroup :columnElements="columnElements"
+                                             :selectedColumnElement="selectedColumnElement"
+                                             @add="onAddColumn"
+                                             @select="onColumnElementSelected" />
+
+                <SectionColumnPropertyGroup v-if="selectedColumnElement
+                    && selectedColumnNumber !== null
+                    && selectedColumnNumber !== undefined
+                    && selectedColumnNumber > -1"
+                                            :element="selectedColumnElement"
+                                            :columnNumber="selectedColumnNumber"
+                                            :isDeleteHidden="columnElements.length <= 1"
+                                            @delete="onDeleteColumn(selectedColumnElement)" />
+            </Accordion>
+
+            <Accordion title="Block Styling">
+                <BackgroundColorProperty :element="componentElement" />
+                <PaddingProperty :element="componentElement" />
+                <BorderRadiusProperty :element="componentElement" />
+            </Accordion>
+
+            <Accordion title="Block Border">
+                <BorderPropertyGroup :element="componentElement" />
+            </Accordion>
+        </AccordionGroup>
+    </ComponentPropertyPanelBase>
+
+    <EmailSectionModal v-model="isSaveEmailSectionModalShown"
+                       :componentElement="componentElement"
+                       :emailDocument="null"
+                       :emailSection="null"
+                       @emailSectionSaved="$emit('emailSectionSaved', $event)" />
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import Accordion from "../accordion.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
+    import BackgroundColorProperty from "../properties/backgroundColorProperty.partial.obs";
+    import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
+    import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
+    import EmailSectionModal from "../emailSectionModal.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import SectionColumnPropertyGroup from "../properties/sectionColumnPropertyGroup.partial.obs";
+    import SectionColumnsPropertyGroup from "../properties/sectionColumnsPropertyGroup.partial.obs";
+    import { EmailEditorEmailSectionBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorEmailSectionBag";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        isCloneDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+        (e: "emailSectionSaved", value: EmailEditorEmailSectionBag): void;
+    }>();
+
+    // #region Values
+
+    const tableElement = ref<HTMLElement | undefined>();
+    const backgroundColor = ref<string>(props.componentElement.style.backgroundColor ?? "");
+    const columnElements = ref<HTMLElement[]>(getChildDropzones(props.componentElement));
+    const selectedColumnElement = ref<HTMLElement | null | undefined>();
+
+    // Email Section state.
+    const isSaveEmailSectionModalShown = ref<boolean>(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const selectedColumnNumber = computed<number | null | undefined>(() => {
+        if (!selectedColumnElement.value) {
+            return;
+        }
+
+        const index = columnElements.value.indexOf(selectedColumnElement.value);
+
+        if (index !== -1) {
+            return index + 1;
+        }
+        else {
+            // Not found.
+            return null;
+        }
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onColumnElementSelected(columnElement: HTMLElement): void {
+        if (selectedColumnElement.value) {
+            selectedColumnElement.value = null;
+
+            nextTick(() => {
+                selectedColumnElement.value = columnElement;
+            });
+        }
+        else {
+            selectedColumnElement.value = columnElement;
+        }
+    }
+
+    function onAddColumn(): void {
+        // Before adding a new column, ensure the section component is a <table>.
+        ensureSectionComponentIsTable();
+
+        const columns = [...columnElements.value];
+
+        const insertAfterColumnIndex = columns.length - 1;
+        const lastColumnElement = columns[insertAfterColumnIndex];
+
+        const td = props.componentElement.ownerDocument.createElement("td");
+        td.classList.add("dropzone", "columns", "small-12");
+        td.setAttribute("valign", "top");
+        setCols(td, 1);
+
+        let columnHunterIndex = columns.length - 1;
+        while (columnHunterIndex >= 0) {
+            const column = columns[columnHunterIndex];
+            columnHunterIndex--;
+
+            const cols = getCols(column);
+            if (cols > 1) {
+                // Found the column to take a col from!
+                setCols(column, cols - 1);
+
+                td.classList.add("last");
+                lastColumnElement.classList.remove("last");
+                lastColumnElement.insertAdjacentElement("afterend", td);
+
+                columnElements.value = getChildDropzones(props.componentElement);
+
+                // Stop processing.
+                return;
+            }
+        }
+    }
+
+    function onDeleteColumn(columnElement: HTMLElement): void {
+        // Skip deleting if this is the only column.
+        if (columnElements.value.length <= 1) {
+            return;
+        }
+
+        const columnIndex = columnElements.value.indexOf(columnElement);
+
+        if (columnIndex !== 0) {
+            // Give the columns to the column to the left.
+            const leftColumnElement = columnElements.value[columnIndex - 1];
+            setCols(leftColumnElement, getCols(columnElement) + getCols(leftColumnElement));
+        }
+        else {
+            // Give the columns to the column to the right.
+            const rightColumnElement = columnElements.value[columnIndex + 1];
+            setCols(rightColumnElement, getCols(columnElement) + getCols(rightColumnElement));
+        }
+
+        // Remove the column element.
+        columnElement.remove();
+
+        // Refresh the list of column elements.
+        columnElements.value = getChildDropzones(props.componentElement);
+    }
+
+    function onShowSaveSectionModal(): void {
+        isSaveEmailSectionModalShown.value = true;
+    }
+
+    // #endregion
+
+    // #region Functions
+
+    function replaceTagName(oldElement: HTMLElement, newTagName: string): HTMLElement {
+        const newElement = oldElement.ownerDocument.createElement(newTagName);
+
+        // Copy attributes from the old element
+        Array.from(oldElement.attributes).forEach((attr) =>
+            newElement.setAttribute(attr.name, attr.value)
+        );
+
+        // Move children to the new element
+        while (oldElement.firstChild) {
+            newElement.appendChild(oldElement.firstChild);
+        }
+
+        // Replace the old element with the new one in the DOM
+        oldElement.replaceWith(newElement);
+
+        return newElement;
+    }
+
+    function ensureSectionComponentIsTable(): void {
+        let columns = [...columnElements.value];
+
+        if (columns.length && columns[0].tagName !== "TD") {
+            // Overwrite the array element with the new HTML element.
+            columns[0] = replaceTagName(columns[0], "td");
+
+            // If the element is not already in a table, then create one.
+            const soleColumn = columns[0];
+
+            if (soleColumn.parentElement?.tagName !== "TR") {
+                tableElement.value = soleColumn.ownerDocument.createElement("table");
+                tableElement.value.classList.add("row");
+                tableElement.value.setAttribute("width", "100%");
+                tableElement.value.style.width = "100%";
+                tableElement.value.setAttribute("cellpadding", "0");
+                tableElement.value.setAttribute("cellspacing", "0");
+                tableElement.value.setAttribute("border", "0");
+                tableElement.value.setAttribute("role", "presentation");
+                tableElement.value.style.borderSpacing = "0";
+                tableElement.value.style.tableLayout = "fixed";
+                const tbodyElement = soleColumn.ownerDocument.createElement("tbody");
+                const trElement = soleColumn.ownerDocument.createElement("tr");
+
+                tableElement.value.appendChild(tbodyElement);
+                tbodyElement.appendChild(trElement);
+
+                soleColumn.replaceWith(tableElement.value);
+                trElement.appendChild(soleColumn);
+
+                soleColumn.classList.add("columns", "small-12", "start");
+                soleColumn.setAttribute("valign", "top");
+                setCols(soleColumn, 12);
+
+                columnElements.value = [soleColumn];
+            }
+        }
+    }
+
+    function getCols(columnElement: HTMLElement): number {
+        const classes = [...columnElement.classList];
+        const sizeClass = classes.find(cls => cls.startsWith("large-"));
+
+        if (sizeClass) {
+            return parseInt(sizeClass.substring(6));
+        }
+        else {
+            // If the large-x CSS class isn't found, default to 2 columns.
+            return 2;
+        }
+    }
+
+    function setCols(columnElement: HTMLElement, cols: number): void {
+        const classes = [...columnElement.classList];
+        const sizeClasses = classes.filter(cls => cls.startsWith("large-"));
+
+        if (sizeClasses) {
+            columnElement.classList.remove(...sizeClasses);
+        }
+
+        columnElement.classList.add(`large-${cols}`);
+        const widthPercentage = `${100 * (cols / 12)}%`;
+        columnElement.setAttribute("width", widthPercentage);
+        columnElement.style.width = widthPercentage;
+    }
+
+    function getChildDropzones(componentElement: HTMLElement): HTMLElement[] {
+        return [...componentElement.querySelectorAll(".dropzone")]
+            .filter(el => !isNestedInAnotherDropzone(<HTMLElement>el, componentElement))
+            .map(e => <HTMLElement>e);
+    }
+
+    function isNestedInAnotherDropzone(element: HTMLElement, parent: HTMLElement): boolean {
+        let ancestor = element.parentElement;
+
+        while (ancestor && ancestor !== parent) {
+            if (ancestor.classList.contains("dropzone")) {
+                return true; // It's nested in another dropzone within the parent
+            }
+            ancestor = ancestor.parentElement;
+        }
+        return false; // No other dropzone ancestors within the parent
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.componentElement, () => {
+        backgroundColor.value = props.componentElement.style.backgroundColor ?? "";
+        columnElements.value = getChildDropzones(props.componentElement);
+        selectedColumnElement.value = null;
+        ensureSectionComponentIsTable();
+    });
+
+    // #endregion
+
+    // #region Hooks
+
+    onMounted(() => {
+        ensureSectionComponentIsTable();
+    });
+
+    // #endregion Hooks
+</script>

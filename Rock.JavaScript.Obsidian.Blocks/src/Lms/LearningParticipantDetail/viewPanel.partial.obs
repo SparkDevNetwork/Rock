@@ -111,8 +111,14 @@
     const currentGradePercent = ref(props.modelValue?.currentGradePercent ?? 0);
     const currentGradeText = ref(props.modelValue?.currentGradeText ?? "");
     const gradeText = computed(() => {
-        const gradePercentText = currentGradePercent.value ? `(${currentGradePercent.value}%)` : "";
-        return currentGradeText.value ? `${currentGradeText.value} ${gradePercentText}` : gradePercentText;
+        const hasGradeText = currentGradeText.value?.trim() !== "";
+        const percentText = currentGradePercent.value ? `${currentGradePercent.value}%` : "";
+
+        if (hasGradeText) {
+            return `${currentGradeText.value} (${percentText})`;
+        }
+
+        return percentText;
     });
 
     const isAcademicCalendarMode = computed(() => props.options.configurationMode === ConfigurationMode.AcademicCalendar);

@@ -28,7 +28,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Block for having SMS Conversations between an SMS enabled phone and a Rock SMS Phone number that has 'Enable Mobile Conversations' set to false." )]
     [IconCssClass( "fa fa-message" )]
-    //[SupportedSiteTypes( SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -41,7 +41,7 @@ namespace Rock.Blocks.Communication
 
     [BooleanField( "Show only personal SMS number",
         Key = AttributeKey.ShowOnlyPersonalSmsNumber,
-        Description = "Only SMS Numbers tied to the current individual will be shown. Those with ADMIN rights will see all SMS Numbers.",
+        Description = "Only SMS Numbers assigned to the current individual will be shown. Those with ADMIN rights will see all SMS Numbers.",
         DefaultBooleanValue = false,
         Order = 2
          )]
@@ -168,7 +168,7 @@ namespace Rock.Blocks.Communication
 
         protected CommunicationMessageFilter SelectedMessageFilter => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.SelectedMessageFilter )
-            .ConvertToEnum<CommunicationMessageFilter>( CommunicationMessageFilter.ShowUnreadReplies );
+            .ConvertToEnum<CommunicationMessageFilter>( CommunicationMessageFilter.ShowAllMessages );
 
         #endregion
 

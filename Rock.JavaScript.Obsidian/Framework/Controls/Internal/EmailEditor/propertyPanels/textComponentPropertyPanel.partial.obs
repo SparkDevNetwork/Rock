@@ -1,0 +1,76 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ComponentPropertyPanelBase :componentElement="componentElement"
+                                title="Paragraph"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')">
+        <AccordionGroup>
+            <Accordion :isPaddingRemoved="true"
+                       title="Text">
+                <InnerHtmlProperty :element="componentElement"
+                                   :mergeFields="mergeFields"
+                                   mode="html" />
+            </Accordion>
+
+            <Accordion title="Text Styling">
+                <FontPropertyGroup :element="componentElement"
+                                   :visibilityOptions="{
+                                       isTextFormatHidden: true,
+                                       isJustifyTextHidden: true
+                                   }" />
+                <BackgroundColorProperty :element="componentElement" />
+            </Accordion>
+
+            <Accordion title="Spacing">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <PaddingProperty :element="componentElement" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <MarginProperty :element="componentElement" />
+                    </div>
+                </div>
+            </Accordion>
+
+            <Accordion title="Border">
+                <BorderPropertyGroup :element="componentElement" />
+                <BorderRadiusProperty :element="componentElement" />
+            </Accordion>
+        </AccordionGroup>
+    </ComponentPropertyPanelBase>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import Accordion from "../accordion.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
+    import BackgroundColorProperty from "../properties/backgroundColorProperty.partial.obs";
+    import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
+    import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
+    import FontPropertyGroup from "../properties/fontPropertyGroup.partial.obs";
+    import InnerHtmlProperty from "../properties/innerHtmlProperty.partial.obs";
+    import MarginProperty from "../properties/marginProperty.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+
+    defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        mergeFields: {
+            type: Object as PropType<string[] | null | undefined>,
+            required: false
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+</script>

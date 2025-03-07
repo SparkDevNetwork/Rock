@@ -68,7 +68,7 @@ namespace Rock.Blocks.Lms
 
         private static class PageParameterKey
         {
-            public const string LearningActivityId = "LearningActivityId";
+            public const string LearningClassActivityId = "LearningClassActivityId";
             public const string LearningClassId = "LearningClassId";
             public const string LearningClassContentPageId = "LearningClassContentPageId";
             public const string LearningClassAnnouncementId = "LearningClassAnnouncementId";
@@ -210,7 +210,8 @@ namespace Rock.Blocks.Lms
                 CourseCode = entity.CourseCode,
                 Credits = entity.Credits,
                 Description = entity.Description,
-                DescriptionAsHtml = entity.Description.IsNotNullOrWhiteSpace() ? new StructuredContentHelper( entity.Description ).Render() : string.Empty,
+                // Don't resolve the merge fields as this is being shown to an admin type person.
+                DescriptionAsHtml = new StructuredContentHelper( entity.Description ).Render(),
                 EnableAnnouncements = entity.EnableAnnouncements,
                 ImageBinaryFile = entity.ImageBinaryFile?.ToListItemBag(),
                 IsActive = entity.IsActive,
@@ -373,7 +374,7 @@ namespace Rock.Blocks.Lms
                 return new LearningCourse
                 {
                     LearningProgram = program,
-                    LearningProgramId = program.Id,
+                    LearningProgramId = program?.Id ?? 0,
                     Id = 0,
                     Guid = Guid.Empty,
                     IsActive = true
@@ -423,7 +424,7 @@ namespace Rock.Blocks.Lms
         private Dictionary<string, string> GetBoxNavigationUrls( LearningCourseBag entity )
         {
             var queryParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey );
-            var activityParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey, PageParameterKey.LearningActivityId );
+            var activityParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey, PageParameterKey.LearningClassActivityId );
             var participantParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey, PageParameterKey.LearningParticipantId );
             var contentPageParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey, PageParameterKey.LearningClassContentPageId );
             var announcementParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey, PageParameterKey.LearningClassAnnouncementId );

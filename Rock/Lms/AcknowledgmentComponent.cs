@@ -14,8 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+
+using Rock.Attribute;
+using Rock.Cms.StructuredContent;
+using Rock.Data;
+using Rock.Enums.Lms;
+using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Lms
 {
@@ -26,25 +34,71 @@ namespace Rock.Lms
     [Export( typeof( LearningActivityComponent ) )]
     [ExportMetadata( "ComponentName", "Acknowledgment" )]
 
+    [RockInternal( "17.0" )]
     [Rock.SystemGuid.EntityTypeGuid( "7fae61a2-5f08-4fd9-8bb7-ff7fab410ac5" )]
     public class AcknowledgmentComponent : LearningActivityComponent
     {
-        /// <summary>
-        /// Gets the Highlight color for the component.
-        /// </summary>
+        #region Keys
+
+        private class SettingKey
+        {
+            public const string ConfirmationText = "confirmationText";
+
+            public const string Content = "content";
+
+            public const string IsConfirmationRequired = "isConfirmationRequired";
+        }
+
+        private class CompletionKey
+        {
+            public const string IsConfirmed = "isConfirmed";
+
+            public const string PointsPossibleAtCompletion = "pointsPossibleAtCompletion";
+        }
+
+        #endregion
+
+        /// <inheritdoc/>
         public override string HighlightColor => "#644a88";
 
-        /// <summary>
-        /// Gets the icon CSS class for the component.
-        /// </summary>
+        /// <inheritdoc/>
         public override string IconCssClass => "far fa-check-square";
 
-        /// <summary>
-        /// Gets the name of the component.
-        /// </summary>
+        /// <inheritdoc/>
         public override string Name => "Acknowledgment";
 
         /// <inheritdoc/>
         public override string ComponentUrl => @"/Obsidian/Controls/Internal/LearningActivity/acknowledgmentLearningActivity.obs";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetActivityConfiguration( LearningClassActivity activity, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
+        {
+            if ( presentation == PresentedFor.Configuration )
+            {
+                return new Dictionary<string, string>();
+            }
+            else
+            {
+                var content = componentData.GetValueOrNull( SettingKey.Content );
+
+                var contentHtml = content.IsNotNullOrWhiteSpace()
+                    ? new StructuredContentHelper( content ).Render()
+                    : string.Empty;
+
+                if ( contentHtml.IsNotNullOrWhiteSpace() )
+                {
+                    var mergeFields = requestContext.GetCommonMergeFields();
+
+                    contentHtml = contentHtml.ResolveMergeFields( mergeFields );
+                }
+
+                return new Dictionary<string, string>
+                {
+                    [SettingKey.ConfirmationText] = componentData.GetValueOrNull( SettingKey.ConfirmationText ),
+                    [SettingKey.Content] = contentHtml,
+                    [SettingKey.IsConfirmationRequired] = componentData.GetValueOrNull( SettingKey.IsConfirmationRequired )
+                };
+            }
+        }
     }
 }

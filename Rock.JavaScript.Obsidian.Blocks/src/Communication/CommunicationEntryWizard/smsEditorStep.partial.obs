@@ -1,0 +1,482 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="sms-editor-step">
+        <Panel :hasFullscreen="true"
+               panelBodyCssClass="panel-body-wizard"
+               type="block">
+            <template #title>
+                <div class="sms-editor-panel-title">
+                    <span>{{ title }}</span>
+                    <div class="sms-editor-panel-title-right">
+                        <HighlightLabel v-if="isSaveSuccessMessageShown"
+                                        labelType="success"
+                                        :dismissible="true">
+                            The communication has been saved.
+                            <button type="button" class="close btn-dismiss-alert" aria-label="Hide This Alert" @click.prevent="isSaveSuccessMessageShown = false">
+                                <i class="fa fa-times" aria-hidden="true"></i>
+                            </button>
+                        </HighlightLabel>
+
+                        <HighlightLabel labelType="info">{{ recipientsLabel }}</HighlightLabel>
+                    </div>
+                </div>
+            </template>
+
+            <template #headerActions>
+                <span class="action panel-action-save clickable"
+                      @click="onSaveCommunication">
+                    <i ref="saveElement"
+                       data-toggle="tooltip"
+                       title="Save Draft"
+                       class="fa fa-save"></i>
+                </span>
+            </template>
+
+            <template #default>
+                <div class="panel-body-contents">
+                    <RockForm v-model:submit="submitTrigger"
+                              @submit="onFormSubmitted">
+                        <div class="row d-sm-flex">
+                            <div class="col-xs-12 col-sm-5">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <DropDownList v-model="smsFromSystemPhoneNumberGuidOrEmptyString"
+                                                      :disabled="isSaving || isSendingTest"
+                                                      help="The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers)."
+                                                      :items="smsFromNumbers"
+                                                      label="From Number"
+                                                      rules="required"
+                                                      :showBlankItem="false" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <SmsMessageEditor v-model="internalMessage"
+                                                          :disabled="isSaving || isSendingTest"
+                                                          :editorHeight="185"
+                                                          :isCharacterCountShown="true"
+                                                          :mergeFields="mergeFields"
+                                                          rules="required"
+                                                          toolbarLabel="Message" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <ImageUploader v-model="currentAttachment"
+                                                       :binaryFileTypeGuid="attachmentBinaryFileTypeGuid"
+                                                       :disabled="isSaving || isSendingTest"
+                                                       label="Attachments"
+                                                       :fileProcessor="smsAttachmentFileProcessor"
+                                                       :uploadAsTemporary="false"
+                                                       @update:modelValue="onAttachmentAdded" />
+
+                                        <NotificationBox v-if="attachmentSizeMessage">{{ attachmentSizeMessage }}</NotificationBox>
+                                        <NotificationBox v-if="mimeTypeMessageHtml" :alertType="mimeTypeAlertType" v-html="mimeTypeMessageHtml" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xs-12 col-sm-7">
+                                <SmsPreview :class="breakpointHelper.breakpoint"
+                                            :smsAttachmentLinks="smsAttachmentLinks"
+                                            :smsFromNumberName="smsFromNumberName"
+                                            :smsMessage="internalMessage" />
+                            </div>
+                        </div>
+
+                        <LoadingOverlay :isVisible="isSaving || isSendingTest"
+                                        targetSelector=".sms-editor-step" />
+                    </RockForm>
+                </div>
+            </template>
+
+            <template #footerActions>
+                <RockButton :disabled="isSaving || isSendingTest"
+                            @click="onPreviousClicked">Previous</RockButton>
+            </template>
+
+            <template #footerSecondaryActions>
+                <RockButton :disabled="isSaving || isSendingTest"
+                            @click="onSendTestClicked">
+                    <i class="fa fa-paper-plane-o"></i> Send Test
+                </RockButton>
+                <RockButton btnType="primary"
+                            :disabled="isSaving || isSendingTest"
+                            @click="onNextClicked">{{ nextStepTitle ? `Next: ${nextStepTitle}` : 'Next' }}</RockButton>
+            </template>
+        </Panel>
+
+        <Modal v-model="isSendTestModalShown"
+               saveText="Send"
+               @save="onSendTestCommunication">
+            <PhoneNumberBox v-model="testSmsPhoneNumberOrEmptyString"
+                            help="This will temporarily change your SMS number during the test, but it will be changed back after the test is complete."
+                            label="SMS Number"
+                            rules="required" />
+        </Modal>
+    </div>
+</template>
+
+<style scoped>
+:deep(.panel-body-wizard) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-body-contents {
+    flex: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+:deep(.panel-sub-header) {
+    background-color: var(--color-interface-softer);
+    border-color: var(--color-interface-soft);
+}
+
+.sms-editor-panel-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sms-editor-panel-title-right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-medium);
+}
+
+.btn-dismiss-alert {
+    font-size: var(--font-size-xsmall);
+}
+
+.btn-dismiss-alert.close i {
+    display: inline-block;
+}
+
+:deep(.confirmation-preview-panel) {
+    /* Since the preview is displayed inside a panel
+       and it needs to expand to the edge of the panel,
+       add a negative margin to the preview and add the same padding to the preview that the panel has. */
+    margin: calc(0px - var(--panel-body-padding));
+}
+
+:deep(.confirmation-preview-panel.xs) {
+    /* In mobile, the preview will move to a new row. Remove the top and bottom negative margin. */
+    margin-top: 0;
+    margin-bottom: 0;
+
+    /* Remove padding and the gray background on mobile devices so the preview takes up the full width. */
+    padding: 0;
+    background: none;
+}
+</style>
+
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import LoadingOverlay from "./loadingOverlay.partial.obs";
+    import SmsPreview from "./smsMobilePreview.partial.obs";
+    import { BinaryFileAttachment, BlockActionCallbacks } from "./types.partial";
+    import { useBreakpointHelper } from "./utils.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import SmsMessageEditor from "@Obsidian/Controls/smsMessageEditor.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { Guid } from "@Obsidian/Types";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { resizeImageFileProcessor } from "@Obsidian/Utility/file";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { asCommaAnd } from "@Obsidian/Utility/stringUtils";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        attachmentBinaryFileTypeGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        maxImageWidth: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        mergeFields: {
+            type: Object as PropType<string[] | undefined>,
+            required: true
+        },
+
+        message: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        nextStepTitle: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        recipientsLabel: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        smsAcceptedMimeTypes: {
+            type: Object as PropType<string[] | null | undefined>,
+            required: true
+        },
+
+        smsAttachmentBinaryFiles: {
+            type: Object as PropType<ListItemBag[] | null | undefined>,
+            required: true
+        },
+
+        smsAttachmentLinks: {
+            type: Object as PropType<BinaryFileAttachment[]>,
+            required: true
+        },
+
+        smsFromNumbers: {
+            type: Object as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        smsFromNumberName: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        smsFromSystemPhoneNumberGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            required: true
+        },
+
+        smsMediaSizeLimitBytes: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        smsSupportedMimeTypes: {
+            type: Object as PropType<string[] | null | undefined>,
+            required: true
+        },
+
+        testSmsPhoneNumber: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "nextStep"): void;
+        (e: "previousStep"): void;
+        (e: "sendTestCommunication", value: BlockActionCallbacks): void;
+        (e: "saveCommunication", value: BlockActionCallbacks): void;
+        (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
+        (e: "update:message", value: string): void;
+        (e: "update:testSmsPhoneNumber", value: string | null | undefined): void;
+        (e: "update:smsFromSystemPhoneNumberGuid", value: Guid | null | undefined): void;
+        (e: "update:smsAttachmentBinaryFiles", value: Guid | null | undefined): void;
+    }>();
+
+    const breakpointHelper = useBreakpointHelper();
+
+    // #region Values
+
+    // UI state.
+    // Set to null to clear the attachment uploader.
+    const isSaving = ref<boolean>(false);
+    const isSendingTest = ref<boolean>(false);
+    const isSendTestModalShown = ref<boolean>(false);
+    const isSaveSuccessMessageShown = ref<boolean>(false);
+    const currentAttachment = ref<ListItemBag | null | undefined>();
+    const saveElement = ref<HTMLElement | undefined>();
+    const mimeTypeAlertType = ref<AlertType>("default");
+    const mimeTypeMessageHtml = ref<string | null | undefined>();
+    const attachmentSizeMessage = ref<string | null | undefined>();
+    const submitTrigger = ref<boolean>(false);
+    const submitAction = ref<"next" | "sendTest">("next");
+
+    // Communication state.
+    const internalMessage = useVModelPassthrough(props, "message", emit);
+    const internalSmsFromSystemPhoneNumberGuid = useVModelPassthrough(props, "smsFromSystemPhoneNumberGuid", emit);
+    const internalTestSmsPhoneNumber = useVModelPassthrough(props, "testSmsPhoneNumber", emit);
+    const internalSmsAttachmentBinaryFiles = useVModelPassthrough(props, "smsAttachmentBinaryFiles", emit);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const smsAttachmentFileProcessor = computed<(file: File) => File | Promise<File>>(() => {
+        const resizer = resizeImageFileProcessor({ maxWidth: props.maxImageWidth });
+
+        function getSupportedImageTypes(): string[] {
+            return props.smsSupportedMimeTypes
+                ?.map(mt => mt.toLowerCase())
+                .filter(mt => mt.startsWith("image/"))
+                .map(mt => mt.split("/")[1]) ?? [];
+        }
+
+        return async (file: File): Promise<File> => {
+            // Check the MIME type.
+            if (props.smsSupportedMimeTypes?.some(mt => mt.toLowerCase() === file.type.toLowerCase())) {
+                mimeTypeMessageHtml.value = null;
+            }
+            else if (props.smsAcceptedMimeTypes?.some(mt => mt.toLowerCase() === file.type.toLowerCase())) {
+                const supportedImageTypes = getSupportedImageTypes();
+                mimeTypeAlertType.value = "info";
+                mimeTypeMessageHtml.value = `When sending attachments with MMS; ${supportedImageTypes.length ? asCommaAnd(supportedImageTypes) : "no"} images are supported by all carriers. Files of type <small>${file.type}</small> are also accepted, but support is dependent upon each carrier and device. So make sure to test sending this to different carriers and phone types to see if it will work as expected.`;
+            }
+            else {
+                const supportedImageTypes = getSupportedImageTypes();
+                mimeTypeAlertType.value = "warning";
+                mimeTypeMessageHtml.value = `When sending attachments with MMS; ${supportedImageTypes.length ? asCommaAnd(supportedImageTypes) : "no"} images are supported by all carriers. However, files of type <small>${file.type}</small> might not be accepted, and support is dependent upon each carrier and device. So make sure to test sending this to different carriers and phone types to see if it will work as expected.`;
+            }
+
+            // Resize the image if needed.
+            let resizedFile = resizer(file);
+
+            if (isPromise(resizedFile)) {
+                resizedFile = await resizedFile;
+            }
+
+            // Check the file size after resizing.
+            if (resizedFile.size > props.smsMediaSizeLimitBytes) {
+                attachmentSizeMessage.value = `The attached file is ${resizedFile.size / 1024 / 1024}MB, which is over the ${props.smsMediaSizeLimitBytes / 1024 / 1024}MB media size limit.`;
+            }
+            else {
+                attachmentSizeMessage.value = null;
+            }
+
+            return resizedFile;
+        };
+    });
+
+    const smsFromSystemPhoneNumberGuidOrEmptyString = computed<string>({
+        get(): string {
+            return internalSmsFromSystemPhoneNumberGuid.value ?? "";
+        },
+        set(value: string): void {
+            internalSmsFromSystemPhoneNumberGuid.value = toGuidOrNull(value);
+        }
+    });
+
+    const testSmsPhoneNumberOrEmptyString = computed<string>({
+        get(): string {
+            return internalTestSmsPhoneNumber.value ?? "";
+        },
+        set(value: string): void {
+            internalTestSmsPhoneNumber.value = value || null;
+        }
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onSendTestClicked(): void {
+        submitAction.value = "sendTest";
+        submitTrigger.value = true;
+    }
+
+    function onNextClicked(): void {
+        submitAction.value = "next";
+        submitTrigger.value = true;
+    }
+
+    function onFormSubmitted(): void {
+        switch (submitAction.value) {
+            case "next":
+                emit("nextStep");
+                break;
+            case "sendTest":
+                isSendTestModalShown.value = true;
+                break;
+        }
+    }
+
+    function onSendTestCommunication(): void {
+        if (isSendingTest.value) {
+            return;
+        }
+
+        isSendingTest.value = true;
+
+        emit("sendTestCommunication", {
+            onSuccess() {
+                isSendingTest.value = false;
+            },
+            onError() {
+                isSendingTest.value = false;
+            }
+        });
+
+        isSendTestModalShown.value = false;
+    }
+
+    function onPreviousClicked(): void {
+        emit("previousStep");
+    }
+
+    function onSaveCommunication(): void {
+        if (isSaving.value) {
+            return;
+        }
+
+        isSaving.value = true;
+
+        emit("saveCommunication", {
+            onSuccess() {
+                isSaveSuccessMessageShown.value = true;
+                isSaving.value = false;
+            },
+            onError() {
+                isSaving.value = false;
+            }
+        });
+    }
+
+    function onAttachmentAdded(attachment: ListItemBag | null | undefined): void {
+        if (isNullish(attachment)) {
+            // Clear warnings.
+            attachmentSizeMessage.value = null;
+            mimeTypeMessageHtml.value = null;
+            return;
+        }
+
+        internalSmsAttachmentBinaryFiles.value = [
+            attachment
+        ];
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(saveElement, element => {
+        if (element) {
+            tooltip(element);
+        }
+    });
+
+    // #endregion
+</script>

@@ -28,7 +28,6 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Enums.Blocks.Communication.CommunicationEntry;
 using Rock.Model;
-using Rock.Net;
 using Rock.Security;
 using Rock.Security.SecurityGrantRules;
 using Rock.Tasks;
@@ -1221,7 +1220,7 @@ namespace Rock.Blocks.Communication
                         ),
                         IsDeceased = personAlias.Person.IsDeceased,
                         PersonAliasGuid = personAlias.Guid,
-                        SmsNumber = personAlias.MobilePhone.Number,
+                        SmsNumber = personAlias.MobilePhone.NumberFormatted,
                         // Set name using the full Person entity.
                         // Name = person.FullName,
                     },
@@ -1270,11 +1269,11 @@ namespace Rock.Blocks.Communication
         {
             if ( communication == null || communication.Id == 0 )
             {
-                return "New Communication".FormatAsHtmlTitle();
+                return "New Communication";
             }
             else
             {
-                return ( communication.Name ?? communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
+                return communication.Name ?? communication.Subject ?? "New Communication";
             }
         }
 

@@ -151,10 +151,13 @@ namespace Rock.Blocks.Lms
                             </div>
                             {% endif %}
 
+                            {% if CourseInfo.Credits != empty and CourseInfo.Credits != 0 %}
                             <div class=""d-flex text-gray-600 gap-1 pb-3"">
                                 <p class=""text-bold mb-0"">Credits: </p>
                                 <p class=""mb-0"">{{CourseInfo.Credits}}</p>
                             </div>
+                            {% endif %}
+
                             <div class=""pt-3 border-top border-gray-200"">
                                 {% if CourseInfo.DescriptionAsHtml == empty %}
                                     <span>No course description provided.</span>
@@ -246,6 +249,16 @@ namespace Rock.Blocks.Lms
                                         </div>
                                         <div class=""text-muted"">You completed this class on {{
                                             classInfo.StudentParticipant.LearningCompletionDateTime | Date: 'sd' }}.</div>
+
+                                        {% if classInfo.StudentParticipant.LearningGradingSystemScale.Name != empty %}
+                                        <div class=""mt-3"">
+                                            <div class=""text-muted"">
+                                                <p class=""text-bold mb-0"">Grade</p>
+                                                <p class=""mb-0"">{{ classInfo.StudentParticipant.LearningGradingSystemScale.Name }}</p>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
                                         <div class=""mt-2"">
                                             <a href=""{{ classInfo.WorkspaceLink }}"">View Class Workspace</a>
                                         </div>
@@ -451,6 +464,7 @@ namespace Rock.Blocks.Lms
                 GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now );
 
             var publicOnly = GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean();
+            var mergeFields = RequestContext.GetCommonMergeFields();
 
             // Get the course details or a default value.
             var course = learningCourseService.GetPublicCourseDetails(
@@ -464,11 +478,12 @@ namespace Rock.Blocks.Lms
                     ProgramInfo = new LearningProgramService.PublicLearningProgramBag(),
                 };
 
-            course.DescriptionAsHtml = new StructuredContentHelper( course.Description ?? string.Empty ).Render();
+            course.DescriptionAsHtml = new StructuredContentHelper( course.Description )
+                .Render()
+                .ResolveMergeFields( mergeFields );
 
             AddClassSpecificProperties( course );
 
-            var mergeFields = this.RequestContext.GetCommonMergeFields( currentPerson );
             mergeFields.Add( "CourseInfo", course );
             mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus );
 

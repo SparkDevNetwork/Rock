@@ -25,6 +25,8 @@
 export const FieldType = {
     /** Address field type */
     AchievementType: "593132CF-BA5D-462F-97F6-94DCC0BFFE6F",
+    /** Adaptive Message field type */
+    AdaptiveMessage: "55CC533A-99D2-418F-B93E-73EA098ABDAE",
     /** Address field type */
     Address: "0A495222-23B7-41D3-82C8-D484CDB75D17",
     /** AI provider field type. */

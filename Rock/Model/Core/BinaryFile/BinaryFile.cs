@@ -256,7 +256,7 @@ namespace Rock.Model
         #endregion
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> containing the name of the file and  represents this instance.
+        /// Returns a <see cref="System.String" /> containing the name of the file and represents this instance.
         /// </summary>
         /// <returns>
         /// A <see cref="System.String" /> containing the name of the file and represents this instance.

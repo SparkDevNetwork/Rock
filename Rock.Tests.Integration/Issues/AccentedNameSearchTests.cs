@@ -26,7 +26,7 @@ using Rock.Tests.Integration.TestData.Crm;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Core.Crm
+namespace Rock.Tests.Integration.Issues
 {
     /// <summary>
     /// A collection of tests to identify potential issues that arise when configuring a Rock database
@@ -150,6 +150,7 @@ namespace Rock.Tests.Integration.Core.Crm
 -- Person Table
 DROP INDEX IF EXISTS [IX_IsDeceased_FirstName_LastName] ON [Person]
 DROP INDEX IF EXISTS [IX_IsDeceased_LastName_FirstName] ON [Person]
+DROP INDEX IF EXISTS [IX_RecordTypeValueId_LastName] ON [Person]
 ALTER TABLE [Person]
 ALTER COLUMN [FirstName] NVARCHAR(100) COLLATE SQL_Latin1_General_CP1_CI_AI
 ALTER TABLE [Person]

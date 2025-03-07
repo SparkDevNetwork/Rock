@@ -1,0 +1,112 @@
+<template>
+    <div class="row">
+        <div class="col-md-6">
+            <GroupPicker v-model="groups"
+                         label="Group(s)"
+                         multiple />
+
+            <InlineCheckBox v-model="includeChildGroups"
+                            label="Include Child Group(s)" />
+
+            <div class="margin-l-lg">
+                <InlineCheckBox v-model="includeSelectedGroups"
+                                label="Include Selected Group(s)"
+                                :disabled="!includeChildGroups" />
+
+                <InlineCheckBox v-model="includeAllDescendants"
+                                label="Include All Descendants"
+                                :disabled="!includeChildGroups" />
+
+                <InlineCheckBox v-model="includeInactiveGroups"
+                                label="Include Inactive Groups"
+                                :disabled="!includeChildGroups" />
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <CheckBoxList v-if="groupMemberRoleItems.length > 0"
+                          v-model="groupMemberRoles"
+                          label="with Group Member Role(s) (optional)"
+                          :items="groupMemberRoleItems" />
+
+            <DropDownList v-model="groupMemberStatus"
+                          label="with Group Member Status"
+                          help="Select a specific group member status to only include group members with that status. Leaving this blank will return all members."
+                          :items="groupMemberStatusItems" />
+
+            <Panel title="Advanced Filters"
+                   hasCollapse>
+                <SlidingDateRangePicker v-model="dateAdded"
+                                        label="Date Added"
+                                        help="Select the date range that the person was added to the group. Leaving this blank will not restrict results to a date range." />
+
+                <SlidingDateRangePicker v-model="firstAttendance"
+                                        label="First Attendance"
+                                        help="The date range of the first attendance using the 'Sunday Date' of each attendance." />
+
+                <SlidingDateRangePicker v-model="lastAttendance"
+                                        label="Last Attendance"
+                                        help="The date range of the last attendance using the 'Sunday Date' of each attendance." />
+            </Panel>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, watch } from "vue";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { GroupMemberStatusDescription } from "@Obsidian/Enums/Group/groupMemberStatus";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    // #region Values
+
+    const groups = ref<ListItemBag[]>(safeParseJson(props.modelValue.groups) ?? []);
+    const includeChildGroups = ref<boolean>(asBoolean(props.modelValue.includeChildGroups));
+    const includeSelectedGroups = ref<boolean>(asBoolean(props.modelValue.includeSelectedGroups));
+    const includeAllDescendants = ref<boolean>(asBoolean(props.modelValue.includeAllDescendants));
+    const includeInactiveGroups = ref<boolean>(asBoolean(props.modelValue.includeInactiveGroups));
+    const groupMemberRoles = ref<string[]>(props.modelValue.groupMemberRoles?.split(",") ?? []);
+    const groupMemberStatus = ref(props.modelValue.groupMemberStatus ?? "");
+    const dateAdded = ref(parseSlidingDateRangeString(props.modelValue.dateAdded ?? ""));
+    const firstAttendance = ref(parseSlidingDateRangeString(props.modelValue.firstAttendance ?? ""));
+    const lastAttendance = ref(parseSlidingDateRangeString(props.modelValue.lastAttendance ?? ""));
+
+    // TODO: This needs to be updated in an API call whenever groups changes.
+    const groupMemberRoleItems = ref<ListItemBag[]>(safeParseJson(props.modelValue.groupMemberRoleItems) ?? []);
+
+    const groupMemberStatusItems = enumToListItemBag(GroupMemberStatusDescription);
+
+    // #endregion
+
+    watch([groups, includeChildGroups, includeSelectedGroups, includeAllDescendants, includeInactiveGroups, groupMemberRoles, groupMemberStatus, dateAdded, firstAttendance, lastAttendance], () => {
+        const newData = { ...props.modelValue };
+
+        newData.groups = JSON.stringify(groups.value);
+        newData.includeChildGroups = asTrueOrFalseString(includeChildGroups.value);
+        newData.includeSelectedGroups = asTrueOrFalseString(includeSelectedGroups.value);
+        newData.includeAllDescendants = asTrueOrFalseString(includeAllDescendants.value);
+        newData.includeInactiveGroups = asTrueOrFalseString(includeInactiveGroups.value);
+        newData.groupMemberRoles = groupMemberRoles.value.join(",");
+        newData.groupMemberStatus = groupMemberStatus.value;
+        newData.dateAdded = dateAdded.value ? slidingDateRangeToString(dateAdded.value) : "";
+        newData.firstAttendance = firstAttendance.value ? slidingDateRangeToString(firstAttendance.value) : "";
+        newData.lastAttendance = lastAttendance.value ? slidingDateRangeToString(lastAttendance.value) : "";
+
+        emit("update:modelValue", newData);
+    });
+</script>

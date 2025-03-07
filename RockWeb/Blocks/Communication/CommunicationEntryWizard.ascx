@@ -9,7 +9,6 @@
         <asp:HiddenField ID="hfEmailEditorHtml_dvrm" runat="server" Value="True" />
         <asp:HiddenField ID="hfDisablePredictableIds" runat="server" Value="" />
 
-
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading panel-follow">
@@ -1267,7 +1266,7 @@
                                         <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Required="true" ValidationGroup="vgEmailSummary" MaxLength="100" Help="<span class='tip tip-lava'></span>" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:EmailBox ID="ebFromAddress" runat="server" Label="From Address" Required="true" AllowLava="true" ValidationGroup="vgEmailSummary" MaxLength="100" Help="<span class='tip tip-lava'>" />
+                                        <Rock:EmailBox ID="ebFromAddress" runat="server" Label="From Address" Required="true" AllowLava="true" ValidationGroup="vgEmailSummary" MaxLength="100" Help="<span class='tip tip-lava'></span>" />
                                         <asp:HiddenField ID="hfShowAdditionalFields" runat="server" />
                                         <div class="pull-right">
                                             <a href="#" class="btn btn-xs btn-link js-show-additional-fields">Show Additional Fields</a>

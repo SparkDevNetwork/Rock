@@ -63,7 +63,7 @@ namespace Rock.Plugin.HotFixes
                 name: "Rock Update Helper v17.0 - Interaction Index Post Migration Job",
                 description: "This job adds the IX_InteractionSessionId_CreatedDateTime index on the Interaction Table.",
                 jobType: "Rock.Jobs.PostV17InteractionIndexPostMigration", cronExpression: "0 0 21 1/1 * ? *",
-                guid: "9984C806-FAEE-4005-973B-9FBE21948972" );
+                guid: SystemGuid.ServiceJob.DATA_MIGRATIONS_170_INTERACTION_INDEX_POST_MIGRATION_JOB );
         }
 
         /// <summary>

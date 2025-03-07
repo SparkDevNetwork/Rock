@@ -23,10 +23,10 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import Chart from "@Obsidian/Controls/chart.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
     import { ChartType, ChartData, ChartOptions } from "@Obsidian/Libs/chart";
 
     const type = ref<ChartType>("bar");

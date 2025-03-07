@@ -912,6 +912,8 @@ namespace Rock.Web
                         {
                             // Use the shared RockContext we created earlier.
                             instanceAsRockBlockType.RockContext = rockContext;
+                            instanceAsRockBlockType.BlockCache = block;
+                            instanceAsRockBlockType.PageCache = page;
                         }
 
                         /*

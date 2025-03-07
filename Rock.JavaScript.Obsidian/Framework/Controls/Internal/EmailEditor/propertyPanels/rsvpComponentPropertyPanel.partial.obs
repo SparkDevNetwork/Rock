@@ -1,0 +1,600 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ComponentPropertyPanelBase :componentElement="componentElement"
+                                title="RSVP"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')">
+        <AccordionGroup>
+            <Accordion title="Settings">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <GroupPicker v-model="selectedGroupListItemBag"
+                                     :autoExpand="true"
+                                     label="RSVP Group"
+                                     :limitToRSVPEnabled="true" />
+                    </div>
+                </div>
+
+                <TransitionVerticalCollapse>
+                    <div v-if="selectedGroupListItemBag" class="row">
+                        <div class="col-sm-12">
+                            <DropDownList v-model="selectedFutureOccurrenceDataOrEmptyString"
+                                          label="Occurrence"
+                                          :items="occurrenceItems" />
+                        </div>
+                    </div>
+                </TransitionVerticalCollapse>
+
+                <TransitionVerticalCollapse>
+                    <div v-if="selectedFutureOccurrenceDataOrEmptyString">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <RockButton btnSize="xs"
+                                            :disabled="areRsvpRecipientsRegistering || areRsvpRecipientsRegistered"
+                                            @click="onRegisterRecipientsClicked">
+                                    <i class="fa fa-user-check"></i> {{ areRsvpRecipientsRegistering ? 'Registering...' : areRsvpRecipientsRegistered ? 'Recipients Registered!' : 'Register Recipients' }}
+                                </RockButton>
+                            </div>
+                        </div>
+                    </div>
+                </TransitionVerticalCollapse>
+            </Accordion>
+
+            <Accordion title="Block Styling">
+                <PaddingProperty :element="componentElement" />
+
+                <AlignAttributeProperty v-if="rsvpInnerWrapElement"
+                                        :element="rsvpInnerWrapElement"
+                                        label="Horizontal Alignment" />
+            </Accordion>
+
+            <Accordion title="Buttons">
+                <div v-if="acceptButtonElement"
+                     class="row">
+                    <div class="col-sm-12">
+                        <FontPropertyGroup :element="acceptButtonElement"
+                                           :copyToElements="declineButtonElement ? [declineButtonElement] : undefined"
+                                           :visibilityOptions="{
+                                               isColorHidden: true,
+                                               isJustifyTextHidden: true,
+                                           }" />
+                    </div>
+                </div>
+
+                <div v-if="acceptButtonElement"
+                     class="row">
+                    <div class="col-sm-12">
+                        <PaddingProperty :element="acceptButtonElement"
+                                         :copyToElements="declineButtonElement ? [declineButtonElement] : undefined"
+                                         label="Button Padding" />
+                    </div>
+                </div>
+
+                <div v-if="acceptButtonElement"
+                     class="row">
+                    <div class="col-sm-12">
+                        <BorderRadiusProperty :element="acceptButtonElement"
+                                              label="Corner Radius"
+                                              :copyToElements="borderRadiusCopyTargets" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <RockLabel class="section-label">Accept Button</RockLabel>
+                        </div>
+                    </div>
+                </div>
+
+                <template v-if="acceptButtonElement">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <TextContentProperty :element="acceptButtonElement"
+                                                 label="Label"
+                                                 @change="onAcceptButtonTextChanged" />
+                        </div>
+                    </div>
+
+                    <div v-if="acceptButtonWidthProvider" class="row">
+                        <div class="col-sm-12">
+                            <ButtonWidthProperty :valueProvider="acceptButtonWidthProvider" />
+                        </div>
+                    </div>
+                </template>
+
+                <div v-if="acceptButtonShellElement"
+                     class="row">
+                    <div class="col-sm-8">
+                        <BackgroundColorProperty :element="acceptButtonShellElement"
+                                                 label="Background Color"
+                                                 @update:backgroundColor="(value) => {
+                                                     acceptButtonBackgroundColor = value;
+                                                     updateRsvpHrefs();
+                                                 }" />
+                    </div>
+                </div>
+
+                <div v-if="acceptButtonElement"
+                     class="row">
+                    <div class="col-sm-8">
+                        <ColorProperty :element="acceptButtonElement"
+                                       label="Text Color"
+                                       @update:color="(value) => {
+                                           acceptButtonColor = value;
+                                           updateRsvpHrefs();
+                                       }" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <RockLabel class="section-label">Decline Button</RockLabel>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="declineButtonShellElement"
+                     class="row">
+                    <div class="col-sm-12">
+                        <DisplayProperty :element="declineButtonShellElement"
+                                         label="Show"
+                                         displayValue="inline-table"
+                                         @update:display="onShowDeclineStylesChanged" />
+                    </div>
+                </div>
+
+                <template v-if="declineButtonElement">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <TextContentProperty :element="declineButtonElement"
+                                                 label="Label"
+                                                 @change="onDeclineButtonTextChanged" />
+                        </div>
+                    </div>
+
+                    <div v-if="declineButtonWidthProvider" class="row">
+                        <div class="col-sm-12">
+                            <ButtonWidthProperty :valueProvider="declineButtonWidthProvider" />
+                        </div>
+                    </div>
+                </template>
+
+                <div v-if="declineButtonShellElement"
+                     class="row">
+                    <div class="col-sm-8">
+                        <BackgroundColorProperty :element="declineButtonShellElement"
+                                                 label="Background Color"
+                                                 @update:backgroundColor="(value) => {
+                                                     declineButtonBackgroundColor = value;
+                                                     updateRsvpHrefs();
+                                                 }" />
+                    </div>
+                </div>
+
+                <div v-if="declineButtonElement"
+                     class="row">
+                    <div class="col-sm-8">
+                        <ColorProperty :element="declineButtonElement"
+                                       label="Text Color"
+                                       @update:color="(value) => {
+                                           declineButtonColor = value;
+                                           updateRsvpHrefs();
+                                       }" />
+                    </div>
+                </div>
+            </Accordion>
+        </AccordionGroup>
+    </ComponentPropertyPanelBase>
+</template>
+
+<style scoped>
+:deep(.colorpicker-element) {
+    width: auto;
+}
+
+.section-label {
+    border-bottom: 1px solid var(--color-interface-soft);
+    width: 100%;
+    padding-bottom: var(--spacing-xsmall);
+    font-size: var(--font-size-regular);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onMounted, onUnmounted, PropType, ref, watch } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import Accordion from "../accordion.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
+    import { createAttendanceOccurrence, getFutureAttendanceOccurrences, registerRsvpRecipients } from "../api";
+    import AlignAttributeProperty from "../properties/alignAttributeProperty.partial.obs";
+    import BackgroundColorProperty from "../properties/backgroundColorProperty.partial.obs";
+    import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
+    import ButtonWidthProperty from "../properties/buttonWidthProperty.partial.obs";
+    import ColorProperty from "../properties/colorProperty.partial.obs";
+    import FontPropertyGroup from "../properties/fontPropertyGroup.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import DisplayProperty from "../properties/displayProperty.partial.obs";
+    import TextContentProperty from "../properties/textContentProperty.partial.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { isHTMLAnchorElement } from "@Obsidian/Utility/dom";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { replaceAll } from "@Obsidian/Utility/stringUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { EmailEditorAttendanceOccurrenceBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorAttendanceOccurrenceBag";
+    import { EmailEditorRegisterRsvpRecipientsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorRegisterRsvpRecipientsOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { createButtonWidthValuesProvider } from "../providers.partial";
+    import { ButtonWidthValues, ValueProvider } from "../types.partial";
+
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        recipientPersonIds: {
+            type: Object as PropType<number[] | null | undefined>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+
+    // #region Computed Props
+
+    const acceptButtonShellElement = computed<HTMLElement | undefined>(() => {
+        return props.componentElement.querySelector(".accept-button-shell") as HTMLElement;
+    });
+
+    const acceptButtonContentElement = computed<HTMLElement | undefined>(() => {
+        return acceptButtonShellElement.value?.querySelector(".rsvp-accept-content") as HTMLElement;
+    });
+
+    const acceptButtonElement = computed<HTMLElement | undefined>(() => {
+        return acceptButtonContentElement.value?.querySelector(".rsvp-accept-link") as HTMLElement;
+    });
+
+    const declineButtonShellElement = computed<HTMLElement | undefined>(() => {
+        return props.componentElement.querySelector(".decline-button-shell") as HTMLElement;
+    });
+
+    const declineButtonContentElement = computed<HTMLElement | undefined>(() => {
+        return declineButtonShellElement.value?.querySelector(".rsvp-decline-content") as HTMLElement;
+    });
+
+    const declineButtonElement = computed<HTMLElement | undefined>(() => {
+        return declineButtonContentElement.value?.querySelector(".rsvp-decline-link") as HTMLElement;
+    });
+
+    const rsvpInnerWrapElement = computed<HTMLElement | undefined>(() => {
+        return props.componentElement.querySelector(".rsvp-innerwrap") as HTMLElement;
+    });
+
+    const borderRadiusCopyTargets = computed<HTMLElement[] | undefined>(() => {
+        const targets: HTMLElement[] = [];
+
+        if (acceptButtonShellElement.value) {
+            targets.push(acceptButtonShellElement.value);
+        }
+
+        if (declineButtonShellElement.value) {
+            targets.push(declineButtonShellElement.value);
+        }
+
+        if (declineButtonElement.value) {
+            targets.push(declineButtonElement.value);
+        }
+
+        if (targets.length) {
+            return targets;
+        }
+        else {
+            return;
+        }
+    });
+
+    // #endregion Computed Props
+
+    // #region Values
+
+    const areRsvpRecipientsRegistering = ref<boolean>(false);
+    const areRsvpRecipientsRegistered = ref<boolean>(false);
+
+    const occurrenceItems = ref<ListItemBag[] | undefined>();
+
+    // Represented as `(Accept|Decline)ButtonColor=${"background-color"}`
+    const acceptButtonBackgroundColor = ref<string | null>(null);
+    const declineButtonBackgroundColor = ref<string | null>(null);
+
+    // Represented as `(Accept|Decline)ButtonFontColor=${"color"}`
+    const acceptButtonColor = ref<string | null>(null);
+    const declineButtonColor = ref<string | null>(null);
+
+    const hiddenGroupIdElement = ref<HTMLInputElement | undefined>();
+    const selectedGroupListItemBag = ref<ListItemBag | null | undefined>();
+
+    const hiddenOccurrenceIdElement = ref<HTMLInputElement | undefined>();
+    const selectedFutureOccurrenceDataOrEmptyString = ref<string>("");
+
+    const acceptButtonWidthProvider = ref<ValueProvider<ButtonWidthValues | null | undefined> | null | undefined>(acceptButtonShellElement.value ? createButtonWidthValuesProvider(acceptButtonShellElement.value) : null);
+    const declineButtonWidthProvider = ref<ValueProvider<ButtonWidthValues | null | undefined> | null | undefined>(declineButtonShellElement.value ? createButtonWidthValuesProvider(declineButtonShellElement.value) : null);
+
+    // #endregion Values
+
+    // #region Functions
+
+    function parseFutureOccurrenceData(value: string): EmailEditorAttendanceOccurrenceBag {
+        const [id, groupId, locationId, scheduleId, occurrenceDate] = (value || "").split("|");
+
+        return {
+            occurrenceId: toNumberOrNull(id) ?? 0,
+            groupId: toNumberOrNull(groupId),
+            locationId: toNumberOrNull(locationId),
+            scheduleId: toNumberOrNull(scheduleId),
+            occurrenceDate
+        };
+    }
+
+    function serializeAttendanceOccurrence(value: EmailEditorAttendanceOccurrenceBag): string {
+        return `${value.occurrenceId}|${value.groupId ?? ""}|${value.locationId ?? ""}|${value.scheduleId ?? ""}|${value.occurrenceDate ?? ""}`;
+    }
+
+    function updateRsvpHrefs(): void {
+        const { occurrenceId } = parseFutureOccurrenceData(selectedFutureOccurrenceDataOrEmptyString.value);
+        // Lava parameters are intentionally not encoded so they can replaced.
+        const nonEncodedParams: string[] = [
+            `p={{ Person | PersonActionIdentifier:'RSVP' }}`
+        ];
+        const sharedParams = new URLSearchParams();
+        sharedParams.set("AcceptButtonText", `${acceptButtonElement.value?.textContent}`);
+        sharedParams.set("AcceptButtonColor", `${replaceAll(acceptButtonBackgroundColor.value ?? "", " ", "")}`);
+        sharedParams.set("AcceptButtonFontColor", `${replaceAll(acceptButtonColor.value ?? "", " ", "")}`);
+        sharedParams.set("DeclineButtonText", `${declineButtonElement.value?.textContent}`);
+        sharedParams.set("DeclineButtonColor", `${replaceAll(declineButtonBackgroundColor.value ?? "", " ", "")}`);
+        sharedParams.set("DeclineButtonFontColor", `${replaceAll(declineButtonColor.value ?? "", " ", "")}`);
+        sharedParams.set("AttendanceOccurrenceId", `${occurrenceId}`);
+
+        const acceptParams = new URLSearchParams(sharedParams);
+        acceptParams.set("isAccept", "1");
+        const declineParams = new URLSearchParams(sharedParams);
+        declineParams.set("isAccept", "0");
+
+        if (isHTMLAnchorElement(acceptButtonElement.value)) {
+            acceptButtonElement.value.href = `{{ 'Global' | Attribute:'PublicApplicationRoot' }}RSVP?${nonEncodedParams.join("&")}&${acceptParams.toString()}`;
+        }
+
+        if (isHTMLAnchorElement(declineButtonElement.value)) {
+            declineButtonElement.value.href = `{{ 'Global' | Attribute:'PublicApplicationRoot' }}RSVP?${nonEncodedParams.join("&")}&${declineParams.toString()}`;
+        }
+    }
+
+    function getOrCreateHiddenGroupIdElement(): HTMLInputElement {
+        let element: HTMLInputElement | null = props.componentElement.querySelector(`input[type="hidden"].rsvp-group-id`) as HTMLInputElement;
+
+        if (!element) {
+            element = props.componentElement.ownerDocument.createElement("input");
+            element.setAttribute("type", "hidden");
+            element.classList.add(".rsvp-group-id");
+            props.componentElement.append(element);
+        }
+
+        hiddenGroupIdElement.value = element;
+
+        return element;
+    }
+
+    function getOrCreateHiddenOccurrenceIdElement(): HTMLInputElement {
+        let element: HTMLInputElement | null = props.componentElement.querySelector(`input[type="hidden"].rsvp-occurrence-value`) as HTMLInputElement;
+
+        if (!element) {
+            element = props.componentElement.ownerDocument.createElement("input");
+            element.setAttribute("type", "hidden");
+            element.classList.add(".rsvp-occurrence-value");
+            props.componentElement.append(element);
+        }
+
+        hiddenOccurrenceIdElement.value = element;
+
+        return element;
+    }
+
+    function toListItemBagOrNull(value: string | null): ListItemBag | null {
+        if (value === null) {
+            return null;
+        }
+        else {
+            return {
+                value
+            };
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onShowDeclineStylesChanged(value: string | null): void {
+        if (value === "none") {
+            // When the decline button is hidden,
+            // remove the left padding from the ancestor element.
+            if (declineButtonShellElement.value?.parentElement) {
+                declineButtonShellElement.value.parentElement.style.paddingLeft = "";
+            }
+        }
+        else {
+            // When the decline button is shown,
+            // add the left padding to the ancestor element.
+            if (declineButtonShellElement.value?.parentElement) {
+                declineButtonShellElement.value.parentElement.style.paddingLeft = "10px";
+            }
+        }
+    }
+
+    async function onRegisterRecipientsClicked(): Promise<void> {
+        areRsvpRecipientsRegistering.value = true;
+        try {
+            const data = parseFutureOccurrenceData(selectedFutureOccurrenceDataOrEmptyString.value);
+
+            if (!data.occurrenceId) {
+                console.error("An occurrence needs to be selected before registering recipients.");
+                return;
+            }
+
+            const bag: EmailEditorRegisterRsvpRecipientsOptionsBag = {
+                occurrenceId: data.occurrenceId,
+                personIds: props.recipientPersonIds
+            };
+
+            const result = await registerRsvpRecipients(bag);
+
+            if (result?.isSuccess) {
+                areRsvpRecipientsRegistered.value = true;
+            }
+            else {
+                areRsvpRecipientsRegistered.value = true;
+                console.error(result?.errorMessage ?? "An error occurred while registering recipients.");
+            }
+        }
+        finally {
+            areRsvpRecipientsRegistering.value = false;
+        }
+    }
+
+    function onAcceptButtonTextChanged(value: string | null): void {
+        if (acceptButtonElement.value) {
+            acceptButtonElement.value.setAttribute("title", value ?? "");
+        }
+
+        updateRsvpHrefs();
+    }
+
+    function onDeclineButtonTextChanged(value: string | null): void {
+        if (declineButtonElement.value) {
+            declineButtonElement.value.setAttribute("title", value ?? "");
+        }
+
+        updateRsvpHrefs();
+    }
+
+    watch(selectedGroupListItemBag, async () => {
+        const groupGuid = toGuidOrNull(selectedGroupListItemBag.value?.value);
+        getOrCreateHiddenGroupIdElement().value = groupGuid ?? "";
+
+        // Cannot clear the occurrence id here because this handler is invoked even when the control is initialized,
+        // and it clears out the occurrence id on load.
+
+        // Hrefs can be updated now. No need to wait for the occurrences to be retrieved.
+        updateRsvpHrefs();
+
+        if (groupGuid) {
+            // Get the future group occurrences.
+            const result = await getFutureAttendanceOccurrences({
+                groupGuid
+            });
+
+            if (result?.isSuccess && result.data) {
+                occurrenceItems.value = result.data;
+            }
+            else {
+                console.error(result.errorMessage ?? "An error occurred while getting future group occurrences.");
+            }
+        }
+    });
+
+    watch(selectedFutureOccurrenceDataOrEmptyString, async () => {
+        let serializedOccurrence = selectedFutureOccurrenceDataOrEmptyString.value;
+        const data = parseFutureOccurrenceData(serializedOccurrence);
+
+        if (data.occurrenceId === 0 && !isNullish(data.groupId)) {
+            // Create new occurrence.
+            const result = await createAttendanceOccurrence({
+                groupId: data.groupId,
+                locationId: data.locationId,
+                occurrenceDate: data.occurrenceDate,
+                scheduleId: data.scheduleId
+            });
+
+            if (result?.isSuccess && result.data) {
+                serializedOccurrence = serializeAttendanceOccurrence(result.data);
+            }
+            else {
+                console.error(result?.errorMessage ?? "An error occurred while creating the attendance occurrence.");
+            }
+        }
+
+        getOrCreateHiddenOccurrenceIdElement().value = serializedOccurrence;
+        updateRsvpHrefs();
+    });
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.componentElement, () => {
+        const groupIdEl = getOrCreateHiddenGroupIdElement();
+        const occurrenceIdEl = getOrCreateHiddenOccurrenceIdElement();
+        selectedGroupListItemBag.value = toListItemBagOrNull(toGuidOrNull(groupIdEl.value));
+        selectedFutureOccurrenceDataOrEmptyString.value = occurrenceIdEl.value;
+
+        updateRsvpHrefs();
+    });
+
+    watch(acceptButtonShellElement, (newElement) => {
+        acceptButtonWidthProvider.value?.dispose();
+        acceptButtonWidthProvider.value = newElement ? createButtonWidthValuesProvider(newElement) : null;
+    });
+
+    watch(declineButtonShellElement, (newElement) => {
+        declineButtonWidthProvider.value?.dispose();
+        declineButtonWidthProvider.value = newElement ? createButtonWidthValuesProvider(newElement) : null;
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onMounted(async () => {
+        const groupIdEl = getOrCreateHiddenGroupIdElement();
+        const occurrenceIdEl = getOrCreateHiddenOccurrenceIdElement();
+        const groupGuid = toGuidOrNull(groupIdEl.value);
+        const groupListItemBag = toListItemBagOrNull(groupGuid);
+
+        if (groupGuid) {
+            // Get the future group occurrences.
+            const result = await getFutureAttendanceOccurrences({
+                groupGuid
+            });
+            if (result?.isSuccess && result.data) {
+                occurrenceItems.value = result.data;
+            }
+            else {
+                console.error(result.errorMessage ?? "An error occurred while getting future group occurrences.");
+            }
+
+            selectedGroupListItemBag.value = groupListItemBag;
+            selectedFutureOccurrenceDataOrEmptyString.value = occurrenceIdEl.value;
+
+            updateRsvpHrefs();
+        }
+    });
+
+    onUnmounted(() => {
+        acceptButtonWidthProvider.value?.dispose();
+        declineButtonWidthProvider.value?.dispose();
+    });
+
+    // #endregion Hooks
+</script>

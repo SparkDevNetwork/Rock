@@ -1,0 +1,133 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <SwitchProperty v-bind="$attrs"
+                    :label="label"
+                    :valueProvider="valueProvider" />
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import SwitchProperty from "./switchProperty.partial.obs";
+    import { inlineStyleProvider, styleSheetProvider } from "../providers.partial";
+    import { StyleSheetMode, ValueProvider } from "../types.partial";
+    import { stringConverter } from "../utils.partial";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Display" as const
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Creates and adds a &lt;style&gt; element to the `element` input to host the changes.
+         */
+        styleSheetMode: {
+            type: Object as PropType<StyleSheetMode | undefined>,
+            required: false
+        },
+
+        /**
+         * This is the value that will be assigned when the switch is turned on.
+         */
+        displayValue: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:display", value: string | null): void;
+    }>();
+
+    // #region Values
+
+    const valueProvider = ref<ValueProvider<boolean | null | undefined>>(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): { value: boolean | null | undefined; dispose(): void; } {
+        const displayProvider: ValueProvider<string | null | undefined> =
+            !props.styleSheetMode
+                ? inlineStyleProvider(
+                    props.element,
+                    "display",
+                    stringConverter,
+                    props.copyToElements,
+                    {
+                        onTargetValueUpdated(value) {
+                            emit("update:display", value);
+                        }
+                    }
+                )
+                : styleSheetProvider(
+                    props.element,
+                    props.styleSheetMode.styleCssClass,
+                    props.styleSheetMode.rulesetCssSelector,
+                    "display",
+                    stringConverter,
+                    {
+                        onTargetValueUpdated(value) {
+                            emit("update:display", value);
+                        }
+                    }
+                );
+
+        return {
+            get value(): boolean | null | undefined {
+                // Only return false if the display is "none".
+                return displayProvider.value !== "none";
+            },
+            set value(newValue: boolean | null | undefined) {
+                if (newValue === true) {
+                    // Clear the "none" display value.
+                    displayProvider.value = props.displayValue;
+                }
+                else if (newValue === false) {
+                    displayProvider.value = "none";
+                }
+                else {
+                    displayProvider.value = null;
+                }
+            },
+            dispose() {
+                displayProvider.dispose();
+            }
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([() => props.element, () => props.copyToElements, () => props.styleSheetMode], () => {
+        valueProvider.value.dispose();
+        valueProvider.value = createValueProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        valueProvider.value.dispose();
+    });
+
+    // #endregion Hooks
+</script>

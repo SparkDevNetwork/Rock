@@ -141,10 +141,23 @@ namespace Rock.Obsidian.UI
                 builder.AddField( fieldKey, item =>
                 {
                     var attributesItem = selector( item );
+                    var htmlValue = attributesItem.GetAttributeCondensedHtmlValue( key );
+
+                    if ( attribute.FieldType?.Guid == SystemGuid.FieldType.BOOLEAN.AsGuid() )
+                    {
+                        if ( htmlValue == "Y" )
+                        {
+                            htmlValue = "<i class=\"fa fa-check\"></i>";
+                        }
+                        else
+                        {
+                            htmlValue = string.Empty;
+                        }
+                    }
 
                     return new
                     {
-                        Html = attributesItem.GetAttributeCondensedHtmlValue( key ),
+                        Html = htmlValue,
                         Text = attributesItem.GetAttributeCondensedTextValue( key )
                     };
                 } );

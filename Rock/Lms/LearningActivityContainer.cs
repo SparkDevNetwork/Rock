@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
+using Rock.Attribute;
 using Rock.Extension;
 
 namespace Rock.Lms
@@ -25,6 +26,7 @@ namespace Rock.Lms
     /// <summary>
     /// MEF Container class for <see cref="LearningActivityComponent">LearningActivityComponents</see>.
     /// </summary>
+    [RockInternal( "17.0" )]
     public class LearningActivityContainer : Container<LearningActivityComponent, IComponentData>
     {
         /// <summary>

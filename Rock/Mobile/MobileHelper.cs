@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
+using Rock.Communication.Chat;
 using Rock.Data;
 using Rock.DownhillCss;
 using Rock.Mobile.JsonFields;
@@ -558,6 +559,14 @@ namespace Rock.Mobile
                 package.AppearanceSettings.PaletteColors.Add( "app-brand-soft", applicationColors.BrandSoft );
                 package.AppearanceSettings.PaletteColors.Add( "app-brand-strong", applicationColors.BrandStrong );
 
+                // Dark Accent Colors
+                package.AppearanceSettings.PaletteColors.Add( "app-primary-soft-dark", darkModeColors.PrimarySoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-primary-strong-dark", darkModeColors.PrimaryStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-secondary-soft-dark", darkModeColors.SecondarySoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-secondary-strong-dark", darkModeColors.SecondaryStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-brand-soft-dark", darkModeColors.BrandSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-brand-strong-dark", darkModeColors.BrandStrong );
+
                 // Functional Colors
                 package.AppearanceSettings.PaletteColors.Add( "app-success-soft", applicationColors.SuccessSoft );
                 package.AppearanceSettings.PaletteColors.Add( "app-success-strong", applicationColors.SuccessStrong );
@@ -567,6 +576,16 @@ namespace Rock.Mobile
                 package.AppearanceSettings.PaletteColors.Add( "app-danger-strong", applicationColors.DangerStrong );
                 package.AppearanceSettings.PaletteColors.Add( "app-warning-soft", applicationColors.WarningSoft );
                 package.AppearanceSettings.PaletteColors.Add( "app-warning-strong", applicationColors.WarningStrong );
+
+                // Dark Functional Colors
+                package.AppearanceSettings.PaletteColors.Add( "app-success-soft-dark", darkModeColors.SuccessSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-success-strong-dark", darkModeColors.SuccessStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-info-soft-dark", darkModeColors.InfoSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-info-strong-dark", darkModeColors.InfoStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-danger-soft-dark", darkModeColors.DangerSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-danger-strong-dark", darkModeColors.DangerStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-warning-soft-dark", darkModeColors.WarningSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-warning-strong-dark", darkModeColors.WarningStrong );
 
                 // This helps maintain backward compatibility.
                 // If someone uses a palette color that no longer exists,
@@ -753,6 +772,8 @@ namespace Rock.Mobile
 
                 package.Campuses.Add( mobileCampus );
             }
+
+            package.ChatPublicApiKey = ChatHelper.GetChatConfiguration()?.ApiKey;
 
             return package;
         }

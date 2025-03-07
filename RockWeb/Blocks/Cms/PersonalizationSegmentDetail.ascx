@@ -36,6 +36,10 @@
                     <div class="col-md-12">
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.PersonalizationSegment, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                     </div>
+
+                    <div class="col-md-12">
+                        <Rock:CategoryPicker ID="cpCategories" runat="server" AllowMultiSelect="true" Label="Categories" />
+                    </div>
                 </div>
 
                 <%-- Person Filters --%>

@@ -72,6 +72,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [EnableAttributeQualification]
+        [Index( "IX_GroupMemberGroupIdGroupRoleIdGroupMemberStatus", IsUnique = false, Order = 0 )]
         public int GroupId { get; set; }
 
         /// <summary>
@@ -104,6 +105,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [EnableAttributeQualification]
+        [Index( "IX_GroupMemberGroupIdGroupRoleIdGroupMemberStatus", IsUnique = false, Order = 1 )]
         public int GroupRoleId { get; set; }
 
         /// <summary>
@@ -124,6 +126,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Index( "IX_GroupMemberGroupIdGroupRoleIdGroupMemberStatus", IsUnique = false, Order = 2 )]
         public GroupMemberStatus GroupMemberStatus { get; set; } = GroupMemberStatus.Active;
 
         /// <summary>

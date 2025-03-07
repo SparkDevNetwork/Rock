@@ -1,0 +1,44 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <GroupPicker label="Group"
+                     v-model="value"
+                     :multiple="multiple"
+                     :limitToSchedulingEnabled="limitToSchedulingEnabled"
+                     :limitToRSVPEnabled="limitToRSVPEnabled" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Limit to Scheduling Enabled" v-model="limitToSchedulingEnabled" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Limit to RSVP Enabled" v-model="limitToRSVPEnabled" />
+                </div>
+            </div>
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const multiple = ref(false);
+    const limitToSchedulingEnabled = ref(false);
+    const limitToRSVPEnabled = ref(false);
+    const value = ref(null);
+    const importCode = getSfcControlImportPath("groupPicker");
+    const exampleCode = `<GroupPicker label="Group" v-model="value" :multiple="false" />`;
+</script>

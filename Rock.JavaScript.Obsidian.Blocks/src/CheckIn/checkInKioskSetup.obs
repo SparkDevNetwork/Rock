@@ -192,7 +192,7 @@
     const kioskId = ref<string>("");
 
     const isUsingCustomConfiguration = ref(false);
-    const manualOptions = ref<SavedKioskConfigurationBag>();
+    const manualOptions = ref<SavedCheckInConfigurationSettingsBag>();
 
     const selectedCamera = ref("");
     const cameraItems = ref<ListItemBag[]>([]);
@@ -207,7 +207,7 @@
     const editConfigurationName = ref("");
     const editConfigurationDescription = ref("");
     const editConfigurationCampuses = ref<string[]>([]);
-    const editConfigurationOptions = ref<SavedKioskConfigurationBag>();
+    const editConfigurationOptions = ref<SavedCheckInConfigurationSettingsBag>();
 
     // #region Computed Values
 
@@ -269,7 +269,7 @@
     const isCustomConfigurationValid = computed((): boolean => {
         return !!kioskId.value
             && !!manualOptions.value
-            && !!manualOptions.value.theme
+            && !!manualOptions.value.themeName
             && !!manualOptions.value.templateId
             && !!manualOptions.value.areaIds
             && manualOptions.value.areaIds.length > 0;
@@ -492,7 +492,7 @@
                 if (blockConfiguration.themes.some(t => t.value === savedConfig.theme)) {
                     manualOptions.value = {
                         ...manualOptions.value,
-                        theme: savedConfig.theme
+                        themeName: savedConfig.theme
                     };
                 }
             }
@@ -623,7 +623,7 @@
         const options = editConfigurationOptions.value ?? manualOptions.value;
         const settings: SavedCheckInConfigurationSettingsBag = {
             templateId: options?.templateId,
-            themeName: options?.theme,
+            themeName: options?.themeName,
             areaIds: options?.areaIds
         };
 
@@ -699,7 +699,7 @@
         const template = blockConfiguration.templates
             ?.find(a => a.id === manualOptions.value?.templateId);
         const areas = manualOptions.value?.areaIds?.map(a => ({ id: a })) ?? [];
-        const themeName = manualOptions.value?.theme;
+        const themeName = manualOptions.value?.themeName;
 
         // Validate all our configuration. This should never be possible
         // but it also makes TypeScript happy.
@@ -728,8 +728,8 @@
     watch([isCustomConfigurationValid, isCustomConfigurationVisible, manualOptions], updateActions);
 
     watch(manualOptions, (value, oldValue) => {
-        if (value?.theme && value?.theme !== oldValue?.theme && value.theme !== blockConfiguration.currentTheme) {
-            redirectForTheme(value.theme);
+        if (value?.themeName && value?.themeName !== oldValue?.themeName && value.themeName !== blockConfiguration.currentTheme) {
+            redirectForTheme(value.themeName);
         }
     });
 

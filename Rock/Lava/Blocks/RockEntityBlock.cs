@@ -569,6 +569,11 @@ namespace Rock.Lava.Blocks
                             // If there is only one item, set a singleton variable in addition to the result list.
                             context.SetMergeField( EntityName, firstItem );
                         }
+                        else
+                        {
+                            // There is more than one so blank out the variable in case it was already set in the Lava context. (Issue #6205)
+                            context.SetMergeField( EntityName, firstItem );
+                        }
                     }
                 }
             }

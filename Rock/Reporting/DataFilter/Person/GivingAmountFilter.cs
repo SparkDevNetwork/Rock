@@ -25,8 +25,10 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Reporting.DataFilter.Person
 {
@@ -36,7 +38,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based on their total contribution amount" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Giving Amount Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "1087DEE3-9932-4647-88A3-7CD87AB16B7D")]
+    [Rock.SystemGuid.EntityTypeGuid( "1087DEE3-9932-4647-88A3-7CD87AB16B7D" )]
     public class GivingAmountFilter : DataFilterComponent
     {
         #region Properties
@@ -61,6 +63,65 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/givingAmountFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+            var dict = new Dictionary<string, string>
+            {
+                { "amount",  config.Amount.ToString() },
+                { "slidingDateRangePickerDelimitedValues", config.SlidingDateRangePickerDelimitedValues.ToString() },
+                { "combineGiving", config.CombineGiving.ToTrueFalse() },
+                { "useAnalyticsModels", config.UseAnalyticsModels.ToTrueFalse() },
+                { "includeChildAccounts", config.IncludeChildAccounts.ToTrueFalse() },
+                { "ignoreInactiveAccounts", config.IgnoreInactiveAccounts.ToTrueFalse() }
+            };
+
+            // ToDictionary converts the Enum to a string via its description, but we want the numeric value
+            dict.AddOrReplace( "comparisonType", config.ComparisonType.ConvertToInt().ToString() );
+
+            // Guid list needs to be converted to ListItemBags
+            if ( config.AccountGuids != null && config.AccountGuids.Count > 0 )
+            {
+                var accounts = new List<ListItemBag>();
+
+                foreach ( var accountGuid in config.AccountGuids )
+                {
+                    var account = FinancialAccountCache.Get( accountGuid );
+                    accounts.Add( account.ToListItemBag() );
+                }
+
+                dict.AddOrReplace( "accountGuids", accounts.ToCamelCaseJson( false, true ) );
+            }
+
+            return dict;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = new SelectionConfig
+            {
+                ComparisonType = ( ComparisonType ) data.GetValueOrDefault( "comparisonType", ComparisonType.EqualTo.ToString() ).ToIntSafe( ( int ) ComparisonType.EqualTo ),
+                Amount = data.GetValueOrDefault( "amount", "0.0" ).AsDecimalOrNull() ?? ( decimal ) 0.0,
+                SlidingDateRangePickerDelimitedValues = data.GetValueOrDefault( "slidingDateRangePickerDelimitedValues", "All||||" ),
+                AccountGuids = data.GetValueOrDefault( "accountGuids", null )?.FromJsonOrNull<List<ListItemBag>>()?.Select( a => a.Value.AsGuid() ).ToList(),
+                CombineGiving = data.GetValueOrDefault( "combineGiving", "False" ).AsBoolean(),
+                UseAnalyticsModels = data.GetValueOrDefault( "useAnalyticsModels", "False" ).AsBoolean(),
+                IncludeChildAccounts = data.GetValueOrDefault( "includeChildAccounts", "False" ).AsBoolean(),
+                IgnoreInactiveAccounts = data.GetValueOrDefault( "ignoreInactiveAccounts", "False" ).AsBoolean(),
+            };
+
+            return selectionConfig.ToJson();
         }
 
         #endregion
@@ -155,7 +216,7 @@ function() {
             }
 
             result = $@"
-{( combineGiving ? "Combined " : string.Empty ) }Giving
+{( combineGiving ? "Combined " : string.Empty )}Giving
 amount total {comparisonType.ConvertToString().ToLower()} {amount.FormatAsCurrency()}
 {toAccountsDescription}.
 Date Range: {SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.SlidingDateRangePickerDelimitedValues )}";
@@ -166,314 +227,6 @@ Date Range: {SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.Slidi
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Creates the child controls.
-        /// </summary>
-        /// <returns></returns>
-        public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
-        {
-            var comparisonControl = ComparisonHelper.ComparisonControl( ComparisonType.LessThan | ComparisonType.GreaterThanOrEqualTo | ComparisonType.EqualTo );
-            comparisonControl.ID = filterControl.ID + "_comparisonControl";
-            filterControl.Controls.Add( comparisonControl );
-
-            var globalAttributes = GlobalAttributesCache.Get();
-
-            CurrencyBox numberBoxAmount = new CurrencyBox();
-            numberBoxAmount.ID = filterControl.ID + "_numberBoxAmount";
-            numberBoxAmount.Label = "Amount";
-
-            filterControl.Controls.Add( numberBoxAmount );
-
-            AccountPicker accountPicker = new AccountPicker();
-            accountPicker.AllowMultiSelect = true;
-            accountPicker.ID = filterControl.ID + "_accountPicker";
-            accountPicker.AddCssClass( "js-account-picker" );
-            accountPicker.Label = "Accounts";
-            filterControl.Controls.Add( accountPicker );
-
-            RockCheckBox cbIncludeChildAccounts = new RockCheckBox();
-            cbIncludeChildAccounts.ID = filterControl.ID + "_cbIncludeChildAccounts";
-            cbIncludeChildAccounts.Text = "Include Child Accounts";
-            cbIncludeChildAccounts.CssClass = "js-include-child-accounts";
-            filterControl.Controls.Add( cbIncludeChildAccounts );
-
-            RockCheckBox cbIgnoreInactiveAccounts = new RockCheckBox();
-            cbIgnoreInactiveAccounts.ID = filterControl.ID + "_cbIgnoreInactiveAccounts";
-            cbIgnoreInactiveAccounts.Text = "Ignore Inactive Accounts";
-            cbIgnoreInactiveAccounts.CssClass = "js-ignore-inactive-accounts";
-            filterControl.Controls.Add( cbIgnoreInactiveAccounts );
-
-            SlidingDateRangePicker slidingDateRangePicker = new SlidingDateRangePicker();
-            slidingDateRangePicker.ID = filterControl.ID + "_slidingDateRangePicker";
-            slidingDateRangePicker.AddCssClass( "js-sliding-date-range" );
-            slidingDateRangePicker.Label = "Date Range";
-            slidingDateRangePicker.Help = "The date range of the transactions using the transaction date of each transaction";
-            slidingDateRangePicker.Required = true;
-            filterControl.Controls.Add( slidingDateRangePicker );
-
-            RockCheckBox cbCombineGiving = new RockCheckBox();
-            cbCombineGiving.ID = filterControl.ID + "_cbCombineGiving";
-            cbCombineGiving.Label = "Combine Giving";
-            cbCombineGiving.CssClass = "js-combine-giving";
-            cbCombineGiving.Help = "Combine individuals in the same giving group when calculating totals and reporting the list of individuals.";
-            filterControl.Controls.Add( cbCombineGiving );
-
-            RockCheckBox cbUseAnalytics = new RockCheckBox();
-            cbUseAnalytics.ID = filterControl.ID + "_cbUseAnalytics";
-            cbUseAnalytics.Label = "Use Analytics Models";
-            cbUseAnalytics.CssClass = "js-use-analytics";
-            cbUseAnalytics.Help = "Using Analytics Data might be faster than querying real-time data, but it may not include data that has been added or updated in the last 24 hours.";
-            filterControl.Controls.Add( cbUseAnalytics );
-
-            var controls = new Control[8] { comparisonControl, numberBoxAmount, accountPicker, cbIncludeChildAccounts, cbIgnoreInactiveAccounts, slidingDateRangePicker, cbCombineGiving, cbUseAnalytics };
-
-            // set an initial config for the selection
-            var selectionConfig = new SelectionConfig
-            {
-                ComparisonType = ComparisonType.GreaterThanOrEqualTo
-            };
-
-            SetSelection( entityType, controls, selectionConfig.ToJson() );
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Renders the controls.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="filterControl">The filter control.</param>
-        /// <param name="writer">The writer.</param>
-        /// <param name="controls">The controls.</param>
-        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
-        {
-            base.RenderControls( entityType, filterControl, writer, controls );
-        }
-
-        /// <summary>
-        /// Class SelectionConfig.
-        /// </summary>
-        protected class SelectionConfig
-        {
-            /// <summary>
-            /// Gets or sets the type of the comparison.
-            /// </summary>
-            /// <value>The type of the comparison.</value>
-            public ComparisonType ComparisonType { get; set; }
-
-            /// <summary>
-            /// Gets or sets the amount.
-            /// </summary>
-            /// <value>The amount.</value>
-            public decimal? Amount { get; set; }
-
-            /// <summary>
-            /// Gets or sets the sliding date range picker delimited values.
-            /// </summary>
-            /// <value>The sliding date range picker delimited values.</value>
-            public string SlidingDateRangePickerDelimitedValues { get; set; }
-
-            /// <summary>
-            /// Gets or sets the account guids.
-            /// </summary>
-            /// <value>The account guids.</value>
-            public List<Guid> AccountGuids { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether [combine giving].
-            /// </summary>
-            /// <value><c>true</c> if [combine giving]; otherwise, <c>false</c>.</value>
-            public bool CombineGiving { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether [use analytics models].
-            /// </summary>
-            /// <value><c>true</c> if [use analytics models]; otherwise, <c>false</c>.</value>
-            public bool UseAnalyticsModels { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether [include child accounts].
-            /// </summary>
-            /// <value><c>true</c> if [include child accounts]; otherwise, <c>false</c>.</value>
-            public bool IncludeChildAccounts { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether [ignore inactive accounts].
-            /// </summary>
-            /// <value><c>true</c> if [ignore inactive accounts]; otherwise, <c>false</c>.</value>
-            public bool IgnoreInactiveAccounts { get; set; }
-
-            /// <summary>
-            /// Parses from old Pipe Delimited format (pre-V13)
-            /// </summary>
-            /// <param name="selection">The selection.</param>
-            /// <returns>System.String.</returns>
-            private static SelectionConfig ParseFromLegacyConfig( string selection )
-            {
-                var selectionConfig = new SelectionConfig();
-                string[] selectionValues = selection.Split( '|' );
-                if ( selectionValues.Length < 4 )
-                {
-                    return null;
-                }
-
-                selectionConfig.ComparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( Rock.Model.ComparisonType.GreaterThanOrEqualTo );
-                selectionConfig.Amount = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
-                if ( selectionValues.Length >= 7 )
-                {
-                    string slidingDelimitedValues = selectionValues[6].Replace( ',', '|' );
-                    selectionConfig.SlidingDateRangePickerDelimitedValues = slidingDelimitedValues;
-                }
-                else
-                {
-                    // if converting from a previous version of the selection
-                    DateTime? startDate = selectionValues[2].AsDateTime();
-                    DateTime? endDate = selectionValues[3].AsDateTime();
-                    var slidingDateRangePicker = new SlidingDateRangePicker();
-                    slidingDateRangePicker.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.DateRange;
-                    slidingDateRangePicker.DateRangeModeStart = startDate;
-                    slidingDateRangePicker.DateRangeModeEnd = endDate;
-                    selectionConfig.SlidingDateRangePickerDelimitedValues = slidingDateRangePicker.DelimitedValues;
-                }
-
-                var accountIdList = new List<int>();
-                if ( selectionValues.Length >= 5 )
-                {
-                    selectionConfig.AccountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() ).ToList();
-                }
-
-                if ( selectionValues.Length >= 6 )
-                {
-                    selectionConfig.CombineGiving = selectionValues[5].AsBooleanOrNull() ?? false;
-                }
-
-                selectionConfig.UseAnalyticsModels = false;
-                selectionConfig.IncludeChildAccounts = false;
-                selectionConfig.IgnoreInactiveAccounts = false;
-
-                return selectionConfig;
-            }
-
-            /// <summary>
-            /// Parses the specified selection.
-            /// </summary>
-            /// <param name="selection">The selection.</param>
-            /// <returns>SelectionConfig.</returns>
-            public static SelectionConfig Parse( string selection )
-            {
-                var selectionConfig = selection.FromJsonOrNull<SelectionConfig>();
-                if ( selectionConfig != null )
-                {
-                    return selectionConfig;
-                }
-
-                // If selection config is NULL, it might be in the old pipe delimited format.
-                return ParseFromLegacyConfig( selection );
-            }
-        }
-
-        /// <summary>
-        /// Gets the selection.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override string GetSelection( Type entityType, Control[] controls )
-        {
-            var comparisonControl = controls[0] as DropDownList;
-            var numberBoxAmount = controls[1] as CurrencyBox;
-            var accountPicker = controls[2] as AccountPicker;
-            var cbIncludeChildAccounts = controls[3] as RockCheckBox;
-            var cbIgnoreInactiveAccounts = controls[4] as RockCheckBox;
-            var slidingDateRangePicker = controls[5] as SlidingDateRangePicker;
-            var cbCombineGiving = controls[6] as RockCheckBox;
-            var cbUseAnalyticsTables = controls[7] as RockCheckBox;
-
-            var comparisonType = comparisonControl.SelectedValue.ConvertToEnum<ComparisonType>();
-            decimal? amount = numberBoxAmount.Text.AsDecimal();
-
-            var accountIdList = accountPicker.SelectedValuesAsInt().ToList();
-            List<Guid> accountGuids;
-            var accounts = FinancialAccountCache.GetByIds( accountIdList );
-            if ( accounts != null && accounts.Any() )
-            {
-                accountGuids = accounts.Select( a => a.Guid ).ToList();
-            }
-            else
-            {
-                accountGuids = null;
-            }
-
-            var selectionConfig = new SelectionConfig
-            {
-                ComparisonType = comparisonType,
-                Amount = amount,
-                AccountGuids = accountGuids,
-                IncludeChildAccounts = cbIncludeChildAccounts.Checked,
-                IgnoreInactiveAccounts = cbIgnoreInactiveAccounts.Checked,
-                CombineGiving = cbCombineGiving.Checked,
-                SlidingDateRangePickerDelimitedValues = slidingDateRangePicker.DelimitedValues,
-                UseAnalyticsModels = cbUseAnalyticsTables.Checked,
-            };
-
-            return selectionConfig.ToJson();
-        }
-
-        /// <summary>
-        /// Sets the selection.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</param>
-        /// <param name="selection">The selection.</param>
-        public override void SetSelection( Type entityType, Control[] controls, string selection )
-        {
-            var selectionConfig = SelectionConfig.Parse( selection );
-
-            var comparisonControl = controls[0] as DropDownList;
-            var numberBoxAmount = controls[1] as CurrencyBox;
-            var accountPicker = controls[2] as AccountPicker;
-            var cbIncludeChildAccounts = controls[3] as RockCheckBox;
-            var cbIgnoreInactiveAccounts = controls[4] as RockCheckBox;
-            var slidingDateRangePicker = controls[5] as SlidingDateRangePicker;
-            var cbCombineGiving = controls[6] as RockCheckBox;
-            var cbUseAnalyticsTables = controls[7] as RockCheckBox;
-
-            // Comparison Control
-            slidingDateRangePicker.DelimitedValues = selectionConfig.SlidingDateRangePickerDelimitedValues;
-            comparisonControl.SetValue( selectionConfig.ComparisonType.ConvertToInt().ToString() );
-
-            // Amount
-            decimal? amount = selectionConfig.Amount;
-            if ( amount.HasValue )
-            {
-                numberBoxAmount.Text = amount.Value.ToString( "F2" );
-            }
-            else
-            {
-                numberBoxAmount.Text = string.Empty;
-            }
-
-            // Accounts
-            var accountGuids = selectionConfig.AccountGuids;
-            List<FinancialAccountCache> accounts;
-            if ( accountGuids != null && accountGuids.Any() )
-            {
-                accounts = FinancialAccountCache.GetByGuids( accountGuids ).ToList();
-            }
-            else
-            {
-                accounts = new List<FinancialAccountCache>();
-            }
-
-            accountPicker.SetValuesFromCache( accounts );
-
-            // everything else
-            cbIncludeChildAccounts.Checked = selectionConfig.IncludeChildAccounts;
-            cbIgnoreInactiveAccounts.Checked = selectionConfig.IgnoreInactiveAccounts;
-            cbCombineGiving.Checked = selectionConfig.CombineGiving;
-            cbUseAnalyticsTables.Checked = selectionConfig.UseAnalyticsModels;
         }
 
         /// <summary>
@@ -676,6 +429,318 @@ Date Range: {SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.Slidi
             Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
 
             return extractedFilterExpression;
+        }
+
+#if WEBFORMS
+
+        /// <summary>
+        /// Creates the child controls.
+        /// </summary>
+        /// <returns></returns>
+        public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
+        {
+            var comparisonControl = ComparisonHelper.ComparisonControl( ComparisonType.LessThan | ComparisonType.GreaterThanOrEqualTo | ComparisonType.EqualTo );
+            comparisonControl.ID = filterControl.ID + "_comparisonControl";
+            filterControl.Controls.Add( comparisonControl );
+
+            var globalAttributes = GlobalAttributesCache.Get();
+
+            CurrencyBox numberBoxAmount = new CurrencyBox();
+            numberBoxAmount.ID = filterControl.ID + "_numberBoxAmount";
+            numberBoxAmount.Label = "Amount";
+
+            filterControl.Controls.Add( numberBoxAmount );
+
+            AccountPicker accountPicker = new AccountPicker();
+            accountPicker.AllowMultiSelect = true;
+            accountPicker.ID = filterControl.ID + "_accountPicker";
+            accountPicker.AddCssClass( "js-account-picker" );
+            accountPicker.Label = "Accounts";
+            filterControl.Controls.Add( accountPicker );
+
+            RockCheckBox cbIncludeChildAccounts = new RockCheckBox();
+            cbIncludeChildAccounts.ID = filterControl.ID + "_cbIncludeChildAccounts";
+            cbIncludeChildAccounts.Text = "Include Child Accounts";
+            cbIncludeChildAccounts.CssClass = "js-include-child-accounts";
+            filterControl.Controls.Add( cbIncludeChildAccounts );
+
+            RockCheckBox cbIgnoreInactiveAccounts = new RockCheckBox();
+            cbIgnoreInactiveAccounts.ID = filterControl.ID + "_cbIgnoreInactiveAccounts";
+            cbIgnoreInactiveAccounts.Text = "Ignore Inactive Accounts";
+            cbIgnoreInactiveAccounts.CssClass = "js-ignore-inactive-accounts";
+            filterControl.Controls.Add( cbIgnoreInactiveAccounts );
+
+            SlidingDateRangePicker slidingDateRangePicker = new SlidingDateRangePicker();
+            slidingDateRangePicker.ID = filterControl.ID + "_slidingDateRangePicker";
+            slidingDateRangePicker.AddCssClass( "js-sliding-date-range" );
+            slidingDateRangePicker.Label = "Date Range";
+            slidingDateRangePicker.Help = "The date range of the transactions using the transaction date of each transaction";
+            slidingDateRangePicker.Required = true;
+            filterControl.Controls.Add( slidingDateRangePicker );
+
+            RockCheckBox cbCombineGiving = new RockCheckBox();
+            cbCombineGiving.ID = filterControl.ID + "_cbCombineGiving";
+            cbCombineGiving.Label = "Combine Giving";
+            cbCombineGiving.CssClass = "js-combine-giving";
+            cbCombineGiving.Help = "Combine individuals in the same giving group when calculating totals and reporting the list of individuals.";
+            filterControl.Controls.Add( cbCombineGiving );
+
+            RockCheckBox cbUseAnalytics = new RockCheckBox();
+            cbUseAnalytics.ID = filterControl.ID + "_cbUseAnalytics";
+            cbUseAnalytics.Label = "Use Analytics Models";
+            cbUseAnalytics.CssClass = "js-use-analytics";
+            cbUseAnalytics.Help = "Using Analytics Data might be faster than querying real-time data, but it may not include data that has been added or updated in the last 24 hours.";
+            filterControl.Controls.Add( cbUseAnalytics );
+
+            var controls = new Control[8] { comparisonControl, numberBoxAmount, accountPicker, cbIncludeChildAccounts, cbIgnoreInactiveAccounts, slidingDateRangePicker, cbCombineGiving, cbUseAnalytics };
+
+            // set an initial config for the selection
+            var selectionConfig = new SelectionConfig
+            {
+                ComparisonType = ComparisonType.GreaterThanOrEqualTo
+            };
+
+            SetSelection( entityType, controls, selectionConfig.ToJson() );
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Renders the controls.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="writer">The writer.</param>
+        /// <param name="controls">The controls.</param>
+        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
+        {
+            base.RenderControls( entityType, filterControl, writer, controls );
+        }
+
+        /// <summary>
+        /// Gets the selection.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override string GetSelection( Type entityType, Control[] controls )
+        {
+            var comparisonControl = controls[0] as DropDownList;
+            var numberBoxAmount = controls[1] as CurrencyBox;
+            var accountPicker = controls[2] as AccountPicker;
+            var cbIncludeChildAccounts = controls[3] as RockCheckBox;
+            var cbIgnoreInactiveAccounts = controls[4] as RockCheckBox;
+            var slidingDateRangePicker = controls[5] as SlidingDateRangePicker;
+            var cbCombineGiving = controls[6] as RockCheckBox;
+            var cbUseAnalyticsTables = controls[7] as RockCheckBox;
+
+            var comparisonType = comparisonControl.SelectedValue.ConvertToEnum<ComparisonType>();
+            decimal? amount = numberBoxAmount.Text.AsDecimal();
+
+            var accountIdList = accountPicker.SelectedValuesAsInt().ToList();
+            List<Guid> accountGuids;
+            var accounts = FinancialAccountCache.GetByIds( accountIdList );
+            if ( accounts != null && accounts.Any() )
+            {
+                accountGuids = accounts.Select( a => a.Guid ).ToList();
+            }
+            else
+            {
+                accountGuids = null;
+            }
+
+            var selectionConfig = new SelectionConfig
+            {
+                ComparisonType = comparisonType,
+                Amount = amount,
+                AccountGuids = accountGuids,
+                IncludeChildAccounts = cbIncludeChildAccounts.Checked,
+                IgnoreInactiveAccounts = cbIgnoreInactiveAccounts.Checked,
+                CombineGiving = cbCombineGiving.Checked,
+                SlidingDateRangePickerDelimitedValues = slidingDateRangePicker.DelimitedValues,
+                UseAnalyticsModels = cbUseAnalyticsTables.Checked,
+            };
+
+            return selectionConfig.ToJson();
+        }
+
+        /// <summary>
+        /// Sets the selection.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="controls">The controls.</param>
+        /// <param name="selection">The selection.</param>
+        public override void SetSelection( Type entityType, Control[] controls, string selection )
+        {
+            var selectionConfig = SelectionConfig.Parse( selection );
+
+            var comparisonControl = controls[0] as DropDownList;
+            var numberBoxAmount = controls[1] as CurrencyBox;
+            var accountPicker = controls[2] as AccountPicker;
+            var cbIncludeChildAccounts = controls[3] as RockCheckBox;
+            var cbIgnoreInactiveAccounts = controls[4] as RockCheckBox;
+            var slidingDateRangePicker = controls[5] as SlidingDateRangePicker;
+            var cbCombineGiving = controls[6] as RockCheckBox;
+            var cbUseAnalyticsTables = controls[7] as RockCheckBox;
+
+            // Comparison Control
+            slidingDateRangePicker.DelimitedValues = selectionConfig.SlidingDateRangePickerDelimitedValues;
+            comparisonControl.SetValue( selectionConfig.ComparisonType.ConvertToInt().ToString() );
+
+            // Amount
+            decimal? amount = selectionConfig.Amount;
+            if ( amount.HasValue )
+            {
+                numberBoxAmount.Text = amount.Value.ToString( "F2" );
+            }
+            else
+            {
+                numberBoxAmount.Text = string.Empty;
+            }
+
+            // Accounts
+            var accountGuids = selectionConfig.AccountGuids;
+            List<FinancialAccountCache> accounts;
+            if ( accountGuids != null && accountGuids.Any() )
+            {
+                accounts = FinancialAccountCache.GetByGuids( accountGuids ).ToList();
+            }
+            else
+            {
+                accounts = new List<FinancialAccountCache>();
+            }
+
+            accountPicker.SetValuesFromCache( accounts );
+
+            // everything else
+            cbIncludeChildAccounts.Checked = selectionConfig.IncludeChildAccounts;
+            cbIgnoreInactiveAccounts.Checked = selectionConfig.IgnoreInactiveAccounts;
+            cbCombineGiving.Checked = selectionConfig.CombineGiving;
+            cbUseAnalyticsTables.Checked = selectionConfig.UseAnalyticsModels;
+        }
+
+#endif
+
+        /// <summary>
+        /// Class SelectionConfig.
+        /// </summary>
+        protected class SelectionConfig
+        {
+            /// <summary>
+            /// Gets or sets the type of the comparison.
+            /// </summary>
+            /// <value>The type of the comparison.</value>
+            public ComparisonType ComparisonType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the amount.
+            /// </summary>
+            /// <value>The amount.</value>
+            public decimal? Amount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the sliding date range picker delimited values.
+            /// </summary>
+            /// <value>The sliding date range picker delimited values.</value>
+            public string SlidingDateRangePickerDelimitedValues { get; set; }
+
+            /// <summary>
+            /// Gets or sets the account guids.
+            /// </summary>
+            /// <value>The account guids.</value>
+            public List<Guid> AccountGuids { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [combine giving].
+            /// </summary>
+            /// <value><c>true</c> if [combine giving]; otherwise, <c>false</c>.</value>
+            public bool CombineGiving { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [use analytics models].
+            /// </summary>
+            /// <value><c>true</c> if [use analytics models]; otherwise, <c>false</c>.</value>
+            public bool UseAnalyticsModels { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [include child accounts].
+            /// </summary>
+            /// <value><c>true</c> if [include child accounts]; otherwise, <c>false</c>.</value>
+            public bool IncludeChildAccounts { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [ignore inactive accounts].
+            /// </summary>
+            /// <value><c>true</c> if [ignore inactive accounts]; otherwise, <c>false</c>.</value>
+            public bool IgnoreInactiveAccounts { get; set; }
+
+            /// <summary>
+            /// Parses from old Pipe Delimited format (pre-V13)
+            /// </summary>
+            /// <param name="selection">The selection.</param>
+            /// <returns>System.String.</returns>
+            private static SelectionConfig ParseFromLegacyConfig( string selection )
+            {
+                var selectionConfig = new SelectionConfig();
+                string[] selectionValues = selection.Split( '|' );
+                if ( selectionValues.Length < 4 )
+                {
+                    return null;
+                }
+
+                selectionConfig.ComparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( Rock.Model.ComparisonType.GreaterThanOrEqualTo );
+                selectionConfig.Amount = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
+                if ( selectionValues.Length >= 7 )
+                {
+                    string slidingDelimitedValues = selectionValues[6].Replace( ',', '|' );
+                    selectionConfig.SlidingDateRangePickerDelimitedValues = slidingDelimitedValues;
+                }
+                else
+                {
+                    // if converting from a previous version of the selection
+                    DateTime? startDate = selectionValues[2].AsDateTime();
+                    DateTime? endDate = selectionValues[3].AsDateTime();
+                    var slidingDateRangePicker = new SlidingDateRangePicker();
+                    slidingDateRangePicker.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.DateRange;
+                    slidingDateRangePicker.DateRangeModeStart = startDate;
+                    slidingDateRangePicker.DateRangeModeEnd = endDate;
+                    selectionConfig.SlidingDateRangePickerDelimitedValues = slidingDateRangePicker.DelimitedValues;
+                }
+
+                var accountIdList = new List<int>();
+                if ( selectionValues.Length >= 5 )
+                {
+                    selectionConfig.AccountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() ).ToList();
+                }
+
+                if ( selectionValues.Length >= 6 )
+                {
+                    selectionConfig.CombineGiving = selectionValues[5].AsBooleanOrNull() ?? false;
+                }
+
+                selectionConfig.UseAnalyticsModels = false;
+                selectionConfig.IncludeChildAccounts = false;
+                selectionConfig.IgnoreInactiveAccounts = false;
+
+                return selectionConfig;
+            }
+
+            /// <summary>
+            /// Parses the specified selection.
+            /// </summary>
+            /// <param name="selection">The selection.</param>
+            /// <returns>SelectionConfig.</returns>
+            public static SelectionConfig Parse( string selection )
+            {
+                var selectionConfig = selection.FromJsonOrNull<SelectionConfig>();
+                if ( selectionConfig != null )
+                {
+                    return selectionConfig;
+                }
+
+                // If selection config is NULL, it might be in the old pipe delimited format.
+                return ParseFromLegacyConfig( selection );
+            }
         }
 
         private class TransactionDetailData

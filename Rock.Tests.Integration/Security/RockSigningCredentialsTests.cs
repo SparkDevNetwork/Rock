@@ -114,8 +114,8 @@ namespace Rock.Tests.Integration.Security
         {
             var rockOidcSettings = RockOidcSettings.GetDefaultSettings();
 
-            var key1CreatedDate = DateTime.UtcNow.AddSeconds( -1 * ( rockOidcSettings.RefreshTokenLifetime + rockOidcSettings.SigningKeyLifetime + 60 ) ).ToString( "yyyy-MM-ddThh:mm:ss" );
-            var key2CreatedDate = DateTime.UtcNow.AddSeconds( 12 * 60 * 60 ).ToString( "yyyy-MM-ddThh:mm:ss" );
+            var key1CreatedDate = DateTime.UtcNow.AddSeconds( -1 * ( rockOidcSettings.RefreshTokenLifetime + rockOidcSettings.SigningKeyLifetime + 60 ) ).ToString( "yyyy-MM-ddTHH:mm:ss" );
+            var key2CreatedDate = DateTime.UtcNow.AddSeconds( 12 * 60 * 60 ).ToString( "yyyy-MM-ddTHH:mm:ss" );
             var expectedModulus = "y99YHW6o5ym/Oeia3cGwFNYUxSFyQTrSpuX7j/2uV6HcVxqFV3Hlo/UC/st5bnUfIaIDX3egC8VeoDyRacsNogAvBDXYGUMQjGd6lwwfm5XFaZXcETi1JioU2Ddl3R21fWxooXBVuUQE7g8+6p5/yMnahA/T1JcVCDeeHU2RWZovtQOh+Y9n3q6eL6mbjtF6TghQazeiAyL3LtYkos6+WwY8Y9gaAWgB3CeZU6j1Ae/E+qGPuQq0v4mwibuDL8oRUk0NhCWb7CM2jIbMMXe3SBjbK+qy7hndAMNgwJ/qvSJWWuonkzqeCdStZnpiNQc34JKedGqBKLk+it8Di3dSMQ==";
 
             var SigningKeys = @"[

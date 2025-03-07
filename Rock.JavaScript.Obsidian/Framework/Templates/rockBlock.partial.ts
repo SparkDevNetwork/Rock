@@ -30,6 +30,7 @@ import { IBlockPersonPreferencesProvider, IPersonPreferenceCollection } from "@O
 import { PersonPreferenceValueBag } from "@Obsidian/ViewModels/Core/personPreferenceValueBag";
 import { BlockReloadMode } from "@Obsidian/Enums/Cms/blockReloadMode";
 import { BrowserBus } from "@Obsidian/Utility/browserBus";
+import { ICancellationToken } from "@Obsidian/Utility/cancellation";
 
 const store = useStore();
 
@@ -211,16 +212,16 @@ export default defineComponent({
 
         // #region Functions
 
-        const httpCall = async <T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> => {
-            return await doApiCall<T>(method, url, params, data);
+        const httpCall = async <T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> => {
+            return await doApiCall<T>(method, url, params, data, cancellationToken);
         };
 
         const get = async <T>(url: string, params: HttpUrlParams = undefined): Promise<HttpResult<T>> => {
             return await httpCall<T>("GET", url, params);
         };
 
-        const post = async <T>(url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> => {
-            return await httpCall<T>("POST", url, params, data);
+        const post = async <T>(url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> => {
+            return await httpCall<T>("POST", url, params, data, cancellationToken);
         };
 
         const invokeBlockAction = createInvokeBlockAction(post, store.state.pageGuid, toGuidOrNull(props.config.blockGuid) ?? emptyGuid, store.state.pageParameters, store.state.interactionGuid);

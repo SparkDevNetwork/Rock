@@ -91,5 +91,21 @@ namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageDetail
         /// The adaptation Attributes
         /// </summary>
         public List<PublicEditableAttributeBag> AdaptationAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reserved key names.
+        /// </summary>
+        /// <value>
+        /// The reserved key names.
+        /// </value>
+        public List<string> ReservedKeyNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message reserved key names.
+        /// </summary>
+        /// <value>
+        /// The message reserved key names.
+        /// </value>
+        public List<string> MessageReservedKeyNames { get; set; }
     }
 }

@@ -1,0 +1,355 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="chooseTemplateStepElement"
+         class="choose-template-step">
+        <Panel :hasFullscreen="true"
+               panelBodyCssClass="panel-body-wizard"
+               :title="title"
+               type="block">
+            <template #default>
+                <div class="panel-body-contents">
+                    <div class="filter-bar d-sm-flex flex-row justify-content-between">
+                        <TextBox v-model="searchFilter"
+                                 :disableLabel="true"
+                                 placeholder="Search templates…">
+                            <template #inputGroupPrepend>
+                                <span class="input-group-addon">
+                                    <i class="fa fa-search"></i>
+                                </span>
+                            </template>
+                        </TextBox>
+
+                        <div class="category-picker-container">
+                            <CategoryPicker v-model="categoryFilter"
+                                            blankValue="All Categories"
+                                            :disableLabel="true"
+                                            :entityTypeGuid="EntityType.CommunicationTemplate"
+                                            :multiple="false" />
+                        </div>
+                    </div>
+
+                    <div ref="errorMessageElement">
+                        <NotificationBox v-if="isErrorMessageShown"
+                                         alertType="warning">
+                            Please select a template.
+                        </NotificationBox>
+                    </div>
+
+                    <div class="templates-section well-section">
+                        <div class="templates-section-header">
+                            <SectionHeader title="Starter Templates"
+                                           description="These templates will help you quickly get started with your communication."
+                                           :isSeparatorHidden="true">
+                                <template #actions>
+                                    <RockButton v-if="starterCommunicationTemplates.length > 3"
+                                                btnType="link"
+                                                class="expand-action"
+                                                :isSquare="true"
+                                                @click="areStarterTemplatesExpanded = !areStarterTemplatesExpanded">
+                                        <i :class="{
+                                            'fa fa-chevron-down': !areStarterTemplatesExpanded,
+                                            'fa fa-chevron-up': areStarterTemplatesExpanded
+                                        }"></i>
+                                    </RockButton>
+                                </template>
+                            </SectionHeader>
+                        </div>
+
+                        <CommunicationTemplateGrid v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
+                                                   :communicationTemplates="starterCommunicationTemplates"
+                                                   :isCollapsed="!areStarterTemplatesExpanded" />
+                    </div>
+
+                    <div class="templates-section">
+                        <div class="templates-section-header">
+                            <SectionHeader title="More Templates"
+                                           description="These are all the custom templates available to your organization."
+                                           :isSeparatorHidden="true" />
+                        </div>
+
+                        <CommunicationTemplateGrid v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
+                                                   :communicationTemplates="moreCommunicationTemplates" />
+                    </div>
+                </div>
+            </template>
+
+            <template #footerActions>
+                <RockButton @click="onPreviousClicked">Previous</RockButton>
+            </template>
+
+            <template #footerSecondaryActions>
+                <RockButton btnType="primary"
+                            :disabled="isFetchingCommunicationTemplate"
+                            @click="onNextStepClicked">
+                    <i v-if="isFetchingCommunicationTemplate" class="fa fa-spinner fa-spin"></i>
+                    {{ nextStepTitle ? `Next: ${nextStepTitle}` : 'Next' }}
+                </RockButton>
+            </template>
+        </Panel>
+    </div>
+</template>
+
+<style scoped>
+:deep(.panel-body-wizard) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+}
+
+:deep(.panel-body-wizard .actions) {
+    margin: 0;
+}
+
+.panel-body-contents {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: var(--panel-body-padding);
+}
+
+
+.category-picker-container {
+    min-width: 225px;
+}
+
+.templates-section {
+    margin: var(--spacing-xlarge) 0;
+}
+
+.templates-section > * + * {
+    margin-top: var(--spacing-large);
+}
+
+.well-section {
+    margin: 0 calc(0px - var(--panel-body-padding));
+    padding: var(--spacing-xlarge) var(--panel-body-padding);
+    background-color: var(--color-interface-softer);
+    border: 1px solid var(--color-interface-soft);
+    border-left: none;
+    border-right: none;
+}
+
+.expand-action {
+    color: var(--text-color);
+}
+</style>
+
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import CommunicationTemplateGrid from "./communicationTemplateGrid.partial.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { Guid } from "@Obsidian/Types";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { scrollElementStartToTop } from "@Obsidian/Utility/dom";
+    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { CommunicationEntryWizardCommunicationTemplateBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateBag";
+    import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        allowedMediums: {
+            type: Object as PropType<CommunicationType[]>,
+            required: true
+        },
+
+        communicationTemplateDetail: {
+            type: Object as PropType<CommunicationEntryWizardCommunicationTemplateDetailBag | null | undefined>,
+            required: true
+        },
+
+        communicationTemplateGuid: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        communicationTemplates: {
+            type: Object as PropType<CommunicationEntryWizardCommunicationTemplateBag[]>,
+            required: true
+        },
+
+        communicationType: {
+            type: Number as PropType<CommunicationType>,
+            required: true
+        },
+
+        isFetchingCommunicationTemplate: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        nextStepTitle: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "nextStep"): void;
+        (e: "previousStep"): void;
+        (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
+    }>();
+
+    // #region Values
+
+    // UI data.
+    const isErrorMessageShown = ref<boolean>(false);
+    const errorMessageElement = ref<HTMLElement | undefined>();
+    const chooseTemplateStepElement = ref<HTMLElement | undefined>();
+    const searchFilter = ref<string>("");
+    const categoryFilter = ref<ListItemBag | null | undefined>();
+    const areStarterTemplatesExpanded = ref<boolean>(false);
+
+    // Communication data.
+    const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const filteredCommunicationTemplates = computed<CommunicationEntryWizardCommunicationTemplateBag[]>(() => {
+        let templates = props.communicationTemplates;
+
+        // Filter by search text.
+        const searchText = searchFilter.value;
+        const searchRegex = tryGetRegExp(searchText);
+        if (searchRegex) {
+            templates = templates.filter(communicationTemplate => {
+                return (communicationTemplate.name && searchRegex.test(communicationTemplate.name))
+                    || (communicationTemplate.description && searchRegex.test(communicationTemplate.description));
+            });
+        }
+        else {
+            const searchTextLowerCase = searchText.toLocaleLowerCase();
+            templates = templates.filter(communicationTemplate => {
+                return (communicationTemplate.name && communicationTemplate.name.toLocaleLowerCase().indexOf(searchTextLowerCase) >= 0)
+                    || (communicationTemplate.description && communicationTemplate.description.toLocaleLowerCase().indexOf(searchTextLowerCase) >= 0);
+            });
+        }
+
+        // Filter by category.
+        const categoryGuid = toGuidOrNull(categoryFilter.value?.value);
+        if (categoryGuid) {
+            templates = templates.filter(communicationTemplate => {
+                return areEqual(communicationTemplate.categoryGuid, categoryGuid);
+            });
+        }
+
+        // Filter by communication type.
+        if (props.communicationType === CommunicationType.Email
+            || (props.communicationType === CommunicationType.RecipientPreference && props.allowedMediums.includes(CommunicationType.Email))) {
+            templates = templates.filter(communicationTemplate => {
+                return communicationTemplate.isEmailSupported;
+            });
+        }
+        else if (props.communicationType === CommunicationType.SMS
+            || (props.communicationType === CommunicationType.RecipientPreference && props.allowedMediums.includes(CommunicationType.SMS))) {
+            templates = templates.filter(communicationTemplate => {
+                return communicationTemplate.isSmsSupported;
+            });
+        }
+
+        return templates;
+    });
+
+    const starterCommunicationTemplates = computed<CommunicationEntryWizardCommunicationTemplateBag[]>(() => {
+        return filteredCommunicationTemplates.value
+            .filter(communicationTemplate => {
+                return communicationTemplate.isStarter;
+            })
+            .sort((a, b) => {
+                if (a.communicationCount > b.communicationCount) {
+                    return -1;
+                }
+                else if (a.communicationCount < b.communicationCount) {
+                    return 1;
+                }
+                else {
+                    return (a.name ?? "").localeCompare(b.name ?? "");
+                }
+            });
+    });
+
+    const moreCommunicationTemplates = computed<CommunicationEntryWizardCommunicationTemplateBag[]>(() => {
+        return filteredCommunicationTemplates.value
+            .filter(communicationTemplate => {
+                return !communicationTemplate.isStarter;
+            })
+            .sort((a, b) => {
+                return (a.name ?? "").localeCompare(b.name ?? "");
+            });
+    });
+
+    const isRegex: RegExp = /\/(.+)\/(.*)/; // Matches regex strings in the form /<regex>/<flags>
+
+    function tryGetRegExp(pattern: string): RegExp | undefined {
+        try {
+            const match = pattern.match(isRegex);
+
+            if (match && match.length) {
+                return new RegExp(match[1], match[2]);
+            }
+        }
+        catch {
+            // The pattern was not valid regex.
+        }
+    }
+
+    function moveNext(): void {
+        if (!props.isFetchingCommunicationTemplate) {
+            emit("nextStep");
+        }
+        else {
+            const watchOnce = watch(() => props.isFetchingCommunicationTemplate, (newValue) => {
+                if (!newValue) {
+                    emit("nextStep");
+
+                    // Cancel the watcher once it runs once.
+                    watchOnce();
+                }
+            });
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onPreviousClicked(): void {
+        emit("previousStep");
+    }
+
+    function onNextStepClicked(): void {
+        if (!internalCommunicationTemplateGuid.value) {
+            isErrorMessageShown.value = true;
+
+            nextTick(() => {
+                if (errorMessageElement.value) {
+                    scrollElementStartToTop(errorMessageElement.value);
+                }
+            });
+        }
+        else {
+            isErrorMessageShown.value = false;
+            moveNext();
+        }
+    }
+
+    // #endregion
+</script>

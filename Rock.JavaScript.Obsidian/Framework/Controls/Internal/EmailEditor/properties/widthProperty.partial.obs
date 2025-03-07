@@ -1,0 +1,142 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RangeSliderProperty v-bind="$attrs"
+                         :element="element"
+                         :label="label"
+                         :min="min"
+                         :max="max"
+                         :showValueBar="!hideValueBar"
+                         :valueProvider="valueProvider"
+                         :valueSuffix="valueSuffix" />
+</template>
+
+<script setup lang="ts">
+    import { computed, onUnmounted, PropType, ref, watch } from "vue";
+    import RangeSliderProperty from "./rangeSliderProperty.partial.obs";
+    import { inlineStyleProvider, styleSheetProvider } from "../providers.partial";
+    import { StyleSheetMode, ValueProvider } from "../types.partial";
+    import { percentageConverter, pixelConverter } from "../utils.partial";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Width" as const
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Creates and adds a &lt;style&gt; element to the `element` input to host the changes.
+         */
+        styleSheetMode: {
+            type: Object as PropType<StyleSheetMode | undefined>,
+            required: false
+        },
+
+        min: {
+            type: Number as PropType<number>,
+            required: true as const
+        },
+
+        max: {
+            type: Number as PropType<number>,
+            required: true as const
+        },
+
+        hideValueBar: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        valueType: {
+            type: String as PropType<"pixel" | "percentage">,
+            default: "pixel" as const
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:width", value: string | null): void;
+    }>();
+
+    // #region Values
+
+    const valueProvider = ref<ValueProvider<number | null | undefined>>(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    const valueSuffix = computed<string>(() => {
+        if (props.valueType === "pixel") {
+            return "px";
+        }
+        else if (props.valueType === "percentage") {
+            return "%";
+        }
+        else {
+            return "";
+        }
+    });
+
+    // #region Functions
+
+    function createValueProvider(): ValueProvider<number | null | undefined> {
+        if (!props.styleSheetMode) {
+            return inlineStyleProvider(
+                props.element,
+                "width",
+                props.valueType === "percentage" ? percentageConverter : pixelConverter,
+                props.copyToElements,
+                {
+                    onTargetValueUpdated(value) {
+                        emit("update:width", value);
+                    }
+                }
+            );
+        }
+        else {
+            return styleSheetProvider(
+                props.element,
+                props.styleSheetMode.styleCssClass,
+                props.styleSheetMode.rulesetCssSelector,
+                "width",
+                props.valueType === "percentage" ? percentageConverter : pixelConverter,
+                {
+                    onTargetValueUpdated(value) {
+                        emit("update:width", value);
+                    }
+                }
+            );
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([() => props.element, () => props.copyToElements, () => props.styleSheetMode], () => {
+        valueProvider.value.dispose();
+        valueProvider.value = createValueProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        valueProvider.value.dispose();
+    });
+
+    // #endregion Hooks
+</script>

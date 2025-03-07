@@ -11,7 +11,6 @@
                 <pre v-once :id="codeEditorId" class="position-absolute inset-0 m-0 ace_editor">{{ internalValue }}</pre>
             </div>
             <div v-else-if="props.editor == 'monaco'" ref="editorWrapper" :class="codeEditorClass + ' border border-panel'" :style="codeEditorStyle"></div>
-            <small v-if="mode === 'markdown'" class='pull-right text-muted'><strong>**bold**</strong> &nbsp;<em>*italics*</em> &nbsp;>quote &nbsp;[link text](link address) &nbsp;<a href='http://commonmark.org/help/' class='btn btn-xs text-muted' target='_blank' rel='noopener noreferrer'>more</a></small>
         </div>
     </RockFormField>
 </template>
@@ -20,7 +19,8 @@
     declare global {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         var ace: any | undefined;
-        var registerMonacoImport: Record<string, (m: unknown) => void>;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        var monaco: any | undefined;
     }
 </script>
 
@@ -151,8 +151,6 @@
 
     let aceScriptLoaded: Promise<boolean> | undefined;
     let monacoScriptLoaded: Promise<boolean> | undefined;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const monacoImport = ref<any>();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let editor: any | unknown;
@@ -247,7 +245,7 @@
                 wordWrap: props.noLineWrap ? "off" : "on",
                 readOnly: props.disabled,
             });
-            monacoImport.value.editor.setModelLanguage(editor.getModel(), modeName.value);
+            window.monaco.editor.setModelLanguage(editor.getModel(), modeName.value);
         }
     });
 
@@ -273,60 +271,7 @@
             return monacoScriptLoaded;
         }
 
-        monacoScriptLoaded = new Promise((resolve, reject) => {
-            let resolved = false;
-
-            // This allows the script module we create below to expose `monaco` to this component.
-            window.registerMonacoImport = window.registerMonacoImport || {};
-            window.registerMonacoImport[uniqueId] = (m) => {
-                monacoImport.value = m;
-                resolved = true;
-                resolve(true);
-            };
-
-            // Create a script tag to load the monaco editor as an ES module.
-            // Combines techniques from https://stackoverflow.com/questions/63179813/how-to-run-the-monaco-editor-from-a-cdn-like-cdnjs/76553340#76553340
-            // and https://stackoverflow.com/questions/63179813/how-to-run-the-monaco-editor-from-a-cdn-like-cdnjs/68746273#68746273
-            // since our build process doesn't work well with the way the monaco editor is constructed to work.
-            const script = document.createElement("script");
-            script.type = "module";
-            script.innerHTML = `
-            import * as monaco from 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/+esm';
-
-            // Before loading vs/editor/editor.main, define a global MonacoEnvironment that overwrites
-            // the default worker url location (used when creating WebWorkers). The problem here is that
-            // HTML5 does not allow cross-domain web workers, so we need to proxy the instantiation of
-            // a web worker through a same-domain script
-            window.MonacoEnvironment = {
-                getWorkerUrl: function(workerId, label) {
-                    return "data:text/javascript;charset=utf-8,${encodeURIComponent("self.MonacoEnvironment = { baseUrl: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/' };")}";
-                }
-            };
-
-            let register = window.registerMonacoImport?.["${uniqueId}"];
-
-            if (typeof register === "function") {
-                register(monaco);
-            }
-            else {
-                console.error("Monaco import not registered. window.registerMonacoImport['${uniqueId}'] function not found.");
-            }`;
-
-            const styles = document.createElement("link");
-            styles.rel = "stylesheet";
-            styles.href = "https://cdn.jsdelivr.net/npm/@vscode/codicons@0.0.36/dist/codicon.min.css";
-
-            document.head.appendChild(styles);
-            document.body.appendChild(script);
-
-            // Make promise reject after a timeout.
-            setTimeout(() => {
-                if (!resolved) {
-                    reject();
-                }
-            }, 20000);
-        });
-
+        monacoScriptLoaded = loadJavaScriptAsync("/Scripts/Rock/Monaco/monaco.js", () => !!window.monaco);
         return monacoScriptLoaded;
     }
 
@@ -368,6 +313,7 @@
             editor.setTheme(`ace/theme/${themeName.value}`);
             editor.getSession().setMode(`ace/mode/${modeName.value}`);
             editor.getSession().setUseWrapMode(!props.noLineWrap);
+            editor.getSession().setValue(internalValue.value);
             editor.setShowPrintMargin(false);
             editor.setReadOnly(props.disabled);
 
@@ -404,7 +350,7 @@
             await loadMonaco();
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            editor = monacoImport.value.editor.create(editorWrapper.value, {
+            editor = window.monaco.editor.create(editorWrapper.value, {
                 value: internalValue.value,
                 language: modeName.value,
                 theme: themeName.value,

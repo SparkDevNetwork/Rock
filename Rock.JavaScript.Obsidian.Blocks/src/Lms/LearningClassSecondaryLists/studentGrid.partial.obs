@@ -191,8 +191,12 @@
     }
 
     function getGradeText(row: Record<string, unknown>): string {
-        if (!row.currentGrade) {
+        if (!row.currentGrade && !row.currentGradePercent) {
             return "";
+        }
+
+        if (!row.currentGrade && row.currentGradePercent) {
+            return `${row.currentGradePercent}%`;
         }
 
         return `${row.currentGrade} (${row.currentGradePercent}%)`;

@@ -80,6 +80,13 @@ namespace RockWeb.Blocks.Reporting
         DefaultIntegerValue = 180,
         Order = 4 )]
 
+    [BooleanField(
+        "Use Obsidian Components",
+        Key = AttributeKey.UseObsidianComponents,
+        Description = "Switches the filter components to use Obsidian if supported.",
+        DefaultBooleanValue = true,
+        Category = "Advanced")]
+
     [Rock.SystemGuid.BlockTypeGuid( "EB279DF9-D817-4905-B6AC-D9883F0DA2E4" )]
     public partial class DataViewDetail : RockBlock
     {
@@ -92,6 +99,7 @@ namespace RockWeb.Blocks.Reporting
             public const string DataViewDetailPage = "DataViewDetailPage";
             public const string ReportDetailPage = "ReportDetailPage";
             public const string GroupDetailPage = "GroupDetailPage";
+            public const string UseObsidianComponents = "UseObsidianComponents";
         }
 
         #endregion Attribute Keys
@@ -1355,6 +1363,11 @@ $(document).ready(function() {
             filterField.ID = string.Format( "ff_{0}", filterField.DataViewFilterGuid.ToString( "N" ) );
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             filterField.Expanded = true;
+            filterField.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
+
+            // This is required for Obsidian filters so they can initialize any
+            // data that must be sent from C# to Obsidian.
+            filterField.SetSelection( string.Empty );
         }
 
         /// <summary>
@@ -1481,6 +1494,7 @@ $(document).ready(function() {
                     filterControl.DataViewFilterGuid = filter.Guid;
                     filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
                     filterControl.FilteredEntityTypeName = filteredEntityTypeName;
+                    filterControl.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
                     if ( filter.EntityTypeId.HasValue )
                     {
                         var entityTypeCache = EntityTypeCache.Get( filter.EntityTypeId.Value, rockContext );

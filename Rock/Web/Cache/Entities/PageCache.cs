@@ -321,7 +321,6 @@ namespace Rock.Web.Cache
 
 
         /// <inheritdoc/>
-        [RockInternal( "1.16.4" )]
         [DataMember]
         public string AdditionalSettingsJson { get; private set; }
 

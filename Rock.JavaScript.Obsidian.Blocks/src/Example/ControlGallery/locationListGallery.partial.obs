@@ -1,0 +1,64 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <LocationList label="Location"
+                      v-model="value"
+                      :multiple="multiple"
+                      :locationTypeValueGuid="locationType?.value"
+                      :allowAdd="allowAdd"
+                      :showCityState="showCityState"
+                      :showBlankItem="showBlankItem"
+                      :isAddressRequired="isAddressRequired"
+                      :parentLocationGuid="parentLocationGuid" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox v-model="showCityState" label="Show City/State" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="multiple" label="Multiple" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="allowAdd" label="Allow Adding Values" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="showBlankItem" label="Show Blank Item" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="isAddressRequired" label="Require Address" help="Only applies when adding a new location." />
+                </div>
+                <div class="col-md-3">
+                    <TextBox v-model="parentLocationGuid" label="Parent Location Guid" />
+                </div>
+                <div class="col-md-3">
+                    <DefinedValuePicker v-model="locationType" label="Location Type" definedTypeGuid="3285DCEF-FAA4-43B9-9338-983F4A384ABA" showBlankItem />
+                </div>
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import LocationList from "@Obsidian/Controls/locationList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { Guid } from "@Obsidian/Types";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const value = ref(null);
+    const locationType = ref<ListItemBag>();
+    const showCityState = ref(false);
+    const multiple = ref(false);
+    const allowAdd = ref(false);
+    const showBlankItem = ref(false);
+    const isAddressRequired = ref(false);
+    const parentLocationGuid = ref<Guid>("e0545b4d-4f97-43b0-971f-94b593ae2134");
+    const importCode = getSfcControlImportPath("locationList");
+    const exampleCode = `<LocationList label="Location" v-model="value" :multiple="false" />`;
+</script>

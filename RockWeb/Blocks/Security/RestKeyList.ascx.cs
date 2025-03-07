@@ -149,6 +149,8 @@ namespace RockWeb.Blocks.Security
             var parms = new Dictionary<string, string>();
             var restUserId = e.RowKeyId;
             parms.Add( "RestUserId", restUserId.ToString() );
+            parms.Add( "autoEdit", "true" );
+            parms.Add( "returnUrl", Request.RawUrl );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 

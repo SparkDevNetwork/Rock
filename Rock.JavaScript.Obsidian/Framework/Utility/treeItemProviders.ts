@@ -39,6 +39,7 @@ import { WorkflowActionTypePickerGetChildrenOptionsBag } from "@Obsidian/ViewMod
 import { MergeFieldPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mergeFieldPickerGetChildrenOptionsBag";
 import { AssetManagerGetRootFoldersOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerGetRootFoldersOptionsBag";
 import { AssetManagerBaseOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerBaseOptionsBag";
+import { UniversalItemTreePickerOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/UniversalItemTreePickerOptionsBag";
 import { flatten } from "./arrayUtils";
 import { toNumberOrNull } from "./numberUtils";
 
@@ -1129,7 +1130,7 @@ export class AssetManagerTreeItemProvider implements ITreeItemProvider {
             userSpecificRoot: this.userSpecificRoot
         };
         const url = "/api/v2/Controls/AssetManagerGetRootFolders";
-        const response = await post<{tree:TreeItemBag[], updatedExpandedFolders: string[]}>(url, undefined, options);
+        const response = await post<{ tree: TreeItemBag[], updatedExpandedFolders: string[] }>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             this.openFolders = new Set(response.data.updatedExpandedFolders);
@@ -1159,5 +1160,55 @@ export class AssetManagerTreeItemProvider implements ITreeItemProvider {
             console.error("Error Fetching Asset Manager Children", response.errorMessage);
             return [];
         }
+    }
+}
+
+/**
+ * Tree Item Provider for retrieving adaptive messages from the server and displaying
+ * them inside a tree list.
+ */
+export class AdaptiveMessageTreeItemProvider implements ITreeItemProvider {
+    /**
+     * The security grant token that will be used to request additional access
+     * to the category list.
+     */
+    public securityGrantToken?: string | null;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
+        const options: UniversalItemTreePickerOptionsBag = {
+            parentValue: parentGuid,
+            securityGrantToken: this.securityGrantToken,
+        };
+
+        const response = await post<TreeItemBag[]>("/api/v2/Controls/AdaptiveMessagePickerGetAdaptiveMessages", {}, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
     }
 }

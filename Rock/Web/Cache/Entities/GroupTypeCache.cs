@@ -870,91 +870,65 @@ namespace Rock.Web.Cache
         [DataMember]
         public ScheduleCoordinatorNotificationType? ScheduleCoordinatorNotificationTypes { get; private set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the Group Type has Peer Network enabled.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if peer network is enabled; otherwise, <c>false</c>.
-        /// </value>
+        /// <inheritdoc cref="GroupType.IsPeerNetworkEnabled"/>
         [DataMember]
         public bool IsPeerNetworkEnabled { get; private set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether relationship growth is enabled.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [relationship growth enabled]; otherwise, <c>false</c>.
-        /// </value>
+        /// <inheritdoc cref="GroupType.RelationshipGrowthEnabled"/>
         [DataMember]
         public bool RelationshipGrowthEnabled { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the relationship strength.
-        /// </summary>
-        /// <value>
-        /// The relationship strength.
-        /// </value>
+        /// <inheritdoc cref="GroupType.RelationshipStrength"/>
         [DataMember]
         public int RelationshipStrength { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the leader to leader relationship multiplier.
-        /// </summary>
-        /// <value>
-        /// The leader to leader relationship multiplier.
-        /// </value>
+        /// <inheritdoc cref="GroupType.LeaderToLeaderRelationshipMultiplier"/>
         [DataMember]
         [DecimalPrecision( 8, 2 )]
         public decimal LeaderToLeaderRelationshipMultiplier { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the leader to non leader relationship multiplier.
-        /// </summary>
-        /// <value>
-        /// The leader to non leader relationship multiplier.
-        /// </value>
+        /// <inheritdoc cref="GroupType.LeaderToNonLeaderRelationshipMultiplier"/>
         [DataMember]
         [DecimalPrecision( 8, 2 )]
         public decimal LeaderToNonLeaderRelationshipMultiplier { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the non leader to non leader relationship multiplier.
-        /// </summary>
-        /// <value>
-        /// The non leader to non leader relationship multiplier.
-        /// </value>
+        /// <inheritdoc cref="GroupType.NonLeaderToNonLeaderRelationshipMultiplier"/>
         [DataMember]
         [DecimalPrecision( 8, 2 )]
         public decimal NonLeaderToNonLeaderRelationshipMultiplier { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the non leader to leader relationship multiplier.
-        /// </summary>
-        /// <value>
-        /// The non leader to leader relationship multiplier.
-        /// </value>
+        /// <inheritdoc cref="GroupType.NonLeaderToLeaderRelationshipMultiplier"/>
         [DataMember]
         [DecimalPrecision( 8, 2 )]
         public decimal NonLeaderToLeaderRelationshipMultiplier { get; private set; }
 
-        /// <summary>
-        /// Gets whether any relationship multipliers have been customized for this group type (if any of them don't
-        /// equal 100%).
-        /// </summary>
-        /// <remarks>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
-        /// </remarks>
-        [RockInternal( "1.17.0" )]
+        /// <inheritdoc cref="GroupType.AreAnyRelationshipMultipliersCustomized"/>
+        [RockInternal( "17.0" )]
         public bool AreAnyRelationshipMultipliersCustomized =>
             LeaderToLeaderRelationshipMultiplier != 1m
             || LeaderToNonLeaderRelationshipMultiplier != 1m
             || NonLeaderToLeaderRelationshipMultiplier != 1m
             || NonLeaderToNonLeaderRelationshipMultiplier != 1m;
+
+        /// <inheritdoc cref="GroupType.IsChatAllowed"/>
+        [DataMember]
+        public bool IsChatAllowed { get; private set; }
+
+        /// <inheritdoc cref="GroupType.IsChatEnabledForAllGroups"/>
+        [DataMember]
+        public bool IsChatEnabledForAllGroups { get; private set; }
+
+        /// <inheritdoc cref="GroupType.IsLeavingChatChannelAllowed"/>
+        [DataMember]
+        public bool IsLeavingChatChannelAllowed { get; private set; }
+
+        /// <inheritdoc cref="GroupType.IsChatChannelPublic"/>
+        [DataMember]
+        public bool IsChatChannelPublic { get; private set; }
+
+        /// <inheritdoc cref="GroupType.IsChatChannelAlwaysShown"/>
+        [DataMember]
+        public bool IsChatChannelAlwaysShown { get; private set; }
 
         #endregion
 
@@ -1171,6 +1145,11 @@ namespace Rock.Web.Cache
             LeaderToNonLeaderRelationshipMultiplier = groupType.LeaderToNonLeaderRelationshipMultiplier;
             NonLeaderToLeaderRelationshipMultiplier = groupType.NonLeaderToLeaderRelationshipMultiplier;
             NonLeaderToNonLeaderRelationshipMultiplier = groupType.NonLeaderToNonLeaderRelationshipMultiplier;
+            IsChatAllowed = groupType.IsChatAllowed;
+            IsChatEnabledForAllGroups = groupType.IsChatEnabledForAllGroups;
+            IsLeavingChatChannelAllowed = groupType.IsLeavingChatChannelAllowed;
+            IsChatChannelPublic = groupType.IsChatChannelPublic;
+            IsChatChannelAlwaysShown = groupType.IsChatChannelAlwaysShown;
         }
 
         /// <summary>

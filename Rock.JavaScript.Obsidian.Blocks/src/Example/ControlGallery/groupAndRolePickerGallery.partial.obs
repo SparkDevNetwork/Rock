@@ -1,0 +1,56 @@
+<template>
+    <GalleryAndResult :value="{ groupType, group, value }"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      hasMultipleValues
+                      enableReflection>
+
+        <RockForm v-model:submit="submit">
+            <GroupAndRolePicker label="Group and Role"
+                                :groupLabel="glabel"
+                                v-model="value"
+                                v-model:groupType="groupType"
+                                v-model:group="group"
+                                :rules="required ? 'required' : ''" :disabled="disabled" />
+            <RockButton @click="submit = true">Submit</RockButton>
+        </RockForm>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <TextBox label="Group Label" v-model="glabel" help="The label for the 2nd dropdown. The main label is also customizable, but the group type and role labels are not." />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Required" v-model="required" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Disabled" v-model="disabled" />
+                </div>
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import GroupAndRolePicker from "@Obsidian/Controls/groupAndRolePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+
+    const value = ref(null);
+    const groupType = ref(null);
+    const group = ref(null);
+    const required = ref(false);
+    const disabled = ref(false);
+    const glabel = ref("Group");
+    const submit = ref(false);
+    const importCode = getSfcControlImportPath("groupAndRolePicker");
+    const exampleCode = `<GroupAndRolePicker label="Group and Role" groupLabel="Group" v-model="value" v-model:groupType="groupType" v-model:group="group" />`;
+</script>

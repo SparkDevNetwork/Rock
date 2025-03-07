@@ -1,7 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "build": "webpack --no-color",
+    "prebuild": "rimraf ../RockWeb/Scripts/Rock/Monaco",
+    "build": "webpack --no-color && webpack --config ./webpack.config.monaco.js --no-color",
     "clean": "tsc --build --clean"
   },
   "devDependencies": {
@@ -14,6 +15,9 @@
     "css-loader": "^6.8.1",
     "eol": "^0.9.1",
     "eslint": "^8.48.0",
+    "file-loader": "^6.2.0",
+    "monaco-editor-webpack-plugin": "^7.1.0",
+    "rimraf": "^6.0.1",
     "style-loader": "^3.3.3",
     "terser-webpack-plugin": "^5.3.9",
     "ts-loader": "^9.4.4",

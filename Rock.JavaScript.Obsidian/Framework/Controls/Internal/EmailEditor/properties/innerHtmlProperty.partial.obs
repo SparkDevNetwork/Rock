@@ -1,0 +1,90 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <HtmlEditor v-if="mode === 'html'"
+                v-model="innerHtml"
+                :editorHeight="400"
+                :mergeFields="mergeFields ?? []" />
+
+    <CodeEditor v-else-if="mode === 'code'"
+                v-model="innerHtml" />
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import { RockCssClassContentEditable } from "../utils.partial";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        mode: {
+            type: String as PropType<"html" | "code">,
+            default: "html" as const
+        },
+
+        mergeFields: {
+            type: Object as PropType<string[] | null | undefined>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "change", value: string): void;
+    }>();
+
+    // #region Values
+
+    // Initialized in the immediate watcher below.
+    const innerHtml = ref<string>(props.element.innerHTML ?? "");
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onInput(): void {
+        if (innerHtml.value !== props.element.innerHTML) {
+            innerHtml.value = props.element.innerHTML;
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(innerHtml, (value: string) => {
+        if (value !== props.element.innerHTML) {
+            props.element.innerHTML = value;
+
+            emit("change", value);
+        }
+    });
+
+    watch(() => props.element, (newValue, oldValue) => {
+        innerHtml.value = props.element.innerHTML;
+
+        if (oldValue) {
+            oldValue.removeEventListener("input", onInput);
+        }
+
+        const component = newValue.closest(".component[data-state='component']");
+        if (component?.parentElement && component.parentElement.querySelectorAll(`[contenteditable="true"],.${RockCssClassContentEditable}`).length) {
+            newValue.addEventListener("input", onInput);
+        }
+    }, {
+        immediate: true
+    });
+
+    // #endregion
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        props.element.removeEventListener("input", onInput);
+    });
+
+    // #endregion
+</script>

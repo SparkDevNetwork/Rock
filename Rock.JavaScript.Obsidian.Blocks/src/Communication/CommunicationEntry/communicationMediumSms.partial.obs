@@ -89,8 +89,7 @@
                     <SmsMessageEditor v-model="message"
                                       :disabled="disabled"
                                       :editorHeight="200"
-                                      :isCountDownShown="mediumOptions.characterLimit > 0"
-                                      :countDownMaxChars="mediumOptions.characterLimit"
+                                      :isCharacterCountShown="true"
                                       :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
                                       toolbarLabel="Message"
                                       rules="required" />

@@ -1,0 +1,162 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <HorizontalAlignmentProperty v-bind="$attrs"
+                                 :label="label"
+                                 :valueProvider="valueProvider" />
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import HorizontalAlignmentProperty from "./horizontalAlignmentProperty.partial.obs";
+    import { inlineStyleProvider, styleSheetProvider } from "../providers.partial";
+    import { HorizontalAlignment, StyleSheetMode, ValueProvider } from "../types.partial";
+    import {
+        pixelConverter,
+        stringConverter
+    } from "../utils.partial";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Horizontal Alignment" as const
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Creates and adds a &lt;style&gt; element to the `element` input to host the changes.
+         */
+        styleSheetMode: {
+            type: Object as PropType<StyleSheetMode | undefined>,
+            required: false
+        }
+    });
+
+    // #region Values
+
+    const valueProvider = ref<ValueProvider<HorizontalAlignment | "" | null | undefined>>(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): ValueProvider<HorizontalAlignment | "" | null | undefined> {
+        const marginLeftProvider: ValueProvider<string | null | undefined> =
+            !props.styleSheetMode
+                ? inlineStyleProvider(
+                    props.element,
+                    "margin-left",
+                    stringConverter,
+                    props.copyToElements
+                )
+                : styleSheetProvider(
+                    props.element,
+                    props.styleSheetMode.styleCssClass,
+                    props.styleSheetMode.rulesetCssSelector,
+                    "margin-left",
+                    stringConverter
+                );
+
+        const marginRightProvider: ValueProvider<string | null | undefined> =
+            !props.styleSheetMode
+                ? inlineStyleProvider(
+                    props.element,
+                    "margin-right",
+                    stringConverter,
+                    props.copyToElements
+                )
+                : styleSheetProvider(
+                    props.element,
+                    props.styleSheetMode.styleCssClass,
+                    props.styleSheetMode.rulesetCssSelector,
+                    "margin-right",
+                    stringConverter
+                );
+
+        const value = ref<HorizontalAlignment | "" | null | undefined>(getValue());
+
+        function getValue(): HorizontalAlignment | "" | null | undefined {
+            const marginLeftValue = marginLeftProvider.value;
+            const marginRightValue = marginRightProvider.value;
+
+            if (pixelConverter.toSource(marginLeftValue ?? null) === 0 && (!marginRightValue || marginRightValue === "auto")) {
+                return "left";
+            }
+            else if ((!marginLeftValue || marginLeftValue === "auto") && pixelConverter.toSource(marginRightValue ?? null) === 0) {
+                return "right";
+            }
+            else if (marginLeftValue === "auto" && marginRightValue === "auto") {
+                return "center";
+            }
+            else {
+                return null;
+            }
+        }
+
+        const watcher = watch(value, (newValue) => {
+            switch (newValue) {
+                case "left":
+                    marginLeftProvider.value = "0";
+                    marginRightProvider.value = "auto";
+                    break;
+                case "center":
+                    marginLeftProvider.value = "auto";
+                    marginRightProvider.value = "auto";
+                    break;
+                case "right":
+                    marginLeftProvider.value = "auto";
+                    marginRightProvider.value = "0";
+                    break;
+                default:
+                    marginLeftProvider.value = null;
+                    marginRightProvider.value = null;
+            }
+        });
+
+        return {
+            get value(): HorizontalAlignment | "" | null | undefined {
+                return value.value;
+            },
+            set value(newValue: HorizontalAlignment | "" | null | undefined) {
+                value.value = newValue;
+            },
+            dispose() {
+                watcher();
+                marginLeftProvider.dispose();
+                marginRightProvider.dispose();
+            }
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([() => props.element, () => props.copyToElements, () => props.styleSheetMode], () => {
+        valueProvider.value.dispose();
+        valueProvider.value = createValueProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        valueProvider.value.dispose();
+    });
+
+    // #endregion Hooks
+</script>
