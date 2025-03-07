@@ -576,9 +576,10 @@ namespace Rock.Blocks.Lms
                 var entityService = new LearningClassService( RockContext );
 
                 // Create a new entity.
-                entity = new LearningClass();
-
-                entity.LearningCourseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
+                entity = new LearningClass
+                {
+                    LearningCourseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId )
+                };
 
                 entityService.Add( entity );
             }
