@@ -241,7 +241,7 @@ namespace Rock.Pdf
         /// <summary>
         /// Display header and footer. Defaults to <c>false</c>.
         /// </summary>
-        public bool DisplayHeaderFooter { get; set; } = false;
+        public bool DisplayHeaderFooter { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the header HTML. This value will override the default. To use the default leave blank/null.
@@ -441,10 +441,10 @@ namespace Rock.Pdf
             {
                 pdfOptions.MarginOptions = new MarginOptions
                 {
-                    Top = "1in",
-                    Right = "0.4in",
-                    Left = "0.4in",
-                    Bottom = "1in",
+                    Top = "0.39in",
+                    Right = "0.39in",
+                    Left = "0.39in",
+                    Bottom = "0.59in",
                 };
             }
 
@@ -455,8 +455,16 @@ namespace Rock.Pdf
             {
                 pdfOptions.HeaderTemplate = this.HeaderHtml;
             }
+            else
+            {
+                pdfOptions.HeaderTemplate = "<!-- -->";
+            }
 
-            if ( this.FooterHtml.IsNullOrWhiteSpace() )
+            if ( this.FooterHtml.IsNotNullOrWhiteSpace() )
+            {
+                pdfOptions.FooterTemplate = this.FooterHtml;
+            }
+            else
             {
                 // Set footer template to show pageNumber/totalPages on the bottom right.
                 // See chromium source code at  https://source.chromium.org/chromium/chromium/src/+/main:components/printing/resources/print_header_footer_template_page.html
@@ -465,16 +473,6 @@ namespace Rock.Pdf
 <div class='text right'>
     <span class='pageNumber'></span>/<span class='totalPages'></span>
 </div>;";
-            }
-            else
-            {
-                pdfOptions.FooterTemplate = this.FooterHtml;
-            }
-
-            // Make Sure the margins doesn't push the document content out of bounds.
-            if ( !IsMarginWithinBounds( pdfOptions ) )
-            {
-                throw new PdfGeneratorException( "The provided margins exceed the document dimensions." );
             }
 
             using ( var activity = ObservabilityHelper.StartActivity( "PDF: Generate From HTML" ) )
@@ -495,107 +493,6 @@ namespace Rock.Pdf
                     return pdfStreamTask.Result;
                 }
             }
-        }
-
-        /// <summary>
-        /// Determines whether the specified margin (in inches) is within the bounds of the document dimensions.
-        /// </summary>
-        /// <param name="pdfOptions"></param>
-        /// <c>true</c> if the combined margins are within the document's width and height; otherwise, <c>false</c>.
-        private bool IsMarginWithinBounds( PdfOptions pdfOptions )
-        {
-            if ( pdfOptions == null )
-            {
-                throw new ArgumentException( "pdfOptions is null or empty", nameof( pdfOptions ) );
-            }
-
-            if ( pdfOptions.Height == null || pdfOptions.Width == null )
-            {
-                return true;
-            }
-
-            // Parse page dimensions
-            double height = ParseMeasurementToInches( pdfOptions.Height as string );
-            double width = ParseMeasurementToInches( pdfOptions.Width as string );
-
-            // Parse margin dimensions
-            var margin = pdfOptions.MarginOptions;
-            double marginLeft = ParseMeasurementToInches( margin.Left );
-            double marginRight = ParseMeasurementToInches( margin.Right );
-            double marginTop = ParseMeasurementToInches( margin.Top );
-            double marginBottom = ParseMeasurementToInches( margin.Bottom );
-
-            if ( ( marginLeft + marginRight ) > width )
-            {
-                return false;
-            }
-            if ( ( marginTop + marginBottom ) > height )
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Parses a measurement string and converts it to inches. A string representing a measurement.
-        /// </summary>
-        /// <param name="measure">
-        /// It should include a numeric value followed by an optional unit. 
-        /// Supported units are "in" (inches), "cm" (centimeters), "mm" (millimeters), "pt" (points), "pc" (picas), and "px" (pixels).
-        /// If no unit is provided, the value is assumed to be in inches. 
-        /// </param>
-        /// <returns>
-        /// The measurement converted to inches as a double.
-        /// </returns>
-        private double ParseMeasurementToInches( string measure )
-        {
-            if ( string.IsNullOrWhiteSpace( measure ) )
-            {
-                throw new ArgumentException( "Measurement is null or empty", nameof( measure ) );
-            }
-
-            measure = measure.Trim().ToLowerInvariant();
-            // default is inches
-            double factor = 1.0;
-
-            if ( measure.EndsWith( "in" ) )
-            {
-                measure = measure.Replace( "in", "" ).Trim();
-            }
-            else if ( measure.EndsWith( "cm" ) )
-            {
-                measure = measure.Replace( "cm", "" ).Trim();
-                factor = 1 / 2.54;
-            }
-            else if ( measure.EndsWith( "mm" ) )
-            {
-                measure = measure.Replace( "mm", "" ).Trim();
-                factor = 1 / 25.4;
-            }
-            else if ( measure.EndsWith( "pt" ) )
-            {
-                measure = measure.Replace( "pt", "" ).Trim();
-                factor = 1 / 72.0;
-            }
-            else if ( measure.EndsWith( "pc" ) )
-            {
-                measure = measure.Replace( "pc", "" ).Trim();
-                factor = 1 / 6.0;
-            }
-            else if ( measure.EndsWith( "px" ) )
-            {
-                measure = measure.Replace( "px", "" ).Trim();
-                factor = 1 / 96.0;
-            }
-
-            // Convert the value to a double and multiply by the conversion faction.
-            if ( double.TryParse( measure, NumberStyles.Any, CultureInfo.InvariantCulture, out double value ) )
-            {
-                return value * factor;
-            }
-
-            throw new FormatException( $"Invalid measurement format: {measure}" );
         }
 
         /// <summary>
