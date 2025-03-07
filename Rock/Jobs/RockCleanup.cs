@@ -32,6 +32,7 @@ using Rock.Core;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Pdf;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -275,7 +276,7 @@ namespace Rock.Jobs
 
             RunCleanupTask( "upcoming event date", () => UpdateEventNextOccurrenceDates() );
 
-            RunCleanupTask( "older chrome engines", () => RemoveOlderChromeEngines() );
+            RunCleanupTask( "non-default chrome engines", () => RemoveNonDefaultChromeEngines() );
 
             RunCleanupTask( "legacy sms phone numbers", () => SynchronizeLegacySmsPhoneNumbers() );
 
@@ -2425,10 +2426,10 @@ SELECT @@ROWCOUNT
         }
 
         /// <summary>
-        /// Removes older unused versions of the chrome engine
+        /// Removes all installed versions of Chrome that do not match the default browser version, ensuring only the required version remains.
         /// </summary>
         /// <returns></returns>
-        private int RemoveOlderChromeEngines()
+        private int RemoveNonDefaultChromeEngines()
         {
             var options = new PuppeteerSharp.BrowserFetcherOptions()
             {
@@ -2437,14 +2438,16 @@ SELECT @@ROWCOUNT
             };
 
             var browserFetcher = new PuppeteerSharp.BrowserFetcher( options );
-            var olderVersions = browserFetcher.GetInstalledBrowsers().Where( r => r.BuildId != Chrome.DefaultBuildId );
+            var olderVersions = browserFetcher.GetInstalledBrowsers().Where( r => r.BuildId != PdfGenerator.BrowserVersion && r.Browser == options.Browser );
+            int totalRemoved = 0;
 
             foreach ( var version in olderVersions )
             {
                 browserFetcher.Uninstall( version.BuildId );
+                totalRemoved++;
             }
 
-            return olderVersions.Count();
+            return totalRemoved;
         }
 
         /// <summary>
