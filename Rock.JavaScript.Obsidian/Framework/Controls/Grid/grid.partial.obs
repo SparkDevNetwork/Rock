@@ -248,8 +248,8 @@
 .grid-column-header {
     position: relative;
     display: flex;
-    justify-content: center;
     align-items: center;
+    word-break: break-word;
     font-size: 14px;
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
     min-width: 120px;
@@ -402,6 +402,7 @@
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
     line-height: 1.4;
     align-self: stretch;
+    word-break: break-word;
     background-color: inherit;
     text-overflow: ellipsis;
     overflow: hidden;
