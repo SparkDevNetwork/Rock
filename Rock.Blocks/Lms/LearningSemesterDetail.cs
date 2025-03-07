@@ -225,7 +225,15 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override LearningSemester GetInitialEntity()
         {
-            return GetInitialEntity<LearningSemester, LearningSemesterService>( RockContext, PageParameterKey.LearningSemesterId );
+            var entity = GetInitialEntity<LearningSemester, LearningSemesterService>( RockContext, PageParameterKey.LearningSemesterId );
+
+            // Set the LearningProgramId so security checks work correctly.
+            if ( entity.Id == 0 )
+            {
+                entity.LearningProgramId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
+            }
+
+            return entity;
         }
 
         /// <summary>
@@ -256,7 +264,10 @@ namespace Rock.Blocks.Lms
             else
             {
                 // Create a new entity.
-                entity = new LearningSemester();
+                entity = new LearningSemester
+                {
+                    LearningProgramId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId )
+                };
                 entityService.Add( entity );
             }
 
