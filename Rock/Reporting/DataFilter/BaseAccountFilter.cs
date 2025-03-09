@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -22,7 +23,8 @@ using System.Linq.Expressions;
 using System.Web.UI;
 
 using Rock.Data;
-using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -58,6 +60,53 @@ namespace Rock.Reporting.DataFilter
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/baseAccountFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            List<ListItemBag> accounts = null;
+            string[] selectionValues = selection.Split( '|' );
+            if ( selectionValues.Length >= 1 )
+            {
+                var accountGuids = selectionValues[0].Split( ',' ).Select( a => a.AsGuid() ).ToList();
+                accounts = FinancialAccountCache.GetByGuids( accountGuids )
+                    .Select( a => new ListItemBag
+                    {
+                        Value = a.Guid.ToString(),
+                        Text = a.Name
+                    } )
+                    .ToList();
+            }
+
+            return new Dictionary<string, string>
+            {
+                ["accounts"] = accounts?.ToCamelCaseJson( false, true )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var accounts = "";
+            var accountsJson = data.GetValueOrNull( "accounts" );
+
+            if ( accounts != null )
+            {
+                accounts = accountsJson.FromJsonOrNull<List<ListItemBag>>()
+                    ?.Select( g => g.Value )
+                    .JoinStrings( "," )
+                    ?? string.Empty;
+            }
+
+            return accounts;
         }
 
         #endregion
@@ -134,7 +183,7 @@ function() {
 
             // NOTE: This filter is already designed to handle either Multiselect or SingleSelect mode, so all you have to is set this to true or false
             accountPicker.AllowMultiSelect = true;
-            
+
             accountPicker.ID = filterControl.ID + "_accountPicker";
             accountPicker.AddCssClass( "js-account-picker" );
             accountPicker.Label = "Account";
