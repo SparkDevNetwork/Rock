@@ -18,6 +18,7 @@ using System;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Communication.Chat;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -126,6 +127,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool IsCheckInAllowed { get; private set; }
 
+        /// <inheritdoc cref="GroupTypeRole.ChatRole"/>
+        [DataMember]
+        public ChatRole ChatRole { get; set; }
+
         #endregion
 
         #region Constructors
@@ -182,6 +187,7 @@ namespace Rock.Web.Cache
             CanManageMembers = role.CanManageMembers;
             IsExcludedFromPeerNetwork = role.IsExcludedFromPeerNetwork;
             IsCheckInAllowed = role.IsCheckInAllowed;
+            ChatRole = role.ChatRole;
         }
 
         /// <summary>

@@ -24,27 +24,27 @@ namespace Rock.Communication.Chat.Sync
     internal class ChatSyncCrudResult : ChatSyncResultBase
     {
         /// <summary>
-        /// The identifiers for records that were skipped during the synchronization operation.
+        /// Gets the identifiers for records that were skipped during the synchronization operation.
         /// </summary>
         public HashSet<string> Skipped { get; } = new HashSet<string>();
 
         /// <summary>
-        /// The identifiers for records that were created during the synchronization operation.
+        /// Gets the identifiers for records that were created during the synchronization operation.
         /// </summary>
         public HashSet<string> Created { get; } = new HashSet<string>();
 
         /// <summary>
-        /// The identifiers for records that were updated during the synchronization operation.
+        /// Gets the identifiers for records that were updated during the synchronization operation.
         /// </summary>
         public HashSet<string> Updated { get; } = new HashSet<string>();
 
         /// <summary>
-        /// The identifiers for records that were deleted during the synchronization operation.
+        /// Gets the identifiers for records that were deleted during the synchronization operation.
         /// </summary>
         public HashSet<string> Deleted { get; } = new HashSet<string>();
 
         /// <summary>
-        /// The unique identifiers for all records that were affected during the synchronization operation.
+        /// Gets the unique identifiers for all records that were affected during the synchronization operation.
         /// </summary>
         public HashSet<string> Unique
         {

@@ -32,7 +32,7 @@ namespace Rock.Communication.Chat.DTO
         public string ChatUserKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the chat member's role within the channel.
+        /// Gets or sets the member's role within the channel.
         /// </summary>
         /// <value>
         /// <see cref="GroupTypeRole.ChatRole"/>

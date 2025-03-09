@@ -21,9 +21,11 @@ using Rock.Communication.Chat.DTO;
 namespace Rock.Communication.Chat.Exceptions
 {
     /// <summary>
-    /// Represents an error encountered when unable to find a <see cref="ChatChannel"/> within the external chat system.
+    /// Represents an error encountered when unable to find a <see cref="ChatChannelMember"/>-specific
+    /// <see cref="ChatChannel"/> within the external chat system.
     /// </summary>
-    internal class ChatChannelNotFoundException : Exception
+    /// <seealso cref="Exception"/>
+    internal class MemberChatChannelNotFoundException : Exception
     {
         /// <summary>
         /// Gets or sets the key of the <see cref="ChatChannelType"/> to which this <see cref="ChatChannel"/> should belong.
@@ -36,30 +38,46 @@ namespace Rock.Communication.Chat.Exceptions
         public string ChatChannelKey { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChatChannelNotFoundException"/> class.
+        /// Gets or sets the "queryable" key of the <see cref="ChatChannel"/> that could not be found.
+        /// </summary>
+        public string QueryableChatChannelKey { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MemberChatChannelNotFoundException"/> class.
         /// </summary>
         /// <param name="message">The error message that explains the reason for the exception.</param>
-        /// <param name="chatChannelTypeKey">The key of the <see cref="ChatChannelType"/> to which this
-        /// <see cref="ChatChannel"/> should belong.</param>
+        /// <param name="chatChannelTypeKey">The key of the <see cref="ChatChannelType"/> to which this <see cref="ChatChannel"/> should belong.</param>
         /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> that could not be found.</param>
-        public ChatChannelNotFoundException( string message, string chatChannelTypeKey, string chatChannelKey ) : base( message )
+        /// <param name="queryableChatChannelKey">The "queryable" key of the <see cref="ChatChannel"/> that could not be found.</param>
+        public MemberChatChannelNotFoundException(
+            string message,
+            string chatChannelTypeKey,
+            string chatChannelKey,
+            string queryableChatChannelKey ) : base( message )
         {
             ChatChannelTypeKey = chatChannelTypeKey;
             ChatChannelKey = chatChannelKey;
+            QueryableChatChannelKey = queryableChatChannelKey;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChatChannelNotFoundException"/> class.
+        /// Initializes a new instance of the <see cref="MemberChatChannelNotFoundException"/> class.
         /// </summary>
         /// <param name="message">The error message that explains the reason for the exception.</param>
         /// <param name="innerException">The exception that is the cause of the current exception, or a null reference if no inner exception is specified.</param>
-        /// <param name="chatChannelTypeKey">The key of the <see cref="ChatChannelType"/> to which this
-        /// <see cref="ChatChannel"/> should belong.</param>
+        /// <param name="chatChannelTypeKey">The key of the <see cref="ChatChannelType"/> to which this <see cref="ChatChannel"/> should belong.</param>
         /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> that could not be found.</param>
-        public ChatChannelNotFoundException( string message, Exception innerException, string chatChannelTypeKey, string chatChannelKey ) : base( message, innerException )
+        /// <param name="queryableChatChannelKey">The "queryable" key of the <see cref="ChatChannel"/> that could not be found.</param>
+        public MemberChatChannelNotFoundException(
+            string message,
+            Exception innerException,
+            string chatChannelTypeKey,
+            string chatChannelKey,
+            string queryableChatChannelKey ) : base( message, innerException )
         {
             ChatChannelTypeKey = chatChannelTypeKey;
             ChatChannelKey = chatChannelKey;
+            QueryableChatChannelKey = queryableChatChannelKey;
         }
     }
 }

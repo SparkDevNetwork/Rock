@@ -15,11 +15,12 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 
-using Rock.Attribute;
 using Rock.Communication.Chat.DTO;
-using Rock.Model;
+using Rock.Communication.Chat.Sync;
+using Rock.Web.Cache;
 
 namespace Rock.Communication.Chat
 {
@@ -31,9 +32,28 @@ namespace Rock.Communication.Chat
         #region Configuration
 
         /// <summary>
+        /// Gets or sets the Rock-to-Chat sync configuration for this chat provider.
+        /// </summary>
+        RockToChatSyncConfig RockToChatSyncConfig { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Chat-to-Rock sync configuration for this chat provider.
+        /// </summary>
+        ChatToRockSyncConfig ChatToRockSyncConfig { get; set; }
+
+        /// <summary>
         /// Initializes the chat provider instance.
         /// </summary>
         void Initialize();
+
+        /// <summary>
+        /// Updates app settings in the external chat system to match the current Rock app settings.
+        /// </summary>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see langword="bool"/> value indicating whether
+        /// the app settings were updated in the external chat system.
+        /// </returns>
+        Task<bool> UpdateAppSettingsAsync();
 
         #endregion Configuration
 
@@ -116,12 +136,15 @@ namespace Rock.Communication.Chat
         #region Chat Channels
 
         /// <summary>
-        /// Gets the "queryable" chat channel key for the provided <see cref="Group"/>, to be used when querying the
+        /// Gets the "queryable" chat channel key for the provided <see cref="GroupCache"/>, to be used when querying the
         /// external chat system's API for an existing <see cref="ChatChannel"/>.
         /// </summary>
-        /// <param name="group">The <see cref="Group"/> for the key to get.</param>
+        /// <param name="groupCache">The <see cref="GroupCache"/> for which to get the "queryable" chat channel key.</param>
         /// <returns>The "queryable" chat channel key.</returns>
-        string GetQueryableChatChannelKey( Group group );
+        /// <remarks>
+        /// For some chat providers, this might be the same value as <see cref="ChatChannel.Key"/>.
+        /// </remarks>
+        string GetQueryableChatChannelKey( GroupCache groupCache );
 
         /// <summary>
         /// Gets a list of <see cref="ChatChannel"/>s from the external chat system that match the provided keys.
@@ -209,12 +232,17 @@ namespace Rock.Communication.Chat
         /// </summary>
         /// <param name="chatChannelTypeKey">The key of the <see cref="ChatChannelType"/> for which members should be updated.</param>
         /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> for which members should be updated.</param>
-        /// <param name="chatChannelMembers">The list of <see cref="ChatChannelMember"/>s to update.</param>
+        /// <param name="chatChannelMembers">The dictionary of <see cref="ChatChannelMember"/>s to update, with each key
+        /// being the latest instance and its corresponding value being the previous instance.</param>
         /// <returns>
         /// A task representing the asynchronous operation, containing the list of <see cref="ChatChannelMember"/>s who
         /// were successfully updated.
         /// </returns>
-        Task<List<ChatChannelMember>> UpdateChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, List<ChatChannelMember> chatChannelMembers );
+        /// <remarks>
+        /// The <paramref name="chatChannelMembers"/> are passed as a dictionary so the chat provider can examine the old
+        /// vs. new instances for specific changes and decide the best way to apply the changes.
+        /// </remarks>
+        Task<List<ChatChannelMember>> UpdateChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, Dictionary<ChatChannelMember, ChatChannelMember> chatChannelMembers );
 
         /// <summary>
         /// Deletes <see cref="ChatChannelMember"/>s from the external chat system that match the provided
@@ -228,6 +256,32 @@ namespace Rock.Communication.Chat
         /// whose <see cref="ChatChannelMember"/>s were successfully deleted.
         /// </returns>
         Task<List<string>> DeleteChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys );
+
+        /// <summary>
+        /// Mutes the <see cref="ChatChannel"/> that matches the provided <see cref="ChatChannelType"/> and
+        /// <see cref="ChatChannel"/> key combination, for the specified <see cref="ChatUser"/>s.
+        /// </summary>
+        /// <param name="chatChannelTypeKey">The key of the <see cref="ChatChannelType"/> that should be muted.</param>
+        /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> that should be muted.</param>
+        /// <param name="chatUserKeys">The keys of the <see cref="ChatUser"/>s for whom the channel should be muted.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing the list of keys for <see cref="ChatUser"/>s
+        /// whose mute status was successfully applied.
+        /// </returns>
+        Task<List<string>> MuteChatChannelAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys );
+
+        /// <summary>
+        /// Unmutes the <see cref="ChatChannel"/> that matches the provided <see cref="ChatChannelType"/> and
+        /// <see cref="ChatChannel"/> key combination, for the specified <see cref="ChatUser"/>s.
+        /// </summary>
+        /// <param name="chatChannelTypeKey">The key of the <see cref="ChatChannelType"/> that should be unmuted.</param>
+        /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> that should be unmuted.</param>
+        /// <param name="chatUserKeys">The keys of the <see cref="ChatUser"/>s for whom the channel should be unmuted.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing the list of keys for <see cref="ChatUser"/>s
+        /// whose unmute status was successfully applied.
+        /// </returns>
+        Task<List<string>> UnmuteChatChannelAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys );
 
         #endregion Chat Channel Members
 
@@ -284,6 +338,42 @@ namespace Rock.Communication.Chat
         Task<List<string>> DeleteChatUsersAsync( List<string> chatUserKeys );
 
         /// <summary>
+        /// Bans the specified <see cref="ChatUser"/>s within the external chat system.
+        /// </summary>
+        /// <param name="chatUserKeys">The list of keys for the <see cref="ChatUser"/>s to ban.</param>
+        /// <param name="chatChannelTypeKey">The optional key for the <see cref="ChatChannelType"/> in which the
+        /// <see cref="ChatUser"/>s should be banned.</param>
+        /// <param name="chatChannelKey">The optional key for the <see cref="ChatChannel"/> in which the
+        /// <see cref="ChatUser"/>s should be banned.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing the list of keys for <see cref="ChatUser"/>s
+        /// who were successfully banned.
+        /// </returns>
+        /// <remarks>
+        /// If <paramref name="chatChannelTypeKey"/> and <paramref name="chatChannelKey"/> are not both provided, bans
+        /// will be applied globally.
+        /// </remarks>
+        Task<List<string>> BanChatUsersAsync( List<string> chatUserKeys, string chatChannelTypeKey = null, string chatChannelKey = null );
+
+        /// <summary>
+        /// Unbans the specified <see cref="ChatUser"/>s within the external chat system.
+        /// </summary>
+        /// <param name="chatUserKeys">The list of keys for the <see cref="ChatUser"/>s to unban.</param>
+        /// <param name="chatChannelTypeKey">The optional key for the <see cref="ChatChannelType"/> in which the
+        /// <see cref="ChatUser"/>s should be unbanned.</param>
+        /// <param name="chatChannelKey">The optional key for the <see cref="ChatChannel"/> in which the
+        /// <see cref="ChatUser"/>s should be unbanned.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing the list of keys for <see cref="ChatUser"/>s
+        /// who were successfully unbanned.
+        /// </returns>
+        /// <remarks>
+        /// If <paramref name="chatChannelTypeKey"/> and <paramref name="chatChannelKey"/> are not both provided, bans
+        /// will be lifted globally.
+        /// </remarks>
+        Task<List<string>> UnbanChatUsersAsync( List<string> chatUserKeys, string chatChannelTypeKey = null, string chatChannelKey = null );
+
+        /// <summary>
         /// Gets a token for the <see cref="ChatUser"/> to use when authenticating with the chat provider.
         /// </summary>
         /// <param name="chatUserKey">The <see cref="ChatUser.Key"/> for which to get a token.</param>
@@ -295,43 +385,32 @@ namespace Rock.Communication.Chat
 
         #endregion Chat Users
 
-        #region Default Value Enforcers
+        #region Webhooks
 
         /// <summary>
-        /// Gets or sets whether Rock should enforce default permission grants per role.
+        /// Gets whether the provided <see cref="HttpRequestMessage"/> is a valid webhook request from the external chat
+        /// provider.
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// If <see langword="true"/>, Rock will be treated as the system of truth for chat permission grants, and
-        /// ensure that all default grants - per role and scope combination - are set within the external chat system.
-        /// If <see langword="false"/>, grants will only be set if there are not already any grants set for a given role
-        /// and scope combination; in this latter case, the external chat system will be treated as the system of truth
-        /// for permission grants.
-        /// </para>
-        /// <para>
-        /// This is an internal property used for testing. It will most likely be removed in a future version of Rock.
-        /// </para>
-        /// </remarks>
-        [RockInternal( "17.0" )]
-        bool ShouldEnforceDefaultGrantsPerRole { get; set; }
+        /// <param name="request">The request to validate.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="WebhookValidationResult"/>.
+        /// </returns>
+        Task<WebhookValidationResult> ValidateWebhookRequestAsync( HttpRequestMessage request );
 
         /// <summary>
-        /// Gets or sets whether Rock should enforce default settings.
+        /// Gets a list of <see cref="ChatToRockSyncCommand"/>s for the provided <see cref="ChatWebhookRequest"/>s.
         /// </summary>
+        /// <param name="webhookRequests">The list of <see cref="ChatWebhookRequest"/>s for which to get
+        /// <see cref="ChatToRockSyncCommand"/>s.</param>
+        /// <returns>
+        /// A list of <see cref="ChatToRockSyncCommand"/>s, one for each valid <see cref="ChatWebhookRequest"/>.
+        /// </returns>
         /// <remarks>
-        /// <para>
-        /// If <see langword="true"/>, Rock will be treated as the system of truth for some settings (e.g. property
-        /// values for channel types, channels, Etc. that already exist in the external chat system), and Rock will
-        /// enforce these required default settings when synchronizing with the external chat system. If <see langword="false"/>,
-        /// existing settings within the external chat system will generally NOT be overwritten.
-        /// </para>
-        /// <para>
-        /// This is an internal property used for testing. It will most likely be removed in a future version of Rock.
-        /// </para>
+        /// Invalid <see cref="ChatWebhookRequest"/>s will not have corresponding <see cref="ChatToRockSyncCommand"/>s,
+        /// with failure details instead being added to Rock Logs.
         /// </remarks>
-        [RockInternal( "17.0" )]
-        bool ShouldEnforceDefaultSettings { get; set; }
+        List<ChatToRockSyncCommand> GetChatToRockSyncCommands( List<ChatWebhookRequest> webhookRequests );
 
-        #endregion Default Value Enforcers
+        #endregion Webhooks
     }
 }

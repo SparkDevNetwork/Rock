@@ -33,7 +33,19 @@ export const ChatSyncType = {
     Update: 2,
 
     /** Delete an existing record. */
-    Delete: 3
+    Delete: 3,
+
+    /** Mute an existing record. */
+    Mute: 4,
+
+    /** Unmute an existing record. */
+    Unmute: 5,
+
+    /** Ban an existing record. */
+    Ban: 6,
+
+    /** Unban an existing record. */
+    Unban: 7
 } as const;
 
 /** The types of chat synchronization operations that can be performed. */
@@ -44,7 +56,15 @@ export const ChatSyncTypeDescription: Record<number, string> = {
 
     2: "Update",
 
-    3: "Delete"
+    3: "Delete",
+
+    4: "Mute",
+
+    5: "Unmute",
+
+    6: "Ban",
+
+    7: "Unban"
 };
 
 /** The types of chat synchronization operations that can be performed. */
