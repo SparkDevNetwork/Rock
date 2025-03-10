@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.Sync;
@@ -25,7 +26,7 @@ namespace Rock.Transactions
     /// <summary>
     /// Represents a transaction for requeuing a chat-to-Rock sync command.
     /// </summary>
-    internal class RequeueChatToRockSyncCommandTransaction : AggregateTransaction<ChatToRockSyncCommand>
+    internal class RequeueChatToRockSyncCommandTransaction : AggregateAsyncTransaction<ChatToRockSyncCommand>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RequeueChatToRockSyncCommandTransaction"/> class.
@@ -37,11 +38,11 @@ namespace Rock.Transactions
         }
 
         /// <inheritdoc/>
-        protected override void Execute( IList<ChatToRockSyncCommand> syncCommands )
+        protected override async Task ExecuteAsync( IList<ChatToRockSyncCommand> syncCommands )
         {
             using ( var chatHelper = new ChatHelper() )
             {
-                chatHelper.SyncFromChatToRock( syncCommands.ToList() );
+                await chatHelper.SyncFromChatToRockAsync( syncCommands.ToList() );
             }
         }
     }

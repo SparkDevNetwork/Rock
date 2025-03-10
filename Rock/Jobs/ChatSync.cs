@@ -61,16 +61,16 @@ namespace Rock.Jobs
 
     [BooleanField( "Enforce Default Grants Per Role",
         Key = AttributeKey.EnforceDefaultGrantsPerRole,
-        Description = "This is an experimental setting that will be removed in a future version of Rock. If enabled, will overwrite all permission grants (per role) in the external chat system with default values. This will be helpful during the early stages of the Rock Chat feature, as we learn the best way to fine-tune these permissions.",
+        Description = "This is an experimental setting that might be removed in a future version of Rock. If enabled, will overwrite all permission grants (per role) in the external chat system with default values. This will be helpful during the early stages of the Rock Chat feature, as we learn the best way to fine-tune these permissions.",
         IsRequired = false,
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Order = 4 )]
 
     [BooleanField( "Enforce Default Sync Settings",
         Key = AttributeKey.EnforceDefaultSyncSettings,
-        Description = "This is an experimental setting that will be removed in a future version of Rock. If enabled, will overwrite all settings (e.g. channel type and channel settings) in the external chat system with default values. This will be helpful during the early stages of the Rock Chat feature, as we learn the best way to fine-tune these settings.",
+        Description = "This is an experimental setting that might be removed in a future version of Rock. If enabled, will overwrite all settings (e.g. channel type and channel settings) in the external chat system with default values. This will be helpful during the early stages of the Rock Chat feature, as we learn the best way to fine-tune these settings.",
         IsRequired = false,
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Order = 5 )]
 
     [IntegerField( "Command Timeout",
@@ -553,12 +553,12 @@ namespace Rock.Jobs
                     : new AggregateException( "One or more exceptions occurred while syncing people to chat person records.", chatUserExceptions );
             }
 
-            AddCrudDetailsToTaskResult( taskResult, chatUserCrudResult, "Chat User" );
+            AddCrudDetailsToTaskResult( taskResult, chatUserCrudResult, "Chat Person" );
 
             if ( globallyBannedChatUserKeys.Any() )
             {
                 var count = globallyBannedChatUserKeys.Count;
-                taskResult.Details.Add( $"{count} {"Chat User".PluralizeIf( count > 1 )} {CrudMessage.GloballyBanned}" );
+                taskResult.Details.Add( $"{count} {"Chat Person".PluralizeIf( count > 1 )} {CrudMessage.GloballyBanned}" );
             }
         }
 

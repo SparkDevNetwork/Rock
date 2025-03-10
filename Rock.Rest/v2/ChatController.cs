@@ -22,8 +22,6 @@ using Microsoft.AspNetCore.Mvc;
 
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.Sync;
-using Rock.Rest.Filters;
-using Rock.Security;
 using Rock.Transactions;
 
 #if WEBFORMS
@@ -49,8 +47,6 @@ namespace Rock.Rest.v2
         /// <returns>A status code indicating the result of the request.</returns>
         [HttpPost]
         [Route( "Webhook" )]
-        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK )]
         [SystemGuid.RestActionGuid( "7D1B2D15-E2F5-4159-AD84-AE7D9262750D" )]
         public async Task<IActionResult> Webhook()

@@ -60,11 +60,6 @@ namespace Rock.Communication.Chat
         public bool IsOpenDirectMessagingAllowed { get; set; }
 
         /// <summary>
-        /// Gets or sets a <see cref="Rock.Model.Workflow"/> type that will be launched every time a chat user is created.
-        /// </summary>
-        public Guid? WelcomeWorkflowTypeGuid { get; set; }
-
-        /// <summary>
         /// Gets or sets a list of unique identifiers, for <see cref="DataView"/>s that will be used to populate badges
         /// in the external chat application.
         /// </summary>

@@ -1828,7 +1828,8 @@ namespace Rock.Communication.Chat
         /// Handles chat webhook requests by synchronizing data from the external chat system to Rock.
         /// </summary>
         /// <param name="webhookRequests">The list of webhook requests to handle.</param>
-        public void HandleChatWebhookRequests( List<ChatWebhookRequest> webhookRequests )
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task HandleChatWebhookRequestsAsync( List<ChatWebhookRequest> webhookRequests )
         {
             if ( webhookRequests?.Any() != true )
             {
@@ -1839,11 +1840,11 @@ namespace Rock.Communication.Chat
             {
                 var syncCommands = ChatProvider.GetChatToRockSyncCommands( webhookRequests );
 
-                SyncFromChatToRock( syncCommands );
+                await SyncFromChatToRockAsync( syncCommands );
             }
             catch ( Exception ex )
             {
-                LogError( ex, nameof( HandleChatWebhookRequests ) );
+                LogError( ex, nameof( HandleChatWebhookRequestsAsync ) );
             }
         }
 
@@ -1851,6 +1852,7 @@ namespace Rock.Communication.Chat
         /// Synchronizes data from the external chat system to Rock.
         /// </summary>
         /// <param name="syncCommands">The list of commands for data to sync.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         /// <remarks>
         /// <para>
         /// This one-way synchronization will result in <see cref="Group"/>s, <see cref="GroupMember"/>s and
@@ -1858,7 +1860,7 @@ namespace Rock.Communication.Chat
         /// being made to the external chat system.
         /// </para>
         /// </remarks>
-        public void SyncFromChatToRock( List<ChatToRockSyncCommand> syncCommands )
+        public async Task SyncFromChatToRockAsync( List<ChatToRockSyncCommand> syncCommands )
         {
             syncCommands = syncCommands
                 ?.Where( c => c?.ShouldRetry == true )
@@ -1940,12 +1942,12 @@ namespace Rock.Communication.Chat
             }
             catch ( Exception ex )
             {
-                LogError( ex, nameof( SyncFromChatToRock ) );
+                LogError( ex, nameof( SyncFromChatToRockAsync ) );
             }
             finally
             {
                 LogChatToRockSyncCommandOutcomes( syncCommands );
-                RequeueRecoverableChatToRockSyncCommands( syncCommands );
+                await RequeueRecoverableChatToRockSyncCommandsAsync( syncCommands );
             }
         }
 
@@ -2848,7 +2850,7 @@ namespace Rock.Communication.Chat
         /// <param name="syncCommands">The list of sync commands to log.</param>
         private void LogChatToRockSyncCommandOutcomes( List<ChatToRockSyncCommand> syncCommands )
         {
-            var operationName = nameof( SyncFromChatToRock );
+            var operationName = nameof( SyncFromChatToRockAsync );
             var structuredLog = "{@SyncCommand}";
 
             foreach ( var syncCommand in syncCommands.Where( c => c.WasCompleted ) )
@@ -2871,11 +2873,15 @@ namespace Rock.Communication.Chat
         /// Requeues recoverable chat-to-Rock sync commands for retrying.
         /// </summary>
         /// <param name="syncCommands">The list of sync commands that might need to be requeued.</param>
-        private void RequeueRecoverableChatToRockSyncCommands( List<ChatToRockSyncCommand> syncCommands )
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task RequeueRecoverableChatToRockSyncCommandsAsync( List<ChatToRockSyncCommand> syncCommands )
         {
             var recoverableCommands = syncCommands
                 .Where( c => c.ShouldRetry )
                 .ToList();
+
+            // We'll wait a few seconds before requeuing these commands, to give Rock and the chat provider time to catch up.
+            await Task.Delay( TimeSpan.FromSeconds( 5 ) );
 
             foreach ( var recoverableCommand in recoverableCommands )
             {
