@@ -540,7 +540,7 @@ namespace Rock.Blocks.CheckIn
                             messagePrefix = "The Source schedule is";
                         }
 
-                        return ActionBadRequest( $"{messagePrefix} is not enabled for check-in. You can enable check-in for a schedule by providing a value for the 'Enable Check-in' field of that schedule." );
+                        return ActionBadRequest( $"{messagePrefix} not enabled for check-in. You can enable check-in for a schedule by providing a value for the 'Enable Check-in' field of that schedule." );
                     }
 
                     var srcGroupLocations = groupLocationQuery.Where( gl => gl.Schedules.Any( s => s.Id == sourceSchedule.Id ) );
