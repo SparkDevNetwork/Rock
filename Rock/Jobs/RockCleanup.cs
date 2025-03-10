@@ -1228,6 +1228,7 @@ namespace Rock.Jobs
             var workflowContext = CreateRockContext();
 
             var workflowService = new WorkflowService( workflowContext );
+            var connectionRequestWorkflowService = new ConnectionRequestWorkflowService( workflowContext );
 
             var completedWorkflows = workflowService.Queryable().AsNoTracking()
                 .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && w.CompletedDateTime.HasValue
@@ -1250,6 +1251,7 @@ namespace Rock.Jobs
                 // to prevent a SQL complexity exception, do a bulk delete anytime the workflowIdsSafeToDelete gets too big
                 if ( workflowIdsSafeToDelete.Count >= batchAmount )
                 {
+                    BulkDeleteInChunks( connectionRequestWorkflowService.Queryable().Where( c => workflowIdsSafeToDelete.Contains( c.WorkflowId ) ), batchAmount, commandTimeout );
                     totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => workflowIdsSafeToDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
                     workflowIdsSafeToDelete = new List<int>();
                 }
@@ -1257,6 +1259,7 @@ namespace Rock.Jobs
 
             if ( workflowIdsSafeToDelete.Any() )
             {
+                BulkDeleteInChunks( connectionRequestWorkflowService.Queryable().Where( c => workflowIdsSafeToDelete.Contains( c.WorkflowId ) ), batchAmount, commandTimeout );
                 totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => workflowIdsSafeToDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
             }
 
