@@ -57,6 +57,19 @@ END
 " );
 
             Sql( $@"
+-- Ensure that Content Channel for Default Check-in Kiosk Ads exists.
+IF NOT EXISTS( SELECT * FROM [ContentChannel] WHERE [Guid] = 'A57BDBCD-FA77-4A6E-967D-1C5ACE962587' )
+BEGIN
+
+DECLARE @DeviceAdsContentChannelTypeId int = (SELECT TOP 1 [Id] FROM [ContentChannelType] WHERE [Guid] = '09F46D0D-72BC-4445-90E7-C256E4778666')
+
+INSERT INTO [dbo].[ContentChannel]
+           ([ContentChannelTypeId], [Name], [Description], [IconCssClass], [RequiresApproval], [EnableRss], [ChannelUrl], [ItemUrl], [TimeToLive], [Guid], [ContentControlType], [RootImageDirectory], [ItemsManuallyOrdered], [ChildItemsManuallyOrdered], [IsIndexEnabled], [IsTaggingEnabled], [ItemTagCategoryId], [IsStructuredContent])
+     VALUES
+           ( @DeviceAdsContentChannelTypeId, 'Default Check-in Kiosk Ads', 'The default collection of advertisements to display on check-in kiosks. These will appear on the welcome screen while waiting for somebody to start the check-in process.', '', 0, 0, '', '', 0, 'A57BDBCD-FA77-4A6E-967D-1C5ACE962587', 0, '', 1, 0, 0, 0, null, 0)
+
+END
+
 DECLARE @ContentChannelItemGuid UNIQUEIDENTIFIER = '{ContentChannelItemGuid}'
 DECLARE @ImageAttributeValueGuid UNIQUEIDENTIFIER = '{ImageAttributeValueGuid}'
 DECLARE @ImageBinaryFileGuid UNIQUEIDENTIFIER = '{DefaultImageBinaryFileGuid}'
