@@ -561,10 +561,22 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
 
-            var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName ) as IRelatedChildDataView;
-            if ( component != null )
+            var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
+
+            using ( var rockContext = new RockContext() )
             {
-                var relatedDataViewId = component.GetRelatedDataViewId( filterControls );
+                var relatedDataViewId = component.GetRelatedDataViewId( FilteredEntityType, GetSelection(), rockContext );
+
+                if ( relatedDataViewId.HasValue )
+                {
+                    return relatedDataViewId.Value;
+                }
+            }
+
+            if ( component is IRelatedChildDataView relatedDataViewComponent )
+            {
+                var relatedDataViewId = relatedDataViewComponent.GetRelatedDataViewId( filterControls );
+
                 if ( relatedDataViewId.HasValue && relatedDataViewId > 0 )
                 {
                     return relatedDataViewId;
