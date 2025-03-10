@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.Sync;
@@ -25,7 +26,7 @@ namespace Rock.Transactions
     /// <summary>
     /// Represents a transaction for handling a chat webhook request.
     /// </summary>
-    internal class HandleChatWebhookRequestTransaction : AggregateTransaction<ChatWebhookRequest>
+    internal class HandleChatWebhookRequestTransaction : AggregateAsyncTransaction<ChatWebhookRequest>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="HandleChatWebhookRequestTransaction"/> class.
@@ -37,11 +38,11 @@ namespace Rock.Transactions
         }
 
         /// <inheritdoc/>
-        protected override void Execute( IList<ChatWebhookRequest> webhookRequests )
+        protected override async Task ExecuteAsync( IList<ChatWebhookRequest> webhookRequests )
         {
             using ( var chatHelper = new ChatHelper() )
             {
-                chatHelper.HandleChatWebhookRequests( webhookRequests.ToList() );
+                await chatHelper.HandleChatWebhookRequestsAsync( webhookRequests.ToList() );
             }
         }
     }
