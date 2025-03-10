@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Model;
-
 namespace Rock.Migrations
 {
 
@@ -33,7 +31,6 @@ namespace Rock.Migrations
         public override void Up()
         {
             UpdateRockChatGroupsUp();
-            AddChatControllerSecurityAuthUp();
         }
 
         /// <summary>
@@ -42,7 +39,6 @@ namespace Rock.Migrations
         public override void Down()
         {
             UpdateRockChatGroupsDown();
-            AddChatControllerSecurityAuthDown();
         }
 
         /// <summary>
@@ -90,38 +86,6 @@ WHERE [Guid] IN (
 
             // Delete "Chat Ban List" group.
             RockMigrationHelper.DeleteGroup( Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST );
-        }
-
-        /// <summary>
-        /// JPH: Add chat controller security auth - up.
-        /// </summary>
-        private void AddChatControllerSecurityAuthUp()
-        {
-            // Add the Webhook action so we can add security auth to it.
-            RockMigrationHelper.AddRestAction(
-                restActionGuid: ChatControllerWebhookActionGuid,
-                controllerName: "Chat",
-                controllerClass: "Rock.Rest.v2.ChatController"
-            );
-
-            // Add "EXECUTE_UNRESTRICTED_WRITE" for all users so the webhook endpoint is fully accessible.
-            RockMigrationHelper.AddSecurityAuthForRestAction(
-                restActionGuid: ChatControllerWebhookActionGuid,
-                order: 0,
-                action: Rock.Security.Authorization.EXECUTE_UNRESTRICTED_WRITE,
-                allow: true,
-                groupGuid: null,
-                specialRole: SpecialRole.AllUsers,
-                authGuid: ChatControllerWebhookActionSecurityAuthGuid
-            );
-        }
-
-        /// <summary>
-        /// JPH: Add chat controller security auth - down.
-        /// </summary>
-        private void AddChatControllerSecurityAuthDown()
-        {
-            RockMigrationHelper.DeleteSecurityAuth( ChatControllerWebhookActionSecurityAuthGuid );
         }
     }
 }
