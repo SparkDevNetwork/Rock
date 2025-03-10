@@ -2302,12 +2302,12 @@ namespace Rock.Blocks.Event
 
             if ( entity == null )
             {
-                return PublicAttributeHelper.GetPublicEditValue( attribute, attribute.DefaultValue );
+                return PublicAttributeHelper.GetPublicValueForEdit( attribute, attribute.DefaultValue );
             }
 
             entity.LoadAttributes( rockContext );
 
-            return PublicAttributeHelper.GetPublicEditValue( attribute, entity.GetAttributeValue( attribute.Key ) );
+            return PublicAttributeHelper.GetPublicValueForEdit( attribute, entity.GetAttributeValue( attribute.Key ) );
         }
 
         /// <summary>
@@ -3926,7 +3926,7 @@ namespace Rock.Blocks.Event
                 session.FieldValues = session.FieldValues ?? new Dictionary<Guid, object>();
                 foreach ( var registrationAttribute in registrationAttributes )
                 {
-                    var defaultEditValue = PublicAttributeHelper.GetPublicEditValue( registrationAttribute, registrationAttribute.DefaultValue );
+                    var defaultEditValue = PublicAttributeHelper.GetPublicValueForEdit( registrationAttribute, registrationAttribute.DefaultValue );
 
                     session.FieldValues[registrationAttribute.Guid] = defaultEditValue;
                 }
@@ -5016,7 +5016,7 @@ namespace Rock.Blocks.Event
             foreach ( var attribute in registrationAttributes )
             {
                 var value = registration.GetAttributeValue( attribute.Key );
-                value = PublicAttributeHelper.GetPublicEditValue( attribute, value );
+                value = PublicAttributeHelper.GetPublicValueForEdit( attribute, value );
 
                 session.FieldValues[attribute.Guid] = value;
             }

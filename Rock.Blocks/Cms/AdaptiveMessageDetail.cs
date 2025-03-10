@@ -293,10 +293,10 @@ namespace Rock.Blocks.Cms
             var attributes = GetAdaptationAttributes( RockContext, "AdaptiveMessageId", entity.Id.ToString() );
 
             bag.AdaptationSharedAttributes = new List<PublicEditableAttributeBag>();
-            bag.AdaptationSharedAttributes.AddRange( inheritedAttributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ) ) );
+            bag.AdaptationSharedAttributes.AddRange( inheritedAttributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttribute( attribute ) ) );
 
             bag.AdaptationAttributes = new List<PublicEditableAttributeBag>();
-            bag.AdaptationAttributes.AddRange( attributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ) ) );
+            bag.AdaptationAttributes.AddRange( attributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttribute( attribute ) ) );
 
             var messageQry = new AdaptiveMessageService( RockContext ).Queryable().AsNoTracking();
             var reservedKeyNames = bag.AdaptationSharedAttributes.Select( a => a.Key ).ToList();
