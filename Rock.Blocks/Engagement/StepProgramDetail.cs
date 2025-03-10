@@ -347,7 +347,7 @@ namespace Rock.Blocks.Engagement
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
-            bag.StepProgramAttributes = GetStepTypeAttributes( rockContext, entity.Id.ToString() ).ConvertAll( e => PublicAttributeHelper.GetPublicEditableAttributeViewModel( e ) );
+            bag.StepProgramAttributes = GetStepTypeAttributes( rockContext, entity.Id.ToString() ).ConvertAll( e => PublicAttributeHelper.GetPublicEditableAttribute( e ) );
 
             bag.Statuses = entity.StepStatuses.Select( s => new StepStatusBag()
             {

@@ -219,7 +219,7 @@ namespace Rock.Field.Types
                             attr =>
                             {
                                 var attribute = AttributeCache.Get( attr.Value.AttributeId );
-                                return PublicAttributeHelper.GetPublicEditValue( attribute, attr.Value.Value );
+                                return PublicAttributeHelper.GetPublicValueForEdit( attribute, attr.Value.Value );
                             }
                          ),
                         ViewValues = a.AttributeValues.ToDictionary(

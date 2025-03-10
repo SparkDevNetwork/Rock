@@ -405,7 +405,7 @@ namespace Rock.Model
                 PersonService.UpdateGivingLeaderId( this.Entity.Id, RockContext );
                 PersonService.UpdateGroupSalutations( this.Entity.Id, RockContext );
 
-                if ( ChatHelper.IsChatEnabled )
+                if ( RockContext.IsRockToChatSyncEnabled && ChatHelper.IsChatEnabled )
                 {
                     Task.Run( async () =>
                     {

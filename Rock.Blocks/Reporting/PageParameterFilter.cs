@@ -676,7 +676,7 @@ namespace Rock.Blocks.Reporting
                     }
 
                     // Get the public edit value for the current private value.
-                    var publicFilterValue = PublicAttributeHelper.GetPublicEditValue( filterAttribute, privateFilterValue );
+                    var publicFilterValue = PublicAttributeHelper.GetPublicValueForEdit( filterAttribute, privateFilterValue );
 
                     // If an empty string was returned for the public edit value, assume the private value is not valid.
                     if ( publicFilterValue.IsNullOrWhiteSpace() )
@@ -1046,7 +1046,7 @@ namespace Rock.Blocks.Reporting
                     return ActionBadRequest( "Unable to find filter to edit." );
                 }
 
-                editableFilter.Filter = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute );
+                editableFilter.Filter = PublicAttributeHelper.GetPublicEditableAttribute( attribute );
             }
 
             return ActionOk( editableFilter );

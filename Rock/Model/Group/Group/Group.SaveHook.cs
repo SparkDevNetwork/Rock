@@ -215,7 +215,7 @@ namespace Rock.Model
                     PersonService.UpdatePrimaryFamilyByGroup( Entity.Id, rockContext );
                 }
 
-                if ( ChatHelper.IsChatEnabled )
+                if ( RockContext.IsRockToChatSyncEnabled && ChatHelper.IsChatEnabled )
                 {
                     Task.Run( async () =>
                     {

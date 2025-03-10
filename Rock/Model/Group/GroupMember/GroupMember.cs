@@ -254,7 +254,7 @@ namespace Rock.Model
         public bool IsChatMuted { get; set; }
 
         /// <summary>
-        /// Gets or sets whether this user is banned from the chat channel. It should be assumed that external chat
+        /// Gets or sets whether this person is banned from the chat channel. It should be assumed that external chat
         /// providers do not remove the member from the channel when they are banned; they just set a banned field to
         /// true. This should be treated as read-only and only set from the sync job or webhooks.
         /// </summary>

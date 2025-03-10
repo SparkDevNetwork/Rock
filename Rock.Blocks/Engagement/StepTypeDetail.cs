@@ -434,7 +434,7 @@ namespace Rock.Blocks.Engagement
             // Get the step type attributes for the grid in the edit view.
             var stepTypeAttributes = GetStepTypeAttributes( GetRockContext(), entity.Id.ToString() ).ConvertAll( e => new StepAttributeBag()
             {
-                Attribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( e ),
+                Attribute = PublicAttributeHelper.GetPublicEditableAttribute( e ),
                 FieldType = FieldTypeCache.Get( e.FieldTypeId )?.Name,
             } );
             bag.StepAttributes = stepTypeAttributes;
@@ -1371,7 +1371,7 @@ namespace Rock.Blocks.Engagement
             else
             {
                 var attribute = attributes.Find( a => a.Guid == attributeGuid );
-                editableAttribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute );
+                editableAttribute = PublicAttributeHelper.GetPublicEditableAttribute( attribute );
                 modalTitle = ActionTitle.Edit( $"Attribute for Participants in Step Type \"{entity.Name}\"." );
             }
 
