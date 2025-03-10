@@ -217,7 +217,7 @@ function() {
             var accounts = FinancialAccountCache.GetByIds( accountIdList );
             if ( accounts != null && accounts.Any() )
             {
-                accountGuids = accounts.Select( a => a.Guid ).ToList().AsDelimited( "," );
+                accountGuids = accounts.Select( a => a.Guid ).ToList().AsDelimited( ", " );
             }
 
             return accountGuids;
