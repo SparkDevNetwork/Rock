@@ -225,6 +225,8 @@
     <Compile Include="Mobile\MobileNavigationActionType.cs" />
     <Compile Include="Net\CookieSameSiteMode.cs" />
     <Compile Include="Net\ResponseElementLocation.cs" />
+    <Compile Include="Observability\FeatureFlags.cs" />
+    <Compile Include="Observability\TraceLevel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reporting\ComparisonType.cs" />
     <Compile Include="Reporting\FieldFilterSourceType.cs" />
