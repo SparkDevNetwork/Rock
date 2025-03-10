@@ -25,6 +25,7 @@ using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
+using Rock.Communication.Chat;
 using Rock.Data;
 using Rock.Enums.Group;
 using Rock.Security;
@@ -345,6 +346,11 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
+            if ( ChatHelper.IsChatEnabled && entityState == EntityState.Deleted )
+            {
+                ChatHelper.TryRemoveCachedChatChannel( this.Id );
+            }
+
             GroupCache.UpdateCachedEntity( Id, entityState );
 
             // If the group changed, and it was a security group, flush the security for the group

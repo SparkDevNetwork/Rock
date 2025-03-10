@@ -31,6 +31,8 @@ export const Group = {
     GroupCalendarAdministrators: "FDA9D63F-B0B1-43E8-8B82-0255E5D99F26",
     /** The Chat Administrators group guid */
     GroupChatAdministrators: "B06096FC-5E98-4DC9-A1EA-7FED844B65C5",
+    /** The group used to identify people who are globally banned from chat */
+    GroupChatBanList: "C9E3A59F-3B5E-43B1-9D97-191EF82D73C4",
     /** The Communication Administrators Group guid */
     GroupCommunicationAdministrators: "B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B",
     /** The group of communication approvers */

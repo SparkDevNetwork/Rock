@@ -107,6 +107,15 @@ namespace Rock.Data
         /// <value><c>true</c> if RealTime messages should be sent by this context; otherwise, <c>false</c>.</value>
         public bool IsRealTimeEnabled { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether Rock-to-chat synchronization attempts should be made in response to
+        /// calls to one of the SaveChanges methods.
+        /// </summary>
+        /// <remarks>
+        /// <see langword="true"/> by default.
+        /// </remarks>
+        internal bool IsRockToChatSyncEnabled { get; set; } = true;
+
         #endregion
 
         #region Fields

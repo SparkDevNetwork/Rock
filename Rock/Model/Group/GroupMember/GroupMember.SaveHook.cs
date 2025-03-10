@@ -421,7 +421,7 @@ namespace Rock.Model
 
                 SendUpdateGroupMemberMessage();
 
-                if ( ChatHelper.IsChatEnabled )
+                if ( RockContext.IsRockToChatSyncEnabled && ChatHelper.IsChatEnabled )
                 {
                     Task.Run( async () =>
                     {

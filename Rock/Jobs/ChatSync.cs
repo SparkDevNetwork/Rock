@@ -52,9 +52,9 @@ namespace Rock.Jobs
         DefaultBooleanValue = true,
         Order = 2 )]
 
-    [BooleanField( "Delete Merged Chat Users",
+    [BooleanField( "Delete Merged Chat Individuals",
         Key = AttributeKey.DeleteMergedChatUsers,
-        Description = "Determines if non-prevailing, merged chat users should be deleted in the external chat system. If enabled, when two people in Rock have been merged, and both had an associated chat user, the non-prevailing chat user will be deleted from the external chat system to ensure other people can send future messages to only the prevailing chat user.",
+        Description = "Determines if non-prevailing, merged chat person records should be deleted in the external chat system. If enabled, when two people in Rock have been merged, and both had an associated chat person record, the non-prevailing chat person record will be deleted from the external chat system to ensure other people can send future messages to only the prevailing chat person record.",
         IsRequired = false,
         DefaultBooleanValue = true,
         Order = 3 )]
@@ -105,6 +105,8 @@ namespace Rock.Jobs
             public const string Created = "Created";
             public const string Updated = "Updated";
             public const string Deleted = "Deleted";
+
+            public const string GloballyBanned = "Globally Banned";
         }
 
         /// <summary>
@@ -182,13 +184,19 @@ namespace Rock.Jobs
         {
             var stopwatch = new Stopwatch();
 
+            // We'll keep track of chat users that are synced along the way, so we ensure each person is fully-synced
+            // all the way through to the external chat system ONLY ONCE throughout this job run.
+            var chatUserStopwatch = new Stopwatch();
+            var chatUserCrudResult = new ChatSyncCrudResult();
+            var chatUserExceptions = new List<Exception>();
+
             // --------------------------------------------------------
             // 1) Ensure the app is set up in the external chat system.
             stopwatch.Start();
             var isSetUpResult = await chatHelper.EnsureChatProviderAppIsSetUpAsync();
             stopwatch.Stop();
 
-            var taskResult = CreateAndAddNewTaskResult( "Sync System User, App Roles and Permission Grants", stopwatch.Elapsed );
+            var taskResult = CreateAndAddNewTaskResult( "Sync Chat System Settings", stopwatch.Elapsed );
 
             // If the setup operation failed, we can't continue with the other tasks.
             if ( isSetUpResult?.HasException == true )
@@ -202,18 +210,79 @@ namespace Rock.Jobs
                 return;
             }
 
-            // ------------------------------------------------------------
-            // 2) Sync "APP - Chat Administrator" security role chat users.
+            // --------------------------------------------------------------------------
+            // 2) Add/[re]enforce global chat bans by syncing "Chat Ban List" chat users.
 
-            // We'll keep track of chat users that are synced along the way, so we ensure each person is fully-synced
-            // all the way through to the external chat system ONLY ONCE throughout this job run.
-            var chatUserStopwatch = new Stopwatch();
-            var chatUserCrudResult = new ChatSyncCrudResult();
-            var chatUserExceptions = new List<Exception>();
+            var globallyBannedChatUserKeys = new HashSet<string>();
+
+            chatUserStopwatch.Start();
+            var chatBanListCrudResult = await chatHelper.SyncGroupMembersToChatProviderAsync( ChatHelper.ChatBanListGroupId );
+            chatUserStopwatch.Stop();
+
+            if ( chatBanListCrudResult != null )
+            {
+                if ( chatBanListCrudResult.HasException )
+                {
+                    chatUserExceptions.Add( chatBanListCrudResult.Exception );
+                }
+
+                // Add any exceptions encountered at the user sync stage.
+                var chatBanListUserExceptions = chatBanListCrudResult
+                    .InnerResults
+                    .OfType<ChatSyncCreateOrUpdateUsersResult>()
+                    .Where( r => r.HasException )
+                    .Select( r => r.Exception )
+                    .ToList();
+
+                if ( chatBanListUserExceptions.Any() )
+                {
+                    chatUserExceptions.AddRange( chatBanListUserExceptions );
+                }
+
+                // Aggregate the chat user CRUD results from the "Chat Ban List" sync operation.
+                chatUserCrudResult.Skipped.UnionWith(
+                    chatBanListCrudResult
+                        .InnerResults
+                        .OfType<ChatSyncCreateOrUpdateUsersResult>()
+                        .SelectMany( r => r.UserResults )
+                        .Where( r => r.SyncTypePerformed == ChatSyncType.Skip )
+                        .Select( r => r.PersonId.ToString() )
+                );
+
+                chatUserCrudResult.Created.UnionWith(
+                    chatBanListCrudResult
+                        .InnerResults
+                        .OfType<ChatSyncCreateOrUpdateUsersResult>()
+                        .SelectMany( r => r.UserResults )
+                        .Where( r => r.SyncTypePerformed == ChatSyncType.Create )
+                        .Select( r => r.PersonId.ToString() )
+                );
+
+                chatUserCrudResult.Updated.UnionWith(
+                    chatBanListCrudResult
+                        .InnerResults
+                        .OfType<ChatSyncCreateOrUpdateUsersResult>()
+                        .SelectMany( r => r.UserResults )
+                        .Where( r => r.SyncTypePerformed == ChatSyncType.Update )
+                        .Select( r => r.PersonId.ToString() )
+                );
+
+                // Aggregate the chat user ban results from the "Chat Ban List" sync operation. Note that global bans
+                // could only have been added/[re]enforced by this process; not lifted/removed.
+                globallyBannedChatUserKeys.UnionWith(
+                    chatBanListCrudResult
+                        .InnerResults
+                        .OfType<ChatSyncBanResult>()
+                        .SelectMany( r => r.Banned )
+                );
+            }
+
+            // ------------------------------------------------------------
+            // 3) Sync "APP - Chat Administrator" security role chat users.
 
             // Only perform this sync if chat is NOT enabled for the chat admins group. Otherwise, these chat users will
             // be synced as part of the regular group sync process below.
-            var chatAminsGroup = GroupCache.Get( Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid() );
+            var chatAminsGroup = GroupCache.Get( ChatHelper.ChatAdministratorsGroupId );
             if ( chatAminsGroup?.GetIsChatEnabled() == false )
             {
                 chatUserStopwatch.Start();
@@ -271,7 +340,7 @@ namespace Rock.Jobs
             }
 
             // --------------------------------------------------
-            // 3) Sync all Rock group types to the chat provider.
+            // 4) Sync all Rock group types to the chat provider.
             stopwatch.Restart();
 
             var groupTypeService = new GroupTypeService( rockContext );
@@ -292,7 +361,7 @@ namespace Rock.Jobs
             }
 
             // ------------------------------------------------------
-            // 4a) Sync all chat-enabled groups to the chat provider.
+            // 5) Sync all chat-enabled groups to the chat provider.
             stopwatch.Restart();
 
             var groupService = new GroupService( rockContext );
@@ -300,7 +369,9 @@ namespace Rock.Jobs
 
             if ( chatEnabledGroups.Any() )
             {
-                var channelCrudResult = await chatHelper.SyncGroupsToChatProviderAsync( chatEnabledGroups );
+                var syncConfig = new RockToChatGroupSyncConfig { ShouldSyncAllGroupMembers = true };
+
+                var channelCrudResult = await chatHelper.SyncGroupsToChatProviderAsync( chatEnabledGroups, syncConfig );
 
                 if ( channelCrudResult != null )
                 {
@@ -403,84 +474,15 @@ namespace Rock.Jobs
                             .Select( r => r.PersonId.ToString() )
                     );
 
-                    // 4b) Sync all chat channel members - for SKIPPED and UPDATED chat channels - to the chat provider.
-                    //     Members for CREATED chat channels will have already been created during the group sync operation.
-                    //     Members for DELETED chat channels will have already been deleted during the group sync operation.
-                    foreach ( var groupIdString in channelCrudResult.Skipped.Union( channelCrudResult.Updated ) )
-                    {
-                        var groupId = groupIdString.AsInteger();
-                        if ( groupId == 0 )
-                        {
-                            continue;
-                        }
-
-                        var updatedChannelMembersCrudResult = await chatHelper.SyncGroupMembersToChatProviderAsync( groupId );
-
-                        if ( updatedChannelMembersCrudResult != null )
-                        {
-                            if ( updatedChannelMembersCrudResult.HasException )
-                            {
-                                channelExceptions.Add( updatedChannelMembersCrudResult.Exception );
-                            }
-
-                            // Add any exceptions encountered at the user sync stage.
-                            var updatedChannelMembersUserExceptions = updatedChannelMembersCrudResult
-                                .InnerResults
-                                .OfType<ChatSyncCreateOrUpdateUsersResult>()
-                                .Where( r => r.HasException )
-                                .Select( r => r.Exception )
-                                .ToList();
-
-                            if ( updatedChannelMembersUserExceptions.Any() )
-                            {
-                                chatUserExceptions.AddRange( updatedChannelMembersUserExceptions );
-                            }
-
-                            // Aggregate the channel member CRUD results from the updated channel members sync operation.
-                            channelMemberCrudResult.Skipped.UnionWith( updatedChannelMembersCrudResult.Skipped );
-                            channelMemberCrudResult.Created.UnionWith( updatedChannelMembersCrudResult.Created );
-                            channelMemberCrudResult.Updated.UnionWith( updatedChannelMembersCrudResult.Updated );
-                            channelMemberCrudResult.Deleted.UnionWith( updatedChannelMembersCrudResult.Deleted );
-
-                            // Aggregate the chat user CRUD results from the updated channel members sync operation.
-                            chatUserCrudResult.Skipped.UnionWith(
-                                updatedChannelMembersCrudResult
-                                    .InnerResults
-                                    .OfType<ChatSyncCreateOrUpdateUsersResult>()
-                                    .SelectMany( r => r.UserResults )
-                                    .Where( r => r.SyncTypePerformed == ChatSyncType.Skip )
-                                    .Select( r => r.PersonId.ToString() )
-                            );
-
-                            chatUserCrudResult.Created.UnionWith(
-                                updatedChannelMembersCrudResult
-                                    .InnerResults
-                                    .OfType<ChatSyncCreateOrUpdateUsersResult>()
-                                    .SelectMany( r => r.UserResults )
-                                    .Where( r => r.SyncTypePerformed == ChatSyncType.Create )
-                                    .Select( r => r.PersonId.ToString() )
-                            );
-
-                            chatUserCrudResult.Updated.UnionWith(
-                                updatedChannelMembersCrudResult
-                                    .InnerResults
-                                    .OfType<ChatSyncCreateOrUpdateUsersResult>()
-                                    .SelectMany( r => r.UserResults )
-                                    .Where( r => r.SyncTypePerformed == ChatSyncType.Update )
-                                    .Select( r => r.PersonId.ToString() )
-                            );
-                        }
-                    }
-
                     stopwatch.Stop();
 
-                    taskResult = CreateAndAddNewTaskResult( "Sync Chat-Enabled Groups to Chat Channels", stopwatch.Elapsed );
+                    taskResult = CreateAndAddNewTaskResult( "Sync Groups to Chat Channels", stopwatch.Elapsed );
 
                     if ( channelExceptions.Any() )
                     {
                         taskResult.Exception = channelExceptions.Count == 1
                             ? channelExceptions.First()
-                            : new AggregateException( "One or more exceptions occurred while syncing chat-enabled groups to chat channels.", channelExceptions );
+                            : new AggregateException( "One or more exceptions occurred while syncing groups to chat channels.", channelExceptions );
                     }
 
                     AddCrudDetailsToTaskResult( taskResult, channelCrudResult, "Channel" );
@@ -489,7 +491,7 @@ namespace Rock.Jobs
             }
 
             // ---------------------------------------------------------
-            // 5) Sync any people who haven't already been synced above.
+            // 6) Sync any people who haven't already been synced above.
 
             chatUserStopwatch.Start();
 
@@ -542,16 +544,22 @@ namespace Rock.Jobs
             }
 
             chatUserStopwatch.Stop();
-            taskResult = CreateAndAddNewTaskResult( "Sync People to Chat Users", chatUserStopwatch.Elapsed );
+            taskResult = CreateAndAddNewTaskResult( "Sync People to Chat Person Records", chatUserStopwatch.Elapsed );
 
             if ( chatUserExceptions.Any() )
             {
                 taskResult.Exception = chatUserExceptions.Count == 1
                     ? chatUserExceptions.First()
-                    : new AggregateException( "One or more exceptions occurred while syncing people to chat users.", chatUserExceptions );
+                    : new AggregateException( "One or more exceptions occurred while syncing people to chat person records.", chatUserExceptions );
             }
 
             AddCrudDetailsToTaskResult( taskResult, chatUserCrudResult, "Chat User" );
+
+            if ( globallyBannedChatUserKeys.Any() )
+            {
+                var count = globallyBannedChatUserKeys.Count;
+                taskResult.Details.Add( $"{count} {"Chat User".PluralizeIf( count > 1 )} {CrudMessage.GloballyBanned}" );
+            }
         }
 
         /// <summary>
