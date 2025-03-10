@@ -50,8 +50,12 @@ namespace Rock.Pdf
 
         private IBrowser _puppeteerBrowser = null;
         private IPage _puppeteerPage;
-        private static readonly string _browserVersion = "133.0.6943.141";
         private static int _lastProgressPercentage = 0;
+
+        /// <summary>
+        /// Default Chrome Version
+        /// </summary>
+        public static string BrowserVersion => "133.0.6943.141";
 
         /// <summary>
         /// Ensures the chrome engine is downloaded and installed.
@@ -77,9 +81,9 @@ namespace Rock.Pdf
 
             try
             {
-                var executablePath = browserFetcher.GetExecutablePath( _browserVersion );
+                var executablePath = browserFetcher.GetExecutablePath( BrowserVersion );
                 var installingFlagFileName = Path.Combine( browserFetcher.CacheDir, ".installing" );
-                var localInstallExists = browserFetcher.GetInstalledBrowsers().Any( b => b.BuildId == _browserVersion );
+                var localInstallExists = browserFetcher.GetInstalledBrowsers().Any( b => b.BuildId == BrowserVersion );
 
                 // If checking for an incomplete install, check if there is an orphaned ".installing" file. Also make sure that the chrome.exe exists
                 // (just in case files were deleted, but folders were not).
@@ -90,7 +94,7 @@ namespace Rock.Pdf
                     {
                         // Attempt to kill any chrome.exe processes that are running in our ChromeEngine directory so that we can remove it.
                         KillChromeProcesses();
-                        browserFetcher.Uninstall( _browserVersion );
+                        browserFetcher.Uninstall( BrowserVersion );
                         localInstallExists = false;
                     }
                 }
@@ -107,7 +111,7 @@ namespace Rock.Pdf
                 }
 
                 File.WriteAllText( installingFlagFileName, "If this file exists, either the chrome engine is currently installing, or was interrupted before the install completed." );
-                AsyncHelper.RunSync( () => browserFetcher.DownloadAsync( _browserVersion ) );
+                AsyncHelper.RunSync( () => browserFetcher.DownloadAsync( BrowserVersion ) );
                 File.Delete( installingFlagFileName );
 
                 if ( _lastProgressPercentage > 99 )
@@ -164,7 +168,7 @@ namespace Rock.Pdf
                 var browserFetcher = GetBrowserFetcher();
 
                 // Kill any chrome.exe's that got left running
-                var executablePath = browserFetcher.GetExecutablePath( _browserVersion );
+                var executablePath = browserFetcher.GetExecutablePath( BrowserVersion );
                 var chromeProcesses = Process.GetProcessesByName( "chrome" );
                 foreach ( var process in chromeProcesses )
                 {
@@ -295,7 +299,7 @@ namespace Rock.Pdf
 
                 // should have already been installed, but just in case it hasn't, download it now.
                 EnsureChromeEngineInstalled( browserFetcher, false );
-                launchOptions.ExecutablePath = browserFetcher.GetExecutablePath( _browserVersion );
+                launchOptions.ExecutablePath = browserFetcher.GetExecutablePath( BrowserVersion );
 
                 _puppeteerBrowser = Puppeteer.LaunchAsync( launchOptions ).Result;
             }
