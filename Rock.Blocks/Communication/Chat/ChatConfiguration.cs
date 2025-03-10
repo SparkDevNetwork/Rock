@@ -127,16 +127,6 @@ namespace Rock.Blocks.Communication.Chat
         {
             var chatConfiguration = ChatHelper.GetChatConfiguration();
 
-            ListItemBag welcomeWorkflowType = null;
-            if ( chatConfiguration.WelcomeWorkflowTypeGuid.HasValue )
-            {
-                var welcomeWorkflowTypeCache = WorkflowTypeCache.Get( chatConfiguration.WelcomeWorkflowTypeGuid.Value );
-                if ( welcomeWorkflowTypeCache != null )
-                {
-                    welcomeWorkflowType = welcomeWorkflowTypeCache.ToListItemBag();
-                }
-            }
-
             List<ListItemBag> chatBadgeDataViews = null;
             if ( chatConfiguration.ChatBadgeDataViewGuids?.Any() == true )
             {
@@ -158,7 +148,6 @@ namespace Rock.Blocks.Communication.Chat
                 ApiSecret = chatConfiguration.ApiSecret,
                 AreChatProfilesVisible = chatConfiguration.AreChatProfilesVisible,
                 IsOpenDirectMessagingAllowed = chatConfiguration.IsOpenDirectMessagingAllowed,
-                WelcomeWorkflowType = welcomeWorkflowType,
                 ChatBadgeDataViews = chatBadgeDataViews
             };
         }
@@ -181,16 +170,6 @@ namespace Rock.Blocks.Communication.Chat
         /// <param name="bag">The chat configuration to save to system settings.</param>
         private void SaveChatConfigurationToSystemSettings( ChatConfigurationBag bag )
         {
-            Guid? welcomeWorkflowTypeGuid = null;
-            if ( bag.WelcomeWorkflowType != null )
-            {
-                var welcomeWorkflowTypeCache = WorkflowTypeCache.Get( bag.WelcomeWorkflowType.Value );
-                if ( welcomeWorkflowTypeCache != null )
-                {
-                    welcomeWorkflowTypeGuid = welcomeWorkflowTypeCache.Guid;
-                }
-            }
-
             List<Guid> chatBadgeDataViewGuids = null;
             if ( bag.ChatBadgeDataViews?.Any() == true )
             {
@@ -212,7 +191,6 @@ namespace Rock.Blocks.Communication.Chat
                 ApiSecret = bag.ApiSecret,
                 AreChatProfilesVisible = bag.AreChatProfilesVisible,
                 IsOpenDirectMessagingAllowed = bag.IsOpenDirectMessagingAllowed,
-                WelcomeWorkflowTypeGuid = welcomeWorkflowTypeGuid,
                 ChatBadgeDataViewGuids = chatBadgeDataViewGuids
             };
 
