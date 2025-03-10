@@ -137,21 +137,6 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
         }
 
         /// <summary>
-        /// Gets the count of weeks in the specified year.
-        /// https://stackoverflow.com/a/17391168
-        /// </summary>
-        /// <param name="year">The year for which to determine the count of weeks.</param>
-        /// <param name="calendarWeekRule">The calendar week rule.</param>
-        /// <param name="firstDayOfWeek">The first day of the week.</param>
-        /// <returns>The count of weeks in the specified year.</returns>
-        private static int GetWeeksInYear( int year, System.Globalization.CalendarWeekRule calendarWeekRule, System.DayOfWeek firstDayOfWeek )
-        {
-            var lastDayOfYear = new DateTime( year, 12, 31 );
-            var calendar = System.Globalization.DateTimeFormatInfo.CurrentInfo.Calendar;
-            return calendar.GetWeekOfYear( lastDayOfYear, calendarWeekRule, firstDayOfWeek );
-        }
-
-        /// <summary>
         /// Populates the AnalyticsSourceDate table (and associated Views). It will first empty the AnalyticsSourceDate table if there is already data in it.
         /// </summary>
         /// <param name="fiscalStartMonth">The fiscal start month.</param>
