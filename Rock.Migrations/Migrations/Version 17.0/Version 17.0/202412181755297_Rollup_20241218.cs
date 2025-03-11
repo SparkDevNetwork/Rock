@@ -15784,7 +15784,7 @@ WHERE ([Guid]='1E6785C0-7D92-49A7-9E15-68E113399152')
         private void UndoObsidianChop_SwapBlockUp()
         {
             UndoObsidianChop_RegisterBlockAttributesForSwap();
-            UndoObsidianChop_SwapObsidianBlocks();
+            //UndoObsidianChop_SwapObsidianBlocks();
         }
 
         private void UndoObsidianChop_RegisterBlockAttributesForSwap()
