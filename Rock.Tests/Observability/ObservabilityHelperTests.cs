@@ -55,26 +55,34 @@ namespace Rock.Tests.Observability
                     listener.Sample = ( ref ActivityCreationOptions<ActivityContext> _ ) => ActivitySamplingResult.AllData;
 
                     ActivitySource.AddActivityListener( listener );
+                    var oldTraceLevel = ObservabilityHelper.SetTraceLevel( Enums.Observability.TraceLevel.Full );
 
-                    using ( var rootActivity = ObservabilityHelper.StartActivity( "Root Activity" ) )
+                    try
                     {
-                        Assert.IsNotNull( rootActivity, "Root activity was null, configuration failed." );
-
-                        for ( int c = 0; c < 15; c++ )
+                        using ( var rootActivity = ObservabilityHelper.StartActivity( "Root Activity" ) )
                         {
-                            using ( var childActivity = ObservabilityHelper.StartActivity( $"Child Activity {c}" ) )
+                            Assert.IsNotNull( rootActivity, "Root activity was null, configuration failed." );
+
+                            for ( int c = 0; c < 15; c++ )
                             {
-                                for ( int gc = 0; gc < 1_000; gc++ )
+                                using ( var childActivity = ObservabilityHelper.StartActivity( $"Child Activity {c}" ) )
                                 {
-                                    using ( var grandChildActivity = ObservabilityHelper.StartActivity( $"Grand Child Activity {c}.{gc}" ) )
+                                    for ( int gc = 0; gc < 1_000; gc++ )
                                     {
+                                        using ( var grandChildActivity = ObservabilityHelper.StartActivity( $"Grand Child Activity {c}.{gc}" ) )
+                                        {
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        Assert.AreEqual( expectedCount, childActivityCount, "Incorrect child activity count." );
-                        Assert.AreEqual( 15_015, rootActivity.GetTagItem( "rock.descendant_count" ), "Incorrect descendant count." );
+                            Assert.AreEqual( expectedCount, childActivityCount, "Incorrect child activity count." );
+                            Assert.AreEqual( 15_015, rootActivity.GetTagItem( "rock.descendant_count" ), "Incorrect descendant count." );
+                        }
+                    }
+                    finally
+                    {
+                        ObservabilityHelper.SetTraceLevel( oldTraceLevel );
                     }
                 }
             }

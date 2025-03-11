@@ -51,8 +51,10 @@ namespace Rock.Observability
         /// <summary>
         /// The global meter provider.
         /// </summary>
-        public static MeterProvider MeterProvider {
-            get {
+        public static MeterProvider MeterProvider
+        {
+            get
+            {
                 return _currentMeterProvider;
             }
         }
@@ -199,8 +201,9 @@ namespace Rock.Observability
                 }
             }
 
-            _traceLevel = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_TRACE_LEVEL )
+            var traceLevel = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_TRACE_LEVEL )
                 .ConvertToEnum<Enums.Observability.TraceLevel>( Enums.Observability.TraceLevel.Minimal );
+            SetTraceLevel( traceLevel );
 
             return _currentTracerProvider;
         }
@@ -264,12 +267,12 @@ namespace Rock.Observability
                 return;
             }
 
-                var exporter = new OpenTelemetry.Exporter.OtlpLogExporter( new OpenTelemetry.Exporter.OtlpExporterOptions
-                {
-                    Endpoint = endpointUri,
-                    Protocol = endpointProtocol,
-                    Headers = endpointHeaders
-                } );
+            var exporter = new OpenTelemetry.Exporter.OtlpLogExporter( new OpenTelemetry.Exporter.OtlpExporterOptions
+            {
+                Endpoint = endpointUri,
+                Protocol = endpointProtocol,
+                Headers = endpointHeaders
+            } );
 
             _exporterWrapper.Exporter = exporter;
         }
@@ -349,7 +352,7 @@ namespace Rock.Observability
             // Add on default attributes
             activity.AddTag( "rock.node", nodeName );
 
-            if (nodeName != machineName )
+            if ( nodeName != machineName )
             {
                 activity.AddTag( "service.instance.id", $"{machineName} ({nodeName})" );
             }
@@ -520,6 +523,22 @@ namespace Rock.Observability
         private static bool IsFeatureEnabled( FeatureFlags feature )
         {
             return GetEnabledFeatures().HasFlag( feature );
+        }
+
+        /// <summary>
+        /// Sets the trace level for the observability system. This exists primarily
+        /// for unit testing purposes to be able to change the trace level without
+        /// requiring a database update.
+        /// </summary>
+        /// <param name="traceLevel">The desired trace level.</param>
+        /// <returns>The previous trace level.</returns>
+        internal static Enums.Observability.TraceLevel SetTraceLevel( Enums.Observability.TraceLevel traceLevel )
+        {
+            var oldTraceLevel = _traceLevel;
+
+            _traceLevel = traceLevel;
+
+            return oldTraceLevel;
         }
     }
 }
