@@ -323,6 +323,10 @@ namespace Rock.CheckIn.v2
 
                         primaryFamily = CreatePrimaryFamily( registrationFamily, familyLastName, defaultCampusId, saveResult );
                     }
+                    else
+                    {
+                        UpdatePrimaryFamily( primaryFamily, registrationFamily, saveResult );
+                    }
 
                     UpdateFamilyAttributeValues( primaryFamily, registrationFamily );
                     EnsurePeopleInPrimaryFamilyAreMembersOfGroup( primaryFamily, registrationPeople );
@@ -675,7 +679,97 @@ namespace Rock.CheckIn.v2
             saveResult.NewFamilyList.Add( family );
             _rockContext.SaveChanges();
 
+            registrationFamily.IfValidProperty( nameof( registrationFamily.Bag.Address ), () =>
+            {
+                UpdateFamilyAddress( family, registrationFamily.Bag.Address );
+            } );
+
             return family;
+        }
+
+        /// <summary>
+        /// Updates the primary family for a registration. This should be
+        /// called when an existing family has been found.
+        /// </summary>
+        /// <param name="family">The existing family to be updated.</param>
+        /// <param name="registrationFamily">The details of the family being registered.</param>
+        /// <param name="saveResult">Will be updated with the new <see cref="Group"/> object.</param>
+        /// <returns>An new instance of <see cref="Group"/> that will have already been saved to the database.</returns>
+        internal void UpdatePrimaryFamily( Group family, ValidPropertiesBox<RegistrationFamilyBag> registrationFamily, FamilyRegistrationSaveResult saveResult )
+        {
+            if ( registrationFamily.Bag.FamilyName.IsNotNullOrWhiteSpace() )
+            {
+                family.Name = registrationFamily.Bag.FamilyName;
+                _rockContext.SaveChanges();
+            }
+
+            registrationFamily.IfValidProperty( nameof( registrationFamily.Bag.Address ), () =>
+            {
+                UpdateFamilyAddress( family, registrationFamily.Bag.Address );
+            } );
+        }
+
+        /// <summary>
+        /// Update the home address for the family.
+        /// </summary>
+        /// <param name="family">The family to be updated.</param>
+        /// <param name="address">The address or <c>null</c> if any existing address should be removed.</param>
+        private void UpdateFamilyAddress( Group family, AddressControlBag address )
+        {
+            var groupLocationService = new GroupLocationService( _rockContext );
+            var homeLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid(), _rockContext ).Id;
+            var familyLocation = family.GroupLocations.Where( a => a.GroupLocationTypeValueId == homeLocationTypeId ).FirstOrDefault();
+
+            // If we don't have a street address then we treat it as removing
+            // the address from the family.
+            if ( address == null || address.Street1.IsNullOrWhiteSpace() )
+            {
+                if ( familyLocation != null )
+                {
+                    groupLocationService.Delete( familyLocation );
+                    _rockContext.SaveChanges();
+                }
+
+                return;
+            }
+
+            // Find the location that matches the address, if not found then a
+            // new one will be created.
+            var newOrExistingLocation = new LocationService( _rockContext ).Get(
+                    address.Street1,
+                    address.Street2,
+                    address.City,
+                    address.State,
+                    address.PostalCode,
+                    address.Country );
+
+            // This only happens if the address was completely invalid. Just abort.
+            if ( newOrExistingLocation == null )
+            {
+                return;
+            }
+
+            // If the family does not have a current home address then create
+            // a new one.
+            if ( familyLocation == null )
+            {
+                familyLocation = new GroupLocation
+                {
+                    GroupLocationTypeValueId = homeLocationTypeId,
+                    GroupId = family.Id,
+                    IsMailingLocation = true,
+                    IsMappedLocation = true
+                };
+
+                groupLocationService.Add( familyLocation );
+            }
+
+            // If the location has changed then update the family location.
+            if ( newOrExistingLocation.Id != familyLocation.LocationId )
+            {
+                familyLocation.LocationId = newOrExistingLocation.Id;
+                _rockContext.SaveChanges();
+            }
         }
 
         /// <summary>
