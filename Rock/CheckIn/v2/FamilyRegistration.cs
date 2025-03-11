@@ -802,8 +802,12 @@ namespace Rock.CheckIn.v2
             registrationPerson.IfValidProperty( nameof( registrationPerson.Bag.Gender ),
                 () => gender = registrationPerson.Bag.Gender );
 
+            // Don't convert to organization time zone, just take the
+            // raw date value from the client without any conversion. This
+            // effectively strips off the timezone and leaves us with the
+            // original date value as entered in the UI.
             registrationPerson.IfValidProperty( nameof( registrationPerson.Bag.BirthDate ),
-                () => birthdate = registrationPerson.Bag.BirthDate?.ToOrganizationDateTime() );
+                () => birthdate = registrationPerson.Bag.BirthDate?.DateTime.Date );
 
             return new PersonService.PersonMatchQuery( registrationPerson.Bag.NickName,
                 registrationPerson.Bag.LastName,
@@ -891,7 +895,11 @@ namespace Rock.CheckIn.v2
             {
                 if ( registrationPerson.Bag.BirthDate.HasValue || saveEmptyValues )
                 {
-                    person.SetBirthDate( registrationPerson.Bag.BirthDate?.ToOrganizationDateTime() );
+                    // Don't convert to organization time zone, just take the
+                    // raw date value from the client without any conversion. This
+                    // effectively strips off the timezone and leaves us with the
+                    // original date value as entered in the UI.
+                    person.SetBirthDate( registrationPerson.Bag.BirthDate?.DateTime.Date );
                 }
             } );
 
