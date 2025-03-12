@@ -1032,6 +1032,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PBX_CDR_MEDIUM_VALUE = "B3904B57-62A2-57AC-43EA-94D4DEBA3D51";
 
+        /// <summary>
+        /// Interaction Channel Type: Chat
+        /// </summary>
+        public const string INTERACTIONCHANNELTYPE_CHAT = "0E2EAE2C-957B-4CCB-8826-AA5627C27BBD";
+
         #endregion
 
         #region Person Search Keys

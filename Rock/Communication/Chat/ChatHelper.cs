@@ -293,7 +293,7 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
-        /// Gets the <see cref="ChatChannel.Key"/> for the provided <see cref="Group"/> identifier.
+        /// Gets the <see cref="ChatChannel.Key"/> for the provided <see cref="GroupCache"/>.
         /// </summary>
         /// <param name="groupCache">The <see cref="GroupCache"/> for which to get the <see cref="ChatChannel.Key"/>.</param>
         /// <returns>The <see cref="ChatChannel.Key"/> or <see langword="null"/>.</returns>
@@ -310,6 +310,30 @@ namespace Rock.Communication.Chat
             }
 
             return $"{ChatChannelKeyPrefix}{groupCache.Id}";
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ChatChannel.Key"/> for the provided <see cref="Group"/>.
+        /// </summary>
+        /// <param name="group">The <see cref="Group"/> for which to get the <see cref="ChatChannel.Key"/>.</param>
+        /// <returns>The <see cref="ChatChannel.Key"/> or <see langword="null"/>.</returns>
+        /// <remarks>
+        /// WARNING: Only use this if you already have the materialized <see cref="Group"/> in hand! Otherwise, use the
+        /// overload that takes a <see cref="GroupCache"/> instead.
+        /// </remarks>
+        public static string GetChatChannelKey( Group group )
+        {
+            if ( group == null )
+            {
+                return null;
+            }
+
+            if ( group.ChatChannelKey.IsNotNullOrWhiteSpace() )
+            {
+                return group.ChatChannelKey;
+            }
+
+            return $"{ChatChannelKeyPrefix}{group.Id}";
         }
 
         /// <summary>
@@ -2162,26 +2186,27 @@ namespace Rock.Communication.Chat
 
                         rockContext.SaveChanges();
                     }
-                    else if ( syncCommand.ChatSyncType == ChatSyncType.Delete )
-                    {
-                        if ( group == null )
-                        {
-                            // We don't have a matching group record [yet]; it's possible we got a delete command
-                            // before the corresponding create command completed. Send it back through the queue.
-                            syncCommand.MarkAsRecoverable( groupNotFoundMsg );
-                            continue;
-                        }
+                    // We've decided to not allow ANY channel deletions from the client.
+                    //else if ( syncCommand.ChatSyncType == ChatSyncType.Delete )
+                    //{
+                    //    if ( group == null )
+                    //    {
+                    //        // We don't have a matching group record [yet]; it's possible we got a delete command
+                    //        // before the corresponding create command completed. Send it back through the queue.
+                    //        syncCommand.MarkAsRecoverable( groupNotFoundMsg );
+                    //        continue;
+                    //    }
 
-                        // Note that Rock cascade-deletes group members; no need to delete them first.
-                        var wasDeleted = groupService.Delete( group );
-                        if ( !wasDeleted )
-                        {
-                            // Try to archive it instead.
-                            groupService.Archive( group, null, false );
-                        }
+                    //    // Note that Rock cascade-deletes group members; no need to delete them first.
+                    //    var wasDeleted = groupService.Delete( group );
+                    //    if ( !wasDeleted )
+                    //    {
+                    //        // Try to archive it instead.
+                    //        groupService.Archive( group, null, false );
+                    //    }
 
-                        rockContext.SaveChanges();
-                    }
+                    //    rockContext.SaveChanges();
+                    //}
                     else
                     {
                         syncCommand.MarkAsUnrecoverable( $"ChatSyncType '{syncCommand.ChatSyncType.ConvertToString()}' is not supported for channel synchronizations." );
@@ -2890,6 +2915,37 @@ namespace Rock.Communication.Chat
         }
 
         #endregion Synchronization: From Chat Provider To Rock
+
+        #region Interactions
+
+        /// <summary>
+        /// Gets the message counts for each <see cref="ChatUser"/> within each <see cref="ChatChannel"/>, for the specified date.
+        /// </summary>
+        /// <param name="messageDate">The date for which to get message counts.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="ChatUserMessageCountsByChatChannelResult"/>.
+        /// </returns>
+        public async Task<ChatUserMessageCountsByChatChannelResult> GetChatUserMessageCountsByChatChannelKeyAsync( DateTime messageDate )
+        {
+            var result = new ChatUserMessageCountsByChatChannelResult { MessageDate = messageDate };
+
+            try
+            {
+                var messageCounts = await ChatProvider.GetChatUserMessageCountsByChatChannelKeyAsync( messageDate );
+
+                result.MessageCounts = messageCounts;
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+
+                LogError( ex, nameof( GetChatUserMessageCountsByChatChannelKeyAsync ) );
+            }
+
+            return result;
+        }
+
+        #endregion Interactions
 
         #endregion Public Methods
 

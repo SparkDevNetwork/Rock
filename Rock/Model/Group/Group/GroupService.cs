@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text;
 
 using Rock.Communication.Chat;
+using Rock.Communication.Chat.DTO;
 using Rock.Data;
 using Rock.Model.Groups.Group.Options;
 using Rock.Web.Cache;
@@ -159,6 +160,26 @@ namespace Rock.Model
             }
 
             return qry;
+        }
+
+        /// <summary>
+        /// Gets the mapping between all <see cref="ChatChannel.Key"/>s and their respective <see cref="Group"/> identifiers.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Dictionary{TKey, TValue}"/> where the key is the <see cref="ChatChannel.Key"/> and the value is
+        /// a <see cref="RockChatGroup"/> for the corresponding <see cref="Group"/>.
+        /// </returns>
+        internal Dictionary<string, RockChatGroup> GetRockChatGroupByChannelKeys()
+        {
+            return GetChatEnabled( shouldTrack: false )
+                .ToDictionary(
+                    g => ChatHelper.GetChatChannelKey( g ),
+                    g => new RockChatGroup
+                    {
+                        GroupId = g.Id,
+                        Name = g.Name
+                    }
+                );
         }
 
         /// <summary>
