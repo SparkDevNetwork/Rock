@@ -177,14 +177,18 @@ namespace Rock.Model
 
             if ( semesterStartFrom.HasValue )
             {
+                // Filter by semester Start Date OR if they are enrolled.
                 classesQuery = classesQuery
-                    .Where( c => c.LearningSemester.StartDate.HasValue && c.LearningSemester.StartDate >= semesterStartFrom.Value );
+                    .Where( c => c.LearningSemester.StartDate.HasValue && c.LearningSemester.StartDate >= semesterStartFrom.Value
+                    || c.LearningParticipants.Any( p => p.PersonId == person.Id ) );
             }
 
             if ( semesterStartTo.HasValue )
             {
+                // Filter by semester Start Date OR if they are enrolled.
                 classesQuery = classesQuery
-                    .Where( c => c.LearningSemester.StartDate.HasValue && c.LearningSemester.StartDate <= semesterStartTo.Value );
+                    .Where( c => c.LearningSemester.StartDate.HasValue && c.LearningSemester.StartDate <= semesterStartTo.Value
+                    || c.LearningParticipants.Any( p => p.PersonId == person.Id ) );
             }
 
             var classes = classesQuery.ToList();

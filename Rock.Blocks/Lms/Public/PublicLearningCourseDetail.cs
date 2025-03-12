@@ -205,7 +205,7 @@ namespace Rock.Blocks.Lms
                     </div>
                 </div>
                 
-                {% assign today = 'Now' | Date:'yyyy-MM-dd' %}
+                {% assign today = 'Now' | Date:'yyyy-MM-dd' | AsDateTime %}
                 {% assign hasClasses = false %}
                 {% for semesterInfo in CourseInfo.Semesters %}
                     
