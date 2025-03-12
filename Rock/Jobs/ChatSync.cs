@@ -22,12 +22,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.Sync;
 using Rock.Data;
 using Rock.Enums.Communication.Chat;
+using Rock.Logging;
 using Rock.Model;
+using Rock.SystemKey;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -37,6 +41,8 @@ namespace Rock.Jobs
     /// </summary>
     [DisplayName( "Chat Sync" )]
     [Description( "Performs synchronization tasks between Rock and the external chat system." )]
+
+    #region Job Attributes
 
     [BooleanField( "Synchronize Data",
         Key = AttributeKey.SynchronizeData,
@@ -81,8 +87,13 @@ namespace Rock.Jobs
         Category = "General",
         Order = 6 )]
 
+    #endregion Job Attributes
+
+    [RockLoggingCategory]
     public class ChatSync : RockJob
     {
+        #region Keys & Constants
+
         /// <summary>
         /// Attribute Keys for the <see cref="ChatSync"/> job.
         /// </summary>
@@ -105,14 +116,20 @@ namespace Rock.Jobs
             public const string Created = "Created";
             public const string Updated = "Updated";
             public const string Deleted = "Deleted";
-
-            public const string GloballyBanned = "Globally Banned";
         }
 
+        #endregion Keys & Constants
+
+        #region Fields
+
         /// <summary>
-        /// The list of chat sync task results.
+        /// The list of chat sync result sections.
         /// </summary>
-        private readonly List<ChatSyncTaskResult> _results = new List<ChatSyncTaskResult>();
+        private readonly List<ChatSyncResultSection> _resultSections = new List<ChatSyncResultSection>();
+
+        #endregion Fields
+
+        #region Constructors
 
         /// <summary>
         /// Empty constructor for job initialization.
@@ -124,16 +141,18 @@ namespace Rock.Jobs
         {
         }
 
+        #endregion Constructors
+
+        #region RockJob Implementation
+
         /// <inheritdoc/>
         public override void Execute()
         {
             // If chat is not enabled, exit early.
             if ( !ChatHelper.IsChatEnabled )
             {
-                _results.Add( new ChatSyncTaskResult
-                {
-                    Title = "Chat is not enabled."
-                } );
+                var section = CreateAndAddResultSection( null ); // No section title.
+                CreateAndAddNewTaskResult( section, "Chat is not enabled.", TimeSpan.Zero );
 
                 ReportResults();
                 return;
@@ -159,11 +178,14 @@ namespace Rock.Jobs
 
                     if ( GetAttributeValue( AttributeKey.SynchronizeData ).AsBoolean() )
                     {
-                        chatHelper.RockToChatSyncConfig.ShouldEnforceDefaultGrantsPerRole = GetAttributeValue( AttributeKey.EnforceDefaultGrantsPerRole ).AsBoolean();
-                        chatHelper.RockToChatSyncConfig.ShouldEnforceDefaultSettings = GetAttributeValue( AttributeKey.EnforceDefaultSyncSettings ).AsBoolean();
-                        chatHelper.RockToChatSyncConfig.ShouldEnsureChatUsersExist = true;
-
                         await SyncDataFromRockToChat( rockContext, chatHelper );
+
+                        // TOOD (Jason): Sync from chat to Rock.
+                    }
+
+                    if ( GetAttributeValue( AttributeKey.CreateInteractions ).AsBoolean() )
+                    {
+                        await CreateInteractionsAsync( rockContext, chatHelper );
                     }
                 }
             } );
@@ -174,6 +196,10 @@ namespace Rock.Jobs
             ReportResults();
         }
 
+        #endregion RockJob Implementation
+
+        #region Private Methods
+
         /// <summary>
         /// Ensures that all chat-related data in Rock is in sync with the corresponding data in the external chat system.
         /// </summary>
@@ -182,7 +208,13 @@ namespace Rock.Jobs
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task SyncDataFromRockToChat( RockContext rockContext, ChatHelper chatHelper )
         {
+            chatHelper.RockToChatSyncConfig.ShouldEnforceDefaultGrantsPerRole = GetAttributeValue( AttributeKey.EnforceDefaultGrantsPerRole ).AsBoolean();
+            chatHelper.RockToChatSyncConfig.ShouldEnforceDefaultSettings = GetAttributeValue( AttributeKey.EnforceDefaultSyncSettings ).AsBoolean();
+            chatHelper.RockToChatSyncConfig.ShouldEnsureChatUsersExist = true;
+
             var stopwatch = new Stopwatch();
+
+            var section = CreateAndAddResultSection( "Rock-to-Chat Sync:" );
 
             // We'll keep track of chat users that are synced along the way, so we ensure each person is fully-synced
             // all the way through to the external chat system ONLY ONCE throughout this job run.
@@ -196,7 +228,7 @@ namespace Rock.Jobs
             var isSetUpResult = await chatHelper.EnsureChatProviderAppIsSetUpAsync();
             stopwatch.Stop();
 
-            var taskResult = CreateAndAddNewTaskResult( "Sync Chat System Settings", stopwatch.Elapsed );
+            var taskResult = CreateAndAddNewTaskResult( section, "Chat Configuration", stopwatch.Elapsed );
 
             // If the setup operation failed, we can't continue with the other tasks.
             if ( isSetUpResult?.HasException == true )
@@ -351,7 +383,7 @@ namespace Rock.Jobs
 
             if ( channelTypeCrudResult != null )
             {
-                taskResult = CreateAndAddNewTaskResult( "Sync Group Types to Chat Channel Types", stopwatch.Elapsed );
+                taskResult = CreateAndAddNewTaskResult( section, "Rock Group Types to Chat Channel Types", stopwatch.Elapsed );
                 AddCrudDetailsToTaskResult( taskResult, channelTypeCrudResult, "Channel Type" );
 
                 if ( channelTypeCrudResult.HasException == true )
@@ -476,7 +508,7 @@ namespace Rock.Jobs
 
                     stopwatch.Stop();
 
-                    taskResult = CreateAndAddNewTaskResult( "Sync Groups to Chat Channels", stopwatch.Elapsed );
+                    taskResult = CreateAndAddNewTaskResult( section, "Rock Groups to Chat Channels", stopwatch.Elapsed );
 
                     if ( channelExceptions.Any() )
                     {
@@ -544,7 +576,7 @@ namespace Rock.Jobs
             }
 
             chatUserStopwatch.Stop();
-            taskResult = CreateAndAddNewTaskResult( "Sync People to Chat Person Records", chatUserStopwatch.Elapsed );
+            taskResult = CreateAndAddNewTaskResult( section, "Rock People to Chat Person Records", chatUserStopwatch.Elapsed );
 
             if ( chatUserExceptions.Any() )
             {
@@ -558,18 +590,289 @@ namespace Rock.Jobs
             if ( globallyBannedChatUserKeys.Any() )
             {
                 var count = globallyBannedChatUserKeys.Count;
-                taskResult.Details.Add( $"{count} {"Chat Person".PluralizeIf( count > 1 )} {CrudMessage.GloballyBanned}" );
+                taskResult.Details.Add( $"{count:N0} {"Chat Person".PluralizeIf( count > 1 )} Globally Banned" );
             }
         }
 
         /// <summary>
-        /// Adds a new <see cref="ChatSyncTaskResult"/> to the <see cref="_results"/> list.
+        /// Creates chat-related interactions for people who have been active in the external chat system.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="chatHelper">The chat helper.</param>
+        private async Task CreateInteractionsAsync( RockContext rockContext, ChatHelper chatHelper )
+        {
+            var section = CreateAndAddResultSection( "Chat Message Interactions:" );
+
+            var settings = Rock.Web.SystemSettings
+                .GetValue( SystemSetting.CHAT_SYNC_JOB_SETTINGS )
+                .FromJsonOrNull<ChatSyncJobSettings>() ?? new ChatSyncJobSettings();
+
+            DateTime messageDate; // The next date to process.
+            var minimumMessageDate = RockDateTime.Today.AddDays( -5 );
+            var lastSuccessfulMessageDate = settings.LastSuccessfulMessageInteractionsDate;
+
+            if ( lastSuccessfulMessageDate.HasValue )
+            {
+                // Increment one day from the last successful run, ensuring we're always working with only dates (and not times).
+                lastSuccessfulMessageDate = lastSuccessfulMessageDate.Value.Date;
+                messageDate = lastSuccessfulMessageDate.Value.AddDays( 1 );
+
+                // While ensuring we don't go further in the past than the minimum date.
+                if ( messageDate < minimumMessageDate )
+                {
+                    messageDate = minimumMessageDate;
+                }
+            }
+            else
+            {
+                messageDate = minimumMessageDate;
+            }
+
+            // A local function to get an "Interaction(s)" label.
+            string GetInteractionsLabel( int recordCount )
+            {
+                return $"{"Interaction".PluralizeIf( recordCount != 1 )}";
+            }
+
+            // We only create these types of interactions through "yesterday".
+            if ( messageDate >= RockDateTime.Today )
+            {
+                CreateAndAddNewTaskResult( section, $"{GetInteractionsLabel( 0 )} {CrudMessage.Skipped}.", TimeSpan.Zero );
+                return;
+            }
+
+            var channelTypeMediumValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CHAT.AsGuid(), rockContext )?.Id;
+            var componentEntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.GROUP.AsGuid(), rockContext )?.Id;
+
+            var interactionChannelId = InteractionChannelCache.GetOrCreateChannelIdByName(
+                channelTypeMediumValueId.Value,
+                channelName: "Chat",
+                componentEntityTypeId,
+                interactionEntityTypeId: null
+            );
+
+            var interactionService = new InteractionService( rockContext );
+            var stopwatch = new Stopwatch();
+
+            // ----------------------------------------------------------------------------------------
+            // 1) Delete untrusted interactions from previous, unsuccessful runs (we'll recreate them).
+            if ( lastSuccessfulMessageDate.HasValue )
+            {
+                stopwatch.Start();
+
+                var deleteInteractionsQry = interactionService.Queryable()
+                    .Where( i =>
+                        i.InteractionComponent.InteractionChannel.Id == interactionChannelId
+                        && i.InteractionDateTime > lastSuccessfulMessageDate.Value
+                    );
+
+                var deletedCount = rockContext.BulkDelete( deleteInteractionsQry );
+
+                stopwatch.Stop();
+
+                if ( deletedCount > 0 )
+                {
+                    CreateAndAddNewTaskResult( section, $"{deletedCount} {GetInteractionsLabel( deletedCount )} {CrudMessage.Deleted}", stopwatch.Elapsed );
+                }
+            }
+
+            // Get the [chat channel key]-to-[Rock group ID & name] mappings.
+            var rockChatGroupByChatChannelKeys = new GroupService( rockContext ).GetRockChatGroupByChannelKeys();
+            if ( rockChatGroupByChatChannelKeys?.Any() != true )
+            {
+                var taskResult = CreateAndAddNewTaskResult( section, "Missing Chat-to-Rock Mapping Data", TimeSpan.Zero );
+                taskResult.IsWarning = true;
+
+                Log( LogLevel.Warning, "No Chat Channel-to-Rock Group ID mappings found. Unable to create Interactions, as we won't be able to map a given Chat Channel back to a Rock Group." );
+
+                // There's no reason to continue if we have no mappings.
+                return;
+            }
+
+            // Get the [chat user key]-to-[Rock person alias ID] mappings.
+            var personAliasIdByChatUserKeys = new PersonAliasService( rockContext ).GetPersonAliasIdByChatUserKeys();
+            if ( personAliasIdByChatUserKeys?.Any() != true )
+            {
+                var taskResult = CreateAndAddNewTaskResult( section, "Missing Chat-to-Rock Mapping Data", TimeSpan.Zero );
+                taskResult.IsWarning = true;
+
+                Log( LogLevel.Warning, "No Chat Person Key-to-Rock Person Alias ID mappings found. Unable to create Interactions, as we won't be able to map a given Chat Channel back to a Rock Group." );
+
+                // There's no reason to continue if we have no mappings.
+                return;
+            }
+
+            // A local function to get a formatted message for the interactions created.
+            string GetInteractionsCreatedMessage( int count, DateTime interactionDate )
+            {
+                return $"{count:N0} {GetInteractionsLabel( count )} {CrudMessage.Created} for {interactionDate:d}";
+            }
+
+            // ----------------------------------------------
+            // 2) Create new interactions, one day at a time.
+            while ( messageDate < RockDateTime.Today )
+            {
+                stopwatch.Restart();
+
+                // A local function to save the current date to job settings and increment to the next day.
+                void MarkDateAsSuccessfullyProcessed()
+                {
+                    settings.LastSuccessfulMessageInteractionsDate = messageDate;
+                    Rock.Web.SystemSettings.SetValue( SystemSetting.CHAT_SYNC_JOB_SETTINGS, settings.ToJson() );
+
+                    // Move on to the next day.
+                    messageDate = messageDate.AddDays( 1 );
+                }
+
+                // Get message counts from the external chat system for the given date.
+                var messageCountsResult = await chatHelper.GetChatUserMessageCountsByChatChannelKeyAsync( messageDate );
+                if ( messageCountsResult == null )
+                {
+                    stopwatch.Stop();
+
+                    Log( LogLevel.Warning, $"`ChatHelper.GetChatUserMessageCountsByChatChannelKeyAsync( {messageDate:d} )` returned `null`." );
+
+                    var taskResult = CreateAndAddNewTaskResult( section, GetInteractionsCreatedMessage( 0, messageDate ), stopwatch.Elapsed );
+                    taskResult.IsWarning = true;
+
+                    // Return from this method altogether, so we can try again next time.
+                    return;
+                }
+                else if ( messageCountsResult.HasException )
+                {
+                    stopwatch.Stop();
+
+                    var taskResult = CreateAndAddNewTaskResult( section, GetInteractionsCreatedMessage( 0, messageDate ), stopwatch.Elapsed );
+                    taskResult.Exception = messageCountsResult.Exception;
+
+                    // Return from this method altogether, so we can try again next time.
+                    return;
+                }
+                else if ( messageCountsResult.MessageCounts.Any() != true )
+                {
+                    stopwatch.Stop();
+
+                    CreateAndAddNewTaskResult( section, GetInteractionsCreatedMessage( 0, messageDate ), stopwatch.Elapsed );
+                    MarkDateAsSuccessfullyProcessed();
+
+                    continue;
+                }
+
+                var interactionsToAdd = new List<Interaction>();
+                var chatChannelKeysSkipped = new HashSet<string>();
+                var chatUserKeysSkipped = new HashSet<string>();
+
+                foreach ( var channelMessageCountsKvp in messageCountsResult.MessageCounts )
+                {
+                    var chatChannelKey = channelMessageCountsKvp.Key;
+                    var chatUserMessageCounts = channelMessageCountsKvp.Value;
+
+                    if ( chatChannelKey.IsNullOrWhiteSpace() || chatUserMessageCounts?.Any() != true )
+                    {
+                        continue;
+                    }
+
+                    // Find the rock chat group.
+                    if ( !rockChatGroupByChatChannelKeys.TryGetValue( chatChannelKey, out var rockChatGroup ) )
+                    {
+                        if ( chatChannelKeysSkipped.Add( chatChannelKey ) )
+                        {
+                            Log( LogLevel.Warning, $"No Rock Group found for Chat Channel Key '{chatChannelKey}'. Unable to create Interactions for this Chat Channel." );
+                        }
+
+                        continue;
+                    }
+
+                    // Ensure we have an interaction component for this group.
+                    var interactionComponentId = InteractionComponentCache.GetOrCreateComponentIdByName(
+                        interactionChannelId,
+                        componentName: rockChatGroup.Name
+                    );
+
+                    foreach ( var chatUserMessageCountsKvp in chatUserMessageCounts )
+                    {
+                        var chatUserKey = chatUserMessageCountsKvp.Key;
+                        var messageCount = chatUserMessageCountsKvp.Value;
+
+                        if ( chatUserKey.IsNullOrWhiteSpace() || messageCount <= 0 )
+                        {
+                            continue;
+                        }
+
+                        // Find the person alias ID.
+                        if ( !personAliasIdByChatUserKeys.TryGetValue( chatUserKey, out var personAliasId ) )
+                        {
+                            if ( chatUserKeysSkipped.Add( chatUserKey ) )
+                            {
+                                Log( LogLevel.Warning, $"No Rock Person Alias ID found for Chat Person Key '{chatUserKey}'. Unable to create Interactions for this Chat Person." );
+                            }
+
+                            continue;
+                        }
+
+                        // Add the interaction.
+                        interactionsToAdd.Add( new Interaction
+                        {
+                            InteractionDateTime = messageDate,
+                            Operation = "Chatted",
+                            InteractionComponentId = interactionComponentId,
+                            PersonAliasId = personAliasId,
+                            InteractionSummary = messageCount.ToString(),
+                        } );
+                    }
+                }
+
+                if ( interactionsToAdd.Any() )
+                {
+                    rockContext.BulkInsert( interactionsToAdd );
+                }
+
+                stopwatch.Stop();
+
+                var createInteractionsTaskResult = CreateAndAddNewTaskResult( section, GetInteractionsCreatedMessage( interactionsToAdd.Count, messageDate ), stopwatch.Elapsed );
+
+                if ( chatChannelKeysSkipped.Any() )
+                {
+                    createInteractionsTaskResult.Details.Add( $"{chatChannelKeysSkipped.Count:N0} Chat {"Channel".PluralizeIf( chatChannelKeysSkipped.Count > 1 )} Skipped" );
+                    createInteractionsTaskResult.IsWarning = true;
+                }
+
+                if ( chatUserKeysSkipped.Any() )
+                {
+                    createInteractionsTaskResult.Details.Add( $"{chatUserKeysSkipped.Count:N0} Chat {"Person".PluralizeIf( chatUserKeysSkipped.Count > 1 )} Skipped" );
+                    createInteractionsTaskResult.IsWarning = true;
+                }
+
+                MarkDateAsSuccessfullyProcessed();
+            }
+        }
+
+        /// <summary>
+        /// Creates and adds a new <see cref="ChatSyncResultSection"/> to the <see cref="_resultSections"/> list.
+        /// </summary>
+        /// <param name="title">The title of the result section.</param>
+        /// <returns>The created <see cref="ChatSyncResultSection"/>.</returns>
+        private ChatSyncResultSection CreateAndAddResultSection( string title )
+        {
+            var resultSection = new ChatSyncResultSection
+            {
+                Title = title
+            };
+
+            _resultSections.Add( resultSection );
+
+            return resultSection;
+        }
+
+        /// <summary>
+        /// Adds a new <see cref="ChatSyncTaskResult"/> to the provided <see cref="ChatSyncResultSection"/>.
+        /// </summary>
+        /// <param name="section">The result section.</param>
         /// <param name="title">The title of the task result.</param>
         /// <param name="elapsed">The time elapsed for the task.</param>
         /// <param name="rowsAffected">The number of rows affected by the task.</param>
         /// <returns>The created <see cref="ChatSyncTaskResult"/>.</returns>
-        private ChatSyncTaskResult CreateAndAddNewTaskResult( string title, TimeSpan elapsed, int rowsAffected = 0 )
+        private ChatSyncTaskResult CreateAndAddNewTaskResult( ChatSyncResultSection section, string title, TimeSpan elapsed, int rowsAffected = 0 )
         {
             var taskResult = new ChatSyncTaskResult
             {
@@ -578,7 +881,7 @@ namespace Rock.Jobs
                 RowsAffected = rowsAffected
             };
 
-            _results.Add( taskResult );
+            section.Results.Add( taskResult );
 
             return taskResult;
         }
@@ -606,25 +909,25 @@ namespace Rock.Jobs
             if ( crudResult?.Skipped.Count > 0 )
             {
                 var count = crudResult.Skipped.Count;
-                taskResult.Details.Add( $"{count} {entityName.PluralizeIf( count > 1 )} {CrudMessage.Skipped}" );
+                taskResult.Details.Add( $"{count:N0} {entityName.PluralizeIf( count > 1 )} {CrudMessage.Skipped}" );
             }
 
             if ( crudResult?.Created.Count > 0 )
             {
                 var count = crudResult.Created.Count;
-                taskResult.Details.Add( $"{count} {entityName.PluralizeIf( count > 1 )} {CrudMessage.Created}" );
+                taskResult.Details.Add( $"{count:N0} {entityName.PluralizeIf( count > 1 )} {CrudMessage.Created}" );
             }
 
             if ( crudResult?.Updated.Count > 0 )
             {
                 var count = crudResult.Updated.Count;
-                taskResult.Details.Add( $"{count} {entityName.PluralizeIf( count > 1 )} {CrudMessage.Updated}" );
+                taskResult.Details.Add( $"{count:N0} {entityName.PluralizeIf( count > 1 )} {CrudMessage.Updated}" );
             }
 
             if ( crudResult?.Deleted.Count > 0 )
             {
                 var count = crudResult.Deleted.Count;
-                taskResult.Details.Add( $"{count} {entityName.PluralizeIf( count > 1 )} {CrudMessage.Deleted}" );
+                taskResult.Details.Add( $"{count:N0} {entityName.PluralizeIf( count > 1 )} {CrudMessage.Deleted}" );
             }
         }
 
@@ -636,35 +939,55 @@ namespace Rock.Jobs
         {
             var jobSummaryBuilder = new StringBuilder();
 
-            if ( _results.Count > 1 )
+            var index = 0;
+            foreach ( var section in _resultSections )
             {
-                jobSummaryBuilder.AppendLine( "Summary:" );
-                jobSummaryBuilder.AppendLine( string.Empty );
+                if ( index++ > 0 )
+                {
+                    // Always introduce an empty line between sections.
+                    jobSummaryBuilder.AppendLine( string.Empty );
+                }
+
+                if ( section.Title.IsNotNullOrWhiteSpace() )
+                {
+                    jobSummaryBuilder.AppendLine( section.Title );
+                    jobSummaryBuilder.AppendLine( string.Empty );
+                }
+
+                foreach ( var result in section.Results )
+                {
+                    jobSummaryBuilder.AppendLine( GetFormattedResult( result ) );
+                }
             }
 
-            foreach ( var result in _results )
-            {
-                jobSummaryBuilder.AppendLine( GetFormattedResult( result ) );
-            }
+            var exceptions = _resultSections
+                .SelectMany( s => s.Results )
+                .Where( r => r.HasException )
+                .Select( r => r.Exception )
+                .ToList();
 
-            if ( _results.Any( a => a.HasException ) )
+            var anyWarnings = _resultSections
+                .SelectMany( s => s.Results )
+                .Where( r => r.IsWarning )
+                .Any();
+
+            if ( exceptions.Any() )
             {
                 jobSummaryBuilder.AppendLine( string.Empty );
                 jobSummaryBuilder.AppendLine( "<i class='fa fa-circle text-danger'></i> Some tasks have errors. View Rock's Exception List for more details. You can also enable 'Error' verbosity level for 'Chat' domains in Rock Logs and re-run this job to get a full list of issues." );
             }
-            else if ( _results.Any( a => a.IsWarning ) )
+            else if ( anyWarnings )
             {
                 jobSummaryBuilder.AppendLine( string.Empty );
-                jobSummaryBuilder.AppendLine( "<i class='fa fa-circle text-warning'></i> Some tasks completed with warnings. Enable 'Warning' verbosity level for 'Chat' domains in Rock Logs and re-run this job to get a full list of issues." );
+                jobSummaryBuilder.AppendLine( "<i class='fa fa-circle text-warning'></i> Some tasks completed with warnings. Enable 'Warning' verbosity level for all 'Chat' domains in Rock Logs and re-run this job to get a full list of issues." );
             }
 
             this.Result = jobSummaryBuilder.ToString();
 
-            var chatSyncTaskExceptions = _results.Where( a => a.HasException ).Select( a => a.Exception ).ToList();
-            if ( chatSyncTaskExceptions.Any() )
+            if ( exceptions.Any() )
             {
                 var jobName = nameof( ChatSync );
-                var exceptionList = new AggregateException( $"One or more exceptions occurred in {jobName}.", chatSyncTaskExceptions );
+                var exceptionList = new AggregateException( $"One or more exceptions occurred in {jobName}.", exceptions );
                 throw new RockJobWarningException( $"{jobName} completed with errors.", exceptionList );
             }
         }
@@ -721,6 +1044,37 @@ namespace Rock.Jobs
             ExceptionLogService.LogException( new RockJobWarningException( $"Unobserved Task Exception in {nameof( ChatSync )} Job.", e.Exception ) );
         }
 
+        #endregion Private Methods
+
+        #region Supporting Members
+
+        /// <summary>
+        /// A configuration object to store progress and drive behavior for the <see cref="ChatSync"/> job.
+        /// </summary>
+        private class ChatSyncJobSettings
+        {
+            /// <summary>
+            /// Gets or sets the last date for which message interactions were successfully created.
+            /// </summary>
+            public DateTime? LastSuccessfulMessageInteractionsDate { get; set; }
+        }
+
+        /// <summary>
+        /// The result data from a grouped set of <see cref="ChatSyncTaskResult"/>s.
+        /// </summary>
+        private class ChatSyncResultSection
+        {
+            /// <summary>
+            /// Gets or sets the title for this section.
+            /// </summary>
+            public string Title { get; set; }
+
+            /// <summary>
+            /// Gets the <see cref="ChatSyncTaskResult"/>s for this section.
+            /// </summary>
+            public List<ChatSyncTaskResult> Results { get; } = new List<ChatSyncTaskResult>();
+        }
+
         /// <summary>
         /// The result data from a chat sync task.
         /// </summary>
@@ -761,5 +1115,7 @@ namespace Rock.Jobs
             /// </summary>
             public bool HasException => Exception != null;
         }
+
+        #endregion Supporting Members
     }
 }

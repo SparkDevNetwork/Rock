@@ -16,9 +16,12 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Communication.Chat;
+using Rock.Communication.Chat.DTO;
 using Rock.Data;
 
 namespace Rock.Model
@@ -362,6 +365,29 @@ namespace Rock.Model
         public IQueryable<PersonAlias> GetPrimaryAliasQuery()
         {
             return this.Queryable().Where( a => a.PersonId == a.AliasPersonId && a.AliasPersonId.HasValue );
+        }
+
+        /// <summary>
+        /// Gets the mapping between all <see cref="ChatUser.Key"/>s and their respective <see cref="PersonAlias"/> identifiers.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Dictionary{TKey, TValue}"/> where the key is the <see cref="ChatUser.Key"/> and the value is
+        /// the <see cref="PersonAlias"/> identifier.
+        /// </returns>
+        internal Dictionary<string, int> GetPersonAliasIdByChatUserKeys()
+        {
+            var rockContext = this.Context as RockContext;
+
+            return new PersonAliasService( rockContext )
+                .Queryable()
+                .Where( pa =>
+                    !pa.Person.IsDeceased
+                    && pa.ForeignKey.StartsWith( ChatHelper.ChatPersonAliasForeignKeyPrefix )
+                )
+                .ToDictionary(
+                    pa => ChatHelper.GetChatUserKey( pa.Guid ),
+                    pa => pa.Id
+                );
         }
     }
 }

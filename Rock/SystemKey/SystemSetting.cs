@@ -423,5 +423,10 @@ namespace Rock.SystemKey
         /// The chat configuration.
         /// </summary>
         public const string CHAT_CONFIGURATION = "core_ChatConfiguration";
+
+        /// <summary>
+        /// Job settings for <see cref="Rock.Jobs.ChatSync"/>
+        /// </summary>
+        public const string CHAT_SYNC_JOB_SETTINGS = "core_ChatSyncJobSettings";
     }
 }
