@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Linq;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -37,7 +39,7 @@ namespace Rock.Model
                 {
                     if ( !Entity.LearningProgramCompletionId.HasValue && Entity.LearningProgramCompletion == null )
                     {
-                        CreateLearningProgramCompletion();
+                        UseExistingOrCreateLearningProgramCompletion();
                     }
                 }
             }
@@ -46,7 +48,7 @@ namespace Rock.Model
             /// Creates the learning program completion record to show that this
             /// participant is enrolled in the program.
             /// </summary>
-            private void CreateLearningProgramCompletion()
+            private void UseExistingOrCreateLearningProgramCompletion()
             {
                 // Attempt to get the learning class.
                 var learningClass= Entity.LearningClass
@@ -84,6 +86,25 @@ namespace Rock.Model
                     return;
                 }
 
+                // Look for an existing pending completion record. In other
+                // words, if they sign up for two courses at once, we only
+                // want to create a single completion record. But if they sign
+                // up for two courses, complete them (and the program); and then
+                // a new course is added to the program which they sign up for
+                // then we want to create a new pending completion record.
+                var existingLearningProgramCompletion = new LearningProgramCompletionService( RockContext ).Queryable()
+                    .Where( lpc => lpc.PersonAlias.PersonId == Entity.PersonId
+                        && lpc.LearningProgramId == learningProgram.Id
+                        && lpc.CompletionStatus == Enums.Lms.CompletionStatus.Pending )
+                    .FirstOrDefault();
+
+                if ( existingLearningProgramCompletion != null )
+                {
+                    Entity.LearningProgramCompletionId = existingLearningProgramCompletion.Id;
+                    return;
+                }
+
+                // We couldn't find an existing pending completion record, so create a new one.
                 var learningProgramCompletion = new LearningProgramCompletion
                 {
                     LearningProgramId = learningProgram.Id,

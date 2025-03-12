@@ -133,7 +133,10 @@ namespace Rock.Communication.Chat
         {
             public const string ChannelCreated = "channel.created";
             public const string ChannelUpdated = "channel.updated";
-            public const string ChannelDeleted = "channel.deleted";
+
+            // Rock code was originally written to support channel deletion webhooks, but we've since decided to not
+            // allow ANY channel deletions from the client.
+            //public const string ChannelDeleted = "channel.deleted";
 
             public const string MemberAdded = "member.added";
             public const string MemberRemoved = "member.removed";
@@ -195,6 +198,11 @@ namespace Rock.Communication.Chat
         /// </summary>
         private Lazy<IUserClient> _userClient;
 
+        /// <summary>
+        /// The backing field for the <see cref="MessageClient"/> property.
+        /// </summary>
+        private Lazy<IMessageClient> _messageClient;
+
         // The best way to see default app-scoped permission grants is to query Stream's "GetApp" Swagger endpoint while
         // targeting a newly-created, unmodified app.
         // https://getstream.io/chat/docs/rest/#/product%3Achat/GetApp
@@ -251,7 +259,7 @@ namespace Rock.Communication.Chat
                         "update-user-owner",
                         "upsert-moderation-config-any-team",
                         // The following have been added as needed.
-                        "ban-user"
+                        "ban-user" // Admins SHOULD be able to ban any user.
                     }
                 }
             };
@@ -306,7 +314,7 @@ namespace Rock.Communication.Chat
                         //"create-reaction-owner",
                         //"create-reply-owner",
                         "delete-attachment-owner",
-                        "delete-channel-owner",
+                        //"delete-channel-owner", // We're not going to allow ANY channel deletions from the client.
                         "delete-message-owner",
                         "delete-reaction-owner",
                         //"flag-message-owner",
@@ -347,7 +355,7 @@ namespace Rock.Communication.Chat
                         "create-restricted-visibility-message",
                         "create-system-message",
                         "delete-attachment",
-                        "delete-channel-owner",
+                        //"delete-channel-owner", // We're not going to allow ANY channel deletions from the client.
                         "delete-message",
                         "delete-reaction",
                         "flag-message",
@@ -370,7 +378,8 @@ namespace Rock.Communication.Chat
                         "update-channel",
                         "update-channel-cooldown",
                         "update-channel-frozen",
-                        //"update-channel-members", // Moderators shouldn't be able to manage members.
+                        //"update-channel-members", // Moderators should NOT be able to manage members for channels they didn't create (this should be done within Rock).
+                        "update-channel-members-owner", // But they SHOULD be able to manage members for channels they personally create within Stream.
                         "update-message",
                         "update-thread",
                         "upload-attachment"
@@ -395,7 +404,7 @@ namespace Rock.Communication.Chat
                         "create-restricted-visibility-message",
                         "create-system-message",
                         "delete-attachment",
-                        "delete-channel",
+                        //"delete-channel", // We're not going to allow ANY channel deletions from the client.
                         "delete-message",
                         "delete-reaction",
                         "flag-message",
@@ -561,6 +570,12 @@ namespace Rock.Communication.Chat
         private IUserClient UserClient => _userClient.Value;
 
         /// <summary>
+        /// Gets the <see cref="IMessageClient"/> that should be used to manage messages within the external Stream chat
+        /// system.
+        /// </summary>
+        private IMessageClient MessageClient => _messageClient.Value;
+
+        /// <summary>
         /// Gets the "unrecoverable" error codes that can be returned by Stream's API.
         /// </summary>
         private List<int> UnrecoverableErrorCodes => _unrecoverableErrorCodes.Value;
@@ -655,6 +670,7 @@ namespace Rock.Communication.Chat
                 _channelTypeClient = new Lazy<IChannelTypeClient>( () => _clientFactory.Value.GetChannelTypeClient() );
                 _channelClient = new Lazy<IChannelClient>( () => _clientFactory.Value.GetChannelClient() );
                 _userClient = new Lazy<IUserClient>( () => _clientFactory.Value.GetUserClient() );
+                _messageClient = new Lazy<IMessageClient>( () => _clientFactory.Value.GetMessageClient() );
             }
         }
 
@@ -670,7 +686,6 @@ namespace Rock.Communication.Chat
                 {
                     WebhookEvent.ChannelCreated,
                     WebhookEvent.ChannelUpdated,
-                    WebhookEvent.ChannelDeleted,
 
                     WebhookEvent.MemberAdded,
                     WebhookEvent.MemberRemoved,
@@ -1066,6 +1081,20 @@ namespace Rock.Communication.Chat
                     .Take( pageSize )
                     .ToList();
 
+                /*
+                    3/11/2025 - JPH
+
+                    Stream's "Querying Channels" docs say:
+
+                        "It is important to note that your `filter` should include, at the very least
+                         `{members: {$in: [userID]}` or pagination could break."
+
+                    However, it's not really feasible for us to provide a list of members when querying channels. If we
+                    suspect we're seeing issues related to this, we'll have to reconsider how we're filtering here.
+
+                    Reason: Mention risk called out by Stream's docs.
+                    https://getstream.io/chat/docs/dotnet-csharp/query_channels/#pagination
+                */
                 var queryChannelsOptions = new QueryChannelsOptions() { MemberLimit = 0, MessageLimit = 0 }
                     .WithLimit( pageSize )
                     .WithFilter(
@@ -1234,12 +1263,10 @@ namespace Rock.Communication.Chat
                     // channel, so there is no need to manually delete those first.
 
                     await RetryAsync(
-                        // The 2nd argument is `hardDelete = true`: By default, messages are soft deleted, which means
-                        // they are removed from client but are still available via server-side export functions. You
-                        // can also hard delete messages, which deletes them from everywhere, by setting "hard_delete":
-                        // true in the request. Messages that have been soft or hard deleted cannot be recovered.
+                        // The 2nd argument is `hardDelete = false`: This dictates that messages should be soft deleted,
+                        // meaning they are removed from the client but are still available via server-side export functions.
                         // https://getstream.io/chat/docs/dotnet-csharp/channel_delete/#deleting-many-channels
-                        async () => await ChannelClient.DeleteChannelsAsync( batchedKeys, true ),
+                        async () => await ChannelClient.DeleteChannelsAsync( batchedKeys, false ),
                         operationName
                     );
 
@@ -1284,6 +1311,20 @@ namespace Rock.Communication.Chat
 
             do
             {
+                /*
+                    3/11/2025 - JPH
+
+                    Stream's "Querying Channels" docs say:
+
+                        "It is important to note that your `filter` should include, at the very least
+                         `{members: {$in: [userID]}` or pagination could break."
+
+                    However, it's not really feasible for us to provide a list of members when querying channels. If we
+                    suspect we're seeing issues related to this, we'll have to reconsider how we're filtering here.
+
+                    Reason: Mention risk called out by Stream's docs.
+                    https://getstream.io/chat/docs/dotnet-csharp/query_channels/#pagination
+                */
                 var queryChannelsOptions = new QueryChannelsOptions { MemberLimit = 0, MessageLimit = 0 }
                     .WithLimit( pageSize )
                     .WithFilter(
@@ -2252,6 +2293,218 @@ namespace Rock.Communication.Chat
 
         #endregion Chat Users
 
+        #region Messages
+
+        /// <inheritdoc/>
+        public async Task<Dictionary<string, Dictionary<string, int>>> GetChatUserMessageCountsByChatChannelKeyAsync( DateTime messageDate )
+        {
+            // The outer dictionary key is the chat channel key and the inner dictionary key is the chat user key.
+            var results = new Dictionary<string, Dictionary<string, int>>();
+
+            var operationName = nameof( GetChatUserMessageCountsByChatChannelKeyAsync ).SplitCase();
+
+            var messageDateStartString = messageDate.StartOfDay().ToRfc3339UtcString();
+
+            // Start by getting channels that have messages on or after the specified date.
+            // Max number of channels to get per query is 30.
+            // https://getstream.io/chat/docs/dotnet-csharp/query_channels/#query-options
+            var pageSize = 30;
+            var offset = 0;
+            var channelsRetrievedCount = 0;
+            var chatChannelIdByCids = new Dictionary<string, string>();
+
+            // With query requests, we want "all or nothing". So if any batches fail, allow an exception to be thrown.
+            do
+            {
+                /*
+                    3/11/2025 - JPH
+
+                    Stream's "Querying Channels" docs say:
+
+                        "It is important to note that your `filter` should include, at the very least
+                         `{members: {$in: [userID]}` or pagination could break."
+
+                    However, it's not really feasible for us to provide a list of members when querying channels. If we
+                    suspect we're seeing issues related to this, we'll have to reconsider how we're filtering here.
+
+                    Reason: Mention risk called out by Stream's docs.
+                    https://getstream.io/chat/docs/dotnet-csharp/query_channels/#pagination
+                */
+                var queryChannelsOptions = new QueryChannelsOptions() { MemberLimit = 0, MessageLimit = 0 }
+                    .WithLimit( pageSize )
+                    .WithOffset( offset )
+                    .WithFilter(
+                        new Dictionary<string, object>
+                        {
+                            // Rule out stale channels.
+                            { "last_message_at", new Dictionary<string, object> { { "$gte", messageDateStartString } } }
+                        }
+                    )
+                    .WithSortBy(
+                        new SortParameter
+                        {
+                            Field = SortParameterFieldKey.CreatedAt,
+                            Direction = SortDirection.Ascending
+                        }
+                    );
+
+                var queryChannelsResponse = await RetryAsync(
+                    async () => await ChannelClient.QueryChannelsAsync( queryChannelsOptions ),
+                    operationName
+                );
+
+                if ( queryChannelsResponse?.Channels?.Any() == true )
+                {
+                    channelsRetrievedCount = queryChannelsResponse.Channels.Count;
+
+                    foreach ( var channelGetResponse in queryChannelsResponse.Channels )
+                    {
+                        var key = channelGetResponse?.Channel?.Cid;
+                        var value = channelGetResponse?.Channel?.Id;
+
+                        if ( key.IsNotNullOrWhiteSpace() && value.IsNotNullOrWhiteSpace() )
+                        {
+                            chatChannelIdByCids.TryAdd( key, value );
+                        }
+                    }
+                }
+                else
+                {
+                    channelsRetrievedCount = 0;
+                }
+
+                offset += pageSize;
+            }
+            while ( channelsRetrievedCount == pageSize );
+
+            if ( !chatChannelIdByCids.Any() )
+            {
+                // There are no channels with messages on or after `messageDate`.
+                return results;
+            }
+
+            // Next, get the message counts by user, for each channel; create an [exclusive] end date to compare against.
+            var messageDateEndString = messageDate.AddDays( 1 ).StartOfDay().ToRfc3339UtcString();
+
+            foreach ( var chatChannelIdsKvp in chatChannelIdByCids )
+            {
+                // We want to query Stream's API using this value.
+                var chatChannelCid = chatChannelIdsKvp.Key;
+
+                // We want to return this value as the outermost dictionary key.
+                var chatChannelId = chatChannelIdsKvp.Value;
+
+                // Messages pagination operates differently than other Stream queries. It appears that we can get up to
+                // 1k messages at a time, and the response will include a `next` value if there are still more messages
+                // to get; we'll query again WITH the `next` value as an argument, until we get a response that doesn't
+                // have a `next` value.
+                // https://getstream.io/chat/docs/dotnet-csharp/search/#pagination
+                var messagesPageSize = 1000;
+                string next = null;
+
+                // We'll also keep a reasonable limit on the number of requests we'll make, just in case Stream has an
+                // issue in their pagination logic. 1M messages per channel, per day will [probably] never happen, so
+                // we'll cap at that (1000 requests X 1000 messages per request).
+                var requestCount = 0;
+                var maxRequestCount = 1000;
+
+                do
+                {
+                    var searchOptions = new SearchOptions()
+                        .WithLimit( messagesPageSize )
+                        .WithNext( next )
+                        .WithFilter(
+                            new Dictionary<string, object>
+                            {
+                                { "cid", chatChannelCid }
+                            }
+                        )
+                        .WithMessageFilterConditions(
+                            new Dictionary<string, object>
+                            {
+                                {
+                                    "$and",
+                                    new List<object>
+                                    {
+                                        new Dictionary<string, object>
+                                        {
+                                            { "created_at", new Dictionary<string, object> { { "$gte", messageDateStartString } } }
+                                        },
+                                        new Dictionary<string, object>
+                                        {
+                                            { "created_at", new Dictionary<string, object> { { "$lt", messageDateEndString } } }
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                        .WithSortBy(
+                            new SortParameter
+                            {
+                                Field = SortParameterFieldKey.CreatedAt,
+                                Direction = SortDirection.Ascending
+                            }
+                        );
+
+                    var messageSearchResponse = await RetryAsync(
+                        async () => await MessageClient.SearchAsync( searchOptions ),
+                        operationName
+                    );
+
+                    next = messageSearchResponse?.Next;
+
+                    var messageCountResults = messageSearchResponse
+                        ?.Results
+                        ?.Where( r => r?.Message?.User?.Id.IsNotNullOrWhiteSpace() == true )
+                        .GroupBy( r => r.Message.User.Id )
+                        .Select( g => new
+                        {
+                            ChatUserKey = g.Key,
+                            MessageCount = g.Count()
+                        } )
+                        .ToDictionary( counts => counts.ChatUserKey, counts => counts.MessageCount );
+
+                    if ( messageCountResults?.Any() == true )
+                    {
+                        // Get or add the "message counts by user" dictionary for this channel.
+                        if ( !results.TryGetValue( chatChannelId, out var runningMessageCounts ) )
+                        {
+                            // We don't have any counts for this channel yet; simply add the results.
+                            results.Add( chatChannelId, messageCountResults );
+                        }
+                        else
+                        {
+                            // We're paging through this channel's messages (there are more than 1k), so we need to
+                            // supplement the previous results.
+                            foreach ( var messageCountKvp in messageCountResults )
+                            {
+                                var chatUserKey = messageCountKvp.Key;
+                                var messageCount = messageCountKvp.Value;
+
+                                if ( runningMessageCounts.TryGetValue( chatUserKey, out var existingMessageCount ) )
+                                {
+                                    // Add to this chat user's running total for this chat channel.
+                                    runningMessageCounts[chatUserKey] = existingMessageCount + messageCount;
+                                }
+                                else
+                                {
+                                    // We haven't seen this user for this channel before now; set their count.
+                                    runningMessageCounts[chatUserKey] = messageCount;
+                                }
+                            }
+                        }
+                    }
+
+                    requestCount++;
+                }
+                while ( next.IsNotNullOrWhiteSpace() && requestCount < maxRequestCount );
+            }
+
+            return results;
+        }
+
+        #endregion Messages
+
         #region Webhooks
 
         /// <inheritdoc/>
@@ -2340,7 +2593,6 @@ namespace Rock.Communication.Chat
                     {
                         case WebhookEvent.ChannelCreated:
                         case WebhookEvent.ChannelUpdated:
-                        case WebhookEvent.ChannelDeleted:
                             syncCommands.AddRange( GetSyncChatChannelAndMembersToRockCommands( chatSyncType.Value, json ) );
                             break;
                         case WebhookEvent.MemberAdded:

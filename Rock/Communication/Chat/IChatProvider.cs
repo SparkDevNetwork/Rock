@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -384,6 +385,20 @@ namespace Rock.Communication.Chat
         Task<string> GetChatUserTokenAsync( string chatUserKey );
 
         #endregion Chat Users
+
+        #region Messages
+
+        /// <summary>
+        /// Gets the message counts for each <see cref="ChatUser"/> within each <see cref="ChatChannel"/>, for the specified date.
+        /// </summary>
+        /// <param name="messageDate">The date for which to get message counts.</param>
+        /// <returns> A task representing the asynchronous operation, containing the message counts.</returns>
+        /// <remarks>
+        /// The outer dictionary key is <see cref="ChatChannel.Key"/> and the inner dictionary key is <see cref="ChatUser.Key"/>.
+        /// </remarks>
+        Task<Dictionary<string, Dictionary<string, int>>> GetChatUserMessageCountsByChatChannelKeyAsync( DateTime messageDate );
+
+        #endregion Messages
 
         #region Webhooks
 
