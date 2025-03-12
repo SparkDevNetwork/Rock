@@ -139,11 +139,13 @@
     right: var(--table-cell-padding-x);
     left: var(--table-cell-padding-x);
     height: initial;
+    width: calc(100% - var(--table-cell-padding-x) - var(--table-cell-padding-x));
+    gap: 4px;
 }
 
 .bar {
-    width: 4%;
-    margin: 0 2px;
+    flex-grow: 1;
+    max-width: 20px;
     position: relative;
     height: 30px;
     transition: height 0.3s ease-out;
@@ -328,8 +330,8 @@
                 const dateKeys = person.donationDateKeys.split("|");
                 dateKeys.forEach(dateKey => {
                     const date = new Date(parseInt(dateKey.slice(0, 4)), parseInt(dateKey.slice(4, 6)) - 1, parseInt(dateKey.slice(6, 8)));
-                    const monthYear = date.toLocaleString("default", {month: "short", year: "numeric"});
-                    if (last13Months.includes(monthYear)){
+                    const monthYear = date.toLocaleString("default", { month: "short", year: "numeric" });
+                    if (last13Months.includes(monthYear)) {
                         donationData[monthYear].donated.add(givingId);
                     }
                 });
@@ -442,14 +444,14 @@
     const getBarChart = (donationDateKeys: string | undefined): { month: string; full: string; class: string; }[] => {
         const donatedMonths = new Set<string>();
 
-        if (donationDateKeys){
+        if (donationDateKeys) {
             const dateKeys = donationDateKeys.split("|");
             dateKeys.forEach(dateKey => {
                 const year = parseInt(dateKey.slice(0, 4));
                 const month = parseInt(dateKey.slice(4, 6)) - 1;
                 const day = parseInt(dateKey.slice(6, 8));
                 const date = new Date(year, month, day);
-                const monthYear = date.toLocaleString("default", {month: "short", year: "numeric"});
+                const monthYear = date.toLocaleString("default", { month: "short", year: "numeric" });
 
                 donatedMonths.add(monthYear);
             });
