@@ -130,8 +130,8 @@ namespace Rock.Lava.Shortcodes
     <li><strong>nodeVerticalSpacing</strong> (12) - The vertical gap space between nodes.</li>
     <li><strong>chartWidth</strong> (800) - The width of the chart.</li>
     <li><strong>chartHeight</strong> (400) - The height of the chart.</li>
-    <li><strong>showLegend</strong> (true) - When hovering a node, a tooltip shows. If this is specified, this text will be prepended before the unit count.</li>
-    <li><strong>nodeTooltipActionLabel</strong> (none) - Whether or not the legend should be shown.</li>
+    <li><strong>showLegend</strong> (true) - Whether or not the legend should be shown.</li>
+    <li><strong>nodeTooltipActionLabel</strong> (none) - When hovering a node, a tooltip shows. If this is specified, this text will be prepended before the unit count.</li>
 </ul>
 
 <p>Nodes have the following options.</p>
