@@ -110,6 +110,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Specifies the modal manager (update panel) that  should use
+        /// when closing modals. This fixes an issue where a modal is closed
+        /// by C# code but the "modal-open" CSS class is not removed. This
+        /// causes drop down controls to be clipped.
+        /// </summary>
+        public string ModalManagerId
+        {
+            get => ViewState["ModalManagerId"] as string;
+            set => ViewState["ModalManagerId"] = value;
+        }
+
+        /// <summary>
         /// Gets or sets the activity type unique identifier.
         /// </summary>
         /// <value>
@@ -467,6 +479,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _formEditor = new WorkflowFormEditor();
             Controls.Add( _formEditor );
             _formEditor.ID = this.ID + "_formEditor";
+            _formEditor.ModalManagerId = ModalManagerId;
 
             _phActionAttributes = new PlaceHolder();
             Controls.Add( _phActionAttributes );
