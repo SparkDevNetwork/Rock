@@ -573,6 +573,11 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
+            if ( component.ObsidianFileUrl != null )
+            {
+                return null;
+            }
+
             if ( component is IRelatedChildDataView relatedDataViewComponent )
             {
                 var relatedDataViewId = relatedDataViewComponent.GetRelatedDataViewId( filterControls );

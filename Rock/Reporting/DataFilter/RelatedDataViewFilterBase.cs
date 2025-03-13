@@ -17,9 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Utility;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -152,6 +155,62 @@ namespace Rock.Reporting.DataFilter
             get { return "Related Data Views"; }
         }
 
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/relatedDataViewFilterBase.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new FilterSettings( selection );
+            var data = new Dictionary<string, string>
+            {
+                { "entityTypeGuid", EntityTypeCache.Get( typeof( TRelatedEntity ) )?.Guid.ToString() ?? null },
+                { "label", GetPickerLabelText() },
+                { "help", GetPickerHelpText() },
+            };
+
+            if ( !settings.IsValid )
+            {
+                return data;
+            }
+
+            var dataView = new DataViewService( rockContext ).Get( settings.DataViewGuid.GetValueOrDefault() );
+
+            if ( dataView == null )
+            {
+                return data;
+            }
+
+            var dataViewBag = new ListItemBag
+            {
+                Value = dataView.Guid.ToString(),
+                Text = dataView.ToString()
+            };
+
+            data.AddOrReplace( "dataView", dataViewBag.ToCamelCaseJson( false, true ) );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var dataView = "";
+            var dataViewJson = data.GetValueOrNull( "dataView" );
+
+            if ( dataViewJson != null )
+            {
+                var dataViewBag = dataViewJson.FromJsonOrNull<ListItemBag>();
+                dataView = dataViewBag.Value ?? string.Empty;
+            }
+
+            return dataView;
+        }
+
         #endregion
 
         #region Public Methods
@@ -165,17 +224,25 @@ namespace Rock.Reporting.DataFilter
         /// </returns>
         public override string GetTitle( Type entityType )
         {
-            return $"{ GetRelatedEntityName() } Data View";
+            return $"{GetRelatedEntityName()} Data View";
         }
 
         /// <summary>
-        /// Override this method to customise the DataViewItemPicker displayed for this filter by setting the Label text, Help text and other properties as necessary.
+        /// Gets the picker control's label text based on the related entity.
         /// </summary>
-        /// <param name="picker"></param>
-        protected virtual void OnConfigureDataViewItemPicker( DataViewItemPicker picker )
+        /// <returns>The picker control's label text based on the related entity.</returns>
+        protected virtual string GetPickerLabelText()
         {
-            picker.Label = string.Format( "Is associated with any {0} in this Data View", GetRelatedEntityName() );
-            picker.Help = string.Format( "A Data View that provides the set of {0} with which the {1} may be connected.", GetRelatedEntityName().Pluralize(), GetTargetEntityName() );
+            return string.Format( "Is associated with any {0} in this Data View", GetRelatedEntityName() );
+        }
+
+        /// <summary>
+        /// Gets the picker control's help text based on the related entity.
+        /// </summary>
+        /// <returns>The picker control's help text based on the related entity.</returns>
+        protected virtual string GetPickerHelpText()
+        {
+            return string.Format( "A Data View that provides the set of {0} with which the {1} may be connected.", GetRelatedEntityName().Pluralize(), GetTargetEntityName() );
         }
 
         /// <summary>
@@ -219,7 +286,7 @@ function() {
 
             var relatedEntityName = GetRelatedEntityName();
 
-            string result = $"Connected to { relatedEntityName }";
+            string result = $"Connected to {relatedEntityName}";
 
             if ( !settings.IsValid )
             {
@@ -232,7 +299,7 @@ function() {
 
                 var dataViewName = ( dataView != null ? dataView.ToString() : string.Empty );
 
-                result = $"Is associated with any { relatedEntityName } in Data View: { dataViewName }";
+                result = $"Is associated with any {relatedEntityName} in Data View: {dataViewName}";
             }
 
             return result;
@@ -242,6 +309,8 @@ function() {
         /// The control data view
         /// </summary>
         protected const string _CtlDataView = "ddlDataView";
+
+#if WEBFORMS
 
         /// <summary>
         /// Creates the child controls.
@@ -265,6 +334,16 @@ function() {
             this.OnConfigureDataViewItemPicker( ddlDataView );
 
             return new Control[] { ddlDataView };
+        }
+
+        /// <summary>
+        /// Override this method to customise the DataViewItemPicker displayed for this filter by setting the Label text, Help text and other properties as necessary.
+        /// </summary>
+        /// <param name="picker"></param>
+        protected virtual void OnConfigureDataViewItemPicker( DataViewItemPicker picker )
+        {
+            picker.Label = GetPickerLabelText();
+            picker.Help = GetPickerHelpText();
         }
 
         /// <summary>
@@ -328,6 +407,23 @@ function() {
 
             return ddlDataView.SelectedValueAsId();
         }
-        #endregion
+
+#endif
+
+        /// <inheritdoc/>
+        public override int? GetRelatedDataViewId( Type entityType, string selection, RockContext rockContext )
+        {
+            var settings = new FilterSettings( selection );
+
+            if ( !settings.IsValid )
+            {
+                return null;
+            }
+
+            return DataComponentSettingsHelper.GetDataViewId( settings.DataViewGuid );
+        }
+
     }
+
+    #endregion
 }
