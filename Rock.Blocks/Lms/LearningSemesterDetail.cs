@@ -216,9 +216,6 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.StartDate ),
                 () => entity.StartDate = box.Bag.StartDate );
 
-            box.IfValidProperty( nameof( box.Bag.LearningProgramId ),
-                () => entity.LearningProgramId = box.Bag.LearningProgramId );
-
             return true;
         }
 
