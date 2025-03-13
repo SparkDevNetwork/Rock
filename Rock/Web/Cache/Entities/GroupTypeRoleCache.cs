@@ -119,6 +119,15 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool CanManageMembers { get; private set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can take attendance.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can take attendance; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool CanTakeAttendance { get; private set; }
+
         /// <inheritdoc cref="GroupTypeRole.IsExcludedFromPeerNetwork"/>
         [DataMember]
         public bool IsExcludedFromPeerNetwork { get; private set; }
@@ -185,6 +194,7 @@ namespace Rock.Web.Cache
             CanView = role.CanView;
             CanEdit = role.CanEdit;
             CanManageMembers = role.CanManageMembers;
+            CanTakeAttendance = role.CanTakeAttendance;
             IsExcludedFromPeerNetwork = role.IsExcludedFromPeerNetwork;
             IsCheckInAllowed = role.IsCheckInAllowed;
             ChatRole = role.ChatRole;
