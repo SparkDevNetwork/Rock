@@ -460,6 +460,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             Controls.Add( _wfatpEntityType );
             _wfatpEntityType.ID = this.ID + "_wfatpEntityType";
             _wfatpEntityType.Label = "Action Type";
+            _wfatpEntityType.Required = true;
 
             _rlEntityTypeOverview = new RockLiteral();
             Controls.Add( _rlEntityTypeOverview );
