@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,7 +24,9 @@ using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Utility;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -37,7 +39,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
     [Description( "Select Group Members according to their membership of Groups from a Group Data View." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Data View" )]
-    [Rock.SystemGuid.EntityTypeGuid( "FE44A344-DED1-4E93-8C74-1820E6313322")]
+    [Rock.SystemGuid.EntityTypeGuid( "FE44A344-DED1-4E93-8C74-1820E6313322" )]
     public class GroupDataViewFilter : DataFilterComponent, IRelatedChildDataView
     {
         #region Properties
@@ -62,6 +64,54 @@ namespace Rock.Reporting.DataFilter.GroupMember
         public override string Section
         {
             get { return "Related Data Views"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/GroupMember/groupDataViewFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var result = new Dictionary<string, string>();
+            var selectionValues = selection.Split( '|' );
+
+            ListItemBag dataViewBag;
+
+            if ( selectionValues.Length == 0 )
+            {
+                return result;
+            }
+
+            var dataViewGuid = selectionValues[0].AsGuidOrNull();
+
+            if ( !dataViewGuid.HasValue )
+            {
+                return result;
+            }
+
+            var dataView = DataViewCache.Get( dataViewGuid.Value );
+
+            if ( dataView == null )
+            {
+                return result;
+            }
+
+            dataViewBag = new ListItemBag { Value = dataView.Guid.ToString(), Text = dataView.Name };
+            result.AddOrReplace( "dataView", dataViewBag.ToCamelCaseJson( false, true ) );
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var dataViewBag = data.GetValueOrNull( "dataView" )?.FromJsonOrNull<ListItemBag>();
+
+            return dataViewBag?.Value ?? string.Empty;
         }
 
         #endregion
@@ -198,6 +248,8 @@ function ()
 
         private const string _CtlDataView = "dvpDataView";
 
+#if WEBFORMS
+
         /// <summary>
         /// Creates the model representation of the child controls used to display and edit the filter settings.
         /// Implement this version of CreateChildControls if your DataFilterComponent works the same in all filter modes
@@ -295,6 +347,22 @@ function ()
 
             return ddlDataView.SelectedValueAsId();
         }
+
+#endif
+
+        /// <inheritdoc/>
+        public override int? GetRelatedDataViewId( Type entityType, string selection, RockContext rockContext )
+        {
+            var settings = new SelectSettings( selection );
+
+            if ( !settings.IsValid )
+            {
+                return null;
+            }
+
+            return DataComponentSettingsHelper.GetDataViewId( settings.DataViewGuid );
+        }
+
         #endregion
 
         #region Settings
@@ -344,5 +412,6 @@ function ()
         }
 
         #endregion
+
     }
 }
