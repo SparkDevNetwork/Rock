@@ -84,6 +84,10 @@
     <Compile Include="Migrations\202503121531161_AddChatInteractionChannel.Designer.cs">
       <DependentUpon>202503121531161_AddChatInteractionChannel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202503131823525_TempUpdateExternalSiteWatchPageRoutes.cs" />
+    <Compile Include="Migrations\202503131823525_TempUpdateExternalSiteWatchPageRoutes.Designer.cs">
+      <DependentUpon>202503131823525_TempUpdateExternalSiteWatchPageRoutes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503042354103_AddLearningClassActivityEntity.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503042354103_AddLearningClassActivityEntity.Designer.cs">
       <DependentUpon>202503042354103_AddLearningClassActivityEntity.cs</DependentUpon>
@@ -2548,6 +2552,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202503121531161_AddChatInteractionChannel.resx">
       <DependentUpon>202503121531161_AddChatInteractionChannel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202503131823525_TempUpdateExternalSiteWatchPageRoutes.resx">
+      <DependentUpon>202503131823525_TempUpdateExternalSiteWatchPageRoutes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503042354103_AddLearningClassActivityEntity.resx">
       <DependentUpon>202503042354103_AddLearningClassActivityEntity.cs</DependentUpon>

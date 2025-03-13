@@ -23,10 +23,12 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
 using Rock.Transactions;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 using Rock.Web.UI;
@@ -122,7 +124,7 @@ namespace RockWeb.Blocks.Cms
 
     [BooleanField(
         "Set Page Title",
-        Description = "Determines if the block should set the page title with the channel name or content item.",
+        Description = "Determines if the block should set the page title with the channel name or content item. This will also add a breadcrumb with the same name.",
         Category = "CustomSetting",
         Key = AttributeKey.SetPageTitle )]
 
@@ -220,7 +222,7 @@ namespace RockWeb.Blocks.Cms
 
     #endregion Block Attributes
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CONTENT_CHANNEL_ITEM_VIEW )]
-    public partial class ContentChannelItemView : RockBlockCustomSettings
+    public partial class ContentChannelItemView : RockBlockCustomSettings, IBreadCrumbBlock
     {
         #region Attribute Keys
 
@@ -631,38 +633,10 @@ Guid - ContentChannelItem Guid";
                     return;
                 }
 
-                if ( contentChannelItem.ContentChannel.RequiresApproval )
+                if ( !ItemIsApprovedToDisplay( contentChannelItem ) )
                 {
-                    var statuses = new List<ContentChannelItemStatus>();
-                    foreach ( var status in ( GetAttributeValue( AttributeKey.Status ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                    {
-                        var statusEnum = status.ConvertToEnumOrNull<ContentChannelItemStatus>();
-                        if ( statusEnum != null )
-                        {
-                            statuses.Add( statusEnum.Value );
-                        }
-                    }
-
-                    if ( !statuses.Contains( contentChannelItem.Status ) )
-                    {
-                        ShowNoDataFound();
-                        return;
-                    }
-                }
-
-                // if a Channel was specified, verify that the ChannelItem is part of the channel
-                var channelGuid = this.GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull();
-                if ( channelGuid.HasValue )
-                {
-                    var channel = ContentChannelCache.Get( channelGuid.Value );
-                    if ( channel != null )
-                    {
-                        if ( contentChannelItem.ContentChannelId != channel.Id )
-                        {
-                            ShowNoDataFound();
-                            return;
-                        }
-                    }
+                    ShowNoDataFound();
+                    return;
                 }
 
                 var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
@@ -695,6 +669,7 @@ Guid - ContentChannelItem Guid";
                 }
 
                 mergeFields.Add( "DetailPage", detailPage );
+                mergeFields.Add( "DetailPageRoute", GetAttributeValue( AttributeKey.DetailPage ) );
 
                 string metaDescriptionValue = GetMetaValueFromAttribute( this.GetAttributeValue( AttributeKey.MetaDescriptionAttribute ), contentChannelItem );
 
@@ -748,12 +723,6 @@ Guid - ContentChannelItem Guid";
                 RockPage.PageTitle = pageTitle;
                 RockPage.BrowserTitle = string.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
                 RockPage.Header.Title = string.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
-
-                var pageBreadCrumb = RockPage.PageReference.BreadCrumbs.FirstOrDefault();
-                if ( pageBreadCrumb != null )
-                {
-                    pageBreadCrumb.Name = RockPage.PageTitle;
-                }
             }
 
             LaunchWorkflow();
@@ -832,7 +801,7 @@ Guid - ContentChannelItem Guid";
         /// Gets the content channel item parameter using the first page parameter or ContentChannelQueryParameter
         /// </summary>
         /// <returns></returns>
-        private string GetContentChannelItemParameterValue()
+        private string GetContentChannelItemParameterValue( PageReference pageReference = null )
         {
             string contentChannelItemKey = null;
 
@@ -840,7 +809,23 @@ Guid - ContentChannelItem Guid";
             string contentChannelQueryParameter = this.GetAttributeValue( AttributeKey.ContentChannelQueryParameter );
             if ( !string.IsNullOrEmpty( contentChannelQueryParameter ) )
             {
-                contentChannelItemKey = this.PageParameter( contentChannelQueryParameter );
+                if ( pageReference != null )
+                {
+                    contentChannelItemKey = pageReference.GetPageParameter( contentChannelQueryParameter );
+                }
+                else
+                {
+                    contentChannelItemKey = this.PageParameter( contentChannelQueryParameter );
+                }
+            }
+            else if ( pageReference != null )
+            {
+                var key = pageReference.Parameters.Keys.FirstOrDefault();
+
+                if ( key != null )
+                {
+                    contentChannelItemKey = pageReference.GetPageParameter( key );
+                }
             }
             else
             {
@@ -874,15 +859,7 @@ Guid - ContentChannelItem Guid";
                 if ( contentChannelGuid.HasValue )
                 {
                     var rockContext = new RockContext();
-                    var statuses = new List<ContentChannelItemStatus>();
-                    foreach ( var status in ( GetAttributeValue( AttributeKey.Status ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                    {
-                        var statusEnum = status.ConvertToEnumOrNull<ContentChannelItemStatus>();
-                        if ( statusEnum != null )
-                        {
-                            statuses.Add( statusEnum.Value );
-                        }
-                    }
+                    var statuses = GetApprovedStatuses();
                     var now = RockDateTime.Now;
                     var contentChannelItem = new ContentChannelItemService( rockContext ).Queryable()
                         .Where( i => i.ContentChannel.Guid.Equals( contentChannelGuid.Value ) && i.StartDateTime <= now && ( !i.ContentChannel.RequiresApproval || statuses.Contains( i.Status ) ) )
@@ -897,6 +874,60 @@ Guid - ContentChannelItem Guid";
             }
 
             return contentChannelItemKey;
+        }
+
+        /// <summary>
+        /// Gets the approved statuses for content channel items from the block
+        /// configuration settings.
+        /// </summary>
+        /// <returns>A list of approved content channel item statuses.</returns>
+        private List<ContentChannelItemStatus> GetApprovedStatuses()
+        {
+            var statuses = new List<ContentChannelItemStatus>();
+
+            foreach ( var status in ( GetAttributeValue( AttributeKey.Status ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                var statusEnum = status.ConvertToEnumOrNull<ContentChannelItemStatus>();
+                if ( statusEnum != null )
+                {
+                    statuses.Add( statusEnum.Value );
+                }
+            }
+
+            return statuses;
+        }
+
+        /// <summary>
+        /// Determines if the content channel item is approved to be displayed.
+        /// This checks the approval state of the item and that it is part of
+        /// the configured channel (if there is one).
+        /// </summary>
+        /// <param name="contentChannelItem">The item to be checked.</param>
+        /// <returns><c>true</c> if the item is okay to display; otherwise <c>false</c>.</returns>
+        private bool ItemIsApprovedToDisplay( ContentChannelItem contentChannelItem )
+        {
+            // If the item requires approval, make sure it is one of our approved statuses.
+            if ( contentChannelItem.ContentChannel.RequiresApproval )
+            {
+                if ( !GetApprovedStatuses().Contains( contentChannelItem.Status ) )
+                {
+                    return false;
+                }
+            }
+
+            // if a Channel was specified, verify that the ChannelItem is part of the channel
+            var channelGuid = this.GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull();
+            if ( channelGuid.HasValue )
+            {
+                var channel = ContentChannelCache.Get( channelGuid.Value );
+
+                if ( channel != null && channel.Id != contentChannelItem.ContentChannelId )
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -1187,6 +1218,56 @@ Guid - ContentChannelItem Guid";
                     }
                 }
             }
+        }
+
+        /// <inheritdoc/>
+        BreadCrumbResult IBreadCrumbBlock.GetBreadCrumbs( PageReference pageReference )
+        {
+            var result = new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb>()
+            };
+
+            if ( !GetAttributeValue( AttributeKey.SetPageTitle ).AsBoolean() )
+            {
+                return result;
+            }
+
+            var contentChannelItemParameterValue = GetContentChannelItemParameterValue( pageReference );
+
+            if ( string.IsNullOrEmpty( contentChannelItemParameterValue ) )
+            {
+                return result;
+            }
+
+            var outputCacheDuration = GetAttributeValue( AttributeKey.OutputCacheDuration ).AsIntegerOrNull();
+            string pageTitle = null;
+
+            if ( outputCacheDuration.HasValue && outputCacheDuration.Value > 0 )
+            {
+                var pageTitleCacheKey = PAGETITLE_CACHE_KEY_PREFIX + contentChannelItemParameterValue;
+
+                pageTitle = GetCacheItem( pageTitleCacheKey, true ) as string;
+            }
+
+            if ( pageTitle == null )
+            {
+                var contentChannelItem = GetContentChannelItem( contentChannelItemParameterValue );
+
+                if ( contentChannelItem == null || !ItemIsApprovedToDisplay( contentChannelItem ) )
+                {
+                    return result;
+                }
+
+                pageTitle = contentChannelItem.Title;
+            }
+
+            if ( pageTitle.IsNotNullOrWhiteSpace() )
+            {
+                result.BreadCrumbs.Add( new BreadCrumbLink( pageTitle, pageReference ) );
+            }
+
+            return result;
         }
 
         #endregion Methods
