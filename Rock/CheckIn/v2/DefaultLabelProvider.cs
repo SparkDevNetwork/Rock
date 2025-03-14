@@ -485,7 +485,7 @@ namespace Rock.CheckIn.v2
             var labelData = GetLabelData( label.LabelType, attendanceLabel, attendanceLabels, sessionFamily );
 
             var filter = label.GetConditionalPrintCriteria();
-            var builder = new Reporting.FieldFilterExpressionBuilder();
+            var builder = new CheckInFieldFilterBuilder();
             var fn = builder.GetIsMatchFunction( filter, labelData.GetType() );
 
             if ( !fn( labelData ) )
