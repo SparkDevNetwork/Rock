@@ -55,37 +55,35 @@
                                             :entityTypeGuid="EntityType.LearningCourse"
                                             :multiple="false" />
 
+                            <RockLabel help="Courses that must be completed before or are considered equivalent to this course.">Requirements</RockLabel>
                             <Grid
                                   :data="courseRequirementsGridData"
                                   keyfield="idKey"
-                                  light>
+                                  light
+                                  liveUpdates
+                                  itemTerm="Requirement"
+                                  :onAddItem="onOpenCourseRequirementModalClick">
                                 <Column name="requiredLearningCourseName"
-                                        title="Requirements"
                                         field="requiredLearningCourseName"
                                         :filter="textValueFilter"
                                         width="100%"
                                         visiblePriority="xs">
                                     <template #format="{ row }">
                                         <div class="col-xs-12 col-md-7">
-                                            <span class="text-muted ml-1">
+                                            <span class="ml-1">
                                                 {{ row.requiredLearningCourseName }} - {{ row.requiredLearningCourseCode }}
                                             </span>
                                         </div>
                                         <span class="col-xs-12 col-md-3">
                                             {{ RequirementTypeDescription[row.requirementType ?? ""] ?? "" }}
                                         </span>
-                                        <div class="col-xs-12 col-md-2 text-right">
-                                            <button aria-label="Remove this requirement" class="btn btn-default btn-square remove-answer-button" @click.prevent="removeRequirement(row)">
+                                        <div class="col-xs-12 col-md-2 grid-columncommand justify-content-end">
+                                            <button aria-label="Remove this requirement" class="btn btn-danger btn-sm" @click.prevent="removeRequirement(row)">
                                                 <i class="fa fa-times" aria-hidden="true"></i>
                                             </button>
                                         </div>
                                     </template>
                                 </Column>
-                                <template #gridFooterAppend>
-                                    <button @click="onOpenCourseRequirementModalClick" type="button" class="btn btn-add pull-right" title="Add a new course requirement.">
-                                        <i class="fa fa-plus fa-fw"></i>
-                                    </button>
-                                </template>
                             </Grid>
                             <Modal v-model="showAddCourseRequirementModal" :title="'Add Requirement for ' + name" @save="onAddRequirementClicked" :isSaveButtonDisabled="!addRequirementType" saveText="Add Requirement">
                                 <div class="row">
@@ -180,6 +178,7 @@
     import ImageUploader from "@Obsidian/Controls/imageuploader.obs";
     import { RequirementTypeDescription } from "@Obsidian/Enums/Lms/requirementType";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
     import { setPropertiesBoxValue, useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
