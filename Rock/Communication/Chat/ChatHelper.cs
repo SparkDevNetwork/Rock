@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
@@ -104,6 +105,11 @@ namespace Rock.Communication.Chat
         /// The prefix to use for a chat-specific <see cref="PersonAlias"/> foreign key.
         /// </summary>
         public const string ChatPersonAliasForeignKeyPrefix = "core-chat:";
+
+        /// <summary>
+        /// A semaphore for thread-safe deletion of deceased individuals.
+        /// </summary>
+        private static readonly SemaphoreSlim _deleteDeceasedIndividualsSemaphore = new SemaphoreSlim( 1, 1 );
 
         #endregion Fields
 
@@ -406,6 +412,11 @@ namespace Rock.Communication.Chat
         /// </summary>
         public void InitializeChatProvider()
         {
+            if ( !IsChatEnabled )
+            {
+                return;
+            }
+
             ChatProvider.Initialize();
         }
 
@@ -462,7 +473,7 @@ namespace Rock.Communication.Chat
         {
             ChatUserAuthentication auth = null;
 
-            if ( personId < 1 )
+            if ( !IsChatEnabled || personId < 1 )
             {
                 return auth;
             }
@@ -953,18 +964,16 @@ namespace Rock.Communication.Chat
         /// </remarks>
         public async Task<ChatSyncCrudResult> SyncGroupMembersToChatProviderAsync( int groupId, RockToChatGroupSyncConfig groupSyncConfig = null )
         {
-            if ( groupId <= 0 )
+            if ( !IsChatEnabled || groupId <= 0 )
             {
                 return new ChatSyncCrudResult();
             }
 
             // Get the sync commands for this group's members.
             var syncCommands = new GroupMemberService( RockContext )
-                .Queryable()
-                .Where( gm =>
-                    gm.GroupId == groupId
-                    && !gm.Person.IsDeceased
-                )
+                // In this case, we DO want to get deceased individuals, as the sync process knows how to handle them.
+                .Queryable( includeDeceased: true )
+                .Where( gm => gm.GroupId == groupId )
                 .Select( gm => new SyncGroupMemberToChatCommand
                 {
                     GroupId = gm.GroupId,
@@ -1074,8 +1083,13 @@ namespace Rock.Communication.Chat
                             result.InnerResults.Add( createOrUpdateChatUsersResult );
 
                             // Determine which commands represent "bans" and which represent "unbans", by checking if
-                            // each person represented by the sync commands currently exits in the group.
-                            var chatBanListMembers = GetRockChatChannelMembers( chatBanListCommands );
+                            // each person represented by the sync commands currently exists in the group. We'll exclude
+                            // deceased individuals altogether from these sync commands, as allowing them to be banned
+                            // would be disrespectful. The sync job will ensure they're properly removed them from the
+                            // external chat system the next time it runs.
+                            var chatBanListMembers = GetRockChatChannelMembers( chatBanListCommands )
+                                .Where( m => !m.IsDeceased )
+                                .ToList();
 
                             // Add the banned and unbanned chat users to the results (for logging).
                             var globalChatUserBanResult = new ChatSyncBanResult();
@@ -1273,6 +1287,76 @@ namespace Rock.Communication.Chat
                 // external chat system.
                 var rockChatChannelMembers = GetRockChatChannelMembers( syncCommands );
 
+                #region Deceased Individuals to Delete
+
+                PersonService personService = null;
+                PersonAliasService personAliasService = null;
+
+                // Take this opportunity to delete any deceased members who are being synced.
+                var deceasedMembers = rockChatChannelMembers.Where( m => m.IsDeceased ).ToList();
+                if ( deceasedMembers.Any() )
+                {
+                    await _deleteDeceasedIndividualsSemaphore.WaitAsync();
+                    try
+                    {
+                        foreach ( var deceasedMember in deceasedMembers )
+                        {
+                            if ( personService == null )
+                            {
+                                personService = new PersonService( RockContext );
+                                personAliasService = new PersonAliasService( RockContext );
+                            }
+
+                            // Remove this member from the outer collection so they aren't processed below.
+                            rockChatChannelMembers.Remove( deceasedMember );
+
+                            // Get this member's chat user key(s).
+                            var keysToDelete = personService
+                                .GetAllRockChatUserKeys( deceasedMember.PersonId )
+                                ?.Where( k =>
+                                    k.ChatPersonAliasId.HasValue
+                                    && k.ChatUserKey.IsNotNullOrWhiteSpace()
+                                )
+                                .ToList();
+
+                            if ( keysToDelete?.Any() != true )
+                            {
+                                continue;
+                            }
+
+                            // This first call will remove the person from all chat-related groups in Rock.
+                            // (We only need to use one of their keys - if they have multiple - to accomplish this).
+                            var deleteCommands = new List<DeleteChatPersonInRockCommand> {
+                                new DeleteChatPersonInRockCommand { ChatPersonKey = keysToDelete.First().ChatUserKey }
+                            };
+
+                            var config = new DeleteChatUsersInRockConfig
+                            {
+                                ShouldUnban = true,
+                                ShouldClearChatPersonAliasForeignKey = false
+                            };
+
+                            DeleteChatUsersInRock( deleteCommands, config );
+
+                            // This second call will delete the person's chat user(s) from the external chat system and clear
+                            // the corresponding chat person alias foreign keys.
+                            var deleteResult = await DeleteChatUsersAsync( personAliasService, keysToDelete );
+                        }
+                    }
+                    finally
+                    {
+                        _deleteDeceasedIndividualsSemaphore.Release();
+                    }
+
+                    // Do we have any more members to process?
+                    if ( !rockChatChannelMembers.Any() )
+                    {
+                        return result;
+                    }
+                }
+
+                #endregion Deceased Individuals to Delete
+
                 #region Channel Members to Delete
 
                 // Handle commands to delete group members.
@@ -1295,12 +1379,13 @@ namespace Rock.Communication.Chat
                         .Distinct()
                         .ToList();
 
-                    var rockChatUserPersonKeys = GetRockChatUserPersonKeys( deletePersonIds );
+                    var rockChatUserKeys = ( personService ?? new PersonService( RockContext ) )
+                        .GetActiveRockChatUserKeys( deletePersonIds );
 
                     // Just in case any people don't have a chat user key, let's at least log them.
                     // Subbing "user" for "person" here, as this can get logged in the UI.
                     var membersWithoutChatPersonKeys = deleteMembers
-                        .Where( c => !rockChatUserPersonKeys.Any( r => r.PersonId == c.PersonId ) )
+                        .Where( c => !rockChatUserKeys.Any( r => r.PersonId == c.PersonId ) )
                         .ToList();
 
                     if ( membersWithoutChatPersonKeys.Any() )
@@ -1320,7 +1405,7 @@ namespace Rock.Communication.Chat
                     // Organize members by channel.
                     foreach ( var member in deleteMembers )
                     {
-                        var chatUserKey = rockChatUserPersonKeys
+                        var chatUserKey = rockChatUserKeys
                             .First( k => k.PersonId == member.PersonId )
                             .ChatUserKey;
 
@@ -1343,7 +1428,8 @@ namespace Rock.Communication.Chat
 
                 #region Channel Members to Create or Update
 
-                // Handle commands to create new or update existing group members.
+                // Handle commands to create new or update existing group members. The chat sync job will ensure deceased
+                // members are properly removed from the external chat system, so don't include them here.
                 var createOrUpdateMembers = rockChatChannelMembers
                     .Where( c =>
                         !c.ShouldDelete
@@ -1591,7 +1677,7 @@ namespace Rock.Communication.Chat
 
                 if ( perChannelExceptions.Any() )
                 {
-                    throw new AggregateException( perChannelExceptions );
+                    throw GetFirstOrAggregateException( perChannelExceptions );
                 }
             }
             catch ( Exception ex )
@@ -1664,7 +1750,7 @@ namespace Rock.Communication.Chat
 
                 // Get the existing chat users.
                 var chatUserKeys = rockChatUserPeople
-                    .Where( p => p.ChatAliasGuid.HasValue )
+                    .Where( p => p.ChatPersonAliasGuid.HasValue )
                     .Select( p => p.ChatUserKey )
                     .ToList();
 
@@ -1779,34 +1865,141 @@ namespace Rock.Communication.Chat
             return result;
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async Task<List<Guid>> DeleteChatUsersAsync( List<Guid> personAliasGuids )
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        /// <summary>
+        /// Deletes non-prevailing, merged <see cref="ChatUser"/>s from the external chat system.
+        /// </summary>
+        /// <param name="personId">
+        /// The optional <see cref="Person"/> identifier to check for merged <see cref="ChatUser"/>s to delete.
+        /// </param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// If <paramref name="personId"/> is not provided, ALL chat-enabled Rock <see cref="Person"/>s will be checked
+        /// for merged <see cref="ChatUser"/>s to delete.
+        /// </para>
+        /// <para>
+        /// For <see cref="ChatUser"/>s who are successfully deleted in the external chat system, their corresponding
+        /// <see cref="PersonAlias"/> records will have their foreign key values cleared.
+        /// </para>
+        /// </remarks>
+        public async Task<ChatSyncCrudResult> DeleteMergedChatUsersAsync( int? personId = null )
         {
-            /*
-                --------------------------
-                To delete users (IN BULK):
+            var result = new ChatSyncCrudResult();
 
-                    1) DeleteManyAsync(DeleteUsersRequest request)
+            if ( !IsChatEnabled )
+            {
+                return result;
+            }
 
-                        public class DeleteUsersRequest
-                        {
-                            public IEnumerable<string> UserIds { get; set; }
-                            public DeletionStrategy? UserDeletionStrategy { get; set; }
-                            public DeletionStrategy? MessageDeletionStrategy { get; set; }
-                            public DeletionStrategy? ConversationDeletionStrategy { get; set; }
-                        }
+            var peopleWithMultipleChatUserKeys = new PersonService( RockContext )
+                    .GetPeopleWithMultipleChatUserKeys( personId );
 
-                            public enum DeletionStrategy
-                            {
-                                None,
-                                Soft,
-                                Pruning,
-                                Hard,
-                            }
-            */
+            if ( peopleWithMultipleChatUserKeys?.Any() != true )
+            {
+                return result;
+            }
 
-            throw new NotImplementedException();
+            // Don't let individual exceptions cause all to fail.
+            var perPersonExceptions = new List<Exception>();
+
+            // This will be used to clear out the chat user[foreign] keys for the chat users who are deleted.
+            var personAliasService = new PersonAliasService( RockContext );
+
+            foreach ( var personKvp in peopleWithMultipleChatUserKeys )
+            {
+                var rockChatUserKeys = personKvp.Value
+                    ?.Where( k =>
+                        k.ChatPersonAliasId.HasValue
+                        && k.ChatUserKey.IsNotNullOrWhiteSpace()
+                    )
+                    .OrderBy( k => k.ChatPersonAliasId ) // Keep the earliest chat person alias.
+                    .ToList();
+
+                var keyToKeep = rockChatUserKeys?.FirstOrDefault();
+                if ( keyToKeep == null )
+                {
+                    continue;
+                }
+
+                var keysToDelete = rockChatUserKeys.Skip( 1 ).ToList();
+                if ( !keysToDelete.Any() )
+                {
+                    continue;
+                }
+
+                var deleteResult = await DeleteChatUsersAsync( personAliasService, keysToDelete, keyToKeep );
+
+                result.Deleted.UnionWith( deleteResult.Deleted );
+                result.Skipped.UnionWith( deleteResult.Skipped );
+
+                if ( deleteResult.HasException )
+                {
+                    perPersonExceptions.Add( deleteResult.Exception );
+                }
+            }
+
+            if ( perPersonExceptions.Any() )
+            {
+                var ex = GetFirstOrAggregateException( perPersonExceptions );
+
+                result.Exception = ex;
+
+                LogError( ex, nameof( DeleteMergedChatUsersAsync ) );
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Deletes all <see cref="ChatUser"/>s for the specified <see cref="Person"/> in the external chat system.
+        /// </summary>
+        /// <param name="personId">The <see cref="Person"/> identifier for whom to delete all <see cref="ChatUser"/>s.</param>
+        /// <param name="personAliasService">The optional <see cref="PersonAliasService"/> to use for clearing foreign key values.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
+        /// </returns>
+        /// <remarks>
+        /// For <see cref="ChatUser"/>s who are successfully deleted in the external chat system, their corresponding
+        /// <see cref="PersonAlias"/> records will have their foreign key values cleared.
+        /// </remarks>
+        public async Task<ChatSyncCrudResult> DeleteChatUsersAsync( int personId, PersonAliasService personAliasService = null )
+        {
+            var result = new ChatSyncCrudResult();
+
+            if ( !IsChatEnabled || personId <= 0 )
+            {
+                return result;
+            }
+
+            var keysToDelete = new PersonService( RockContext )
+                .GetAllRockChatUserKeys( personId )
+                ?.Where( k =>
+                    k.ChatPersonAliasId.HasValue
+                    && k.ChatUserKey.IsNotNullOrWhiteSpace()
+                )
+                .ToList();
+
+            if ( keysToDelete?.Any() != true )
+            {
+                return result;
+            }
+
+            var deleteResult = await DeleteChatUsersAsync(
+                personAliasService ?? new PersonAliasService( RockContext ),
+                keysToDelete
+            );
+
+            result.Deleted.UnionWith( deleteResult.Deleted );
+            result.Skipped.UnionWith( deleteResult.Skipped );
+
+            if ( deleteResult.HasException )
+            {
+                result.Exception = deleteResult.Exception;
+            }
+
+            return result;
         }
 
         #endregion Synchronization: From Rock To Chat Provider
@@ -1816,6 +2009,11 @@ namespace Rock.Communication.Chat
         /// <inheritdoc cref="IChatProvider.ValidateWebhookRequestAsync(HttpRequestMessage)"/>
         public async Task<WebhookValidationResult> ValidateWebhookRequestAsync( HttpRequestMessage request )
         {
+            if ( !IsChatEnabled )
+            {
+                return new WebhookValidationResult( null );
+            }
+
             WebhookValidationResult result;
 
             try
@@ -1855,7 +2053,7 @@ namespace Rock.Communication.Chat
         /// <returns>A task representing the asynchronous operation.</returns>
         public async Task HandleChatWebhookRequestsAsync( List<ChatWebhookRequest> webhookRequests )
         {
-            if ( webhookRequests?.Any() != true )
+            if ( !IsChatEnabled || webhookRequests?.Any() != true )
             {
                 return;
             }
@@ -1890,7 +2088,7 @@ namespace Rock.Communication.Chat
                 ?.Where( c => c?.ShouldRetry == true )
                 .ToList();
 
-            if ( syncCommands?.Any() != true )
+            if ( !IsChatEnabled || syncCommands?.Any() != true )
             {
                 return;
             }
@@ -1975,12 +2173,743 @@ namespace Rock.Communication.Chat
             }
         }
 
+        #endregion Synchronization: From Chat Provider To Rock
+
+        #region Interactions
+
+        /// <summary>
+        /// Gets the message counts for each <see cref="ChatUser"/> within each <see cref="ChatChannel"/>, for the specified date.
+        /// </summary>
+        /// <param name="messageDate">The date for which to get message counts.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="ChatUserMessageCountsByChatChannelResult"/>.
+        /// </returns>
+        public async Task<ChatUserMessageCountsByChatChannelResult> GetChatUserMessageCountsByChatChannelKeyAsync( DateTime messageDate )
+        {
+            var result = new ChatUserMessageCountsByChatChannelResult { MessageDate = messageDate };
+
+            if ( !IsChatEnabled )
+            {
+                return result;
+            }
+
+            try
+            {
+                var messageCounts = await ChatProvider.GetChatUserMessageCountsByChatChannelKeyAsync( messageDate );
+
+                result.MessageCounts = messageCounts;
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+
+                LogError( ex, nameof( GetChatUserMessageCountsByChatChannelKeyAsync ) );
+            }
+
+            return result;
+        }
+
+        #endregion Interactions
+
+        #endregion Public Methods
+
+        #region Private Methods
+
+        #region Logging & Error Handling
+
+        /// <summary>
+        /// Gets the first exception in the list, or an <see cref="AggregateException"/> if there are multiple exceptions.
+        /// </summary>
+        /// <param name="exceptions">The list of exceptions.</param>
+        /// <param name="aggregateMessage">The optional message to include in the <see cref="AggregateException"/>.</param>
+        internal static Exception GetFirstOrAggregateException( List<Exception> exceptions, string aggregateMessage = null )
+        {
+            return exceptions.Count == 1
+                ? exceptions.First()
+                : aggregateMessage.IsNotNullOrWhiteSpace()
+                    ? new AggregateException( aggregateMessage, exceptions )
+                    : new AggregateException( exceptions );
+        }
+
+        /// <summary>
+        /// Formats and writes a debug log message.
+        /// </summary>
+        /// <param name="operationName">The name of the operation that was taking place.</param>
+        /// <param name="message">Format string of the log message in message template format. Example: <c>"User {User} logged in from {Address}"</c></param>
+        /// <param name="args">An object array that contains zero or more objects to format.</param>
+        private void LogDebug( string operationName, string message, params object[] args )
+        {
+            var logMessage = $"{nameof( ChatHelper ).SplitCase()} > {operationName.SplitCase()}: {message}";
+            Logger.LogDebug( logMessage, args );
+        }
+
+        /// <summary>
+        /// Formats and writes a warning log message.
+        /// </summary>
+        /// <param name="operationName">The name of the operation that was taking place.</param>
+        /// <param name="message">Format string of the log message in message template format. Example: <c>"User {User} logged in from {Address}"</c></param>
+        /// <param name="args">An object array that contains zero or more objects to format.</param>
+        private void LogWarning( string operationName, string message, params object[] args )
+        {
+            var logMessage = $"{nameof( ChatHelper ).SplitCase()} > {operationName.SplitCase()}: {message}";
+            Logger.LogWarning( logMessage, args );
+        }
+
+        /// <summary>
+        /// Formats and writes an error log message.
+        /// </summary>
+        /// <param name="operationName">The name of the operation that was taking place.</param>
+        /// <param name="message">Format string of the log message in message template format. Example: <c>"User {User} logged in from {Address}"</c></param>
+        /// <param name="args">An object array that contains zero or more objects to format.</param>
+        private void LogError( string operationName, string message, params object[] args )
+        {
+            LogError( null, operationName, message, args );
+        }
+
+        /// <summary>
+        /// Formats and writes an error log message.
+        /// </summary>
+        /// <param name="exception">The exception to log.</param>
+        /// <param name="operationName">The name of the operation that was taking place.</param>
+        /// <param name="message">Format string of the log message in message template format. Example: <c>"User {User} logged in from {Address}"</c></param>
+        /// <param name="args">An object array that contains zero or more objects to format.</param>
+        private void LogError( Exception exception, string operationName, string message = null, params object[] args )
+        {
+            var logMessage = $"{nameof( ChatHelper ).SplitCase()} > {operationName.SplitCase()} failed.{( message.IsNotNullOrWhiteSpace() ? $" {message}" : string.Empty )}";
+
+            if ( exception != null )
+            {
+                Logger.LogError( exception, logMessage, args );
+            }
+            else
+            {
+                Logger.LogError( logMessage, args );
+            }
+        }
+
+        #endregion Logging & Error Handling
+
+        #region Rock Model CRUD
+
+        /// <summary>
+        /// Gets existing or creates new chat-specific <see cref="PersonAlias"/> records within Rock, and returns the
+        /// alias's unique identifier along with additional supporting data needed to add or update <see cref="ChatUser"/>s
+        /// in the external chat system.
+        /// </summary>
+        /// <param name="syncCommands">The list of commands for <see cref="RockChatUserPerson"/>s to get or create.</param>
+        /// <param name="chatConfiguration">The cached <see cref="ChatConfiguration"/> to prevent repeated reads from
+        /// system settings.</param>
+        /// <returns>A list of <see cref="RockChatUserPerson"/>s.</returns>
+        /// <remarks>
+        /// For each provided <see cref="SyncPersonToChatCommand"/>, if a chat-specific <see cref="PersonAlias"/> record
+        /// doesn't already exist for the <see cref="Person"/> AND <see cref="SyncPersonToChatCommand.ShouldEnsureChatAliasExists"/>
+        /// is <see langword="false"/>, a <see cref="RockChatUserPerson"/> will NOT be returned for that <see cref="Person"/>.
+        /// </remarks>
+        private List<RockChatUserPerson> GetOrCreateRockChatUserPeople( List<SyncPersonToChatCommand> syncCommands, ChatConfiguration chatConfiguration )
+        {
+            // Start by getting the minimum data set needed to add or update chat users in the external chat system.
+            // Note that we never want to include deceased individuals here.
+            var personQry = new PersonService( RockContext ).Queryable();
+            var chatAliasQry = new PersonAliasService( RockContext ).GetChatPersonAliasesQuery();
+
+            var personIds = syncCommands.Select( c => c.PersonId ).Distinct().ToList();
+
+            if ( personIds.Count == 1 )
+            {
+                // Most performant: limit queries to just this person.
+                var firstPersonId = personIds.First();
+                personQry = personQry.Where( p => p.Id == firstPersonId );
+                chatAliasQry = chatAliasQry.Where( pa => pa.PersonId == firstPersonId );
+            }
+            else if ( personIds.Count < 1000 )
+            {
+                // For fewer than 1k people, allow a SQL `WHERE...IN` clause.
+                personQry = personQry.Where( p => personIds.Contains( p.Id ) );
+                chatAliasQry = chatAliasQry.Where( pa => personIds.Contains( pa.PersonId ) );
+            }
+            else
+            {
+                // For 1k or more people, create and join to an entity set.
+                var entitySetOptions = new AddEntitySetActionOptions
+                {
+                    Name = $"{nameof( ChatHelper )}_{nameof( GetOrCreateRockChatUserPeople )}",
+                    EntityTypeId = EntityTypeCache.Get<Person>().Id,
+                    EntityIdList = personIds,
+                    ExpiryInMinutes = 20
+                };
+
+                var entitySetService = new EntitySetService( RockContext );
+                var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
+                var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
+
+                personQry = personQry.Where( p => entitySetItemQry.Contains( p.Id ) );
+                chatAliasQry = chatAliasQry.Where( pa => entitySetItemQry.Contains( pa.PersonId ) );
+            }
+
+            var chatAdministratorPersonIdQry = new GroupMemberService( RockContext )
+                .Queryable()
+                .Where( gm =>
+                    gm.GroupId == ChatAdministratorsGroupId
+                    && gm.GroupMemberStatus == GroupMemberStatus.Active
+                )
+                .Select( gm => gm.PersonId );
+
+            var rockChatUserPeople = personQry
+                .GroupJoin(
+                    chatAliasQry,
+                    p => p.Id,
+                    pa => pa.PersonId,
+                    ( p, chatAliases ) => new
+                    {
+                        Person = p,
+                        ChatAliases = chatAliases.Select( ca => new { ca.Id, ca.Guid } )
+                    }
+                )
+                .GroupJoin(
+                    chatAdministratorPersonIdQry,
+                    p => p.Person.Id,
+                    adminId => adminId,
+                    ( p, admins ) => new { p.Person, p.ChatAliases, IsChatAdmin = admins.Any() }
+                )
+                .ToList() // Materialize everything in a single query; we'll perform in-memory sorting of chat aliases below.
+                .Select( p => new RockChatUserPerson
+                {
+                    PersonId = p.Person.Id,
+                    NickName = p.Person.NickName,
+                    LastName = p.Person.LastName,
+                    SuffixValueId = p.Person.SuffixValueId,
+                    RecordTypeValueId = p.Person.RecordTypeValueId,
+                    PhotoId = p.Person.PhotoId,
+                    BirthYear = p.Person.BirthYear,
+                    Gender = p.Person.Gender,
+                    AgeClassification = p.Person.AgeClassification,
+                    IsChatProfilePublic = p.Person.IsChatProfilePublic,
+                    IsChatOpenDirectMessageAllowed = p.Person.IsChatOpenDirectMessageAllowed,
+                    ChatPersonAliasGuid = p.ChatAliases?.Any() == true
+                        ? p.ChatAliases.OrderBy( a => a.Id ).First().Guid // Get the earliest chat alias in the case of multiple.
+                        : ( Guid? ) null,
+                    IsChatAdministrator = p.IsChatAdmin,
+                    Badges = new List<ChatBadge>()
+                } )
+                .ToList();
+
+            // If any people don't already have a chat alias, add them in bulk IF instructed by their respective sync commands.
+            var newChatAliasesToSave = new List<PersonAlias>();
+
+            // Iterate backwards for ease-of-removal for those people who will not be synced further.
+            for ( var i = rockChatUserPeople.Count - 1; i >= 0; i-- )
+            {
+                var rockChatUserPerson = rockChatUserPeople[i];
+                if ( rockChatUserPerson.ChatPersonAliasGuid.HasValue )
+                {
+                    // This person already has a chat alias; move on.
+                    continue;
+                }
+
+                // Find this person's sync command.
+                var syncCommand = syncCommands.FirstOrDefault( c => c.PersonId == rockChatUserPerson.PersonId );
+                if ( syncCommand?.ShouldEnsureChatAliasExists != true )
+                {
+                    // This person didn't already have a chat alias, and we're not going to add one.
+                    // Remove them from the results and move on.
+                    rockChatUserPeople.RemoveAt( i );
+                    continue;
+                }
+
+                var guid = Guid.NewGuid();
+                var chatAlias = new PersonAlias
+                {
+                    PersonId = rockChatUserPerson.PersonId,
+                    Guid = guid,
+                    ForeignKey = GetChatPersonAliasForeignKey( guid )
+                };
+
+                newChatAliasesToSave.Add( chatAlias );
+                rockChatUserPerson.ChatPersonAliasGuid = guid;
+                rockChatUserPerson.AlreadyExistedInRock = false;
+            }
+
+            // If we don't have any people to sync further, return early.
+            if ( !rockChatUserPeople.Any() )
+            {
+                return rockChatUserPeople;
+            }
+
+            if ( newChatAliasesToSave.Any() )
+            {
+                RockContext.BulkInsert( newChatAliasesToSave );
+            }
+
+            var peopleNeedingBadges = RockToChatSyncConfig.ShouldEnsureChatUsersExist
+                ? rockChatUserPeople                                                    // Sync badges for ALL people.
+                : rockChatUserPeople.Where( p => !p.AlreadyExistedInRock ).ToList();    // Sync badges for NEW people.
+
+            if ( !peopleNeedingBadges.Any() )
+            {
+                return rockChatUserPeople;
+            }
+
+            // Build the badge rosters.
+            var anyBadges = false;
+            var badgeRosters = new List<RockChatBadgeRoster>();
+            if ( chatConfiguration.ChatBadgeDataViewGuids?.Any() == true )
+            {
+                foreach ( var dataViewGuid in chatConfiguration.ChatBadgeDataViewGuids )
+                {
+                    var dataViewCache = DataViewCache.Get( dataViewGuid );
+                    var dataViewIdKey = dataViewCache?.IdKey;
+
+                    // Note that we're strictly enforcing ONLY persisted data views for this purpose.
+                    if ( dataViewCache?.IsPersisted() != true || badgeRosters.Any( r => r.ChatBadge.Key == dataViewIdKey ) )
+                    {
+                        continue;
+                    }
+
+                    var badgePersonIds = dataViewCache.GetVolatileEntityIds().ToHashSet();
+                    if ( !badgePersonIds.Any() )
+                    {
+                        continue;
+                    }
+
+                    ColorPair colorPair = null;
+                    if ( dataViewCache.HighlightColor.IsNotNullOrWhiteSpace() )
+                    {
+                        colorPair = RockColor.CalculateColorPair( new RockColor( dataViewCache.HighlightColor ) );
+                    }
+
+                    badgeRosters.Add(
+                        new RockChatBadgeRoster
+                        {
+                            ChatBadge = new ChatBadge
+                            {
+                                Key = dataViewCache.IdKey,
+                                Name = dataViewCache.Name,
+                                IconCssClass = dataViewCache.IconCssClass,
+                                BackgroundColor = colorPair?.BackgroundColor?.ToHex(),
+                                ForegroundColor = colorPair?.ForegroundColor?.ToHex()
+                            },
+                            PersonIds = badgePersonIds
+                        }
+                    );
+
+                    anyBadges = true;
+                }
+            }
+
+            peopleNeedingBadges.ForEach( p =>
+            {
+                if ( !anyBadges )
+                {
+                    p.Badges = new List<ChatBadge>();
+                }
+                else
+                {
+                    p.Badges = badgeRosters
+                        .Where( r => r.PersonIds.Contains( p.PersonId ) )
+                        .Select( r => r.ChatBadge )
+                        .ToList();
+                }
+            } );
+
+            return rockChatUserPeople;
+        }
+
+        /// <summary>
+        /// Gets <see cref="RockChatChannelMember"/>s for the provided <see cref="SyncGroupMemberToChatCommand"/>s.
+        /// </summary>
+        /// <param name="commands">The list of <see cref="SyncGroupMemberToChatCommand"/>s for which to get
+        /// <see cref="RockChatChannelMember"/>s.</param>
+        /// <returns>
+        /// A list of <see cref="RockChatChannelMember"/>s with one entry for each Rock <see cref="Group"/> and
+        /// <see cref="Person"/> combination.
+        /// </returns>
+        private List<RockChatChannelMember> GetRockChatChannelMembers( List<SyncGroupMemberToChatCommand> commands )
+        {
+            /*
+                2/12/2025: JPH
+
+                When looking for group member records to sync to the external chat system, we need to follow a
+                less-than-obvious plan of attack:
+
+                    1. A group member record that is deleted, inactive (`GroupMemberStatus != GroupMemberStatus.Active`)
+                       or archived (`IsArchived == true`) should sometimes result in the member being removed from the
+                       external chat channel. BUT there might be another group member record for this person, that
+                       should now be used as the source of truth instead.
+                    2. If there are multiple group member records for a given group and person combination, we should
+                       prefer the first active, non-archived record (but still allow an inactive, banned record if there
+                       are no active ones), further sorted as follows:
+                            `GroupRole.Order` (ascending)
+                            `GroupRole.IsLeader` (descending)
+                            `GroupRole.Id` (ascending)
+                    3. If the selected group member record for a given person matches the following:
+                            `GroupMemberStatus != GroupMemberStatus.Active`
+                            `IsChatBanned == true`
+                       Then we SHOULD NOT remove the member from the external chat system, so it can know that the
+                       member has already been banned from the channel.
+
+                Reason: Always return the "correct" group member for a given group & person combination.
+             */
+
+            // In this case, we DO want to get deceased individuals, so the callers can decide how to handle them.
+            var groupMemberQry = new GroupMemberService( RockContext ).Queryable( includeDeceased: true );
+
+            // Get the distinct group IDs represented within the commands.
+            var groupIds = commands.Select( c => c.GroupId ).Distinct().ToList();
+            if ( groupIds.Count == 1 )
+            {
+                // Most performant: limit queries to just this group.
+                var firstGroupId = groupIds.First();
+                groupMemberQry = groupMemberQry.Where( gm => gm.GroupId == firstGroupId );
+            }
+            else if ( groupIds.Count < 1000 )
+            {
+                // For fewer than 1k groups, allow a SQL `WHERE...IN` clause.
+                groupMemberQry = groupMemberQry.Where( gm => groupIds.Contains( gm.GroupId ) );
+            }
+            else
+            {
+                // For 1k or more groups, create and join to an entity set.
+                var entitySetOptions = new AddEntitySetActionOptions
+                {
+                    Name = $"{nameof( ChatHelper )}_{nameof( GetRockChatChannelMembers )}_Groups",
+                    EntityTypeId = EntityTypeCache.Get<Group>().Id,
+                    EntityIdList = groupIds,
+                    ExpiryInMinutes = 20
+                };
+
+                var entitySetService = new EntitySetService( RockContext );
+                var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
+                var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
+
+                groupMemberQry = groupMemberQry.Where( gm => entitySetItemQry.Contains( gm.GroupId ) );
+            }
+
+            // Get the distinct person IDs represented within the commands.
+            var personIds = commands.Select( c => c.PersonId ).Distinct().ToList();
+            if ( personIds.Count == 1 )
+            {
+                // Most performant: limit queries to just this person.
+                var firstPersonId = personIds.First();
+                groupMemberQry = groupMemberQry.Where( gm => gm.PersonId == firstPersonId );
+            }
+            else if ( personIds.Count < 1000 )
+            {
+                // For fewer than 1k people, allow a SQL `WHERE...IN` clause.
+                groupMemberQry = groupMemberQry.Where( gm => personIds.Contains( gm.PersonId ) );
+            }
+            else
+            {
+                // For 1k or more people, create and join to an entity set.
+                var entitySetOptions = new AddEntitySetActionOptions
+                {
+                    Name = $"{nameof( ChatHelper )}_{nameof( GetRockChatChannelMembers )}_People",
+                    EntityTypeId = EntityTypeCache.Get<Person>().Id,
+                    EntityIdList = personIds,
+                    ExpiryInMinutes = 20
+                };
+
+                var entitySetService = new EntitySetService( RockContext );
+                var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
+                var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
+
+                groupMemberQry = groupMemberQry.Where( gm => entitySetItemQry.Contains( gm.PersonId ) );
+            }
+
+            // Get all group members for each group & person combination.
+            var membersByGroupAndPerson = groupMemberQry
+                .Select( gm => new
+                {
+                    GroupMemberId = gm.Id,
+                    gm.GroupId,
+                    gm.PersonId,
+                    gm.GroupMemberStatus,
+                    GroupRoleId = gm.GroupRole.Id,
+                    GroupRoleOrder = gm.GroupRole.Order,
+                    GroupRoleIsLeader = gm.GroupRole.IsLeader,
+                    gm.GroupRole.ChatRole,
+                    gm.IsChatMuted,
+                    gm.IsChatBanned,
+                    gm.Person.IsDeceased
+                } )
+                .GroupBy( gm => new
+                {
+                    gm.GroupId,
+                    gm.PersonId
+                } )
+                .AsEnumerable() // Materialize the query so inner `ToList()` calls don't result in multiple queries.
+                .Select( g => new
+                {
+                    g.Key.GroupId,
+                    g.Key.PersonId,
+                    GroupMembers = g.ToList()
+                } )
+                .ToDictionary( g => $"{g.GroupId}|{g.PersonId}", g => g.GroupMembers );
+
+            var rockChatChannelMembers = new List<RockChatChannelMember>();
+
+            // Because the list of commands could represent a given group & person combination more than once, let's
+            // keep track of those we've already seen to speed up this method's return.
+            var alreadySeenCombinations = new HashSet<string>();
+
+            foreach ( var command in commands )
+            {
+                var groupAndPersonKey = $"{command.GroupId}|{command.PersonId}";
+                if ( !alreadySeenCombinations.Add( groupAndPersonKey ) )
+                {
+                    continue;
+                }
+
+                // Create and add the outgoing member to the collection; we'll refine them below.
+                var rockChatChannelMember = new RockChatChannelMember
+                {
+                    GroupId = command.GroupId,
+                    PersonId = command.PersonId
+                };
+
+                rockChatChannelMembers.Add( rockChatChannelMember );
+
+                // Find all member records for this group & person combination.
+                if ( !membersByGroupAndPerson.TryGetValue( groupAndPersonKey, out var members ) || !members.Any() )
+                {
+                    // This person is not currently a member of this group.
+                    rockChatChannelMember.ShouldDelete = true;
+                    continue;
+                }
+
+                var memberToSync = members
+                    .OrderByDescending( gm => gm.GroupMemberStatus == GroupMemberStatus.Active ) // Prefer active.
+                    .ThenBy( gm => gm.GroupRoleOrder )
+                    .ThenByDescending( gm => gm.GroupRoleIsLeader )
+                    .ThenBy( gm => gm.GroupRoleId )
+                    .First();
+
+                if ( memberToSync.GroupMemberStatus != GroupMemberStatus.Active && !memberToSync.IsChatBanned && !memberToSync.IsDeceased )
+                {
+                    // Only delete non-active, non-banned members, non-deceased members.
+                    // The chat sync job will ensure deceased members are properly removed the next time it runs.
+                    rockChatChannelMember.ShouldDelete = true;
+                }
+                else
+                {
+                    rockChatChannelMember.ChatRole = memberToSync.ChatRole;
+                    rockChatChannelMember.IsChatMuted = memberToSync.IsChatMuted;
+                    rockChatChannelMember.IsChatBanned = memberToSync.IsChatBanned;
+                    rockChatChannelMember.ShouldDelete = false;
+                    rockChatChannelMember.IsDeceased = memberToSync.IsDeceased;
+                }
+            }
+
+            return rockChatChannelMembers;
+        }
+
+        #endregion Rock Model CRUD
+
+        #region Converters: From Rock Models To Rock Chat DTOs
+
+        /// <summary>
+        /// Tries to convert a <see cref="GroupType"/> to a <see cref="ChatChannelType"/>.
+        /// </summary>
+        /// <param name="groupType">The <see cref="GroupType"/> to convert.</param>
+        /// <returns>A <see cref="ChatChannelType"/> or <see langword="null"/> if unable to convert.</returns>
+        private ChatChannelType TryConvertToChatChannelType( GroupType groupType )
+        {
+            if ( groupType?.Id < 1 )
+            {
+                return null;
+            }
+
+            return new ChatChannelType
+            {
+                Key = GetChatChannelTypeKey( groupType.Id )
+            };
+        }
+
+        /// <summary>
+        /// Tries to convert a <see cref="Group"/> to a <see cref="ChatChannel"/>.
+        /// </summary>
+        /// <param name="group">The <see cref="Group"/> to convert.</param>
+        /// <returns>A <see cref="ChatChannel"/> or <see langword="null"/> if unable to convert.</returns>
+        private ChatChannel TryConvertToChatChannel( Group group )
+        {
+            if ( group?.Id < 1 || group.GroupTypeId < 1 )
+            {
+                return null;
+            }
+
+            var groupCache = GroupCache.Get( group.Id );
+            if ( groupCache == null )
+            {
+                return null;
+            }
+
+            return new ChatChannel
+            {
+                Key = GetChatChannelKey( groupCache ),
+                ChatChannelTypeKey = GetChatChannelTypeKey( group.GroupTypeId ),
+                QueryableKey = ChatProvider.GetQueryableChatChannelKey( groupCache ),
+                Name = group.Name,
+                IsLeavingAllowed = group.GetIsLeavingChatChannelAllowed(),
+                IsPublic = group.GetIsChatChannelPublic(),
+                IsAlwaysShown = group.GetIsChatChannelAlwaysShown()
+            };
+        }
+
+        /// <summary>
+        /// Tries to convert a <see cref="RockChatChannelMember"/> and <paramref name="chatUserKey"/> to a
+        /// <see cref="ChatChannelMember"/>.
+        /// </summary>
+        /// <param name="rockChatChannelMember">The <see cref="RockChatChannelMember"/> to convert.</param>
+        /// <param name="chatUserKey">The <see cref="ChatUser.Key"/> that represents this <see cref="ChatChannelMember"/>.</param>
+        /// <returns>A <see cref="ChatChannelMember"/> or <see langword="null"/> if unable to convert.</returns>
+        private ChatChannelMember TryConvertToChatChannelMember( RockChatChannelMember rockChatChannelMember, string chatUserKey )
+        {
+            if ( rockChatChannelMember == null || chatUserKey.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            return new ChatChannelMember
+            {
+                ChatUserKey = chatUserKey,
+                Role = rockChatChannelMember.ChatRole.GetDescription(),
+                IsChatMuted = rockChatChannelMember.IsChatMuted,
+                IsChatBanned = rockChatChannelMember.IsChatBanned
+            };
+        }
+
+        /// <summary>
+        /// Tries to convert a <see cref="RockChatUserPerson"/> to a <see cref="ChatUser"/>.
+        /// </summary>
+        /// <param name="rockChatUserPerson">The <see cref="RockChatUserPerson"/> to convert.</param>
+        /// <param name="chatConfiguration">The cached <see cref="ChatConfiguration"/> to prevent repeated reads from
+        /// system settings.</param>
+        /// <returns>A <see cref="ChatUser"/> or <see langword="null"/> if unable to convert.</returns>
+        private ChatUser TryConvertToChatUser( RockChatUserPerson rockChatUserPerson, ChatConfiguration chatConfiguration )
+        {
+            if ( rockChatUserPerson?.ChatPersonAliasGuid == null )
+            {
+                return null;
+            }
+
+            var fullName = Person.FormatFullName(
+                rockChatUserPerson.NickName,
+                rockChatUserPerson.LastName,
+                rockChatUserPerson.SuffixValueId,
+                rockChatUserPerson.RecordTypeValueId
+            );
+
+            var photoUrlPerson = new Person
+            {
+                NickName = rockChatUserPerson.NickName,
+                LastName = rockChatUserPerson.LastName,
+                PhotoId = rockChatUserPerson.PhotoId,
+                BirthYear = rockChatUserPerson.BirthYear,
+                Gender = rockChatUserPerson.Gender,
+                RecordTypeValueId = rockChatUserPerson.RecordTypeValueId,
+                AgeClassification = rockChatUserPerson.AgeClassification
+            };
+
+            var publicApplicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
+            var photoUrl = $"{publicApplicationRoot}{Person.GetPersonPhotoUrl( photoUrlPerson ).TrimStart( '~', '/' )}";
+
+            var isProfileVisible = rockChatUserPerson.IsChatProfilePublic.HasValue
+                ? rockChatUserPerson.IsChatProfilePublic.Value
+                : chatConfiguration.AreChatProfilesVisible;
+
+            var isOpenDirectMessageAllowed = rockChatUserPerson.IsChatOpenDirectMessageAllowed.HasValue
+                ? rockChatUserPerson.IsChatOpenDirectMessageAllowed.Value
+                : chatConfiguration.IsOpenDirectMessagingAllowed;
+
+            return new ChatUser
+            {
+                Key = GetChatUserKey( rockChatUserPerson.ChatPersonAliasGuid.Value ),
+                Name = fullName,
+                PhotoUrl = photoUrl,
+                IsAdmin = rockChatUserPerson.IsChatAdministrator,
+                IsProfileVisible = isProfileVisible,
+                IsOpenDirectMessageAllowed = isOpenDirectMessageAllowed,
+                Badges = rockChatUserPerson.Badges
+            };
+        }
+
+        #endregion Converters: From Rock Models To Rock Chat DTOs
+
+        #region Synchronization: From Rock To Chat Provider
+
+        /// <summary>
+        /// Deletes <see cref="ChatUser"/>s in the external chat system and optionally transfers ownership of their
+        /// resources to a new <see cref="ChatUser"/>.
+        /// </summary>
+        /// <param name="personAliasService">The <see cref="PersonAliasService"/> to use for clearing foreign key values.</param>
+        /// <param name="keysToDelete">The list of <see cref="RockChatUserKey"/>s to delete.</param>
+        /// <param name="newKey">The new <see cref="ChatUser.Key"/> to whom ownership of resources should be transferred.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
+        /// </returns>
+        /// <remarks>
+        /// For <see cref="ChatUser"/>s who are successfully deleted in the external chat system, their corresponding
+        /// <see cref="PersonAlias"/> records will have their foreign key values cleared.
+        /// </remarks>
+        private async Task<ChatSyncCrudResult> DeleteChatUsersAsync( PersonAliasService personAliasService, List<RockChatUserKey> keysToDelete, RockChatUserKey newKey = null )
+        {
+            var result = new ChatSyncCrudResult();
+
+            try
+            {
+                var chatUserKeys = keysToDelete
+                    .Select( k => k.ChatUserKey )
+                    .ToList();
+
+                var deleteResult = await ChatProvider.DeleteChatUsersAsync( chatUserKeys, newKey?.ChatUserKey );
+                result.Skipped.UnionWith( deleteResult.Skipped );
+                result.Deleted.UnionWith( deleteResult.Deleted );
+                result.Exception = deleteResult.Exception;
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+            }
+
+            // Even if an exception occurred, if any users were actually deleted in the external chat system (or
+            // skipped), let's take this opportunity to ensure their chat person alias foreign key value is cleared.
+            if ( result.Deleted.Any() || result.Skipped.Any() )
+            {
+                var keysToClear = keysToDelete
+                    .Where( k =>
+                        result.Deleted.Contains( k.ChatUserKey )
+                        || result.Skipped.Contains( k.ChatUserKey )
+                    )
+                    .ToList();
+
+                // This will always be a short list of records (usually just one), so a  SQL `WHERE...IN` clause will
+                // never be problematic here.
+                var deletedAliasIds = keysToClear.Select( k => k.ChatPersonAliasId.Value ).ToList();
+                var aliasesToUpdateQry = personAliasService
+                    .Queryable()
+                    .Where( a => deletedAliasIds.Contains( a.Id ) );
+
+                RockContext.BulkUpdate( aliasesToUpdateQry, a => new PersonAlias { ForeignKey = null } );
+            }
+
+            return result;
+        }
+
+        #endregion Synchronization: From Rock To Chat Provider
+
+        #region Synchronization: From Chat Provider To Rock
+
         /// <summary>
         /// Deletes chat users and their corresponding chat-enabled group members in Rock.
         /// </summary>
         /// <param name="syncCommands">The list of commands for chat users to delete.</param>
-        private void DeleteChatUsersInRock( List<DeleteChatPersonInRockCommand> syncCommands )
+        /// <param name="config">The optional configuration for fine-tuning the deletion process.</param>
+        private void DeleteChatUsersInRock( List<DeleteChatPersonInRockCommand> syncCommands, DeleteChatUsersInRockConfig config = null )
         {
+            if ( config == null )
+            {
+                config = new DeleteChatUsersInRockConfig();
+            }
+
             foreach ( var syncCommand in syncCommands )
             {
                 if ( syncCommand.ChatSyncType != ChatSyncType.Delete )
@@ -2027,16 +2956,18 @@ namespace Rock.Communication.Chat
                     // parent group, as the group member service knows how to delete vs. archive members when needed.
                     var groupMemberService = new GroupMemberService( rockContext );
 
-                    // IMPORTANT: We're purposefully NOT removing them from the "Chat Ban List" group here.
-                    //            If they're banned, they can only be unbanned manually.
-
                     var groupMembers = groupMemberService
-                        .Queryable()
+                        // In this case, we DO want to get deceased individuals, so we can remove them.
+                        .Queryable( includeDeceased: true )
                         .Include( gm => gm.Group )
                         .Where( gm =>
                             gm.PersonId == chatPersonAlias.PersonId
                             && (
                                 gm.GroupId == ChatAdministratorsGroupId
+                                || (
+                                    config.ShouldUnban
+                                    && gm.GroupId == ChatBanListGroupId
+                                )
                                 || (
                                     gm.Group.GroupType.IsChatAllowed
                                     && (
@@ -2048,14 +2979,26 @@ namespace Rock.Communication.Chat
                         )
                         .ToList();
 
+                    var shouldSaveChanges = false;
+
                     foreach ( var groupMember in groupMembers )
                     {
                         groupMemberService.Delete( groupMember );
+                        shouldSaveChanges = true;
                     }
 
-                    personAliasService.Delete( chatPersonAlias );
+                    if ( config.ShouldClearChatPersonAliasForeignKey )
+                    {
+                        // We can't DELETE this chat person alias (because there are probably already interactions tied to it),
+                        // so we should - instead - clear out the foreign key field that designates it as a chat-specific record.
+                        chatPersonAlias.ForeignKey = null;
+                        shouldSaveChanges = true;
+                    }
 
-                    rockContext.SaveChanges();
+                    if ( shouldSaveChanges )
+                    {
+                        rockContext.SaveChanges();
+                    }
 
                     syncCommand.MarkAsCompleted();
                 }
@@ -2915,724 +3858,6 @@ namespace Rock.Communication.Chat
         }
 
         #endregion Synchronization: From Chat Provider To Rock
-
-        #region Interactions
-
-        /// <summary>
-        /// Gets the message counts for each <see cref="ChatUser"/> within each <see cref="ChatChannel"/>, for the specified date.
-        /// </summary>
-        /// <param name="messageDate">The date for which to get message counts.</param>
-        /// <returns>
-        /// A task representing the asynchronous operation, containing a <see cref="ChatUserMessageCountsByChatChannelResult"/>.
-        /// </returns>
-        public async Task<ChatUserMessageCountsByChatChannelResult> GetChatUserMessageCountsByChatChannelKeyAsync( DateTime messageDate )
-        {
-            var result = new ChatUserMessageCountsByChatChannelResult { MessageDate = messageDate };
-
-            try
-            {
-                var messageCounts = await ChatProvider.GetChatUserMessageCountsByChatChannelKeyAsync( messageDate );
-
-                result.MessageCounts = messageCounts;
-            }
-            catch ( Exception ex )
-            {
-                result.Exception = ex;
-
-                LogError( ex, nameof( GetChatUserMessageCountsByChatChannelKeyAsync ) );
-            }
-
-            return result;
-        }
-
-        #endregion Interactions
-
-        #endregion Public Methods
-
-        #region Private Methods
-
-        #region Logging
-
-        /// <summary>
-        /// Formats and writes a debug log message.
-        /// </summary>
-        /// <param name="operationName">The name of the operation that was taking place.</param>
-        /// <param name="message">Format string of the log message in message template format. Example: <c>"User {User} logged in from {Address}"</c></param>
-        /// <param name="args">An object array that contains zero or more objects to format.</param>
-        private void LogDebug( string operationName, string message, params object[] args )
-        {
-            var logMessage = $"{nameof( ChatHelper ).SplitCase()} > {operationName.SplitCase()}: {message}";
-            Logger.LogDebug( logMessage, args );
-        }
-
-        /// <summary>
-        /// Formats and writes a warning log message.
-        /// </summary>
-        /// <param name="operationName">The name of the operation that was taking place.</param>
-        /// <param name="message">Format string of the log message in message template format. Example: <c>"User {User} logged in from {Address}"</c></param>
-        /// <param name="args">An object array that contains zero or more objects to format.</param>
-        private void LogWarning( string operationName, string message, params object[] args )
-        {
-            var logMessage = $"{nameof( ChatHelper ).SplitCase()} > {operationName.SplitCase()}: {message}";
-            Logger.LogWarning( logMessage, args );
-        }
-
-        /// <summary>
-        /// Formats and writes an error log message.
-        /// </summary>
-        /// <param name="operationName">The name of the operation that was taking place.</param>
-        /// <param name="message">Format string of the log message in message template format. Example: <c>"User {User} logged in from {Address}"</c></param>
-        /// <param name="args">An object array that contains zero or more objects to format.</param>
-        private void LogError( string operationName, string message, params object[] args )
-        {
-            LogError( null, operationName, message, args );
-        }
-
-        /// <summary>
-        /// Formats and writes an error log message.
-        /// </summary>
-        /// <param name="exception">The exception to log.</param>
-        /// <param name="operationName">The name of the operation that was taking place.</param>
-        /// <param name="message">Format string of the log message in message template format. Example: <c>"User {User} logged in from {Address}"</c></param>
-        /// <param name="args">An object array that contains zero or more objects to format.</param>
-        private void LogError( Exception exception, string operationName, string message = null, params object[] args )
-        {
-            var logMessage = $"{nameof( ChatHelper ).SplitCase()} > {operationName.SplitCase()} failed.{( message.IsNotNullOrWhiteSpace() ? $" {message}" : string.Empty )}";
-
-            if ( exception != null )
-            {
-                Logger.LogError( exception, logMessage, args );
-            }
-            else
-            {
-                Logger.LogError( logMessage, args );
-            }
-        }
-
-        #endregion Logging
-
-        #region Rock Model CRUD
-
-        /// <summary>
-        /// Gets existing or creates new chat-specific <see cref="PersonAlias"/> records within Rock, and returns the
-        /// alias's unique identifier along with additional supporting data needed to add or update <see cref="ChatUser"/>s
-        /// in the external chat system.
-        /// </summary>
-        /// <param name="syncCommands">The list of commands for <see cref="RockChatUserPerson"/>s to get or create.</param>
-        /// <param name="chatConfiguration">The cached <see cref="ChatConfiguration"/> to prevent repeated reads from
-        /// system settings.</param>
-        /// <returns>A list of <see cref="RockChatUserPerson"/>s.</returns>
-        /// <remarks>
-        /// For each provided <see cref="SyncPersonToChatCommand"/>, if a chat-specific <see cref="PersonAlias"/> record
-        /// doesn't already exist for the <see cref="Person"/> AND <see cref="SyncPersonToChatCommand.ShouldEnsureChatAliasExists"/>
-        /// is <see langword="false"/>, a <see cref="RockChatUserPerson"/> will NOT be returned for that <see cref="Person"/>.
-        /// </remarks>
-        private List<RockChatUserPerson> GetOrCreateRockChatUserPeople( List<SyncPersonToChatCommand> syncCommands, ChatConfiguration chatConfiguration )
-        {
-            // Start by getting the minimum data set needed to add or update chat users in the external chat system.
-            var personQry = new PersonService( RockContext )
-                .Queryable()
-                .Where( p => !p.IsDeceased );
-
-            var chatAliasQry = new PersonAliasService( RockContext )
-                .Queryable()
-                .Where( pa => pa.ForeignKey.StartsWith( ChatPersonAliasForeignKeyPrefix ) );
-
-            var personIds = syncCommands.Select( c => c.PersonId ).Distinct().ToList();
-
-            if ( personIds.Count == 1 )
-            {
-                // Most performant: limit queries to just this person.
-                var firstPersonId = personIds.First();
-                personQry = personQry.Where( p => p.Id == firstPersonId );
-                chatAliasQry = chatAliasQry.Where( pa => pa.PersonId == firstPersonId );
-            }
-            else if ( personIds.Count < 1000 )
-            {
-                // For fewer than 1k people, allow a SQL `WHERE...IN` clause.
-                personQry = personQry.Where( p => personIds.Contains( p.Id ) );
-                chatAliasQry = chatAliasQry.Where( pa => personIds.Contains( pa.PersonId ) );
-            }
-            else
-            {
-                // For 1k or more people, create and join to an entity set.
-                var entitySetOptions = new AddEntitySetActionOptions
-                {
-                    Name = $"{nameof( ChatHelper )}_{nameof( GetOrCreateRockChatUserPeople )}",
-                    EntityTypeId = EntityTypeCache.Get<Person>().Id,
-                    EntityIdList = personIds,
-                    ExpiryInMinutes = 20
-                };
-
-                var entitySetService = new EntitySetService( RockContext );
-                var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
-                var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
-
-                personQry = personQry.Where( p => entitySetItemQry.Contains( p.Id ) );
-                chatAliasQry = chatAliasQry.Where( pa => entitySetItemQry.Contains( pa.PersonId ) );
-            }
-
-            var chatAdministratorPersonIdQry = new GroupMemberService( RockContext )
-                .Queryable()
-                .Where( gm =>
-                    gm.GroupId == ChatAdministratorsGroupId
-                    && gm.GroupMemberStatus == GroupMemberStatus.Active
-                    && !gm.Person.IsDeceased
-                )
-                .Select( gm => gm.PersonId );
-
-            var rockChatUserPeople = personQry
-                .GroupJoin(
-                    chatAliasQry,
-                    p => p.Id,
-                    pa => pa.PersonId,
-                    ( p, chatAliases ) => new
-                    {
-                        Person = p,
-                        ChatAliases = chatAliases.Select( ca => new { ca.Id, ca.Guid } )
-                    }
-                )
-                .GroupJoin(
-                    chatAdministratorPersonIdQry,
-                    p => p.Person.Id,
-                    adminId => adminId,
-                    ( p, admins ) => new { p.Person, p.ChatAliases, IsChatAdmin = admins.Any() }
-                )
-                .ToList() // Materialize everything in a single query; we'll perform in-memory sorting of chat aliases below.
-                .Select( p => new RockChatUserPerson
-                {
-                    PersonId = p.Person.Id,
-                    NickName = p.Person.NickName,
-                    LastName = p.Person.LastName,
-                    SuffixValueId = p.Person.SuffixValueId,
-                    RecordTypeValueId = p.Person.RecordTypeValueId,
-                    PhotoId = p.Person.PhotoId,
-                    BirthYear = p.Person.BirthYear,
-                    Gender = p.Person.Gender,
-                    AgeClassification = p.Person.AgeClassification,
-                    IsChatProfilePublic = p.Person.IsChatProfilePublic,
-                    IsChatOpenDirectMessageAllowed = p.Person.IsChatOpenDirectMessageAllowed,
-                    ChatAliasGuid = p.ChatAliases?.Any() == true
-                        ? p.ChatAliases.OrderBy( a => a.Id ).First().Guid // Get the earliest chat alias in the case of multiple.
-                        : ( Guid? ) null,
-                    IsChatAdministrator = p.IsChatAdmin,
-                    Badges = new List<ChatBadge>()
-                } )
-                .ToList();
-
-            // If any people don't already have a chat alias, add them in bulk IF instructed by their respective sync commands.
-            var newChatAliasesToSave = new List<PersonAlias>();
-
-            // Iterate backwards for ease-of-removal for those people who will not be synced further.
-            for ( var i = rockChatUserPeople.Count - 1; i >= 0; i-- )
-            {
-                var rockChatUserPerson = rockChatUserPeople[i];
-                if ( rockChatUserPerson.ChatAliasGuid.HasValue )
-                {
-                    // This person already has a chat alias; move on.
-                    continue;
-                }
-
-                // Find this person's sync command.
-                var syncCommand = syncCommands.FirstOrDefault( c => c.PersonId == rockChatUserPerson.PersonId );
-                if ( syncCommand?.ShouldEnsureChatAliasExists != true )
-                {
-                    // This person didn't already have a chat alias, and we're not going to add one.
-                    // Remove them from the results and move on.
-                    rockChatUserPeople.RemoveAt( i );
-                    continue;
-                }
-
-                var guid = Guid.NewGuid();
-                var chatAlias = new PersonAlias
-                {
-                    PersonId = rockChatUserPerson.PersonId,
-                    Guid = guid,
-                    ForeignKey = GetChatPersonAliasForeignKey( guid )
-                };
-
-                newChatAliasesToSave.Add( chatAlias );
-                rockChatUserPerson.ChatAliasGuid = guid;
-                rockChatUserPerson.AlreadyExistedInRock = false;
-            }
-
-            // If we don't have any people to sync further, return early.
-            if ( !rockChatUserPeople.Any() )
-            {
-                return rockChatUserPeople;
-            }
-
-            if ( newChatAliasesToSave.Any() )
-            {
-                RockContext.BulkInsert( newChatAliasesToSave );
-            }
-
-            var peopleNeedingBadges = RockToChatSyncConfig.ShouldEnsureChatUsersExist
-                ? rockChatUserPeople                                                    // Sync badges for ALL people.
-                : rockChatUserPeople.Where( p => !p.AlreadyExistedInRock ).ToList();    // Sync badges for NEW people.
-
-            if ( !peopleNeedingBadges.Any() )
-            {
-                return rockChatUserPeople;
-            }
-
-            // Build the badge rosters.
-            var anyBadges = false;
-            var badgeRosters = new List<RockChatBadgeRoster>();
-            if ( chatConfiguration.ChatBadgeDataViewGuids?.Any() == true )
-            {
-                foreach ( var dataViewGuid in chatConfiguration.ChatBadgeDataViewGuids )
-                {
-                    var dataViewCache = DataViewCache.Get( dataViewGuid );
-                    var dataViewIdKey = dataViewCache?.IdKey;
-
-                    // Note that we're strictly enforcing ONLY persisted data views for this purpose.
-                    if ( dataViewCache?.IsPersisted() != true || badgeRosters.Any( r => r.ChatBadge.Key == dataViewIdKey ) )
-                    {
-                        continue;
-                    }
-
-                    var badgePersonIds = dataViewCache.GetVolatileEntityIds().ToHashSet();
-                    if ( !badgePersonIds.Any() )
-                    {
-                        continue;
-                    }
-
-                    ColorPair colorPair = null;
-                    if ( dataViewCache.HighlightColor.IsNotNullOrWhiteSpace() )
-                    {
-                        colorPair = RockColor.CalculateColorPair( new RockColor( dataViewCache.HighlightColor ) );
-                    }
-
-                    badgeRosters.Add(
-                        new RockChatBadgeRoster
-                        {
-                            ChatBadge = new ChatBadge
-                            {
-                                Key = dataViewCache.IdKey,
-                                Name = dataViewCache.Name,
-                                IconCssClass = dataViewCache.IconCssClass,
-                                BackgroundColor = colorPair?.BackgroundColor?.ToHex(),
-                                ForegroundColor = colorPair?.ForegroundColor?.ToHex()
-                            },
-                            PersonIds = badgePersonIds
-                        }
-                    );
-
-                    anyBadges = true;
-                }
-            }
-
-            peopleNeedingBadges.ForEach( p =>
-            {
-                if ( !anyBadges )
-                {
-                    p.Badges = new List<ChatBadge>();
-                }
-                else
-                {
-                    p.Badges = badgeRosters
-                        .Where( r => r.PersonIds.Contains( p.PersonId ) )
-                        .Select( r => r.ChatBadge )
-                        .ToList();
-                }
-            } );
-
-            return rockChatUserPeople;
-        }
-
-        /// <summary>
-        /// Gets existing <see cref="ChatUser.Key"/> mappings for the provided <see cref="Person"/> identifiers.
-        /// </summary>
-        /// <param name="personIds">The list of <see cref="Person"/> identifiers for which to get
-        /// <see cref="RockChatUserPersonKey"/>s.</param>
-        /// <returns>A list of <see cref="RockChatUserPersonKey"/>s with one entry for each <see cref="Person"/> who
-        /// already has a chat-specific <see cref="PersonAlias"/> record.</returns>
-        ///
-        /// BC TODO: Talk to Jason about this method, needed to make it public.
-        public List<RockChatUserPersonKey> GetRockChatUserPersonKeys( List<int> personIds )
-        {
-            var personQry = new PersonService( RockContext )
-                .Queryable()
-                .Where( p => !p.IsDeceased );
-
-            var chatAliasQry = new PersonAliasService( RockContext )
-                .Queryable()
-                .Where( pa => pa.ForeignKey.StartsWith( ChatPersonAliasForeignKeyPrefix ) );
-
-            if ( personIds.Count == 1 )
-            {
-                // Most performant: limit queries to just this person.
-                var firstPersonId = personIds.First();
-                personQry = personQry.Where( p => p.Id == firstPersonId );
-                chatAliasQry = chatAliasQry.Where( pa => pa.PersonId == firstPersonId );
-            }
-            else if ( personIds.Count < 1000 )
-            {
-                // For fewer than 1k people, allow a SQL `WHERE...IN` clause.
-                personQry = personQry.Where( p => personIds.Contains( p.Id ) );
-                chatAliasQry = chatAliasQry.Where( pa => personIds.Contains( pa.PersonId ) );
-            }
-            else
-            {
-                // For 1k or more people, create and join to an entity set.
-                var entitySetOptions = new AddEntitySetActionOptions
-                {
-                    Name = $"{nameof( ChatHelper )}_{nameof( GetRockChatUserPersonKeys )}",
-                    EntityTypeId = EntityTypeCache.Get<Person>().Id,
-                    EntityIdList = personIds,
-                    ExpiryInMinutes = 20
-                };
-
-                var entitySetService = new EntitySetService( RockContext );
-                var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
-                var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
-
-                personQry = personQry.Where( p => entitySetItemQry.Contains( p.Id ) );
-                chatAliasQry = chatAliasQry.Where( pa => entitySetItemQry.Contains( pa.PersonId ) );
-            }
-
-            return personQry
-                .GroupJoin(
-                    chatAliasQry,
-                    p => p.Id,
-                    pa => pa.PersonId,
-                    ( p, chatAliases ) => new
-                    {
-                        Person = p,
-                        ChatAliases = chatAliases.Select( ca => new { ca.Id, ca.Guid } )
-                    }
-                )
-                .ToList() // Materialize everything in a single query; we'll perform in-memory sorting of chat aliases below.
-                .Select( p => new RockChatUserPersonKey
-                {
-                    PersonId = p.Person.Id,
-                    ChatAliasGuid = p.ChatAliases?.Any() == true
-                        ? p.ChatAliases.OrderBy( a => a.Id ).First().Guid // Get the earliest chat alias in the case of multiple.
-                        : ( Guid? ) null,
-                } )
-                .Where( k => k.ChatAliasGuid.HasValue ) // Only include results that actually have a chat alias guid.
-                .ToList();
-        }
-
-        /// <summary>
-        /// Gets <see cref="RockChatChannelMember"/>s for the provided <see cref="SyncGroupMemberToChatCommand"/>s.
-        /// </summary>
-        /// <param name="commands">The list of <see cref="SyncGroupMemberToChatCommand"/>s for which to get
-        /// <see cref="RockChatChannelMember"/>s.</param>
-        /// <returns>
-        /// A list of <see cref="RockChatChannelMember"/>s with one entry for each Rock <see cref="Group"/> and
-        /// <see cref="Person"/> combination.
-        /// </returns>
-        private List<RockChatChannelMember> GetRockChatChannelMembers( List<SyncGroupMemberToChatCommand> commands )
-        {
-            /*
-                2/12/2025: JPH
-
-                When looking for group member records to sync to the external chat system, we need to follow a
-                less-than-obvious plan of attack:
-
-                    1. A group member record that is deleted, inactive (`GroupMemberStatus != GroupMemberStatus.Active`)
-                       or archived (`IsArchived == true`) should sometimes result in the member being removed from the
-                       external chat channel. BUT there might be another group member record for this person, that
-                       should now be used as the source of truth instead.
-                    2. If there are multiple group member records for a given group and person combination, we should
-                       prefer the first active, non-archived record (but still allow an inactive, banned record if there
-                       are no active ones), further sorted as follows:
-                            `GroupRole.Order` (ascending)
-                            `GroupRole.IsLeader` (descending)
-                            `GroupRole.Id` (ascending)
-                    3. If the selected group member record for a given person matches the following:
-                            `GroupMemberStatus != GroupMemberStatus.Active`
-                            `IsChatBanned == true`
-                       Then we SHOULD NOT remove the member from the external chat system, so it can know that the
-                       member has already been banned from the channel.
-
-                Reason: Always return the "correct" group member for a given group & person combination.
-             */
-
-            var groupMemberService = new GroupMemberService( RockContext );
-            var groupMemberQry = groupMemberService
-                .Queryable() // Note that we're EXCLUDING archived members.
-                .Where( gm => !gm.Person.IsDeceased );
-
-            // Get the distinct group IDs represented within the commands.
-            var groupIds = commands.Select( c => c.GroupId ).Distinct().ToList();
-            if ( groupIds.Count == 1 )
-            {
-                // Most performant: limit queries to just this group.
-                var firstGroupId = groupIds.First();
-                groupMemberQry = groupMemberQry.Where( gm => gm.GroupId == firstGroupId );
-            }
-            else if ( groupIds.Count < 1000 )
-            {
-                // For fewer than 1k groups, allow a SQL `WHERE...IN` clause.
-                groupMemberQry = groupMemberQry.Where( gm => groupIds.Contains( gm.GroupId ) );
-            }
-            else
-            {
-                // For 1k or more groups, create and join to an entity set.
-                var entitySetOptions = new AddEntitySetActionOptions
-                {
-                    Name = $"{nameof( ChatHelper )}_{nameof( GetRockChatChannelMembers )}_Groups",
-                    EntityTypeId = EntityTypeCache.Get<Group>().Id,
-                    EntityIdList = groupIds,
-                    ExpiryInMinutes = 20
-                };
-
-                var entitySetService = new EntitySetService( RockContext );
-                var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
-                var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
-
-                groupMemberQry = groupMemberQry.Where( gm => entitySetItemQry.Contains( gm.GroupId ) );
-            }
-
-            // Get the distinct person IDs represented within the commands.
-            var personIds = commands.Select( c => c.PersonId ).Distinct().ToList();
-            if ( personIds.Count == 1 )
-            {
-                // Most performant: limit queries to just this person.
-                var firstPersonId = personIds.First();
-                groupMemberQry = groupMemberQry.Where( gm => gm.PersonId == firstPersonId );
-            }
-            else if ( personIds.Count < 1000 )
-            {
-                // For fewer than 1k people, allow a SQL `WHERE...IN` clause.
-                groupMemberQry = groupMemberQry.Where( gm => personIds.Contains( gm.PersonId ) );
-            }
-            else
-            {
-                // For 1k or more people, create and join to an entity set.
-                var entitySetOptions = new AddEntitySetActionOptions
-                {
-                    Name = $"{nameof( ChatHelper )}_{nameof( GetRockChatChannelMembers )}_People",
-                    EntityTypeId = EntityTypeCache.Get<Person>().Id,
-                    EntityIdList = personIds,
-                    ExpiryInMinutes = 20
-                };
-
-                var entitySetService = new EntitySetService( RockContext );
-                var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
-                var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
-
-                groupMemberQry = groupMemberQry.Where( gm => entitySetItemQry.Contains( gm.PersonId ) );
-            }
-
-            // Get all group members for each group & person combination.
-            var membersByGroupAndPerson = groupMemberQry
-                .Select( gm => new
-                {
-                    GroupMemberId = gm.Id,
-                    gm.GroupId,
-                    gm.PersonId,
-                    gm.GroupMemberStatus,
-                    GroupRoleId = gm.GroupRole.Id,
-                    GroupRoleOrder = gm.GroupRole.Order,
-                    GroupRoleIsLeader = gm.GroupRole.IsLeader,
-                    gm.GroupRole.ChatRole,
-                    gm.IsChatMuted,
-                    gm.IsChatBanned
-                } )
-                .GroupBy( gm => new
-                {
-                    gm.GroupId,
-                    gm.PersonId
-                } )
-                .AsEnumerable() // Materialize the query so inner `ToList()` calls don't result in multiple queries.
-                .Select( g => new
-                {
-                    g.Key.GroupId,
-                    g.Key.PersonId,
-                    GroupMembers = g.ToList()
-                } )
-                .ToDictionary( g => $"{g.GroupId}|{g.PersonId}", g => g.GroupMembers );
-
-            var rockChatChannelMembers = new List<RockChatChannelMember>();
-
-            // Because the list of commands could represent a given group & person combination more than once, let's
-            // keep track of those we've already seen to speed up this method's return.
-            var alreadySeenCombinations = new HashSet<string>();
-
-            foreach ( var command in commands )
-            {
-                var groupAndPersonKey = $"{command.GroupId}|{command.PersonId}";
-                if ( !alreadySeenCombinations.Add( groupAndPersonKey ) )
-                {
-                    continue;
-                }
-
-                // Create and add the outgoing member to the collection; we'll refine them below.
-                var rockChatChannelMember = new RockChatChannelMember
-                {
-                    GroupId = command.GroupId,
-                    PersonId = command.PersonId
-                };
-
-                rockChatChannelMembers.Add( rockChatChannelMember );
-
-                // Find all member records for this group & person combination.
-                if ( !membersByGroupAndPerson.TryGetValue( groupAndPersonKey, out var members ) || !members.Any() )
-                {
-                    // This person is not currently a member of this group.
-                    rockChatChannelMember.ShouldDelete = true;
-                    continue;
-                }
-
-                var memberToSync = members
-                    .OrderByDescending( gm => gm.GroupMemberStatus == GroupMemberStatus.Active ) // Prefer active.
-                    .ThenBy( gm => gm.GroupRoleOrder )
-                    .ThenByDescending( gm => gm.GroupRoleIsLeader )
-                    .ThenBy( gm => gm.GroupRoleId )
-                    .First();
-
-                if ( memberToSync.GroupMemberStatus != GroupMemberStatus.Active && !memberToSync.IsChatBanned )
-                {
-                    // Only delete non-active, non-banned members.
-                    rockChatChannelMember.ShouldDelete = true;
-                }
-                else
-                {
-                    rockChatChannelMember.ChatRole = memberToSync.ChatRole;
-                    rockChatChannelMember.IsChatMuted = memberToSync.IsChatMuted;
-                    rockChatChannelMember.IsChatBanned = memberToSync.IsChatBanned;
-                    rockChatChannelMember.ShouldDelete = false;
-                }
-            }
-
-            return rockChatChannelMembers;
-        }
-
-        #endregion Rock Model CRUD
-
-        #region Converters: From Rock Models To Rock Chat DTOs
-
-        /// <summary>
-        /// Tries to convert a <see cref="GroupType"/> to a <see cref="ChatChannelType"/>.
-        /// </summary>
-        /// <param name="groupType">The <see cref="GroupType"/> to convert.</param>
-        /// <returns>A <see cref="ChatChannelType"/> or <see langword="null"/> if unable to convert.</returns>
-        private ChatChannelType TryConvertToChatChannelType( GroupType groupType )
-        {
-            if ( groupType?.Id < 1 )
-            {
-                return null;
-            }
-
-            return new ChatChannelType
-            {
-                Key = GetChatChannelTypeKey( groupType.Id )
-            };
-        }
-
-        /// <summary>
-        /// Tries to convert a <see cref="Group"/> to a <see cref="ChatChannel"/>.
-        /// </summary>
-        /// <param name="group">The <see cref="Group"/> to convert.</param>
-        /// <returns>A <see cref="ChatChannel"/> or <see langword="null"/> if unable to convert.</returns>
-        private ChatChannel TryConvertToChatChannel( Group group )
-        {
-            if ( group?.Id < 1 || group.GroupTypeId < 1 )
-            {
-                return null;
-            }
-
-            var groupCache = GroupCache.Get( group.Id );
-            if ( groupCache == null )
-            {
-                return null;
-            }
-
-            return new ChatChannel
-            {
-                Key = GetChatChannelKey( groupCache ),
-                ChatChannelTypeKey = GetChatChannelTypeKey( group.GroupTypeId ),
-                QueryableKey = ChatProvider.GetQueryableChatChannelKey( groupCache ),
-                Name = group.Name,
-                IsLeavingAllowed = group.GetIsLeavingChatChannelAllowed(),
-                IsPublic = group.GetIsChatChannelPublic(),
-                IsAlwaysShown = group.GetIsChatChannelAlwaysShown()
-            };
-        }
-
-        /// <summary>
-        /// Tries to convert a <see cref="RockChatChannelMember"/> and <paramref name="chatUserKey"/> to a
-        /// <see cref="ChatChannelMember"/>.
-        /// </summary>
-        /// <param name="rockChatChannelMember">The <see cref="RockChatChannelMember"/> to convert.</param>
-        /// <param name="chatUserKey">The <see cref="ChatUser.Key"/> that represents this <see cref="ChatChannelMember"/>.</param>
-        /// <returns>A <see cref="ChatChannelMember"/> or <see langword="null"/> if unable to convert.</returns>
-        private ChatChannelMember TryConvertToChatChannelMember( RockChatChannelMember rockChatChannelMember, string chatUserKey )
-        {
-            if ( rockChatChannelMember == null || chatUserKey.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
-            return new ChatChannelMember
-            {
-                ChatUserKey = chatUserKey,
-                Role = rockChatChannelMember.ChatRole.GetDescription(),
-                IsChatMuted = rockChatChannelMember.IsChatMuted,
-                IsChatBanned = rockChatChannelMember.IsChatBanned
-            };
-        }
-
-        /// <summary>
-        /// Tries to convert a <see cref="RockChatUserPerson"/> to a <see cref="ChatUser"/>.
-        /// </summary>
-        /// <param name="rockChatUserPerson">The <see cref="RockChatUserPerson"/> to convert.</param>
-        /// <param name="chatConfiguration">The cached <see cref="ChatConfiguration"/> to prevent repeated reads from
-        /// system settings.</param>
-        /// <returns>A <see cref="ChatUser"/> or <see langword="null"/> if unable to convert.</returns>
-        private ChatUser TryConvertToChatUser( RockChatUserPerson rockChatUserPerson, ChatConfiguration chatConfiguration )
-        {
-            if ( rockChatUserPerson?.ChatAliasGuid == null )
-            {
-                return null;
-            }
-
-            var fullName = Person.FormatFullName(
-                rockChatUserPerson.NickName,
-                rockChatUserPerson.LastName,
-                rockChatUserPerson.SuffixValueId,
-                rockChatUserPerson.RecordTypeValueId
-            );
-
-            var photoUrlPerson = new Person
-            {
-                NickName = rockChatUserPerson.NickName,
-                LastName = rockChatUserPerson.LastName,
-                PhotoId = rockChatUserPerson.PhotoId,
-                BirthYear = rockChatUserPerson.BirthYear,
-                Gender = rockChatUserPerson.Gender,
-                RecordTypeValueId = rockChatUserPerson.RecordTypeValueId,
-                AgeClassification = rockChatUserPerson.AgeClassification
-            };
-
-            var publicApplicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
-            var photoUrl = $"{publicApplicationRoot}{Person.GetPersonPhotoUrl( photoUrlPerson ).TrimStart( '~', '/' )}";
-
-            var isProfileVisible = rockChatUserPerson.IsChatProfilePublic.HasValue
-                ? rockChatUserPerson.IsChatProfilePublic.Value
-                : chatConfiguration.AreChatProfilesVisible;
-
-            var isOpenDirectMessageAllowed = rockChatUserPerson.IsChatOpenDirectMessageAllowed.HasValue
-                ? rockChatUserPerson.IsChatOpenDirectMessageAllowed.Value
-                : chatConfiguration.IsOpenDirectMessagingAllowed;
-
-            return new ChatUser
-            {
-                Key = GetChatUserKey( rockChatUserPerson.ChatAliasGuid.Value ),
-                Name = fullName,
-                PhotoUrl = photoUrl,
-                IsAdmin = rockChatUserPerson.IsChatAdministrator,
-                IsProfileVisible = isProfileVisible,
-                IsOpenDirectMessageAllowed = isOpenDirectMessageAllowed,
-                Badges = rockChatUserPerson.Badges
-            };
-        }
-
-        #endregion Converters: From Rock Models To Rock Chat DTOs
 
         #endregion Private Methods
 

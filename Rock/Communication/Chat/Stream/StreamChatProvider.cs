@@ -767,7 +767,7 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
             // Even though no exceptions were thrown, let's verify that all required roles actually exist.
@@ -914,7 +914,7 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
             return results;
@@ -969,7 +969,7 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
             return results;
@@ -1014,7 +1014,7 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
             return results;
@@ -1175,7 +1175,7 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
             return results;
@@ -1222,7 +1222,7 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
             return results;
@@ -1284,7 +1284,7 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
             return results;
@@ -1382,7 +1382,7 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
         }
 
@@ -1622,7 +1622,7 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
             return results;
@@ -1820,7 +1820,7 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
             return results;
@@ -1879,7 +1879,7 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
             return results;
@@ -1930,7 +1930,7 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
             return results;
@@ -1981,7 +1981,7 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
             return results;
@@ -2158,18 +2158,127 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
             return results;
         }
 
         /// <inheritdoc/>
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async Task<List<string>> DeleteChatUsersAsync( List<string> chatUserKeys )
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async Task<ChatSyncCrudResult> DeleteChatUsersAsync( List<string> chatUserKeys, string newChatUserKey = null )
         {
-            throw new NotImplementedException();
+            var result = new ChatSyncCrudResult();
+
+            if ( chatUserKeys?.Any() != true )
+            {
+                return result;
+            }
+
+            // Prevent delete exceptions by first ensuring the chat users truly exist in Stream.
+            try
+            {
+                var queryChatUserKeys = chatUserKeys.ToList();
+                if ( newChatUserKey.IsNotNullOrWhiteSpace() )
+                {
+                    if ( queryChatUserKeys.Contains( newChatUserKey ) )
+                    {
+                        // We can't replace the users with one we're deleting.
+                        newChatUserKey = null;
+                    }
+                    else
+                    {
+                        // Add this user to query to ensure they exist.
+                        queryChatUserKeys.Add( newChatUserKey );
+                    }
+                }
+
+                var existingChatUsers = await GetChatUsersAsync( queryChatUserKeys );
+                for ( var i = chatUserKeys.Count - 1; i >= 0; i-- )
+                {
+                    var chatUserKey = chatUserKeys[i];
+                    if ( !existingChatUsers.Any( u => u.Key == chatUserKey ) )
+                    {
+                        // Send this key right back out the door.
+                        result.Skipped.Add( chatUserKey );
+                        chatUserKeys.RemoveAt( i );
+                    }
+                }
+
+                if ( newChatUserKey.IsNotNullOrWhiteSpace() && !existingChatUsers.Any( u => u.Key == newChatUserKey ) )
+                {
+                    // The specified "new" user doesn't exist in Stream.
+                    newChatUserKey = null;
+                }
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+                return result;
+            }
+
+            // Do any remain to be deleted?
+            if ( !chatUserKeys.Any() )
+            {
+                return result;
+            }
+
+            var operationName = nameof( DeleteChatUsersAsync ).SplitCase();
+
+            // Max number of users to delete per query is 100.
+            // https://getstream.io/chat/docs/dotnet-csharp/update_users/#deleting-many-users
+            var pageSize = 100;
+            var offset = 0;
+            var usersToDeleteCount = chatUserKeys.Count;
+
+            // Don't let individual batch failures cause all to fail.
+            var exceptions = new List<Exception>();
+
+            while ( offset < usersToDeleteCount )
+            {
+                var batchedKeys = chatUserKeys
+                    .Skip( offset )
+                    .Take( pageSize )
+                    .ToList();
+
+                try
+                {
+                    var deleteUsersRequest = new DeleteUsersRequest().WithUserIds( chatUserKeys );
+
+                    if ( newChatUserKey.IsNotNullOrWhiteSpace() )
+                    {
+                        deleteUsersRequest.NewChannelOwnerId = newChatUserKey;
+                    }
+                    else
+                    {
+                        deleteUsersRequest.UserDeletionStrategy = DeletionStrategy.Soft;
+                        deleteUsersRequest.MessageDeletionStrategy = DeletionStrategy.Soft;
+                        deleteUsersRequest.ConversationDeletionStrategy = DeletionStrategy.Soft;
+                    }
+
+                    await RetryAsync(
+                        async () => await UserClient.DeleteManyAsync( deleteUsersRequest ),
+                        operationName
+                    );
+
+                    // Assume if we got this far - and an exception wasn't thrown - users were marked for deletion.
+                    result.Deleted.UnionWith( batchedKeys );
+                }
+                catch ( Exception ex )
+                {
+                    exceptions.Add( ex );
+                }
+                finally
+                {
+                    offset += pageSize;
+                }
+            }
+
+            if ( exceptions.Any() )
+            {
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>
@@ -2220,7 +2329,7 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
             return results;
@@ -2274,7 +2383,7 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
+                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
             return results;

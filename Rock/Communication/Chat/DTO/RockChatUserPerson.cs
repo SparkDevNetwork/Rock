@@ -24,7 +24,7 @@ namespace Rock.Communication.Chat.DTO
     /// Represents the minimum necessary combined info from Rock <see cref="Person"/> and <see cref="PersonAlias"/>
     /// models needed to synchronize to a <see cref="ChatUser"/> in the external chat system.
     /// </summary>
-    internal class RockChatUserPerson : RockChatUserPersonKey
+    internal class RockChatUserPerson : RockChatUserKey
     {
         /// <inheritdoc cref="Person.NickName"/>
         public string NickName { get; set; }
