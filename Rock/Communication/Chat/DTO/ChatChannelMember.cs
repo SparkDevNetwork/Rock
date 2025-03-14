@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Enums.Communication.Chat;
 using Rock.Model;
 
 namespace Rock.Communication.Chat.DTO
@@ -23,19 +24,14 @@ namespace Rock.Communication.Chat.DTO
     /// </summary>
     internal class ChatChannelMember
     {
-        /// <summary>
-        /// Gets or sets the chat user key.
-        /// </summary>
-        /// <value>
-        /// "rock_user_{PersonAlias.Id}"
-        /// </value>
+        /// <inheritdoc cref="ChatUser.Key"/>
         public string ChatUserKey { get; set; }
 
         /// <summary>
         /// Gets or sets the member's role within the channel.
         /// </summary>
         /// <value>
-        /// <see cref="GroupTypeRole.ChatRole"/>
+        /// The <see langword="string"/> representation of a <see cref="ChatRole"/>.
         /// </value>
         public string Role { get; set; }
 

@@ -332,14 +332,15 @@ namespace Rock.Communication.Chat
         /// Deletes the specified <see cref="ChatUser"/>s in the external chat system.
         /// </summary>
         /// <param name="chatUserKeys">The list of keys for the <see cref="ChatUser"/>s to delete.</param>
+        /// <param name="newChatUserKey">The optional key of the <see cref="ChatUser"/> to whom ownership of the deleted
+        /// users' external chat system resources should be transferred.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of keys for <see cref="ChatUser"/>s
-        /// who were successfully deleted.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
-        Task<List<string>> DeleteChatUsersAsync( List<string> chatUserKeys );
+        Task<ChatSyncCrudResult> DeleteChatUsersAsync( List<string> chatUserKeys, string newChatUserKey = null );
 
         /// <summary>
-        /// Bans the specified <see cref="ChatUser"/>s within the external chat system.
+        /// Bans the specified <see cref="ChatUser"/>s in the external chat system.
         /// </summary>
         /// <param name="chatUserKeys">The list of keys for the <see cref="ChatUser"/>s to ban.</param>
         /// <param name="chatChannelTypeKey">The optional key for the <see cref="ChatChannelType"/> in which the
@@ -357,7 +358,7 @@ namespace Rock.Communication.Chat
         Task<List<string>> BanChatUsersAsync( List<string> chatUserKeys, string chatChannelTypeKey = null, string chatChannelKey = null );
 
         /// <summary>
-        /// Unbans the specified <see cref="ChatUser"/>s within the external chat system.
+        /// Unbans the specified <see cref="ChatUser"/>s in the external chat system.
         /// </summary>
         /// <param name="chatUserKeys">The list of keys for the <see cref="ChatUser"/>s to unban.</param>
         /// <param name="chatChannelTypeKey">The optional key for the <see cref="ChatChannelType"/> in which the

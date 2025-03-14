@@ -368,22 +368,38 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the mapping between all <see cref="ChatUser.Key"/>s and their respective <see cref="PersonAlias"/> identifiers.
+        /// Returns a Queryable of chat-specific Person Aliases.
         /// </summary>
+        /// <returns>A Queryable of chat-specific Person Aliases.</returns>
+        internal IQueryable<PersonAlias> GetChatPersonAliasesQuery()
+        {
+            return this.Queryable().Where( a => a.ForeignKey.StartsWith( ChatHelper.ChatPersonAliasForeignKeyPrefix ) );
+        }
+
+        /// <summary>
+        /// Gets the mapping between all <see cref="ChatUser.Key"/>s and each respective chat-specific
+        /// <see cref="PersonAlias"/> identifier.
+        /// </summary>
+        /// <param name="includeDeceased">Whether to include deceased individuals in the results.</param>
         /// <returns>
         /// A <see cref="Dictionary{TKey, TValue}"/> where the key is the <see cref="ChatUser.Key"/> and the value is
         /// the <see cref="PersonAlias"/> identifier.
         /// </returns>
-        internal Dictionary<string, int> GetPersonAliasIdByChatUserKeys()
+        /// <remarks>
+        /// A given <see cref="Person"/> might be represented more than once in the returned dictionary if they have
+        /// more than one chat-specific <see cref="PersonAlias"/>.
+        /// </remarks>
+        internal Dictionary<string, int> GetChatPersonAliasIdByChatUserKeys( bool includeDeceased = false )
         {
             var rockContext = this.Context as RockContext;
 
-            return new PersonAliasService( rockContext )
-                .Queryable()
-                .Where( pa =>
-                    !pa.Person.IsDeceased
-                    && pa.ForeignKey.StartsWith( ChatHelper.ChatPersonAliasForeignKeyPrefix )
-                )
+            var chatAliasQry = GetChatPersonAliasesQuery();
+            if ( !includeDeceased )
+            {
+                chatAliasQry = chatAliasQry.Where( pa => !pa.Person.IsDeceased );
+            }
+
+            return chatAliasQry
                 .ToDictionary(
                     pa => ChatHelper.GetChatUserKey( pa.Guid ),
                     pa => pa.Id

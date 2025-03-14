@@ -22,25 +22,44 @@ namespace Rock.Communication.Chat.DTO
 {
     /// <summary>
     /// Represents the mapping between a <see cref="Person"/> and their respective <see cref="ChatUser"/> within the
-    /// external chat systemS.
+    /// external chat system.
     /// </summary>
-    internal class RockChatUserPersonKey
+    internal class RockChatUserKey
     {
+        /// <summary>
+        /// The backing field for the <see cref="ChatUserKey"/> property.
+        /// </summary>
+        private string _chatUserKey;
+
         /// <summary>
         /// Gets or sets the <see cref="Person"/> identifier.
         /// </summary>
         public int PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets this person's chat-specific <see cref="PersonAlias"/> unique identifier.
+        /// Gets or sets the chat-specific <see cref="PersonAlias"/> identifier.
         /// </summary>
-        public Guid? ChatAliasGuid { get; set; }
+        public int? ChatPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="ChatUser.Key"/> for this person.
+        /// Gets or sets the chat-specific <see cref="PersonAlias"/> unique identifier.
         /// </summary>
-        public string ChatUserKey => this.ChatAliasGuid.HasValue
-            ? ChatHelper.GetChatUserKey( this.ChatAliasGuid.Value )
-            : null;
+        public Guid? ChatPersonAliasGuid { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="ChatUser.Key"/>.
+        /// </summary>
+        public string ChatUserKey
+        {
+            get
+            {
+                if ( _chatUserKey.IsNullOrWhiteSpace() && this.ChatPersonAliasGuid.HasValue )
+                {
+                    _chatUserKey = ChatHelper.GetChatUserKey( this.ChatPersonAliasGuid.Value );
+                }
+
+                return _chatUserKey;
+            }
+        }
     }
 }
