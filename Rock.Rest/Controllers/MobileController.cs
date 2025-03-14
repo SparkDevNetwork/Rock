@@ -22,9 +22,12 @@ using System.ServiceModel.Channels;
 using System.Threading.Tasks;
 using System.Web.Http;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
 using Rock.Communication.Chat;
+using Rock.Logging;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -127,16 +130,30 @@ namespace Rock.Rest.Controllers
                 launchPacket.CurrentPerson = MobileHelper.GetMobilePerson( person, site );
                 launchPacket.CurrentPerson.AuthToken = MobileHelper.GetAuthenticationToken( principal.Identity.Name );
 
-                using( var chatHelper = new ChatHelper() )
+                if( ChatHelper.IsChatEnabled )
                 {
-                    var chatAuth = await chatHelper.GetChatUserAuthenticationAsync( person.Id );
-
-                    launchPacket.ChatPerson = new ChatPersonBag
+                    using ( var chatHelper = new ChatHelper() )
                     {
-                        Token = chatAuth.Token,
-                        UserId = chatAuth.ChatUserKey
-                    };
-                }
+                        var chatAuth = await chatHelper.GetChatUserAuthenticationAsync( person.Id );
+
+                        // This should really never be null, but if it were
+                        // to be, it would break launching your mobile app, so
+                        // just in case.
+                        if ( chatAuth != null )
+                        {
+                            launchPacket.ChatPerson = new ChatPersonBag
+                            {
+                                Token = chatAuth.Token,
+                                UserId = chatAuth.ChatUserKey
+                            };
+                        }
+                        else
+                        {
+                            var logger = RockLogger.LoggerFactory.CreateLogger<MobileController>();
+                            logger.LogError( "Failed to get chat user authentication for person {PersonId}. This should never happen.", person.Id );
+                        }
+                    }
+                }                
 
                 UserLoginService.UpdateLastLogin( principal.Identity.Name );
             }
