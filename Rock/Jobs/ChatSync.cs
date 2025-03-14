@@ -58,7 +58,7 @@ namespace Rock.Jobs
         DefaultBooleanValue = true,
         Order = 2 )]
 
-    [BooleanField( "Delete Merged Chat Individuals",
+    [BooleanField( "Delete Merged Chat Person Records",
         Key = AttributeKey.DeleteMergedChatUsers,
         Description = "Determines if non-prevailing, merged chat person records should be deleted in the external chat system. If enabled, when two people in Rock have been merged, and both had an associated chat person record, the non-prevailing chat person record will be deleted from the external chat system to ensure other people can send future messages to only the prevailing chat person record.",
         IsRequired = false,
@@ -187,6 +187,11 @@ namespace Rock.Jobs
                     {
                         await CreateInteractionsAsync( rockContext, chatHelper );
                     }
+
+                    if ( GetAttributeValue( AttributeKey.DeleteMergedChatUsers ).AsBoolean() )
+                    {
+                        await DeleteMergedChatUsersAsync( rockContext, chatHelper );
+                    }
                 }
             } );
 
@@ -199,6 +204,8 @@ namespace Rock.Jobs
         #endregion RockJob Implementation
 
         #region Private Methods
+
+        #region Synchronize Data
 
         /// <summary>
         /// Ensures that all chat-related data in Rock is in sync with the corresponding data in the external chat system.
@@ -224,6 +231,7 @@ namespace Rock.Jobs
 
             // --------------------------------------------------------
             // 1) Ensure the app is set up in the external chat system.
+
             stopwatch.Start();
             var isSetUpResult = await chatHelper.EnsureChatProviderAppIsSetUpAsync();
             stopwatch.Stop();
@@ -242,8 +250,36 @@ namespace Rock.Jobs
                 return;
             }
 
+            // -----------------------------------------------------------------
+            // 2) Delete any deceased individuals from the external chat system.
+
+            // This should almost never find any individuals to delete, as the chat helper already has a pretty robust
+            // process for deleting Rock group members and external chat users, as soon as they're marked as deceased in
+            // Rock. This is just a safeguard, in case that process fails for some reason, or in case the deceased
+            // individual didn't belong to any chat-enabled groups at the time of being marked as deceased.
+
+            chatUserStopwatch.Start();
+
+            var personService = new PersonService( rockContext );
+            var personAliasService = new PersonAliasService( rockContext );
+
+            var deceasedChatUserPersonIds = personService.GetDeceasedChatUserPersonIds().ToList();
+            if ( deceasedChatUserPersonIds.Any() )
+            {
+                foreach ( var personId in deceasedChatUserPersonIds )
+                {
+                    var deleteResult = await chatHelper.DeleteChatUsersAsync( personId, personAliasService );
+                    if ( deleteResult?.Deleted.Any() == true )
+                    {
+                        chatUserCrudResult.Deleted.Add( personId.ToString() );
+                    }
+                }
+            }
+
+            chatUserStopwatch.Stop();
+
             // --------------------------------------------------------------------------
-            // 2) Add/[re]enforce global chat bans by syncing "Chat Ban List" chat users.
+            // 3) Add/[re]enforce global chat bans by syncing "Chat Ban List" chat users.
 
             var globallyBannedChatUserKeys = new HashSet<string>();
 
@@ -310,7 +346,7 @@ namespace Rock.Jobs
             }
 
             // ------------------------------------------------------------
-            // 3) Sync "APP - Chat Administrator" security role chat users.
+            // 4) Sync "APP - Chat Administrator" security role chat users.
 
             // Only perform this sync if chat is NOT enabled for the chat admins group. Otherwise, these chat users will
             // be synced as part of the regular group sync process below.
@@ -372,7 +408,7 @@ namespace Rock.Jobs
             }
 
             // --------------------------------------------------
-            // 4) Sync all Rock group types to the chat provider.
+            // 5) Sync all Rock group types to the chat provider.
             stopwatch.Restart();
 
             var groupTypeService = new GroupTypeService( rockContext );
@@ -393,7 +429,8 @@ namespace Rock.Jobs
             }
 
             // ------------------------------------------------------
-            // 5) Sync all chat-enabled groups to the chat provider.
+            // 6) Sync all chat-enabled groups to the chat provider.
+
             stopwatch.Restart();
 
             var groupService = new GroupService( rockContext );
@@ -522,13 +559,12 @@ namespace Rock.Jobs
                 }
             }
 
-            // ---------------------------------------------------------
-            // 6) Sync any people who haven't already been synced above.
+            // ----------------------------------------------------------------------
+            // 7) Sync any non-deceased people who haven't already been synced above.
 
             chatUserStopwatch.Start();
 
-            var personService = new PersonService( rockContext );
-            var chatUserPersonIds = personService.GetChatUserPersonIds().ToList();
+            var chatUserPersonIds = personService.GetNonDeceasedChatUserPersonIds().ToList();
 
             // Filter down to those people who haven't already been synced above.
             var alreadySyncedPersonIds = chatUserCrudResult.Unique.Select( a => a.AsInteger() ).ToList();
@@ -594,14 +630,22 @@ namespace Rock.Jobs
             }
         }
 
+        #endregion Synchronize Data
+
+        #region Create Interactions
+
         /// <summary>
         /// Creates chat-related interactions for people who have been active in the external chat system.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="chatHelper">The chat helper.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task CreateInteractionsAsync( RockContext rockContext, ChatHelper chatHelper )
         {
             var section = CreateAndAddResultSection( "Chat Message Interactions:" );
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
 
             var settings = Rock.Web.SystemSettings
                 .GetValue( SystemSetting.CHAT_SYNC_JOB_SETTINGS )
@@ -637,7 +681,9 @@ namespace Rock.Jobs
             // We only create these types of interactions through "yesterday".
             if ( messageDate >= RockDateTime.Today )
             {
-                CreateAndAddNewTaskResult( section, $"{GetInteractionsLabel( 0 )} {CrudMessage.Skipped}.", TimeSpan.Zero );
+                stopwatch.Stop();
+
+                CreateAndAddNewTaskResult( section, CrudMessage.Skipped, stopwatch.Elapsed );
                 return;
             }
 
@@ -652,13 +698,12 @@ namespace Rock.Jobs
             );
 
             var interactionService = new InteractionService( rockContext );
-            var stopwatch = new Stopwatch();
 
             // ----------------------------------------------------------------------------------------
             // 1) Delete untrusted interactions from previous, unsuccessful runs (we'll recreate them).
             if ( lastSuccessfulMessageDate.HasValue )
             {
-                stopwatch.Start();
+                stopwatch.Restart();
 
                 var deleteInteractionsQry = interactionService.Queryable()
                     .Where( i =>
@@ -690,7 +735,7 @@ namespace Rock.Jobs
             }
 
             // Get the [chat user key]-to-[Rock person alias ID] mappings.
-            var personAliasIdByChatUserKeys = new PersonAliasService( rockContext ).GetPersonAliasIdByChatUserKeys();
+            var personAliasIdByChatUserKeys = new PersonAliasService( rockContext ).GetChatPersonAliasIdByChatUserKeys();
             if ( personAliasIdByChatUserKeys?.Any() != true )
             {
                 var taskResult = CreateAndAddNewTaskResult( section, "Missing Chat-to-Rock Mapping Data", TimeSpan.Zero );
@@ -846,6 +891,41 @@ namespace Rock.Jobs
                 MarkDateAsSuccessfullyProcessed();
             }
         }
+
+        #endregion Create Interactions
+
+        #region Delete Merged Chat Users
+
+        /// <summary>
+        /// Deletes non-prevailing chat person records that have been merged with other Rock people.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="chatHelper">The chat helper.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task DeleteMergedChatUsersAsync( RockContext rockContext, ChatHelper chatHelper )
+        {
+            var section = CreateAndAddResultSection( "Delete Merged Chat Person Records:" );
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            var mergeResult = await chatHelper.DeleteMergedChatUsersAsync();
+
+            stopwatch.Stop();
+
+            if ( mergeResult?.Deleted.Any() != true )
+            {
+                CreateAndAddNewTaskResult( section, CrudMessage.Skipped, stopwatch.Elapsed );
+                return;
+            }
+
+            var count = mergeResult.Deleted.Count;
+            CreateAndAddNewTaskResult( section, $"{count:N0} Merged Chat Person {"Record".PluralizeIf( count > 1 )} {CrudMessage.Deleted}", stopwatch.Elapsed );
+        }
+
+        #endregion Delete Merged Chat Users
+
+        #region Task Result Reporting
 
         /// <summary>
         /// Creates and adds a new <see cref="ChatSyncResultSection"/> to the <see cref="_resultSections"/> list.
@@ -1043,6 +1123,8 @@ namespace Rock.Jobs
         {
             ExceptionLogService.LogException( new RockJobWarningException( $"Unobserved Task Exception in {nameof( ChatSync )} Job.", e.Exception ) );
         }
+
+        #endregion Task Result Reporting
 
         #endregion Private Methods
 

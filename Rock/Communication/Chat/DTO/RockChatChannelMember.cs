@@ -48,5 +48,10 @@ namespace Rock.Communication.Chat.DTO
         /// Gets or sets whether the <see cref="ChatChannelMember"/> should be deleted in the external chat system.
         /// </summary>
         public bool ShouldDelete { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the <see cref="Person"/> is deceased.
+        /// </summary>
+        public bool IsDeceased { get; set; }
     }
 }

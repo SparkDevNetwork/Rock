@@ -725,13 +725,14 @@
     <Compile Include="Communication\Chat\Sync\ChatWebhookRequest.cs" />
     <Compile Include="Communication\Chat\DTO\RockChatChannelMember.cs" />
     <Compile Include="Communication\Chat\DTO\RockChatUserPerson.cs" />
-    <Compile Include="Communication\Chat\DTO\RockChatUserPersonKey.cs" />
+    <Compile Include="Communication\Chat\DTO\RockChatUserKey.cs" />
     <Compile Include="Communication\Chat\Exceptions\MemberChatChannelNotFoundException.cs" />
     <Compile Include="Communication\Chat\DTO\RockChatBadgeRoster.cs" />
     <Compile Include="Communication\Chat\Exceptions\InvalidChatWebhookRequestException.cs" />
     <Compile Include="Communication\Chat\Sync\ChatSyncBooleanResult.cs" />
     <Compile Include="Communication\Chat\Sync\ChatSyncCreateOrUpdateUsersResult.cs" />
     <Compile Include="Communication\Chat\Sync\ChatSyncCrudResult.cs" />
+    <Compile Include="Communication\Chat\Sync\DeleteChatUsersInRockConfig.cs" />
     <Compile Include="Communication\Chat\Sync\RockToChatGroupSyncConfig.cs" />
     <Compile Include="Communication\Chat\Sync\RockToChatSyncConfig.cs" />
     <Compile Include="Communication\Chat\Sync\ChatSyncResultBase.cs" />
