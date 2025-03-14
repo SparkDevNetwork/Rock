@@ -1,0 +1,24 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <RockWebPath Condition="'$(RockWebPath)' == ''"></RockWebPath>
+    <CopyToRockWeb Condition="'$(CopyToRockWeb)' == ''">False</CopyToRockWeb>
+  </PropertyGroup>
+
+  <Target Name="CopyArtifactsToRockWebBin" AfterTargets="AfterBuild" Condition="'$(CopyToRockWeb)' == 'True' and '$(RockWebPath)' != '' and '$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <!-- Need a way to ignore specific files, such as libgrpc* and SqlServerTypes/* -->
+    <FindUnderPath Path="$(OutDir)" Files="@(FileWrites)"
+        UpdateToAbsolutePaths="True">
+      <Output TaskParameter="InPath" ItemName="_SourceFilesToCopyToRockWeb"/>
+    </FindUnderPath>
+
+    <ItemGroup>
+      <_FilesToCopyToRockWeb Include="%(_SourceFilesToCopyToRockWeb.Identity)" Condition="!@(_SourceFilesToCopyToRockWeb->EndsWith('.dll.config'))" />
+    </ItemGroup>
+
+    <CopyToRockWeb
+        Source="$(OutDir)"
+        Destination="$(RockWebPath)\Bin"
+        Files="@(_FilesToCopyToRockWeb)"
+        Exclude="$(ExcludeFromRockWebCopy)" />
+  </Target>
+</Project>

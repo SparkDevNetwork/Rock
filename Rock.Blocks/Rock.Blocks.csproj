@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <RockWebPath>..\RockWeb</RockWebPath>
+    <CopyToRockWeb>True</CopyToRockWeb>
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,32 +45,5 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web" />
   </ItemGroup>
-
-  <Target Name="CopyArtifactsToRockWebBin" AfterTargets="AfterBuild">
-    <!-- Need a way to ignore specific files, such as libgrpc* and SqlServerTypes/* -->
-    <Warning Text="Copying artifacts to RockWeb\bin" />
-
-    <FindUnderPath Path="$(OutDir)" Files="@(FileWrites)"
-        UpdateToAbsolutePaths="True">
-      <Output TaskParameter="InPath" ItemName="_SourceFilesToCopyToRockWeb"/>
-    </FindUnderPath>
-
-    <Warning Text="@(_SourceFilesToCopyToRockWeb)" />
-
-    <PropertyGroup>
-      <RockWebPath>..\RockWeb</RockWebPath>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <_FilesToCopyToRockWeb Include="%(_SourceFilesToCopyToRockWeb.Identity)" Condition="!@(_SourceFilesToCopyToRockWeb->EndsWith('.dll.config'))" />
-    </ItemGroup>
-
-    <Warning Text="@(_FilesToCopyToRockWeb)" />
-
-    <Copy SourceFiles="@(_FilesToCopyToRockWeb)"
-        DestinationFiles="@(_FilesToCopyToRockWeb->'%(Identity)'->Replace('$(MSBuildProjectDirectory)\$(OutDir)', '$(MSBuildProjectDirectory)\$(RockWebPath)\Bin\'))"
-        SkipUnchangedFiles="True">
-    </Copy>
-  </Target>
 
 </Project>
