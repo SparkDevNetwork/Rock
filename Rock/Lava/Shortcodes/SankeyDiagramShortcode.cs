@@ -49,32 +49,32 @@ namespace Rock.Lava.Shortcodes
             /// <summary>
             /// The width of the rectangular node
             /// </summary>
-            public const string NodeWidth = "nodeWidth";
+            public const string NodeWidth = "nodewidth";
 
             /// <summary>
             /// The vertical gap space between nodes
             /// </summary>
-            public const string NodeVerticalSpacing = "nodeVerticalSpacing";
+            public const string NodeVerticalSpacing = "nodeverticalspacing";
 
             /// <summary>
             /// The width of the chart
             /// </summary>
-            public const string ChartWidth = "chartWidth";
+            public const string ChartWidth = "chartwidth";
 
             /// <summary>
             /// The height of the chart
             /// </summary>
-            public const string ChartHeight = "chartHeight";
+            public const string ChartHeight = "chartheight";
 
             /// <summary>
             /// When hovering a node, a tooltip shows. If this is specified, this text will be prepended before the unit count.
             /// </summary>
-            public const string NodeTooltipActionLabel = "nodeTooltipActionLabel";
+            public const string NodeTooltipActionLabel = "nodetooltipactionlabel";
 
             /// <summary>
             /// Whether or not the legend should be shown
             /// </summary>
-            public const string ShowLegend = "showLegend";
+            public const string ShowLegend = "showlegend";
         }
 
         /// <summary>
@@ -92,46 +92,46 @@ namespace Rock.Lava.Shortcodes
         internal const string DocumentationMetadata = @"
 <p>Builds a diagram that emphasizes flow/movement/change (edge) from one state (node) to another or one time to another, in which the width of the flow is proportional to the number flowing in/out from the total.</p>
 
-<pre>{[ sankeydiagram nodeTooltipActionLabel:'Total Steps Taken' ]}
+<pre>{[ sankeydiagram nodetooltipactionlabel:'Total Steps Taken' ]}
     [[ node id:'1' name:'Baptism' color:'cyan' ]][[ endnode ]]
     [[ node id:'2' name:'Confirmation' color:'rebeccapurple' ]][[ endnode ]]
     [[ node id:'3' name:'Eucharist' ]][[ endnode ]]
     [[ node id:'4' name:'Confession' ]][[ endnode ]]
 
-    [[ edge level:'1' sourceId:'0' targetId:'1' units:'48' ]][[ endedge ]]
-    [[ edge level:'1' sourceId:'0' targetId:'2' units:'21' ]][[ endedge ]]
-    [[ edge level:'1' sourceId:'0' targetId:'3' units:'11' ]][[ endedge ]]
-    [[ edge level:'1' sourceId:'0' targetId:'4' units:'10' ]][[ endedge ]]
-    [[ edge level:'2' sourceId:'1' targetId:'2' units:'32', tooltip:'&lt;strong&gt;Baptism &gt; Confirmation&lt;/strong&gt;&lt;br&gt;Steps Taken: 32' ]][[ endedge ]]
-    [[ edge level:'2' sourceId:'2' targetId:'1' units:'11', tooltip:'&lt;strong&gt;Confirmation &gt; Baptism&lt;/strong&gt;&lt;br&gt;Steps Taken: 11' ]][[ endedge ]]
-    [[ edge level:'2' sourceId:'2' targetId:'3' units:'3', tooltip:'&lt;strong&gt;Confirmation &gt; Eucharist&lt;/strong&gt;&lt;br&gt;Steps Taken: 3' ]][[ endedge ]]
-    [[ edge level:'2' sourceId:'2' targetId:'4' units:'5', tooltip:'&lt;strong&gt;Confirmation &gt; Confession&lt;/strong&gt;&lt;br&gt;Steps Taken: 5' ]][[ endedge ]]
-    [[ edge level:'2' sourceId:'3' targetId:'1' units:'5', tooltip:'&lt;strong&gt;Eucharist &gt; Baptism&lt;/strong&gt;&lt;br&gt;Steps Taken: 5' ]][[ endedge ]]
-    [[ edge level:'2' sourceId:'3' targetId:'4' units:'3', tooltip:'&lt;strong&gt;Eucharist &gt; Confession&lt;/strong&gt;&lt;br&gt;Steps Taken: 3' ]][[ endedge ]]
-    [[ edge level:'2' sourceId:'4' targetId:'1' units:'7', tooltip:'&lt;strong&gt;Confession &gt; Baptism&lt;/strong&gt;&lt;br&gt;Steps Taken: 7' ]][[ endedge ]]
-    [[ edge level:'3' sourceId:'1' targetId:'2' units:'10', tooltip:'&lt;strong&gt;Baptism &gt; Confirmation&lt;/strong&gt;&lt;br&gt;Steps Taken: 10' ]][[ endedge ]]
-    [[ edge level:'3' sourceId:'1' targetId:'3' units:'9', tooltip:'&lt;strong&gt;Baptism &gt; Eucharist&lt;/strong&gt;&lt;br&gt;Steps Taken: 9' ]][[ endedge ]]
-    [[ edge level:'3' sourceId:'2' targetId:'1' units:'10', tooltip:'&lt;strong&gt;Confirmation &gt; Baptism&lt;/strong&gt;&lt;br&gt;Steps Taken: 10' ]][[ endedge ]]
-    [[ edge level:'3' sourceId:'2' targetId:'3' units:'20', tooltip:'&lt;strong&gt;Confirmation &gt; Eucharist&lt;/strong&gt;&lt;br&gt;Steps Taken: 20' ]][[ endedge ]]
-    [[ edge level:'3' sourceId:'3' targetId:'1' units:'3', tooltip:'&lt;strong&gt;Eucharist &gt; Baptism&lt;/strong&gt;&lt;br&gt;Steps Taken: 3' ]][[ endedge ]]
-    [[ edge level:'3' sourceId:'4' targetId:'1' units:'8', tooltip:'&lt;strong&gt;Confession &gt; Baptism&lt;/strong&gt;&lt;br&gt;Steps Taken: 8' ]][[ endedge ]]
-    [[ edge level:'4' sourceId:'1' targetId:'2' units:'11', tooltip:'&lt;strong&gt;Baptism &gt; Confirmation&lt;/strong&gt;&lt;br&gt;Steps Taken: 11' ]][[ endedge ]]
-    [[ edge level:'4' sourceId:'1' targetId:'3' units:'7', tooltip:'&lt;strong&gt;Baptism &gt; Eucharist&lt;/strong&gt;&lt;br&gt;Steps Taken: 7' ]][[ endedge ]]
-    [[ edge level:'4' sourceId:'1' targetId:'4' units:'2', tooltip:'&lt;strong&gt;Baptism &gt; Confession&lt;/strong&gt;&lt;br&gt;Steps Taken: 2' ]][[ endedge ]]
-    [[ edge level:'4' sourceId:'2' targetId:'3' units:'5', tooltip:'&lt;strong&gt;Confirmation &gt; Eucharist&lt;/strong&gt;&lt;br&gt;Steps Taken: 5' ]][[ endedge ]]
-    [[ edge level:'4' sourceId:'2' targetId:'4' units:'3', tooltip:'&lt;strong&gt;Confirmation &gt; Confession&lt;/strong&gt;&lt;br&gt;Steps Taken: 3' ]][[ endedge ]]
-    [[ edge level:'4' sourceId:'3' targetId:'4' units:'10', tooltip:'&lt;strong&gt;Eucharist &gt; Confession&lt;/strong&gt;&lt;br&gt;Steps Taken: 10' ]][[ endedge ]]
+    [[ edge level:'1' sourceid:'0' targetid:'1' units:'48' ]][[ endedge ]]
+    [[ edge level:'1' sourceid:'0' targetid:'2' units:'21' ]][[ endedge ]]
+    [[ edge level:'1' sourceid:'0' targetid:'3' units:'11' ]][[ endedge ]]
+    [[ edge level:'1' sourceid:'0' targetid:'4' units:'10' ]][[ endedge ]]
+    [[ edge level:'2' sourceid:'1' targetid:'2' units:'32', tooltip:'&lt;strong&gt;Baptism &gt; Confirmation&lt;/strong&gt;&lt;br&gt;Steps Taken: 32' ]][[ endedge ]]
+    [[ edge level:'2' sourceid:'2' targetid:'1' units:'11', tooltip:'&lt;strong&gt;Confirmation &gt; Baptism&lt;/strong&gt;&lt;br&gt;Steps Taken: 11' ]][[ endedge ]]
+    [[ edge level:'2' sourceid:'2' targetid:'3' units:'3', tooltip:'&lt;strong&gt;Confirmation &gt; Eucharist&lt;/strong&gt;&lt;br&gt;Steps Taken: 3' ]][[ endedge ]]
+    [[ edge level:'2' sourceid:'2' targetid:'4' units:'5', tooltip:'&lt;strong&gt;Confirmation &gt; Confession&lt;/strong&gt;&lt;br&gt;Steps Taken: 5' ]][[ endedge ]]
+    [[ edge level:'2' sourceid:'3' targetid:'1' units:'5', tooltip:'&lt;strong&gt;Eucharist &gt; Baptism&lt;/strong&gt;&lt;br&gt;Steps Taken: 5' ]][[ endedge ]]
+    [[ edge level:'2' sourceid:'3' targetid:'4' units:'3', tooltip:'&lt;strong&gt;Eucharist &gt; Confession&lt;/strong&gt;&lt;br&gt;Steps Taken: 3' ]][[ endedge ]]
+    [[ edge level:'2' sourceid:'4' targetid:'1' units:'7', tooltip:'&lt;strong&gt;Confession &gt; Baptism&lt;/strong&gt;&lt;br&gt;Steps Taken: 7' ]][[ endedge ]]
+    [[ edge level:'3' sourceid:'1' targetid:'2' units:'10', tooltip:'&lt;strong&gt;Baptism &gt; Confirmation&lt;/strong&gt;&lt;br&gt;Steps Taken: 10' ]][[ endedge ]]
+    [[ edge level:'3' sourceid:'1' targetid:'3' units:'9', tooltip:'&lt;strong&gt;Baptism &gt; Eucharist&lt;/strong&gt;&lt;br&gt;Steps Taken: 9' ]][[ endedge ]]
+    [[ edge level:'3' sourceid:'2' targetid:'1' units:'10', tooltip:'&lt;strong&gt;Confirmation &gt; Baptism&lt;/strong&gt;&lt;br&gt;Steps Taken: 10' ]][[ endedge ]]
+    [[ edge level:'3' sourceid:'2' targetid:'3' units:'20', tooltip:'&lt;strong&gt;Confirmation &gt; Eucharist&lt;/strong&gt;&lt;br&gt;Steps Taken: 20' ]][[ endedge ]]
+    [[ edge level:'3' sourceid:'3' targetid:'1' units:'3', tooltip:'&lt;strong&gt;Eucharist &gt; Baptism&lt;/strong&gt;&lt;br&gt;Steps Taken: 3' ]][[ endedge ]]
+    [[ edge level:'3' sourceid:'4' targetid:'1' units:'8', tooltip:'&lt;strong&gt;Confession &gt; Baptism&lt;/strong&gt;&lt;br&gt;Steps Taken: 8' ]][[ endedge ]]
+    [[ edge level:'4' sourceid:'1' targetid:'2' units:'11', tooltip:'&lt;strong&gt;Baptism &gt; Confirmation&lt;/strong&gt;&lt;br&gt;Steps Taken: 11' ]][[ endedge ]]
+    [[ edge level:'4' sourceid:'1' targetid:'3' units:'7', tooltip:'&lt;strong&gt;Baptism &gt; Eucharist&lt;/strong&gt;&lt;br&gt;Steps Taken: 7' ]][[ endedge ]]
+    [[ edge level:'4' sourceid:'1' targetid:'4' units:'2', tooltip:'&lt;strong&gt;Baptism &gt; Confession&lt;/strong&gt;&lt;br&gt;Steps Taken: 2' ]][[ endedge ]]
+    [[ edge level:'4' sourceid:'2' targetid:'3' units:'5', tooltip:'&lt;strong&gt;Confirmation &gt; Eucharist&lt;/strong&gt;&lt;br&gt;Steps Taken: 5' ]][[ endedge ]]
+    [[ edge level:'4' sourceid:'2' targetid:'4' units:'3', tooltip:'&lt;strong&gt;Confirmation &gt; Confession&lt;/strong&gt;&lt;br&gt;Steps Taken: 3' ]][[ endedge ]]
+    [[ edge level:'4' sourceid:'3' targetid:'4' units:'10', tooltip:'&lt;strong&gt;Eucharist &gt; Confession&lt;/strong&gt;&lt;br&gt;Steps Taken: 10' ]][[ endedge ]]
 {[ endsankeydiagram ]}</pre>
 
 <p>The shortcode has a number of parameters that can customize the behavior.</p>
 
 <ul>
-    <li><strong>nodeWidth</strong> (12) - The width of the rectangular node.</li>
-    <li><strong>nodeVerticalSpacing</strong> (12) - The vertical gap space between nodes.</li>
-    <li><strong>chartWidth</strong> (800) - The width of the chart.</li>
-    <li><strong>chartHeight</strong> (400) - The height of the chart.</li>
-    <li><strong>showLegend</strong> (true) - Whether or not the legend should be shown.</li>
-    <li><strong>nodeTooltipActionLabel</strong> (none) - When hovering a node, a tooltip shows. If this is specified, this text will be prepended before the unit count.</li>
+    <li><strong>nodewidth</strong> (12) - The width of the rectangular node.</li>
+    <li><strong>nodeverticalspacing</strong> (12) - The vertical gap space between nodes.</li>
+    <li><strong>chartwidth</strong> (800) - The width of the chart.</li>
+    <li><strong>chartheight</strong> (400) - The height of the chart.</li>
+    <li><strong>showlegend</strong> (true) - Whether or not the legend should be shown.</li>
+    <li><strong>nodetooltipactionlabel</strong> (none) - When hovering a node, a tooltip shows. If this is specified, this text will be prepended before the unit count.</li>
 </ul>
 
 <p>Nodes have the following options.</p>
@@ -146,8 +146,8 @@ namespace Rock.Lava.Shortcodes
 
 <ul>
     <li><strong>level</strong> - The required level for the edge. Level 1 represents the initial states and therefore should have empty source IDs. Level 2 is the flow from the initial state to the next state and so on.</li>
-    <li><strong>sourceId</strong> - The required identifier of where the units are coming from. The identifier needs to match the ID of one of the nodes. Should be '0' for Level 1</li>
-    <li><strong>targetId</strong> - The required identifier of where the units are going to. The identifier needs to match the ID of one of the nodes.</li>
+    <li><strong>sourceid</strong> - The required identifier of where the units are coming from. The identifier needs to match the ID of one of the nodes. Should be '0' for Level 1</li>
+    <li><strong>targetid</strong> - The required identifier of where the units are going to. The identifier needs to match the ID of one of the nodes.</li>
     <li><strong>units</strong> - The required number of units or items flowing from the source to the target.</li>
     <li><strong>tooltip</strong> (generated) - The optional tooltip you'll see when hovering over this flow between the nodes. If not provided, the number of units will be shown.</li>
 </ul>
