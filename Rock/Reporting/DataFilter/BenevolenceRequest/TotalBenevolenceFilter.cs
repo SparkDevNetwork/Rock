@@ -104,7 +104,7 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
         {
             var selectionValues = selection.Split( '|' );
 
-            if ( selectionValues.Length > 0 )
+            if ( selectionValues.Length > 1 )
             {
                 return new Dictionary<string, string>
                 {
