@@ -359,18 +359,18 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a Queryable of Primary Person Aliases
+        /// Gets a Queryable of Primary <see cref="PersonAlias"/>es.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A Queryable of Primary <see cref="PersonAlias"/>es.</returns>
         public IQueryable<PersonAlias> GetPrimaryAliasQuery()
         {
             return this.Queryable().Where( a => a.PersonId == a.AliasPersonId && a.AliasPersonId.HasValue );
         }
 
         /// <summary>
-        /// Returns a Queryable of chat-specific Person Aliases.
+        /// Gets a Queryable of chat-specific <see cref="PersonAlias"/>es.
         /// </summary>
-        /// <returns>A Queryable of chat-specific Person Aliases.</returns>
+        /// <returns>A Queryable of chat-specific <see cref="PersonAlias"/>es.</returns>
         internal IQueryable<PersonAlias> GetChatPersonAliasesQuery()
         {
             return this.Queryable().Where( a => a.ForeignKey.StartsWith( ChatHelper.ChatPersonAliasForeignKeyPrefix ) );

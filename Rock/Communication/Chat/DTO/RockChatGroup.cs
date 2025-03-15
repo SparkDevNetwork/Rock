@@ -39,5 +39,20 @@ namespace Rock.Communication.Chat.DTO
         /// The value from the corresponding <see cref="Group.Name"/>.
         /// </value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the key of the <see cref="ChatChannel"/> within the external chat system.
+        /// </summary>
+        public string ChatChannelKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the key of the <see cref="ChatChannelType"/> within the external chat system.
+        /// </summary>
+        public string ChatChannelTypeKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this <see cref="Group"/> is currently chat-enabled.
+        /// </summary>
+        public bool IsChatEnabled { get; set; }
     }
 }

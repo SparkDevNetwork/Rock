@@ -358,6 +358,16 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
+        /// Determines if a given <see cref="ChatChannel"/> originated in Rock, based on its <see cref="ChatChannel.Key"/>.
+        /// </summary>
+        /// <param name="chatChannelKey">The <see cref="ChatChannel.Key"/> to check.</param>
+        /// <returns>Whether the <see cref="ChatChannel"/> originated in Rock.</returns>
+        public static bool DidChatChannelOriginateInRock( string chatChannelKey )
+        {
+            return GetGroupId( chatChannelKey ).HasValue;
+        }
+
+        /// <summary>
         /// Gets the <see cref="ChatUser.Key"/> for the provided <see cref="PersonAlias"/> unique identifier.
         /// </summary>
         /// <param name="personAliasGuid">The <see cref="PersonAlias"/> unique identifier for which to get the <see cref="ChatUser.Key"/>.</param>
@@ -2071,6 +2081,71 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
+        /// Gets all chat channels from the external chat system.
+        /// </summary>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="GetChatChannelsResult"/>.
+        /// </returns>
+        public async Task<GetChatChannelsResult> GetAllChatChannelsAsync()
+        {
+            var result = new GetChatChannelsResult();
+
+            if ( !IsChatEnabled )
+            {
+                return result;
+            }
+
+            try
+            {
+                result.ChatChannels = await ChatProvider.GetAllChatChannelsAsync();
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+
+                LogError( ex, nameof( GetAllChatChannelsAsync ) );
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets a list of <see cref="ChatChannelMember"/>s from the external chat system that match the provided
+        /// <see cref="ChatChannelType"/> and <see cref="ChatChannel"/> key combination.
+        /// </summary>
+        /// <param name="chatChannelTypeKey">The key of the <see cref="ChatChannelType"/> for the members to get.</param>
+        /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> for the members to get.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="GetChatChannelMembersResult"/>.
+        /// </returns>
+        public async Task<GetChatChannelMembersResult> GetChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey )
+        {
+            var result = new GetChatChannelMembersResult
+            {
+                ChatChannelTypeKey = chatChannelTypeKey,
+                ChatChannelKey = chatChannelKey
+            };
+
+            if ( !IsChatEnabled || chatChannelTypeKey.IsNullOrWhiteSpace() || chatChannelKey.IsNullOrWhiteSpace() )
+            {
+                return result;
+            }
+
+            try
+            {
+                result.ChatChannelMembers = await ChatProvider.GetChatChannelMembersAsync( chatChannelTypeKey, chatChannelKey );
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+
+                LogError( ex, nameof( GetChatChannelMembersAsync ) );
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Synchronizes data from the external chat system to Rock.
         /// </summary>
         /// <param name="syncCommands">The list of commands for data to sync.</param>
@@ -2922,7 +2997,7 @@ namespace Rock.Communication.Chat
                 syncCommand.ResetForSyncAttempt();
 
                 // We'll use a new rock context to keep each command isolated.
-                // Note that we're also disabling Rock-to-chat post save hooks as a result of any saves performed here.
+                // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
                 using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
                 {
                     var personAliasService = new PersonAliasService( rockContext );
@@ -3009,8 +3084,11 @@ namespace Rock.Communication.Chat
         /// Synchronizes chat channels to Rock groups.
         /// </summary>
         /// <param name="syncCommands">The list of commands for chat channels to sync.</param>
-        private void SyncChatChannelsToRock( List<SyncChatChannelToRockCommand> syncCommands )
+        /// <returns>A <see cref="ChatSyncCrudResult"/> containing the results of the synchronization.</returns>
+        internal ChatSyncCrudResult SyncChatChannelsToRock( List<SyncChatChannelToRockCommand> syncCommands )
         {
+            var result = new ChatSyncCrudResult();
+
             foreach ( var syncCommand in syncCommands )
             {
                 syncCommand.ResetForSyncAttempt();
@@ -3046,7 +3124,7 @@ namespace Rock.Communication.Chat
                 }
 
                 // We'll use a new rock context to keep each command isolated.
-                // Note that we're also disabling Rock-to-chat post save hooks as a result of any saves performed here.
+                // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
                 using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
                 {
                     var groupService = new GroupService( rockContext );
@@ -3065,6 +3143,7 @@ namespace Rock.Communication.Chat
                             if ( syncCommand.ChatSyncType == ChatSyncType.Delete )
                             {
                                 // No need to report these delete attempts as failures.
+                                result.Skipped.Add( groupId.ToString() );
                                 syncCommand.MarkAsSkipped();
                                 continue;
                             }
@@ -3092,6 +3171,7 @@ namespace Rock.Communication.Chat
                         if ( group != null )
                         {
                             // There's already a matching group.
+                            result.Skipped.Add( groupId.ToString() );
                             syncCommand.MarkAsSkipped();
                             continue;
                         }
@@ -3107,6 +3187,8 @@ namespace Rock.Communication.Chat
                         );
 
                         rockContext.SaveChanges();
+
+                        result.Created.Add( groupId.ToString() );
                     }
                     else if ( syncCommand.ChatSyncType == ChatSyncType.Update )
                     {
@@ -3121,6 +3203,7 @@ namespace Rock.Communication.Chat
                         // Update the group (but only if needed).
                         if ( group.Name == syncCommand.GroupName )
                         {
+                            result.Skipped.Add( groupId.ToString() );
                             syncCommand.MarkAsSkipped();
                             continue;
                         }
@@ -3128,6 +3211,8 @@ namespace Rock.Communication.Chat
                         group.Name = syncCommand.GroupName;
 
                         rockContext.SaveChanges();
+
+                        result.Updated.Add( groupId.ToString() );
                     }
                     // We've decided to not allow ANY channel deletions from the client.
                     //else if ( syncCommand.ChatSyncType == ChatSyncType.Delete )
@@ -3149,6 +3234,8 @@ namespace Rock.Communication.Chat
                     //    }
 
                     //    rockContext.SaveChanges();
+
+                    //    result.Deleted.Add( groupId.ToString() );
                     //}
                     else
                     {
@@ -3160,17 +3247,24 @@ namespace Rock.Communication.Chat
                     syncCommand.MarkAsCompleted();
                 }
             }
+
+            return result;
         }
 
         /// <summary>
         /// Synchronizes chat channel members to Rock group members.
         /// </summary>
         /// <param name="syncCommands">The list of commands for chat channel members to sync.</param>
-        private void SyncChatChannelMembersToRock( List<SyncChatChannelMemberToRockCommand> syncCommands )
+        /// <returns>A <see cref="ChatSyncCrudResult"/> containing the results of the synchronization.</returns>
+        internal ChatSyncCrudResult SyncChatChannelMembersToRock( List<SyncChatChannelMemberToRockCommand> syncCommands )
         {
+            var result = new ChatSyncCrudResult();
+
             foreach ( var syncCommand in syncCommands )
             {
                 syncCommand.ResetForSyncAttempt();
+
+                var memberId = $"{syncCommand.GroupId}|{syncCommand.PersonId}";
 
                 int? groupId = syncCommand.GroupId;
                 if ( !groupId.HasValue && syncCommand.ChatChannelKey.IsNullOrWhiteSpace() )
@@ -3180,7 +3274,7 @@ namespace Rock.Communication.Chat
                 }
 
                 // We'll use a new rock context to keep each command isolated.
-                // Note that we're also disabling Rock-to-chat post save hooks as a result of any saves performed here.
+                // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
                 using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
                 {
                     // Try to get the targeted group.
@@ -3204,6 +3298,7 @@ namespace Rock.Communication.Chat
                         {
                             // No need to report these delete attempts as failures. Since the group couldn't be found,
                             // this means the child members have also been deleted (or archived).
+                            result.Skipped.Add( memberId );
                             syncCommand.MarkAsSkipped();
                             continue;
                         }
@@ -3263,6 +3358,7 @@ namespace Rock.Communication.Chat
                         if ( groupMembers.Any() )
                         {
                             // There's already a matching group member.
+                            result.Skipped.Add( memberId );
                             syncCommand.MarkAsSkipped();
                             continue;
                         }
@@ -3295,7 +3391,9 @@ namespace Rock.Communication.Chat
                                 PersonId = chatPersonAlias.PersonId,
                                 GroupRoleId = groupRoleId.Value,
                                 GroupMemberStatus = GroupMemberStatus.Active,
-                                GroupTypeId = groupTypeCache.Id
+                                GroupTypeId = groupTypeCache.Id,
+                                IsChatBanned = syncCommand.IsBanned ?? false,
+                                IsChatMuted = syncCommand.IsMuted ?? false
                             }
                         );
 
@@ -3303,6 +3401,8 @@ namespace Rock.Communication.Chat
                         // ensure the correct channel member role is in place.
                         rockContext.IsRockToChatSyncEnabled = true;
                         rockContext.SaveChanges();
+
+                        result.Created.Add( memberId );
                     }
                     else if ( syncCommand.ChatSyncType == ChatSyncType.Delete )
                     {
@@ -3320,6 +3420,8 @@ namespace Rock.Communication.Chat
                         }
 
                         rockContext.SaveChanges();
+
+                        result.Deleted.Add( memberId );
                     }
                     else
                     {
@@ -3331,6 +3433,8 @@ namespace Rock.Communication.Chat
                     syncCommand.MarkAsCompleted();
                 }
             }
+
+            return result;
         }
 
         /// <summary>
@@ -3344,7 +3448,7 @@ namespace Rock.Communication.Chat
                 syncCommand.ResetForSyncAttempt();
 
                 // We'll use a new rock context to keep each command isolated.
-                // Note that we're also disabling Rock-to-chat post save hooks as a result of any saves performed here.
+                // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
                 using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
                 {
                     // Try to get the targeted person.
@@ -3460,7 +3564,7 @@ namespace Rock.Communication.Chat
                 }
 
                 // We'll use a new rock context to keep each command isolated.
-                // Note that we're also disabling Rock-to-chat post save hooks as a result of any saves performed here.
+                // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
                 using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
                 {
                     // Try to get the targeted group.
@@ -3604,7 +3708,7 @@ namespace Rock.Communication.Chat
                 }
 
                 // We'll use a new rock context to keep each command isolated.
-                // Note that we're also disabling Rock-to-chat post save hooks as a result of any saves performed here.
+                // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
                 using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
                 {
                     // Try to get the targeted group.
@@ -3813,7 +3917,7 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
-        /// Logs chat-to-Rock sync command outcomes to Rock Logs.
+        /// Logs Chat-to-Rock sync command outcomes to Rock Logs.
         /// </summary>
         /// <param name="syncCommands">The list of sync commands to log.</param>
         private void LogChatToRockSyncCommandOutcomes( List<ChatToRockSyncCommand> syncCommands )
@@ -3838,7 +3942,7 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
-        /// Requeues recoverable chat-to-Rock sync commands for retrying.
+        /// Requeues recoverable Chat-to-Rock sync commands for retrying.
         /// </summary>
         /// <param name="syncCommands">The list of sync commands that might need to be requeued.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
@@ -3864,7 +3968,7 @@ namespace Rock.Communication.Chat
         #region Supporting Members
 
         /// <summary>
-        /// Represents a Rock <see cref="Group"/> identifier for chat-to-Rock synchronization.
+        /// Represents a Rock <see cref="Group"/> identifier for Chat-to-Rock synchronization.
         /// </summary>
         private class ChatToRockGroupIdentifier
         {
@@ -3880,7 +3984,7 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
-        /// Represents a Rock <see cref="Person"/> identifier for chat-to-Rock synchronization.
+        /// Represents a Rock <see cref="Person"/> identifier for Chat-to-Rock synchronization.
         /// </summary>
         private class ChatToRockPersonIdentifier
         {

@@ -5180,10 +5180,10 @@ AND GroupTypeId = ${familyGroupType.Id}
         }
 
         /// <summary>
-        /// Gets the distinct identifiers of <see cref="Person"/> records for non-deceased individuals who have at least
-        /// one chat-specific <see cref="PersonAlias"/> record.
+        /// Gets a Queryable of the distinct identifiers of <see cref="Person"/> records for non-deceased individuals
+        /// who have at least one chat-specific <see cref="PersonAlias"/> record.
         /// </summary>
-        /// <returns>The <see cref="Person"/> identifiers of all non-deceased, chat-enabled individuals.</returns>
+        /// <returns>A Queryable of the distinct <see cref="Person"/> identifiers of all non-deceased, chat-enabled individuals.</returns>
         internal IQueryable<int> GetNonDeceasedChatUserPersonIds()
         {
             var rockContext = this.Context as RockContext;
@@ -5201,10 +5201,10 @@ AND GroupTypeId = ${familyGroupType.Id}
         }
 
         /// <summary>
-        /// Gets the distinct identifiers of <see cref="Person"/> records for deceased individuals who have at least one
-        /// chat-specific <see cref="PersonAlias"/> record.
+        /// Gets a Queryable of the distinct identifiers of <see cref="Person"/> records for deceased individuals who
+        /// have at least one chat-specific <see cref="PersonAlias"/> record.
         /// </summary>
-        /// <returns>The <see cref="Person"/> identifiers of all deceased, chat-enabled individuals.</returns>
+        /// <returns>A Queryable of the distinct <see cref="Person"/> identifiers of all deceased, chat-enabled individuals.</returns>
         /// <remarks>
         /// This is useful when determining which <see cref="ChatUser"/>s to delete in the external chat system.
         /// </remarks>
@@ -5359,16 +5359,16 @@ AND GroupTypeId = ${familyGroupType.Id}
         }
 
         /// <summary>
-        /// Gets all of a chat-enabled <see cref="Person"/>'s <see cref="RockChatUserKey"/>s, including those for
-        /// deceased individuals.
+        /// Gets a Queryable of a chat-enabled <see cref="Person"/>'s complete list of <see cref="RockChatUserKey"/>s,
+        /// including those for deceased individuals.
         /// </summary>
         /// <param name="personId">The identifier of the <see cref="Person"/> for whom to get <see cref="RockChatUserKey"/>s.</param>
-        /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="RockChatUserKey"/>s for the specified <see cref="Person"/>.</returns>
+        /// <returns>A Queryable of a chat-enabled <see cref="Person"/>'s complete list of <see cref="RockChatUserKey"/>s</returns>
         /// <remarks>
         /// This is probably only useful when deleting all of a <see cref="Person"/>'s <see cref="ChatUser"/>s in the
         /// external chat system.
         /// </remarks>
-        internal IEnumerable<RockChatUserKey> GetAllRockChatUserKeys( int personId )
+        internal IQueryable<RockChatUserKey> GetAllRockChatUserKeys( int personId )
         {
             var rockContext = this.Context as RockContext;
 

@@ -21,6 +21,7 @@ namespace Rock.Communication.Chat.Sync
     /// <summary>
     /// Represents the result of a simple CRUD chat synchronization operation.
     /// </summary>
+    /// <seealso cref="ChatSyncResultBase"/>
     internal class ChatSyncCrudResult : ChatSyncResultBase
     {
         /// <summary>

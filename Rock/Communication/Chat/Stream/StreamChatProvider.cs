@@ -100,6 +100,7 @@ namespace Rock.Communication.Chat
         /// </summary>
         private static class WebhookJsonProperty
         {
+            public const string Banned = "banned";
             public const string Channel = "channel";
             public const string ChannelId = "channel_id";
             public const string ChannelRole = "channel_role";
@@ -110,6 +111,7 @@ namespace Rock.Communication.Chat
             public const string Members = "members";
             public const string Mute = "mute";
             public const string Name = "name";
+            public const string NotificationsMuted = "notifications_muted";
             public const string RequestInfo = "request_info";
             public const string Type = "type";
             public const string User = "user";
@@ -1135,6 +1137,101 @@ namespace Rock.Communication.Chat
         }
 
         /// <inheritdoc/>
+        public async Task<List<ChatChannel>> GetAllChatChannelsAsync()
+        {
+            return await GetAllChatChannelsAsync( null );
+        }
+
+        /// <summary>
+        /// Gets all <see cref="ChatChannel"/>s, optionally filtered by <see cref="ChatChannelType"/>.
+        /// </summary>
+        /// <param name="chatChannelTypeKey">The optional <see cref="ChatChannelType.Key"/> to filter the results by.</param>
+        /// <returns>
+        /// If <paramref name="chatChannelTypeKey"/> is provided, all <see cref="ChatChannel"/>s of the specified
+        /// <see cref="ChatChannelType"/>; If not, all <see cref="ChatChannel"/>s in Stream.
+        /// </returns>
+        private async Task<List<ChatChannel>> GetAllChatChannelsAsync( string chatChannelTypeKey = null )
+        {
+            var results = new List<ChatChannel>();
+
+            var operationName = nameof( GetAllChatChannelsAsync ).SplitCase();
+
+            // Max number of channels to get per query is 30.
+            // https://getstream.io/chat/docs/dotnet-csharp/query_channels/#query-options
+            var pageSize = 30;
+            var offset = 0;
+            var channelsRetrievedCount = 0;
+
+            // Keep track of channel keys already seen, to prevent the possibility of duplicates returned.
+            var seenChannelKeys = new HashSet<string>();
+
+            // With a query request, we want "all or nothing". So if any batches fail, allow an exception to be thrown.
+            do
+            {
+                /*
+                    3/11/2025 - JPH
+
+                    Stream's "Querying Channels" docs say:
+
+                        "It is important to note that your `filter` should include, at the very least
+                         `{members: {$in: [userID]}` or pagination could break."
+
+                    However, it's not really feasible for us to provide a list of members when querying channels. If we
+                    suspect we're seeing issues related to this, we'll have to reconsider how we're filtering here.
+
+                    Reason: Mention risk called out by Stream's docs.
+                    https://getstream.io/chat/docs/dotnet-csharp/query_channels/#pagination
+                */
+                var queryChannelsOptions = new QueryChannelsOptions { MemberLimit = 0, MessageLimit = 0 }
+                    .WithOffset( offset )
+                    .WithLimit( pageSize )
+                    .WithSortBy(
+                        new SortParameter
+                        {
+                            Field = SortParameterFieldKey.CreatedAt,
+                            Direction = SortDirection.Ascending
+                        }
+                    );
+
+                // Filter by channel type?
+                if ( chatChannelTypeKey.IsNotNullOrWhiteSpace() )
+                {
+                    queryChannelsOptions.Filter = new Dictionary<string, object>
+                    {
+                        { "type", chatChannelTypeKey }
+                    };
+                }
+
+                var queryChannelResponse = await RetryAsync(
+                    async () => await ChannelClient.QueryChannelsAsync( queryChannelsOptions ),
+                    operationName
+                );
+
+                if ( queryChannelResponse?.Channels?.Any() == true )
+                {
+                    channelsRetrievedCount = queryChannelResponse.Channels.Count;
+                    results.AddRange(
+                        queryChannelResponse.Channels
+                            .Select( c => TryConvertToChatChannel( c ) )
+                            .Where( c =>
+                                c != null
+                                && seenChannelKeys.Add( c.Key )
+                            )
+                    );
+                }
+                else
+                {
+                    channelsRetrievedCount = 0;
+                }
+
+                offset += channelsRetrievedCount;
+            }
+            while ( channelsRetrievedCount == pageSize );
+
+            return results;
+        }
+
+        /// <inheritdoc/>
         /// <exception cref="AggregateException">If any <see cref="ChatChannel"/>s fail to be created.</exception>
         public async Task<List<ChatChannel>> CreateChatChannelsAsync( List<ChatChannel> chatChannels )
         {
@@ -1301,89 +1398,12 @@ namespace Rock.Communication.Chat
         {
             var operationName = nameof( DeleteChatChannelsOfTypeAsync ).SplitCase();
 
-            // We'll get and delete these channels in batches of 30, as the query max of 30 is the limiting factor.
-            // https://getstream.io/chat/docs/dotnet-csharp/query_channels/#query-options
-            var pageSize = 30;
-            var channelsRetrievedCount = 0;
+            var chatChannels = await GetAllChatChannelsAsync( chatChannelTypeKey );
+            var chatChannelKeys = chatChannels
+                .Select( c => c.Key )
+                .ToList();
 
-            // Don't let individual batch failures cause all to fail.
-            var exceptions = new List<Exception>();
-
-            do
-            {
-                /*
-                    3/11/2025 - JPH
-
-                    Stream's "Querying Channels" docs say:
-
-                        "It is important to note that your `filter` should include, at the very least
-                         `{members: {$in: [userID]}` or pagination could break."
-
-                    However, it's not really feasible for us to provide a list of members when querying channels. If we
-                    suspect we're seeing issues related to this, we'll have to reconsider how we're filtering here.
-
-                    Reason: Mention risk called out by Stream's docs.
-                    https://getstream.io/chat/docs/dotnet-csharp/query_channels/#pagination
-                */
-                var queryChannelsOptions = new QueryChannelsOptions { MemberLimit = 0, MessageLimit = 0 }
-                    .WithLimit( pageSize )
-                    .WithFilter(
-                        new Dictionary<string, object>
-                        {
-                            { "type", chatChannelTypeKey }
-                        }
-                    )
-                    .WithSortBy(
-                        new SortParameter
-                        {
-                            Field = SortParameterFieldKey.CreatedAt,
-                            Direction = SortDirection.Ascending
-                        }
-                    );
-
-                try
-                {
-                    var queryChannelResponse = await RetryAsync(
-                        async () => await ChannelClient.QueryChannelsAsync( queryChannelsOptions ),
-                        operationName
-                    );
-
-                    List<string> chatChannelKeys = null;
-                    if ( queryChannelResponse?.Channels?.Any() == true )
-                    {
-                        channelsRetrievedCount = queryChannelResponse.Channels.Count;
-                        chatChannelKeys = new List<string>(
-                            queryChannelResponse.Channels
-                                .Where( c => ( c?.Channel?.Cid ).IsNotNullOrWhiteSpace() )
-                                .Select( c => c.Channel.Cid )
-                                .Distinct()
-                        );
-                    }
-                    else
-                    {
-                        channelsRetrievedCount = 0;
-                    }
-
-                    if ( chatChannelKeys?.Any() == true )
-                    {
-                        await DeleteChatChannelsAsync( chatChannelKeys );
-                    }
-                }
-                catch ( Exception ex )
-                {
-                    exceptions.Add( ex );
-
-                    // Don't get stuck in an infinite loop, but try at least once more to see if we can get past this
-                    // failed batch.
-                    channelsRetrievedCount = pageSize;
-                }
-            }
-            while ( channelsRetrievedCount == pageSize );
-
-            if ( exceptions.Any() )
-            {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
-            }
+            await DeleteChatChannelsAsync( chatChannelKeys );
         }
 
         #endregion Chat Channels
@@ -3272,11 +3292,24 @@ namespace Rock.Communication.Chat
             {
                 // Try to get the channel member's role.
                 var channelRole = memberJson[WebhookJsonProperty.ChannelRole]?.ToString();
-
                 if ( channelRole.IsNotNullOrWhiteSpace() )
                 {
                     // Assign the role to the sync command, but only if it represents one of Rock's chat roles.
                     syncCommand.ChatRole = EnumExtensions.ConvertToEnumOrNull<ChatRole>( channelRole );
+                }
+
+                // Try to get the channel member's banned status.
+                var bannedToken = memberJson[WebhookJsonProperty.Banned];
+                if ( bannedToken?.Type == JTokenType.Boolean )
+                {
+                    syncCommand.IsBanned = bannedToken.ToObject<bool>();
+                }
+
+                // Try to get the channel member's muted status.
+                var mutedToken = memberJson[WebhookJsonProperty.NotificationsMuted];
+                if ( mutedToken?.Type == JTokenType.Boolean )
+                {
+                    syncCommand.IsMuted = mutedToken.ToObject<bool>();
                 }
             }
 

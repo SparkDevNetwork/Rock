@@ -19,6 +19,7 @@ namespace Rock.Communication.Chat.Sync
     /// <summary>
     /// Represents the result of a simple <see langword="bool"/> chat synchronization operation.
     /// </summary>
+    /// <seealso cref="ChatSyncResultBase"/>
     internal class ChatSyncBooleanResult : ChatSyncResultBase
     {
         /// <summary>

@@ -733,6 +733,8 @@
     <Compile Include="Communication\Chat\Sync\ChatSyncCreateOrUpdateUsersResult.cs" />
     <Compile Include="Communication\Chat\Sync\ChatSyncCrudResult.cs" />
     <Compile Include="Communication\Chat\Sync\DeleteChatUsersInRockConfig.cs" />
+    <Compile Include="Communication\Chat\Sync\GetChatChannelMembersResult.cs" />
+    <Compile Include="Communication\Chat\Sync\GetChatChannelsResult.cs" />
     <Compile Include="Communication\Chat\Sync\RockToChatGroupSyncConfig.cs" />
     <Compile Include="Communication\Chat\Sync\RockToChatSyncConfig.cs" />
     <Compile Include="Communication\Chat\Sync\ChatSyncResultBase.cs" />

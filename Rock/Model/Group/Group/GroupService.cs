@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Text;
 
 using Rock.Communication.Chat;
@@ -137,11 +138,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a queryable collection of <see cref="Group"/>s that are chat-enabled.
+        /// Gets a Queryable of <see cref="Group"/>s that are chat-enabled.
         /// </summary>
         /// <param name="shouldTrack">Whether entity framework should track these <see cref="Group"/>s.</param>
-        /// <returns>A queryable collection of <see cref="Group"/>s that are chat-enabled.</returns>
-        public IQueryable<Group> GetChatEnabled( bool shouldTrack = false )
+        /// <returns>A Queryable of <see cref="Group"/>s that are chat-enabled.</returns>
+        internal IQueryable<Group> GetChatEnabled( bool shouldTrack = false )
         {
             var qry = Queryable().Where( g =>
                 g.GroupType.IsChatAllowed
@@ -163,23 +164,60 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the mapping between all <see cref="ChatChannel.Key"/>s and their respective <see cref="Group"/> identifiers.
+        /// Gets a list of <see cref="RockChatGroup"/>s, which represent <see cref="Group"/>s that correspond to
+        /// <see cref="ChatChannel"/>s in the external chat system.
         /// </summary>
+        /// <param name="includeArchivedAndDisabled">
+        /// If <see langword="false"/>, results will only include non-archived, chat-enabled <see cref="Group"/>s.
+        /// If <see langword="true"/>, results will include archived <see cref="Group"/>s and those that have a
+        /// <see cref="Group.ChatChannelKey"/> defined, even if they're not currently chat-enabled.
+        /// </param>
         /// <returns>
-        /// A <see cref="Dictionary{TKey, TValue}"/> where the key is the <see cref="ChatChannel.Key"/> and the value is
-        /// a <see cref="RockChatGroup"/> for the corresponding <see cref="Group"/>.
+        /// A list of <see cref="RockChatGroup"/>s.
         /// </returns>
-        internal Dictionary<string, RockChatGroup> GetRockChatGroupByChannelKeys()
+        internal List<RockChatGroup> GetRockChatGroups( bool includeArchivedAndDisabled = false )
         {
-            return GetChatEnabled( shouldTrack: false )
-                .ToDictionary(
-                    g => ChatHelper.GetChatChannelKey( g ),
-                    g => new RockChatGroup
+            IQueryable<Group> qry;
+
+            if ( includeArchivedAndDisabled )
+            {
+                qry = AsNoFilter().Where( g =>
+                    (
+                        // Even if a group is not currently chat-enabled, include it if it has a chat channel key.
+                        // (so we don't accidentally create a duplicate)
+                        g.ChatChannelKey != null
+                        && g.ChatChannelKey != ""
+                    )
+                    || (
+                        g.GroupType.IsChatAllowed
+                        && (
+                            g.GroupType.IsChatEnabledForAllGroups
+                            || (
+                                g.IsChatEnabledOverride.HasValue
+                                && g.IsChatEnabledOverride.Value
+                            )
+                        )
+                    )
+                );
+            }
+            else
+            {
+                qry = GetChatEnabled();
+            }
+
+            return qry
+                .AsEnumerable() // Materialize the query.
+                .Select( g =>
+                    new RockChatGroup
                     {
                         GroupId = g.Id,
-                        Name = g.Name
+                        Name = g.Name,
+                        ChatChannelKey = ChatHelper.GetChatChannelKey( g ),
+                        ChatChannelTypeKey = ChatHelper.GetChatChannelTypeKey( g.GroupTypeId ),
+                        IsChatEnabled = g.GetIsChatEnabled()
                     }
-                );
+                )
+                .ToList();
         }
 
         /// <summary>

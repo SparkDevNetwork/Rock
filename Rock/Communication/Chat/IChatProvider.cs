@@ -158,6 +158,15 @@ namespace Rock.Communication.Chat
         Task<List<ChatChannel>> GetChatChannelsAsync( List<string> chatChannelKeys );
 
         /// <summary>
+        /// Gets a list of all <see cref="ChatChannel"/>s from the external chat system.
+        /// </summary>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing the complete list of <see cref="ChatChannel"/>s
+        /// from the external chat system.
+        /// </returns>
+        Task<List<ChatChannel>> GetAllChatChannelsAsync();
+
+        /// <summary>
         /// Creates new <see cref="ChatChannel"/>s in the external chat system.
         /// </summary>
         /// <param name="chatChannels">The list of <see cref="ChatChannel"/>s to create.</param>
