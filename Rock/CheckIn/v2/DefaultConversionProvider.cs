@@ -191,6 +191,7 @@ namespace Rock.CheckIn.v2
                         Person = fm.Person,
                         IsInPrimaryFamily = fm.IsInPrimaryFamily,
                         RecentAttendances = attendeeAttendances,
+                        PreSelectedOpportunities = new List<OpportunitySelectionBag>(),
                         Opportunities = baseOpportunities.Clone()
                     };
                 } )

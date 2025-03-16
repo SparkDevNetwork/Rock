@@ -41,6 +41,14 @@ namespace Rock.Update.Models
         public string Version { get; set; }
 
         /// <summary>
+        /// Gets or sets the description of the Rock Release.
+        /// </summary>
+        /// <value>
+        /// The description of the Rock Release.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
         /// Gets or sets the release date.
         /// </summary>
         /// <value>
