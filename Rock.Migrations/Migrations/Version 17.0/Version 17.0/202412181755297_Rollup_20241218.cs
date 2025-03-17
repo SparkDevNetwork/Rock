@@ -16530,52 +16530,55 @@ END" );
 
             #region Delete Legacy Peer Network Groups and Group Type
 
-            try
-            {
-                Sql( @"
-DECLARE @GroupTypeId INT = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E');
+            // This code was moved to the PostV17AddAndUpdatePeerNetworkIndexes job
+            // on 2025-03-17 to reduce the time it takes migrations to run and
+            // reduce the chance of a timeout error.
+//            try
+//            {
+//                Sql( @"
+//DECLARE @GroupTypeId INT = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E');
 
--- [GroupMember] records tied to these groups will cascade-delete.
-DELETE [Group] WHERE [GroupTypeId] = @GroupTypeId;" );
+//-- [GroupMember] records tied to these groups will cascade-delete.
+//DELETE [Group] WHERE [GroupTypeId] = @GroupTypeId;" );
 
-                RockMigrationHelper.DeleteGroupType( "8C0E5852-F08F-4327-9AA5-87800A6AB53E" );
-            }
-            catch ( Exception ex )
-            {
-                // This could be risky, as there might be unforeseen foreign key relationships to the records we're
-                // trying to delete here. If there's an exception, log it and move on. It's not detrimental for these
-                // records to remain in the database. But let's at least try to hide this group type from display in
-                // lists and navigation, and ensure it doesn't take part in the new Peer Network functionality.
-                Sql( @"
-DECLARE @GroupTypeId INT = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E');
+//                RockMigrationHelper.DeleteGroupType( "8C0E5852-F08F-4327-9AA5-87800A6AB53E" );
+//            }
+//            catch ( Exception ex )
+//            {
+//                // This could be risky, as there might be unforeseen foreign key relationships to the records we're
+//                // trying to delete here. If there's an exception, log it and move on. It's not detrimental for these
+//                // records to remain in the database. But let's at least try to hide this group type from display in
+//                // lists and navigation, and ensure it doesn't take part in the new Peer Network functionality.
+//                Sql( @"
+//DECLARE @GroupTypeId INT = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E');
 
-UPDATE [GroupType]
-SET [ShowInGroupList] = 0
-    , [ShowInNavigation] = 0
-    , [ModifiedDateTime] = GETDATE()
-    , [IsPeerNetworkEnabled] = 0
-    , [RelationshipStrength] = 0
-    , [RelationshipGrowthEnabled] = 0
-    , [LeaderToLeaderRelationshipMultiplier] = 0
-    , [LeaderToNonLeaderRelationshipMultiplier] = 0
-    , [NonLeaderToLeaderRelationshipMultiplier] = 0
-    , [NonLeaderToNonLeaderRelationshipMultiplier] = 0
-WHERE [Id] = @GroupTypeId;
+//UPDATE [GroupType]
+//SET [ShowInGroupList] = 0
+//    , [ShowInNavigation] = 0
+//    , [ModifiedDateTime] = GETDATE()
+//    , [IsPeerNetworkEnabled] = 0
+//    , [RelationshipStrength] = 0
+//    , [RelationshipGrowthEnabled] = 0
+//    , [LeaderToLeaderRelationshipMultiplier] = 0
+//    , [LeaderToNonLeaderRelationshipMultiplier] = 0
+//    , [NonLeaderToLeaderRelationshipMultiplier] = 0
+//    , [NonLeaderToNonLeaderRelationshipMultiplier] = 0
+//WHERE [Id] = @GroupTypeId;
 
-UPDATE [Group]
-SET [IsActive] = 0
-    , [ModifiedDateTime] = GETDATE()
-    , [RelationshipStrengthOverride] = NULL
-    , [RelationshipGrowthEnabledOverride] = NULL
-    , [LeaderToLeaderRelationshipMultiplierOverride] = NULL
-    , [LeaderToNonLeaderRelationshipMultiplierOverride] = NULL
-    , [NonLeaderToLeaderRelationshipMultiplierOverride] = NULL
-    , [NonLeaderToNonLeaderRelationshipMultiplierOverride] = NULL
-WHERE [GroupTypeId] = @GroupTypeId;" );
+//UPDATE [Group]
+//SET [IsActive] = 0
+//    , [ModifiedDateTime] = GETDATE()
+//    , [RelationshipStrengthOverride] = NULL
+//    , [RelationshipGrowthEnabledOverride] = NULL
+//    , [LeaderToLeaderRelationshipMultiplierOverride] = NULL
+//    , [LeaderToNonLeaderRelationshipMultiplierOverride] = NULL
+//    , [NonLeaderToLeaderRelationshipMultiplierOverride] = NULL
+//    , [NonLeaderToNonLeaderRelationshipMultiplierOverride] = NULL
+//WHERE [GroupTypeId] = @GroupTypeId;" );
 
-                var exception = new Exception( "Unable to delete legacy Peer Network Groups and Group Type.", ex );
-                ExceptionLogService.LogException( exception );
-            }
+//                var exception = new Exception( "Unable to delete legacy Peer Network Groups and Group Type.", ex );
+//                ExceptionLogService.LogException( exception );
+//            }
 
             #endregion Delete Legacy Peer Network Groups and Group Type
         }
