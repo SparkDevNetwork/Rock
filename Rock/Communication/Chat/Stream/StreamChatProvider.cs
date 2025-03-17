@@ -677,8 +677,10 @@ namespace Rock.Communication.Chat
         }
 
         /// <inheritdoc/>
-        public async Task<bool> UpdateAppSettingsAsync()
+        public async Task<ChatSyncSetupResult> UpdateAppSettingsAsync()
         {
+            var result = new ChatSyncSetupResult();
+
             var operationName = nameof( UpdateAppSettingsAsync ).SplitCase();
 
             var request = new AppSettingsRequest
@@ -702,13 +704,22 @@ namespace Rock.Communication.Chat
                 }
             };
 
-            await RetryAsync(
-                async () => await AppClient.UpdateAppSettingsAsync( request ),
-                operationName
-            );
+            try
+            {
+                await RetryAsync(
+                    async () => await AppClient.UpdateAppSettingsAsync( request ),
+                    operationName
+                );
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+            }
 
-            // Assume if we got this far - and an exception wasn't thrown - app settings were updated.
-            return true;
+            // If an exception wasn't thrown, assume app settings were updated.
+            result.IsSetUp = !result.HasException;
+
+            return result;
         }
 
         #endregion Configuration
@@ -722,134 +733,139 @@ namespace Rock.Communication.Chat
         public Dictionary<string, List<string>> DefaultChannelTypeGrantsByRole => _defaultChannelTypeGrantsByRole.Value;
 
         /// <inheritdoc/>
-        /// <exception cref="AggregateException">If any roles fail to be created.</exception>
-        public async Task<bool> EnsureAppRolesExistAsync()
+        public async Task<ChatSyncSetupResult> EnsureAppRolesExistAsync()
         {
+            var result = new ChatSyncSetupResult();
+
             var operationName = nameof( EnsureAppRolesExistAsync ).SplitCase();
 
-            var listRolesResponse = await RetryAsync(
-                async () => await PermissionClient.ListRolesAsync(),
-                operationName
-            );
-
-            var existingRoles = listRolesResponse?.Roles ?? new List<CustomRole>();
-            var existingRequiredRoles = new List<string>();
-
-            // Don't let individual failures cause all to fail.
-            var exceptions = new List<Exception>();
-
-            foreach ( var requiredRole in ChatHelper.RequiredAppRoles )
+            try
             {
-                // The Stream client will throw an exception if the role already exists, so we'll do our best to avoid this.
-                var existingRole = existingRoles.FirstOrDefault( r => r.Name == requiredRole );
-                if ( existingRole != null )
+                var listRolesResponse = await RetryAsync(
+                    async () => await PermissionClient.ListRolesAsync(),
+                    operationName
+                );
+
+                var existingRoles = listRolesResponse?.Roles ?? new List<CustomRole>();
+                var existingRequiredRoles = new List<string>();
+
+                foreach ( var requiredRole in ChatHelper.RequiredAppRoles )
                 {
-                    existingRequiredRoles.Add( requiredRole );
-                }
-                else
-                {
-                    try
+                    // The Stream client will throw an exception if the role already exists, so we'll do our best to avoid this.
+                    var existingRole = existingRoles.FirstOrDefault( r => r.Name == requiredRole );
+                    if ( existingRole != null )
+                    {
+                        existingRequiredRoles.Add( requiredRole );
+                    }
+                    else
                     {
                         var roleResponse = await RetryAsync(
-                            async () => await PermissionClient.CreateRoleAsync( requiredRole ),
-                            operationName
-                        );
+                                async () => await PermissionClient.CreateRoleAsync( requiredRole ),
+                                operationName
+                            );
 
                         if ( roleResponse?.Role?.Name == requiredRole )
                         {
                             existingRequiredRoles.Add( requiredRole );
                         }
                     }
-                    catch ( Exception ex )
-                    {
-                        exceptions.Add( ex );
-                    }
                 }
-            }
 
-            if ( exceptions.Any() )
+                result.IsSetUp = ChatHelper.RequiredAppRoles.All( r => existingRequiredRoles.Contains( r ) );
+            }
+            catch ( Exception ex )
             {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+                result.Exception = ex;
             }
 
-            // Even though no exceptions were thrown, let's verify that all required roles actually exist.
-            return ChatHelper.RequiredAppRoles.All( r => existingRequiredRoles.Contains( r ) );
+            return result;
         }
 
         /// <inheritdoc/>
-        public async Task<bool> EnsureAppGrantsExistAsync()
+        public async Task<ChatSyncSetupResult> EnsureAppGrantsExistAsync()
         {
+            var result = new ChatSyncSetupResult();
+
             var operationName = nameof( EnsureAppGrantsExistAsync ).SplitCase();
 
-            var getAppResponse = await RetryAsync(
-                async () => await AppClient.GetAppSettingsAsync(),
-                operationName
-            );
-
-            var anyGrantsToAdd = false;
-            var grants = getAppResponse?.App?.Grants;
-            if ( grants?.Any() != true || RockToChatSyncConfig.ShouldEnforceDefaultGrantsPerRole )
+            try
             {
-                if ( grants == null )
-                {
-                    // This will probably never happen, but for some reason the app doesn't have ANY grants.
-                    grants = new Dictionary<string, List<string>>();
-                }
-
-                // Add or overwrite `rock_` grants.
-                foreach ( var kvp in DefaultAppGrantsByRole )
-                {
-                    grants.AddOrReplace( kvp.Key, kvp.Value );
-                }
-
-                anyGrantsToAdd = true;
-            }
-            else
-            {
-                /*
-                    2/3/2025 - JPH
-
-                    When an app already has at least one app-scoped permission grant defined in the external chat system,
-                    the only reason we would currently want to "update" the app is if we detect that ANY of the `rock_`
-                    roles don't already have at least one grant defined. If ALL roles already have at least one grant
-                    defined, this means [A] we've already synced this app at least once, and [B] the external chat system
-                    is now the system of truth for permission grants (as admins may fine-tune grants on that side).
-
-                    Reason: Avoid calling chat provider APIs when not needed & avoid overwriting existing App Grants.
-                 */
-
-                foreach ( var role in ChatHelper.RequiredAppRoles )
-                {
-                    grants.TryGetValue( role, out var existingRoleGrants );
-                    if ( existingRoleGrants?.Any() == true )
-                    {
-                        // There's already at least one grant for this role; don't overwrite.
-                        continue;
-                    }
-
-                    DefaultAppGrantsByRole.TryGetValue( role, out var defaultRoleGrants );
-                    if ( defaultRoleGrants?.Any() == true )
-                    {
-                        // Add the default grants for this role.
-                        grants.AddOrReplace( role, defaultRoleGrants );
-                        anyGrantsToAdd = true;
-                    }
-                }
-            }
-
-            if ( anyGrantsToAdd )
-            {
-                await RetryAsync(
-                    async () => await AppClient.UpdateAppSettingsAsync( new AppSettingsRequest
-                    {
-                        Grants = grants
-                    } ),
+                var getAppResponse = await RetryAsync(
+                    async () => await AppClient.GetAppSettingsAsync(),
                     operationName
                 );
+
+                var anyGrantsToAdd = false;
+                var grants = getAppResponse?.App?.Grants;
+                if ( grants?.Any() != true || RockToChatSyncConfig.ShouldEnforceDefaultGrantsPerRole )
+                {
+                    if ( grants == null )
+                    {
+                        // This will probably never happen, but for some reason the app doesn't have ANY grants.
+                        grants = new Dictionary<string, List<string>>();
+                    }
+
+                    // Add or overwrite `rock_` grants.
+                    foreach ( var kvp in DefaultAppGrantsByRole )
+                    {
+                        grants.AddOrReplace( kvp.Key, kvp.Value );
+                    }
+
+                    anyGrantsToAdd = true;
+                }
+                else
+                {
+                    /*
+                        2/3/2025 - JPH
+
+                        When an app already has at least one app-scoped permission grant defined in the external chat system,
+                        the only reason we would currently want to "update" the app is if we detect that ANY of the `rock_`
+                        roles don't already have at least one grant defined. If ALL roles already have at least one grant
+                        defined, this means [A] we've already synced this app at least once, and [B] the external chat system
+                        is now the system of truth for permission grants (as admins may fine-tune grants on that side).
+
+                        Reason: Avoid calling chat provider APIs when not needed & avoid overwriting existing App Grants.
+                     */
+
+                    foreach ( var role in ChatHelper.RequiredAppRoles )
+                    {
+                        grants.TryGetValue( role, out var existingRoleGrants );
+                        if ( existingRoleGrants?.Any() == true )
+                        {
+                            // There's already at least one grant for this role; don't overwrite.
+                            continue;
+                        }
+
+                        DefaultAppGrantsByRole.TryGetValue( role, out var defaultRoleGrants );
+                        if ( defaultRoleGrants?.Any() == true )
+                        {
+                            // Add the default grants for this role.
+                            grants.AddOrReplace( role, defaultRoleGrants );
+                            anyGrantsToAdd = true;
+                        }
+                    }
+                }
+
+                if ( anyGrantsToAdd )
+                {
+                    await RetryAsync(
+                        async () => await AppClient.UpdateAppSettingsAsync( new AppSettingsRequest
+                        {
+                            Grants = grants
+                        } ),
+                        operationName
+                    );
+                }
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
             }
 
-            // Assume if we got this far - and an exception wasn't thrown - all app grants exist.
-            return true;
+            // If an exception wasn't thrown, assume all app grants exist.
+            result.IsSetUp = !result.HasException;
+
+            return result;
         }
 
         #endregion Roles & Permission Grants
@@ -857,32 +873,43 @@ namespace Rock.Communication.Chat
         #region Chat Channel Types
 
         /// <inheritdoc/>
-        public async Task<List<ChatChannelType>> GetAllChatChannelTypesAsync()
+        public async Task<GetChatChannelTypesResult> GetAllChatChannelTypesAsync()
         {
+            var result = new GetChatChannelTypesResult();
+
             var operationName = nameof( GetAllChatChannelTypesAsync ).SplitCase();
 
-            var listChannelTypesResponse = await RetryAsync(
-                async () => await ChannelTypeClient.ListChannelTypesAsync(),
-                operationName
-            );
+            try
+            {
+                var listChannelTypesResponse = await RetryAsync(
+                    async () => await ChannelTypeClient.ListChannelTypesAsync(),
+                    operationName
+                );
 
-            return listChannelTypesResponse
-                ?.ChannelTypes
-                ?.Values
-                .Select( ct => TryConvertToChatChannelType( ct ) )
-                .Where( ct => ct != null )
-                .ToList();
+                result.ChatChannelTypes.AddRange(
+                    listChannelTypesResponse
+                        ?.ChannelTypes
+                        ?.Values
+                        .Select( ct => TryConvertToChatChannelType( ct ) )
+                        .Where( ct => ct != null )
+                );
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>
-        /// <exception cref="AggregateException">If any <see cref="ChatChannelType"/>s fail to be created.</exception>
-        public async Task<List<ChatChannelType>> CreateChatChannelTypesAsync( List<ChatChannelType> chatChannelTypes )
+        public async Task<ChatSyncCrudResult> CreateChatChannelTypesAsync( List<ChatChannelType> chatChannelTypes )
         {
-            var results = new List<ChatChannelType>();
+            var result = new ChatSyncCrudResult();
 
             if ( chatChannelTypes?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             var operationName = nameof( CreateChatChannelTypesAsync ).SplitCase();
@@ -906,7 +933,7 @@ namespace Rock.Communication.Chat
                         operationName
                     );
 
-                    results.Add( chatChannelType );
+                    result.Created.Add( chatChannelType.Key );
                 }
                 catch ( Exception ex )
                 {
@@ -916,21 +943,20 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
-            return results;
+            return result;
         }
 
         /// <inheritdoc/>
-        /// <exception cref="AggregateException">If any <see cref="ChatChannelType"/>s fail to be updated.</exception>
-        public async Task<List<ChatChannelType>> UpdateChatChannelTypesAsync( List<ChatChannelType> chatChannelTypes )
+        public async Task<ChatSyncCrudResult> UpdateChatChannelTypesAsync( List<ChatChannelType> chatChannelTypes )
         {
-            var results = new List<ChatChannelType>();
+            var result = new ChatSyncCrudResult();
 
             if ( chatChannelTypes?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             var operationName = nameof( UpdateChatChannelTypesAsync ).SplitCase();
@@ -961,7 +987,7 @@ namespace Rock.Communication.Chat
                         operationName
                     );
 
-                    results.Add( chatChannelType );
+                    result.Updated.Add( chatChannelType.Key );
                 }
                 catch ( Exception ex )
                 {
@@ -971,21 +997,20 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
-            return results;
+            return result;
         }
 
         /// <inheritdoc/>
-        /// <exception cref="AggregateException">If any <see cref="ChatChannelType"/>s fail to be deleted.</exception>
-        public async Task<List<string>> DeleteChatChannelTypesAsync( List<string> chatChannelTypeKeys )
+        public async Task<ChatSyncCrudResult> DeleteChatChannelTypesAsync( List<string> chatChannelTypeKeys )
         {
-            var results = new List<string>();
+            var result = new ChatSyncCrudResult();
 
             if ( chatChannelTypeKeys?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             var operationName = nameof( DeleteChatChannelTypesAsync ).SplitCase();
@@ -999,14 +1024,26 @@ namespace Rock.Communication.Chat
                 {
                     // Stream channels tied to this channel type are NOT cascade-deleted, so we need to first delete
                     // those to prevent an error response when deleting the channel type.
-                    await DeleteChatChannelsOfTypeAsync( key );
+                    var deleteChannelsResult = await DeleteChatChannelsOfTypeAsync( key );
+                    if ( deleteChannelsResult?.HasException == true )
+                    {
+                        exceptions.Add( deleteChannelsResult.Exception );
+                    }
+                    else
+                    {
+                        if ( deleteChannelsResult != null )
+                        {
 
-                    await RetryAsync(
-                        async () => await ChannelTypeClient.DeleteChannelTypeAsync( key ),
-                        operationName
-                    );
+                            result.InnerResults.Add( deleteChannelsResult );
+                        }
 
-                    results.Add( key );
+                        await RetryAsync(
+                            async () => await ChannelTypeClient.DeleteChannelTypeAsync( key ),
+                            operationName
+                        );
+
+                        result.Deleted.Add( key );
+                    }
                 }
                 catch ( Exception ex )
                 {
@@ -1016,10 +1053,10 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
-            return results;
+            return result;
         }
 
         #endregion Chat Channel Types
@@ -1027,15 +1064,15 @@ namespace Rock.Communication.Chat
         #region Chat Channels
 
         /// <inheritdoc/>
-        public string GetQueryableChatChannelKey( GroupCache groupCache )
+        public string GetQueryableChatChannelKey( Group group )
         {
-            if ( groupCache == null )
+            if ( group == null )
             {
                 return null;
             }
 
-            var chatChannelTypeKey = ChatHelper.GetChatChannelTypeKey( groupCache.GroupTypeId );
-            var chatChannelKey = ChatHelper.GetChatChannelKey( groupCache );
+            var chatChannelTypeKey = ChatHelper.GetChatChannelTypeKey( group.GroupTypeId );
+            var chatChannelKey = ChatHelper.GetChatChannelKey( group );
 
             return GetQueryableChatChannelKey( chatChannelTypeKey, chatChannelKey );
         }
@@ -1055,13 +1092,13 @@ namespace Rock.Communication.Chat
         }
 
         /// <inheritdoc/>
-        public async Task<List<ChatChannel>> GetChatChannelsAsync( List<string> chatChannelKeys )
+        public async Task<GetChatChannelsResult> GetChatChannelsAsync( List<string> queryableChatChannelKeys )
         {
-            var results = new List<ChatChannel>();
+            var result = new GetChatChannelsResult();
 
-            if ( chatChannelKeys?.Any() != true )
+            if ( queryableChatChannelKeys?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             var operationName = nameof( GetChatChannelsAsync ).SplitCase();
@@ -1070,74 +1107,81 @@ namespace Rock.Communication.Chat
             // https://getstream.io/chat/docs/dotnet-csharp/query_channels/#query-options
             var pageSize = 30;
             var offset = 0;
-            var channelsToGetCount = chatChannelKeys.Count;
+            var channelsToGetCount = queryableChatChannelKeys.Count;
 
             // Keep track of channel keys already seen, to prevent the possibility of duplicates returned.
             var seenChannelKeys = new HashSet<string>();
 
-            // With a query request, we want "all or nothing". So if any batches fail, allow an exception to be thrown.
-            while ( offset < channelsToGetCount )
+            try
             {
-                var batchedKeys = chatChannelKeys
-                    .Skip( offset )
-                    .Take( pageSize )
-                    .ToList();
-
-                /*
-                    3/11/2025 - JPH
-
-                    Stream's "Querying Channels" docs say:
-
-                        "It is important to note that your `filter` should include, at the very least
-                         `{members: {$in: [userID]}` or pagination could break."
-
-                    However, it's not really feasible for us to provide a list of members when querying channels. If we
-                    suspect we're seeing issues related to this, we'll have to reconsider how we're filtering here.
-
-                    Reason: Mention risk called out by Stream's docs.
-                    https://getstream.io/chat/docs/dotnet-csharp/query_channels/#pagination
-                */
-                var queryChannelsOptions = new QueryChannelsOptions() { MemberLimit = 0, MessageLimit = 0 }
-                    .WithLimit( pageSize )
-                    .WithFilter(
-                        new Dictionary<string, object>
-                        {
-                            { "cid", new Dictionary<string, object> { { "$in", batchedKeys } } }
-                        }
-                    )
-                    .WithSortBy(
-                        new SortParameter
-                        {
-                            Field = SortParameterFieldKey.CreatedAt,
-                            Direction = SortDirection.Ascending
-                        }
-                    );
-
-                var queryChannelResponse = await RetryAsync(
-                    async () => await ChannelClient.QueryChannelsAsync( queryChannelsOptions ),
-                    operationName
-                );
-
-                if ( queryChannelResponse?.Channels?.Any() == true )
+                // With a query request, we want "all or nothing". So if any batches fail, return an exception.
+                while ( offset < channelsToGetCount )
                 {
-                    results.AddRange(
-                        queryChannelResponse.Channels
-                            .Select( c => TryConvertToChatChannel( c ) )
-                            .Where( c =>
-                                c != null
-                                && seenChannelKeys.Add( c.Key )
-                            )
-                    );
-                }
+                    var batchedKeys = queryableChatChannelKeys
+                        .Skip( offset )
+                        .Take( pageSize )
+                        .ToList();
 
-                offset += pageSize;
+                    /*
+                        3/11/2025 - JPH
+
+                        Stream's "Querying Channels" docs say:
+
+                            "It is important to note that your `filter` should include, at the very least
+                             `{members: {$in: [userID]}` or pagination could break."
+
+                        However, it's not really feasible for us to provide a list of members when querying channels. If we
+                        suspect we're seeing issues related to this, we'll have to reconsider how we're filtering here.
+
+                        Reason: Mention risk called out by Stream's docs.
+                        https://getstream.io/chat/docs/dotnet-csharp/query_channels/#pagination
+                    */
+                    var queryChannelsOptions = new QueryChannelsOptions() { MemberLimit = 0, MessageLimit = 0 }
+                        .WithLimit( pageSize )
+                        .WithFilter(
+                            new Dictionary<string, object>
+                            {
+                                { "cid", new Dictionary<string, object> { { "$in", batchedKeys } } }
+                            }
+                        )
+                        .WithSortBy(
+                            new SortParameter
+                            {
+                                Field = SortParameterFieldKey.CreatedAt,
+                                Direction = SortDirection.Ascending
+                            }
+                        );
+
+                    var queryChannelResponse = await RetryAsync(
+                        async () => await ChannelClient.QueryChannelsAsync( queryChannelsOptions ),
+                        operationName
+                    );
+
+                    if ( queryChannelResponse?.Channels?.Any() == true )
+                    {
+                        result.ChatChannels.AddRange(
+                            queryChannelResponse.Channels
+                                .Select( c => TryConvertToChatChannel( c ) )
+                                .Where( c =>
+                                    c != null
+                                    && seenChannelKeys.Add( c.Key )
+                                )
+                        );
+                    }
+
+                    offset += pageSize;
+                }
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
             }
 
-            return results;
+            return result;
         }
 
         /// <inheritdoc/>
-        public async Task<List<ChatChannel>> GetAllChatChannelsAsync()
+        public async Task<GetChatChannelsResult> GetAllChatChannelsAsync()
         {
             return await GetAllChatChannelsAsync( null );
         }
@@ -1150,9 +1194,9 @@ namespace Rock.Communication.Chat
         /// If <paramref name="chatChannelTypeKey"/> is provided, all <see cref="ChatChannel"/>s of the specified
         /// <see cref="ChatChannelType"/>; If not, all <see cref="ChatChannel"/>s in Stream.
         /// </returns>
-        private async Task<List<ChatChannel>> GetAllChatChannelsAsync( string chatChannelTypeKey = null )
+        private async Task<GetChatChannelsResult> GetAllChatChannelsAsync( string chatChannelTypeKey = null )
         {
-            var results = new List<ChatChannel>();
+            var result = new GetChatChannelsResult();
 
             var operationName = nameof( GetAllChatChannelsAsync ).SplitCase();
 
@@ -1165,81 +1209,87 @@ namespace Rock.Communication.Chat
             // Keep track of channel keys already seen, to prevent the possibility of duplicates returned.
             var seenChannelKeys = new HashSet<string>();
 
-            // With a query request, we want "all or nothing". So if any batches fail, allow an exception to be thrown.
-            do
+            try
             {
-                /*
-                    3/11/2025 - JPH
-
-                    Stream's "Querying Channels" docs say:
-
-                        "It is important to note that your `filter` should include, at the very least
-                         `{members: {$in: [userID]}` or pagination could break."
-
-                    However, it's not really feasible for us to provide a list of members when querying channels. If we
-                    suspect we're seeing issues related to this, we'll have to reconsider how we're filtering here.
-
-                    Reason: Mention risk called out by Stream's docs.
-                    https://getstream.io/chat/docs/dotnet-csharp/query_channels/#pagination
-                */
-                var queryChannelsOptions = new QueryChannelsOptions { MemberLimit = 0, MessageLimit = 0 }
-                    .WithOffset( offset )
-                    .WithLimit( pageSize )
-                    .WithSortBy(
-                        new SortParameter
-                        {
-                            Field = SortParameterFieldKey.CreatedAt,
-                            Direction = SortDirection.Ascending
-                        }
-                    );
-
-                // Filter by channel type?
-                if ( chatChannelTypeKey.IsNotNullOrWhiteSpace() )
+                // With a query request, we want "all or nothing". So if any batches fail, return an exception.
+                do
                 {
-                    queryChannelsOptions.Filter = new Dictionary<string, object>
+                    /*
+                        3/11/2025 - JPH
+
+                        Stream's "Querying Channels" docs say:
+
+                            "It is important to note that your `filter` should include, at the very least
+                             `{members: {$in: [userID]}` or pagination could break."
+
+                        However, it's not really feasible for us to provide a list of members when querying channels. If we
+                        suspect we're seeing issues related to this, we'll have to reconsider how we're filtering here.
+
+                        Reason: Mention risk called out by Stream's docs.
+                        https://getstream.io/chat/docs/dotnet-csharp/query_channels/#pagination
+                    */
+                    var queryChannelsOptions = new QueryChannelsOptions { MemberLimit = 0, MessageLimit = 0 }
+                        .WithOffset( offset )
+                        .WithLimit( pageSize )
+                        .WithSortBy(
+                            new SortParameter
+                            {
+                                Field = SortParameterFieldKey.CreatedAt,
+                                Direction = SortDirection.Ascending
+                            }
+                        );
+
+                    // Filter by channel type?
+                    if ( chatChannelTypeKey.IsNotNullOrWhiteSpace() )
+                    {
+                        queryChannelsOptions.Filter = new Dictionary<string, object>
                     {
                         { "type", chatChannelTypeKey }
                     };
-                }
+                    }
 
-                var queryChannelResponse = await RetryAsync(
-                    async () => await ChannelClient.QueryChannelsAsync( queryChannelsOptions ),
-                    operationName
-                );
-
-                if ( queryChannelResponse?.Channels?.Any() == true )
-                {
-                    channelsRetrievedCount = queryChannelResponse.Channels.Count;
-                    results.AddRange(
-                        queryChannelResponse.Channels
-                            .Select( c => TryConvertToChatChannel( c ) )
-                            .Where( c =>
-                                c != null
-                                && seenChannelKeys.Add( c.Key )
-                            )
+                    var queryChannelResponse = await RetryAsync(
+                        async () => await ChannelClient.QueryChannelsAsync( queryChannelsOptions ),
+                        operationName
                     );
-                }
-                else
-                {
-                    channelsRetrievedCount = 0;
-                }
 
-                offset += channelsRetrievedCount;
+                    if ( queryChannelResponse?.Channels?.Any() == true )
+                    {
+                        channelsRetrievedCount = queryChannelResponse.Channels.Count;
+                        result.ChatChannels.AddRange(
+                            queryChannelResponse.Channels
+                                .Select( c => TryConvertToChatChannel( c ) )
+                                .Where( c =>
+                                    c != null
+                                    && seenChannelKeys.Add( c.Key )
+                                )
+                        );
+                    }
+                    else
+                    {
+                        channelsRetrievedCount = 0;
+                    }
+
+                    offset += channelsRetrievedCount;
+                }
+                while ( channelsRetrievedCount == pageSize );
             }
-            while ( channelsRetrievedCount == pageSize );
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+            }
 
-            return results;
+            return result;
         }
 
         /// <inheritdoc/>
-        /// <exception cref="AggregateException">If any <see cref="ChatChannel"/>s fail to be created.</exception>
-        public async Task<List<ChatChannel>> CreateChatChannelsAsync( List<ChatChannel> chatChannels )
+        public async Task<ChatSyncCrudResult> CreateChatChannelsAsync( List<ChatChannel> chatChannels )
         {
-            var results = new List<ChatChannel>();
+            var result = new ChatSyncCrudResult();
 
             if ( chatChannels?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             var operationName = nameof( CreateChatChannelsAsync ).SplitCase();
@@ -1262,7 +1312,7 @@ namespace Rock.Communication.Chat
                         operationName
                     );
 
-                    results.Add( chatChannel );
+                    result.Created.Add( chatChannel.QueryableKey );
                 }
                 catch ( Exception ex )
                 {
@@ -1272,21 +1322,20 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
-            return results;
+            return result;
         }
 
         /// <inheritdoc/>
-        /// <exception cref="AggregateException">If any <see cref="ChatChannel"/>s fail to be updated.</exception>
-        public async Task<List<ChatChannel>> UpdateChatChannelsAsync( List<ChatChannel> chatChannels )
+        public async Task<ChatSyncCrudResult> UpdateChatChannelsAsync( List<ChatChannel> chatChannels )
         {
-            var results = new List<ChatChannel>();
+            var result = new ChatSyncCrudResult();
 
             if ( chatChannels?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             var operationName = nameof( UpdateChatChannelsAsync ).SplitCase();
@@ -1309,7 +1358,7 @@ namespace Rock.Communication.Chat
                         operationName
                     );
 
-                    results.Add( chatChannel );
+                    result.Updated.Add( chatChannel.QueryableKey );
                 }
                 catch ( Exception ex )
                 {
@@ -1319,21 +1368,20 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
-            return results;
+            return result;
         }
 
         /// <inheritdoc/>
-        /// <exception cref="AggregateException">If any <see cref="ChatChannel"/>s fail to be deleted.</exception>
-        public async Task<List<string>> DeleteChatChannelsAsync( List<string> chatChannelKeys )
+        public async Task<ChatSyncCrudResult> DeleteChatChannelsAsync( List<string> chatChannelQueryableKeys )
         {
-            var results = new List<string>();
+            var result = new ChatSyncCrudResult();
 
-            if ( chatChannelKeys?.Any() != true )
+            if ( chatChannelQueryableKeys?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             var operationName = nameof( DeleteChatChannelsAsync ).SplitCase();
@@ -1342,14 +1390,14 @@ namespace Rock.Communication.Chat
             // https://getstream.io/chat/docs/dotnet-csharp/channel_delete/#deleting-many-channels
             var pageSize = 100;
             var offset = 0;
-            var channelsToDeleteCount = chatChannelKeys.Count;
+            var channelsToDeleteCount = chatChannelQueryableKeys.Count;
 
             // Don't let individual batch failures cause all to fail.
             var exceptions = new List<Exception>();
 
             while ( offset < channelsToDeleteCount )
             {
-                var batchedKeys = chatChannelKeys
+                var batchedKeys = chatChannelQueryableKeys
                     .Skip( offset )
                     .Take( pageSize )
                     .ToList();
@@ -1367,7 +1415,7 @@ namespace Rock.Communication.Chat
                         operationName
                     );
 
-                    results.AddRange( batchedKeys );
+                    result.Deleted.UnionWith( batchedKeys );
                 }
                 catch ( Exception ex )
                 {
@@ -1381,10 +1429,10 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
-            return results;
+            return result;
         }
 
         /// <summary>
@@ -1393,17 +1441,28 @@ namespace Rock.Communication.Chat
         /// <param name="chatChannelTypeKey">The key of the <see cref="ChatChannelType"/> whose <see cref="ChatChannel"/>s
         /// should be deleted.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        /// <exception cref="AggregateException">If any <see cref="ChatChannel"/>s fail to be deleted.</exception>
-        private async Task DeleteChatChannelsOfTypeAsync( string chatChannelTypeKey )
+        private async Task<ChatSyncCrudResult> DeleteChatChannelsOfTypeAsync( string chatChannelTypeKey )
         {
-            var operationName = nameof( DeleteChatChannelsOfTypeAsync ).SplitCase();
+            var result = new ChatSyncCrudResult();
 
-            var chatChannels = await GetAllChatChannelsAsync( chatChannelTypeKey );
-            var chatChannelKeys = chatChannels
-                .Select( c => c.Key )
+            var getChatChannelsResult = await GetAllChatChannelsAsync( chatChannelTypeKey );
+            if ( getChatChannelsResult?.HasException == true )
+            {
+                result.Exception = getChatChannelsResult.Exception;
+                return result;
+            }
+
+            var chatChannelQueryableKeys = getChatChannelsResult
+                ?.ChatChannels
+                ?.Select( c => c.QueryableKey )
                 .ToList();
 
-            await DeleteChatChannelsAsync( chatChannelKeys );
+            if ( chatChannelQueryableKeys?.Any() != true )
+            {
+                return result;
+            }
+
+            return await DeleteChatChannelsAsync( chatChannelQueryableKeys );
         }
 
         #endregion Chat Channels
@@ -1411,16 +1470,20 @@ namespace Rock.Communication.Chat
         #region Chat Channel Members
 
         /// <inheritdoc/>
-        public async Task<List<ChatChannelMember>> GetChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey )
+        public async Task<GetChatChannelMembersResult> GetAllChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey )
         {
-            var results = new List<ChatChannelMember>();
+            var result = new GetChatChannelMembersResult
+            {
+                ChatChannelTypeKey = chatChannelTypeKey,
+                ChatChannelKey = chatChannelKey
+            };
 
             if ( chatChannelTypeKey.IsNullOrWhiteSpace() || chatChannelKey.IsNullOrWhiteSpace() )
             {
-                return results;
+                return result;
             }
 
-            var operationName = nameof( GetChatChannelMembersAsync ).SplitCase();
+            var operationName = nameof( GetAllChatChannelMembersAsync ).SplitCase();
 
             // Max number of members to get per query is 100.
             // https://getstream.io/chat/docs/dotnet-csharp/query_members/#query-options
@@ -1428,31 +1491,31 @@ namespace Rock.Communication.Chat
             var offset = 0;
             var membersRetrievedCount = 0;
 
-            // Keep track of user keys already seen, to prevent the possibility of duplicates returned.
+            // Keep track of chat user keys already seen, to prevent the possibility of duplicates returned.
             var seenChatUserKeys = new HashSet<string>();
 
-            // With a query request, we want "all or nothing". So if any batches fail, allow an exception to be thrown.
-            do
+            try
             {
-                var queryMembersRequest = new QueryMembersRequest
+                // With a query request, we want "all or nothing". So if any batches fail, return an exception.
+                do
                 {
-                    Limit = pageSize,
-                    Offset = offset,
-                    Type = chatChannelTypeKey,
-                    Id = chatChannelKey,
-                    FilterConditions = new Dictionary<string, object>(), // Exception thrown if not defined.
-                    Sorts = new List<SortParameter>
+                    var queryMembersRequest = new QueryMembersRequest
                     {
-                        new SortParameter
+                        Limit = pageSize,
+                        Offset = offset,
+                        Type = chatChannelTypeKey,
+                        Id = chatChannelKey,
+                        FilterConditions = new Dictionary<string, object>(), // Exception thrown if not defined.
+                        Sorts = new List<SortParameter>
                         {
-                            Field = SortParameterFieldKey.CreatedAt,
-                            Direction = SortDirection.Ascending
+                            new SortParameter
+                            {
+                                Field = SortParameterFieldKey.CreatedAt,
+                                Direction = SortDirection.Ascending
+                            }
                         }
-                    }
-                };
+                    };
 
-                try
-                {
                     var queryMembersResponse = await RetryAsync(
                         async () => await ChannelClient.QueryMembersAsync( queryMembersRequest ),
                         operationName,
@@ -1462,9 +1525,9 @@ namespace Rock.Communication.Chat
                     if ( queryMembersResponse?.Members?.Any() == true )
                     {
                         membersRetrievedCount = queryMembersResponse.Members.Count;
-                        results.AddRange(
+                        result.ChatChannelMembers.AddRange(
                             queryMembersResponse.Members
-                                .Select( m => TryConvertToChatChannelMember( m ) )
+                                .Select( m => TryConvertToChatChannelMember( chatChannelTypeKey, chatChannelKey, m ) )
                                 .Where( m =>
                                     m != null
                                     && seenChatUserKeys.Add( m.ChatUserKey )
@@ -1478,72 +1541,14 @@ namespace Rock.Communication.Chat
 
                     offset += membersRetrievedCount;
                 }
-                catch ( StreamChatException ex ) when ( ex.ErrorCode == 16 )
-                {
-                    // Provide the caller with a predictable exception so they can decide how to proceed when the
-                    // targeted channel does not exist.
-                    var queryableChatChannelKey = GetQueryableChatChannelKey( chatChannelTypeKey, chatChannelKey );
-                    throw new MemberChatChannelNotFoundException(
-                        $"{LogMessagePrefix} {operationName} failed: channel does not exist in Stream (type: {chatChannelTypeKey}; id: {chatChannelKey}).",
-                        ex,
-                        chatChannelTypeKey,
-                        chatChannelKey,
-                        queryableChatChannelKey
-                    );
-                }
-            }
-            while ( membersRetrievedCount == pageSize );
-
-            return results;
-        }
-
-        /// <inheritdoc/>
-        public async Task<ChatChannelMember> GetChatChannelMemberAsync( string chatChannelTypeKey, string chatChannelKey, string chatUserKey )
-        {
-            if ( chatChannelTypeKey.IsNullOrWhiteSpace() || chatChannelKey.IsNullOrWhiteSpace() || chatUserKey.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
-            var operationName = nameof( GetChatChannelMemberAsync ).SplitCase();
-
-            var queryMembersRequest = new QueryMembersRequest
-            {
-                Type = chatChannelTypeKey,
-                Id = chatChannelKey,
-                FilterConditions = new Dictionary<string, object>
-                {
-                    { "id", chatUserKey }
-                },
-                Sorts = new List<SortParameter>
-                {
-                    new SortParameter
-                    {
-                        Field = SortParameterFieldKey.CreatedAt,
-                        Direction = SortDirection.Ascending
-                    }
-                }
-            };
-
-            try
-            {
-                var queryMembersResponse = await RetryAsync(
-                    async () => await ChannelClient.QueryMembersAsync( queryMembersRequest ),
-                    operationName,
-                    streamErrorCodesToThrow: new HashSet<int> { 16 }
-                );
-
-                if ( queryMembersResponse?.Members?.Any() == true )
-                {
-                    return TryConvertToChatChannelMember( queryMembersResponse.Members.First() );
-                }
+                while ( membersRetrievedCount == pageSize );
             }
             catch ( StreamChatException ex ) when ( ex.ErrorCode == 16 )
             {
                 // Provide the caller with a predictable exception so they can decide how to proceed when the
                 // targeted channel does not exist.
                 var queryableChatChannelKey = GetQueryableChatChannelKey( chatChannelTypeKey, chatChannelKey );
-                throw new MemberChatChannelNotFoundException(
+                result.Exception = new MemberChatChannelNotFoundException(
                     $"{LogMessagePrefix} {operationName} failed: channel does not exist in Stream (type: {chatChannelTypeKey}; id: {chatChannelKey}).",
                     ex,
                     chatChannelTypeKey,
@@ -1551,18 +1556,117 @@ namespace Rock.Communication.Chat
                     queryableChatChannelKey
                 );
             }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+            }
 
-            return null;
+            return result;
         }
 
         /// <inheritdoc/>
-        public async Task<List<ChatChannelMember>> CreateChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, List<ChatChannelMember> chatChannelMembers )
+        public async Task<GetChatChannelMembersResult> GetChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys )
         {
-            var results = new List<ChatChannelMember>();
+            var result = new GetChatChannelMembersResult
+            {
+                ChatChannelTypeKey = chatChannelTypeKey,
+                ChatChannelKey = chatChannelKey
+            };
+
+            if ( chatChannelTypeKey.IsNullOrWhiteSpace() || chatChannelKey.IsNullOrWhiteSpace() || chatUserKeys?.Any() != true )
+            {
+                return result;
+            }
+
+            var operationName = nameof( GetChatChannelMembersAsync ).SplitCase();
+
+            // Max number of channel members to get per query is 100.
+            // https://getstream.io/chat/docs/dotnet-csharp/query_members/#query-options
+            var pageSize = 100;
+            var offset = 0;
+            var membersToGetCount = chatUserKeys.Count;
+
+            // Keep track of chat user keys already seen, to prevent the possibility of duplicates returned.
+            var seenChatUserKeys = new HashSet<string>();
+
+            try
+            {
+                // With a query request, we want "all or nothing". So if any batches fail, return an exception.
+                while ( offset < membersToGetCount )
+                {
+                    var batchedKeys = chatUserKeys
+                        .Skip( offset )
+                        .Take( pageSize )
+                        .ToList();
+
+                    var queryMembersRequest = new QueryMembersRequest
+                    {
+                        Type = chatChannelTypeKey,
+                        Id = chatChannelKey,
+                        FilterConditions = new Dictionary<string, object>
+                        {
+                            { "id", new Dictionary<string, object> { { "$in", batchedKeys } } }
+                        },
+                        Sorts = new List<SortParameter>
+                        {
+                            new SortParameter
+                            {
+                                Field = SortParameterFieldKey.CreatedAt,
+                                Direction = SortDirection.Ascending
+                            }
+                        }
+                    };
+
+                    var queryMembersResponse = await RetryAsync(
+                        async () => await ChannelClient.QueryMembersAsync( queryMembersRequest ),
+                        operationName,
+                        streamErrorCodesToThrow: new HashSet<int> { 16 }
+                    );
+
+                    if ( queryMembersResponse?.Members?.Any() == true )
+                    {
+                        result.ChatChannelMembers.AddRange(
+                            queryMembersResponse.Members
+                                .Select( m => TryConvertToChatChannelMember( chatChannelTypeKey, chatChannelKey, m ) )
+                                .Where( m =>
+                                    m != null
+                                    && seenChatUserKeys.Add( m.ChatUserKey )
+                                )
+                        );
+                    }
+
+                    offset += pageSize;
+                }
+            }
+            catch ( StreamChatException ex ) when ( ex.ErrorCode == 16 )
+            {
+                // Provide the caller with a predictable exception so they can decide how to proceed when the
+                // targeted channel does not exist.
+                var queryableChatChannelKey = GetQueryableChatChannelKey( chatChannelTypeKey, chatChannelKey );
+                result.Exception = new MemberChatChannelNotFoundException(
+                    $"{LogMessagePrefix} {operationName} failed: channel does not exist in Stream (type: {chatChannelTypeKey}; id: {chatChannelKey}).",
+                    ex,
+                    chatChannelTypeKey,
+                    chatChannelKey,
+                    queryableChatChannelKey
+                );
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public async Task<ChatSyncCrudResult> CreateChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, List<ChatChannelMember> chatChannelMembers )
+        {
+            var result = new ChatSyncCrudResult();
 
             if ( chatChannelTypeKey.IsNullOrWhiteSpace() || chatChannelKey.IsNullOrWhiteSpace() || chatChannelMembers?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             var operationName = nameof( CreateChatChannelMembersAsync ).SplitCase();
@@ -1606,7 +1710,15 @@ namespace Rock.Communication.Chat
                         batchedMembers
                     );
 
-                    results.AddRange( assignedRoleResults );
+                    if ( assignedRoleResults?.Updated.Any() == true )
+                    {
+                        result.Created.UnionWith( assignedRoleResults.Updated );
+                    }
+
+                    if ( assignedRoleResults?.HasException == true )
+                    {
+                        exceptions.Add( assignedRoleResults.Exception );
+                    }
 
                     // Are any members being added as banned? Unlikely, but possible.
                     var bannedMemberChatUserKeys = batchedMembers
@@ -1616,7 +1728,16 @@ namespace Rock.Communication.Chat
 
                     if ( bannedMemberChatUserKeys.Any() )
                     {
-                        await BanChatUsersAsync( bannedMemberChatUserKeys, chatChannelTypeKey, chatChannelKey );
+                        var bannedResult = await BanChatUsersAsync( bannedMemberChatUserKeys, chatChannelTypeKey, chatChannelKey );
+                        if ( bannedResult != null )
+                        {
+                            result.InnerResults.Add( bannedResult );
+
+                            if ( bannedResult.HasException )
+                            {
+                                exceptions.Add( bannedResult.Exception );
+                            }
+                        }
                     }
 
                     // Are any members being added as muted? Again.. unlikely, but possible.
@@ -1627,7 +1748,16 @@ namespace Rock.Communication.Chat
 
                     if ( mutedMemberChatUserKeys.Any() )
                     {
-                        await MuteChatChannelAsync( chatChannelTypeKey, chatChannelKey, mutedMemberChatUserKeys );
+                        var mutedResult = await MuteChatChannelAsync( chatChannelTypeKey, chatChannelKey, mutedMemberChatUserKeys );
+                        if ( mutedResult != null )
+                        {
+                            result.InnerResults.Add( mutedResult );
+
+                            if ( mutedResult.HasException )
+                            {
+                                exceptions.Add( mutedResult.Exception );
+                            }
+                        }
                     }
                 }
                 catch ( Exception ex )
@@ -1642,25 +1772,29 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
-            return results;
+            return result;
         }
 
         /// <inheritdoc/>
-        public async Task<List<ChatChannelMember>> UpdateChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, Dictionary<ChatChannelMember, ChatChannelMember> chatChannelMembers )
+        public async Task<ChatSyncCrudResult> UpdateChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, Dictionary<ChatChannelMember, ChatChannelMember> chatChannelMembers )
         {
+            var result = new ChatSyncCrudResult();
+
             if ( chatChannelTypeKey.IsNullOrWhiteSpace() || chatChannelKey.IsNullOrWhiteSpace() || chatChannelMembers?.Any() != true )
             {
-                return new List<ChatChannelMember>();
+                return result;
             }
 
-            // Stream's API doesn't allow us to easily update all of a member's possible changes in a single call.
-            // We'll complete the updates in 3 phases and return a unique list of those members who were updated.
+            var operationName = nameof( UpdateChatChannelMembersAsync ).SplitCase();
 
-            var results = new List<ChatChannelMember>();
-            var uniqueChatUserKeys = new HashSet<string>();
+            // Stream's API doesn't allow us to easily update all of a member's possible changes in a single call.
+            // We'll complete the updates in 3 phases and return a CRUD result indicating which members were updated.
+
+            // Don't let individual update phase failures cause all to fail.
+            var exceptions = new List<Exception>();
 
             // -------------------------------------------
             // 1) Update members whose roles have changed.
@@ -1671,8 +1805,17 @@ namespace Rock.Communication.Chat
 
             if ( roleChangeMembers.Any() )
             {
-                results.AddRange( await AssignRolesAsync( chatChannelTypeKey, chatChannelKey, roleChangeMembers ) );
-                uniqueChatUserKeys.UnionWith( results.Select( r => r.ChatUserKey ) );
+                var assignRolesResult = await AssignRolesAsync( chatChannelTypeKey, chatChannelKey, roleChangeMembers );
+
+                if ( assignRolesResult?.Updated.Any() == true )
+                {
+                    result.Updated.UnionWith( assignRolesResult.Updated );
+                }
+
+                if ( assignRolesResult?.HasException == true )
+                {
+                    exceptions.Add( assignRolesResult.Exception );
+                }
             }
 
             // -------------------------------------------------------
@@ -1691,14 +1834,17 @@ namespace Rock.Communication.Chat
 
                 if ( banChatUserKeys.Any() )
                 {
-                    var bannedKeys = await BanChatUsersAsync( banChatUserKeys, chatChannelTypeKey, chatChannelKey );
-                    bannedKeys.ForEach( k =>
+                    var banResults = await BanChatUsersAsync( banChatUserKeys, chatChannelTypeKey, chatChannelKey );
+
+                    if ( banResults?.Banned.Any() == true )
                     {
-                        if ( uniqueChatUserKeys.Add( k ) )
-                        {
-                            results.Add( banStatusChangeMembers.First( m => m.ChatUserKey == k ) );
-                        }
-                    } );
+                        result.Updated.UnionWith( banResults.Banned );
+                    }
+
+                    if ( banResults?.HasException == true )
+                    {
+                        exceptions.Add( banResults.Exception );
+                    }
                 }
 
                 var unbanChatUserKeys = banStatusChangeMembers
@@ -1708,14 +1854,17 @@ namespace Rock.Communication.Chat
 
                 if ( unbanChatUserKeys.Any() )
                 {
-                    var unbannedKeys = await UnbanChatUsersAsync( unbanChatUserKeys, chatChannelTypeKey, chatChannelKey );
-                    unbannedKeys.ForEach( k =>
+                    var unbanResults = await UnbanChatUsersAsync( unbanChatUserKeys, chatChannelTypeKey, chatChannelKey );
+
+                    if ( unbanResults?.Unbanned.Any() == true )
                     {
-                        if ( uniqueChatUserKeys.Add( k ) )
-                        {
-                            results.Add( banStatusChangeMembers.First( m => m.ChatUserKey == k ) );
-                        }
-                    } );
+                        result.Updated.UnionWith( unbanResults.Unbanned );
+                    }
+
+                    if ( unbanResults?.HasException == true )
+                    {
+                        exceptions.Add( unbanResults.Exception );
+                    }
                 }
             }
 
@@ -1736,14 +1885,17 @@ namespace Rock.Communication.Chat
 
                 if ( muteChatUserKeys.Any() )
                 {
-                    var mutedKeys = await MuteChatChannelAsync( chatChannelTypeKey, chatChannelKey, muteChatUserKeys );
-                    mutedKeys.ForEach( k =>
+                    var mutedResult = await MuteChatChannelAsync( chatChannelTypeKey, chatChannelKey, muteChatUserKeys );
+
+                    if ( mutedResult?.Muted.Any() == true )
                     {
-                        if ( uniqueChatUserKeys.Add( k ) )
-                        {
-                            results.Add( muteStatusChangeMembers.First( m => m.ChatUserKey == k ) );
-                        }
-                    } );
+                        result.Updated.UnionWith( mutedResult.Muted );
+                    }
+
+                    if ( mutedResult?.HasException == true )
+                    {
+                        exceptions.Add( mutedResult.Exception );
+                    }
                 }
 
                 var unmuteChatUserKeys = muteStatusChangeMembers
@@ -1753,18 +1905,26 @@ namespace Rock.Communication.Chat
 
                 if ( unmuteChatUserKeys.Any() )
                 {
-                    var unmutedKeys = await UnmuteChatChannelAsync( chatChannelTypeKey, chatChannelKey, unmuteChatUserKeys );
-                    unmutedKeys.ForEach( k =>
+                    var unmutedResult = await UnmuteChatChannelAsync( chatChannelTypeKey, chatChannelKey, unmuteChatUserKeys );
+
+                    if ( unmutedResult?.Unmuted.Any() == true )
                     {
-                        if ( uniqueChatUserKeys.Add( k ) )
-                        {
-                            results.Add( muteStatusChangeMembers.First( m => m.ChatUserKey == k ) );
-                        }
-                    } );
+                        result.Updated.UnionWith( unmutedResult.Unmuted );
+                    }
+
+                    if ( unmutedResult?.HasException == true )
+                    {
+                        exceptions.Add( unmutedResult.Exception );
+                    }
                 }
             }
 
-            return results;
+            if ( exceptions.Any() )
+            {
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -1774,13 +1934,12 @@ namespace Rock.Communication.Chat
         /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> for which roles should be assigned.</param>
         /// <param name="chatChannelMembers">The list of <see cref="ChatChannelMember"/>s to whom roles should be assigned.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="ChatChannelMember"/>s whose
-        /// roles were successfully assigned.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
-        /// <exception cref="AggregateException">If any <see cref="ChatChannelMember"/>s fail to have a role assigned.</exception>
-        private async Task<List<ChatChannelMember>> AssignRolesAsync( string chatChannelTypeKey, string chatChannelKey, List<ChatChannelMember> chatChannelMembers )
+        private async Task<ChatSyncCrudResult> AssignRolesAsync( string chatChannelTypeKey, string chatChannelKey, List<ChatChannelMember> chatChannelMembers )
         {
-            var results = new List<ChatChannelMember>();
+            var result = new ChatSyncCrudResult();
+
             var operationName = nameof( AssignRolesAsync ).SplitCase();
 
             // Max number of roles to assign per request is 100.
@@ -1826,7 +1985,7 @@ namespace Rock.Communication.Chat
                         operationName
                     );
 
-                    results.AddRange( batchedAssignments );
+                    result.Updated.UnionWith( batchedAssignments.Select( a => a.Key ) );
                 }
                 catch ( Exception ex )
                 {
@@ -1840,20 +1999,20 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
-            return results;
+            return result;
         }
 
         /// <inheritdoc/>
-        public async Task<List<string>> DeleteChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys )
+        public async Task<ChatSyncCrudResult> DeleteChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys )
         {
-            var results = new List<string>();
+            var result = new ChatSyncCrudResult();
 
             if ( chatChannelTypeKey.IsNullOrWhiteSpace() || chatChannelKey.IsNullOrWhiteSpace() || chatUserKeys?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             var operationName = nameof( DeleteChatChannelMembersAsync ).SplitCase();
@@ -1885,7 +2044,9 @@ namespace Rock.Communication.Chat
                         operationName
                     );
 
-                    results.AddRange( batchedKeys );
+                    result.Deleted.UnionWith(
+                        batchedKeys.Select( k => ChatHelper.GetChatChannelMemberKey( chatChannelKey, k ) )
+                    );
                 }
                 catch ( Exception ex )
                 {
@@ -1899,23 +2060,23 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
-            return results;
+            return result;
         }
 
         /// <inheritdoc/>
-        public async Task<List<string>> MuteChatChannelAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys )
+        public async Task<ChatSyncMuteResult> MuteChatChannelAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys )
         {
             // Testing shows that Stream's mute endpoints can be repeatedly called for the same user without error, so
             // we're not going to worry about checking if the channel is already muted for these users.
 
-            var results = new List<string>();
+            var result = new ChatSyncMuteResult();
 
             if ( chatChannelTypeKey.IsNullOrWhiteSpace() || chatChannelKey.IsNullOrWhiteSpace() || chatUserKeys?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             var operationName = nameof( MuteChatChannelAsync ).SplitCase();
@@ -1940,7 +2101,7 @@ namespace Rock.Communication.Chat
                     );
 
                     // If we got here, we'll trust the mute was successful.
-                    results.Add( chatUserKey );
+                    result.Muted.Add( ChatHelper.GetChatChannelMemberKey( chatChannelKey, chatUserKey ) );
                 }
                 catch ( Exception ex )
                 {
@@ -1950,23 +2111,23 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
-            return results;
+            return result;
         }
 
         /// <inheritdoc/>
-        public async Task<List<string>> UnmuteChatChannelAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys )
+        public async Task<ChatSyncMuteResult> UnmuteChatChannelAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys )
         {
             // Testing shows that Stream's mute endpoints can be repeatedly called for the same user without error, so
             // we're not going to worry about checking if the channel is muted for these users.
 
-            var results = new List<string>();
+            var result = new ChatSyncMuteResult();
 
             if ( chatChannelTypeKey.IsNullOrWhiteSpace() || chatChannelKey.IsNullOrWhiteSpace() || chatUserKeys?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             var operationName = nameof( UnmuteChatChannelAsync ).SplitCase();
@@ -1991,7 +2152,7 @@ namespace Rock.Communication.Chat
                     );
 
                     // If we got here, we'll trust the unmute was successful.
-                    results.Add( chatUserKey );
+                    result.Unmuted.Add( ChatHelper.GetChatChannelMemberKey( chatChannelKey, chatUserKey ) );
                 }
                 catch ( Exception ex )
                 {
@@ -2001,10 +2162,10 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
-            return results;
+            return result;
         }
 
         #endregion Chat Channel Members
@@ -2012,34 +2173,43 @@ namespace Rock.Communication.Chat
         #region Chat Users
 
         /// <inheritdoc/>
-        public async Task<bool> EnsureSystemUserExistsAsync()
+        public async Task<ChatSyncSetupResult> EnsureSystemUserExistsAsync()
         {
+            var result = new ChatSyncSetupResult();
+
             var operationName = nameof( EnsureSystemUserExistsAsync ).SplitCase();
 
             var chatSystemUser = ChatHelper.GetChatSystemUser();
             var request = TryConvertToStreamUserRequest( chatSystemUser );
 
-            var upsertResponse = await RetryAsync(
-                async () => await UserClient.UpsertAsync( request ),
-                operationName
-            );
+            try
+            {
+                var upsertResponse = await RetryAsync(
+                    async () => await UserClient.UpsertAsync( request ),
+                    operationName
+                );
 
-            var systemUserExists = upsertResponse
-                ?.Users
-                ?.Values
-                ?.Any( u => u?.Id == chatSystemUser.Key ) == true;
+                result.IsSetUp = upsertResponse
+                    ?.Users
+                    ?.Values
+                    ?.Any( u => u?.Id == chatSystemUser.Key ) == true;
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+            }
 
-            return systemUserExists;
+            return result;
         }
 
         /// <inheritdoc/>
-        public async Task<List<ChatUser>> GetChatUsersAsync( List<string> chatUserKeys )
+        public async Task<GetChatUsersResult> GetChatUsersAsync( List<string> chatUserKeys )
         {
-            var results = new List<ChatUser>();
+            var result = new GetChatUsersResult();
 
             if ( chatUserKeys?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             var operationName = nameof( GetChatUsersAsync ).SplitCase();
@@ -2050,66 +2220,85 @@ namespace Rock.Communication.Chat
             var offset = 0;
             var usersToGetCount = chatUserKeys.Count;
 
-            // Keep track of user keys already seen, to prevent the possibility of duplicates returned.
+            // Keep track of chat user keys already seen, to prevent the possibility of duplicates returned.
             var seenUserKeys = new HashSet<string>();
 
-            // With a query request, we want "all or nothing". So if any batches fail, allow an exception to be thrown.
-            while ( offset < usersToGetCount )
+            try
             {
-                var batchedKeys = chatUserKeys
-                    .Skip( offset )
-                    .Take( pageSize )
-                    .ToList();
-
-                var queryUserOptions = new QueryUserOptions()
-                    .WithLimit( pageSize )
-                    .WithFilter(
-                        new Dictionary<string, object>
-                        {
-                            { "id", new Dictionary<string, object> { { "$in", batchedKeys } } }
-                        }
-                    )
-                    .WithSortBy(
-                        new SortParameter
-                        {
-                            Field = SortParameterFieldKey.CreatedAt,
-                            Direction = SortDirection.Ascending
-                        }
-                    );
-
-                var queryUsersResponse = await RetryAsync(
-                    async () => await UserClient.QueryAsync( queryUserOptions ),
-                    operationName
-                );
-
-                if ( queryUsersResponse?.Users?.Any() == true )
+                // With a query request, we want "all or nothing". So if any batches fail, return an exception.
+                while ( offset < usersToGetCount )
                 {
-                    results.AddRange(
-                        queryUsersResponse.Users
-                            .Select( u => TryConvertToChatUser( u ) )
-                            .Where( u =>
-                                u != null
-                                && seenUserKeys.Add( u.Key )
-                            )
-                    );
-                }
+                    var batchedKeys = chatUserKeys
+                        .Skip( offset )
+                        .Take( pageSize )
+                        .ToList();
 
-                offset += pageSize;
+                    var queryUserOptions = new QueryUserOptions()
+                        .WithLimit( pageSize )
+                        .WithFilter(
+                            new Dictionary<string, object>
+                            {
+                                { "id", new Dictionary<string, object> { { "$in", batchedKeys } } }
+                            }
+                        )
+                        .WithSortBy(
+                            new SortParameter
+                            {
+                                Field = SortParameterFieldKey.CreatedAt,
+                                Direction = SortDirection.Ascending
+                            }
+                        );
+
+                    var queryUsersResponse = await RetryAsync(
+                        async () => await UserClient.QueryAsync( queryUserOptions ),
+                        operationName
+                    );
+
+                    if ( queryUsersResponse?.Users?.Any() == true )
+                    {
+                        result.ChatUsers.AddRange(
+                            queryUsersResponse.Users
+                                .Select( u => TryConvertToChatUser( u ) )
+                                .Where( u =>
+                                    u != null
+                                    && seenUserKeys.Add( u.Key )
+                                )
+                        );
+                    }
+
+                    offset += pageSize;
+                }
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
             }
 
-            return results;
+            return result;
         }
 
         /// <inheritdoc/>
-        public async Task<List<ChatUser>> CreateChatUsersAsync( List<ChatUser> chatUsers )
+        public async Task<ChatSyncCrudResult> CreateChatUsersAsync( List<ChatUser> chatUsers )
         {
-            return await UpsertChatUsersAsync( chatUsers );
+            var result = new ChatSyncCrudResult();
+
+            var upsertResult = await UpsertChatUsersAsync( chatUsers );
+            result.Created.UnionWith( upsertResult.Updated );
+            result.Exception = upsertResult.Exception;
+
+            return result;
         }
 
         /// <inheritdoc/>
-        public async Task<List<ChatUser>> UpdateChatUsersAsync( List<ChatUser> chatUsers )
+        public async Task<ChatSyncCrudResult> UpdateChatUsersAsync( List<ChatUser> chatUsers )
         {
-            return await UpsertChatUsersAsync( chatUsers );
+            var result = new ChatSyncCrudResult();
+
+            var upsertResult = await UpsertChatUsersAsync( chatUsers );
+            result.Updated.UnionWith( upsertResult.Updated );
+            result.Exception = upsertResult.Exception;
+
+            return result;
         }
 
         /// <summary>
@@ -2120,9 +2309,10 @@ namespace Rock.Communication.Chat
         /// A task representing the asynchronous operation, containing the list of <see cref="ChatUser"/>s that were
         /// successfully created or updated.
         /// </returns>
-        /// <exception cref="AggregateException">If any <see cref="ChatUser"/>s fail to be created or updated.</exception>
-        private async Task<List<ChatUser>> UpsertChatUsersAsync( List<ChatUser> chatUsers )
+        private async Task<ChatSyncCrudResult> UpsertChatUsersAsync( List<ChatUser> chatUsers )
         {
+            var result = new ChatSyncCrudResult();
+
             var requests = chatUsers
                 ?.Select( u => new
                 {
@@ -2132,11 +2322,9 @@ namespace Rock.Communication.Chat
                 .Where( r => r.Request != null )
                 .ToList();
 
-            var results = new List<ChatUser>();
-
             if ( requests?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             var operationName = nameof( UpsertChatUsersAsync ).SplitCase();
@@ -2164,7 +2352,7 @@ namespace Rock.Communication.Chat
                         operationName
                     );
 
-                    results.AddRange( batchedRequests.Select( r => r.ChatUser ) );
+                    result.Updated.UnionWith( batchedRequests.Select( r => r.ChatUser.Key ) );
                 }
                 catch ( Exception ex )
                 {
@@ -2178,10 +2366,10 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
-            return results;
+            return result;
         }
 
         /// <inheritdoc/>
@@ -2194,46 +2382,49 @@ namespace Rock.Communication.Chat
                 return result;
             }
 
-            // Prevent delete exceptions by first ensuring the chat users truly exist in Stream.
-            try
-            {
-                var queryChatUserKeys = chatUserKeys.ToList();
-                if ( newChatUserKey.IsNotNullOrWhiteSpace() )
-                {
-                    if ( queryChatUserKeys.Contains( newChatUserKey ) )
-                    {
-                        // We can't replace the users with one we're deleting.
-                        newChatUserKey = null;
-                    }
-                    else
-                    {
-                        // Add this user to query to ensure they exist.
-                        queryChatUserKeys.Add( newChatUserKey );
-                    }
-                }
+            // Don't let individual batch failures cause all to fail.
+            var exceptions = new List<Exception>();
 
-                var existingChatUsers = await GetChatUsersAsync( queryChatUserKeys );
+            // Try to prevent delete and ownership transfer exceptions by first ensuring the chat users truly exist in Stream.
+            var queryChatUserKeys = chatUserKeys.ToList();
+            if ( newChatUserKey.IsNotNullOrWhiteSpace() )
+            {
+                if ( queryChatUserKeys.Contains( newChatUserKey ) )
+                {
+                    // We can't replace the users with one we're deleting.
+                    newChatUserKey = null;
+                }
+                else
+                {
+                    // Add this user to query to ensure they exist.
+                    queryChatUserKeys.Add( newChatUserKey );
+                }
+            }
+
+            var getChatUsersResult = await GetChatUsersAsync( queryChatUserKeys );
+            if ( getChatUsersResult?.ChatUsers?.Any() == true )
+            {
                 for ( var i = chatUserKeys.Count - 1; i >= 0; i-- )
                 {
                     var chatUserKey = chatUserKeys[i];
-                    if ( !existingChatUsers.Any( u => u.Key == chatUserKey ) )
+                    if ( !getChatUsersResult.ChatUsers.Any( u => u.Key == chatUserKey ) )
                     {
-                        // Send this key right back out the door.
+                        // Send this key right back out the door since there's no matching Stream user.
                         result.Skipped.Add( chatUserKey );
                         chatUserKeys.RemoveAt( i );
                     }
                 }
 
-                if ( newChatUserKey.IsNotNullOrWhiteSpace() && !existingChatUsers.Any( u => u.Key == newChatUserKey ) )
+                if ( newChatUserKey.IsNotNullOrWhiteSpace() && !getChatUsersResult.ChatUsers.Any( u => u.Key == newChatUserKey ) )
                 {
-                    // The specified "new" user doesn't exist in Stream.
+                    // The specified "new" user doesn't exist in Stream; cancel the ownership transfer.
                     newChatUserKey = null;
                 }
             }
-            catch ( Exception ex )
+
+            if ( getChatUsersResult?.HasException == true )
             {
-                result.Exception = ex;
-                return result;
+                exceptions.Add( getChatUsersResult.Exception );
             }
 
             // Do any remain to be deleted?
@@ -2249,9 +2440,6 @@ namespace Rock.Communication.Chat
             var pageSize = 100;
             var offset = 0;
             var usersToDeleteCount = chatUserKeys.Count;
-
-            // Don't let individual batch failures cause all to fail.
-            var exceptions = new List<Exception>();
 
             while ( offset < usersToDeleteCount )
             {
@@ -2302,16 +2490,16 @@ namespace Rock.Communication.Chat
         }
 
         /// <inheritdoc/>
-        public async Task<List<string>> BanChatUsersAsync( List<string> chatUserKeys, string chatChannelTypeKey = null, string chatChannelKey = null )
+        public async Task<ChatSyncBanResult> BanChatUsersAsync( List<string> chatUserKeys, string chatChannelTypeKey = null, string chatChannelKey = null )
         {
             // Testing shows that Stream's ban endpoints can be repeatedly called for the same user without error, so
             // we're not going to worry about checking if these users are already banned.
 
-            var results = new List<string>();
+            var result = new ChatSyncBanResult();
 
             if ( chatUserKeys?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             var operationName = nameof( BanChatUsersAsync ).SplitCase();
@@ -2339,7 +2527,8 @@ namespace Rock.Communication.Chat
                     );
 
                     // If we got here, we'll trust the ban was successful.
-                    results.Add( chatUserKey );
+                    var bannedKey = ChatHelper.GetChatChannelMemberKey( chatChannelKey, chatUserKey ) ?? chatUserKey;
+                    result.Banned.Add( bannedKey );
                 }
                 catch ( Exception ex )
                 {
@@ -2349,23 +2538,23 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
-            return results;
+            return result;
         }
 
         /// <inheritdoc/>
-        public async Task<List<string>> UnbanChatUsersAsync( List<string> chatUserKeys, string chatChannelTypeKey = null, string chatChannelKey = null )
+        public async Task<ChatSyncBanResult> UnbanChatUsersAsync( List<string> chatUserKeys, string chatChannelTypeKey = null, string chatChannelKey = null )
         {
             // Testing shows that Stream's ban endpoints can be repeatedly called for the same user without error, so
             // we're not going to worry about checking if these users are banned.
 
-            var results = new List<string>();
+            var result = new ChatSyncBanResult();
 
             if ( chatUserKeys?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             var operationName = nameof( UnbanChatUsersAsync ).SplitCase();
@@ -2393,7 +2582,8 @@ namespace Rock.Communication.Chat
                     );
 
                     // If we got here, we'll trust the unban was successful.
-                    results.Add( chatUserKey );
+                    var unBannedKey = ChatHelper.GetChatChannelMemberKey( chatChannelKey, chatUserKey ) ?? chatUserKey;
+                    result.Unbanned.Add( unBannedKey );
                 }
                 catch ( Exception ex )
                 {
@@ -2403,21 +2593,32 @@ namespace Rock.Communication.Chat
 
             if ( exceptions.Any() )
             {
-                throw ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
             }
 
-            return results;
+            return result;
         }
 
         /// <inheritdoc/>
-        public Task<string> GetChatUserTokenAsync( string chatUserKey )
+        public Task<GetChatStringResult> GetChatUserTokenAsync( string chatUserKey )
         {
+            var result = new GetChatStringResult();
+
             if ( chatUserKey.IsNullOrWhiteSpace() )
             {
-                return null;
+                return Task.FromResult( result );
             }
 
-            return Task.FromResult( UserClient.CreateToken( chatUserKey ) );
+            try
+            {
+                result.Value = UserClient.CreateToken( chatUserKey );
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+            }
+
+            return Task.FromResult( result );
         }
 
         #endregion Chat Users
@@ -2425,10 +2626,9 @@ namespace Rock.Communication.Chat
         #region Messages
 
         /// <inheritdoc/>
-        public async Task<Dictionary<string, Dictionary<string, int>>> GetChatUserMessageCountsByChatChannelKeyAsync( DateTime messageDate )
+        public async Task<ChatUserMessageCountsByChatChannelResult> GetChatUserMessageCountsByChatChannelKeyAsync( DateTime messageDate )
         {
-            // The outer dictionary key is the chat channel key and the inner dictionary key is the chat user key.
-            var results = new Dictionary<string, Dictionary<string, int>>();
+            var result = new ChatUserMessageCountsByChatChannelResult();
 
             var operationName = nameof( GetChatUserMessageCountsByChatChannelKeyAsync ).SplitCase();
 
@@ -2442,129 +2642,33 @@ namespace Rock.Communication.Chat
             var channelsRetrievedCount = 0;
             var chatChannelIdByCids = new Dictionary<string, string>();
 
-            // With query requests, we want "all or nothing". So if any batches fail, allow an exception to be thrown.
-            do
+            try
             {
-                /*
-                    3/11/2025 - JPH
-
-                    Stream's "Querying Channels" docs say:
-
-                        "It is important to note that your `filter` should include, at the very least
-                         `{members: {$in: [userID]}` or pagination could break."
-
-                    However, it's not really feasible for us to provide a list of members when querying channels. If we
-                    suspect we're seeing issues related to this, we'll have to reconsider how we're filtering here.
-
-                    Reason: Mention risk called out by Stream's docs.
-                    https://getstream.io/chat/docs/dotnet-csharp/query_channels/#pagination
-                */
-                var queryChannelsOptions = new QueryChannelsOptions() { MemberLimit = 0, MessageLimit = 0 }
-                    .WithLimit( pageSize )
-                    .WithOffset( offset )
-                    .WithFilter(
-                        new Dictionary<string, object>
-                        {
-                            // Rule out stale channels.
-                            { "last_message_at", new Dictionary<string, object> { { "$gte", messageDateStartString } } }
-                        }
-                    )
-                    .WithSortBy(
-                        new SortParameter
-                        {
-                            Field = SortParameterFieldKey.CreatedAt,
-                            Direction = SortDirection.Ascending
-                        }
-                    );
-
-                var queryChannelsResponse = await RetryAsync(
-                    async () => await ChannelClient.QueryChannelsAsync( queryChannelsOptions ),
-                    operationName
-                );
-
-                if ( queryChannelsResponse?.Channels?.Any() == true )
-                {
-                    channelsRetrievedCount = queryChannelsResponse.Channels.Count;
-
-                    foreach ( var channelGetResponse in queryChannelsResponse.Channels )
-                    {
-                        var key = channelGetResponse?.Channel?.Cid;
-                        var value = channelGetResponse?.Channel?.Id;
-
-                        if ( key.IsNotNullOrWhiteSpace() && value.IsNotNullOrWhiteSpace() )
-                        {
-                            chatChannelIdByCids.TryAdd( key, value );
-                        }
-                    }
-                }
-                else
-                {
-                    channelsRetrievedCount = 0;
-                }
-
-                offset += pageSize;
-            }
-            while ( channelsRetrievedCount == pageSize );
-
-            if ( !chatChannelIdByCids.Any() )
-            {
-                // There are no channels with messages on or after `messageDate`.
-                return results;
-            }
-
-            // Next, get the message counts by user, for each channel; create an [exclusive] end date to compare against.
-            var messageDateEndString = messageDate.AddDays( 1 ).StartOfDay().ToRfc3339UtcString();
-
-            foreach ( var chatChannelIdsKvp in chatChannelIdByCids )
-            {
-                // We want to query Stream's API using this value.
-                var chatChannelCid = chatChannelIdsKvp.Key;
-
-                // We want to return this value as the outermost dictionary key.
-                var chatChannelId = chatChannelIdsKvp.Value;
-
-                // Messages pagination operates differently than other Stream queries. It appears that we can get up to
-                // 1k messages at a time, and the response will include a `next` value if there are still more messages
-                // to get; we'll query again WITH the `next` value as an argument, until we get a response that doesn't
-                // have a `next` value.
-                // https://getstream.io/chat/docs/dotnet-csharp/search/#pagination
-                var messagesPageSize = 1000;
-                string next = null;
-
-                // We'll also keep a reasonable limit on the number of requests we'll make, just in case Stream has an
-                // issue in their pagination logic. 1M messages per channel, per day will [probably] never happen, so
-                // we'll cap at that (1000 requests X 1000 messages per request).
-                var requestCount = 0;
-                var maxRequestCount = 1000;
-
+                // With a query request, we want "all or nothing". So if any batches fail, return an exception.
                 do
                 {
-                    var searchOptions = new SearchOptions()
-                        .WithLimit( messagesPageSize )
-                        .WithNext( next )
+                    /*
+                        3/11/2025 - JPH
+
+                        Stream's "Querying Channels" docs say:
+
+                            "It is important to note that your `filter` should include, at the very least
+                             `{members: {$in: [userID]}` or pagination could break."
+
+                        However, it's not really feasible for us to provide a list of members when querying channels. If we
+                        suspect we're seeing issues related to this, we'll have to reconsider how we're filtering here.
+
+                        Reason: Mention risk called out by Stream's docs.
+                        https://getstream.io/chat/docs/dotnet-csharp/query_channels/#pagination
+                    */
+                    var queryChannelsOptions = new QueryChannelsOptions() { MemberLimit = 0, MessageLimit = 0 }
+                        .WithLimit( pageSize )
+                        .WithOffset( offset )
                         .WithFilter(
                             new Dictionary<string, object>
                             {
-                                { "cid", chatChannelCid }
-                            }
-                        )
-                        .WithMessageFilterConditions(
-                            new Dictionary<string, object>
-                            {
-                                {
-                                    "$and",
-                                    new List<object>
-                                    {
-                                        new Dictionary<string, object>
-                                        {
-                                            { "created_at", new Dictionary<string, object> { { "$gte", messageDateStartString } } }
-                                        },
-                                        new Dictionary<string, object>
-                                        {
-                                            { "created_at", new Dictionary<string, object> { { "$lt", messageDateEndString } } }
-                                        }
-                                    }
-                                }
+                                // Rule out stale channels.
+                                { "last_message_at", new Dictionary<string, object> { { "$gte", messageDateStartString } } }
                             }
                         )
                         .WithSortBy(
@@ -2575,61 +2679,164 @@ namespace Rock.Communication.Chat
                             }
                         );
 
-                    var messageSearchResponse = await RetryAsync(
-                        async () => await MessageClient.SearchAsync( searchOptions ),
+                    var queryChannelsResponse = await RetryAsync(
+                        async () => await ChannelClient.QueryChannelsAsync( queryChannelsOptions ),
                         operationName
                     );
 
-                    next = messageSearchResponse?.Next;
-
-                    var messageCountResults = messageSearchResponse
-                        ?.Results
-                        ?.Where( r => r?.Message?.User?.Id.IsNotNullOrWhiteSpace() == true )
-                        .GroupBy( r => r.Message.User.Id )
-                        .Select( g => new
-                        {
-                            ChatUserKey = g.Key,
-                            MessageCount = g.Count()
-                        } )
-                        .ToDictionary( counts => counts.ChatUserKey, counts => counts.MessageCount );
-
-                    if ( messageCountResults?.Any() == true )
+                    if ( queryChannelsResponse?.Channels?.Any() == true )
                     {
-                        // Get or add the "message counts by user" dictionary for this channel.
-                        if ( !results.TryGetValue( chatChannelId, out var runningMessageCounts ) )
-                        {
-                            // We don't have any counts for this channel yet; simply add the results.
-                            results.Add( chatChannelId, messageCountResults );
-                        }
-                        else
-                        {
-                            // We're paging through this channel's messages (there are more than 1k), so we need to
-                            // supplement the previous results.
-                            foreach ( var messageCountKvp in messageCountResults )
-                            {
-                                var chatUserKey = messageCountKvp.Key;
-                                var messageCount = messageCountKvp.Value;
+                        channelsRetrievedCount = queryChannelsResponse.Channels.Count;
 
-                                if ( runningMessageCounts.TryGetValue( chatUserKey, out var existingMessageCount ) )
-                                {
-                                    // Add to this chat user's running total for this chat channel.
-                                    runningMessageCounts[chatUserKey] = existingMessageCount + messageCount;
-                                }
-                                else
-                                {
-                                    // We haven't seen this user for this channel before now; set their count.
-                                    runningMessageCounts[chatUserKey] = messageCount;
-                                }
+                        foreach ( var channelGetResponse in queryChannelsResponse.Channels )
+                        {
+                            var key = channelGetResponse?.Channel?.Cid;
+                            var value = channelGetResponse?.Channel?.Id;
+
+                            if ( key.IsNotNullOrWhiteSpace() && value.IsNotNullOrWhiteSpace() )
+                            {
+                                chatChannelIdByCids.TryAdd( key, value );
                             }
                         }
                     }
+                    else
+                    {
+                        channelsRetrievedCount = 0;
+                    }
 
-                    requestCount++;
+                    offset += pageSize;
                 }
-                while ( next.IsNotNullOrWhiteSpace() && requestCount < maxRequestCount );
+                while ( channelsRetrievedCount == pageSize );
+
+                if ( !chatChannelIdByCids.Any() )
+                {
+                    // There are no channels with messages on or after `messageDate`.
+                    return result;
+                }
+
+                // Next, get the message counts by user, for each channel; create an [exclusive] end date to compare against.
+                var messageDateEndString = messageDate.AddDays( 1 ).StartOfDay().ToRfc3339UtcString();
+
+                foreach ( var chatChannelIdsKvp in chatChannelIdByCids )
+                {
+                    // We want to query Stream's API using this value.
+                    var chatChannelCid = chatChannelIdsKvp.Key;
+
+                    // We want to return this value as the outermost dictionary key.
+                    var chatChannelId = chatChannelIdsKvp.Value;
+
+                    // Messages pagination operates differently than other Stream queries. It appears that we can get up to
+                    // 1k messages at a time, and the response will include a `next` value if there are still more messages
+                    // to get; we'll query again WITH the `next` value as an argument, until we get a response that doesn't
+                    // have a `next` value.
+                    // https://getstream.io/chat/docs/dotnet-csharp/search/#pagination
+                    var messagesPageSize = 1000;
+                    string next = null;
+
+                    // We'll also keep a reasonable limit on the number of requests we'll make, just in case Stream has an
+                    // issue in their pagination logic. 1M messages per channel, per day will [probably] never happen, so
+                    // we'll cap at that (1000 requests X 1000 messages per request).
+                    var requestCount = 0;
+                    var maxRequestCount = 1000;
+
+                    do
+                    {
+                        var searchOptions = new SearchOptions()
+                            .WithLimit( messagesPageSize )
+                            .WithNext( next )
+                            .WithFilter(
+                                new Dictionary<string, object>
+                                {
+                                    { "cid", chatChannelCid }
+                                }
+                            )
+                            .WithMessageFilterConditions(
+                                new Dictionary<string, object>
+                                {
+                                    {
+                                        "$and",
+                                        new List<object>
+                                        {
+                                            new Dictionary<string, object>
+                                            {
+                                                { "created_at", new Dictionary<string, object> { { "$gte", messageDateStartString } } }
+                                            },
+                                            new Dictionary<string, object>
+                                            {
+                                                { "created_at", new Dictionary<string, object> { { "$lt", messageDateEndString } } }
+                                            }
+                                        }
+                                    }
+                                }
+                            )
+                            .WithSortBy(
+                                new SortParameter
+                                {
+                                    Field = SortParameterFieldKey.CreatedAt,
+                                    Direction = SortDirection.Ascending
+                                }
+                            );
+
+                        var messageSearchResponse = await RetryAsync(
+                            async () => await MessageClient.SearchAsync( searchOptions ),
+                            operationName
+                        );
+
+                        next = messageSearchResponse?.Next;
+
+                        var messageCountResults = messageSearchResponse
+                            ?.Results
+                            ?.Where( r => r?.Message?.User?.Id.IsNotNullOrWhiteSpace() == true )
+                            .GroupBy( r => r.Message.User.Id )
+                            .Select( g => new
+                            {
+                                ChatUserKey = g.Key,
+                                MessageCount = g.Count()
+                            } )
+                            .ToDictionary( counts => counts.ChatUserKey, counts => counts.MessageCount );
+
+                        if ( messageCountResults?.Any() == true )
+                        {
+                            // Get or add the "message counts by user" dictionary for this channel.
+                            if ( !result.MessageCounts.TryGetValue( chatChannelId, out var runningMessageCounts ) )
+                            {
+                                // We don't have any counts for this channel yet; simply add the results.
+                                result.MessageCounts.Add( chatChannelId, messageCountResults );
+                            }
+                            else
+                            {
+                                // We're paging through this channel's messages (there are more than 1k), so we need to
+                                // supplement the previous results.
+                                foreach ( var messageCountKvp in messageCountResults )
+                                {
+                                    var chatUserKey = messageCountKvp.Key;
+                                    var messageCount = messageCountKvp.Value;
+
+                                    if ( runningMessageCounts.TryGetValue( chatUserKey, out var existingMessageCount ) )
+                                    {
+                                        // Add to this chat user's running total for this chat channel.
+                                        runningMessageCounts[chatUserKey] = existingMessageCount + messageCount;
+                                    }
+                                    else
+                                    {
+                                        // We haven't seen this user for this channel before now; set their count.
+                                        runningMessageCounts[chatUserKey] = messageCount;
+                                    }
+                                }
+                            }
+                        }
+
+                        requestCount++;
+                    }
+                    while ( next.IsNotNullOrWhiteSpace() && requestCount < maxRequestCount );
+                }
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
             }
 
-            return results;
+            return result;
         }
 
         #endregion Messages
@@ -2679,17 +2886,17 @@ namespace Rock.Communication.Chat
         }
 
         /// <inheritdoc/>
-        public List<ChatToRockSyncCommand> GetChatToRockSyncCommands( List<ChatWebhookRequest> webhookRequests )
+        public GetChatToRockSyncCommandsResult GetChatToRockSyncCommands( List<ChatWebhookRequest> webhookRequests )
         {
-            var commands = new List<ChatToRockSyncCommand>();
+            var result = new GetChatToRockSyncCommandsResult();
 
             if ( webhookRequests?.Any() != true )
             {
-                return commands;
+                return result;
             }
 
             var operationName = nameof( GetChatToRockSyncCommands ).SplitCase();
-            var structuredLog = "{@Payload}";
+            var structuredLog = "Payload: {@Payload}";
 
             foreach ( var request in webhookRequests )
             {
@@ -2746,7 +2953,7 @@ namespace Rock.Communication.Chat
                             break;
                     }
 
-                    commands.AddRange( syncCommands );
+                    result.SyncCommands.AddRange( syncCommands );
                 }
                 catch ( ChatWebhookParseException ex )
                 {
@@ -2760,7 +2967,7 @@ namespace Rock.Communication.Chat
                 }
             }
 
-            return commands;
+            return result;
         }
 
         #endregion Webhooks
@@ -2818,7 +3025,7 @@ namespace Rock.Communication.Chat
                             var jitter = TimeSpan.FromMilliseconds( random.NextDouble() * 0.2 * waitTime.TotalMilliseconds );
                             var waitTimeWithJitter = waitTime + jitter;
 
-                            Logger.LogWarning( $"{LogMessagePrefix} Rate Limit Exceeded ({operationName}). Waiting for {waitTimeWithJitter.TotalSeconds} seconds before retrying." );
+                            Logger.LogInformation( $"{LogMessagePrefix} Rate Limit Exceeded ({operationName}). Waiting for {waitTimeWithJitter.TotalSeconds} seconds before retrying." );
 
                             await Task.Delay( waitTimeWithJitter );
                             continue; // Retry after delay.
@@ -3106,17 +3313,21 @@ namespace Rock.Communication.Chat
         /// <summary>
         /// Tries to convert a <see cref="ChannelMember"/> to a <see cref="ChatChannelMember"/>.
         /// </summary>
-        /// <param name="channelMember">the <see cref="ChannelMember"/> to convert.</param>
+        /// <param name="chatChannelTypeKey">The key of the <see cref="ChatChannelType"/> to which this member belongs.</param>
+        /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> to which this member belongs.</param>
+        /// <param name="channelMember">The <see cref="ChannelMember"/> to convert.</param>
         /// <returns>A <see cref="ChatChannelMember"/> or <see langword="null"/> if unable to convert.</returns>
-        private ChatChannelMember TryConvertToChatChannelMember( ChannelMember channelMember )
+        private ChatChannelMember TryConvertToChatChannelMember( string chatChannelTypeKey, string chatChannelKey, ChannelMember channelMember )
         {
-            if ( ( channelMember?.UserId ).IsNullOrWhiteSpace() )
+            if ( chatChannelTypeKey.IsNullOrWhiteSpace() || chatChannelKey.IsNullOrWhiteSpace() || ( channelMember?.UserId ).IsNullOrWhiteSpace() )
             {
                 return null;
             }
 
             return new ChatChannelMember
             {
+                ChatChannelTypeKey = chatChannelTypeKey,
+                ChatChannelKey = chatChannelKey,
                 ChatUserKey = channelMember.UserId,
                 Role = channelMember.ChannelRole,
                 IsChatMuted = channelMember.NotificationsMuted ?? false,

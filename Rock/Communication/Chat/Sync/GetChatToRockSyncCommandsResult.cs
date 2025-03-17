@@ -16,19 +16,17 @@
 //
 using System.Collections.Generic;
 
-using Rock.Communication.Chat.DTO;
-
 namespace Rock.Communication.Chat.Sync
 {
     /// <summary>
-    /// Represents the result of getting <see cref="ChatChannel"/>s from the external chat system.
+    /// Represents the result of transforming webhook requests from the external chat system into <see cref="ChatToRockSyncCommand"/>s.
     /// </summary>
     /// <see cref="ChatSyncResultBase"/>
-    internal class GetChatChannelsResult : ChatSyncResultBase
+    internal class GetChatToRockSyncCommandsResult : ChatSyncResultBase
     {
         /// <summary>
-        /// Gets the list of <see cref="ChatChannel"/>s retrieved from the external chat system.
+        /// Gets the list of <see cref="ChatToRockSyncCommand"/>s received as webhooks from the external chat system.
         /// </summary>
-        public List<ChatChannel> ChatChannels { get; } = new List<ChatChannel>();
+        public List<ChatToRockSyncCommand> SyncCommands { get; } = new List<ChatToRockSyncCommand>();
     }
 }

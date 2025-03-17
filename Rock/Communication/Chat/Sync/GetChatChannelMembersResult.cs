@@ -37,8 +37,8 @@ namespace Rock.Communication.Chat.Sync
         public string ChatChannelKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of <see cref="ChatChannelMember"/>s retrieved from the external chat system.
+        /// Gets the list of <see cref="ChatChannelMember"/>s retrieved from the external chat system.
         /// </summary>
-        public List<ChatChannelMember> ChatChannelMembers { get; set; }
+        public List<ChatChannelMember> ChatChannelMembers { get; } = new List<ChatChannelMember>();
     }
 }

@@ -14,21 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
-
-using Rock.Communication.Chat.DTO;
-
 namespace Rock.Communication.Chat.Sync
 {
     /// <summary>
-    /// Represents the result of getting <see cref="ChatChannel"/>s from the external chat system.
+    /// Represents the result of a setup chat synchronization operation.
     /// </summary>
-    /// <see cref="ChatSyncResultBase"/>
-    internal class GetChatChannelsResult : ChatSyncResultBase
+    /// <seealso cref="ChatSyncResultBase"/>
+    internal class ChatSyncSetupResult : ChatSyncResultBase
     {
         /// <summary>
-        /// Gets the list of <see cref="ChatChannel"/>s retrieved from the external chat system.
+        /// Gets or sets a value indicating whether the synchronization operation was successful.
         /// </summary>
-        public List<ChatChannel> ChatChannels { get; } = new List<ChatChannel>();
+        public bool IsSetUp { get; set; }
     }
 }
