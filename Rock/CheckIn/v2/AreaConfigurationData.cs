@@ -55,6 +55,12 @@ namespace Rock.CheckIn.v2
         public virtual bool IsConcurrentCheckInPrevented { get; }
 
         /// <summary>
+        /// Determines if the group type has been configured to support scheduling
+        /// people ahead of time.
+        /// </summary>
+        public virtual bool IsSchedulingEnabled { get; }
+
+        /// <summary>
         /// Gets where labels should be printed for groups in this area.
         /// </summary>
         /// <value>The printed label destination.</value>
@@ -90,6 +96,7 @@ namespace Rock.CheckIn.v2
             AttendanceRule = groupTypeCache.AttendanceRule;
             AlreadyEnrolledMatchingLogic = groupTypeCache.AlreadyEnrolledMatchingLogic;
             IsConcurrentCheckInPrevented = groupTypeCache.IsConcurrentCheckInPrevented;
+            IsSchedulingEnabled = groupTypeCache.IsSchedulingEnabled;
             PrintTo = groupTypeCache.AttendancePrintTo;
             LocationSelectionStrategy = groupTypeCache
                 .GetAttributeValue( SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_LOCATION_SELECTION_STRATEGY )

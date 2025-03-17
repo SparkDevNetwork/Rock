@@ -47,6 +47,14 @@ namespace Rock.CheckIn.v2
         public OpportunityCollection Opportunities { get; set; }
 
         /// <summary>
+        /// A list of opportunities that should be pre-selected. This is
+        /// used by the filters to indicate that an opportunity has been
+        /// configured for pre-selection. It may be ignored if the opporunity
+        /// is no longer valid.
+        /// </summary>
+        public List<OpportunitySelectionBag> PreSelectedOpportunities { get; set; }
+
+        /// <summary>
         /// Gets or sets the last date and time the person checked in.
         /// </summary>
         /// <value>The last date and time the person checked in.</value>

@@ -50,7 +50,9 @@
                     if (token) {
                         // Allow time for the success animation to be displayed.
                         setTimeout(function () {
-                            window.location = "javascript:" + config.postBackScript;
+                            if (config.postBackScript) {
+                                window.location = "javascript:" + config.postBackScript;
+                            }
                         }, 750);
                     }
                 },
@@ -106,10 +108,6 @@
 
                 if (!config.key) {
                     throw 'key is required';
-                }
-
-                if (!config.postBackScript) {
-                    throw 'postBackScript is required';
                 }
 
                 // Ensure Cloudflare's Turnstile script is added to the page.

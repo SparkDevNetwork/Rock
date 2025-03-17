@@ -333,7 +333,11 @@ namespace RockWeb.Blocks.Core
             string version = e.CommandArgument.ToString();
 
             hdnInstallVersion.Value = version;
-            litConfirmationMessage.Text = string.Format( "Are you sure you want to upgrade to Rock {0}?", RockVersion( new Version( version ) ) );
+
+            var litPackageDescription = ( Literal ) e.Item.FindControl( "litPackageDescription" );
+            string versionDescription = litPackageDescription?.Text ?? version;
+            litConfirmationMessage.Text = string.Format( "Are you sure you want to upgrade to {0}?", versionDescription );
+
             mdConfirmInstall.Show();
         }
 
@@ -355,7 +359,7 @@ namespace RockWeb.Blocks.Core
                 var installedRelease = rockInstaller.InstallVersion();
 
                 nbSuccess.Text = ConvertToHtmlLiWrappedUl( installedRelease.ReleaseNotes ).ConvertCrLfToHtmlBr();
-                lSuccessVersion.Text = GetRockVersion( installedRelease.SemanticVersion );
+                lSuccessVersion.Text = installedRelease.Description;
             }
             catch ( OutOfMemoryException ex )
             {
