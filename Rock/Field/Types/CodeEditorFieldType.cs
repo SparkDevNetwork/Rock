@@ -17,9 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 #if WEBFORMS
 using System.Web.UI;
+using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
 using Rock.Reporting;
@@ -223,14 +225,16 @@ namespace Rock.Field.Types
         {
             if ( controls != null && controls.Count == 3 && configurationValues != null )
             {
-                if ( controls[0] != null && controls[0] is RockDropDownList && configurationValues.ContainsKey( EDITOR_MODE ) )
+                if ( controls[0] != null && controls[0] is RockDropDownList )
                 {
-                    ( ( RockDropDownList ) controls[0] ).SelectedValue = configurationValues[EDITOR_MODE].Value;
+                    SetDropDownValue( controls[0], configurationValues, EDITOR_MODE, CodeEditorMode.Text );
                 }
-                if ( controls[1] != null && controls[1] is RockDropDownList && configurationValues.ContainsKey( EDITOR_THEME ) )
+
+                if ( controls[1] != null && controls[1] is RockDropDownList )
                 {
-                    ( ( RockDropDownList ) controls[1] ).SelectedValue = configurationValues[EDITOR_THEME].Value;
+                    SetDropDownValue( controls[1], configurationValues, EDITOR_THEME, CodeEditorTheme.Rock );
                 }
+
                 if ( controls[2] != null && controls[2] is NumberBox && configurationValues.ContainsKey( EDITOR_HEIGHT ) )
                 {
                     ( ( NumberBox ) controls[2] ).Text = configurationValues[EDITOR_HEIGHT].Value;
@@ -272,12 +276,44 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Sets the selected value of a <see cref="RockDropDownList"/> control based on the provided configuration values.
+        /// If the value exists in the drop-down list, it is selected directly.
+        /// If the value does not exist, it is converted from an enum and stored as its integer representation.
+        /// </summary>
+        /// <typeparam name="T">The enum type that represents the possible drop-down values.</typeparam>
+        /// <param name="control">The control to be processed, expected to be a <see cref="RockDropDownList"/>.</param>
+        /// <param name="configValues">A dictionary containing configuration key-value pairs.</param>
+        /// <param name="key">The key in <paramref name="configValues"/> that holds the desired drop-down value.</param>
+        /// <param name="defaultEnumValue">The default enum value to use if the key does not match an existing drop-down entry.</param>
+        private void SetDropDownValue<T>( Control control, Dictionary<string, ConfigurationValue> configValues, string key, T defaultEnumValue ) where T : struct, Enum
+        {
+            /*
+                 3/17/2025 - N.A.
+
+                 Ensures that the text value of the enum is correctly retrieved from the configuration values when assigned 
+                 to the RockDropDownList control. This is necessary because many of these controls were previously storing
+                 their values as the enum text string value (and not the enum int value).
+
+                 Reason: Prevents potential mismatches between stored configuration values and enum representations.
+            */
+            if ( control is RockDropDownList dropdown && configValues.ContainsKey( key ) )
+            {
+                string configValue = configValues[key].Value;
+                bool containsItem = dropdown.Items.Cast<System.Web.UI.WebControls.ListItem>().Any( item => item.Value == configValue );
+
+                dropdown.SelectedValue = containsItem
+                    ? configValue
+                    : configValue.ConvertToEnum<T>( defaultEnumValue ).ConvertToInt().ToString();
+            }
+        }
+
+        /// <summary>
         /// Formats the value as HTML.
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condesed].</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
         public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
         {
