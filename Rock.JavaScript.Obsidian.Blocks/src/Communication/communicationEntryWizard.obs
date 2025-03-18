@@ -17,6 +17,7 @@
                              v-model:recipients="recipients"
                              v-model:segmentCriteria="segmentCriteria"
                              :allowedMediums="allowedMediums"
+                             :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                              :communicationId="communicationId"
                              :communicationListGroups="config.communicationListGroups ?? []"
                              :communicationTopicValues="config.communicationTopicValues ?? []"
@@ -46,6 +47,7 @@
             <ChooseTemplateStep v-else-if="step === 'Choose Template'"
                                 v-model:communicationTemplateGuid="communicationTemplateGuid"
                                 :allowedMediums="allowedMediums"
+                                :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                                 :communicationTemplateDetail="communicationTemplateDetail"
                                 :communicationTemplates="communicationTemplates"
                                 :communicationType="communicationType"
@@ -65,6 +67,7 @@
                                v-model:message="message"
                                v-model:replyToEmail="replyToEmail"
                                v-model:subject="subject"
+                               :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                                :attachmentBinaryFileTypeGuid="config.attachmentBinaryFileTypeGuid"
                                :nextStepTitle="nextStep"
                                :title="step"
@@ -75,6 +78,7 @@
                              v-model:communicationTemplateGuid="communicationTemplateGuid"
                              v-model:message="message"
                              v-model:testEmailAddress="testEmailAddress"
+                             :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                              :communicationTemplates="communicationTemplateListItems"
                              :imageComponentBinaryFileTypeGuid="config.imageComponentBinaryFileTypeGuid"
                              :isFetchingRecipients="isFetchingRecipients"
@@ -83,6 +87,9 @@
                              :previewHtmlProcessor="previewHtmlProcessor"
                              :recipientPersonIds="emailRecipients.map(e => e.personId)"
                              :recipientsLabel="emailRecipientsLabel"
+                             :shortLinkCheckToken="onShortLinkCheckToken"
+                             :shortLinkSites="config.shortLinkSites"
+                             :shortLinkTokenMinLength="config.minimumShortLinkTokenLength"
                              :title="step"
                              :videoProviderNames="config.videoProviderNames"
                              @nextStep="onNextStepClicked"
@@ -96,11 +103,15 @@
                            v-model:smsAttachmentBinaryFiles="smsAttachmentBinaryFiles"
                            v-model:smsFromSystemPhoneNumberGuid="smsFromSystemPhoneNumberGuid"
                            v-model:testSmsPhoneNumber="testSmsPhoneNumber"
+                           :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                            :attachmentBinaryFileTypeGuid="config.attachmentBinaryFileTypeGuid"
                            :maxImageWidth="config.maxSmsImageWidth"
                            :mergeFields="config.mergeFields ?? undefined"
                            :nextStepTitle="nextStep"
                            :recipientsLabel="smsRecipientsLabel"
+                           :shortLinkCheckToken="onShortLinkCheckToken"
+                           :shortLinkSites="config.shortLinkSites"
+                           :shortLinkTokenMinLength="config.minimumShortLinkTokenLength"
                            :smsAcceptedMimeTypes="config.smsAcceptedMimeTypes"
                            :smsAttachmentLinks="smsAttachmentLinks"
                            :smsFromNumberName="smsFromNumberName"
@@ -120,6 +131,7 @@
                                         v-model:pushOpenMessageJson="pushOpenMessageJson"
                                         v-model:pushTitle="pushTitle"
                                         :applications="config.pushApplications ?? []"
+                                        :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                                         :isUsingRockMobilePushTransport="config.isUsingRockMobilePushTransport"
                                         :mergeFields="config.mergeFields ?? undefined"
                                         :nextStepTitle="nextStep"
@@ -131,6 +143,7 @@
 
             <ConfirmationStep v-else-if="step === 'Review & Confirm'"
                               :allowedMediums="allowedMediums"
+                              :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                               :bccEmails="bccEmails"
                               :ccEmails="ccEmails"
                               :communicationListGroupName="communicationListGroupName"
@@ -218,8 +231,9 @@
     import { getTopic } from "@Obsidian/Utility/realTime";
     import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
     import { debounceAsync, isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationEntryWizardCheckShortLinkTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCheckShortLinkTokenBag";
     import { CommunicationEntryWizardCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationBag";
-    import { CommunicationEntryWizardCommunicationTemplateBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateBag";
+    import { CommunicationEntryWizardCommunicationTemplateListItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateListItemBag";
     import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
     import { CommunicationEntryWizardInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardInitializationBox";
     import { CommunicationEntryWizardPushNotificationOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardPushNotificationOptionsBag";
@@ -313,7 +327,7 @@
     // #region Values
 
     // Stepper state.
-    const steps = JSON.parse(new URLSearchParams(window.location.search).get("step") ?? "[]") as Step[];
+    const steps: Step[] = [];
     const previousSteps: Step[] = steps.length > 1 ? steps.slice(0, steps.length - 1) : [];
     const step = ref<Step>(steps.length ? steps[steps.length - 1] : "Configure Communication");
 
@@ -335,7 +349,7 @@
     const reviewAndConfirmNextAction = ref<"send" | "save">("send");
     const wasCommunicationTemplateChanged = ref<boolean>(false);
     const isSaveCommunicationTemplateModalShown = ref<boolean>(false);
-    const communicationTemplates = ref<CommunicationEntryWizardCommunicationTemplateBag[]>(config.templates ?? []);
+    const communicationTemplates = ref<CommunicationEntryWizardCommunicationTemplateListItemBag[]>(config.templates ?? []);
 
     // Communication state.
     const bccEmails = ref<string>(config.communication?.bccEmails ?? "");
@@ -791,6 +805,22 @@
     // #endregion Functions
 
     // #region Event Handlers
+
+    async function onShortLinkCheckToken(token: string, siteId: number): Promise<string> {
+        const bag: CommunicationEntryWizardCheckShortLinkTokenBag = {
+            siteId,
+            token
+        };
+        const result = await invokeBlockAction.checkShortLinkToken(bag);
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            // Something went wrong so just return the original token.
+            return token;
+        }
+    }
 
     async function onOverwriteExistingCommunicationTemplate(bag: CommunicationEntryWizardCommunicationTemplateDetailBag, blockActionCallbacks: BlockActionCallbacks): Promise<void> {
         const result = await invokeBlockAction.saveCommunicationTemplate(bag);

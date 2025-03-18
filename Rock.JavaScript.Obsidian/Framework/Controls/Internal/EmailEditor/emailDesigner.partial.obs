@@ -12,6 +12,7 @@
                      :componentTypeDragDropRequest="componentTypeDragDropRequest"
                      :componentTypeDragLeaveRequest="componentTypeDragLeaveRequest"
                      :componentTypeDragEndRequest="componentTypeDragEndRequest"
+                     :replaceComponentRequest="replaceComponentRequest"
                      :cssVariables="cssVariables"
                      :getHtmlRequest="getHtmlRequest"
                      @emailDocumentUpdated="$emit('emailDocumentUpdated', $event)" />
@@ -48,7 +49,8 @@
         ComponentTypeDragLeaveRequest,
         ComponentTypeDragOverRequest,
         ComponentTypeDragStartRequest,
-        DeleteComponentRequest
+        DeleteComponentRequest,
+        ReplaceComponentRequest
     } from "./types.partial";
     import { GetHtmlRequest } from "./types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -72,6 +74,11 @@
 
         cloneComponentRequest: {
             type: Object as PropType<CloneComponentRequest | null | undefined>,
+            required: true
+        },
+
+        replaceComponentRequest: {
+            type: Object as PropType<ReplaceComponentRequest | null | undefined>,
             required: true
         },
 

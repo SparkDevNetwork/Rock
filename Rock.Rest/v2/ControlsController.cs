@@ -7914,10 +7914,13 @@ namespace Rock.Rest.v2
                 .Where( p => p.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( p, Security.Authorization.VIEW ) == true )
                 .ToList();
             List<TreeItemBag> pageItemList = new List<TreeItemBag>();
+            Func<Page, string> getTreeItemValue = options.UseIntegerIds
+                ? new Func<Page, string>( p => p.Id.ToString() )
+                : new Func<Page, string>( p => p.Guid.ToString() );
             foreach ( var page in pageList )
             {
                 var pageItem = new TreeItemBag();
-                pageItem.Value = page.Guid.ToString();
+                pageItem.Value = getTreeItemValue( page );
                 pageItem.Text = page.InternalName;
 
                 pageItemList.Add( pageItem );
@@ -7929,14 +7932,15 @@ namespace Rock.Rest.v2
             var qryHasChildren = service
                 .Where( p =>
                     p.ParentPageId.HasValue &&
-                    resultIds.Contains( p.ParentPageId.Value ) )
-                .Select( p => p.ParentPage.Guid )
-                .Distinct()
-                .ToList();
+                    resultIds.Contains( p.ParentPageId.Value ) );
+
+            var pageIdentifiersWithChildren = options.UseIntegerIds
+                ? qryHasChildren.Select( p => p.ParentPage.Id.ToString() ).Distinct().ToList()
+                : qryHasChildren.Select( p => p.ParentPage.Guid.ToString() ).Distinct().ToList();
 
             foreach ( var g in pageItemList )
             {
-                var hasChildren = qryHasChildren.Any( a => a.ToString() == g.Value );
+                var hasChildren = pageIdentifiersWithChildren.Any( a => a == g.Value );
                 g.HasChildren = hasChildren;
                 g.IsFolder = hasChildren;
                 g.IconCssClass = "fa fa-file-o";

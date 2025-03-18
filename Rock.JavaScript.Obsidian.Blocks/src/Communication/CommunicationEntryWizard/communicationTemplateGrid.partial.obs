@@ -89,13 +89,13 @@
     import { useBreakpointHelper } from "./utils.partial";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { Guid } from "@Obsidian/Types";
-    import { CommunicationEntryWizardCommunicationTemplateBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateBag";
+    import { CommunicationEntryWizardCommunicationTemplateListItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateListItemBag";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { areEqual } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         communicationTemplates: {
-            type: Object as PropType<CommunicationEntryWizardCommunicationTemplateBag[]>,
+            type: Object as PropType<CommunicationEntryWizardCommunicationTemplateListItemBag[]>,
             required: true
         },
 
@@ -136,11 +136,11 @@
         }
     });
 
-    const topCommunicationTemplates = computed<CommunicationEntryWizardCommunicationTemplateBag[]>(() => {
+    const topCommunicationTemplates = computed<CommunicationEntryWizardCommunicationTemplateListItemBag[]>(() => {
         return props.communicationTemplates.slice(0, colsPerRow.value);
     });
 
-    const bottomCommunicationTemplates = computed<CommunicationEntryWizardCommunicationTemplateBag[]>(() => {
+    const bottomCommunicationTemplates = computed<CommunicationEntryWizardCommunicationTemplateListItemBag[]>(() => {
         return props.communicationTemplates.slice(colsPerRow.value);
     });
 

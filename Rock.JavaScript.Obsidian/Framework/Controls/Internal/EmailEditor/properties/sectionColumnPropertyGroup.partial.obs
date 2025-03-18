@@ -9,15 +9,19 @@
                     @click="$emit('delete')"><i class="fa fa-trash"></i> Remove</RockButton>
     </div>
 
-    <HorizontalAlignmentTextAlignProperty :element="element" />
+    <template v-if="componentWrapper">
+        <HorizontalAlignmentProperty :valueProvider="horizontalAlignmentProvider" />
 
-    <BackgroundColorProperty :element="element" />
+        <ColorPickerProperty v-if="backgroundColorProvider"
+                             label="Background Color"
+                             :valueProvider="backgroundColorProvider" />
 
-    <PaddingProperty :element="element" />
+        <PaddingProperty :element="componentWrapper.marginWrapper.borderWrapper.paddingWrapper.td" />
 
-    <BorderRadiusProperty :element="element" />
+        <BorderRadiusProperty :element="componentWrapper.marginWrapper.borderWrapper.td" />
 
-    <BorderPropertyGroup :element="element" />
+        <BorderPropertyGroup :element="componentWrapper.marginWrapper.borderWrapper.td" />
+    </template>
 </template>
 
 <style scoped>
@@ -41,16 +45,19 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
-    import BackgroundColorProperty from "./backgroundColorProperty.partial.obs";
+    import { onUnmounted, PropType, ref, watch } from "vue";
     import BorderPropertyGroup from "./borderPropertyGroup.partial.obs";
     import BorderRadiusProperty from "./borderRadiusProperty.partial.obs";
+    import ColorPickerProperty from "./colorPickerProperty.partial.obs";
     import PaddingProperty from "./paddingProperty.partial.obs";
-    import HorizontalAlignmentTextAlignProperty from "./horizontalAlignmentTextAlignProperty.partial.obs";
+    import HorizontalAlignmentProperty from "./horizontalAlignmentProperty.partial.obs";
+    import { attributeProvider, createBackgroundColorProvider } from "../providers.partial";
+    import { HorizontalAlignment, ValueConverter, ValueProvider } from "../types.partial";
+    import { findComponentInnerWrappers } from "../utils.partial";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 
-    defineProps({
+    const props = defineProps({
         element: {
             type: Object as PropType<HTMLElement>,
             required: true
@@ -70,4 +77,63 @@
     defineEmits<{
         (e: "delete"): void;
     }>();
+
+    // #region Values
+
+    const componentWrapper = ref(findComponentInnerWrappers(props.element));
+    const horizontalAlignmentProvider = ref<ValueProvider<HorizontalAlignment | "" | null | undefined>>(
+        createValueProvider()
+    );
+    const backgroundColorProvider = ref(componentWrapper.value ? createBackgroundColorProvider(componentWrapper.value) : null);
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): ValueProvider<HorizontalAlignment | "" | null | undefined> {
+        const converter: ValueConverter<"" | HorizontalAlignment | null | undefined, string | null> = {
+            toSource(target: string | null): "" | HorizontalAlignment | null | undefined {
+                return target === "center"
+                    ? "center"
+                    : target === "left"
+                        ? "left"
+                        : target === "right"
+                            ? "right"
+                            : null;
+            },
+            toTarget(source: "" | HorizontalAlignment | null | undefined): string | null {
+                return source ?? null;
+            }
+        };
+        return attributeProvider<HorizontalAlignment | "" | null | undefined>(
+            componentWrapper.value!.marginWrapper.borderWrapper.paddingWrapper.td,
+            "align",
+            converter
+        );
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.element, () => {
+        componentWrapper.value = findComponentInnerWrappers(props.element);
+
+        horizontalAlignmentProvider.value.dispose();
+        horizontalAlignmentProvider.value = createValueProvider();
+
+        backgroundColorProvider.value?.dispose();
+        backgroundColorProvider.value = componentWrapper.value ? createBackgroundColorProvider(componentWrapper.value) : null;
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        horizontalAlignmentProvider.value.dispose();
+        backgroundColorProvider.value?.dispose();
+    });
+
+    // #endregion Hooks
 </script>

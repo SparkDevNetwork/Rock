@@ -57,6 +57,9 @@
                                                           :isCharacterCountShown="true"
                                                           :mergeFields="mergeFields"
                                                           rules="required"
+                                                          :shortLinkCheckToken="shortLinkCheckToken"
+                                                          :shortLinkSites="shortLinkSites"
+                                                          :shortLinkTokenMinLength="shortLinkTokenMinLength"
                                                           toolbarLabel="Message" />
                                     </div>
                                 </div>
@@ -92,7 +95,8 @@
             </template>
 
             <template #footerActions>
-                <RockButton :disabled="isSaving || isSendingTest"
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowLeft'"
+                            :disabled="isSaving || isSendingTest"
                             @click="onPreviousClicked">Previous</RockButton>
             </template>
 
@@ -101,7 +105,8 @@
                             @click="onSendTestClicked">
                     <i class="fa fa-paper-plane-o"></i> Send Test
                 </RockButton>
-                <RockButton btnType="primary"
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowRight'"
+                            btnType="primary"
                             :disabled="isSaving || isSendingTest"
                             @click="onNextClicked">{{ nextStepTitle ? `Next: ${nextStepTitle}` : 'Next' }}</RockButton>
             </template>
@@ -193,6 +198,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import SmsMessageEditor from "@Obsidian/Controls/smsMessageEditor.obs";
+    import { vShortcut } from "@Obsidian/Directives/shortcut";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -205,6 +211,11 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
+        areNavigationShortcutsDisabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
         attachmentBinaryFileTypeGuid: {
             type: String as PropType<Guid>,
             required: true
@@ -233,6 +244,20 @@
         recipientsLabel: {
             type: String as PropType<string>,
             required: true
+        },
+
+        shortLinkCheckToken: {
+            type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>,
+            required: true
+        },
+
+        shortLinkSites: {
+            type: Object as PropType<ListItemBag[] | null | undefined>,
+            required: true
+        },
+
+        shortLinkTokenMinLength: {
+            type: Number as PropType<number | null | undefined>
         },
 
         smsAcceptedMimeTypes: {

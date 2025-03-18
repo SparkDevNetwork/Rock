@@ -97,6 +97,10 @@
     display: block;
     margin-top: var(--spacing-xsmall);
 }
+
+.sms-text {
+    overflow-wrap: break-word;
+}
 </style>
 
 <script setup lang="ts">

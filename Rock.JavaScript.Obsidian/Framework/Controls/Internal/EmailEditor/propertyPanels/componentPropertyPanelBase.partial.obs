@@ -42,6 +42,12 @@
         </template>
 
         <template #default>
+            <template v-if="false">
+                <NotificationBox alertType="warning">
+                    This component uses an old structure and may not display correctly.
+                    <RockButton btnType="primary" @click="onMigrateComponentClicked">Migrate Component</RockButton>
+                </NotificationBox>
+            </template>
             <slot></slot>
         </template>
     </FlatPanel>
@@ -60,7 +66,9 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import FlatPanel from "../flatPanel.partial.obs";
+    import { ComponentMigrationHelper } from "../types.partial";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 
     const props = defineProps({
         componentElement: {
@@ -81,6 +89,10 @@
         isCloneDisabled: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        componentMigrationHelper: {
+            type: Object as PropType<ComponentMigrationHelper | null | undefined>,
         }
     });
 
@@ -89,6 +101,7 @@
         (e: "complete"): void;
         (e: "delete"): void;
         (e: "save"): void;
+        (e: "migrate", value: Element): void;
     }>();
 
     type DeleteStage = {
@@ -131,6 +144,23 @@
     const deleteStage = ref<DeleteStage>(readyDeleteStage);
 
     // #endregion Values
+
+    // #region Event Handlers
+
+    function onMigrateComponentClicked(): void {
+        if (props.componentMigrationHelper) {
+            const migratedComponent = props.componentMigrationHelper.migrate(props.componentElement);
+
+            if (props.componentElement === migratedComponent) {
+                // No migration was needed.
+            }
+            else {
+                emit("migrate", migratedComponent);
+            }
+        }
+    }
+
+    // #endregion Event Handlers
 
     // #region Watchers
 

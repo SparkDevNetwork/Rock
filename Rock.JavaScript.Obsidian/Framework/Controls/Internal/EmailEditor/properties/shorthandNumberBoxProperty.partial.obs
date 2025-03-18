@@ -196,7 +196,14 @@
 
     // #region Values
 
-    const isMoreShown = ref<boolean>(
+    const hasInitialShorthand = !isNullish(internalShorthandValue.value);
+    const hasInitialTop = !isNullish(internalTopValue.value);
+    const hasInitialBottom = !isNullish(internalBottomValue.value);
+    const hasInitialLeft = !isNullish(internalLeftValue.value);
+    const hasInitialRight = !isNullish(internalRightValue.value);
+    const hasShorthandOnly = hasInitialShorthand && !hasInitialTop && !hasInitialBottom && !hasInitialRight && !hasInitialLeft;
+
+    const isMoreShown = ref<boolean>(hasShorthandOnly ? false :
         (internalShorthandValue.value ?? 0) !== (internalTopValue.value ?? 0)
         || (internalShorthandValue.value ?? 0) !== (internalBottomValue.value ?? 0)
         || (internalShorthandValue.value ?? 0) !== (internalLeftValue.value ?? 0)

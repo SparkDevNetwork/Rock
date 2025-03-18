@@ -21,17 +21,11 @@
 // </copyright>
 //
 
-/** Bag containing the information to create a group attendance occurrence in the Communication Entry Wizard block. */
-export type CommunicationEntryWizardCreateGroupOccurrenceRequestBag = {
-    /** Gets or sets the group identifier. */
-    groupId: number;
+/** Bag containing the information needed to check a short link token in the Communication Entry Wizard block. */
+export type CommunicationEntryWizardCheckShortLinkTokenBag = {
+    /** Gets or sets the site identifier. */
+    siteId: number;
 
-    /** Gets or sets the location identifier. */
-    locationId?: number | null;
-
-    /** Gets or sets the date of the attendance occurrence. */
-    occurrenceDate?: string | null;
-
-    /** Gets or sets the schedule identifier. */
-    scheduleId?: number | null;
+    /** Gets or sets the token. */
+    token?: string | null;
 };

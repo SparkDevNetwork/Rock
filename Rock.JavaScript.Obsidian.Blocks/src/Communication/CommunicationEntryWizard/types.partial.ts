@@ -27,6 +27,7 @@ import { CommunicationEntryWizardRecipientBag } from "@Obsidian/ViewModels/Block
 import { CommunicationEntryWizardSaveResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSaveResponseBag";
 import { CommunicationEntryWizardSendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSendResponseBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { CommunicationEntryWizardCheckShortLinkTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCheckShortLinkTokenBag";
 
 export type SendTimePreference = "now" | "later";
 
@@ -72,6 +73,7 @@ export type PersonPreferencesHelper = {
 
 export type InvokeBlockActionHelper = {
     cancelMetricsReminder(communicationGuid: Guid): Promise<HttpResult<void>>;
+    checkShortLinkToken(bag: CommunicationEntryWizardCheckShortLinkTokenBag): Promise<HttpResult<string>>;
     getCommunicationTemplate(communicationTemplateGuid: Guid): Promise<HttpResult<CommunicationEntryWizardCommunicationTemplateDetailBag>>;
     getEmailPreviewHtml(bag: CommunicationEntryWizardCommunicationBag): Promise<HttpResult<CommunicationEntryWizardGetEmailPreviewHtmlBag | null | undefined>>;
     getRecipient(personAliasGuid: Guid): Promise<HttpResult<CommunicationEntryWizardRecipientBag>>;

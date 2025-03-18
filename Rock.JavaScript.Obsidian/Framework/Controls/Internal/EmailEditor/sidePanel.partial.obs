@@ -21,11 +21,15 @@
                                         :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
                                         :mergeFields="mergeFields"
                                         :recipientPersonIds="recipientPersonIds"
+                                        :shortLinkCheckToken="shortLinkCheckToken"
+                                        :shortLinkSites="shortLinkSites"
+                                        :shortLinkTokenMinLength="shortLinkTokenMinLength"
                                         :videoProviderNames="videoProviderNames"
                                         @clone="onCloneComponent"
                                         @complete="onCompleteComponent"
                                         @delete="onDeleteComponent"
-                                        @emailSectionSaved="addEmailSectionToList" />
+                                        @emailSectionSaved="addEmailSectionToList"
+                                        @migrate="onMigrateComponent" />
 
                 <FlatPanel v-else
                            :hasPaddedBody="true"
@@ -318,7 +322,7 @@
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { EmailEditorEmailSectionBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorEmailSectionBag";
     import { EmailEditorDeleteEmailSectionOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorDeleteEmailSectionOptionsBag";
-    import { CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, DeleteComponentRequest, EditorComponentTypeName } from "./types.partial";
+    import { CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, DeleteComponentRequest, EditorComponentTypeName, ReplaceComponentRequest } from "./types.partial";
     import { getComponentIconHtml, getComponentTitle } from "./utils.partial";
     import { Category } from "@Obsidian/SystemGuids/category";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -374,13 +378,25 @@
             required: true
         },
 
-        recipientPersonIds: {
-            type: Object as PropType<number[] | null | undefined>,
+        selectedComponentElement: {
+            type: Object as PropType<HTMLElement | null | undefined>,
             required: true
         },
 
-        selectedComponentElement: {
-            type: Object as PropType<HTMLElement | null | undefined>,
+        shortLinkCheckToken: {
+            type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>
+        },
+
+        shortLinkSites: {
+            type: Array as PropType<ListItemBag[] | null | undefined>
+        },
+
+        shortLinkTokenMinLength: {
+            type: Number as PropType<number | null | undefined>
+        },
+
+        recipientPersonIds: {
+            type: Object as PropType<number[] | null | undefined>,
             required: true
         },
 
@@ -396,6 +412,7 @@
         (e: "componentTypeDragStart", value: ComponentTypeDragStartRequest): void;
         (e: "componentTypeDragEnd", value: ComponentTypeDragEndRequest): void;
         (e: "deleteComponent", value: DeleteComponentRequest): void;
+        (e: "replaceComponent", value: ReplaceComponentRequest): void;
         (e: "update:selectedComponentElement", value: HTMLElement | null | undefined): void;
         (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
     }>();
@@ -669,6 +686,14 @@
         if (internalSelectedComponentElement.value) {
             emit("cloneComponent", {
                 componentElement: internalSelectedComponentElement.value
+            });
+        }
+    }
+
+    function onMigrateComponent(newComponentElement: Element): void {
+        if (isHTMLElement(newComponentElement)) {
+            emit("replaceComponent", {
+                newComponentElement
             });
         }
     }

@@ -209,6 +209,16 @@ export function isHTMLElement(el: unknown): el is HTMLElement {
 }
 
 /**
+ * Determines whether the argument is an HTMLTableElement.
+ */
+export function isHTMLTableElement(el: unknown): el is HTMLTableElement {
+    // This handles context mismatch when checking iframe elements.
+    const elWindow = el?.["ownerDocument"]?.["defaultView"] as (Window & typeof globalThis);
+
+    return el instanceof HTMLTableElement || (!!elWindow && (el instanceof elWindow.HTMLTableElement));
+}
+
+/**
  * Determines whether the argument is an HTMLAnchorElement.
  */
 export function isHTMLAnchorElement(el: unknown): el is HTMLAnchorElement {

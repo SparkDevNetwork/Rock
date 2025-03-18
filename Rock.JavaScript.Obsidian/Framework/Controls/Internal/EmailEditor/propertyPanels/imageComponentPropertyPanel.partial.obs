@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ComponentPropertyPanelBase :componentElement="componentElement"
+    <ComponentPropertyPanelBase v-if="componentHelper"
+                                :componentElement="componentElement"
                                 title="Image"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
@@ -132,7 +133,8 @@
                 <div v-if="imageElement"
                      class="row">
                     <div class="col-sm-12">
-                        <BorderRadiusProperty :element="imageElement" />
+                        <BorderRadiusProperty :element="imageElement"
+                                              :copyToElements="[componentHelper.marginWrapper.borderWrapper.td]" />
                     </div>
                 </div>
             </Accordion>
@@ -140,16 +142,14 @@
             <Accordion title="Spacing">
                 <div class="row">
                     <div class="col-sm-12">
-                        <MarginProperty :element="componentElement" />
+                        <PaddingProperty :element="componentHelper.marginWrapper.td"
+                                         label="Margin" />
                     </div>
                 </div>
             </Accordion>
 
-            <Accordion title="Border">
-                <template v-if="imageElement">
-                    <BorderPropertyGroup :element="imageElement"
-                                         @update:isBorderShown="onIsBorderShownUpdated" />
-                </template>
+            <Accordion v-if="imageElement" title="Border">
+                <BorderPropertyGroup :element="imageElement" />
             </Accordion>
         </AccordionGroup>
     </ComponentPropertyPanelBase>
@@ -164,9 +164,9 @@
     import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
     import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
     import HorizontalAlignmentTextAlignProperty from "../properties/horizontalAlignmentTextAlignProperty.partial.obs";
-    import MarginProperty from "../properties/marginProperty.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
     import { HorizontalAlignment } from "../types.partial";
-    import { EmailContentCssClass, get, pixelConverter } from "../utils.partial";
+    import { get, getImageComponentHelper, getPaddingWrapperCellSelector, pixelConverter } from "../utils.partial";
     import AssetPicker from "@Obsidian/Controls/Internal/assetPicker.obs";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -282,6 +282,7 @@
 
     // #region Values
 
+    const componentHelper = ref(getImageComponentHelper(props.componentElement));
     const imageElement = ref<HTMLImageElement | null | undefined>(props.componentElement?.querySelector("img"));
     const anchorElement = ref<HTMLAnchorElement | null | undefined>(imageElement.value?.closest("a") === imageElement.value?.parentElement ? imageElement.value?.parentElement as HTMLAnchorElement : null);
     const anchorHref = ref<string>(anchorElement.value?.getAttribute("href") ?? "");
@@ -856,7 +857,7 @@
      * Gets the table.email-content td from the component if set.
      */
     function getEmailContentTdFromComponent(): HTMLTableCellElement | null | undefined {
-        const td = props.componentElement.querySelector(`.${EmailContentCssClass} > tbody > tr > td, .${EmailContentCssClass} > tr > td`);
+        const td = props.componentElement.querySelector(getPaddingWrapperCellSelector("image"));
 
         if (td) {
             return td as HTMLTableCellElement;
@@ -1043,13 +1044,6 @@
         applyAssetCommand.execute();
     }
 
-    function onIsBorderShownUpdated(value: boolean): void {
-        if (value && imageElement.value) {
-            // When there is a border, the image element must use box-sizing: border-box so that the border is included in the image's size.
-            imageElement.value.style.boxSizing = "border-box";
-        }
-    }
-
     function onImageSizeUpdated(): void {
         // Undo the old size.
         activeSetSizeCommand.undo();
@@ -1224,6 +1218,7 @@
     // #region Watchers
 
     watch(() => props.componentElement, () => {
+        componentHelper.value = getImageComponentHelper(props.componentElement);
         imageElement.value = props.componentElement?.querySelector("img");
         imageGuidAndName.value = getImageFromComponent();
         fileAsset.value = getAssetFromComponent();
@@ -1238,19 +1233,6 @@
 
         activeSetSizeCommand = getActiveSetSizeCommand();
         activeApplyCommand = getActiveApplyCommand();
-        // When the selected image component changes,
-        // its assumed to be a valid image already
-        // given the loaded settings, so there is no need
-        // to execute any commands.
-        // if (imageSourceType.value === "image") {
-        //     applyImageCommand.execute();
-        // }
-        // else if (imageSourceType.value === "asset") {
-        //     applyAssetCommand.execute();
-        // }
-        // else {
-        //     applyPlaceholderCommand.execute();
-        // }
     });
 
     // #endregion Watchers
