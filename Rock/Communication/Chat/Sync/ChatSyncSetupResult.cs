@@ -14,24 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
-
 namespace Rock.Communication.Chat.Sync
 {
     /// <summary>
-    /// Represents the result of a chat ban synchronization operation.
+    /// Represents the result of a setup chat synchronization operation.
     /// </summary>
     /// <seealso cref="ChatSyncResultBase"/>
-    internal class ChatSyncBanResult : ChatSyncResultBase
+    internal class ChatSyncSetupResult : ChatSyncResultBase
     {
         /// <summary>
-        /// Gets the identifiers for records that were banned during the synchronization operation.
+        /// Gets or sets a value indicating whether the synchronization operation was successful.
         /// </summary>
-        public HashSet<string> Banned { get; } = new HashSet<string>();
-
-        /// <summary>
-        /// Gets the identifiers for records that were unbanned during the synchronization operation.
-        /// </summary>
-        public HashSet<string> Unbanned { get; } = new HashSet<string>();
+        public bool IsSetUp { get; set; }
     }
 }

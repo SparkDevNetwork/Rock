@@ -51,10 +51,10 @@ namespace Rock.Communication.Chat
         /// Updates app settings in the external chat system to match the current Rock app settings.
         /// </summary>
         /// <returns>
-        /// A task representing the asynchronous operation, containing a <see langword="bool"/> value indicating whether
-        /// the app settings were updated in the external chat system.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncSetupResult"/> indicating
+        /// whether the app settings were updated in the external chat system.
         /// </returns>
-        Task<bool> UpdateAppSettingsAsync();
+        Task<ChatSyncSetupResult> UpdateAppSettingsAsync();
 
         #endregion Configuration
 
@@ -75,19 +75,19 @@ namespace Rock.Communication.Chat
         /// necessary.
         /// </summary>
         /// <returns>
-        /// A task representing the asynchronous operation, containing a <see langword="bool"/> value indicating whether
-        /// the app roles exist in the external chat system.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncSetupResult"/> indicating
+        /// whether the app roles exist in the external chat system.
         /// </returns>
-        Task<bool> EnsureAppRolesExistAsync();
+        Task<ChatSyncSetupResult> EnsureAppRolesExistAsync();
 
         /// <summary>
         /// Ensures that all required, app-scoped permission grants exist in the external chat system.
         /// </summary>
         /// <returns>
-        /// A task representing the asynchronous operation, containing a <see langword="bool"/> value indicating whether
-        /// the app app-scoped permission grants exist in the external chat system.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncSetupResult"/> indicating
+        /// whether the app app-scoped permission grants exist in the external chat system.
         /// </returns>
-        Task<bool> EnsureAppGrantsExistAsync();
+        Task<ChatSyncSetupResult> EnsureAppGrantsExistAsync();
 
         #endregion Roles & Permission Grants
 
@@ -97,40 +97,36 @@ namespace Rock.Communication.Chat
         /// Gets a list of all <see cref="ChatChannelType"/>s from the external chat system.
         /// </summary>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="ChatChannelType"/>s that
-        /// exist in the external chat system.
+        /// A task representing the asynchronous operation, containing a <see cref="GetChatChannelTypesResult"/>.
         /// </returns>
-        Task<List<ChatChannelType>> GetAllChatChannelTypesAsync();
+        Task<GetChatChannelTypesResult> GetAllChatChannelTypesAsync();
 
         /// <summary>
         /// Creates new <see cref="ChatChannelType"/>s in the external chat system.
         /// </summary>
         /// <param name="chatChannelTypes">The list of <see cref="ChatChannelType"/>s to create.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="ChatChannelType"/>s that
-        /// were successfully created.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
-        Task<List<ChatChannelType>> CreateChatChannelTypesAsync( List<ChatChannelType> chatChannelTypes );
+        Task<ChatSyncCrudResult> CreateChatChannelTypesAsync( List<ChatChannelType> chatChannelTypes );
 
         /// <summary>
         /// Updates existing <see cref="ChatChannelType"/>s in the external chat system.
         /// </summary>
         /// <param name="chatChannelTypes">The list of <see cref="ChatChannelType"/>s to update.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="ChatChannelType"/>s that
-        /// were successfully updated.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
-        Task<List<ChatChannelType>> UpdateChatChannelTypesAsync( List<ChatChannelType> chatChannelTypes );
+        Task<ChatSyncCrudResult> UpdateChatChannelTypesAsync( List<ChatChannelType> chatChannelTypes );
 
         /// <summary>
         /// Deletes the specified <see cref="ChatChannelType"/>s in the external chat system.
         /// </summary>
         /// <param name="chatChannelTypeKeys">The list of keys for the <see cref="ChatChannelType"/>s to delete.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of keys for <see cref="ChatChannelType"/>s
-        /// that were successfully deleted.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
-        Task<List<string>> DeleteChatChannelTypesAsync( List<string> chatChannelTypeKeys );
+        Task<ChatSyncCrudResult> DeleteChatChannelTypesAsync( List<string> chatChannelTypeKeys );
 
         #endregion Chat Channel Types
 
@@ -140,81 +136,83 @@ namespace Rock.Communication.Chat
         /// Gets the "queryable" chat channel key for the provided <see cref="GroupCache"/>, to be used when querying the
         /// external chat system's API for an existing <see cref="ChatChannel"/>.
         /// </summary>
-        /// <param name="groupCache">The <see cref="GroupCache"/> for which to get the "queryable" chat channel key.</param>
+        /// <param name="rockChatGroup">The <see cref="RockChatGroup"/> for which to get the "queryable" chat channel key.</param>
         /// <returns>The "queryable" chat channel key.</returns>
         /// <remarks>
         /// For some chat providers, this might be the same value as <see cref="ChatChannel.Key"/>.
         /// </remarks>
-        string GetQueryableChatChannelKey( GroupCache groupCache );
+        string GetQueryableChatChannelKey( RockChatGroup rockChatGroup );
 
         /// <summary>
         /// Gets a list of <see cref="ChatChannel"/>s from the external chat system that match the provided keys.
         /// </summary>
-        /// <param name="chatChannelKeys">The list of keys for the <see cref="ChatChannel"/>s to get.</param>
+        /// <param name="queryableChatChannelKeys">The list of queryable keys for the <see cref="ChatChannel"/>s to get.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="ChatChannel"/>s from the
-        /// external chat system that match the provided keys.
+        /// A task representing the asynchronous operation, containing a <see cref="GetChatChannelsResult"/>.
         /// </returns>
-        Task<List<ChatChannel>> GetChatChannelsAsync( List<string> chatChannelKeys );
+        Task<GetChatChannelsResult> GetChatChannelsAsync( List<string> queryableChatChannelKeys );
+
+        /// <summary>
+        /// Gets a list of all <see cref="ChatChannel"/>s from the external chat system.
+        /// </summary>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="GetChatChannelsResult"/>.
+        /// </returns>
+        Task<GetChatChannelsResult> GetAllChatChannelsAsync();
 
         /// <summary>
         /// Creates new <see cref="ChatChannel"/>s in the external chat system.
         /// </summary>
         /// <param name="chatChannels">The list of <see cref="ChatChannel"/>s to create.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="ChatChannel"/>s that were
-        /// successfully created.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
-        Task<List<ChatChannel>> CreateChatChannelsAsync( List<ChatChannel> chatChannels );
+        Task<ChatSyncCrudResult> CreateChatChannelsAsync( List<ChatChannel> chatChannels );
 
         /// <summary>
         /// Updates existing <see cref="ChatChannel"/>s in the external chat system.
         /// </summary>
         /// <param name="chatChannels">The list of <see cref="ChatChannel"/>s to update.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="ChatChannel"/>s that were
-        /// successfully updated.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
-        Task<List<ChatChannel>> UpdateChatChannelsAsync( List<ChatChannel> chatChannels );
+        Task<ChatSyncCrudResult> UpdateChatChannelsAsync( List<ChatChannel> chatChannels );
 
         /// <summary>
         /// Deletes the specified <see cref="ChatChannel"/>s in the external chat system.
         /// </summary>
-        /// <param name="chatChannelKeys">The list of keys for the <see cref="ChatChannel"/>s to delete.</param>
+        /// <param name="chatChannelQueryableKeys">The list of queryable keys for the <see cref="ChatChannel"/>s to delete.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of keys for <see cref="ChatChannel"/>s
-        /// that were successfully deleted.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
-        Task<List<string>> DeleteChatChannelsAsync( List<string> chatChannelKeys );
+        Task<ChatSyncCrudResult> DeleteChatChannelsAsync( List<string> chatChannelQueryableKeys );
 
         #endregion Chat Channels
 
         #region Chat Channel Members
 
         /// <summary>
-        /// Gets a list of <see cref="ChatChannelMember"/>s from the external chat system that match the provided
+        /// Gets a list of <see cref="ChatChannelMember"/>s from the external chat system who match the provided
         /// <see cref="ChatChannelType"/> and <see cref="ChatChannel"/> key combination.
         /// </summary>
         /// <param name="chatChannelTypeKey">The key of the <see cref="ChatChannelType"/> for the members to get.</param>
         /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> for the members to get.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="ChatChannelMember"/>s from
-        /// the external chat system who match the provided key combination.
+        /// A task representing the asynchronous operation, containing a <see cref="GetChatChannelMembersResult"/>.
         /// </returns>
-        Task<List<ChatChannelMember>> GetChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey );
+        Task<GetChatChannelMembersResult> GetAllChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey );
 
         /// <summary>
-        /// Gets a single <see cref="ChatChannelMember"/> from the external chat system that matches the provided
-        /// <see cref="ChatChannelType"/>, <see cref="ChatChannel"/> and <see cref="ChatUser"/> key combination.
+        /// Gets a list of <see cref="ChatChannelMember"/>s from the external chat system who match the provided
+        /// <see cref="ChatChannelType"/>, <see cref="ChatChannel"/> and <see cref="ChatUser"/> key combinations.
         /// </summary>
-        /// <param name="chatChannelTypeKey">The key of the <see cref="ChatChannelType"/> for the member to get.</param>
-        /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> for the member to get.</param>
-        /// <param name="chatUserKey">The key of the <see cref="ChatUser"/> for the member to get.</param>
+        /// <param name="chatChannelTypeKey">The key of the <see cref="ChatChannelType"/> for the members to get.</param>
+        /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> for the members to get.</param>
+        /// <param name="chatUserKeys">The list of <see cref="ChatUser"/> keys for the members to get.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the <see cref="ChatChannelMember"/> from the
-        /// external chat system who matches the provided key combination.
+        /// A task representing the asynchronous operation, containing a <see cref="GetChatChannelMembersResult"/>.
         /// </returns>
-        Task<ChatChannelMember> GetChatChannelMemberAsync( string chatChannelTypeKey, string chatChannelKey, string chatUserKey );
+        Task<GetChatChannelMembersResult> GetChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys );
 
         /// <summary>
         /// Creates new <see cref="ChatChannelMember"/>s in the external chat system.
@@ -223,10 +221,9 @@ namespace Rock.Communication.Chat
         /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> for which members should be created.</param>
         /// <param name="chatChannelMembers">The list of <see cref="ChatChannelMember"/>s to create.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="ChatChannelMember"/>s who
-        /// were successfully created.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
-        Task<List<ChatChannelMember>> CreateChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, List<ChatChannelMember> chatChannelMembers );
+        Task<ChatSyncCrudResult> CreateChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, List<ChatChannelMember> chatChannelMembers );
 
         /// <summary>
         /// Updates existing <see cref="ChatChannelMember"/>s in the external chat system.
@@ -236,14 +233,13 @@ namespace Rock.Communication.Chat
         /// <param name="chatChannelMembers">The dictionary of <see cref="ChatChannelMember"/>s to update, with each key
         /// being the latest instance and its corresponding value being the previous instance.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="ChatChannelMember"/>s who
-        /// were successfully updated.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
         /// <remarks>
         /// The <paramref name="chatChannelMembers"/> are passed as a dictionary so the chat provider can examine the old
         /// vs. new instances for specific changes and decide the best way to apply the changes.
         /// </remarks>
-        Task<List<ChatChannelMember>> UpdateChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, Dictionary<ChatChannelMember, ChatChannelMember> chatChannelMembers );
+        Task<ChatSyncCrudResult> UpdateChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, Dictionary<ChatChannelMember, ChatChannelMember> chatChannelMembers );
 
         /// <summary>
         /// Deletes <see cref="ChatChannelMember"/>s from the external chat system that match the provided
@@ -253,10 +249,9 @@ namespace Rock.Communication.Chat
         /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> for which members should be deleted.</param>
         /// <param name="chatUserKeys">The keys of the <see cref="ChatUser"/>s for whom members should be deleted.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of keys for <see cref="ChatUser"/>s
-        /// whose <see cref="ChatChannelMember"/>s were successfully deleted.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
-        Task<List<string>> DeleteChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys );
+        Task<ChatSyncCrudResult> DeleteChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys );
 
         /// <summary>
         /// Mutes the <see cref="ChatChannel"/> that matches the provided <see cref="ChatChannelType"/> and
@@ -266,10 +261,9 @@ namespace Rock.Communication.Chat
         /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> that should be muted.</param>
         /// <param name="chatUserKeys">The keys of the <see cref="ChatUser"/>s for whom the channel should be muted.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of keys for <see cref="ChatUser"/>s
-        /// whose mute status was successfully applied.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncMuteResult"/>.
         /// </returns>
-        Task<List<string>> MuteChatChannelAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys );
+        Task<ChatSyncMuteResult> MuteChatChannelAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys );
 
         /// <summary>
         /// Unmutes the <see cref="ChatChannel"/> that matches the provided <see cref="ChatChannelType"/> and
@@ -279,10 +273,9 @@ namespace Rock.Communication.Chat
         /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> that should be unmuted.</param>
         /// <param name="chatUserKeys">The keys of the <see cref="ChatUser"/>s for whom the channel should be unmuted.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of keys for <see cref="ChatUser"/>s
-        /// whose unmute status was successfully applied.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncMuteResult"/>.
         /// </returns>
-        Task<List<string>> UnmuteChatChannelAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys );
+        Task<ChatSyncMuteResult> UnmuteChatChannelAsync( string chatChannelTypeKey, string chatChannelKey, List<string> chatUserKeys );
 
         #endregion Chat Channel Members
 
@@ -293,40 +286,45 @@ namespace Rock.Communication.Chat
         /// chat system. Creates the user if necessary.
         /// </summary>
         /// <returns>
-        /// A task representing the asynchronous operation, containing a <see langword="bool"/> value indicating whether
-        /// the system user exists in the external chat system.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncSetupResult"/> indicating
+        /// whether the system user exists in the external chat system.
         /// </returns>
-        Task<bool> EnsureSystemUserExistsAsync();
+        Task<ChatSyncSetupResult> EnsureSystemUserExistsAsync();
+
+        /// <summary>
+        /// Gets a list of all <see cref="ChatUser.Key"/>s from the external chat system.
+        /// </summary>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="GetChatKeysResult"/>.
+        /// </returns>
+        Task<GetChatKeysResult> GetAllChatUserKeysAsync();
 
         /// <summary>
         /// Gets a list of <see cref="ChatUser"/>s from the external chat system that match the provided keys.
         /// </summary>
         /// <param name="chatUserKeys">The list of keys for the <see cref="ChatUser"/>s to get.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="ChatUser"/>s from the
-        /// external chat system who match the provided keys.
+        /// A task representing the asynchronous operation, containing a <see cref="GetChatUsersResult"/>.
         /// </returns>
-        Task<List<ChatUser>> GetChatUsersAsync( List<string> chatUserKeys );
+        Task<GetChatUsersResult> GetChatUsersAsync( List<string> chatUserKeys );
 
         /// <summary>
         /// Creates new <see cref="ChatUser"/>s in the external chat system.
         /// </summary>
         /// <param name="chatUsers">The list of <see cref="ChatUser"/>s to create.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="ChatUser"/>s who were
-        /// successfully created.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
-        Task<List<ChatUser>> CreateChatUsersAsync( List<ChatUser> chatUsers );
+        Task<ChatSyncCrudResult> CreateChatUsersAsync( List<ChatUser> chatUsers );
 
         /// <summary>
         /// Updates existing <see cref="ChatUser"/>s in the external chat system.
         /// </summary>
         /// <param name="chatUsers">The list of <see cref="ChatUser"/>s to update.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="ChatUser"/>s who were
-        /// successfully updated.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
-        Task<List<ChatUser>> UpdateChatUsersAsync( List<ChatUser> chatUsers );
+        Task<ChatSyncCrudResult> UpdateChatUsersAsync( List<ChatUser> chatUsers );
 
         /// <summary>
         /// Deletes the specified <see cref="ChatUser"/>s in the external chat system.
@@ -348,14 +346,13 @@ namespace Rock.Communication.Chat
         /// <param name="chatChannelKey">The optional key for the <see cref="ChatChannel"/> in which the
         /// <see cref="ChatUser"/>s should be banned.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of keys for <see cref="ChatUser"/>s
-        /// who were successfully banned.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncBanResult"/>.
         /// </returns>
         /// <remarks>
         /// If <paramref name="chatChannelTypeKey"/> and <paramref name="chatChannelKey"/> are not both provided, bans
         /// will be applied globally.
         /// </remarks>
-        Task<List<string>> BanChatUsersAsync( List<string> chatUserKeys, string chatChannelTypeKey = null, string chatChannelKey = null );
+        Task<ChatSyncBanResult> BanChatUsersAsync( List<string> chatUserKeys, string chatChannelTypeKey = null, string chatChannelKey = null );
 
         /// <summary>
         /// Unbans the specified <see cref="ChatUser"/>s in the external chat system.
@@ -366,24 +363,22 @@ namespace Rock.Communication.Chat
         /// <param name="chatChannelKey">The optional key for the <see cref="ChatChannel"/> in which the
         /// <see cref="ChatUser"/>s should be unbanned.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of keys for <see cref="ChatUser"/>s
-        /// who were successfully unbanned.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncBanResult"/>.
         /// </returns>
         /// <remarks>
         /// If <paramref name="chatChannelTypeKey"/> and <paramref name="chatChannelKey"/> are not both provided, bans
         /// will be lifted globally.
         /// </remarks>
-        Task<List<string>> UnbanChatUsersAsync( List<string> chatUserKeys, string chatChannelTypeKey = null, string chatChannelKey = null );
+        Task<ChatSyncBanResult> UnbanChatUsersAsync( List<string> chatUserKeys, string chatChannelTypeKey = null, string chatChannelKey = null );
 
         /// <summary>
         /// Gets a token for the <see cref="ChatUser"/> to use when authenticating with the chat provider.
         /// </summary>
         /// <param name="chatUserKey">The <see cref="ChatUser.Key"/> for which to get a token.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the token or <see langword="null"/> if unable to
-        /// get a token.
+        /// A task representing the asynchronous operation, containing a <see cref="GetChatStringResult"/>.
         /// </returns>
-        Task<string> GetChatUserTokenAsync( string chatUserKey );
+        Task<GetChatStringResult> GetChatUserTokenAsync( string chatUserKey );
 
         #endregion Chat Users
 
@@ -393,11 +388,10 @@ namespace Rock.Communication.Chat
         /// Gets the message counts for each <see cref="ChatUser"/> within each <see cref="ChatChannel"/>, for the specified date.
         /// </summary>
         /// <param name="messageDate">The date for which to get message counts.</param>
-        /// <returns> A task representing the asynchronous operation, containing the message counts.</returns>
-        /// <remarks>
-        /// The outer dictionary key is <see cref="ChatChannel.Key"/> and the inner dictionary key is <see cref="ChatUser.Key"/>.
-        /// </remarks>
-        Task<Dictionary<string, Dictionary<string, int>>> GetChatUserMessageCountsByChatChannelKeyAsync( DateTime messageDate );
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="ChatUserMessageCountsByChatChannelResult"/>.
+        /// </returns>
+        Task<ChatUserMessageCountsByChatChannelResult> GetChatUserMessageCountsByChatChannelKeyAsync( DateTime messageDate );
 
         #endregion Messages
 
@@ -419,13 +413,14 @@ namespace Rock.Communication.Chat
         /// <param name="webhookRequests">The list of <see cref="ChatWebhookRequest"/>s for which to get
         /// <see cref="ChatToRockSyncCommand"/>s.</param>
         /// <returns>
-        /// A list of <see cref="ChatToRockSyncCommand"/>s, one for each valid <see cref="ChatWebhookRequest"/>.
+        /// A <see cref="GetChatToRockSyncCommandsResult"/> that contains a list of <see cref="ChatToRockSyncCommand"/>s,
+        /// one for each valid <see cref="ChatWebhookRequest"/>.
         /// </returns>
         /// <remarks>
         /// Invalid <see cref="ChatWebhookRequest"/>s will not have corresponding <see cref="ChatToRockSyncCommand"/>s,
         /// with failure details instead being added to Rock Logs.
         /// </remarks>
-        List<ChatToRockSyncCommand> GetChatToRockSyncCommands( List<ChatWebhookRequest> webhookRequests );
+        GetChatToRockSyncCommandsResult GetChatToRockSyncCommands( List<ChatWebhookRequest> webhookRequests );
 
         #endregion Webhooks
     }

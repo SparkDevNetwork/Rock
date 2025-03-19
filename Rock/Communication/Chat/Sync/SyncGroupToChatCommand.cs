@@ -14,16 +14,29 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Communication.Chat.DTO;
+using Rock.Model;
+
 namespace Rock.Communication.Chat.Sync
 {
     /// <summary>
-    /// Represents the result of a simple <see langword="bool"/> chat synchronization operation.
+    /// Represents a command to synchronize a <see cref="Group"/> to a <see cref="ChatChannel"/> in the external chat system.
     /// </summary>
-    internal class ChatSyncBooleanResult : ChatSyncResultBase
+    internal class SyncGroupToChatCommand
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the synchronization operation was successful.
+        /// Gets or sets the <see cref="GroupType"/> identifier that represents this <see cref="Group"/>.
         /// </summary>
-        public bool WasSuccessful { get; set; }
+        public int GroupTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier that represents this <see cref="Group"/>.
+        /// </summary>
+        public int GroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ChatChannel.Key"/> that represents this <see cref="Group"/>.
+        /// </summary>
+        public string ChatChannelKey { get; set; }
     }
 }

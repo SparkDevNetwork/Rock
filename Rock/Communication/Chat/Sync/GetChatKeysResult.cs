@@ -19,19 +19,14 @@ using System.Collections.Generic;
 namespace Rock.Communication.Chat.Sync
 {
     /// <summary>
-    /// Represents the result of a chat ban synchronization operation.
+    /// Represents the result of getting identifiers for records that exist in the external chat system.
     /// </summary>
     /// <seealso cref="ChatSyncResultBase"/>
-    internal class ChatSyncBanResult : ChatSyncResultBase
+    internal class GetChatKeysResult : ChatSyncResultBase
     {
         /// <summary>
-        /// Gets the identifiers for records that were banned during the synchronization operation.
+        /// Gets the identifiers for records that exist within the external chat system.
         /// </summary>
-        public HashSet<string> Banned { get; } = new HashSet<string>();
-
-        /// <summary>
-        /// Gets the identifiers for records that were unbanned during the synchronization operation.
-        /// </summary>
-        public HashSet<string> Unbanned { get; } = new HashSet<string>();
+        public HashSet<string> Keys { get; } = new HashSet<string>();
     }
 }

@@ -16,22 +16,19 @@
 //
 using System.Collections.Generic;
 
+using Rock.Communication.Chat.DTO;
+
 namespace Rock.Communication.Chat.Sync
 {
     /// <summary>
-    /// Represents the result of a chat ban synchronization operation.
+    /// Represents the result of getting <see cref="ChatChannel"/>s from the external chat system.
     /// </summary>
-    /// <seealso cref="ChatSyncResultBase"/>
-    internal class ChatSyncBanResult : ChatSyncResultBase
+    /// <see cref="ChatSyncResultBase"/>
+    internal class GetChatChannelsResult : ChatSyncResultBase
     {
         /// <summary>
-        /// Gets the identifiers for records that were banned during the synchronization operation.
+        /// Gets the list of <see cref="ChatChannel"/>s retrieved from the external chat system.
         /// </summary>
-        public HashSet<string> Banned { get; } = new HashSet<string>();
-
-        /// <summary>
-        /// Gets the identifiers for records that were unbanned during the synchronization operation.
-        /// </summary>
-        public HashSet<string> Unbanned { get; } = new HashSet<string>();
+        public List<ChatChannel> ChatChannels { get; } = new List<ChatChannel>();
     }
 }

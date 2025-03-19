@@ -98,7 +98,12 @@ namespace Rock.Blocks.Communication.Chat
                         chatHelper.InitializeChatProvider();
                     }
 
-                    await chatHelper.EnsureChatProviderAppIsSetUpAsync();
+                    var isSetUpResult = await chatHelper.EnsureChatProviderAppIsSetUpAsync();
+                    if ( isSetUpResult?.IsSetUp != true )
+                    {
+                        // There's no point in trying to sync the group types if initial setup failed.
+                        return;
+                    }
 
                     // We'll only sync chat-enabled group types as a part of this configuration save, as there is no
                     // good way to warn the individual of any previously-synced channel types that might become deleted

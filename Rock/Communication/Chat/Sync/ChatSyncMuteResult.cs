@@ -14,31 +14,24 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-
-using Rock.Communication.Chat.DTO;
 
 namespace Rock.Communication.Chat.Sync
 {
     /// <summary>
-    /// Represents the result of querying the external chat system for message counts for each <see cref="ChatUser"/>
-    /// within each <see cref="ChatChannel"/>.
+    /// Represents the result of a chat mute synchronization operation.
     /// </summary>
     /// <seealso cref="ChatSyncResultBase"/>
-    internal class ChatUserMessageCountsByChatChannelResult : ChatSyncResultBase
+    internal class ChatSyncMuteResult : ChatSyncResultBase
     {
         /// <summary>
-        /// Gets or sets the message date for which the counts were queried.
+        /// Gets the identifiers for records that were muted during the synchronization operation.
         /// </summary>
-        public DateTime MessageDate { get; set; }
+        public HashSet<string> Muted { get; } = new HashSet<string>();
 
         /// <summary>
-        /// Gets the message counts for each <see cref="ChatUser"/> within each <see cref="ChatChannel"/>.
+        /// Gets the identifiers for records that were unmuted during the synchronization operation.
         /// </summary>
-        /// <remarks>
-        /// The outer dictionary key is <see cref="ChatChannel.Key"/> and the inner dictionary key is <see cref="ChatUser.Key"/>.
-        /// </remarks>
-        public Dictionary<string, Dictionary<string, int>> MessageCounts { get; } = new Dictionary<string, Dictionary<string, int>>();
+        public HashSet<string> Unmuted { get; } = new HashSet<string>();
     }
 }

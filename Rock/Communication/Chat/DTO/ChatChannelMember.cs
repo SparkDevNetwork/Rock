@@ -24,6 +24,12 @@ namespace Rock.Communication.Chat.DTO
     /// </summary>
     internal class ChatChannelMember
     {
+        /// <inheritdoc cref="ChatChannelType.Key"/>
+        public string ChatChannelTypeKey { get; set; }
+
+        /// <inheritdoc cref="ChatChannel.Key"/>
+        public string ChatChannelKey { get; set; }
+
         /// <inheritdoc cref="ChatUser.Key"/>
         public string ChatUserKey { get; set; }
 
@@ -40,5 +46,13 @@ namespace Rock.Communication.Chat.DTO
 
         /// <inheritdoc cref="GroupMember.IsChatBanned"/>
         public bool IsChatBanned { get; set; }
+
+        /// <summary>
+        /// Gets the runtime key for this <see cref="ChatChannelMember"/> (not saved in Rock or the external chat system).
+        /// </summary>
+        /// <value>
+        /// <see cref="ChatHelper.GetChatChannelMemberKey(string, string)"/>
+        /// </value>
+        public string Key => ChatHelper.GetChatChannelMemberKey( this.ChatChannelKey, this.ChatUserKey );
     }
 }

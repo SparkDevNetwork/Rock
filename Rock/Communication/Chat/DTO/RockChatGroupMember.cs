@@ -23,7 +23,7 @@ namespace Rock.Communication.Chat.DTO
     /// Represents the minimum necessary combined info from Rock <see cref="GroupMember"/> and <see cref="GroupTypeRole"/>
     /// models needed to synchronize to a <see cref="ChatChannelMember"/> in the external chat system.
     /// </summary>
-    internal class RockChatChannelMember
+    internal class RockChatGroupMember
     {
         /// <summary>
         /// Gets or sets the <see cref="Group"/> identifier that represents this <see cref="GroupMember"/>.
@@ -45,13 +45,18 @@ namespace Rock.Communication.Chat.DTO
         public bool IsChatBanned { get; set; }
 
         /// <summary>
+        /// Gets or sets whether the <see cref="Person"/> is deceased.
+        /// </summary>
+        public bool IsDeceased { get; set; }
+
+        /// <summary>
         /// Gets or sets whether the <see cref="ChatChannelMember"/> should be deleted in the external chat system.
         /// </summary>
         public bool ShouldDelete { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the <see cref="Person"/> is deceased.
+        /// Gets or sets whether the <see cref="ChatChannelMember"/> should be ignored during the sync process.
         /// </summary>
-        public bool IsDeceased { get; set; }
+        public bool ShouldIgnore { get; set; }
     }
 }

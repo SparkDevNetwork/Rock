@@ -63,16 +63,5 @@ namespace Rock.Communication.Chat.DTO
 
         /// <inheritdoc cref="ChatUser.Badges"/>
         public List<ChatBadge> Badges { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the underlying chat-specific <see cref="PersonAlias"/> already existed in Rock for
-        /// this <see cref="Person"/>.
-        /// </summary>
-        /// <remarks>
-        /// If <see langword="true"/>, a chat-specific <see cref="PersonAlias"/> already existed in Rock and was used to
-        /// build this <see cref="RockChatUserPerson"/>. If <see langword="false"/>, a new <see cref="PersonAlias"/> was
-        /// saved to the Rock database as a part of creating this <see cref="RockChatUserPerson"/>.
-        /// </remarks>
-        public bool AlreadyExistedInRock { get; set; } = true;
     }
 }
