@@ -15,12 +15,59 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { PropType } from "vue";
 import { Ref } from "vue";
-import { Guid } from "@Obsidian/Types";
 import { Enumerable } from "@Obsidian/Utility/linq";
 
+/**
+ * Represents a set of related table elements used for email components.
+ * Ensures structure and maintainability for email layouts.
+ */
+export type TableElements = {
+    /** The main `<table>` element, representing a structured container for content. */
+    table: HTMLTableElement;
+
+    /** The `<tbody>` element, grouping the component’s rows. */
+    tbody: HTMLTableSectionElement;
+
+    /** The `<tr>` element, defining a row within the table. */
+    tr: HTMLTableRowElement;
+
+    /** The `<td>` element, representing a cell that contains the component’s content. */
+    td: HTMLTableCellElement;
+};
+
+/**
+ * Defines the three standard wrapper layers used in all email components.
+ * Provides a structured, reusable layout for components like text, images, dividers, and buttons.
+ */
+export type ComponentStructure = {
+    /**
+     * The **outermost** structure that defines spacing and alignment.
+     * Ensures correct positioning within the email layout.
+     * - Controls **simulated margin** via padding.
+     * - Controls **horizontal alignment** (left, center, right).
+     */
+    marginWrapper: TableElements & {
+        /**
+         * Defines the **component's visual boundaries**.
+         * Handles styling and overall structure.
+         * - Controls **borders** and **border-radius**.
+         * - Defines **the width** of the component.
+         */
+        borderWrapper: TableElements & {
+            /**
+             * Manages **internal spacing and layout** within the component.
+             * Ensures proper content padding while maintaining a structured layout.
+             * - Controls **background color**.
+             * - Controls **inner padding** inside the component.
+             * - Manages **content positioning** without affecting shape.
+             */
+            paddingWrapper: TableElements;
+        };
+    };
+};
+
+/** The component type names including special types */
 export type EditorComponentTypeName =
     "video"
     | "button"
@@ -39,6 +86,17 @@ export type EditorComponentTypeName =
     | "left-sidebar-section" // this is a special component type
     | "title"
     | "row";
+
+/** The component type names. */
+export type ComponentTypeName = Exclude<
+    EditorComponentTypeName,
+    "one-column-section"
+    | "two-column-section"
+    | "three-column-section"
+    | "four-column-section"
+    | "right-sidebar-section"
+    | "left-sidebar-section"
+>;
 
 export type ComponentTypeDragStartMessage = {
     type: "COMPONENT_TYPE_DRAG_START";
@@ -185,6 +243,10 @@ export type DeleteComponentRequest = {
     componentElement: HTMLElement;
 };
 
+export type ReplaceComponentRequest = {
+    newComponentElement: HTMLElement;
+};
+
 export type ComponentTypeDragStartRequest = {
     componentTypeName: EditorComponentTypeName;
     customHtml?: string | null | undefined;
@@ -213,6 +275,14 @@ export type StyleSheetElements = {
     styleSheet: CSSStyleSheet;
     styleElement: HTMLStyleElement;
     ruleset?: CSSStyleRule | undefined;
+};
+
+export type StyleSheetMediaElements = {
+    elementWindow: Window & typeof globalThis;
+    elementDocument: Document;
+    styleSheet: CSSStyleSheet;
+    styleElement: HTMLStyleElement;
+    ruleset?: CSSMediaRule | undefined;
 };
 
 export class ProviderNotCreatedError extends Error {
@@ -278,3 +348,9 @@ export class WeakPair<K extends object, V> {
 export type ButtonWidth = "fitToText" | "full" | "fixed";
 
 export type ButtonWidthValues = { width: ButtonWidth | null | undefined; fixedWidth: number | null | undefined; };
+
+export type ComponentMigrationHelper = {
+    isMigrationRequired(componentElement: Element): boolean;
+    migrate(componentElement: Element): Element;
+    readonly latestVersion: string;
+};

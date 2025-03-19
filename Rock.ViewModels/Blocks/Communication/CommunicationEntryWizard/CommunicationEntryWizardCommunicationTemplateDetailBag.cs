@@ -151,5 +151,10 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// Gets or sets the description.
         /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this is a system template.
+        /// </summary>
+        public bool IsSystem { get; set; }
     }
 }

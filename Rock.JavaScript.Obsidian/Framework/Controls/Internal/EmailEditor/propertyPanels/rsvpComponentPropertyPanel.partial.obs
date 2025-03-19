@@ -234,7 +234,6 @@
     import { createButtonWidthValuesProvider } from "../providers.partial";
     import { ButtonWidthValues, ValueProvider } from "../types.partial";
 
-
     const props = defineProps({
         componentElement: {
             type: Object as PropType<HTMLElement>,

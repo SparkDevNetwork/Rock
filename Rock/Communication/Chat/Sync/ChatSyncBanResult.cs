@@ -21,6 +21,7 @@ namespace Rock.Communication.Chat.Sync
     /// <summary>
     /// Represents the result of a chat ban synchronization operation.
     /// </summary>
+    /// <seealso cref="ChatSyncResultBase"/>
     internal class ChatSyncBanResult : ChatSyncResultBase
     {
         /// <summary>

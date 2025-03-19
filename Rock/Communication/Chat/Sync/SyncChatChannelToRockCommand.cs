@@ -16,6 +16,7 @@
 //
 using Rock.Communication.Chat.DTO;
 using Rock.Enums.Communication.Chat;
+using Rock.Model;
 
 namespace Rock.Communication.Chat.Sync
 {
@@ -25,12 +26,12 @@ namespace Rock.Communication.Chat.Sync
     internal class SyncChatChannelToRockCommand : ChatToRockSyncCommand
     {
         /// <summary>
-        /// Gets or sets the Rock group type identifier.
+        /// Gets or sets the <see cref="GroupType"/> identifier.
         /// </summary>
         public int? GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Rock group identifier.
+        /// Gets or sets the <see cref="Group"/> identifier.
         /// </summary>
         public int? GroupId { get; set; }
 
@@ -39,10 +40,13 @@ namespace Rock.Communication.Chat.Sync
         /// </summary>
         public string ChatChannelKey { get; set; }
 
-        /// <summary>
-        /// Gets or sets the rock group name.
-        /// </summary>
+        /// <inheritdoc cref="Group.Name"/>
         public string GroupName { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the chat channel is active.
+        /// </summary>
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncChatChannelToRockCommand"/> class.

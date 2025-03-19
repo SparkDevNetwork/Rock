@@ -3,7 +3,10 @@
     <HtmlEditor v-if="mode === 'html'"
                 v-model="innerHtml"
                 :editorHeight="400"
-                :mergeFields="mergeFields ?? []" />
+                :mergeFields="mergeFields ?? []"
+                :shortLinkCheckToken="shortLinkCheckToken"
+                :shortLinkSites="shortLinkSites"
+                :shortLinkTokenMinLength="shortLinkTokenMinLength" />
 
     <CodeEditor v-else-if="mode === 'code'"
                 v-model="innerHtml" />
@@ -14,6 +17,7 @@
     import { RockCssClassContentEditable } from "../utils.partial";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         element: {
@@ -29,7 +33,19 @@
         mergeFields: {
             type: Object as PropType<string[] | null | undefined>,
             required: false
-        }
+        },
+
+        shortLinkCheckToken: {
+            type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>
+        },
+
+        shortLinkSites: {
+            type: Object as PropType<ListItemBag[] | null | undefined>
+        },
+
+        shortLinkTokenMinLength: {
+            type: Number as PropType<number | null | undefined>
+        },
     });
 
     const emit = defineEmits<{

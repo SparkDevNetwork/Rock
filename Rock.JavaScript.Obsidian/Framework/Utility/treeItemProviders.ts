@@ -373,6 +373,11 @@ export class PageTreeItemProvider implements ITreeItemProvider {
     public siteType?: SiteType | null;
 
     /**
+     * Whether integer identifiers should be used in the results.
+     */
+    public useIntegerIds?: boolean | null | undefined;
+
+    /**
      * Gets the child items of the given parent (or root if no parent given) from the server.
      *
      * @param parentGuid The parent item whose children are retrieved.
@@ -387,7 +392,8 @@ export class PageTreeItemProvider implements ITreeItemProvider {
             rootPageGuid: null,
             hidePageGuids: this.hidePageGuids ?? [],
             securityGrantToken: this.securityGrantToken,
-            siteType: this.siteType
+            siteType: this.siteType,
+            useIntegerIds: this.useIntegerIds ?? false
         };
         const url = "/api/v2/Controls/PagePickerGetChildren";
         const response = await post<TreeItemBag[]>(url, undefined, options);

@@ -45,7 +45,7 @@ namespace Rock.Blocks.Communication.Chat
 
             using ( var chatHelper = new ChatHelper() )
             {
-                var chatUserAuth = await chatHelper.GetChatUserAuthenticationAsync( person.Id );
+                var chatUserAuth = await chatHelper.GetChatUserAuthenticationAsync( person.Id, true );
                 var sharedChannelGroupStreamKey = ChatHelper.GetChatChannelTypeKey( sharedChannelGroupTypeId.Value );
                 var directMessagingChannelStreamKey = ChatHelper.GetChatChannelTypeKey( directMessagingChannelGroupTypeId.Value );
 

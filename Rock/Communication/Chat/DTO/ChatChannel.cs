@@ -57,5 +57,10 @@ namespace Rock.Communication.Chat.DTO
 
         /// <inheritdoc cref="Group.GetIsChatChannelAlwaysShown"/>
         public bool IsAlwaysShown { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the channel is active.
+        /// </summary>
+        public bool IsActive { get; set; } = true;
     }
 }

@@ -161,5 +161,23 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// Gets or sets the personalization segments.
         /// </summary>
         public List<ListItemBag> PersonalizationSegments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sites enabled for shortening.
+        /// </summary>
+        public List<ListItemBag> ShortLinkSites { get; set; }
+
+        /// <summary>
+        /// Gets or sets the minimum number of characters for short link tokens.
+        /// </summary>
+        public int MinimumShortLinkTokenLength { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether navigation shortcuts are disabled.
+        /// </summary>
+        /// <value>
+        /// When <see langword="true"/>, navigation shortcuts will be disabled.
+        /// </value>
+        public bool AreNavigationShortcutsDisabled { get; set; }
     }
 }

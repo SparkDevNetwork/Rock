@@ -59,18 +59,5 @@ namespace Rock.Communication.Chat.Sync
         /// </remarks>
         [RockInternal( "17.0" )]
         public bool ShouldEnforceDefaultSettings { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether Rock should always ensure that <see cref="ChatUser"/>s exist within the external
-        /// chat system.
-        /// </summary>
-        /// <remarks>
-        /// If <see langword="true"/>, Rock will query the chat provider (in bulk) for a matching <see cref="ChatUser"/>,
-        /// for each chat-specific, preexisting <see cref="PersonAlias"/> being synchronized. If <see langword="false"/>,
-        /// the preexistence of a chat-specific <see cref="PersonAlias"/> record will be considered "enough" to assume
-        /// that a matching <see cref="ChatUser"/> already exists, at the risk of encountering API errors later in the
-        /// sync process.
-        /// </remarks>
-        public bool ShouldEnsureChatUsersExist { get; set; } = true;
     }
 }

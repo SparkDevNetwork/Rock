@@ -192,6 +192,9 @@ namespace Rock.Model
                         // The course completion workflow type id (if any).
                         CourseCompletionWorkflowTypeId = a.LearningClassActivity.LearningClass.LearningCourse.CompletionWorkflowTypeId,
 
+                        // The learning course Guid (for passing to workflow)
+                        LearningCourseGuid = a.LearningClassActivity.LearningClass.LearningCourse.Guid,
+
                         // Some activities (assessment) may not clearly indicate if the Facilitator must
                         // grade the activity before it can be considered complete.
                         // Therefore; we are always evaluating grades until the class is considered over.
@@ -267,7 +270,9 @@ namespace Rock.Model
                 {
                     var workflowAttributes = new Dictionary<string, string>
                     {
-                        {"Student", participant.ToJson()}
+                        {"Student", participant.ToJson()},
+                        {"Person", participant.Person.PrimaryAliasGuid.ToStringSafe()},
+                        {"LearningCourse", anyCompletionRecord.LearningCourseGuid.ToStringSafe()}
                     };
 
                     var workflow = WorkflowTypeCache.Get( ( int ) anyCompletionRecord.CourseCompletionWorkflowTypeId );

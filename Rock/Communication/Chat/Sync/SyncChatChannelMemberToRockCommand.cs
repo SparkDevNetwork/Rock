@@ -64,6 +64,12 @@ namespace Rock.Communication.Chat.Sync
         /// </summary>
         public ChatRole? ChatRole { get; set; }
 
+        /// <inheritdoc cref="GroupMember.IsChatBanned"/>
+        public bool? IsBanned { get; set; }
+
+        /// <inheritdoc cref="GroupMember.IsChatMuted"/>
+        public bool? IsMuted { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncChatChannelMemberToRockCommand"/> class.
         /// </summary>

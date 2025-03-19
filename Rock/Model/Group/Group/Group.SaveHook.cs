@@ -23,6 +23,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Rock.Communication.Chat;
+using Rock.Communication.Chat.Sync;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -219,15 +220,16 @@ namespace Rock.Model
                 {
                     Task.Run( async () =>
                     {
-                        if ( PreSaveState == EntityContextState.Deleted )
-                        {
-                            // Ensure the chat helper deletes the channel within the external chat system.
-                            Entity.IsChatEnabledOverride = false;
-                        }
-
                         using ( var chatHelper = new ChatHelper() )
                         {
-                            await chatHelper.SyncGroupsToChatProviderAsync( new List<Group> { Entity } );
+                            var syncCommand = new SyncGroupToChatCommand
+                            {
+                                GroupTypeId = Entity.GroupTypeId,
+                                GroupId = Entity.Id,
+                                ChatChannelKey = Entity.ChatChannelKey
+                            };
+
+                            await chatHelper.SyncGroupsToChatProviderAsync( new List<SyncGroupToChatCommand> { syncCommand } );
                         }
                     } );
                 }
