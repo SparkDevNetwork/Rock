@@ -725,7 +725,7 @@
     <Compile Include="Communication\Chat\Sync\ChatToRockSyncConfig.cs" />
     <Compile Include="Communication\Chat\Sync\ChatUserMessageCountsByChatChannelResult.cs" />
     <Compile Include="Communication\Chat\Sync\ChatWebhookRequest.cs" />
-    <Compile Include="Communication\Chat\DTO\RockChatChannelMember.cs" />
+    <Compile Include="Communication\Chat\DTO\RockChatGroupMember.cs" />
     <Compile Include="Communication\Chat\DTO\RockChatUserPerson.cs" />
     <Compile Include="Communication\Chat\DTO\RockChatUserKey.cs" />
     <Compile Include="Communication\Chat\Exceptions\MemberChatChannelNotFoundException.cs" />
@@ -738,6 +738,7 @@
     <Compile Include="Communication\Chat\Sync\GetChatChannelMembersResult.cs" />
     <Compile Include="Communication\Chat\Sync\GetChatChannelsResult.cs" />
     <Compile Include="Communication\Chat\Sync\GetChatChannelTypesResult.cs" />
+    <Compile Include="Communication\Chat\Sync\GetChatKeysResult.cs" />
     <Compile Include="Communication\Chat\Sync\GetChatStringResult.cs" />
     <Compile Include="Communication\Chat\Sync\GetChatToRockSyncCommandsResult.cs" />
     <Compile Include="Communication\Chat\Sync\GetChatUsersResult.cs" />
@@ -752,6 +753,7 @@
     <Compile Include="Communication\Chat\Sync\SyncGroupMemberToChatCommand.cs" />
     <Compile Include="Communication\Chat\Sync\ChatSyncCreateOrUpdateUserResult.cs" />
     <Compile Include="Communication\Chat\Sync\SyncChannelMembersToChatCommand.cs" />
+    <Compile Include="Communication\Chat\Sync\SyncGroupToChatCommand.cs" />
     <Compile Include="Communication\Chat\Sync\SyncPersonToChatCommand.cs" />
     <Compile Include="Communication\Chat\Sync\ChatToRockSyncCommand.cs" />
     <Compile Include="Communication\Chat\Sync\WebhookValidationResult.cs" />

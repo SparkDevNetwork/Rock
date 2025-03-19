@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
@@ -29,8 +30,7 @@ using Rock.Communication.Chat.Exceptions;
 using Rock.Communication.Chat.Sync;
 using Rock.Enums.Communication.Chat;
 using Rock.Logging;
-using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Transactions;
 
 using StreamChat.Clients;
 using StreamChat.Exceptions;
@@ -69,6 +69,7 @@ namespace Rock.Communication.Chat
         /// </summary>
         private static class ChannelDataKey
         {
+            public const string Disabled = "disabled";
             public const string Name = "name";
             public const string IsLeavingAllowed = "rock_leaving_allowed";
             public const string IsPublic = "rock_public";
@@ -105,6 +106,7 @@ namespace Rock.Communication.Chat
             public const string ChannelId = "channel_id";
             public const string ChannelRole = "channel_role";
             public const string ChannelType = "channel_type";
+            public const string Disabled = "disabled";
             public const string Ext = "ext";
             public const string Id = "id";
             public const string Member = "member";
@@ -135,10 +137,6 @@ namespace Rock.Communication.Chat
         {
             public const string ChannelCreated = "channel.created";
             public const string ChannelUpdated = "channel.updated";
-
-            // Rock code was originally written to support channel deletion webhooks, but we've since decided to not
-            // allow ANY channel deletions from the client.
-            //public const string ChannelDeleted = "channel.deleted";
 
             public const string MemberAdded = "member.added";
             public const string MemberRemoved = "member.removed";
@@ -1064,17 +1062,15 @@ namespace Rock.Communication.Chat
         #region Chat Channels
 
         /// <inheritdoc/>
-        public string GetQueryableChatChannelKey( Group group )
+        public string GetQueryableChatChannelKey( RockChatGroup rockChatGroup )
         {
-            if ( group == null )
+            if ( rockChatGroup?.ChatChannelTypeKey.IsNotNullOrWhiteSpace() == true
+                && rockChatGroup.ChatChannelKey.IsNotNullOrWhiteSpace() )
             {
-                return null;
+                return GetQueryableChatChannelKey( rockChatGroup.ChatChannelTypeKey, rockChatGroup.ChatChannelKey );
             }
 
-            var chatChannelTypeKey = ChatHelper.GetChatChannelTypeKey( group.GroupTypeId );
-            var chatChannelKey = ChatHelper.GetChatChannelKey( group );
-
-            return GetQueryableChatChannelKey( chatChannelTypeKey, chatChannelKey );
+            return null;
         }
 
         /// <summary>
@@ -1114,7 +1110,6 @@ namespace Rock.Communication.Chat
 
             try
             {
-                // With a query request, we want "all or nothing". So if any batches fail, return an exception.
                 while ( offset < channelsToGetCount )
                 {
                     var batchedKeys = queryableChatChannelKeys
@@ -1211,7 +1206,6 @@ namespace Rock.Communication.Chat
 
             try
             {
-                // With a query request, we want "all or nothing". So if any batches fail, return an exception.
                 do
                 {
                     /*
@@ -1243,9 +1237,9 @@ namespace Rock.Communication.Chat
                     if ( chatChannelTypeKey.IsNotNullOrWhiteSpace() )
                     {
                         queryChannelsOptions.Filter = new Dictionary<string, object>
-                    {
-                        { "type", chatChannelTypeKey }
-                    };
+                        {
+                            { "type", chatChannelTypeKey }
+                        };
                     }
 
                     var queryChannelResponse = await RetryAsync(
@@ -1496,7 +1490,6 @@ namespace Rock.Communication.Chat
 
             try
             {
-                // With a query request, we want "all or nothing". So if any batches fail, return an exception.
                 do
                 {
                     var queryMembersRequest = new QueryMembersRequest
@@ -1591,7 +1584,6 @@ namespace Rock.Communication.Chat
 
             try
             {
-                // With a query request, we want "all or nothing". So if any batches fail, return an exception.
                 while ( offset < membersToGetCount )
                 {
                     var batchedKeys = chatUserKeys
@@ -2202,6 +2194,69 @@ namespace Rock.Communication.Chat
             return result;
         }
 
+        /// <inheritdoc />
+        public async Task<GetChatKeysResult> GetAllChatUserKeysAsync()
+        {
+            var result = new GetChatKeysResult();
+
+            var operationName = nameof( GetAllChatUserKeysAsync ).SplitCase();
+
+            // Max number of users to get per query is 30.
+            // https://getstream.io/chat/docs/dotnet-csharp/query_users/#supported-queries
+            var pageSize = 30;
+            var offset = 0;
+            var usersRetrievedCount = 0;
+
+            try
+            {
+                do
+                {
+                    var queryUserOptions = new QueryUserOptions()
+                        .WithOffset( offset )
+                        .WithLimit( pageSize )
+                        .WithFilter(
+                            new Dictionary<string, object>() // Exception thrown if not defined.
+                        )
+                        .WithSortBy(
+                            new SortParameter
+                            {
+                                Field = SortParameterFieldKey.CreatedAt,
+                                Direction = SortDirection.Ascending
+                            }
+                        );
+
+                    var queryUsersResponse = await RetryAsync(
+                        async () => await UserClient.QueryAsync( queryUserOptions ),
+                        operationName
+                    );
+
+                    if ( queryUsersResponse?.Users?.Any() == true )
+                    {
+                        usersRetrievedCount = queryUsersResponse.Users.Count;
+                        result.Keys.UnionWith(
+                            queryUsersResponse.Users
+                                .Select( u => TryConvertToChatUser( u ) )
+                                .Where( u => u?.Key.IsNotNullOrWhiteSpace() == true )
+                                .Select( u => u.Key )
+                        );
+                    }
+                    else
+                    {
+                        usersRetrievedCount = 0;
+                    }
+
+                    offset += usersRetrievedCount;
+                }
+                while ( usersRetrievedCount == pageSize );
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+            }
+
+            return result;
+        }
+
         /// <inheritdoc/>
         public async Task<GetChatUsersResult> GetChatUsersAsync( List<string> chatUserKeys )
         {
@@ -2225,7 +2280,6 @@ namespace Rock.Communication.Chat
 
             try
             {
-                // With a query request, we want "all or nothing". So if any batches fail, return an exception.
                 while ( offset < usersToGetCount )
                 {
                     var batchedKeys = chatUserKeys
@@ -2644,7 +2698,6 @@ namespace Rock.Communication.Chat
 
             try
             {
-                // With a query request, we want "all or nothing". So if any batches fail, return an exception.
                 do
                 {
                     /*
@@ -3052,15 +3105,64 @@ namespace Rock.Communication.Chat
 
                             Sometimes we want to retry in these cases, but other times, we can more-confidently react.
 
+                            Furthermore, Stream often reuses generic error codes for many different scenarios, so we need to dig
+                            further into some exceptions to properly understand the response.
+
                             Reason: Know when to retry for "eventual consistency" scenarios vs. handling differently.
                         */
 
+                        // First, attempt to detect if Rock is syncing a chat user who's been deleted in Stream.
+                        if ( streamChatException.ErrorCode == 16 )
+                        {
+                            /*
+                                3/17/2025 - JPH
+
+                                This one is especially unfortunate, as the only way to consistently catch it is to parse
+                                the error message. The scenario is:
+
+                                    1. A chat user was deleted in Stream.
+                                    2. Rock somehow missed the webhook event that conveyed this deletion, and therefore
+                                       failed to delete the chat user in Rock.
+                                    3. Rock tried to sync the deleted chat user, but Stream responded with a 16 error code,
+                                       as a deleted `user_id` cannot be used again.
+
+                                We need to clear this chat-specific person alias record to prevent this error from
+                                reoccurring every time the chat user is attempted to be synced.
+
+                                Reason: Detect when a Rock chat user no longer exists in Stream.
+                            */
+
+                            var pattern = @"user (rock-user-[a-f0-9-]+) was deleted";
+                            var match = Regex.Match( streamChatException.Message, pattern );
+                            if ( match.Success )
+                            {
+                                // Issue a sync command instructing Rock to delete this chat user.
+                                var deleteCommand = new DeleteChatPersonInRockCommand
+                                {
+                                    ChatPersonKey = match.Groups[1].Value
+                                };
+
+                                new RequeueChatToRockSyncCommandTransaction( deleteCommand ).Enqueue( useFastQueue: true );
+
+                                // Try to get the person alias GUID for logging.
+                                var personAliasGuid = ChatHelper.GetPersonAliasGuid( deleteCommand.ChatPersonKey );
+
+                                throw new ChatSyncException(
+                                    $"Chat Person with key '{deleteCommand.ChatPersonKey}' no longer exists in Stream; Rock will now clear the corresponding Person Alias Name and Foreign Key values to prevent repeated failures (where Person Alias GUID = '{personAliasGuid}'). The previous chat sync request has been cancelled as it's unrecoverable. Run the 'Chat Sync' Job to ensure Rock is in sync with Stream.",
+                                    streamChatException
+                                );
+                            }
+                        }
+
+                        // Next, if the caller of this method has specified that they have custom handling for this
+                        // Stream error code, simply throw the exception.
                         if ( streamErrorCodesToThrow?.Contains( streamChatException.ErrorCode ) == true )
                         {
                             // The caller has specified that they have custom handling for this Stream error code.
                             throw;
                         }
 
+                        // Finally, if the error code is one of the known, unrecoverable Stream API Error Codes, don't retry.
                         if ( UnrecoverableErrorCodes.Contains( streamChatException.ErrorCode ) )
                         {
                             // If this exception can be identified as a known, unrecoverable Stream API Error Code, there's no need to retry.
@@ -3231,6 +3333,7 @@ namespace Rock.Communication.Chat
             channelRequest.SetData( ChannelDataKey.IsLeavingAllowed, chatChannel.IsLeavingAllowed );
             channelRequest.SetData( ChannelDataKey.IsPublic, chatChannel.IsPublic );
             channelRequest.SetData( ChannelDataKey.IsAlwaysShown, chatChannel.IsAlwaysShown );
+            channelRequest.SetData( ChannelDataKey.Disabled, !chatChannel.IsActive );
 
             return channelRequest;
         }
@@ -3298,6 +3401,8 @@ namespace Rock.Communication.Chat
                 return null;
             }
 
+            var isChannelDisabled = channel.GetDataOrDefault( ChannelDataKey.Disabled, false );
+
             return new ChatChannel
             {
                 Key = channel.Id,
@@ -3306,7 +3411,8 @@ namespace Rock.Communication.Chat
                 Name = channel.GetDataOrDefault( ChannelDataKey.Name, channel.Cid ),
                 IsLeavingAllowed = channel.GetDataOrDefault( ChannelDataKey.IsLeavingAllowed, false ),
                 IsPublic = channel.GetDataOrDefault( ChannelDataKey.IsPublic, false ),
-                IsAlwaysShown = channel.GetDataOrDefault( ChannelDataKey.IsAlwaysShown, false )
+                IsAlwaysShown = channel.GetDataOrDefault( ChannelDataKey.IsAlwaysShown, false ),
+                IsActive = !isChannelDisabled
             };
         }
 
@@ -3422,6 +3528,13 @@ namespace Rock.Communication.Chat
 
                 // Assign the group name to the sync command.
                 channelSyncCommand.GroupName = groupName;
+
+                // Try to get the channel's disabled status.
+                var disabledToken = json[WebhookJsonProperty.Disabled];
+                if ( disabledToken?.Type == JTokenType.Boolean )
+                {
+                    channelSyncCommand.IsActive = !disabledToken.ToObject<bool>();
+                }
             }
 
             // ----------------------------------------------------------------------------------------------

@@ -373,7 +373,16 @@ namespace Rock.Model
         /// <returns>A Queryable of chat-specific <see cref="PersonAlias"/>es.</returns>
         internal IQueryable<PersonAlias> GetChatPersonAliasesQuery()
         {
-            return this.Queryable().Where( a => a.ForeignKey.StartsWith( ChatHelper.ChatPersonAliasForeignKeyPrefix ) );
+            return this.Queryable().Where( a => a.Name == ChatHelper.ChatPersonAliasName );
+        }
+
+        /// <summary>
+        /// Gets a Queryable of all <see cref="ChatUser.Key"/>s in Rock, including those for deceased individuals.
+        /// </summary>
+        /// <returns>A Queryable of all <see cref="ChatUser.Key"/>s in Rock.</returns>
+        internal IQueryable<string> GetAllChatUserKeysQuery()
+        {
+            return GetChatPersonAliasesQuery().Select( pa => pa.ForeignKey );
         }
 
         /// <summary>
@@ -391,8 +400,6 @@ namespace Rock.Model
         /// </remarks>
         internal Dictionary<string, int> GetChatPersonAliasIdByChatUserKeys( bool includeDeceased = false )
         {
-            var rockContext = this.Context as RockContext;
-
             var chatAliasQry = GetChatPersonAliasesQuery();
             if ( !includeDeceased )
             {
@@ -401,7 +408,7 @@ namespace Rock.Model
 
             return chatAliasQry
                 .ToDictionary(
-                    pa => ChatHelper.GetChatUserKey( pa.Guid ),
+                    pa => pa.ForeignKey,
                     pa => pa.Id
                 );
         }

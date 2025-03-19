@@ -29,6 +29,7 @@ using Rock.Communication.Chat;
 using Rock.Data;
 using Rock.Enums.Group;
 using Rock.Security;
+using Rock.SystemGuid;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
@@ -657,19 +658,14 @@ namespace Rock.Model
         /// <returns>Whether chat is enabled for this group.</returns>
         internal bool GetIsChatEnabled()
         {
-            bool groupTypeIsChatAllowed;
-            bool groupTypeIsChatEnabledForAllGroups;
+            var groupTypeIsChatAllowed = false;
+            var groupTypeIsChatEnabledForAllGroups = false;
 
             var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
             if ( groupTypeCache != null )
             {
                 groupTypeIsChatAllowed = groupTypeCache.IsChatAllowed;
                 groupTypeIsChatEnabledForAllGroups = groupTypeCache.IsChatEnabledForAllGroups;
-            }
-            else
-            {
-                groupTypeIsChatAllowed = this.GroupType?.IsChatAllowed ?? false;
-                groupTypeIsChatEnabledForAllGroups = this.GroupType?.IsChatEnabledForAllGroups ?? false;
             }
 
             if ( !groupTypeIsChatAllowed )
@@ -704,7 +700,7 @@ namespace Rock.Model
                 return groupTypeCache.IsLeavingChatChannelAllowed;
             }
 
-            return this.GroupType?.IsLeavingChatChannelAllowed ?? false;
+            return false;
         }
 
         /// <summary>
@@ -727,7 +723,7 @@ namespace Rock.Model
                 return groupTypeCache.IsChatChannelPublic;
             }
 
-            return this.GroupType?.IsChatChannelPublic ?? false;
+            return false;
         }
 
         /// <summary>
@@ -750,7 +746,19 @@ namespace Rock.Model
                 return groupTypeCache.IsChatChannelAlwaysShown;
             }
 
-            return this.GroupType?.IsChatChannelAlwaysShown ?? false;
+            return false;
+        }
+
+        /// <summary>
+        /// Gets whether this chat channel is active.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if <see cref="GetIsChatEnabled"/>, <see cref="IsActive"/> and NOT <see cref="IsArchived"/>;
+        /// otherwise, <see langword="false"/>.
+        /// </returns>
+        internal bool GetIsChatChannelActive()
+        {
+            return this.GetIsChatEnabled() && this.IsActive && !this.IsArchived;
         }
 
         #endregion

@@ -138,50 +138,14 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a Queryable of <see cref="Group"/>s that are chat-enabled.
+        /// Gets a Queryable of chat-specific <see cref="Group"/>s, regardless of whether they're currently chat-enabled.
         /// </summary>
-        /// <param name="shouldTrack">Whether entity framework should track these <see cref="Group"/>s.</param>
-        /// <returns>A Queryable of <see cref="Group"/>s that are chat-enabled.</returns>
-        internal IQueryable<Group> GetChatEnabled( bool shouldTrack = false )
+        /// <returns>A Queryable of chat-specific <see cref="Group"/>s.</returns>
+        /// <remarks>This will include archived, chat-specific <see cref="Group"/>s.</remarks>
+        internal IQueryable<Group> GetChatChannelGroupsQuery()
         {
-            var qry = Queryable().Where( g =>
-                g.GroupType.IsChatAllowed
-                && (
-                    g.GroupType.IsChatEnabledForAllGroups
-                    || (
-                        g.IsChatEnabledOverride.HasValue
-                        && g.IsChatEnabledOverride.Value
-                    )
-                )
-            );
-
-            if ( !shouldTrack )
-            {
-                qry = qry.AsNoTracking();
-            }
-
-            return qry;
-        }
-
-        /// <summary>
-        /// Gets a list of <see cref="RockChatGroup"/>s, which represent <see cref="Group"/>s that correspond to
-        /// <see cref="ChatChannel"/>s in the external chat system.
-        /// </summary>
-        /// <param name="includeArchivedAndDisabled">
-        /// If <see langword="false"/>, results will only include non-archived, chat-enabled <see cref="Group"/>s.
-        /// If <see langword="true"/>, results will include archived <see cref="Group"/>s and those that have a
-        /// <see cref="Group.ChatChannelKey"/> defined, even if they're not currently chat-enabled.
-        /// </param>
-        /// <returns>
-        /// A list of <see cref="RockChatGroup"/>s.
-        /// </returns>
-        internal List<RockChatGroup> GetRockChatGroups( bool includeArchivedAndDisabled = false )
-        {
-            IQueryable<Group> qry;
-
-            if ( includeArchivedAndDisabled )
-            {
-                qry = AsNoFilter().Where( g =>
+            return AsNoFilter()
+                .Where( g =>
                     (
                         // Even if a group is not currently chat-enabled, include it if it has a chat channel key.
                         // (so we don't accidentally create a duplicate)
@@ -199,25 +163,57 @@ namespace Rock.Model
                         )
                     )
                 );
-            }
-            else
-            {
-                qry = GetChatEnabled();
-            }
+        }
 
-            return qry
+        /// <summary>
+        /// Gets the complete list of <see cref="RockChatGroup"/>s - lightweight objects which represent all
+        /// <see cref="Group"/>s that correspond to <see cref="ChatChannel"/>s in the external chat system, regardless
+        /// of whether they're currently chat-enabled.
+        /// </summary>
+        /// <returns>
+        /// A list of <see cref="RockChatGroup"/>s.
+        /// </returns>
+        /// <remarks>This will include archived, chat-specific <see cref="Group"/>s.</remarks>
+        internal List<RockChatGroup> GetRockChatGroups()
+        {
+            return GetChatChannelGroupsQuery()
                 .AsEnumerable() // Materialize the query.
                 .Select( g =>
                     new RockChatGroup
                     {
+                        GroupTypeId = g.GroupTypeId,
                         GroupId = g.Id,
-                        Name = g.Name,
-                        ChatChannelKey = ChatHelper.GetChatChannelKey( g ),
                         ChatChannelTypeKey = ChatHelper.GetChatChannelTypeKey( g.GroupTypeId ),
-                        IsChatEnabled = g.GetIsChatEnabled()
+                        ChatChannelKey = ChatHelper.GetChatChannelKey( g.Id, g.ChatChannelKey ),
+                        Name = g.Name,
+                        IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
+                        IsPublic = g.GetIsChatChannelPublic(),
+                        IsAlwaysShown = g.GetIsChatChannelAlwaysShown(),
+                        IsChatEnabled = g.GetIsChatEnabled(),
+                        IsChatChannelActive = g.GetIsChatChannelActive()
                     }
                 )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Gets a Queryable of all <see cref="Group"/>s that are currently chat-enabled.
+        /// </summary>
+        /// <returns>A Queryable of all <see cref="Group"/>s that are currently chat-enabled.</returns>
+        /// <remarks>This will include archived, chat-enabled <see cref="Group"/>s.</remarks>
+        internal IQueryable<Group> GetChatEnabledGroupsQuery()
+        {
+            return AsNoFilter()
+                .Where( g =>
+                    g.GroupType.IsChatAllowed
+                    && (
+                        g.GroupType.IsChatEnabledForAllGroups
+                        || (
+                            g.IsChatEnabledOverride.HasValue
+                            && g.IsChatEnabledOverride.Value
+                        )
+                    )
+                );
         }
 
         /// <summary>
@@ -248,7 +244,8 @@ namespace Rock.Model
             }
 
             // Fall back to looking in the database and caching if we find it.
-            groupId = Queryable()
+            // We always want to include archived groups, as they'll be considered inactive chat channels.
+            groupId = AsNoFilter()
                 .Where( g => g.ChatChannelKey == chatChannelKey )
                 .Select( g => g.Id )
                 .FirstOrDefault();

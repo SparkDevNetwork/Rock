@@ -182,8 +182,7 @@ namespace Rock.Jobs
 
                     if ( GetAttributeValue( AttributeKey.SynchronizeData ).AsBoolean() )
                     {
-                        await SyncDataFromRockToChat( rockContext, chatHelper );
-                        await SyncDataFromChatToRock( rockContext, chatHelper );
+                        await SynchronizeData( rockContext, chatHelper );
                     }
 
                     if ( GetAttributeValue( AttributeKey.CreateInteractions ).AsBoolean() )
@@ -211,34 +210,35 @@ namespace Rock.Jobs
         #region Synchronize Data
 
         /// <summary>
-        /// Ensures that all chat-related data in Rock is in sync with the corresponding data in the external chat system.
+        /// <para>
+        /// First, ensures that all chat-related data in Rock is in sync with the corresponding data in the external chat system.
+        /// </para>
+        /// <para>
+        /// Second, ensures that all chat-related data in the external chat system is in sync with the corresponding data in Rock.
+        /// </para>
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="chatHelper">The chat helper.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        private async Task SyncDataFromRockToChat( RockContext rockContext, ChatHelper chatHelper )
+        private async Task SynchronizeData( RockContext rockContext, ChatHelper chatHelper )
         {
+            #region 1) Rock-to-Chat Sync
+
             chatHelper.RockToChatSyncConfig.ShouldEnforceDefaultGrantsPerRole = GetAttributeValue( AttributeKey.EnforceDefaultGrantsPerRole ).AsBoolean();
             chatHelper.RockToChatSyncConfig.ShouldEnforceDefaultSettings = GetAttributeValue( AttributeKey.EnforceDefaultSyncSettings ).AsBoolean();
 
-            var stopwatch = new Stopwatch();
+            var rockToChatStopwatch = new Stopwatch();
 
             var section = CreateAndAddResultSection( "Rock-to-Chat Sync:" );
 
-            // We'll keep track of chat users that are synced along the way, so we ensure each person is fully-synced
-            // all the way through to the external chat system ONLY ONCE throughout this job run.
-            var chatUserStopwatch = new Stopwatch();
-            var chatUserCrudResult = new ChatSyncCrudResult();
-            var chatUserExceptions = new List<Exception>();
+            // ---------------------------------------------------------
+            // 1a) Ensure the app is set up in the external chat system.
 
-            // --------------------------------------------------------
-            // 1) Ensure the app is set up in the external chat system.
-
-            stopwatch.Start();
+            rockToChatStopwatch.Restart();
             var isSetUpResult = await chatHelper.EnsureChatProviderAppIsSetUpAsync();
-            stopwatch.Stop();
+            rockToChatStopwatch.Stop();
 
-            var taskResult = CreateAndAddNewTaskResult( section, "Chat Configuration", stopwatch.Elapsed );
+            var taskResult = CreateAndAddNewTaskResult( section, "Chat Configuration", rockToChatStopwatch.Elapsed );
 
             // If the setup operation failed, we can't continue with the other tasks.
             if ( isSetUpResult?.HasException == true )
@@ -254,52 +254,70 @@ namespace Rock.Jobs
                 return;
             }
 
-            // -----------------------------------------------------------------
-            // 2) Delete any deceased individuals from the external chat system.
+            // -------------------------------------------------------------------------------
+            // 1b) Delete any Rock chat users who no longer exist in the external chat system.
 
-            // This should almost never find any individuals to delete, as the chat helper already has a pretty robust
-            // process for deleting Rock group members and external chat users, as soon as they're marked as deceased in
-            // Rock. This is just a safeguard, in case that process fails for some reason, or in case the deceased
-            // individual didn't belong to any chat-enabled groups at the time of being marked as deceased.
+            // Technically, this should be considered a Chat-to-Rock sync operation, but we need to perform it up front,
+            // as it's important to delete these Rock chat users before attempting to perform the remaining Rock-to-Chat
+            // sync operations. This should prevent exceptions that might otherwise be encountered by referencing chat
+            // user keys that have already been deleted in the external chat system. We won't report these deletions in
+            // the job results, as we don't want to cause alarm.
 
-            chatUserStopwatch.Start();
+            await chatHelper.DeleteRockChatUsersMissingFromChatProviderAsync();
+
+            // ------------------------------------------------------------------
+            // 1c) Delete any deceased individuals from the external chat system.
+
+            // We'll keep track of chat users that are synced along the way, so we ensure each person is fully-synced
+            // all the way through to the external chat system ONLY ONCE throughout this job run.
+            var rockToChatUsersStopwatch = new Stopwatch();
+            var rockToChatUsersResult = new ChatSyncCrudResult();
+            var rockToChatUsersExceptions = new List<Exception>();
 
             var personService = new PersonService( rockContext );
             var personAliasService = new PersonAliasService( rockContext );
 
-            var deceasedChatUserPersonIds = personService.GetDeceasedChatUserPersonIds().ToList();
+            // This should almost never find any individuals to delete, as the chat helper already has a pretty robust
+            // process for inactivating Rock group members and deleting external chat users, as soon as they're marked
+            // as deceased in Rock. This is just a safeguard, in case that process fails for some reason, or in case the
+            // deceased individual didn't belong to any chat-enabled groups at the time of being marked as deceased.
+
+            rockToChatUsersStopwatch.Start();
+
+            var deceasedChatUserPersonIds = personService.GetDeceasedChatUserPersonIdsQuery().ToList();
             if ( deceasedChatUserPersonIds.Any() )
             {
                 foreach ( var personId in deceasedChatUserPersonIds )
                 {
-                    var deleteResult = await chatHelper.DeleteChatUsersAsync( personId, personAliasService );
-                    if ( deleteResult?.Deleted.Any() == true )
+                    var deleteDeceasedIndividualsResult = await chatHelper.DeleteChatUsersAsync( personId, personAliasService );
+                    if ( deleteDeceasedIndividualsResult?.Deleted.Any() == true )
                     {
-                        chatUserCrudResult.Deleted.Add( personId.ToString() );
+                        rockToChatUsersResult.Deleted.Add( personId.ToString() );
                     }
                 }
             }
 
-            chatUserStopwatch.Stop();
+            rockToChatUsersStopwatch.Stop();
 
-            // --------------------------------------------------------------------------
-            // 3) Add/[re]enforce global chat bans by syncing "Chat Ban List" chat users.
+            // ---------------------------------------------------------------------------
+            // 1d) Add/[re]enforce global chat bans by syncing "Chat Ban List" chat users.
 
             var globallyBannedChatUserKeys = new HashSet<string>();
 
-            chatUserStopwatch.Start();
-            var chatBanListCrudResult = await chatHelper.SyncGroupMembersToChatProviderAsync( ChatHelper.ChatBanListGroupId );
-            chatUserStopwatch.Stop();
+            rockToChatUsersStopwatch.Start();
+            var chatBanListResult = await chatHelper.SyncGroupMembersToChatProviderAsync( ChatHelper.ChatBanListGroupId );
+            rockToChatUsersStopwatch.Stop();
 
-            if ( chatBanListCrudResult != null )
+            if ( chatBanListResult != null )
             {
-                if ( chatBanListCrudResult.HasException )
+                // Add any exceptions encountered at the channel member sync stage (should never happen within this call).
+                if ( chatBanListResult.HasException )
                 {
-                    chatUserExceptions.Add( chatBanListCrudResult.Exception );
+                    rockToChatUsersExceptions.Add( chatBanListResult.Exception );
                 }
 
-                // Add any exceptions encountered at the user sync stage.
-                var chatBanListUserExceptions = chatBanListCrudResult
+                // Add any exceptions encountered at the global chat user sync stage.
+                var chatBanListUserExceptions = chatBanListResult
                     .InnerResults
                     .OfType<ChatSyncCreateOrUpdateUsersResult>()
                     .Where( r => r.HasException )
@@ -308,12 +326,13 @@ namespace Rock.Jobs
 
                 if ( chatBanListUserExceptions.Any() )
                 {
-                    chatUserExceptions.AddRange( chatBanListUserExceptions );
+                    rockToChatUsersExceptions.AddRange( chatBanListUserExceptions );
                 }
 
                 // Aggregate the chat user CRUD results from the "Chat Ban List" sync operation.
-                chatUserCrudResult.Skipped.UnionWith(
-                    chatBanListCrudResult
+                // There should be no deletions here.
+                rockToChatUsersResult.Skipped.UnionWith(
+                    chatBanListResult
                         .InnerResults
                         .OfType<ChatSyncCreateOrUpdateUsersResult>()
                         .SelectMany( r => r.UserResults )
@@ -321,8 +340,8 @@ namespace Rock.Jobs
                         .Select( r => r.PersonId.ToString() )
                 );
 
-                chatUserCrudResult.Created.UnionWith(
-                    chatBanListCrudResult
+                rockToChatUsersResult.Created.UnionWith(
+                    chatBanListResult
                         .InnerResults
                         .OfType<ChatSyncCreateOrUpdateUsersResult>()
                         .SelectMany( r => r.UserResults )
@@ -330,8 +349,8 @@ namespace Rock.Jobs
                         .Select( r => r.PersonId.ToString() )
                 );
 
-                chatUserCrudResult.Updated.UnionWith(
-                    chatBanListCrudResult
+                rockToChatUsersResult.Updated.UnionWith(
+                    chatBanListResult
                         .InnerResults
                         .OfType<ChatSyncCreateOrUpdateUsersResult>()
                         .SelectMany( r => r.UserResults )
@@ -339,8 +358,8 @@ namespace Rock.Jobs
                         .Select( r => r.PersonId.ToString() )
                 );
 
-                // Add any exceptions encountered at the ban/unban sync stage.
-                var chatBanUnbanExceptions = chatBanListCrudResult
+                // Add any exceptions encountered at the global ban/unban sync stage.
+                var chatBanUnbanExceptions = chatBanListResult
                     .InnerResults
                     .OfType<ChatSyncBanResult>()
                     .Where( r => r.HasException )
@@ -349,40 +368,41 @@ namespace Rock.Jobs
 
                 if ( chatBanUnbanExceptions.Any() )
                 {
-                    chatUserExceptions.AddRange( chatBanUnbanExceptions );
+                    rockToChatUsersExceptions.AddRange( chatBanUnbanExceptions );
                 }
 
                 // Aggregate the chat user ban results from the "Chat Ban List" sync operation. Note that global bans
                 // could only have been added/[re]enforced by this process; not lifted/removed.
                 globallyBannedChatUserKeys.UnionWith(
-                    chatBanListCrudResult
+                    chatBanListResult
                         .InnerResults
                         .OfType<ChatSyncBanResult>()
                         .SelectMany( r => r.Banned )
                 );
             }
 
-            // ------------------------------------------------------------
-            // 4) Sync "APP - Chat Administrator" security role chat users.
+            // -------------------------------------------------------------
+            // 1e) Sync "APP - Chat Administrator" security role chat users.
 
             // Only perform this sync if chat is NOT enabled for the chat admins group. Otherwise, these chat users will
             // be synced as part of the regular group sync process below.
             var chatAminsGroup = GroupCache.Get( ChatHelper.ChatAdministratorsGroupId );
             if ( chatAminsGroup?.GetIsChatEnabled() == false )
             {
-                chatUserStopwatch.Start();
-                var chatAdminsCrudResult = await chatHelper.SyncGroupMembersToChatProviderAsync( chatAminsGroup.Id );
-                chatUserStopwatch.Stop();
+                rockToChatUsersStopwatch.Start();
+                var chatAdminsResult = await chatHelper.SyncGroupMembersToChatProviderAsync( chatAminsGroup.Id );
+                rockToChatUsersStopwatch.Stop();
 
-                if ( chatAdminsCrudResult != null )
+                if ( chatAdminsResult != null )
                 {
-                    if ( chatAdminsCrudResult.HasException )
+                    // Add any exceptions encountered at the channel member sync stage (should never happen within this call).
+                    if ( chatAdminsResult.HasException )
                     {
-                        chatUserExceptions.Add( chatAdminsCrudResult.Exception );
+                        rockToChatUsersExceptions.Add( chatAdminsResult.Exception );
                     }
 
-                    // Add any exceptions encountered at the user sync stage.
-                    var chatAdminsUserExceptions = chatAdminsCrudResult
+                    // Add any exceptions encountered at the global chat user sync stage.
+                    var chatAdminsUserExceptions = chatAdminsResult
                         .InnerResults
                         .OfType<ChatSyncCreateOrUpdateUsersResult>()
                         .Where( r => r.HasException )
@@ -391,12 +411,13 @@ namespace Rock.Jobs
 
                     if ( chatAdminsUserExceptions.Any() )
                     {
-                        chatUserExceptions.AddRange( chatAdminsUserExceptions );
+                        rockToChatUsersExceptions.AddRange( chatAdminsUserExceptions );
                     }
 
                     // Aggregate the chat user CRUD results from the chat admins sync operation.
-                    chatUserCrudResult.Skipped.UnionWith(
-                        chatAdminsCrudResult
+                    // There should be no deletions here.
+                    rockToChatUsersResult.Skipped.UnionWith(
+                        chatAdminsResult
                             .InnerResults
                             .OfType<ChatSyncCreateOrUpdateUsersResult>()
                             .SelectMany( r => r.UserResults )
@@ -404,8 +425,8 @@ namespace Rock.Jobs
                             .Select( r => r.PersonId.ToString() )
                     );
 
-                    chatUserCrudResult.Created.UnionWith(
-                        chatAdminsCrudResult
+                    rockToChatUsersResult.Created.UnionWith(
+                        chatAdminsResult
                             .InnerResults
                             .OfType<ChatSyncCreateOrUpdateUsersResult>()
                             .SelectMany( r => r.UserResults )
@@ -413,8 +434,8 @@ namespace Rock.Jobs
                             .Select( r => r.PersonId.ToString() )
                     );
 
-                    chatUserCrudResult.Updated.UnionWith(
-                        chatAdminsCrudResult
+                    rockToChatUsersResult.Updated.UnionWith(
+                        chatAdminsResult
                             .InnerResults
                             .OfType<ChatSyncCreateOrUpdateUsersResult>()
                             .SelectMany( r => r.UserResults )
@@ -424,33 +445,36 @@ namespace Rock.Jobs
                 }
             }
 
-            // --------------------------------------------------
-            // 5) Sync all Rock group types to the chat provider.
-            stopwatch.Restart();
+            // ---------------------------------------------------
+            // 1f) Sync all Rock group types to the chat provider.
+            rockToChatStopwatch.Restart();
 
             var groupTypeService = new GroupTypeService( rockContext );
             var allGroupTypes = groupTypeService.Queryable().ToList();
 
-            var channelTypeCrudResult = await chatHelper.SyncGroupTypesToChatProviderAsync( allGroupTypes );
-            stopwatch.Stop();
+            var rockToChatChannelTypesResult = await chatHelper.SyncGroupTypesToChatProviderAsync( allGroupTypes );
+
+            rockToChatStopwatch.Stop();
 
             // It's possible for chat channels to have been deleted as a part of the group type sync, so we'll go ahead
-            // and create a channel CRUD result here to begin tracking those deletions.
-            var channelCrudResult = new ChatSyncCrudResult();
-            var channelExceptions = new List<Exception>();
+            // and create a channels CRUD result here to begin tracking those deletions.
+            var rockToChatChannelsResult = new ChatSyncCrudResult();
+            var rockToChatChannelsExceptions = new List<Exception>();
 
-            if ( channelTypeCrudResult != null )
+            if ( rockToChatChannelTypesResult != null )
             {
-                taskResult = CreateAndAddNewTaskResult( section, "Rock Group Types to Chat Channel Types", stopwatch.Elapsed );
-                AddCrudDetailsToTaskResult( taskResult, channelTypeCrudResult, "Channel Type" );
+                taskResult = CreateAndAddNewTaskResult( section, "Rock Group Types to Chat Channel Types", rockToChatStopwatch.Elapsed );
 
-                if ( channelTypeCrudResult.HasException == true )
+                AddCrudDetailsToTaskResult( taskResult, rockToChatChannelTypesResult, "Channel Type" );
+
+                // Add any exceptions encountered at the channel type sync stage.
+                if ( rockToChatChannelTypesResult.HasException == true )
                 {
-                    taskResult.Exception = channelTypeCrudResult.Exception;
+                    taskResult.Exception = rockToChatChannelTypesResult.Exception;
                 }
 
                 // Add any exceptions encountered at the channel deletion stage.
-                var channelDeletionExceptions = channelTypeCrudResult
+                var channelDeletionExceptions = rockToChatChannelTypesResult
                     .InnerResults
                     .OfType<ChatSyncCrudResult>()
                     .Where( r => r.HasException )
@@ -459,63 +483,107 @@ namespace Rock.Jobs
 
                 if ( channelDeletionExceptions.Any() )
                 {
-                    channelExceptions.AddRange( channelDeletionExceptions );
+                    rockToChatChannelsExceptions.AddRange( channelDeletionExceptions );
                 }
 
                 // Aggregate the channel delete results from the group type sync operation.
-                channelCrudResult.Deleted.UnionWith(
-                    channelTypeCrudResult
+                rockToChatChannelsResult.Deleted.UnionWith(
+                    rockToChatChannelTypesResult
                         .InnerResults
                         .OfType<ChatSyncCrudResult>()
                         .SelectMany( r => r.Deleted )
                 );
             }
 
-            // ------------------------------------------------------
-            // 6) Sync all chat-enabled groups to the chat provider.
+            // -------------------------------------------------------
+            // 1g) Sync all chat-enabled groups to the chat provider.
 
-            stopwatch.Restart();
+            rockToChatStopwatch.Restart();
 
             var groupService = new GroupService( rockContext );
-            var chatEnabledGroups = groupService.GetChatEnabled().ToList();
+            var chatEnabledGroupSyncCommands = groupService.GetChatEnabledGroupsQuery()
+                .Select( g =>
+                    new SyncGroupToChatCommand
+                    {
+                        GroupTypeId = g.GroupTypeId,
+                        GroupId = g.Id,
+                        ChatChannelKey = g.ChatChannelKey
+                    }
+                )
+                .ToList();
 
-            if ( chatEnabledGroups.Any() )
+            if ( chatEnabledGroupSyncCommands.Any() )
             {
                 var syncConfig = new RockToChatGroupSyncConfig { ShouldSyncAllGroupMembers = true };
 
-                var chatEnabledChannelCrudResult = await chatHelper.SyncGroupsToChatProviderAsync( chatEnabledGroups, syncConfig );
+                var chatEnabledChannelCrudResult = await chatHelper.SyncGroupsToChatProviderAsync( chatEnabledGroupSyncCommands, syncConfig );
                 if ( chatEnabledChannelCrudResult != null )
                 {
+                    // Add any exceptions encountered at the channel sync stage.
                     if ( chatEnabledChannelCrudResult.HasException )
                     {
-                        channelExceptions.Add( chatEnabledChannelCrudResult.Exception );
+                        rockToChatChannelsExceptions.Add( chatEnabledChannelCrudResult.Exception );
                     }
 
                     // Aggregate the channel CRUD results from the chat-enabled group sync operation.
-                    channelCrudResult.Skipped.UnionWith(
+                    // There should be no deletions here.
+                    rockToChatChannelsResult.Skipped.UnionWith(
                         chatEnabledChannelCrudResult.Skipped
                     );
 
-                    channelCrudResult.Created.UnionWith(
+                    rockToChatChannelsResult.Created.UnionWith(
                         chatEnabledChannelCrudResult.Created
                     );
 
-                    channelCrudResult.Updated.UnionWith(
+                    rockToChatChannelsResult.Updated.UnionWith(
                         chatEnabledChannelCrudResult.Updated
                     );
 
-                    // Keep track of group members and exceptions encountered during this phase of the job run.
-                    var channelMemberCrudResult = new ChatSyncCrudResult();
-                    var channelMemberExceptions = chatEnabledChannelCrudResult
+                    // Keep track of channel members synced during the chat-enabled group sync operation.
+                    var rockToChatChannelMembersResult = new ChatSyncCrudResult();
+
+                    // Add any exceptions encountered at the channel member sync stage.
+                    var rockToChatChannelMembersExceptions = chatEnabledChannelCrudResult
                         .InnerResults
+                        .OfType<ChatSyncCrudResult>()
                         .Where( r => r.HasException )
                         .Select( r => r.Exception )
                         .ToList();
 
-                    if ( channelMemberExceptions.Any() )
+                    if ( rockToChatChannelMembersExceptions.Any() )
                     {
-                        channelExceptions.AddRange( channelMemberExceptions );
+                        rockToChatChannelsExceptions.AddRange( rockToChatChannelMembersExceptions );
                     }
+
+                    // Aggregate the channel member CRUD results from the chat-enabled group sync operation.
+                    // There might be deletions here.
+                    rockToChatChannelMembersResult.Skipped.UnionWith(
+                        chatEnabledChannelCrudResult
+                            .InnerResults
+                            .OfType<ChatSyncCrudResult>()
+                            .SelectMany( r => r.Skipped )
+                    );
+
+                    rockToChatChannelMembersResult.Created.UnionWith(
+                        chatEnabledChannelCrudResult
+                            .InnerResults
+                            .OfType<ChatSyncCrudResult>()
+                            .SelectMany( r => r.Created )
+                    );
+
+                    rockToChatChannelMembersResult.Updated.UnionWith(
+                        chatEnabledChannelCrudResult
+                            .InnerResults
+                            .OfType<ChatSyncCrudResult>()
+                            .SelectMany( r => r.Updated )
+                    );
+
+                    rockToChatChannelMembersResult.Deleted.UnionWith(
+                        chatEnabledChannelCrudResult
+                            .InnerResults
+                            .OfType<ChatSyncCrudResult>()
+                            .SelectMany( r => r.Deleted )
+                    );
 
                     // Add any exceptions encountered at the channel member user sync stage.
                     var channelMemberUserExceptions = chatEnabledChannelCrudResult
@@ -529,40 +597,12 @@ namespace Rock.Jobs
 
                     if ( channelMemberUserExceptions.Any() )
                     {
-                        chatUserExceptions.AddRange( channelMemberUserExceptions );
+                        rockToChatUsersExceptions.AddRange( channelMemberUserExceptions );
                     }
 
-                    // Aggregate the channel member CRUD results from the channel sync operation.
-                    channelMemberCrudResult.Skipped.UnionWith(
-                        chatEnabledChannelCrudResult
-                            .InnerResults
-                            .OfType<ChatSyncCrudResult>()
-                            .SelectMany( r => r.Skipped )
-                    );
-
-                    channelMemberCrudResult.Created.UnionWith(
-                        chatEnabledChannelCrudResult
-                            .InnerResults
-                            .OfType<ChatSyncCrudResult>()
-                            .SelectMany( r => r.Created )
-                    );
-
-                    channelMemberCrudResult.Updated.UnionWith(
-                        chatEnabledChannelCrudResult
-                            .InnerResults
-                            .OfType<ChatSyncCrudResult>()
-                            .SelectMany( r => r.Updated )
-                    );
-
-                    channelMemberCrudResult.Deleted.UnionWith(
-                        chatEnabledChannelCrudResult
-                            .InnerResults
-                            .OfType<ChatSyncCrudResult>()
-                            .SelectMany( r => r.Deleted )
-                    );
-
-                    // Aggregate the chat user CRUD results from the channel[member] sync operations.
-                    chatUserCrudResult.Skipped.UnionWith(
+                    // Aggregate the channel member user CRUD results from the chat-enabled group sync operation.
+                    // There should be no deletions here.
+                    rockToChatUsersResult.Skipped.UnionWith(
                         chatEnabledChannelCrudResult
                             .InnerResults
                             .OfType<ChatSyncCrudResult>()
@@ -573,7 +613,7 @@ namespace Rock.Jobs
                             .Select( r => r.PersonId.ToString() )
                     );
 
-                    chatUserCrudResult.Created.UnionWith(
+                    rockToChatUsersResult.Created.UnionWith(
                         chatEnabledChannelCrudResult
                             .InnerResults
                             .OfType<ChatSyncCrudResult>()
@@ -584,7 +624,7 @@ namespace Rock.Jobs
                             .Select( r => r.PersonId.ToString() )
                     );
 
-                    chatUserCrudResult.Updated.UnionWith(
+                    rockToChatUsersResult.Updated.UnionWith(
                         chatEnabledChannelCrudResult
                             .InnerResults
                             .OfType<ChatSyncCrudResult>()
@@ -595,31 +635,32 @@ namespace Rock.Jobs
                             .Select( r => r.PersonId.ToString() )
                     );
 
-                    stopwatch.Stop();
+                    rockToChatStopwatch.Stop();
 
-                    taskResult = CreateAndAddNewTaskResult( section, "Rock Groups to Chat Channels", stopwatch.Elapsed );
+                    taskResult = CreateAndAddNewTaskResult( section, "Rock Groups to Chat Channels", rockToChatStopwatch.Elapsed );
 
-                    if ( channelExceptions.Any() )
+                    if ( rockToChatChannelsExceptions.Any() )
                     {
-                        taskResult.Exception = channelExceptions.Count == 1
-                            ? channelExceptions.First()
-                            : new AggregateException( "One or more exceptions occurred while syncing groups to chat channels.", channelExceptions );
+                        taskResult.Exception = ChatHelper.GetFirstOrAggregateException(
+                            rockToChatChannelsExceptions,
+                            "One or more exceptions occurred while syncing groups to chat channels."
+                        );
                     }
 
-                    AddCrudDetailsToTaskResult( taskResult, channelCrudResult, "Channel" );
-                    AddCrudDetailsToTaskResult( taskResult, channelMemberCrudResult, "Channel Member" );
+                    AddCrudDetailsToTaskResult( taskResult, rockToChatChannelsResult, "Channel" );
+                    AddCrudDetailsToTaskResult( taskResult, rockToChatChannelMembersResult, "Channel Member" );
                 }
             }
 
-            // ----------------------------------------------------------------------
-            // 7) Sync any non-deceased people who haven't already been synced above.
+            // -----------------------------------------------------------------------
+            // 1h) Sync any non-deceased people who haven't already been synced above.
 
-            chatUserStopwatch.Start();
+            rockToChatUsersStopwatch.Start();
 
-            var chatUserPersonIds = personService.GetNonDeceasedChatUserPersonIds().ToList();
+            var chatUserPersonIds = personService.GetNonDeceasedChatUserPersonIdsQuery().ToList();
 
             // Filter down to those people who haven't already been synced above.
-            var alreadySyncedPersonIds = chatUserCrudResult.Unique.Select( a => a.AsInteger() ).ToList();
+            var alreadySyncedPersonIds = rockToChatUsersResult.Unique.Select( a => a.AsInteger() ).ToList();
             var syncCommands = chatUserPersonIds
                 .Where( personId => !alreadySyncedPersonIds.Contains( personId ) )
                 .Select( personId =>
@@ -634,28 +675,29 @@ namespace Rock.Jobs
             if ( syncCommands.Any() )
             {
                 var createOrUpdateUsersResult = await chatHelper.CreateOrUpdateChatUsersAsync( syncCommands );
-
                 if ( createOrUpdateUsersResult != null )
                 {
+                    // Add any exceptions encountered at the global chat user sync stage.
                     if ( createOrUpdateUsersResult.HasException )
                     {
-                        chatUserExceptions.Add( createOrUpdateUsersResult.Exception );
+                        rockToChatUsersExceptions.Add( createOrUpdateUsersResult.Exception );
                     }
 
-                    // Aggregate the chat user CRUD results from this last person sync operation.
-                    chatUserCrudResult.Skipped.UnionWith(
+                    // Aggregate the chat user CRUD results from the global chat user sync operation.
+                    // There should be no deletions here.
+                    rockToChatUsersResult.Skipped.UnionWith(
                         createOrUpdateUsersResult.UserResults
                             .Where( r => r.SyncTypePerformed == ChatSyncType.Skip )
                             .Select( r => r.PersonId.ToString() )
                     );
 
-                    chatUserCrudResult.Created.UnionWith(
+                    rockToChatUsersResult.Created.UnionWith(
                         createOrUpdateUsersResult.UserResults
                             .Where( r => r.SyncTypePerformed == ChatSyncType.Create )
                             .Select( r => r.PersonId.ToString() )
                     );
 
-                    chatUserCrudResult.Updated.UnionWith(
+                    rockToChatUsersResult.Updated.UnionWith(
                         createOrUpdateUsersResult.UserResults
                             .Where( r => r.SyncTypePerformed == ChatSyncType.Update )
                             .Select( r => r.PersonId.ToString() )
@@ -663,34 +705,30 @@ namespace Rock.Jobs
                 }
             }
 
-            chatUserStopwatch.Stop();
-            taskResult = CreateAndAddNewTaskResult( section, "Rock People to Chat Person Records", chatUserStopwatch.Elapsed );
+            rockToChatUsersStopwatch.Stop();
 
-            if ( chatUserExceptions.Any() )
+            taskResult = CreateAndAddNewTaskResult( section, "Rock People to Chat Person Records", rockToChatUsersStopwatch.Elapsed );
+
+            if ( rockToChatUsersExceptions.Any() )
             {
                 taskResult.Exception = ChatHelper.GetFirstOrAggregateException(
-                    chatUserExceptions,
+                    rockToChatUsersExceptions,
                     "Exceptions occurred while syncing Rock People to Chat Person records."
                 );
             }
 
-            AddCrudDetailsToTaskResult( taskResult, chatUserCrudResult, "Chat Person" );
+            AddCrudDetailsToTaskResult( taskResult, rockToChatUsersResult, "Chat Person" );
 
             if ( globallyBannedChatUserKeys.Any() )
             {
                 var count = globallyBannedChatUserKeys.Count;
                 taskResult.Details.Add( $"{count:N0} {"Chat Person".PluralizeIf( count > 1 )} Globally Banned" );
             }
-        }
 
-        /// <summary>
-        /// Ensures that all chat-related data in the external chat system is in sync with the corresponding data in Rock.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="chatHelper">The chat helper.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        private async Task SyncDataFromChatToRock( RockContext rockContext, ChatHelper chatHelper )
-        {
+            #endregion 1) Rock-to-Chat Sync
+
+            #region 2) Chat-to-Rock Sync
+
             /*
                 3/14/2025 - JPH
 
@@ -702,28 +740,30 @@ namespace Rock.Jobs
                 Reason: Treat Rock as the primary system of truth, with the external chat system as the secondary.
              */
 
-            var stopwatch = new Stopwatch();
+            var chatToRockStopwatch = new Stopwatch();
 
-            var section = CreateAndAddResultSection( "Chat-to-Rock Sync:" );
-            var taskResult = CreateAndAddNewTaskResult( section, "Chat Channels to Rock Groups", TimeSpan.Zero );
+            section = CreateAndAddResultSection( "Chat-to-Rock Sync:" );
 
-            // ----------------------------------
-            // 1) Create any missing Rock groups.
+            // -----------------------------------
+            // 2a) Create any missing Rock groups.
 
-            stopwatch.Start();
+            taskResult = CreateAndAddNewTaskResult( section, "Chat Channels to Rock Groups", TimeSpan.Zero );
 
-            // Start by querying the external chat system for a complete list of channels.
-            var chatChannelsResult = await chatHelper.GetAllChatChannelsAsync();
-            if ( chatChannelsResult?.ChatChannels?.Any() != true )
+            chatToRockStopwatch.Restart();
+
+            // Start by querying the external chat system for a complete list of chat channels.
+            var getChatChannelsResult = await chatHelper.GetAllChatChannelsAsync();
+            if ( getChatChannelsResult == null || getChatChannelsResult.HasException || !getChatChannelsResult.ChatChannels.Any() )
             {
-                stopwatch.Stop();
+                chatToRockStopwatch.Stop();
 
-                taskResult.Elapsed = stopwatch.Elapsed;
+                taskResult.Elapsed = chatToRockStopwatch.Elapsed;
                 taskResult.Details.Add( "0 Channels Retrieved" );
 
-                if ( chatChannelsResult?.HasException == true )
+                // Add any exceptions encountered while getting external chat channels.
+                if ( getChatChannelsResult?.HasException == true )
                 {
-                    taskResult.Exception = chatChannelsResult.Exception;
+                    taskResult.Exception = getChatChannelsResult.Exception;
                 }
                 else
                 {
@@ -736,34 +776,30 @@ namespace Rock.Jobs
                 return;
             }
 
-            var chatToRockSyncExceptions = new List<Exception>();
-            if ( chatChannelsResult.HasException )
-            {
-                chatToRockSyncExceptions.Add( chatChannelsResult.Exception );
-            }
-
-            // Continue by getting existing Rock groups (including those that are archived and not currently chat-enabled).
-            var rockChatGroups = new GroupService( rockContext ).GetRockChatGroups( includeArchivedAndDisabled: true );
-
-            var channelSyncCommands = new List<SyncChatChannelToRockCommand>();
-            var groupCrudResult = new ChatSyncCrudResult();
+            // Continue by getting existing Rock groups.
+            var existingRockChatGroups = groupService.GetRockChatGroups() ?? new List<RockChatGroup>();
 
             // Collect any Rock groups along the way, whose members should be synced.
-            var rockChatGroupsRequiringMemberSync = new List<RockChatGroup>();
+            var groupsRequiringMemberSync = new List<GroupCache>();
 
-            foreach ( var chatChannel in chatChannelsResult.ChatChannels )
+            var chatToRockGroupsResult = new ChatSyncCrudResult();
+            var chatToRockGroupsExceptions = new List<Exception>();
+            var chatToRockGroupsCommands = new List<SyncChatChannelToRockCommand>();
+
+            // Spin through the external chat channels to determine if we need to create any Rock groups.
+            foreach ( var chatChannel in getChatChannelsResult.ChatChannels )
             {
                 // Find the Rock group matching this external chat channel.
-                var rockChatGroup = rockChatGroups.FirstOrDefault( g => g.ChatChannelKey == chatChannel.Key );
-                if ( rockChatGroup != null )
+                var existingRockChatGroup = existingRockChatGroups.FirstOrDefault( g => g.ChatChannelKey == chatChannel.Key );
+                if ( existingRockChatGroup != null )
                 {
                     // This channel already has a Rock group representation; no need to create it.
-                    groupCrudResult.Skipped.Add( rockChatGroup.GroupId.ToString() );
+                    chatToRockGroupsResult.Skipped.Add( existingRockChatGroup.GroupId.ToString() );
 
                     // However, we will sync the members if it's currently chat-enabled.
-                    if ( rockChatGroup.IsChatEnabled )
+                    if ( existingRockChatGroup.IsChatEnabled )
                     {
-                        rockChatGroupsRequiringMemberSync.Add( rockChatGroup );
+                        groupsRequiringMemberSync.Add( GroupCache.Get( existingRockChatGroup.GroupId ) );
                     }
 
                     continue;
@@ -789,64 +825,68 @@ namespace Rock.Jobs
                 {
                     GroupTypeId = groupTypeId,
                     ChatChannelKey = chatChannel.Key,
-                    GroupName = chatChannel.Name
+                    GroupName = chatChannel.Name,
+                    IsActive = chatChannel.IsActive
                 };
 
-                channelSyncCommands.Add( syncCommand );
+                chatToRockGroupsCommands.Add( syncCommand );
             }
 
-            if ( channelSyncCommands.Any() )
+            // Try to create any missing Rock groups.
+            if ( chatToRockGroupsCommands.Any() )
             {
-                // Try to create the Rock groups.
-                var channelSyncCrudResult = chatHelper.SyncChatChannelsToRock( channelSyncCommands );
+                var channelSyncCrudResult = chatHelper.SyncChatChannelsToRock( chatToRockGroupsCommands );
                 if ( channelSyncCrudResult != null )
                 {
+                    // Add any exceptions encountered at the group sync stage.
                     if ( channelSyncCrudResult.HasException )
                     {
-                        chatToRockSyncExceptions.Add( channelSyncCrudResult.Exception );
+                        chatToRockGroupsExceptions.Add( channelSyncCrudResult.Exception );
                     }
 
-                    groupCrudResult.Skipped.UnionWith( channelSyncCrudResult.Skipped );
-                    groupCrudResult.Created.UnionWith( channelSyncCrudResult.Created );
+                    // Aggregate the group CRUD results from this sync operation.
+                    chatToRockGroupsResult.Skipped.UnionWith( channelSyncCrudResult.Skipped ); // Already existed (another process beat this job?)
+                    chatToRockGroupsResult.Created.UnionWith( channelSyncCrudResult.Created ); // Newly-created
 
                     // Sync the members for any groups that were synced.
-                    rockChatGroupsRequiringMemberSync.AddRange(
-                        rockChatGroups.Where( g =>
-                            channelSyncCrudResult.Unique.Contains( g.GroupId.ToString() )
-                        )
+                    groupsRequiringMemberSync.AddRange(
+                        channelSyncCrudResult.Unique.Select( id => GroupCache.Get( id.ToString() ) )
                     );
                 }
             }
 
-            // -----------------------------------------
-            // 2) Create any missing Rock group members.
+            // ------------------------------------------
+            // 2b) Create any missing Rock group members.
 
-            var channelMemberSyncCommands = new List<SyncChatChannelMemberToRockCommand>();
-            var groupMemberCrudResult = new ChatSyncCrudResult();
+            var chatToRockGroupMembersResult = new ChatSyncCrudResult();
+            var chatToRockGroupMemberCommands = new List<SyncChatChannelMemberToRockCommand>();
 
-            foreach ( var rockChatGroup in rockChatGroupsRequiringMemberSync )
+            foreach ( var groupCache in groupsRequiringMemberSync )
             {
-                var groupId = rockChatGroup.GroupId;
-                var chatChannelKey = rockChatGroup.ChatChannelKey;
-                var chatChannelTypeKey = rockChatGroup.ChatChannelTypeKey;
+                var groupId = groupCache.Id;
+                var chatChannelKey = ChatHelper.GetChatChannelKey( groupId, groupCache.ChatChannelKey );
+                var chatChannelTypeKey = ChatHelper.GetChatChannelTypeKey( groupCache.GroupTypeId );
 
                 // Start by querying the external chat system for a list of channel members.
-                var chatChannelMembersResult = await chatHelper.GetChatChannelMembersAsync( chatChannelTypeKey, chatChannelKey );
-                if ( chatChannelMembersResult == null )
+                var getChatChannelMembersResult = await chatHelper.GetChatChannelMembersAsync( chatChannelTypeKey, chatChannelKey );
+                if ( getChatChannelMembersResult == null )
                 {
+                    Log( LogLevel.Warning, $"Unable to preform Chat-to-Rock sync when no Chat Channel Members response was received from the external chat system for channel with key = '{chatChannelKey}'." );
                     continue;
                 }
 
-                if ( chatChannelMembersResult.HasException )
+                // Add any exceptions encountered while getting external channel members.
+                if ( getChatChannelMembersResult.HasException )
                 {
-                    chatToRockSyncExceptions.Add( chatChannelMembersResult.Exception );
+                    chatToRockGroupsExceptions.Add( getChatChannelMembersResult.Exception );
+                    continue;
                 }
 
-                var channelMembersWithKeys = chatChannelMembersResult.ChatChannelMembers
-                    ?.Where( m => m?.ChatUserKey.IsNotNullOrWhiteSpace() == true )
+                var channelMembersWithKeys = getChatChannelMembersResult.ChatChannelMembers
+                    .Where( m => m?.ChatUserKey.IsNotNullOrWhiteSpace() == true )
                     .ToList();
 
-                if ( channelMembersWithKeys?.Any() != true )
+                if ( channelMembersWithKeys.Any() != true )
                 {
                     // No group members to create.
                     continue;
@@ -867,36 +907,43 @@ namespace Rock.Jobs
                         IsMuted = channelMember.IsChatMuted
                     };
 
-                    channelMemberSyncCommands.Add( syncCommand );
+                    chatToRockGroupMemberCommands.Add( syncCommand );
                 }
             }
 
-            if ( channelMemberSyncCommands.Any() )
+            // Try to create any missing Rock group members.
+            if ( chatToRockGroupMemberCommands.Any() )
             {
-                // Try to create the Rock group members.
-                var channelMemberCrudResult = chatHelper.SyncChatChannelMembersToRock( channelMemberSyncCommands );
+                var channelMemberCrudResult = chatHelper.SyncChatChannelMembersToRock( chatToRockGroupMemberCommands );
                 if ( channelMemberCrudResult != null )
                 {
+                    // Add any exceptions encountered at the group member sync stage.
                     if ( channelMemberCrudResult.HasException )
                     {
-                        chatToRockSyncExceptions.Add( channelMemberCrudResult.Exception );
+                        chatToRockGroupsExceptions.Add( channelMemberCrudResult.Exception );
                     }
 
-                    groupMemberCrudResult.Skipped.UnionWith( channelMemberCrudResult.Skipped );
-                    groupMemberCrudResult.Created.UnionWith( channelMemberCrudResult.Created );
+                    // Aggregate the group member CRUD results from this sync operation.
+                    chatToRockGroupMembersResult.Skipped.UnionWith( channelMemberCrudResult.Skipped ); // Already existed
+                    chatToRockGroupMembersResult.Created.UnionWith( channelMemberCrudResult.Created ); // Newly-created
                 }
             }
 
-            stopwatch.Stop();
-            taskResult.Elapsed = stopwatch.Elapsed;
+            chatToRockStopwatch.Stop();
+            taskResult.Elapsed = chatToRockStopwatch.Elapsed;
 
-            if ( chatToRockSyncExceptions.Any() )
+            if ( chatToRockGroupsExceptions.Any() )
             {
-                taskResult.Exception = ChatHelper.GetFirstOrAggregateException( chatToRockSyncExceptions, "Exceptions occurred while syncing Chat data to Rock." );
+                taskResult.Exception = ChatHelper.GetFirstOrAggregateException(
+                    chatToRockGroupsExceptions,
+                    "Exceptions occurred while syncing Chat data to Rock."
+                );
             }
 
-            AddCrudDetailsToTaskResult( taskResult, groupCrudResult, "Group", CrudMessage.Present );
-            AddCrudDetailsToTaskResult( taskResult, groupMemberCrudResult, "Group Member", CrudMessage.Present );
+            AddCrudDetailsToTaskResult( taskResult, chatToRockGroupsResult, "Group", CrudMessage.Present );
+            AddCrudDetailsToTaskResult( taskResult, chatToRockGroupMembersResult, "Group Member", CrudMessage.Present );
+
+            #endregion 2) Chat-to-Rock Sync
         }
 
         #endregion Synchronize Data
@@ -968,8 +1015,8 @@ namespace Rock.Jobs
 
             var interactionService = new InteractionService( rockContext );
 
-            // ----------------------------------------------------------------------------------------
-            // 1) Delete untrusted interactions from previous, unsuccessful runs (we'll recreate them).
+            // -----------------------------------------------------------------------------------------
+            // 2a) Delete untrusted interactions from previous, unsuccessful runs (we'll recreate them).
             if ( lastSuccessfulMessageDate.HasValue )
             {
                 stopwatch.Restart();
@@ -1022,8 +1069,8 @@ namespace Rock.Jobs
                 return $"{count:N0} {GetInteractionsLabel( count )} {CrudMessage.Created} for {interactionDate:d}";
             }
 
-            // ----------------------------------------------
-            // 2) Create new interactions, one day at a time.
+            // -----------------------------------------------
+            // 2b) Create new interactions, one day at a time.
             while ( messageDate < RockDateTime.Today )
             {
                 stopwatch.Restart();

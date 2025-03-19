@@ -21,7 +21,6 @@ using System.Threading.Tasks;
 
 using Rock.Communication.Chat.DTO;
 using Rock.Communication.Chat.Sync;
-using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Communication.Chat
@@ -137,12 +136,12 @@ namespace Rock.Communication.Chat
         /// Gets the "queryable" chat channel key for the provided <see cref="GroupCache"/>, to be used when querying the
         /// external chat system's API for an existing <see cref="ChatChannel"/>.
         /// </summary>
-        /// <param name="group">The <see cref="Group"/> for which to get the "queryable" chat channel key.</param>
+        /// <param name="rockChatGroup">The <see cref="RockChatGroup"/> for which to get the "queryable" chat channel key.</param>
         /// <returns>The "queryable" chat channel key.</returns>
         /// <remarks>
         /// For some chat providers, this might be the same value as <see cref="ChatChannel.Key"/>.
         /// </remarks>
-        string GetQueryableChatChannelKey( Group group );
+        string GetQueryableChatChannelKey( RockChatGroup rockChatGroup );
 
         /// <summary>
         /// Gets a list of <see cref="ChatChannel"/>s from the external chat system that match the provided keys.
@@ -291,6 +290,14 @@ namespace Rock.Communication.Chat
         /// whether the system user exists in the external chat system.
         /// </returns>
         Task<ChatSyncSetupResult> EnsureSystemUserExistsAsync();
+
+        /// <summary>
+        /// Gets a list of all <see cref="ChatUser.Key"/>s from the external chat system.
+        /// </summary>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="GetChatKeysResult"/>.
+        /// </returns>
+        Task<GetChatKeysResult> GetAllChatUserKeysAsync();
 
         /// <summary>
         /// Gets a list of <see cref="ChatUser"/>s from the external chat system that match the provided keys.

@@ -280,6 +280,12 @@ namespace Rock.Web.Cache
             return GroupTypeCache.Get( this.GroupTypeId )?.IsChatChannelAlwaysShown ?? false;
         }
 
+        /// <inheritdoc cref="Group.GetIsChatChannelActive"/>
+        internal bool GetIsChatChannelActive()
+        {
+            return this.GetIsChatEnabled() && this.IsActive && !this.IsArchived;
+        }
+
         #endregion
 
         #region Navigation Properties
