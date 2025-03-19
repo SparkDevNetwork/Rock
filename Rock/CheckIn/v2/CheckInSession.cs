@@ -419,6 +419,7 @@ namespace Rock.CheckIn.v2
                 {
                     var activeAttendances = attendee.RecentAttendances
                         .Where( a => a.StartDateTime >= today
+                            && a.DidAttend
                             && !a.EndDateTime.HasValue )
                         .ToList();
 

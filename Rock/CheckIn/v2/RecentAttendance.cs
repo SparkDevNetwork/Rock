@@ -62,6 +62,11 @@ namespace Rock.CheckIn.v2
         public DateTime? EndDateTime { get; set; }
 
         /// <summary>
+        /// Determines if the attendance record was marked as attended.
+        /// </summary>
+        public bool DidAttend { get; set; }
+
+        /// <summary>
         /// Gets or sets the person identifier.
         /// </summary>
         /// <value>
