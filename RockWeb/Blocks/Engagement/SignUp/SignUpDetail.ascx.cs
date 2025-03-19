@@ -2940,7 +2940,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             BuildProjectTypeRadioButtonList( group );
 
-            if ( !IsAuthorizedToAdministrate( group ) )
+            if ( !IsAuthorizedToEdit( group ) )
             {
                 wpMemberAttributes.Visible = false;
                 wpMemberOpportunityAttributes.Visible = false;
