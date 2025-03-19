@@ -710,6 +710,7 @@ $(document).ready(function() {
 
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
                 linkedPages.Add( "DetailPage", LinkedPageRoute( AttributeKey.DetailPage ) );
+                linkedPages.Add( "DetailPageRoute", GetAttributeValue( AttributeKey.DetailPage ) );
 
                 List<ContentChannelItem> contentItemList = null;
                 List<TagModel> tags = null;

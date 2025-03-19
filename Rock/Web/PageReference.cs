@@ -915,6 +915,10 @@ namespace Rock.Web
                             instanceAsRockBlockType.BlockCache = block;
                             instanceAsRockBlockType.PageCache = page;
                         }
+                        else if ( instance is RockBlock instanceAsRockBlock )
+                        {
+                            instanceAsRockBlock.SetBlock( page, block, false, false );
+                        }
 
                         /*
 	                        09/11/2024 - JSC
