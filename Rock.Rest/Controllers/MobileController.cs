@@ -25,6 +25,7 @@ using System.Web.Http;
 using Microsoft.Extensions.Logging;
 
 using Rock.Common.Mobile;
+using Rock.Common.Mobile.Blocks.Communication.Chat;
 using Rock.Common.Mobile.Enums;
 using Rock.Communication.Chat;
 using Rock.Logging;
@@ -136,9 +137,6 @@ namespace Rock.Rest.Controllers
                     {
                         var chatAuth = await chatHelper.GetChatUserAuthenticationAsync( person.Id, false );
 
-                        // This should really never be null, but if it were
-                        // to be, it would break launching your mobile app, so
-                        // just in case.
                         if ( chatAuth != null )
                         {
                             launchPacket.ChatPerson = new ChatPersonBag
@@ -146,11 +144,6 @@ namespace Rock.Rest.Controllers
                                 Token = chatAuth.Token,
                                 UserId = chatAuth.ChatUserKey
                             };
-                        }
-                        else
-                        {
-                            var logger = RockLogger.LoggerFactory.CreateLogger<MobileController>();
-                            logger.LogError( "Failed to get chat user authentication for person {PersonId}. This should never happen.", person.Id );
                         }
                     }
                 }                

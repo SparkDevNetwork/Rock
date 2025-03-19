@@ -3054,7 +3054,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         private void BuildProjectTypeRadioButtonList( Group group )
         {
             var projectTypeAttribute = group.Attributes.FirstOrDefault( a => a.Key == AttributeKey.ProjectType ).Value;
-            if ( projectTypeAttribute == null || !projectTypeAttribute.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+            if ( projectTypeAttribute == null )
             {
                 pnlProjectType.Visible = false;
                 return;
