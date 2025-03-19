@@ -36,7 +36,10 @@ import {
     ValueProvider,
     ValueProviderHooks,
     WeakPair,
-    ButtonWidthValues
+    ButtonWidthValues,
+    ComponentStructure,
+    ComponentTypeName,
+    HorizontalAlignment
 } from "./types.partial";
 import {
     addRuleset,
@@ -48,18 +51,26 @@ import {
     DefaultBodyWidth,
     DefaultEmailBackgroundColor,
     findElements,
+    getBorderWrapperCellSelector,
+    getBorderWrapperTableSelector,
+    getComponentTypeName,
+    getMarginWrapperCellSelector,
+    getMarginWrapperTableSelector,
+    getPaddingWrapperCellSelector,
+    getPaddingWrapperTableSelector,
     GlobalStylesCssSelectors,
     numberToStringConverter,
     percentageConverter,
     pixelConverter,
     RockStylesCssClass,
-    stringConverter,
-    updateStyleElementTextContent
+    stringConverter
 } from "./utils.partial";
+import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
 import { toGuidOrNull } from "@Obsidian/Utility/guid";
 import { Enumerable } from "@Obsidian/Utility/linq";
 import { isNotNullish, isNullish } from "@Obsidian/Utility/util";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { isHTMLElement } from "@Obsidian/Utility/dom";
 
 export function inlineStyleProvider<T>(
     element: HTMLElement,
@@ -412,8 +423,30 @@ export function shorthandInlineStyleProvider<T>(
     };
 }
 
+function isCssMediaRule(value: CSSRule): value is CSSMediaRule {
+    const ownerWindow = value.parentStyleSheet?.ownerNode?.ownerDocument.defaultView;
+
+    return !!value && !!ownerWindow?.CSSMediaRule && value instanceof ownerWindow.CSSMediaRule;
+}
+
+function findMediaRule(element: Element, styleCssClass: string, mediaQuery: string): CSSMediaRule | null {
+    const styleElements = findElements(element, styleCssClass, "");
+
+    if (!styleElements?.styleSheet) {
+        return null;
+    }
+
+    const match = Enumerable
+        .from(styleElements.styleSheet.cssRules)
+        .ofType(isCssMediaRule)
+        .where(rule => rule.conditionText === mediaQuery)
+        .firstOrDefault();
+
+    return match ?? null;
+}
+
 /**
- * Creates a ValueProvider for a stylesheet pixel value.
+ * Creates a ValueProvider for a stylesheet value.
  *
  * @param element The element that owns the stylesheet.
  * @param styleCssClass The CSS class of the stylesheet.
@@ -467,7 +500,7 @@ export function styleSheetProvider<T>(
             hooks?.onStyleUpdated?.(ruleset.style, targetValue);
             hooks?.onTargetValueUpdated?.(targetValue);
 
-            updateStyleElementTextContent(elements);
+            updateStyleElementTextContent(elements.styleElement, elements.styleSheet);
         }
     });
 
@@ -559,7 +592,7 @@ export function shorthandStyleSheetProvider<T extends number | string | boolean 
                         shorthand: null
                     });
 
-                    updateStyleElementTextContent(elements);
+                    updateStyleElementTextContent(elements.styleElement, elements.styleSheet);
                 }
             }
         });
@@ -598,7 +631,7 @@ export function shorthandStyleSheetProvider<T extends number | string | boolean 
                 top: targetValue
             });
 
-            updateStyleElementTextContent(elements);
+            updateStyleElementTextContent(elements.styleElement, elements.styleSheet);
         }
     });
 
@@ -635,7 +668,7 @@ export function shorthandStyleSheetProvider<T extends number | string | boolean 
                 bottom: targetValue
             });
 
-            updateStyleElementTextContent(elements);
+            updateStyleElementTextContent(elements.styleElement, elements.styleSheet);
         }
     });
 
@@ -672,7 +705,7 @@ export function shorthandStyleSheetProvider<T extends number | string | boolean 
                 left: targetValue
             });
 
-            updateStyleElementTextContent(elements);
+            updateStyleElementTextContent(elements.styleElement, elements.styleSheet);
         }
     });
 
@@ -709,7 +742,7 @@ export function shorthandStyleSheetProvider<T extends number | string | boolean 
                 right: targetValue
             });
 
-            updateStyleElementTextContent(elements);
+            updateStyleElementTextContent(elements.styleElement, elements.styleSheet);
         }
     });
 
@@ -764,7 +797,7 @@ export function shorthandStyleSheetProvider<T extends number | string | boolean 
                 shorthand: targetValue
             });
 
-            updateStyleElementTextContent(elements);
+            updateStyleElementTextContent(elements.styleElement, elements.styleSheet);
         }
     });
 
@@ -1390,7 +1423,7 @@ export function createDomWatcherProvider<T>(
     selector: string,
     valueProviderFactory: (element: Element) => ValueProvider<T>,
     fallback: T,
-    options?: { includeSelf?: boolean | string; }
+    options?: { includeSelf?: boolean | string; additionalFilter?: (el: Element) => boolean; additionalProjection?: (el: Element) => Element; }
 ): ValueProvider<T> {
     const valueProviderKeys = new Set<Element>();
     let valueProviders = new WeakMap<Element, { provider: ValueProvider<T> }>();
@@ -1486,6 +1519,271 @@ export function createDomWatcherProvider<T>(
     };
 }
 
+
+
+export function createDomWatcherShorthandProvider<T>(
+    root: Document | Element,
+    selector: string,
+    valueProviderFactory: (element: Element) => ShorthandValueProvider<T>,
+    fallback: T,
+    options?: { includeSelf?: boolean | string; additionalFilter?: (el: Element) => boolean; additionalProjection?: (el: Element) => Element; }
+): ShorthandValueProvider<T> {
+    let isDisposed: boolean = false;
+    const valueProviderKeys = new Set<Element>();
+    let valueProviders = new WeakMap<Element, { provider: ShorthandValueProvider<T> }>();
+
+    const firstProvider = getValueProviders().firstOrDefault();
+    const shorthandValue = ref<T>(firstProvider?.shorthandValue ?? fallback);
+    const topValue = ref<T>(firstProvider?.topValue ?? fallback);
+    const bottomValue = ref<T>(firstProvider?.bottomValue ?? fallback);
+    const rightValue = ref<T>(firstProvider?.rightValue ?? fallback);
+    const leftValue = ref<T>(firstProvider?.leftValue ?? fallback);
+
+    // Watch for element changes.
+    const domWatcher = createDomWatcher(root, selector, options);
+    domWatcher.onElementFound((el) => {
+        const provider = addValueProvider(el);
+
+        const isFirstValueProvider = valueProviderKeys.size === 1;
+
+        if (isFirstValueProvider
+            && isNullish(shorthandValue.value)
+            && isNullish(topValue.value)
+            && isNullish(bottomValue.value)
+            && isNullish(rightValue.value)
+            && isNullish(leftValue.value)) {
+            // Get the value from the first provider.
+            if (!isNullish(provider.shorthandValue)) {
+                (shorthandValue as Ref<T>).value = provider.shorthandValue;
+            }
+            else {
+                (topValue as Ref<T>).value = provider.topValue;
+                (bottomValue as Ref<T>).value = provider.bottomValue;
+                (rightValue as Ref<T>).value = provider.rightValue;
+                (leftValue as Ref<T>).value = provider.leftValue;
+            }
+        }
+        else {
+            // Ensure the new value provider gets the current value.
+            if (!isNullish(shorthandValue.value)) {
+                provider.shorthandValue = (shorthandValue as Ref<T>).value;
+            }
+            else {
+                provider.topValue = (topValue as Ref<T>).value;
+                provider.bottomValue = (bottomValue as Ref<T>).value;
+                provider.rightValue = (rightValue as Ref<T>).value;
+                provider.leftValue = (leftValue as Ref<T>).value;
+            }
+        }
+    });
+    domWatcher.onElementRemoved(removeValueProvider);
+
+    function addValueProvider(element: Element): ShorthandValueProvider<T> {
+        // Ensure the key exists.
+        if (!valueProviderKeys.has(element)) {
+            valueProviderKeys.add(element);
+        }
+
+        if (valueProviders.has(element)) {
+            return valueProviders.get(element)!.provider;
+        }
+        else {
+            const provider = valueProviderFactory(element);
+            valueProviders.set(element, { provider });
+            return provider;
+        }
+    }
+
+    function removeValueProvider(element: Element): ShorthandValueProvider<T> | undefined {
+        if (valueProviderKeys.has(element)) {
+            valueProviderKeys.delete(element);
+        }
+
+        if (valueProviders.has(element)) {
+            const provider = valueProviders.get(element)!.provider;
+            valueProviders.delete(element);
+            return provider;
+        }
+    }
+
+    function getValueProviders(): Enumerable<ShorthandValueProvider<T>> {
+        return Enumerable.from(valueProviderKeys)
+            .where(key => valueProviders.has(key))
+            .select(key => valueProviders.get(key)!.provider);
+    }
+
+    const shorthandWatcher = watch(shorthandValue, (newValue) => {
+        // Set the new value in all providers.
+        getValueProviders().forEach(provider => {
+            provider.shorthandValue = newValue as T;
+        });
+    });
+
+    const topWatcher = watch(topValue, (newValue) => {
+        // Set the new value in all providers.
+        getValueProviders().forEach(provider => {
+            provider.topValue = newValue as T;
+        });
+    });
+
+    const bottomWatcher = watch(bottomValue, (newValue) => {
+        // Set the new value in all providers.
+        getValueProviders().forEach(provider => {
+            provider.bottomValue = newValue as T;
+        });
+    });
+
+    const rightWatcher = watch(rightValue, (newValue) => {
+        // Set the new value in all providers.
+        getValueProviders().forEach(provider => {
+            provider.rightValue = newValue as T;
+        });
+    });
+
+    const leftWatcher = watch(leftValue, (newValue) => {
+        // Set the new value in all providers.
+        getValueProviders().forEach(provider => {
+            provider.leftValue = newValue as T;
+        });
+    });
+
+    return {
+        get shorthandValue(): T {
+            return shorthandValue.value as T;
+        },
+
+        set shorthandValue(newValue: T) {
+            (shorthandValue as Ref<T>).value = newValue;
+        },
+
+        get topValue(): T {
+            return topValue.value as T;
+        },
+
+        set topValue(newValue: T) {
+            (topValue as Ref<T>).value = newValue;
+        },
+
+        get bottomValue(): T {
+            return bottomValue.value as T;
+        },
+
+        set bottomValue(newValue: T) {
+            (bottomValue as Ref<T>).value = newValue;
+        },
+
+        get rightValue(): T {
+            return rightValue.value as T;
+        },
+
+        set rightValue(newValue: T) {
+            (rightValue as Ref<T>).value = newValue;
+        },
+
+        get leftValue(): T {
+            return leftValue.value as T;
+        },
+
+        set leftValue(newValue: T) {
+            (leftValue as Ref<T>).value = newValue;
+        },
+
+        get isDisposed(): boolean {
+            return isDisposed;
+        },
+
+        dispose() {
+            shorthandWatcher();
+            topWatcher();
+            bottomWatcher();
+            rightWatcher();
+            leftWatcher();
+
+            // Copy the keys array since keys will be removed from the original array.
+            [...valueProviderKeys].forEach(element => {
+                const provider = removeValueProvider(element);
+
+                if (provider) {
+                    provider.dispose();
+                }
+            });
+
+            // To be safe, clear the keys and provider objects too.
+            valueProviderKeys.clear();
+            valueProviders = new WeakMap<Element, { provider: ShorthandValueProvider<T> }>();
+
+            domWatcher.dispose();
+
+            isDisposed = true;
+        },
+    };
+}
+
+export function createSetterOnlyShorthandProvider<T>(
+    provider: ShorthandValueProvider<T>
+): ShorthandValueProvider<T> {
+    const internalShorthandValue = ref<T>(provider.shorthandValue);
+    const internalTopValue = ref<T>(provider.topValue);
+    const internalBottomValue = ref<T>(provider.bottomValue);
+    const internalRightValue = ref<T>(provider.rightValue);
+    const internalLeftValue = ref<T>(provider.leftValue);
+
+    return {
+        get shorthandValue(): T {
+            return internalShorthandValue.value as T;
+        },
+
+        set shorthandValue(newValue: T) {
+            (internalShorthandValue as Ref<T>).value = newValue;
+            provider.shorthandValue = newValue;
+        },
+
+        get topValue(): T {
+            return internalTopValue.value as T;
+        },
+
+        set topValue(newValue: T) {
+            (internalTopValue as Ref<T>).value = newValue;
+            provider.topValue = newValue;
+        },
+
+        get bottomValue(): T {
+            return internalBottomValue.value as T;
+        },
+
+        set bottomValue(newValue: T) {
+            (internalBottomValue as Ref<T>).value = newValue;
+            provider.bottomValue = newValue;
+        },
+
+        get rightValue(): T {
+            return internalRightValue.value as T;
+        },
+
+        set rightValue(newValue: T) {
+            (internalRightValue as Ref<T>).value = newValue;
+            provider.rightValue = newValue;
+        },
+
+        get leftValue(): T {
+            return internalLeftValue.value as T;
+        },
+
+        set leftValue(newValue: T) {
+            (internalLeftValue as Ref<T>).value = newValue;
+            provider.leftValue = newValue;
+        },
+
+        get isDisposed(): boolean {
+            return provider.isDisposed;
+        },
+
+        dispose() {
+            provider.dispose();
+        }
+    };
+}
+
 const globalBodyWidthProviderCache = new WeakPair<Document, ValueProvider<number | null | undefined>>();
 
 export function createGlobalBodyWidthProvider(
@@ -1499,7 +1797,7 @@ export function createGlobalBodyWidthProvider(
     // Watch for body inner table elements.
     const widthAttributeProvider = createDomWatcherProvider(
         document.body,
-        `${GlobalStylesCssSelectors.bodyWidth}:not([data-body-width-component="true"])`,
+        `${GlobalStylesCssSelectors.bodyWidth}:not([data-component-body-width="true"])`,
         (el) => attributeProvider(el, "width", numberToStringConverter),
         undefined
     );
@@ -1614,11 +1912,185 @@ function createDefaultValueProvider<T>(
 
 const globalBodyBackgroundColorProviderCache = new WeakPair<Document, ValueProvider<string | null | undefined>>();
 
-export function createGlobalBodyBackgroundColorProvider(
+function getComponentClass(componentElement: Element): string {
+    return Enumerable
+        .from(componentElement.classList)
+        .where(c => c.startsWith("component-"))
+        .firstOrDefault() ?? "";
+}
+
+const hexConverter: ValueConverter<string | null | undefined, string | null> = {
+    toSource(targetValue: string | null): string | null | undefined {
+        return targetValue;
+    },
+
+    toTarget(sourceValue: string | null | undefined): string | null {
+        if (isNullish(sourceValue)) {
+            return null;
+        }
+        else if (sourceValue === "") {
+            return "";
+        }
+        else {
+            // TODO Handle the case where sourceValue is not a valid color (still being entered).
+            const rockColor = new RockColor(sourceValue);
+            return rockColor.toHex();
+        }
+    }
+};
+
+export function createBackgroundColorProvider(
+    wrappers: ComponentStructure
+): ValueProvider<string | null | undefined> {
+    const backgroundColorInlineStyleProvider = inlineStyleProvider(
+        wrappers.marginWrapper.borderWrapper.paddingWrapper.td,
+        "background-color",
+        stringConverter,
+        null
+    );
+
+    const bgcolorAttributeProvider = attributeProvider(
+        wrappers.marginWrapper.borderWrapper.paddingWrapper.table,
+        "bgcolor",
+        hexConverter,
+        undefined
+    );
+
+    const value = ref<string | null | undefined>(backgroundColorInlineStyleProvider.value);
+
+    const watcher = watch(value, (newValue) => {
+        backgroundColorInlineStyleProvider.value = newValue;
+        bgcolorAttributeProvider.value = newValue;
+    });
+
+    return {
+        get value() {
+            return value.value;
+        },
+        set value(newValue) {
+            value.value = newValue;
+        },
+        dispose() {
+            watcher();
+            bgcolorAttributeProvider.dispose();
+            backgroundColorInlineStyleProvider.dispose();
+        }
+    };
+}
+
+export function createComponentBackgroundColorProvider(
+    componentElement: Element
+): ValueProvider<string | null | undefined> {
+    const componentClass = getComponentClass(componentElement);
+    if (!componentClass) {
+        throw new Error("Unable to create component background color provider. Element is not a valid component.");
+    }
+
+    const componentTypeName = getComponentTypeName(componentElement);
+
+    const backgroundColorInlineStyleProvider = createDomWatcherProvider(
+        componentElement,
+        getPaddingWrapperCellSelector(componentTypeName),
+        (el) => {
+            return inlineStyleProvider(
+                el as HTMLElement,
+                "background-color",
+                stringConverter,
+                null,
+                {
+                    onSourceValueUpdated(value) {
+                        if (value) {
+                            if (isHTMLElement(el)) {
+                                componentElement.setAttribute("data-component-background-color", "true");
+                            }
+                        }
+                        else {
+                            if (isHTMLElement(el)) {
+                                // `delete el.dataset["key"]` doesn't always work.
+                                // Using `el.removeAttribute("data-key")` instead.
+                                componentElement.removeAttribute("data-component-background-color");
+                            }
+                        }
+                    }
+                }
+            );
+        },
+        undefined,
+        {
+            includeSelf: true
+        }
+    );
+
+    const bgcolorAttributeProvider = createDomWatcherProvider(
+        componentElement,
+        getPaddingWrapperTableSelector(componentTypeName),
+        (el) => attributeProvider(el, "bgcolor", hexConverter, undefined),
+        backgroundColorInlineStyleProvider.value,
+        {
+            includeSelf: true
+        }
+    );
+
+    const value = ref<string | null | undefined>(backgroundColorInlineStyleProvider.value);
+
+    const watcher = watch(value, (newValue) => {
+        backgroundColorInlineStyleProvider.value = newValue;
+        bgcolorAttributeProvider.value = newValue;
+    });
+
+    return {
+        get value() {
+            return value.value;
+        },
+        set value(newValue) {
+            value.value = newValue;
+        },
+        dispose() {
+            watcher();
+            bgcolorAttributeProvider.dispose();
+            backgroundColorInlineStyleProvider.dispose();
+        }
+    };
+}
+
+const globalButtonBackgroundColorProviderCache = new WeakPair<Document, ValueProvider<string | null | undefined>>();
+
+export function createGlobalButtonBackgroundColorProvider(
     document: Document
 ): ValueProvider<string | null | undefined> {
-    if (globalBodyBackgroundColorProviderCache.has(document)) {
-        throw new ProviderAlreadyExistsError("GlobalBodyBackgroundColorProvider");
+    const provider = createGlobalComponentBackgroundColorProvider(
+        document,
+        "button",
+        "GlobalButtonBackgroundColorProvider",
+        globalButtonBackgroundColorProviderCache
+    );
+
+    if (isNullish(provider.value)) {
+        // Set the default global button color.
+        provider.value = "#2196f3";
+    }
+
+    return provider;
+}
+
+export function getGlobalButtonBackgroundColorProvider(
+    document: Document
+): ValueProvider<string | null | undefined> {
+    if (!globalButtonBackgroundColorProviderCache.has(document)) {
+        throw new ProviderNotCreatedError("GlobalButtonBackgroundColorProvider");
+    }
+
+    return globalButtonBackgroundColorProviderCache.get(document)!;
+}
+
+function createGlobalComponentBackgroundColorProvider(
+    document: Document,
+    componentTypeName: ComponentTypeName,
+    providerName: string,
+    cache: WeakPair<Document, ValueProvider<string | null | undefined>>
+): ValueProvider<string | null | undefined> {
+    if (cache.has(document)) {
+        throw new ProviderAlreadyExistsError(providerName);
     }
 
     const head = document.body;
@@ -1626,15 +2098,17 @@ export function createGlobalBodyBackgroundColorProvider(
 
     const bgcolorAttributeProvider = createDomWatcherProvider(
         body,
-        `${GlobalStylesCssSelectors.bodyColor}:not([data-body-color-component="true"])`,
-        (el) => attributeProvider(el, "bgcolor", stringConverter),
+        `.component:not([data-component-background-color="true"]) ${getPaddingWrapperTableSelector(componentTypeName)}`,
+        (el) => {
+            return attributeProvider(el, "bgcolor", stringConverter);
+        },
         undefined
     );
 
     const backgroundColorStyleSheetProvider = styleSheetProvider(
         head,
         RockStylesCssClass,
-        GlobalStylesCssSelectors.bodyColor,
+        `.component:not([data-component-background-color="true"]) ${getPaddingWrapperCellSelector(componentTypeName)}`,
         "background-color",
         stringConverter
     );
@@ -1646,24 +2120,108 @@ export function createGlobalBodyBackgroundColorProvider(
         bgcolorAttributeProvider.value = newValue;
     });
 
-    const provider = createDefaultValueProvider(
-        {
-            get value(): string | null | undefined {
-                return value.value;
-            },
-            set value(newValue: string | null | undefined) {
-                value.value = newValue;
-            },
-            dispose() {
-                watcher();
-                backgroundColorStyleSheetProvider.dispose();
-                bgcolorAttributeProvider.dispose();
-            }
+    const provider: ValueProvider<string | null | undefined> = {
+        get value(): string | null | undefined {
+            return value.value;
         },
-        DefaultBodyColor
+
+        set value(newValue: string | null | undefined) {
+            value.value = newValue;
+        },
+
+        dispose() {
+            watcher();
+            backgroundColorStyleSheetProvider.dispose();
+            bgcolorAttributeProvider.dispose();
+        }
+    };
+
+    cache.set(document, provider);
+
+    return provider;
+}
+
+export function createComponentOuterBackgroundColorProvider(
+    componentElement: Element
+): ValueProvider<string | null | undefined> {
+    const componentClass = getComponentClass(componentElement);
+    const componentTypeName = getComponentTypeName(componentElement);
+    if (!componentClass) {
+        throw new Error("Unable to create component outer background color provider. Element is not a valid component.");
+    }
+
+    const backgroundColorInlineStyleProvider = createDomWatcherProvider(
+        componentElement,
+        getMarginWrapperCellSelector(componentTypeName),
+        (el) => inlineStyleProvider(
+            el as HTMLElement,
+            "background-color",
+            stringConverter,
+            null,
+            {
+                onSourceValueUpdated(value) {
+                    if (value) {
+                        componentElement.setAttribute("data-component-outer-background-color", "true");
+                    }
+                    else {
+                        // `delete el.dataset["key"]` doesn't always work.
+                        // Using `el.removeAttribute("data-key")` instead.
+                        componentElement.removeAttribute("data-component-outer-background-color");
+                    }
+                }
+            }
+        ),
+        undefined,
+        {
+            includeSelf: true
+        }
     );
 
-    globalBodyBackgroundColorProviderCache.set(document, provider);
+    const bgcolorAttributeProvider = createDomWatcherProvider(
+        componentElement,
+        `.${componentClass}.component.margin-wrapper`,
+        (el) => attributeProvider(el, "bgcolor", stringConverter),
+        backgroundColorInlineStyleProvider.value,
+        {
+            includeSelf: true
+        }
+    );
+
+    const value = ref<string | null | undefined>(backgroundColorInlineStyleProvider.value);
+
+    const watcher = watch(value, (newValue) => {
+        backgroundColorInlineStyleProvider.value = newValue;
+        bgcolorAttributeProvider.value = newValue;
+    });
+
+    return {
+        get value() {
+            return value.value;
+        },
+        set value(newValue) {
+            value.value = newValue;
+        },
+        dispose() {
+            watcher();
+            bgcolorAttributeProvider.dispose();
+            backgroundColorInlineStyleProvider.dispose();
+        }
+    };
+}
+
+export function createGlobalBodyBackgroundColorProvider(
+    document: Document
+): ValueProvider<string | null | undefined> {
+    const provider = createGlobalComponentBackgroundColorProvider(
+        document,
+        "row",
+        "GlobalBodyBackgroundColorProvider",
+        globalBodyBackgroundColorProviderCache
+    );
+
+    if (isNullish(provider.value)) {
+        provider.value = DefaultBodyColor;
+    }
 
     return provider;
 }
@@ -1688,7 +2246,6 @@ export function createGlobalBackgroundColorProvider(
         throw new ProviderAlreadyExistsError("GlobalBackgroundColorProvider");
     }
 
-    const head = document.body;
     const body = document.body;
 
     const bgcolorAttributeProvider = createDomWatcherProvider(
@@ -1759,7 +2316,7 @@ export function createGlobalButtonWidthValuesProvider(
     const buttonShellMaxWidthProvider = styleSheetProvider(
         body,
         RockStylesCssClass,
-        GlobalStylesCssSelectors.buttonWidthValuesShell,
+        `.component-button:not([data-component-button-width="true"]) .button-shell, .component-rsvp:not([data-component-button-width="true"]) .rsvp-button-shell`,
         "max-width",
         percentageConverter
     );
@@ -1767,14 +2324,14 @@ export function createGlobalButtonWidthValuesProvider(
     const buttonShellWidthProvider = styleSheetProvider(
         body,
         RockStylesCssClass,
-        GlobalStylesCssSelectors.buttonWidthValuesShell,
+        `.component-button:not([data-component-button-width="true"]) .button-shell, .component-rsvp:not([data-component-button-width="true"]) .rsvp-button-shell`,
         "width",
         stringConverter
     );
 
     const buttonShellWidthAttributeProvider = createDomWatcherProvider(
         body,
-        `.component-button .button-shell:not([data-component-button-width="true"]), .component-rsvp .rsvp-button-shell:not([data-component-button-width="true"])`,
+        `.component-button:not([data-component-button-width="true"]) .button-shell, .component-rsvp:not([data-component-button-width="true"]) .rsvp-button-shell`,
         (el) => attributeProvider(
             el,
             "width",
@@ -1785,7 +2342,7 @@ export function createGlobalButtonWidthValuesProvider(
     const buttonLinkDisplayProvider = styleSheetProvider(
         body,
         RockStylesCssClass,
-        GlobalStylesCssSelectors.buttonWidthValuesButton,
+        `.component-button:not([data-component-button-width="true"]) .component-button .button-link, .component-rsvp:not([data-component-button-width="true"]) .rsvp-accept-link, .component-rsvp:not([data-component-button-width="true"]) .rsvp-decline-link`,
         "display",
         stringConverter
     );
@@ -1918,7 +2475,7 @@ export function createButtonWidthValuesProvider(
 
     const buttonLinkDisplayProvider = createDomWatcherProvider(
         buttonShellElement,
-        ".button-link, .rsvp-accept-link, .rsvp-decline-link",
+        ".button-link .rsvp-accept-link, .rsvp-decline-link",
         (el) => inlineStyleProvider(
             el as HTMLElement,
             "display",
@@ -1967,10 +2524,10 @@ export function createButtonWidthValuesProvider(
             // Doing this here instead of the width attribute sourceValueUpdated hook
             // because the attribute could be set to null but still be a component-specific override.
             // This override will prevent the global version of this property from setting component-overridden attribute values.
-            buttonShellElement.setAttribute("data-component-button-width", "true");
+            buttonShellElement.closest(".component-button")?.setAttribute("data-component-button-width", "true");
         }
         else {
-            buttonShellElement.removeAttribute("data-component-button-width");
+            buttonShellElement.closest(".component-button")?.removeAttribute("data-component-button-width");
         }
     });
 
@@ -2018,4 +2575,400 @@ export function createButtonWidthValuesProvider(
             buttonLinkDisplayProvider.dispose();
         }
     };
+}
+
+function findOrCreateStyleElement(parent: Element, styleCssClass: string): HTMLStyleElement {
+    const doc = parent.ownerDocument;
+
+    // Try to find an existing <style> tag with the given class inside the parent element
+    let styleElement = Array.from(parent.getElementsByTagName("style")).find(
+        (s) => s.classList.contains(styleCssClass)
+    ) as HTMLStyleElement | undefined;
+
+    // If no <style> tag exists, create one and append it inside the parent element
+    if (!styleElement) {
+        styleElement = doc.createElement("style");
+        styleElement.classList.add(styleCssClass);
+        parent.appendChild(styleElement);
+    }
+
+    return styleElement;
+}
+
+function addMediaRule(styleElement: HTMLStyleElement, mediaQueryConditionText: string, cssRule: string): void {
+    const targetSheet = styleElement.sheet as CSSStyleSheet;
+
+    const rule = `@media ${mediaQueryConditionText} { ${cssRule} }`;
+    targetSheet.insertRule(rule, targetSheet.cssRules.length);
+
+    // Sync <style> tag content
+    updateStyleElementTextContent(styleElement, targetSheet);
+}
+
+function updateStyleElementTextContent(styleElement: HTMLStyleElement, sheet: CSSStyleSheet): void {
+    let cssText = "";
+    for (const rule of Array.from(sheet.cssRules)) {
+        cssText += rule.cssText + "\n";
+    }
+
+    // Reflect changes in the <style> tag.
+    styleElement.textContent = cssText;
+}
+
+function removeMediaRule(styleElement: HTMLStyleElement, mediaQueryConditionText: string): void {
+    const doc = styleElement.ownerDocument;
+    const win = doc.defaultView;
+    if (!win) return;
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const CSSMediaRuleType = win.CSSMediaRule;
+    const targetSheet = styleElement.sheet as CSSStyleSheet;
+
+    for (let i = 0; i < targetSheet.cssRules.length; i++) {
+        const rule = targetSheet.cssRules[i];
+        if (rule instanceof CSSMediaRuleType && rule.conditionText === mediaQueryConditionText) {
+            targetSheet.deleteRule(i);
+            updateStyleElementTextContent(styleElement, targetSheet);
+            return;
+        }
+    }
+}
+
+export function createMediaQueryEffect<T>(
+    element: Element,
+    styleCssClass: string,
+    cssRule: string,
+    cssStyleProperty: CssStyleDeclarationKebabKey,
+    valueProvider: ValueProvider<T>,
+    converter: ValueConverter<T, string | null>
+): Disposable {
+    // Construct the initial media query from the value provider.
+    const initialTargetValue = converter.toTarget(valueProvider.value);
+
+    let mediaQueryConditionText: string | null =
+        initialTargetValue
+            ? `screen and (${cssStyleProperty}: ${initialTargetValue})`
+            : null;
+
+    // Find or create the <style> element inside the given element.
+    const styleElement = findOrCreateStyleElement(element, styleCssClass);
+
+    // Find or create the media rule.
+    if (mediaQueryConditionText) {
+        removeMediaRule(styleElement, mediaQueryConditionText);
+        addMediaRule(styleElement, mediaQueryConditionText, cssRule);
+    }
+
+    // Watch for changes in valueProvider and update media query dynamically.
+    const watcher = watch(() => valueProvider.value, (newValue) => {
+        const targetValue = converter.toTarget(newValue);
+
+        // Remove the old media query rule.
+        if (mediaQueryConditionText) {
+            removeMediaRule(styleElement, mediaQueryConditionText);
+        }
+
+        mediaQueryConditionText =
+            targetValue
+                ? `screen and (${cssStyleProperty}: ${targetValue})`
+                : null;
+
+        // Add the new media query rule.
+        if (mediaQueryConditionText) {
+            addMediaRule(styleElement, mediaQueryConditionText, cssRule);
+        }
+    });
+
+    return {
+        [Symbol.dispose]() {
+            watcher();
+        }
+    };
+}
+
+export function createComponentBorderWidthProvider(
+    componentElement: HTMLElement
+): ShorthandValueProvider<number | null | undefined> {
+    const componentClass = getComponentClass(componentElement);
+    const componentTypeName = getComponentTypeName(componentElement);
+    if (!componentClass) {
+        throw new Error("Unable to create component border width provider. Element is not a valid component.");
+    }
+
+    return createDomWatcherShorthandProvider(
+        componentElement,
+        getBorderWrapperCellSelector(componentTypeName),
+        (el) => shorthandInlineStyleProvider(
+            el as HTMLElement,
+            "border-width",
+            {
+                top: "border-top-width",
+                bottom: "border-bottom-width",
+                right: "border-right-width",
+                left: "border-left-width",
+            },
+            pixelConverter,
+            null,
+            {
+                onStyleUpdated(_style, value) {
+                    if (!isNullish(value.shorthand)
+                        || !isNullish(value.top)
+                        || !isNullish(value.bottom)
+                        || !isNullish(value.right)
+                        || !isNullish(value.left)) {
+                        componentElement.setAttribute("data-component-border-width", "true");
+                    }
+                    else {
+                        // `delete el.dataset["key"]` doesn't always work.
+                        // Using `el.removeAttribute("data-key")` instead.
+                        componentElement.removeAttribute("data-component-border-width");
+                    }
+                }
+            }
+        ),
+        undefined,
+        {
+            includeSelf: true
+        }
+    );
+}
+
+const globalDividerWidthProviderCache = new WeakPair<Document, ValueProvider<number | null | undefined>>();
+
+export function createGlobalDividerWidthProvider(
+    document: Document
+): ValueProvider<number | null | undefined> {
+    if (globalDividerWidthProviderCache.has(document)) {
+        throw new ProviderAlreadyExistsError("GlobalDividerWidthProvider");
+    }
+
+    const widthAttributeProvider = createDomWatcherProvider(
+        document.body,
+        `.component:not([data-component-width="true"]) ${getBorderWrapperTableSelector("divider")}`,
+        (el) => attributeProvider(
+            el,
+            "width",
+            percentageConverter
+        ),
+        undefined
+    );
+
+    const widthStyleSheetProvider = styleSheetProvider(
+        document.body,
+        RockStylesCssClass,
+        `.component:not([data-component-width="true"]) ${getBorderWrapperTableSelector("divider")}`,
+        "width",
+        percentageConverter
+    );
+
+    widthStyleSheetProvider.value = widthAttributeProvider.value;
+
+    const value = ref<number | null | undefined>(widthAttributeProvider.value);
+
+    const watcher = watch(value, newValue => {
+        widthAttributeProvider.value = newValue;
+        widthStyleSheetProvider.value = newValue;
+    });
+
+    const provider: ValueProvider<number | null | undefined> = {
+        get value() {
+            return value.value;
+        },
+
+        set value(newValue) {
+            value.value = newValue;
+        },
+
+        dispose() {
+            watcher();
+            widthAttributeProvider.dispose();
+            widthStyleSheetProvider.dispose();
+        }
+    };
+
+    if (isNullish(provider.value)) {
+        // Default to 100%.
+        provider.value = 100;
+    }
+
+    globalDividerWidthProviderCache.set(document, provider);
+
+    return provider;
+}
+
+export function getGlobalDividerWidthProvider(
+    document: Document
+): ValueProvider<number | null | undefined> {
+    if (!globalDividerWidthProviderCache.has(document)) {
+        throw new ProviderNotCreatedError("GlobalDividerWidthProvider");
+    }
+
+    return globalDividerWidthProviderCache.get(document)!;
+}
+
+export function createComponentWidthProvider(
+    componentElement: Element
+): ValueProvider<number | null | undefined> {
+    const componentTypeName = getComponentTypeName(componentElement);
+
+    const widthStyleSheetProvider = createDomWatcherProvider(
+        componentElement,
+        getBorderWrapperTableSelector(componentTypeName),
+        (el) => inlineStyleProvider(
+            el as HTMLElement,
+            "width",
+            percentageConverter,
+            undefined,
+            {
+                onSourceValueUpdated(value) {
+                    if (!isNullish(value)) {
+                        // This should only be added when the component has the inline style
+                        // indicating that it has been specifically modified.
+                        componentElement.setAttribute("data-component-width", "true");
+                    }
+                    else {
+                        componentElement.removeAttribute("data-component-width");
+                    }
+                }
+            }
+        ),
+        undefined
+    );
+
+    const widthAttributeProvider = createDomWatcherProvider(
+        componentElement,
+        getBorderWrapperTableSelector(componentTypeName),
+        (el) => attributeProvider(
+            el,
+            "width",
+            percentageConverter
+        ),
+        widthStyleSheetProvider.value
+    );
+
+    // Ensure both providers have same value.
+    widthAttributeProvider.value = widthStyleSheetProvider.value;
+
+    const value = ref<number | null | undefined>(widthStyleSheetProvider.value);
+
+    const watcher = watch(value, newValue => {
+        widthAttributeProvider.value = newValue;
+        widthStyleSheetProvider.value = newValue;
+    });
+
+    return {
+        get value() {
+            return value.value;
+        },
+
+        set value(newValue) {
+            value.value = newValue;
+        },
+
+        dispose() {
+            watcher();
+            widthAttributeProvider.dispose();
+            widthStyleSheetProvider.dispose();
+        }
+    };
+}
+
+const horizontalAlignmentToAlignAttrConverter: ValueConverter<HorizontalAlignment | null | undefined, string | null> = {
+    toTarget(source: HorizontalAlignment | null | undefined): string | null {
+        if (isNullish(source)) {
+            return null;
+        }
+        else if (source === "center") {
+            return "center";
+        }
+        else if (source === "left") {
+            return "left";
+        }
+        else if (source === "right") {
+            return "right";
+        }
+        else {
+            // Unknown value.
+            return null;
+        }
+    },
+
+    toSource(target: string | null): HorizontalAlignment | null | undefined {
+        if (isNullish(target)) {
+            return null;
+        }
+        else if (target === "center") {
+            return "center";
+        }
+        else if (target === "left") {
+            return "left";
+        }
+        else if (target === "right") {
+            return "right";
+        }
+        else {
+            // Unknown value.
+            return null;
+        }
+    },
+};
+
+const globalDividerHorizontalAlignmentProviderCache = new WeakPair<Document, ValueProvider<HorizontalAlignment | null | undefined>>();
+
+export function createGlobalDividerHorizontalAlignmentProvider(
+    document: Document
+): ValueProvider<HorizontalAlignment | null | undefined> {
+    const alignAttributeProvider = createDomWatcherProvider(
+        document,
+        getMarginWrapperCellSelector("divider", `:not([data-component-horizontal-alignment="true"])`),
+        (el) => attributeProvider(
+            el,
+            "align",
+            horizontalAlignmentToAlignAttrConverter,
+            undefined
+        ),
+        undefined
+    );
+
+    globalDividerHorizontalAlignmentProviderCache.set(document, alignAttributeProvider);
+
+    return alignAttributeProvider;
+}
+
+export function getGlobalDividerHorizontalAlignmentProvider(
+    document: Document
+): ValueProvider<HorizontalAlignment | null | undefined> {
+    if (!globalDividerHorizontalAlignmentProviderCache.has(document)) {
+        throw new ProviderNotCreatedError("GlobalDividerHorizontalAlignmentProvider");
+    }
+
+    return globalDividerHorizontalAlignmentProviderCache.get(document)!;
+}
+
+export function createComponentOuterHorizontalAlignmentProvider(
+    componentElement: Element
+): ValueProvider<HorizontalAlignment | null | undefined> {
+    const alignAttributeProvider = createDomWatcherProvider(
+        componentElement,
+        getMarginWrapperCellSelector(getComponentTypeName(componentElement)),
+        (el) => attributeProvider(
+            el,
+            "align",
+            horizontalAlignmentToAlignAttrConverter,
+            undefined,
+            {
+                onSourceValueUpdated(value) {
+                    if (!isNullish(value)) {
+                        componentElement.setAttribute("data-component-horizontal-alignment", "true");
+                    }
+                    else {
+                        componentElement.removeAttribute("data-component-horizontal-alignment");
+                    }
+                }
+            }
+        ),
+        undefined
+    );
+
+    return alignAttributeProvider;
 }

@@ -5,22 +5,26 @@
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
                                 @delete="$emit('delete')">
-        <AccordionGroup>
-            <Accordion title="General Settings">
-                <RangeSliderProperty label="Body Width"
-                                     :min="480"
-                                     :max="900"
-                                     :showValueBar="true"
-                                     :valueProvider="bodyWidthProvider"
-                                     valueSuffix="px" />
+        <template v-if="componentHelper">
+            <AccordionGroup>
+                <Accordion title="General Settings">
+                    <RangeSliderProperty label="Body Width"
+                                         :min="480"
+                                         :max="900"
+                                         :showValueBar="true"
+                                         :valueProvider="bodyWidthProvider"
+                                         valueSuffix="px" />
 
-                <ColorPickerProperty label="Body Color"
-                                     :valueProvider="bodyColorProvider" />
+                    <ColorPickerProperty label="Body Color"
+                                         :valueProvider="backgroundColorProvider" />
 
-                <ColorPickerProperty label="Background Color"
-                                     :valueProvider="backgroundColorProvider" />
-            </Accordion>
-        </AccordionGroup>
+                    <ColorPickerProperty label="Background Color"
+                                         :valueProvider="outerBackgroundColorProvider" />
+
+                    <PaddingProperty :element="componentHelper.marginWrapper.borderWrapper.paddingWrapper.td" />
+                </Accordion>
+            </AccordionGroup>
+        </template>
     </ComponentPropertyPanelBase>
 </template>
 
@@ -30,15 +34,21 @@
     import Accordion from "../accordion.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
     import ColorPickerProperty from "../properties/colorPickerProperty.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
     import RangeSliderProperty from "../properties/rangeSliderProperty.partial.obs";
-    import { attributeProvider, createDomWatcherProvider, inlineStyleProvider } from "../providers.partial";
+    import {
+        attributeProvider,
+        createComponentBackgroundColorProvider,
+        createComponentOuterBackgroundColorProvider,
+        createDomWatcherProvider,
+        inlineStyleProvider
+    } from "../providers.partial";
     import { ValueProvider } from "../types.partial";
     import {
-        EmailRowCssClass,
+        getBorderWrapperTableSelector,
+        getRowComponentHelper,
         numberToStringConverter,
-        pixelConverter,
-        stringConverter,
-        EmailRowContentCssClass
+        pixelConverter
     } from "../utils.partial";
     import { isNullish } from "@Obsidian/Utility/util";
     import { isHTMLElement } from "@Obsidian/Utility/dom";
@@ -56,16 +66,16 @@
         (e: "delete"): void;
     }>();
 
-    const specificEmailRowToRowContentCssClassSelector = `.${EmailRowCssClass} > tbody > tr > td > .${EmailRowContentCssClass}, .${EmailRowCssClass} > tr > td > .${EmailRowContentCssClass}` as const;
-
     // #region Computed Props
 
     // #endregion Computed Props
 
     // #region Values
 
-    const bodyColorProvider = ref<ValueProvider<string | null | undefined>>(getBodyColorProvider());
-    const backgroundColorProvider = ref<ValueProvider<string | null | undefined>>(getBackgroundColorProvider());
+    const rowComponentHelper = getRowComponentHelper();
+    const componentHelper = ref(rowComponentHelper.getElements(props.componentElement));
+    const backgroundColorProvider = ref<ValueProvider<string | null | undefined>>(createComponentBackgroundColorProvider(props.componentElement));
+    const outerBackgroundColorProvider = ref<ValueProvider<string | null | undefined>>(createComponentOuterBackgroundColorProvider(props.componentElement));
     const bodyWidthProvider = ref<ValueProvider<number | null | undefined>>(getBodyWidthProvider());
 
     // #endregion Values
@@ -76,111 +86,10 @@
 
     // #region Functions
 
-    function getBodyColorProvider(): ValueProvider<string | null | undefined> {
-        const backgroundColorInlineStyleProvider = createDomWatcherProvider(
-            props.componentElement,
-            `:scope > ${specificEmailRowToRowContentCssClassSelector}`,
-            (el) => inlineStyleProvider(el as HTMLElement, "background-color", stringConverter, undefined, {
-                onSourceValueUpdated(value) {
-                    if (value) {
-                        if (isHTMLElement(el)) {
-                            el.setAttribute("data-body-color-component", "true");
-                        }
-                    }
-                    else {
-                        if (isHTMLElement(el)) {
-                            // `delete el.dataset["key"]` doesn't always work.
-                            // Using `el.removeAttribute("data-key")` instead.
-                            el.removeAttribute("data-body-color-component");
-                        }
-                    }
-                }
-            }),
-            undefined,
-            {
-                includeSelf: specificEmailRowToRowContentCssClassSelector
-            }
-        );
-
-        const bgcolorAttributeProvider = createDomWatcherProvider(
-            props.componentElement,
-            `:scope > ${specificEmailRowToRowContentCssClassSelector}`,
-            (el) => attributeProvider(el, "bgcolor", stringConverter, undefined),
-            backgroundColorInlineStyleProvider.value,
-            {
-                includeSelf: specificEmailRowToRowContentCssClassSelector
-            }
-        );
-
-        const value = ref<string | null | undefined>(backgroundColorInlineStyleProvider.value);
-
-        const watcher = watch(value, (newValue) => {
-            backgroundColorInlineStyleProvider.value = newValue;
-            bgcolorAttributeProvider.value = newValue;
-        });
-
-        return {
-            get value() {
-                return value.value;
-            },
-            set value(newValue) {
-                value.value = newValue;
-            },
-            dispose() {
-                watcher();
-                bgcolorAttributeProvider.dispose();
-                backgroundColorInlineStyleProvider.dispose();
-            }
-        };
-    }
-
-    function getBackgroundColorProvider(): ValueProvider<string | null | undefined> {
-        const backgroundColorInlineStyleProvider = createDomWatcherProvider(
-            props.componentElement,
-            `:scope > .${EmailRowCssClass}`,
-            (el) => inlineStyleProvider(el as HTMLElement, "background-color", stringConverter),
-            undefined,
-            {
-                includeSelf: EmailRowCssClass
-            }
-        );
-
-        const bgcolorAttributeProvider = createDomWatcherProvider(
-            props.componentElement,
-            `:scope > .${EmailRowCssClass}`,
-            (el) => attributeProvider(el, "bgcolor", stringConverter),
-            backgroundColorInlineStyleProvider.value,
-            {
-                includeSelf: EmailRowCssClass
-            }
-        );
-
-        const value = ref<string | null | undefined>(backgroundColorInlineStyleProvider.value);
-
-        const watcher = watch(value, (newValue) => {
-            backgroundColorInlineStyleProvider.value = newValue;
-            bgcolorAttributeProvider.value = newValue;
-        });
-
-        return {
-            get value() {
-                return value.value;
-            },
-            set value(newValue) {
-                value.value = newValue;
-            },
-            dispose() {
-                watcher();
-                bgcolorAttributeProvider.dispose();
-                backgroundColorInlineStyleProvider.dispose();
-            }
-        };
-    }
-
     function getBodyWidthProvider(): ValueProvider<number | null | undefined> {
         const maxWidthInlineStyleProvider = createDomWatcherProvider(
             props.componentElement,
-            `:scope > ${specificEmailRowToRowContentCssClassSelector}`,
+            getBorderWrapperTableSelector("row"),
             (el) => inlineStyleProvider(el as HTMLElement, "max-width", pixelConverter, undefined, {
                 onStyleUpdated(style, value) {
                     if (!isNullish(value)) {
@@ -190,27 +99,31 @@
 
                     if (isHTMLElement(el)) {
                         if (value) {
-                            el.setAttribute("data-body-width-component", "true");
+                            el.setAttribute("data-component-body-width", "true");
                         }
                         else {
-                            el.removeAttribute("data-body-width-component");
+                            el.removeAttribute("data-component-body-width");
                         }
                     }
                 }
             }),
             undefined,
             {
-                includeSelf: specificEmailRowToRowContentCssClassSelector
+                additionalFilter: (el) => {
+                    return el.closest(".component-row") === props.componentElement;
+                }
             }
         );
 
         const widthAttributeProvider = createDomWatcherProvider(
             props.componentElement,
-            `:scope > ${specificEmailRowToRowContentCssClassSelector}`,
+            getBorderWrapperTableSelector("row"),
             (el) => attributeProvider(el, "width", numberToStringConverter),
             maxWidthInlineStyleProvider.value,
             {
-                includeSelf: specificEmailRowToRowContentCssClassSelector
+                additionalFilter: (el) => {
+                    return el.closest(".component-row") === props.componentElement;
+                }
             }
         );
 
@@ -241,14 +154,16 @@
     // #region Watchers
 
     watch(() => props.componentElement, () => {
-        backgroundColorProvider.value.dispose();
-        backgroundColorProvider.value = getBackgroundColorProvider();
+        outerBackgroundColorProvider.value.dispose();
+        outerBackgroundColorProvider.value = createComponentOuterBackgroundColorProvider(props.componentElement);
 
-        bodyColorProvider.value.dispose();
-        bodyColorProvider.value = getBodyColorProvider();
+        backgroundColorProvider.value.dispose();
+        backgroundColorProvider.value = createComponentBackgroundColorProvider(props.componentElement);
 
         bodyWidthProvider.value.dispose();
         bodyWidthProvider.value = getBodyWidthProvider();
+
+        componentHelper.value = rowComponentHelper.getElements(props.componentElement);
     });
 
     // #endregion Watchers
@@ -256,8 +171,8 @@
     // #region Hooks
 
     onUnmounted(() => {
+        outerBackgroundColorProvider.value.dispose();
         backgroundColorProvider.value.dispose();
-        bodyColorProvider.value.dispose();
         bodyWidthProvider.value.dispose();
     });
 

@@ -55,6 +55,9 @@
                                  :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
                                  :disabled="isDisabled"
                                  :mergeFields="mergeFields"
+                                 :shortLinkCheckToken="shortLinkCheckToken"
+                                 :shortLinkSites="shortLinkSites"
+                                 :shortLinkTokenMinLength="shortLinkTokenMinLength"
                                  :recipientPersonIds="recipientPersonIds"
                                  :videoProviderNames="videoProviderNames" />
 
@@ -64,7 +67,8 @@
             </template>
 
             <template #footerActions>
-                <RockButton :disabled="isDisabled"
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowLeft'"
+                            :disabled="isDisabled"
                             @click="onPreviousClicked">Previous</RockButton>
             </template>
 
@@ -74,7 +78,8 @@
                     <i class="fa fa-paper-plane-o"></i> Send Test
                 </RockButton>
 
-                <RockButton btnType="primary"
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowRight'"
+                            btnType="primary"
                             :disabled="isDisabled"
                             @click="onNextClicked">{{ nextStepTitle ? `Next: ${nextStepTitle}` : 'Next' }}</RockButton>
             </template>
@@ -189,6 +194,7 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { vShortcut } from "@Obsidian/Directives/shortcut";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
@@ -196,8 +202,8 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
-        message: {
-            type: String as PropType<string>,
+        areNavigationShortcutsDisabled: {
+            type: Boolean as PropType<boolean>,
             required: true
         },
 
@@ -221,23 +227,18 @@
             required: true
         },
 
-        recipientsLabel: {
-            type: String as PropType<string>,
+        mergeFields: {
+            type: Object as PropType<string[] | undefined>,
             required: true
         },
 
-        title: {
+        message: {
             type: String as PropType<string>,
             required: true
         },
 
         nextStepTitle: {
             type: String as PropType<string | null | undefined>,
-            required: true
-        },
-
-        mergeFields: {
-            type: Object as PropType<string[] | undefined>,
             required: true
         },
 
@@ -251,7 +252,31 @@
             required: true
         },
 
+        recipientsLabel: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        shortLinkCheckToken: {
+            type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>,
+            required: true
+        },
+
+        shortLinkSites: {
+            type: Object as PropType<ListItemBag[] | null | undefined>,
+            required: true
+        },
+
+        shortLinkTokenMinLength: {
+            type: Number as PropType<number | null | undefined>
+        },
+
         testEmailAddress: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        title: {
             type: String as PropType<string>,
             required: true
         },

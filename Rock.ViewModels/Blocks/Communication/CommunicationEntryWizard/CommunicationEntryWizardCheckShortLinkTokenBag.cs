@@ -13,17 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
-namespace Rock.Communication.Chat.Sync
+
+namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
 {
     /// <summary>
-    /// Represents the result of a simple <see langword="bool"/> chat synchronization operation.
+    /// Bag containing the information needed to check a short link token in the Communication Entry Wizard block.
     /// </summary>
-    internal class ChatSyncBooleanResult : ChatSyncResultBase
+    public class CommunicationEntryWizardCheckShortLinkTokenBag
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the synchronization operation was successful.
+        /// Gets or sets the token.
         /// </summary>
-        public bool WasSuccessful { get; set; }
+        public string Token { get; set; }
+
+        /// <summary>
+        /// Gets or sets the site identifier.
+        /// </summary>
+        public int SiteId { get; set; }
     }
 }

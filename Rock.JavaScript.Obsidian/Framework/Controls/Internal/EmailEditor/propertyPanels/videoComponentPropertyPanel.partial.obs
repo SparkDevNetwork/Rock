@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ComponentPropertyPanelBase :componentElement="componentElement"
+    <ComponentPropertyPanelBase v-if="componentHelper"
+                                :componentElement="componentElement"
                                 title="Video"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
@@ -53,7 +54,7 @@
             </Accordion>
 
             <Accordion title="Spacing">
-                <PaddingProperty :element="componentElement" />
+                <PaddingProperty :element="componentHelper.marginWrapper.borderWrapper.paddingWrapper.td" />
             </Accordion>
         </AccordionGroup>
     </ComponentPropertyPanelBase>
@@ -66,6 +67,7 @@
     import Accordion from "../accordion.partial.obs";
     import AltAttributeProperty from "../properties/altAttributeProperty.partial.obs";
     import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import { getVideoComponentHelper } from "../utils.partial";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -106,6 +108,7 @@
 
     // #region Values
 
+    const componentHelper = ref(getVideoComponentHelper(props.componentElement));
     const addonIconCssClass = ref<string>("fa fa-arrow-right");
     const imageElement = ref<HTMLImageElement | null | undefined>(props.componentElement.querySelector("img"));
     const anchorElement = ref<HTMLAnchorElement | null | undefined>(imageElement.value?.closest("a") === imageElement.value?.parentElement ? imageElement.value?.parentElement as HTMLAnchorElement : null);
@@ -288,6 +291,7 @@
     });
 
     watch(() => props.componentElement, () => {
+        componentHelper.value = getVideoComponentHelper(props.componentElement);
         imageElement.value = props.componentElement.querySelector("img");
         anchorElement.value = imageElement.value?.closest("a") === imageElement.value?.parentElement ? imageElement.value?.parentElement as HTMLAnchorElement : null;
         imageGuidAndName.value = props.componentElement.dataset[dataAttributeKey.imageGuid]

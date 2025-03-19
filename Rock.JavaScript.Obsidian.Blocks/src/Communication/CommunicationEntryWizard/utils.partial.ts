@@ -31,6 +31,7 @@ import { CommunicationEntryWizardSaveMetricsReminderRequestBag } from "@Obsidian
 import { CommunicationEntryWizardSaveResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSaveResponseBag";
 import { CommunicationEntryWizardSendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSendResponseBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { CommunicationEntryWizardCheckShortLinkTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCheckShortLinkTokenBag";
 
 const breakpointHelperInjectionKey: InjectionKey<ComputedRef<BreakpointHelper>> = Symbol("breakpoint-helper");
 
@@ -89,6 +90,10 @@ export function useInvokeBlockActionHelper(): InvokeBlockActionHelper {
             return invokeBlockAction("CancelMetricsReminder", {
                 communicationGuid: communicationGuid
             });
+        },
+
+        checkShortLinkToken(bag: CommunicationEntryWizardCheckShortLinkTokenBag): Promise<HttpResult<string>> {
+            return invokeBlockAction<string>("CheckShortLinkToken", { bag });
         },
 
         saveMetricsReminder(bag: CommunicationEntryWizardSaveMetricsReminderRequestBag): Promise<HttpResult<void>> {

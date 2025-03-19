@@ -321,7 +321,8 @@ namespace Rock.Jobs
 
             var workflowAttributes = new Dictionary<string, string>
             {
-                ["Person"] = personAliasGuid.ToString()
+                ["Person"] = personAliasGuid.ToString(),
+                ["LearningProgram"] = program.Guid.ToString()
             };
 
             var workflowType = WorkflowTypeCache.Get( program.CompletionWorkflowTypeId.Value, rockContext );

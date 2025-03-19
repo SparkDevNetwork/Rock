@@ -134,7 +134,7 @@ namespace Rock.Rest.Controllers
                 {
                     using ( var chatHelper = new ChatHelper() )
                     {
-                        var chatAuth = await chatHelper.GetChatUserAuthenticationAsync( person.Id );
+                        var chatAuth = await chatHelper.GetChatUserAuthenticationAsync( person.Id, false );
 
                         // This should really never be null, but if it were
                         // to be, it would break launching your mobile app, so

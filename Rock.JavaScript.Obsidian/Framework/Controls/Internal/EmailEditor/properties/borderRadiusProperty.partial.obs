@@ -17,6 +17,7 @@
     import { shorthandInlineStyleProvider, shorthandStyleSheetProvider } from "../providers.partial";
     import { ShorthandValueProvider, StyleSheetMode } from "../types.partial";
     import { pixelConverter } from "../utils.partial";
+    import { isNullish } from "@Obsidian/Utility/util";
 
     const props = defineProps({
         element: {
@@ -68,7 +69,23 @@
                     right: "border-bottom-right-radius"
                 },
                 pixelConverter,
-                props.copyToElements
+                props.copyToElements,
+                {
+                    onStyleUpdated(style, value) {
+                        if (!isNullish(value?.shorthand)
+                            || !isNullish(value?.top)
+                            || !isNullish(value?.bottom)
+                            || !isNullish(value?.left)
+                            || !isNullish(value?.right)) {
+                            // Set overflow to hidden to prevent descendents from overflowing the rounded corners.
+                            style.overflow = "hidden";
+                        }
+                        else {
+                            // Set overflow to hidden to prevent descendents from overflowing the rounded corners.
+                            style.removeProperty("overflow");
+                        }
+                    }
+                }
             );
         }
         else {
@@ -83,7 +100,23 @@
                     left: "border-bottom-left-radius",
                     right: "border-bottom-right-radius"
                 },
-                pixelConverter
+                pixelConverter,
+                {
+                    onStyleUpdated(style, value) {
+                        if (!isNullish(value?.shorthand)
+                            || !isNullish(value?.top)
+                            || !isNullish(value?.bottom)
+                            || !isNullish(value?.left)
+                            || !isNullish(value?.right)) {
+                            // Set overflow to hidden to prevent descendents from overflowing the rounded corners.
+                            style.overflow = "hidden";
+                        }
+                        else {
+                            // Set overflow to hidden to prevent descendents from overflowing the rounded corners.
+                            style.removeProperty("overflow");
+                        }
+                    }
+                }
             );
         }
     }

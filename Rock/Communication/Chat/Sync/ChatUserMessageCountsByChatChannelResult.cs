@@ -25,7 +25,8 @@ namespace Rock.Communication.Chat.Sync
     /// Represents the result of querying the external chat system for message counts for each <see cref="ChatUser"/>
     /// within each <see cref="ChatChannel"/>.
     /// </summary>
-    internal class ChatUserMessageCountsByChatChannelResult
+    /// <seealso cref="ChatSyncResultBase"/>
+    internal class ChatUserMessageCountsByChatChannelResult : ChatSyncResultBase
     {
         /// <summary>
         /// Gets or sets the message date for which the counts were queried.
@@ -33,21 +34,11 @@ namespace Rock.Communication.Chat.Sync
         public DateTime MessageDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the message counts for each <see cref="ChatUser"/> within each <see cref="ChatChannel"/>.
+        /// Gets the message counts for each <see cref="ChatUser"/> within each <see cref="ChatChannel"/>.
         /// </summary>
         /// <remarks>
         /// The outer dictionary key is <see cref="ChatChannel.Key"/> and the inner dictionary key is <see cref="ChatUser.Key"/>.
         /// </remarks>
-        public Dictionary<string, Dictionary<string, int>> MessageCounts { get; set; }
-
-        /// <summary>
-        /// Gets or sets the exception - if any - that occurred during the querying operation.
-        /// </summary>
-        public Exception Exception { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether an exception occurred during the querying operation.
-        /// </summary>
-        public bool HasException => Exception != null;
+        public Dictionary<string, Dictionary<string, int>> MessageCounts { get; } = new Dictionary<string, Dictionary<string, int>>();
     }
 }

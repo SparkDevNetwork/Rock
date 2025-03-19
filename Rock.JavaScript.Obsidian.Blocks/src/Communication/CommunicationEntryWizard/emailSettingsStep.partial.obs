@@ -103,11 +103,13 @@
             </template>
 
             <template #footerActions>
-                <RockButton @click="onPreviousClicked">Previous</RockButton>
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowLeft'"
+                            @click="onPreviousClicked">Previous</RockButton>
             </template>
 
             <template #footerSecondaryActions>
-                <RockButton btnType="primary"
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowRight'"
+                            btnType="primary"
                             :form="formId"
                             type="submit">{{ nextStepTitle ? `Next: ${nextStepTitle}` : 'Next' }}</RockButton>
             </template>
@@ -148,6 +150,7 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { vShortcut } from "@Obsidian/Directives/shortcut";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -156,6 +159,11 @@
     import { isHTMLElement } from "@Obsidian/Utility/dom";
 
     const props = defineProps({
+        areNavigationShortcutsDisabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
         attachmentBinaryFileTypeGuid: {
             type: String as PropType<Guid>,
             required: true

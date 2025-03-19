@@ -130,7 +130,7 @@
                                 <WorkflowTypePicker
                                                     v-model="completionWorkflowType"
                                                     label="Completion Workflow Type"
-                                                    help="The workflow to launch when an individual completes the course." />
+                                                    help="The workflow to launch when an individual completes the course. The 'Person' and 'LearningCourse' will also be passed as workflow attributes." />
                             </div>
                             <div class="col-md-6">
                                 <NumberBox v-model="maxStudents"

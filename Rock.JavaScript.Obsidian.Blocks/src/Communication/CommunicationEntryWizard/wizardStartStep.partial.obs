@@ -243,7 +243,8 @@
             </template>
 
             <template #footerSecondaryActions>
-                <RockButton btnType="primary"
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowRight'"
+                            btnType="primary"
                             :form="formId"
                             type="submit">{{ nextStepTitle ? `Next: ${nextStepTitle}` : 'Next' }}</RockButton>
             </template>
@@ -305,6 +306,10 @@
     margin: 0;
 }
 
+.medium-content i {
+    color: var(--color-interface-strong);
+}
+
 .medium .fa-dot-circle-o {
     color: var(--color-primary);
 }
@@ -358,6 +363,7 @@
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { vShortcut } from "@Obsidian/Directives/shortcut";
     import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
     import { SegmentCriteria, SegmentCriteriaDescription } from "@Obsidian/Enums/Communication/segmentCriteria";
     import { Guid } from "@Obsidian/Types";
@@ -372,6 +378,11 @@
     const props = defineProps({
         allowedMediums: {
             type: Object as PropType<CommunicationType[]>,
+            required: true
+        },
+
+        areNavigationShortcutsDisabled: {
+            type: Boolean as PropType<boolean>,
             required: true
         },
 
