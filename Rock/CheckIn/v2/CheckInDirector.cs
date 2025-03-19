@@ -371,39 +371,7 @@ namespace Rock.CheckIn.v2
 
             personAttendanceQuery = WhereContains( personAttendanceQuery, personIdNumbers, a => a.PersonAlias.PersonId );
 
-            return personAttendanceQuery
-                .Select( a => new
-                {
-                    AttendanceId = a.Id,
-                    AttendanceGuid = a.Guid,
-                    Status = a.CheckInStatus,
-                    a.StartDateTime,
-                    a.EndDateTime,
-                    PersonId = a.PersonAlias.Person.Id,
-                    GroupTypeId = a.Occurrence.Group.GroupType.Id,
-                    GroupId = a.Occurrence.Group.Id,
-                    LocationId = a.Occurrence.Location.Id,
-                    ScheduleId = a.Occurrence.Schedule.Id,
-                    CampusId = a.CampusId.HasValue ? a.CampusId.Value : ( int? ) null
-                } )
-                .ToList()
-                .Select( a => new RecentAttendance
-                {
-                    AttendanceGuid = a.AttendanceGuid,
-                    AttendanceId = IdHasher.Instance.GetHash( a.AttendanceId ),
-                    Status = a.Status,
-                    StartDateTime = a.StartDateTime,
-                    EndDateTime = a.EndDateTime,
-                    PersonId = IdHasher.Instance.GetHash( a.PersonId ),
-                    GroupTypeId = IdHasher.Instance.GetHash( a.GroupTypeId ),
-                    GroupId = IdHasher.Instance.GetHash( a.GroupId ),
-                    LocationId = IdHasher.Instance.GetHash( a.LocationId ),
-                    ScheduleId = IdHasher.Instance.GetHash( a.ScheduleId ),
-                    CampusId = a.CampusId.HasValue
-                        ? IdHasher.Instance.GetHash( a.CampusId.Value )
-                        : null
-                } )
-                .ToList();
+            return GetRecentAttendanceFromQuery( personAttendanceQuery );
         }
 
         /// <summary>
@@ -443,7 +411,18 @@ namespace Rock.CheckIn.v2
 
             personAttendanceQuery = WhereContains( personAttendanceQuery, locationIds, a => a.Occurrence.Location.Id );
 
-            return personAttendanceQuery
+            return GetRecentAttendanceFromQuery( personAttendanceQuery );
+        }
+
+        /// <summary>
+        /// Converts the queryable of <see cref="Attendance"/> records into
+        /// a list of of <see cref="RecentAttendance"/> records.
+        /// </summary>
+        /// <param name="attendanceQuery">The query that contains the records to be converted.</param>
+        /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
+        public static List<RecentAttendance> GetRecentAttendanceFromQuery( IQueryable<Attendance> attendanceQuery )
+        {
+            return attendanceQuery
                 .Select( a => new
                 {
                     AttendanceId = a.Id,
@@ -451,6 +430,7 @@ namespace Rock.CheckIn.v2
                     Status = a.CheckInStatus,
                     a.StartDateTime,
                     a.EndDateTime,
+                    a.DidAttend,
                     PersonId = a.PersonAlias.Person.Id,
                     GroupTypeId = a.Occurrence.Group.GroupType.Id,
                     GroupId = a.Occurrence.Group.Id,
@@ -466,6 +446,7 @@ namespace Rock.CheckIn.v2
                     Status = a.Status,
                     StartDateTime = a.StartDateTime,
                     EndDateTime = a.EndDateTime,
+                    DidAttend = a.DidAttend ?? false,
                     PersonId = IdHasher.Instance.GetHash( a.PersonId ),
                     GroupTypeId = IdHasher.Instance.GetHash( a.GroupTypeId ),
                     GroupId = IdHasher.Instance.GetHash( a.GroupId ),
