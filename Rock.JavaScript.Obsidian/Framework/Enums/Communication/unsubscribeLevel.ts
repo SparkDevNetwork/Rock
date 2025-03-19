@@ -21,28 +21,31 @@
 // </copyright>
 //
 
-import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+/** Represents the level at which an individual can unsubscribe from communications. */
+export const UnsubscribeLevel = {
+    /** Unsubscribe from all communications. */
+    All: 1,
 
-/** The editable item details for the Learning Semester Detail block. */
-export type LearningSemesterBag = {
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
+    /** Unsubscribe from bulk communications. */
+    Bulk: 2,
 
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
+    /** Unsubscribe from communication lists. */
+    CommunicationList: 3,
 
-    /** Gets or sets the date the semester ends. */
-    endDate?: string | null;
+    /** Unsubscribe from communication campaigns. */
+    Campaign: 4
+} as const;
 
-    /** Gets or sets the date that students must enroll by. */
-    enrollmentCloseDate?: string | null;
+/** Represents the level at which an individual can unsubscribe from communications. */
+export const UnsubscribeLevelDescription: Record<number, string> = {
+    1: "All",
 
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
+    2: "Bulk",
 
-    /** Gets or sets the name of the LearningSemester. */
-    name?: string | null;
+    3: "Communication List",
 
-    /** Gets or sets the date the semester starts */
-    startDate?: string | null;
+    4: "Campaign"
 };
+
+/** Represents the level at which an individual can unsubscribe from communications. */
+export type UnsubscribeLevel = typeof UnsubscribeLevel[keyof typeof UnsubscribeLevel];

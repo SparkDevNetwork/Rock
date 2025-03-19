@@ -142,6 +142,8 @@ export const ServiceJob = {
     DataMigrations170ChopObsidianBlocks: "74265B89-31DF-4430-84D4-8343C64F2580",
     /** The Job to run Post v17.0 Data Migrations to chop Shortened Link Block. */
     DataMigrations170ChopShortenedLinksBlock: "8899363A-C52B-4D82-88C2-CA199D73E95C",
+    /** The Job to run Post v17.0 Interaction Index Migration . */
+    DataMigrations170InteractionIndexPostMigrationJob: "9984C806-FAEE-4005-973B-9FBE21948972",
     /** The post update data migration job to remove the legacy Communication Recipient List Webforms block. */
     DataMigrations170RemoveCommunicationRecipientListBlock: "54CCFFFD-83A8-4BB6-A699-DDE34310BFE6",
     /** The post update data migration job to remove the legacy Communication Recipient List Webforms block. */
