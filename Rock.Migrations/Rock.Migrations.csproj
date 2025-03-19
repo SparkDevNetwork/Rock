@@ -64,37 +64,41 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202503052051200_CodeGenerated_20250305.cs" />
-    <Compile Include="Migrations\202503052051200_CodeGenerated_20250305.designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503052051200_CodeGenerated_20250305.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503052051200_CodeGenerated_20250305.designer.cs">
       <DependentUpon>202503052051200_CodeGenerated_20250305.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202503072129289_AddDefaultLearningActivitySecurity.cs" />
-    <Compile Include="Migrations\202503072129289_AddDefaultLearningActivitySecurity.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503072129289_AddDefaultLearningActivitySecurity.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503072129289_AddDefaultLearningActivitySecurity.Designer.cs">
       <DependentUpon>202503072129289_AddDefaultLearningActivitySecurity.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202503090205494_AddChatWebhookSupport.cs" />
-    <Compile Include="Migrations\202503090205494_AddChatWebhookSupport.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503090205494_AddChatWebhookSupport.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503090205494_AddChatWebhookSupport.Designer.cs">
       <DependentUpon>202503090205494_AddChatWebhookSupport.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202503111645326_UndoObsidianChop_20250311.cs" />
-    <Compile Include="Migrations\202503111645326_UndoObsidianChop_20250311.designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503111645326_UndoObsidianChop_20250311.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503111645326_UndoObsidianChop_20250311.designer.cs">
       <DependentUpon>202503111645326_UndoObsidianChop_20250311.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202503121531161_AddChatInteractionChannel.cs" />
-    <Compile Include="Migrations\202503121531161_AddChatInteractionChannel.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503121531161_AddChatInteractionChannel.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503121531161_AddChatInteractionChannel.Designer.cs">
       <DependentUpon>202503121531161_AddChatInteractionChannel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202503131624313_UpdateCommunicationRecipientModel.cs" />
-    <Compile Include="Migrations\202503131624313_UpdateCommunicationRecipientModel.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503131624313_UpdateCommunicationRecipientModel.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503131624313_UpdateCommunicationRecipientModel.Designer.cs">
       <DependentUpon>202503131624313_UpdateCommunicationRecipientModel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202503131713456_UpdateGroupTypeRoleModel.cs" />
-    <Compile Include="Migrations\202503131713456_UpdateGroupTypeRoleModel.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503131713456_UpdateGroupTypeRoleModel.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503131713456_UpdateGroupTypeRoleModel.Designer.cs">
       <DependentUpon>202503131713456_UpdateGroupTypeRoleModel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202503182147210_AddCommunicationTopicDefinedValues.cs" />
-    <Compile Include="Migrations\202503182147210_AddCommunicationTopicDefinedValues.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503182147210_AddCommunicationTopicDefinedValues.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503182147210_AddCommunicationTopicDefinedValues.Designer.cs">
       <DependentUpon>202503182147210_AddCommunicationTopicDefinedValues.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503192144358_Rollup_20250319.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503192144358_Rollup_20250319.Designer.cs">
+      <DependentUpon>202503192144358_Rollup_20250319.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503042354103_AddLearningClassActivityEntity.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503042354103_AddLearningClassActivityEntity.Designer.cs">
@@ -2546,29 +2550,32 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202503052051200_CodeGenerated_20250305.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503052051200_CodeGenerated_20250305.resx">
       <DependentUpon>202503052051200_CodeGenerated_20250305.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202503072129289_AddDefaultLearningActivitySecurity.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503072129289_AddDefaultLearningActivitySecurity.resx">
       <DependentUpon>202503072129289_AddDefaultLearningActivitySecurity.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202503090205494_AddChatWebhookSupport.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503090205494_AddChatWebhookSupport.resx">
       <DependentUpon>202503090205494_AddChatWebhookSupport.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202503111645326_UndoObsidianChop_20250311.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503111645326_UndoObsidianChop_20250311.resx">
       <DependentUpon>202503111645326_UndoObsidianChop_20250311.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202503121531161_AddChatInteractionChannel.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503121531161_AddChatInteractionChannel.resx">
       <DependentUpon>202503121531161_AddChatInteractionChannel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202503131624313_UpdateCommunicationRecipientModel.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503131624313_UpdateCommunicationRecipientModel.resx">
       <DependentUpon>202503131624313_UpdateCommunicationRecipientModel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202503131713456_UpdateGroupTypeRoleModel.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503131713456_UpdateGroupTypeRoleModel.resx">
       <DependentUpon>202503131713456_UpdateGroupTypeRoleModel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202503182147210_AddCommunicationTopicDefinedValues.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503182147210_AddCommunicationTopicDefinedValues.resx">
       <DependentUpon>202503182147210_AddCommunicationTopicDefinedValues.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503192144358_Rollup_20250319.resx">
+      <DependentUpon>202503192144358_Rollup_20250319.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503042354103_AddLearningClassActivityEntity.resx">
       <DependentUpon>202503042354103_AddLearningClassActivityEntity.cs</DependentUpon>
