@@ -360,7 +360,7 @@ export type FormCompletionAction = {
     type?: FormCompletionActionType;
 
     /**
-     * contains the HTML message content that should be displayed to the
+     * Contains the text message content that should be displayed to the
      * individual after the form has been submitted.
      */
     message?: string | null;
