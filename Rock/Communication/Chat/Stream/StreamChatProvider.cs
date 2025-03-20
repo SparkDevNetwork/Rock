@@ -241,7 +241,7 @@ namespace Rock.Communication.Chat
                                     "query-polls-owner",
                                     "search-user",
                                     "update-poll-owner",
-                                    "update-user-owner"
+                                    "update-user-owner",
                                 }
                             },
                             {
@@ -269,8 +269,9 @@ namespace Rock.Communication.Chat
                                     "update-poll-any-team",
                                     "update-user-owner",
                                     "upsert-moderation-config-any-team",
+
                                     // The following have been added as needed.
-                                    "ban-user" // Admins SHOULD be able to ban any user.
+                                    "ban-user", // Admins SHOULD be able to ban any user.
                                 }
                             }
                         };
@@ -337,6 +338,7 @@ namespace Rock.Communication.Chat
                                     "send-custom-event",
                                     "send-poll",
                                     "upload-attachment",
+
                                     // The following were taken from the default "messaging (Channel Type scope)" > "user" grants.
                                     // (with redundant grants commented out)
                                     //"add-links-owner",
@@ -366,7 +368,10 @@ namespace Rock.Communication.Chat
                                     "update-channel-owner",
                                     "update-message-owner",
                                     "update-thread-owner",
-                                    //"upload-attachment-owner"
+                                    //"upload-attachment-owner",
+
+                                    // The following have been added as needed.
+                                    "leave-channel", // The UI will combine this with per-channel leaving allowances.
                                 }
                             },
                             {
@@ -415,7 +420,10 @@ namespace Rock.Communication.Chat
                                     "update-channel-members-owner", // But they SHOULD be able to manage members for channels they personally create within Stream.
                                     "update-message",
                                     "update-thread",
-                                    "upload-attachment"
+                                    "upload-attachment",
+
+                                    // The following have been added as needed.
+                                    "leave-channel", // The UI will combine this with per-channel leaving allowances.
                                 }
                             },
                             {
@@ -463,7 +471,10 @@ namespace Rock.Communication.Chat
                                     "update-channel-members",
                                     "update-message",
                                     "update-thread",
-                                    "upload-attachment"
+                                    "upload-attachment",
+
+                                    // The following have been added as needed.
+                                    "leave-channel", // The UI will combine this with per-channel leaving allowances.
                                 }
                             }
                         };
@@ -560,16 +571,6 @@ namespace Rock.Communication.Chat
             };
         } );
 
-        /// <summary>
-        /// The backing field for the <see cref="RockToChatSyncConfig"/> property.
-        /// </summary>
-        private RockToChatSyncConfig _rockToChatSyncConfig = new RockToChatSyncConfig();
-
-        /// <summary>
-        /// The backing field for the <see cref="ChatToRockSyncConfig"/> property;
-        /// </summary>
-        private ChatToRockSyncConfig _chatToRockSyncConfig = new ChatToRockSyncConfig();
-
         #endregion Fields
 
         #region Properties
@@ -656,36 +657,6 @@ namespace Rock.Communication.Chat
         #region IChatProvider Implementation
 
         #region Configuration
-
-        /// <inheritdoc/>
-        public RockToChatSyncConfig RockToChatSyncConfig
-        {
-            get => _rockToChatSyncConfig;
-            set
-            {
-                if ( value == null )
-                {
-                    value = new RockToChatSyncConfig();
-                }
-
-                _rockToChatSyncConfig = value;
-            }
-        }
-
-        /// <inheritdoc/>
-        public ChatToRockSyncConfig ChatToRockSyncConfig
-        {
-            get => _chatToRockSyncConfig;
-            set
-            {
-                if ( value == null )
-                {
-                    value = new ChatToRockSyncConfig();
-                }
-
-                _chatToRockSyncConfig = value;
-            }
-        }
 
         /// <inheritdoc/>
         public void Initialize()
@@ -844,9 +815,14 @@ namespace Rock.Communication.Chat
         }
 
         /// <inheritdoc/>
-        public async Task<ChatSyncSetupResult> EnsureAppGrantsExistAsync()
+        public async Task<ChatSyncSetupResult> EnsureAppGrantsExistAsync( RockToChatSyncConfig config )
         {
             var result = new ChatSyncSetupResult();
+
+            if ( config == null )
+            {
+                return result;
+            }
 
             var operationName = nameof( EnsureAppGrantsExistAsync ).SplitCase();
 
@@ -859,7 +835,7 @@ namespace Rock.Communication.Chat
 
                 var anyGrantsToAdd = false;
                 var grants = getAppResponse?.App?.Grants;
-                if ( grants?.Any() != true || RockToChatSyncConfig.ShouldEnforceDefaultGrantsPerRole )
+                if ( grants?.Any() != true || config.ShouldEnforceDefaultGrantsPerRole )
                 {
                     if ( grants == null )
                     {
@@ -981,8 +957,14 @@ namespace Rock.Communication.Chat
 
             foreach ( var chatChannelType in chatChannelTypes )
             {
-                // Always set default property values and permission grants for newly-created channel types.
-                var request = TryConvertToStreamChannelTypeWithStringCommandsRequest( chatChannelType, true, true );
+                // Always set default permission grants and property values for newly-created channel types.
+                var config = new RockToChatSyncConfig
+                {
+                    ShouldEnforceDefaultGrantsPerRole = true,
+                    ShouldEnforceDefaultSettings = true
+                };
+
+                var request = TryConvertToStreamChannelTypeWithStringCommandsRequest( chatChannelType, config );
                 if ( request == null )
                 {
                     continue;
@@ -1012,11 +994,11 @@ namespace Rock.Communication.Chat
         }
 
         /// <inheritdoc/>
-        public async Task<ChatSyncCrudResult> UpdateChatChannelTypesAsync( List<ChatChannelType> chatChannelTypes )
+        public async Task<ChatSyncCrudResult> UpdateChatChannelTypesAsync( List<ChatChannelType> chatChannelTypes, RockToChatSyncConfig config )
         {
             var result = new ChatSyncCrudResult();
 
-            if ( chatChannelTypes?.Any() != true )
+            if ( chatChannelTypes?.Any() != true || config == null )
             {
                 return result;
             }
@@ -1028,12 +1010,9 @@ namespace Rock.Communication.Chat
 
             foreach ( var chatChannelType in chatChannelTypes )
             {
-                // Only set default property values and/or permission grants for updates if explicitly instructed to do so.
-                var request = TryConvertToStreamChannelTypeWithStringCommandsRequest(
-                    chatChannelType,
-                    RockToChatSyncConfig.ShouldEnforceDefaultSettings,
-                    RockToChatSyncConfig.ShouldEnforceDefaultGrantsPerRole
-                );
+                // Only set default property values and/or permission grants for updates if explicitly instructed to do
+                // so by the caller of this method.
+                var request = TryConvertToStreamChannelTypeWithStringCommandsRequest( chatChannelType, config );
                 if ( request == null )
                 {
                     continue;
@@ -3270,14 +3249,11 @@ namespace Rock.Communication.Chat
         /// Tries to convert a <see cref="ChatChannelType"/> to a <see cref="ChannelTypeWithStringCommandsRequest"/>.
         /// </summary>
         /// <param name="chatChannelType">The <see cref="ChatChannelType"/> to convert.</param>
-        /// <param name="setDefaultPropertyValues">If <see langword="true"/>, will set property values to match Rock's
-        /// preferred, default channel type settings in Stream. If <see langword="false"/>, will only set the
-        /// `Name` property.</param>
-        /// <param name="setDefaultGrants">If <see langword="true"/>, will set `Grants` to match Rock's preferred,
-        /// default channel type permission grants (per role) in Stream. If <see langword="false"/>, will not set the
-        /// `Grants` property.</param>
+        /// <param name="config">
+        /// A <see cref="RockToChatSyncConfig"/> to fine-tune how Rock-to-Chat synchronization should be completed.
+        /// </param>
         /// <returns>A <see cref="ChannelTypeWithStringCommandsRequest"/> or <see langword="null"/> if unable to convert.</returns>
-        private ChannelTypeWithStringCommandsRequest TryConvertToStreamChannelTypeWithStringCommandsRequest( ChatChannelType chatChannelType, bool setDefaultPropertyValues, bool setDefaultGrants )
+        private ChannelTypeWithStringCommandsRequest TryConvertToStreamChannelTypeWithStringCommandsRequest( ChatChannelType chatChannelType, RockToChatSyncConfig config )
         {
             if ( ( chatChannelType?.Key ).IsNullOrWhiteSpace() )
             {
@@ -3296,7 +3272,7 @@ namespace Rock.Communication.Chat
 
             ChannelTypeWithStringCommandsRequest request;
 
-            if ( setDefaultPropertyValues )
+            if ( config.ShouldEnforceDefaultSettings )
             {
                 request = new ChannelTypeWithStringCommandsRequest
                 {
@@ -3332,7 +3308,7 @@ namespace Rock.Communication.Chat
                 };
             }
 
-            if ( setDefaultGrants )
+            if ( config.ShouldEnforceDefaultGrantsPerRole )
             {
                 request.Grants = DefaultChannelTypeGrantsByRole;
             }
@@ -3554,7 +3530,7 @@ namespace Rock.Communication.Chat
 
             // ----------------------------------------------------
             // 1) Start by adding the sync command for the channel.
-            var channelSyncCommand = new SyncChatChannelToRockCommand( ChatToRockSyncConfig.SyncCommandAttemptLimit, chatSyncType );
+            var channelSyncCommand = new SyncChatChannelToRockCommand( chatSyncType );
 
             // Ensure the payload contains a chat group identifier.
             var chatGroupIdentifiers = TryGetChatGroupIdentifiers( json );
@@ -3660,7 +3636,7 @@ namespace Rock.Communication.Chat
         /// <exception cref="ChatWebhookParseException">If the member JSON is missing expected values.</exception>
         private SyncChatChannelMemberToRockCommand GetSyncChatChannelMemberToRockCommand( ChatSyncType chatSyncType, JObject memberJson, ChatGroupIdentifiers chatGroupIdentifiers, string memberJsonPathRoot = WebhookJsonProperty.Member )
         {
-            var syncCommand = new SyncChatChannelMemberToRockCommand( ChatToRockSyncConfig.SyncCommandAttemptLimit, chatSyncType )
+            var syncCommand = new SyncChatChannelMemberToRockCommand( chatSyncType )
             {
                 ChatChannelKey = chatGroupIdentifiers.ChannelKey,
                 GroupId = chatGroupIdentifiers.GroupId
@@ -3713,7 +3689,7 @@ namespace Rock.Communication.Chat
         /// <exception cref="ChatWebhookParseException">If the Stream webhook payload is missing expected values.</exception>
         private SyncChatChannelMutedStatusToRockCommand GetSyncChatChannelMutedStatusToRockCommand( ChatSyncType chatSyncType, JObject json )
         {
-            var syncCommand = new SyncChatChannelMutedStatusToRockCommand( ChatToRockSyncConfig.SyncCommandAttemptLimit, chatSyncType );
+            var syncCommand = new SyncChatChannelMutedStatusToRockCommand( chatSyncType );
 
             // Ensure the payload contains a chat user ID;
             var userId = json[WebhookJsonProperty.User]?[WebhookJsonProperty.Id]?.ToString();
@@ -3760,15 +3736,17 @@ namespace Rock.Communication.Chat
             var isChannelSpecific = chatGroupIdentifiers.GroupId.HasValue
                 || chatGroupIdentifiers.ChannelKey.IsNotNullOrWhiteSpace();
 
-            var attemptLimit = isChannelSpecific
-                ? ChatToRockSyncConfig.SyncCommandAttemptLimit
-                : 1; // Only attempt once for global ban/unban events.
-
-            var syncCommand = new SyncChatBannedStatusToRockCommand( attemptLimit, chatSyncType )
+            var syncCommand = new SyncChatBannedStatusToRockCommand( chatSyncType )
             {
                 ChatChannelKey = chatGroupIdentifiers.ChannelKey,
                 GroupId = chatGroupIdentifiers.GroupId
             };
+
+            if ( !isChannelSpecific )
+            {
+                // Only attempt once for global ban/unban events.
+                syncCommand.AttemptLimit = 1;
+            }
 
             // Ensure the payload contains a chat user ID;
             var userId = json[WebhookJsonProperty.User]?[WebhookJsonProperty.Id]?.ToString();
