@@ -714,6 +714,7 @@
     <Compile Include="Attribute\CustomSettingsBlockTypeAttribute.cs" />
     <Compile Include="Attribute\ImageFieldAttribute.cs" />
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
+    <Compile Include="ClientService\Core\Note\NoteClientService.cs" />
     <Compile Include="Cms\RestActionMetadata.cs" />
     <Compile Include="Cms\RestControllerMetadata.cs" />
     <Compile Include="Communication\Chat\DTO\ChatUserAuthentication.cs" />
@@ -1744,6 +1745,7 @@
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
     <Compile Include="Plugin\HotFixes\226_UpdateIndexesForV16_8.cs" />
+    <Compile Include="Plugin\HotFixes\235_AddChatConfigurationAdminUI.cs" />
     <Compile Include="Plugin\HotFixes\231_MigrationRollupsForV16_10_0.cs" />
     <Compile Include="Plugin\HotFixes\230_FixVolGenBuildScript_CampusName.cs" />
     <Compile Include="Plugin\HotFixes\228_SetConnectionTypeLinkUrl.cs" />

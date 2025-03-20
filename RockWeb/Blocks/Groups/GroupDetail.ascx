@@ -31,6 +31,7 @@
                         <Rock:HighlightLabel ID="hlIsPrivate" runat="server" CssClass="js-privategroup-label" LabelType="Default" Text="Private" />
                         <Rock:HighlightLabel ID="hlElevatedSecurityLevel" runat="server" LabelType="Warning" Visible="false" />
                         <Rock:HighlightLabel ID="hlPeerNetwork" runat="server" LabelType="Info" Visible="false" />
+                        <Rock:HighlightLabel ID="hlChat" runat="server" LabelType="Info" Visible="false" />
                         <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                         <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                     </div>
@@ -352,6 +353,36 @@
                                     </Rock:Grid>
                                 </div>
                             </Rock:RockControlWrapper>
+                        </Rock:PanelWidget>
+
+                        <%-- Chat --%>
+                        <Rock:PanelWidget ID="wpChat" runat="server" Title="Chat">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlIsChatEnabled" runat="server" Label="Is Chat Enabled" Help="If enabled, this group will participate in the chat system as a chat channel.">
+                                        <asp:ListItem Value="" Text="Inherit from Group Type" />
+                                        <asp:ListItem Value="n" Text="No" />
+                                        <asp:ListItem Value="y" Text="Yes" />
+                                    </Rock:RockDropDownList>
+                                    <Rock:RockDropDownList ID="ddlIsLeavingChatChannelAllowed" runat="server" Label="Is Leaving Chat Channel Allowed" Help="If enabled, individuals are allowed to leave this chat channel.">
+                                        <asp:ListItem Value="" Text="Inherit from Group Type" />
+                                        <asp:ListItem Value="n" Text="No" />
+                                        <asp:ListItem Value="y" Text="Yes" />
+                                    </Rock:RockDropDownList>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlIsChatChannelPublic" runat="server" Label="Is Chat Channel Public" Help="If enabled, this chat channel is visible to everyone when performing a search. This also implies that the channel may be joined by any person via the chat application.">
+                                        <asp:ListItem Value="" Text="Inherit from Group Type" />
+                                        <asp:ListItem Value="n" Text="No" />
+                                        <asp:ListItem Value="y" Text="Yes" />
+                                    </Rock:RockDropDownList>
+                                    <Rock:RockDropDownList ID="ddlIsChatChannelAlwaysShown" runat="server" Label="Is Chat Channel Always Shown" Help="If enabled, this chat channel is always shown in the channel list even if the person has not joined the channel.">
+                                        <asp:ListItem Value="" Text="Inherit from Group Type" />
+                                        <asp:ListItem Value="n" Text="No" />
+                                        <asp:ListItem Value="y" Text="Yes" />
+                                    </Rock:RockDropDownList>
+                                </div>
+                            </div>
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupSync" runat="server" Title="Group Sync Settings">

@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rock.ViewModels.Blocks.Core.Notes
+namespace Rock.ViewModels.Controls
 {
     /// <summary>
     /// Describes a note that is in edit mode.

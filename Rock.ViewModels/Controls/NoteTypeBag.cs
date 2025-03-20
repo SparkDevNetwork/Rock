@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.Core.Notes
+namespace Rock.ViewModels.Controls
 {
     /// <summary>
     /// Describes a single type of note that might be included in the list

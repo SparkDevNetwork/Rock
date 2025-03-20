@@ -12,13 +12,10 @@
 </template>
 
 <script setup lang="ts">
-    import type Note from "./note.partial.obs";
-    import { computed, inject, PropType } from "vue";
-    import { ExpandedNoteBag, NoteOptions } from "./types.partial";
-    import { noteOptionsSymbol } from "./utils.partial";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { Component, computed, PropType } from "vue";
+    import { ExpandedNoteBag } from "./types.partial";
+    import { sortNotes, useNoteOptions } from "./utils.partial";
     import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
-    import { DeleteNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/deleteNoteRequestBag";
 
     const props = defineProps({
         notes: {
@@ -32,13 +29,10 @@
         }
     });
 
-    const invokeBlockAction = useInvokeBlockAction();
-
     // #region Values
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const noteOptions = inject<NoteOptions>(noteOptionsSymbol)!;
-    const noteComponent = noteOptions.noteComponent as typeof Note;
+    const noteOptions = useNoteOptions();
 
     // #endregion
 
@@ -52,6 +46,10 @@
         return props.depth > 0 ? "note-list-nested" : "note-view-list";
     });
 
+    const noteComponent = computed((): Component => {
+        return noteOptions.value.noteComponent;
+    });
+
     // #endregion
 
     // #region Event Handlers
@@ -63,18 +61,18 @@
      * @param note The note that has been deleted.
      */
     async function onDeleteNote(note: ExpandedNoteBag): Promise<void> {
+        if (!note.idKey || !noteOptions.value.deleteNote) {
+            return;
+        }
         if (!await confirmDelete("Note")) {
             return;
         }
 
-        const request: DeleteNoteRequestBag = {
-            idKey: note.idKey
-        };
-
-        const result = await invokeBlockAction("DeleteNote", { request });
-
-        if (!result.isSuccess) {
-            await alert(result.errorMessage ?? "Unable to delete note.");
+        try {
+            await noteOptions.value.deleteNote(note.idKey);
+        }
+        catch (e) {
+            await alert(e instanceof Error ? e.message : "Unable to delete note.");
             return;
         }
 
@@ -94,8 +92,18 @@
     function onEditedNote(note: ExpandedNoteBag): void {
         const index = props.notes.findIndex(n => n.idKey === note.idKey);
 
-        if (index >= 0) {
-            props.notes.splice(index, 1, note);
+        if (index < 0) {
+            return;
+        }
+
+        const oldNote = props.notes[index];
+        const reorder = oldNote.isAlert !== note.isAlert
+            || oldNote.isPinned !== note.isPinned;
+
+        props.notes.splice(index, 1, note);
+
+        if (reorder) {
+            sortNotes(props.notes, noteOptions.value.isDescending);
         }
     }
 

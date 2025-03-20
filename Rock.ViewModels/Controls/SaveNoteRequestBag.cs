@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.Core.Notes
+namespace Rock.ViewModels.Controls
 {
     /// <summary>
     /// Describes a request to save changes to an existing note.

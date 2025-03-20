@@ -19,12 +19,12 @@
                     <TextBox v-model="apiKey"
                              label="API Key"
                              help="The API key for Rock to use when interacting with the external chat application."
-                             :rules="['required', 'noemojisorspecialfonts']"
+                             :rules="['noemojisorspecialfonts']"
                              :disabled="isSaving" />
                     <TextBox v-model="apiSecret"
                              label="API Secret"
                              help="The API secret for Rock to use when interacting with the external chat application."
-                             :rules="['required', 'noemojisorspecialfonts']"
+                             :rules="['noemojisorspecialfonts']"
                              :disabled="isSaving" />
                     <DataViewPicker v-model="chatBadgeDataViews"
                                     label="Badge Persisted Data Views"
@@ -71,7 +71,6 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";

@@ -21,13 +21,13 @@
 // </copyright>
 //
 
-import { NoteEditBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteEditBag";
+import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
 
 /** Describes a request to save changes to an existing note. */
 export type SaveNoteRequestBag = {
     /** Gets or sets the bag that contains the changes that should be made to the note. */
     bag?: NoteEditBag | null;
 
-    /** Gets the valid properties of the Rock.ViewModels.Blocks.Core.Notes.SaveNoteRequestBag.Bag. */
+    /** Gets the valid properties of the Rock.ViewModels.Controls.SaveNoteRequestBag.Bag. */
     validProperties?: string[] | null;
 };

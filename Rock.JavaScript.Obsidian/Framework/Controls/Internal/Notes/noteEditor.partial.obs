@@ -119,8 +119,8 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { updateRefValue } from "@Obsidian/Utility/component";
-    import { NoteEditBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteEditBag";
-    import { NoteTypeBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteTypeBag";
+    import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
+    import { NoteTypeBag } from "@Obsidian/ViewModels/Controls/noteTypeBag";
 
     const props = defineProps({
         modelValue: {
