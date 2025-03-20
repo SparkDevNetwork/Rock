@@ -1,0 +1,457 @@
+<template>
+    <div class="panel panel-note">
+        <div v-if="title || titleIconCssClass || showAddNote" class="panel-heading clearfix">
+            <h3 class="panel-title">
+                <i v-if="titleIconCssClass" :class="titleIconCssClass"></i>
+                {{ title }}
+            </h3>
+
+            <button v-if="showAddNote && descending"
+                    class="add-note btn btn-xs btn-action btn-square"
+                    @click.prevent="onAddNoteClick">
+                <i class="fa fa-plus"></i>
+            </button>
+        </div>
+
+        <div class="panel-body">
+            <TransitionVerticalCollapse>
+                <div v-if="descending && isAddNoteVisible">
+                    <NoteEditor v-model="addNoteBag"
+                                :noteTypes="noteTypes"
+                                :showAlert="noteOptions.showAlert"
+                                :showDate="noteOptions.showCreateDate"
+                                :showPrivate="noteOptions.showPrivate"
+                                :showSecurity="noteOptions.showSecurity"
+                                :hideCancel="alwaysShowAdd"
+                                autoSize
+                                :autoFocus="!alwaysShowAdd"
+                                @cancel="onNoteAddCancel"
+                                @save="onNoteAddSave" />
+                </div>
+            </TransitionVerticalCollapse>
+
+            <NoteList :notes="notes" @beginEditNote="onBeginEditNote" @endEditNote="onEndEditNote" />
+
+            <TransitionVerticalCollapse>
+                <div v-if="!descending && isAddNoteVisible">
+                    <NoteEditor v-model="addNoteBag"
+                                :noteTypes="noteTypes"
+                                :showAlert="noteOptions.showAlert"
+                                :showDate="noteOptions.showCreateDate"
+                                :showPrivate="noteOptions.showPrivate"
+                                :showSecurity="noteOptions.showSecurity"
+                                :hideCancel="alwaysShowAdd"
+                                autoSize
+                                :autoFocus="!alwaysShowAdd"
+                                @cancel="onNoteAddCancel"
+                                @save="onNoteAddSave" />
+                </div>
+            </TransitionVerticalCollapse>
+
+            <button v-if="showAddNote && !descending"
+                    class="add-note btn btn-xs btn-action btn-square"
+                    @click.prevent="onAddNoteClick">
+                <i class="fa fa-plus"></i>
+            </button>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import Note from "./Notes/note.partial.obs";
+    import NoteList from "./Notes/noteList.partial.obs";
+    import NoteEditor from "./Notes/noteEditor.partial.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { insertSortedPosition, provideEmitter, provideNoteOptions } from "./Notes/utils.partial";
+    import { ExpandedNoteBag, NoteOptions } from "./Notes/types.partial";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { computed, onBeforeUnmount, PropType, reactive, ref } from "vue";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
+    import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Controls/saveNoteRequestBag";
+    import { NoteBag } from "@Obsidian/ViewModels/Controls/noteBag";
+    import { NoteTypeBag } from "@Obsidian/ViewModels/Controls/noteTypeBag";
+
+    const props = defineProps({
+        /** The notes to be displayed in the container. */
+        notes: {
+            type: Array as PropType<NoteBag[]>,
+            required: true
+        },
+
+        /** The note types that are valid to display. */
+        noteTypes: {
+            type: Array as PropType<NoteTypeBag[]>,
+            required: true
+        },
+
+        /** The title of the panel header surrounding the notes. */
+        title: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        /** The icon CSS class that will be displayed in the header. */
+        titleIconCssClass: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        /** `true` if notes should be displayed in descending order. */
+        descending: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * `true` if the is alert option should be displayed when editing
+         * notes.
+         */
+        showAlert: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * `true` if the created date time override should be displayed when
+         * editing notes.
+         */
+        showCreateDateOverride: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** `true` if the note type panel header should be displayed. */
+        showNoteTypeHeading: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * `true` if the private option should be displayed when editing notes.
+         */
+        showPrivate: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * `true` if the security button should be displayed when editing notes.
+         */
+        showSecurity: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** `true` if adding new notes is available. */
+        showAdd: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * `true` if the add note editor should always be visible. Otherwise
+         * the person will have to click the add button to begin adding a note.
+         */
+        alwaysShowAdd: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** `true` if the person avatar should be shown when viewing notes. */
+        showAvatar: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Contains the URL of the current person's avatar. */
+        personAvatarUrl: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        /** `true` if the notes container is rendered in lightweight mode. */
+        lightMode: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** `true` if replies should be auto expanded. */
+        autoExpandReplies: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The function to call to begin editing an existing note. */
+        onEditNote: {
+            type: Function as PropType<(idKey: string) => Promise<NoteEditBag> | NoteEditBag>,
+            required: false
+        },
+
+        /** The function to call to watch or unwatch a note. */
+        onWatchNote: {
+            type: Function as PropType<(idKey: string, watching: boolean) => Promise<void> | void>,
+            required: false
+        },
+
+        /** The function to call to save a new or edited note. */
+        onSaveNote: {
+            type: Function as PropType<(note: SaveNoteRequestBag) => Promise<NoteBag> | NoteBag>,
+            required: false
+        },
+
+        /** The function to call to delete an existing note. */
+        onDeleteNote: {
+            type: Function as PropType<(idKey: string) => Promise<void> | void>,
+            required: false
+        }
+    });
+
+    // #region Values
+
+    const notes = reactive(getExpandedNotes().filter(n => !n.parentNoteIdKey));
+    const isManuallyAddingNote = ref(false);
+    const isEditingNote = ref(false);
+    const addNoteBag = ref<NoteEditBag>({ isAlert: false, isPrivate: false, isPinned: false });
+    const isSavingNote = ref(false);
+
+    const emitter = provideEmitter();
+    const subscriberKey = emitter.subscribe();
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isAddNoteVisible = computed((): boolean => {
+        if (isManuallyAddingNote.value) {
+            return true;
+        }
+
+        if (isEditingNote.value) {
+            return false;
+        }
+
+        return props.showAdd && props.alwaysShowAdd;
+    });
+
+    const selectableNoteTypes = computed((): NoteTypeBag[] => {
+        return props.noteTypes?.filter(nt => nt.userSelectable) ?? [];
+    });
+
+    const showAddNote = computed((): boolean => {
+        return selectableNoteTypes.value.length > 0 && !props.alwaysShowAdd && props.showAdd;
+    });
+
+    /**
+     * Our standard note options that will be used by child components rather
+     * than passing all the information around inside properties.
+     */
+    const noteOptions = computed((): NoteOptions => {
+        return {
+            autoExpandReplies: props.autoExpandReplies,
+            avatarUrl: props.showAvatar ? props.personAvatarUrl : undefined,
+            isLightMode: props.lightMode,
+            noteComponent: Note,
+            noteTypes: props.noteTypes ?? [],
+            selectableNoteTypes: selectableNoteTypes.value,
+            isDescending: props.descending,
+            showAdd: props.showAdd,
+            showAlert: props.showAlert,
+            showAvatar: props.showAvatar,
+            showCreateDate: props.showCreateDateOverride,
+            showNoteTypeHeading: props.showNoteTypeHeading,
+            showPrivate: props.showPrivate,
+            showSecurity: props.showSecurity,
+            editNote: props.onEditNote,
+            watchNote: props.onWatchNote,
+            saveNote: props.onSaveNote,
+            deleteNote: props.onDeleteNote
+        };
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the set of initial expanded note bags from the configuration data.
+     */
+    function getExpandedNotes(): ExpandedNoteBag[] {
+        const expandedNotes: ExpandedNoteBag[] = [];
+
+        // If we don't have any notes or note types then we have nothing to do.
+        if (!props.notes || !props.noteTypes) {
+            return expandedNotes;
+        }
+
+        // Populate the basic expanded note data by associating each note with
+        // the note type it references.
+        for (const note of props.notes) {
+            const type = props.noteTypes.find(nt => nt.idKey === note.noteTypeIdKey);
+
+            if (type) {
+                expandedNotes.push({
+                    noteType: type,
+                    childNotes: [],
+                    ...note
+                });
+            }
+        }
+
+        // Populate the childNotes by finding all children of each note.
+        for (const note of expandedNotes) {
+            if (note.parentNoteIdKey) {
+                const parentNote = expandedNotes.find(n => n.idKey === note.parentNoteIdKey);
+
+                if (parentNote) {
+                    parentNote.childNotes.push(note);
+                }
+            }
+        }
+
+        return expandedNotes;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the person clicks the button to begin adding
+     * a new note to the list of notes.
+     */
+    function onAddNoteClick(): void {
+        // Make sure we start off on a clean slate.
+        addNoteBag.value = {
+            noteTypeIdKey: selectableNoteTypes.value[0].idKey,
+            text: "",
+            isAlert: false,
+            isPrivate: false,
+            isPinned: false,
+            attributeValues: {}
+        };
+
+        isManuallyAddingNote.value = true;
+    }
+
+    /**
+     * Event handler for when the person clicks the cancel button while
+     * trying to add a new note.
+     */
+    function onNoteAddCancel(): void {
+        isManuallyAddingNote.value = false;
+    }
+
+    /**
+     * Event handler for when the person clicks the save button while adding
+     * a new note.
+     */
+    async function onNoteAddSave(): Promise<void> {
+        if (!noteOptions.value.saveNote) {
+            return;
+        }
+
+        if (isSavingNote.value) {
+            return;
+        }
+
+        // Make sure we don't try to save the same note twice.
+        isSavingNote.value = true;
+
+        try {
+            const request: SaveNoteRequestBag = {};
+
+            setPropertiesBoxValue(request, "idKey", addNoteBag.value.idKey);
+            setPropertiesBoxValue(request, "parentNoteIdKey", undefined);
+            setPropertiesBoxValue(request, "noteTypeIdKey", addNoteBag.value.noteTypeIdKey);
+            setPropertiesBoxValue(request, "text", addNoteBag.value.text);
+            setPropertiesBoxValue(request, "isAlert", addNoteBag.value.isAlert);
+            setPropertiesBoxValue(request, "isPrivate", addNoteBag.value.isPrivate);
+            setPropertiesBoxValue(request, "isPinned", addNoteBag.value.isPinned);
+            setPropertiesBoxValue(request, "attributeValues", addNoteBag.value.attributeValues);
+
+            if (addNoteBag.value.createdDateTime) {
+                setPropertiesBoxValue(request, "createdDateTime", addNoteBag.value.createdDateTime);
+            }
+
+            let note: NoteBag;
+
+            try {
+                note = await noteOptions.value.saveNote(request);
+            }
+            catch (e) {
+                await alert(e instanceof Error ? e.message : "Unable to save the note.");
+                return;
+            }
+
+            // Even though the note might have saved, if we don't have a type
+            // then we can't display it. This should never happen in production.
+            const type = props.noteTypes?.find(nt => nt.idKey === note.noteTypeIdKey);
+
+            if (!type) {
+                await alert("Unable to save the note.");
+                return;
+            }
+
+            // Convert the note to an expanded note so we can properly track
+            // all the associated data.
+            const expandedNote: ExpandedNoteBag = {
+                ...note,
+                noteType: type,
+                childNotes: []
+            };
+
+            insertSortedPosition(expandedNote, notes, props.descending);
+
+            // Clear the UI.
+            addNoteBag.value = {
+                isAlert: false,
+                isPrivate: false,
+                isPinned: false
+            };
+
+            isManuallyAddingNote.value = false;
+        }
+        finally {
+            isSavingNote.value = false;
+        }
+    }
+
+    /**
+     * Event handler for when any child note begins an edit operation.
+     */
+    function onBeginEditNote(): void {
+        // Clear any new note that was in progress.
+        addNoteBag.value = {
+            isAlert: false,
+            isPrivate: false,
+            isPinned: false
+        };
+
+        // Hide the UI for adding a new note.
+        isEditingNote.value = true;
+    }
+
+    /**
+     * Event handler for when a child note has ended an editing operation.
+     */
+    function onEndEditNote(): void {
+        // If we are in always show "add" configuration state then show the
+        // add note UI again.
+        isEditingNote.value = false;
+    }
+
+    // #endregion
+
+    // Unsubscribe when we unmount to prevent memory leaks.
+    onBeforeUnmount(() => {
+        emitter.unsubscribe(subscriberKey);
+    });
+
+    // Provide the options that child components will need.
+    provideNoteOptions(noteOptions);
+
+    // Listen for child note component events.
+    emitter.on("beginEdit", subscriberKey, onBeginEditNote);
+    emitter.on("endEdit", subscriberKey, onEndEditNote);
+</script>

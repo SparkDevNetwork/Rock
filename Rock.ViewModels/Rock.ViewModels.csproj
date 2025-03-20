@@ -531,11 +531,11 @@
     <Compile Include="Blocks\Cms\ContentCollectionDetail\CustomFieldFilterBag.cs" />
     <Compile Include="Blocks\Core\Notes\DeleteNoteRequestBag.cs" />
     <Compile Include="Blocks\Core\Notes\EditNoteRequestBag.cs" />
-    <Compile Include="Blocks\Core\Notes\NoteBag.cs" />
-    <Compile Include="Blocks\Core\Notes\NoteEditBag.cs" />
+    <Compile Include="Controls\NoteBag.cs" />
+    <Compile Include="Controls\NoteEditBag.cs" />
     <Compile Include="Blocks\Core\Notes\NotesInitializationBox.cs" />
-    <Compile Include="Blocks\Core\Notes\NoteTypeBag.cs" />
-    <Compile Include="Blocks\Core\Notes\SaveNoteRequestBag.cs" />
+    <Compile Include="Controls\NoteTypeBag.cs" />
+    <Compile Include="Controls\SaveNoteRequestBag.cs" />
     <Compile Include="Blocks\Core\Notes\WatchNoteRequestBag.cs" />
     <Compile Include="Blocks\Core\NotificationMessageList\GetMessageActionRequestBag.cs" />
     <Compile Include="Blocks\Core\NotificationMessageList\GetMessageActionResponseBag.cs" />

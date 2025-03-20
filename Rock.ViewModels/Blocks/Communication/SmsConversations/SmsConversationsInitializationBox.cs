@@ -17,7 +17,7 @@
 using System.Collections.Generic;
 
 using Rock.Enums.Communication;
-using Rock.ViewModels.Blocks.Core.Notes;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.SmsConversations

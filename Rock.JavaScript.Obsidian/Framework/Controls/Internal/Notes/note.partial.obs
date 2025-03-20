@@ -33,7 +33,7 @@
                             <template v-else>
                                 {{ note.caption }}
                             </template>
-                            <span v-if="approvalTypeLabel" :class="'pull-right mr-1 label label-' + approvalTypeLabel">{{NoteApprovalStatusDescription[note.approvalStatus ?? 0]}}</span>
+                            <span v-if="approvalTypeLabel" :class="'pull-right mr-1 label label-' + approvalTypeLabel">{{ NoteApprovalStatusDescription[note.approvalStatus ?? 0] }}</span>
                         </span>
                         <span class="note-details">
                             <span v-if="!noteOptions.isLightMode" class="tag-flair">
@@ -98,7 +98,7 @@
                 <TransitionVerticalCollapse>
                     <div v-if="isAddNoteVisible">
                         <NoteEditor v-model="editNoteBag"
-                                    :noteTypes="noteTypes"
+                                    :noteTypes="editorNoteTypes"
                                     :showAlert="noteOptions.showAlert"
                                     :showDate="noteOptions.showCreateDate"
                                     :showPrivate="noteOptions.showPrivate"
@@ -115,7 +115,7 @@
         <TransitionVerticalCollapse>
             <div v-if="isEditingNote">
                 <NoteEditor v-model="editNoteBag"
-                            :noteTypes="noteTypes"
+                            :noteTypes="editorNoteTypes"
                             :showAlert="noteOptions.showAlert"
                             :showDate="noteOptions.showCreateDate"
                             :showPrivate="noteOptions.showPrivate"
@@ -172,24 +172,23 @@
 <script setup lang="ts">
     import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
-    import NotesContainer from "./notesContainer.partial.obs";
+    import NotesContainer from "./noteList.partial.obs";
     import NoteEditor from "./noteEditor.partial.obs";
     import { ColorPair } from "@Obsidian/Core/Utilities/colorPair";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
-    import { computed, inject, onBeforeUnmount, onMounted, PropType, ref } from "vue";
-    import { ExpandedNoteBag, NoteOptions } from "./types.partial";
-    import { noteOptionsSymbol, toCssClass, useEmitter } from "./utils.partial";
-    import { setPropertiesBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { computed, onBeforeUnmount, onMounted, PropType, ref } from "vue";
+    import { ExpandedNoteBag } from "./types.partial";
+    import { insertSortedPosition, toCssClass, useEmitter, useNoteOptions } from "./utils.partial";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { alert } from "@Obsidian/Utility/dialogs";
-    import { NoteBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteBag";
+    import { NoteBag } from "@Obsidian/ViewModels/Controls/noteBag";
     import { NoteApprovalStatus, NoteApprovalStatusDescription } from "@Obsidian/Enums/Core/noteApprovalStatus";
-    import { NoteEditBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteEditBag";
-    import { EditNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/editNoteRequestBag";
-    import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/saveNoteRequestBag";
-    import { WatchNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/watchNoteRequestBag";
+    import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
+    import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Controls/saveNoteRequestBag";
+    import { NoteTypeBag } from "@Obsidian/ViewModels/Controls/noteTypeBag";
 
     const props = defineProps({
         note: {
@@ -210,20 +209,38 @@
         (e: "endEditNote"): void
     }>();
 
-    const invokeBlockAction = useInvokeBlockAction();
-    const reloadBlock = useReloadBlock();
-
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const noteOptions = inject<NoteOptions>(noteOptionsSymbol)!;
-    const noteTypes = ref(noteOptions.noteTypes);
+    const noteOptions = useNoteOptions();
 
     // #region Values
 
-    const isChildNotesVisible = ref(noteOptions.autoExpandReplies);
+    const requiredNoteTypeIdKey = ref<string | null>();
+    const isChildNotesVisible = ref(noteOptions.value.autoExpandReplies);
     const isAddNoteVisible = ref(false);
     const isEditingNote = ref(false);
     const editNoteBag = ref<NoteEditBag>({ isAlert: false, isPrivate: false, isPinned: false });
     const isSavingNote = ref(false);
+    const emitter = useEmitter();
+    const subscriberKey = emitter.subscribe();
+
+    // #endregion
+
+    // #region Computed Values
+
+    const noteTypes = computed((): NoteTypeBag[] => {
+        return noteOptions.value.noteTypes;
+    });
+
+    const editorNoteTypes = computed((): NoteTypeBag[] => {
+        // If a note type is not required, use the default configuration.
+        if (!requiredNoteTypeIdKey.value) {
+            return noteOptions.value.selectableNoteTypes;
+        }
+
+        // Restrict the note type selection to the required note type.
+        // The note type selector will not be displayed to the user.
+        return noteOptions.value.selectableNoteTypes.filter(t => t.idKey === requiredNoteTypeIdKey.value);
+    });
+
     const approvalTypeLabel = computed(() => {
         if (props.note.noteType.requiresApprovals) {
             if (props.note.approvalStatus === NoteApprovalStatus.Denied) {
@@ -237,17 +254,10 @@
         return "";
     });
 
-    const emitter = useEmitter();
-    const subscriberKey = emitter.subscribe();
-
-    // #endregion
-
-    // #region Computed Values
-
     /** `true` if the person photo should be shown in the UI. */
     const showPersonPhoto = computed((): boolean => {
-        return noteOptions.isLightMode
-            || (noteOptions.showAvatar && !!props.note.createdByIdKey);
+        return noteOptions.value.isLightMode
+            || (noteOptions.value.showAvatar && !!props.note.createdByIdKey);
     });
 
     /**
@@ -381,7 +391,7 @@
     const dropDownActions = computed((): MenuAction[] => {
         const actions: MenuAction[] = [];
 
-        if (props.note.noteType.allowsReplies && noteOptions.showAdd) {
+        if (props.note.noteType.allowsReplies && noteOptions.value.showAdd) {
             if (props.note.noteType.maxReplyDepth === -1 || props.depth < props.note.noteType.maxReplyDepth) {
                 actions.push({
                     title: "Reply",
@@ -470,7 +480,7 @@
      * current note.
      */
     function getNoteTypeForCurrentNote(parentNoteTypeIdKey: string | undefined | null): string | null | undefined {
-        const noteTypeIdKey = parentNoteTypeIdKey ?? noteOptions.selectableNoteTypes[0].idKey;
+        const noteTypeIdKey = parentNoteTypeIdKey ?? noteOptions.value.selectableNoteTypes[0].idKey;
         return noteTypeIdKey;
     }
 
@@ -482,15 +492,8 @@
      * @param requiredNoteTypeIdKey The required note type, or `null`
      * if the note type is user-selectable.
      */
-    function configureAvailableNoteTypes(requiredNoteTypeIdKey: string | undefined | null): void {
-        // If a note type is not required, use the default configuration.
-        if (requiredNoteTypeIdKey === null) {
-            return;
-        }
-
-        // Restrict the note type selection to the required note type.
-        // The note type selector will not be displayed to the user.
-        noteTypes.value = noteOptions.selectableNoteTypes.filter(t => t.idKey === requiredNoteTypeIdKey);
+    function configureAvailableNoteTypes(noteTypeIdKey: string | undefined | null): void {
+        requiredNoteTypeIdKey.value = noteTypeIdKey;
     }
 
     // #endregion
@@ -502,16 +505,19 @@
      * editing a note.
      */
     async function onEditNote(): Promise<void> {
-        const request: EditNoteRequestBag = {
-            idKey: props.note.idKey ?? ""
-        };
+        if (!props.note.idKey || !noteOptions.value.editNote) {
+            return;
+        }
 
         // Get the edit data from the server. Because attributes might be in
         // play we need to get the edit version of the values.
-        const result = await invokeBlockAction<NoteEditBag>("EditNote", { request });
+        let note: NoteEditBag;
 
-        if (!result.isSuccess || !result.data) {
-            await alert(result.errorMessage ?? "Unable to edit note.");
+        try {
+            note = await noteOptions.value.editNote(props.note.idKey);
+        }
+        catch (e) {
+            await alert(e instanceof Error ? e.message : "Unable to edit note.");
             return;
         }
 
@@ -523,7 +529,7 @@
         const noteTypeIdKey = props.note.parentNoteIdKey === null ? null : props.note.noteTypeIdKey;
         configureAvailableNoteTypes(noteTypeIdKey);
 
-        editNoteBag.value = result.data;
+        editNoteBag.value = note;
         isAddNoteVisible.value = false;
         isEditingNote.value = true;
     }
@@ -542,15 +548,15 @@
      * on this note.
      */
     async function onWatchNote(): Promise<void> {
-        const request: WatchNoteRequestBag = {
-            idKey: props.note.idKey,
-            isWatching: !props.note.isWatching
-        };
+        if (!props.note.idKey || !noteOptions.value.watchNote) {
+            return;
+        }
 
-        const result = await invokeBlockAction("WatchNote", { request });
-
-        if (!result.isSuccess) {
-            await alert(result.errorMessage ?? "Unable to update note.");
+        try {
+            await noteOptions.value.watchNote(props.note.idKey, !props.note.isWatching);
+        }
+        catch (e) {
+            await alert(e instanceof Error ? e.message : "Unable to update note.");
             return;
         }
 
@@ -609,6 +615,10 @@
      * a reply to this note or editing the note itself.
      */
     async function onNoteSave(): Promise<void> {
+        if (!noteOptions.value.saveNote) {
+            return;
+        }
+
         if (isSavingNote.value) {
             return;
         }
@@ -632,19 +642,27 @@
                 setPropertiesBoxValue(request, "createdDateTime", editNoteBag.value.createdDateTime);
             }
 
-            const result = await invokeBlockAction<NoteBag>("SaveNote", { request });
+            let note: NoteBag;
+
+            try {
+                note = await noteOptions.value.saveNote(request);
+            }
+            catch (e) {
+                await alert(e instanceof Error ? e.message : "Unable to save the note.");
+                return;
+            }
 
             // Make sure we can actually display the note. If we can't find the
             // note type then display an error instead.
-            const type = noteTypes.value?.find(nt => nt.idKey === result.data?.noteTypeIdKey);
+            const type = noteTypes.value.find(nt => nt.idKey === note.noteTypeIdKey);
 
-            if (!result.isSuccess || !result.data || !type) {
-                await alert(result.errorMessage ?? "Unable to save the note.");
+            if (!type) {
+                await alert("Unable to save the note.");
                 return;
             }
 
             const expandedNote: ExpandedNoteBag = {
-                ...result.data,
+                ...note,
                 noteType: type,
                 childNotes: []
             };
@@ -657,54 +675,7 @@
                 // Insert this new note as a child of the current note.
                 const notes = props.note.childNotes;
 
-                if (noteOptions.isDescending) {
-                    let index = 0;
-
-                    // If not an alert, put it at the top of the list after all
-                    // other alerts.
-                    if (!expandedNote.isAlert) {
-                        while (index < notes.length && notes[index].isAlert) {
-                            index++;
-                        }
-                    }
-
-                    // If not pinned to top, put it at the top of the list after all
-                    // other pinned to top and alerts.
-                    if (!expandedNote.isPinned) {
-                        while (index < notes.length && notes[index].isPinned) {
-                            index++;
-                        }
-                    }
-
-                    notes.splice(index, 0, expandedNote);
-                }
-                else {
-                    let index = 0;
-
-                    // If an alert and pinned item, put it at as the last alert and pinned item.
-                    if (expandedNote.isAlert && expandedNote.isPinned) {
-                        while (index < notes.length && (notes[index].isAlert && notes[index].isPinned)) {
-                            index++;
-                        }
-                    }
-                    // If an alert but not a pinned item, put it at as the last alert item.
-                    else if (expandedNote.isAlert && !expandedNote.isPinned) {
-                        while (index < notes.length && notes[index].isAlert) {
-                            index++;
-                        }
-                    }
-                    // If not an alert but a pinned item, put it at as the last item.
-                    else if (!expandedNote.isAlert && expandedNote.isPinned) {
-                        while (index < notes.length && (notes[index].isAlert || notes[index].isPinned)) {
-                            index++;
-                        }
-                    }
-                    else {
-                        index = notes.length;
-                    }
-
-                    notes.splice(index, 0, expandedNote);
-                }
+                insertSortedPosition(expandedNote, notes, noteOptions.value.isDescending);
             }
 
             isAddNoteVisible.value = false;
@@ -716,7 +687,6 @@
             // Inform other components in this block that we are done with
             // our edit operation.
             emitter.emit("endEdit", subscriberKey);
-            reloadBlock();
         }
     }
 

@@ -1,6 +1,8 @@
 import { Component } from "vue";
-import { NoteBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteBag";
-import { NoteTypeBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteTypeBag";
+import { NoteBag } from "@Obsidian/ViewModels/Controls/noteBag";
+import { NoteTypeBag } from "@Obsidian/ViewModels/Controls/noteTypeBag";
+import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
+import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Controls/saveNoteRequestBag";
 
 /**
  * Expanded note bag that contains some additional details that will be
@@ -66,4 +68,16 @@ export type NoteOptions = {
 
     /** `true` if replies should be auto expanded. */
     autoExpandReplies: boolean;
+
+    /** The function to call to begin editing an existing note. */
+    editNote?: (idKey: string) => Promise<NoteEditBag> | NoteEditBag;
+
+    /** The function to call to watch or unwatch a note. */
+    watchNote?: (idKey: string, watching: boolean) => Promise<void> | void;
+
+    /** The function to call to save a new or edited note. */
+    saveNote?: (note: SaveNoteRequestBag) => Promise<NoteBag> | NoteBag;
+
+    /** The function to call to delete a note. */
+    deleteNote?: (idKey: string) => Promise<void> | void;
 };

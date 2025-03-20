@@ -20,7 +20,7 @@ using System.Collections.Generic;
 
 using Rock.Model;
 
-namespace Rock.ViewModels.Blocks.Core.Notes
+namespace Rock.ViewModels.Controls
 {
     /// <summary>
     /// Describes an existing note that should be displayed to the person.

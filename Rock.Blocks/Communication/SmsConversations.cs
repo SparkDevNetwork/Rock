@@ -16,7 +16,7 @@ using Rock.Reporting;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Communication.SmsConversations;
-using Rock.ViewModels.Blocks.Core.Notes;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
