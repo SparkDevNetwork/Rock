@@ -213,11 +213,6 @@ namespace Rock.Communication.Chat
         internal RockToChatSyncConfig RockToChatSyncConfig { get; } = new RockToChatSyncConfig();
 
         /// <summary>
-        /// Gets the Chat-to-Rock sync configuration for this chat helper.
-        /// </summary>
-        internal ChatToRockSyncConfig ChatToRockSyncConfig { get; } = new ChatToRockSyncConfig();
-
-        /// <summary>
         /// Gets the <see cref="ILogger"/> that should be used to write log messages for this chat helper.
         /// </summary>
         private ILogger Logger { get; }
@@ -270,8 +265,6 @@ namespace Rock.Communication.Chat
             }
 
             ChatProvider = RockApp.Current.GetChatProvider();
-            ChatProvider.RockToChatSyncConfig = RockToChatSyncConfig;
-            ChatProvider.ChatToRockSyncConfig = ChatToRockSyncConfig;
         }
 
         /// <inheritdoc/>
@@ -641,7 +634,7 @@ namespace Rock.Communication.Chat
                     return result;
                 }
 
-                var appGrantsResult = await ChatProvider.EnsureAppGrantsExistAsync();
+                var appGrantsResult = await ChatProvider.EnsureAppGrantsExistAsync( RockToChatSyncConfig );
                 if ( appGrantsResult?.IsSetUp != true || appGrantsResult.HasException )
                 {
                     LogFailure( appGrantsResult?.Exception, nameof( ChatProvider.EnsureAppGrantsExistAsync ) );
@@ -889,7 +882,11 @@ namespace Rock.Communication.Chat
 
                 if ( channelTypesToUpdate.Any() )
                 {
-                    var updatedResult = await ChatProvider.UpdateChatChannelTypesAsync( channelTypesToUpdate );
+                    var updatedResult = await ChatProvider.UpdateChatChannelTypesAsync(
+                        channelTypesToUpdate,
+                        RockToChatSyncConfig
+                    );
+
                     updatedResult?.Updated.ToList().ForEach( key => AddGroupTypeToResult( key, ChatSyncType.Update ) );
 
                     if ( updatedResult?.HasException == true )

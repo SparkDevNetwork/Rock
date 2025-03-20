@@ -33,16 +33,6 @@ namespace Rock.Communication.Chat
         #region Configuration
 
         /// <summary>
-        /// Gets or sets the Rock-to-Chat sync configuration for this chat provider.
-        /// </summary>
-        RockToChatSyncConfig RockToChatSyncConfig { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Chat-to-Rock sync configuration for this chat provider.
-        /// </summary>
-        ChatToRockSyncConfig ChatToRockSyncConfig { get; set; }
-
-        /// <summary>
         /// Initializes the chat provider instance.
         /// </summary>
         void Initialize();
@@ -83,11 +73,14 @@ namespace Rock.Communication.Chat
         /// <summary>
         /// Ensures that all required, app-scoped permission grants exist in the external chat system.
         /// </summary>
+        /// <param name="config">
+        /// A <see cref="RockToChatSyncConfig"/> to fine-tune how Rock-to-Chat synchronization should be completed.
+        /// </param>
         /// <returns>
         /// A task representing the asynchronous operation, containing a <see cref="ChatSyncSetupResult"/> indicating
         /// whether the app app-scoped permission grants exist in the external chat system.
         /// </returns>
-        Task<ChatSyncSetupResult> EnsureAppGrantsExistAsync();
+        Task<ChatSyncSetupResult> EnsureAppGrantsExistAsync( RockToChatSyncConfig config );
 
         #endregion Roles & Permission Grants
 
@@ -114,10 +107,13 @@ namespace Rock.Communication.Chat
         /// Updates existing <see cref="ChatChannelType"/>s in the external chat system.
         /// </summary>
         /// <param name="chatChannelTypes">The list of <see cref="ChatChannelType"/>s to update.</param>
+        /// <param name="config">
+        /// A <see cref="RockToChatSyncConfig"/> to fine-tune how Rock-to-Chat synchronization should be completed.
+        /// </param>
         /// <returns>
         /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
-        Task<ChatSyncCrudResult> UpdateChatChannelTypesAsync( List<ChatChannelType> chatChannelTypes );
+        Task<ChatSyncCrudResult> UpdateChatChannelTypesAsync( List<ChatChannelType> chatChannelTypes, RockToChatSyncConfig config );
 
         /// <summary>
         /// Deletes the specified <see cref="ChatChannelType"/>s in the external chat system.

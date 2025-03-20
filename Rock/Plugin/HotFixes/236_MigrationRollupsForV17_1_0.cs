@@ -154,12 +154,17 @@ namespace Rock.Plugin.HotFixes
             // Add the new routes, but only if there are not any routes
             // that might conflict.
             Sql( @"
-IF NOT EXISTS (SELECT 1 FROM [PageRoute] WHERE [Route] LIKE 'watch/%')
+DECLARE @SeriesPageId INT = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = '7669a501-4075-431a-9828-565c47fd21c8')
+DECLARE @MessagePageId INT = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = 'bb83c51d-65c7-4f6c-ba24-a496167c9b11')
+IF NOT EXISTS (SELECT 1 FROM [PageRoute] WHERE [Route] LIKE 'watch/%') AND @SeriesPageId IS NOT NULL AND @MessagePageId IS NOT NULL
 BEGIN
-    INSERT INTO [PageRoute] ([IsSystem], [PageId], [Route], [IsGlobal], [Guid]) 
-        VALUES
-        (1, 460, 'watch/{Series}', 0, 'bef2bf79-7cc0-49eb-93ab-2dcb7b1ce859'),
-        (1, 461, 'watch/{Series}/{Message}', 0, '8f2735a3-c434-4e3a-b7b6-a943a4254c5e')
+    IF NOT EXISTS (SELECT 1 FROM [PageRoute] WHERE [Guid] IN ('bef2bf79-7cc0-49eb-93ab-2dcb7b1ce859', '8f2735a3-c434-4e3a-b7b6-a943a4254c5e'))
+    BEGIN
+        INSERT INTO [PageRoute] ([IsSystem], [PageId], [Route], [IsGlobal], [Guid]) 
+            VALUES
+            (1, @SeriesPageId, 'watch/{Series}', 0, 'bef2bf79-7cc0-49eb-93ab-2dcb7b1ce859'),
+            (1, @MessagePageId, 'watch/{Series}/{Message}', 0, '8f2735a3-c434-4e3a-b7b6-a943a4254c5e')
+    END
 END" );
         }
 

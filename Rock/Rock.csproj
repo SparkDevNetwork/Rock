@@ -723,7 +723,6 @@
     <Compile Include="Communication\Chat\Exceptions\ChatWebhookParseException.cs" />
     <Compile Include="Communication\Chat\Sync\ChatSyncBanResult.cs" />
     <Compile Include="Communication\Chat\Sync\ChatSyncMuteResult.cs" />
-    <Compile Include="Communication\Chat\Sync\ChatToRockSyncConfig.cs" />
     <Compile Include="Communication\Chat\Sync\ChatUserMessageCountsByChatChannelResult.cs" />
     <Compile Include="Communication\Chat\Sync\ChatWebhookRequest.cs" />
     <Compile Include="Communication\Chat\DTO\RockChatGroupMember.cs" />
