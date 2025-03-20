@@ -248,6 +248,8 @@ export const DefinedValue = {
     InteractionchanneltypeChallengeProgress: "6AA529BD-9FA5-43AD-A98E-B8DF5F997146",
     /** Interaction Channel Type: Challenges */
     InteractionchanneltypeChallenges: "593607DC-4537-46E4-939F-60E0F74A1518",
+    /** Interaction Channel Type: Chat */
+    InteractionchanneltypeChat: "0E2EAE2C-957B-4CCB-8826-AA5627C27BBD",
     /** Interaction Channel Type: Communication */
     InteractionchanneltypeCommunication: "55004F5C-A8ED-7CB7-47EE-5988E9F8E0A8",
     /** Interaction Channel Type: Content Channel */
