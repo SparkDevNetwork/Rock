@@ -237,6 +237,12 @@ namespace Rock.Net
         /// </summary>
         internal Guid RelatedInteractionGuid { get; set; } = Guid.NewGuid();
 
+        /// <summary>
+        /// The unique identifier of the (interaction) session related to this
+        /// request.
+        /// </summary>
+        internal Guid SessionGuid { get; set; } = Guid.NewGuid();
+
         #endregion
 
         #region Constructors
@@ -308,6 +314,8 @@ namespace Rock.Net
             AddContextEntitiesFromHeaders();
 
             CurrentVisitorId = LoadCurrentVisitorId();
+
+            SessionGuid = request.RequestContext.HttpContext.Session?["RockSessionId"].ToStringSafe().AsGuidOrNull() ?? Guid.NewGuid();
         }
 
         /// <summary>
@@ -757,7 +765,7 @@ namespace Rock.Net
         /// <returns></returns>
         public virtual IDictionary<string, string> GetPageParameters()
         {
-            return new Dictionary<string, string>( PageParameters );
+            return new Dictionary<string, string>( PageParameters, StringComparer.InvariantCultureIgnoreCase );
         }
 
         /// <summary>

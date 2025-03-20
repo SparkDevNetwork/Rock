@@ -1745,6 +1745,7 @@
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
     <Compile Include="Plugin\HotFixes\226_UpdateIndexesForV16_8.cs" />
+    <Compile Include="Plugin\HotFixes\236_MigrationRollupsForV17_1_0.cs" />
     <Compile Include="Plugin\HotFixes\235_AddChatConfigurationAdminUI.cs" />
     <Compile Include="Plugin\HotFixes\231_MigrationRollupsForV16_10_0.cs" />
     <Compile Include="Plugin\HotFixes\230_FixVolGenBuildScript_CampusName.cs" />
