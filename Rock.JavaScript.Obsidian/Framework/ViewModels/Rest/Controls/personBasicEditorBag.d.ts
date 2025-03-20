@@ -45,6 +45,9 @@ export type PersonBasicEditorBag = {
     /** Person's mobile phone number */
     mobilePhoneNumber?: string | null;
 
+    /** Person's nick name */
+    nickName?: string | null;
+
     /** Person's date of birth */
     personBirthDate?: DatePartsPickerValueBag | null;
 
