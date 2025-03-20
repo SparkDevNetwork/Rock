@@ -656,7 +656,8 @@ namespace Rock.Model
         /// will be used.
         /// </summary>
         /// <returns>Whether chat is enabled for this group.</returns>
-        internal bool GetIsChatEnabled()
+        [RockInternal( "17.1", true )]
+        public bool GetIsChatEnabled()
         {
             var groupTypeIsChatAllowed = false;
             var groupTypeIsChatEnabledForAllGroups = false;
@@ -687,7 +688,8 @@ namespace Rock.Model
         /// then the value of <see cref="GroupType.IsLeavingChatChannelAllowed"/> will be used.
         /// </summary>
         /// <returns>Whether individuals are allowed to leave this chat channel.</returns>
-        internal bool GetIsLeavingChatChannelAllowed()
+        [RockInternal( "17.1", true )]
+        public bool GetIsLeavingChatChannelAllowed()
         {
             if ( this.IsLeavingChatChannelAllowedOverride.HasValue )
             {
@@ -710,7 +712,8 @@ namespace Rock.Model
         /// <see cref="GroupType.IsChatChannelPublic"/> will be used.
         /// </summary>
         /// <returns>Whether this chat channel is public, and may be joined by any person.</returns>
-        internal bool GetIsChatChannelPublic()
+        [RockInternal( "17.1", true )]
+        public bool GetIsChatChannelPublic()
         {
             if ( this.IsChatChannelPublicOverride.HasValue )
             {
@@ -733,7 +736,8 @@ namespace Rock.Model
         /// <see cref="GroupType.IsChatChannelAlwaysShown"/> will be used.
         /// </summary>
         /// <returns>Whether this chat channel is always shown in the channel list, and may be joined by any person.</returns>
-        internal bool GetIsChatChannelAlwaysShown()
+        [RockInternal( "17.1", true )]
+        public bool GetIsChatChannelAlwaysShown()
         {
             if ( this.IsChatChannelAlwaysShownOverride.HasValue )
             {

@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.Attribute;
 using Rock.Communication.Chat.DTO;
 using Rock.Communication.Chat.Exceptions;
 using Rock.Communication.Chat.Sync;
@@ -46,7 +47,8 @@ namespace Rock.Communication.Chat
     /// A helper class to assist with common chat tasks.
     /// </summary>
     [RockLoggingCategory]
-    internal class ChatHelper : IDisposable
+    [RockInternal( "17.1", true )]
+    public class ChatHelper : IDisposable
     {
         #region Fields
 
@@ -104,7 +106,7 @@ namespace Rock.Communication.Chat
         /// <summary>
         /// The value to use for a chat-specific <see cref="PersonAlias.Name"/>.
         /// </summary>
-        public const string ChatPersonAliasName = "core-chat";
+        internal const string ChatPersonAliasName = "core-chat";
 
         /// <summary>
         /// A semaphore for thread-safe deletion of deceased individuals.
@@ -132,22 +134,22 @@ namespace Rock.Communication.Chat
         /// <summary>
         /// Gets a list of required, app-scoped roles that should exist in the external chat system.
         /// </summary>
-        public static List<string> RequiredAppRoles => _requiredAppRoles.Value;
+        internal static List<string> RequiredAppRoles => _requiredAppRoles.Value;
 
         /// <summary>
         /// Gets the <see cref="Group"/> identifier for the chat administrators group.
         /// </summary>
-        public static int ChatAdministratorsGroupId => _systemGroupIdsByGuid.Value[SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS];
+        internal static int ChatAdministratorsGroupId => _systemGroupIdsByGuid.Value[SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS];
 
         /// <summary>
         /// Gets the <see cref="Group"/> identifier for the chat ban list group.
         /// </summary>
-        public static int ChatBanListGroupId => _systemGroupIdsByGuid.Value[SystemGuid.Group.GROUP_CHAT_BAN_LIST];
+        internal static int ChatBanListGroupId => _systemGroupIdsByGuid.Value[SystemGuid.Group.GROUP_CHAT_BAN_LIST];
 
         /// <summary>
         /// Gets the URL to which the external chat provider should send webhook requests.
         /// </summary>
-        public static string WebhookUrl
+        internal static string WebhookUrl
         {
             get
             {
@@ -159,12 +161,12 @@ namespace Rock.Communication.Chat
         /// <summary>
         /// Gets the Rock-to-Chat sync configuration for this chat helper.
         /// </summary>
-        public RockToChatSyncConfig RockToChatSyncConfig { get; } = new RockToChatSyncConfig();
+        internal RockToChatSyncConfig RockToChatSyncConfig { get; } = new RockToChatSyncConfig();
 
         /// <summary>
         /// Gets the Chat-to-Rock sync configuration for this chat helper.
         /// </summary>
-        public ChatToRockSyncConfig ChatToRockSyncConfig { get; } = new ChatToRockSyncConfig();
+        internal ChatToRockSyncConfig ChatToRockSyncConfig { get; } = new ChatToRockSyncConfig();
 
         /// <summary>
         /// Gets the <see cref="ILogger"/> that should be used to write log messages for this chat helper.
@@ -238,7 +240,7 @@ namespace Rock.Communication.Chat
 
         #endregion Con/Destructors
 
-        #region Public Methods
+        #region Internal Methods
 
         #region Configuration & Keys
 
@@ -246,7 +248,7 @@ namespace Rock.Communication.Chat
         /// Gets the current chat configuration from system settings.
         /// </summary>
         /// <returns>The current chat configuration.</returns>
-        public static ChatConfiguration GetChatConfiguration()
+        internal static ChatConfiguration GetChatConfiguration()
         {
             var chatConfigurationJson = Rock.Web.SystemSettings.GetValue( SystemSetting.CHAT_CONFIGURATION );
             var chatConfiguration = chatConfigurationJson.FromJsonOrNull<ChatConfiguration>() ?? new ChatConfiguration();
@@ -263,7 +265,7 @@ namespace Rock.Communication.Chat
         /// Saves the provided chat configuration to system settings.
         /// </summary>
         /// <param name="chatConfiguration">The chat configuration to save.</param>
-        public static void SaveChatConfiguration( ChatConfiguration chatConfiguration )
+        internal static void SaveChatConfiguration( ChatConfiguration chatConfiguration )
         {
             if ( chatConfiguration == null )
             {
@@ -283,7 +285,7 @@ namespace Rock.Communication.Chat
         /// </summary>
         /// <param name="groupTypeId">The <see cref="GroupType"/> identifier for which to get the <see cref="ChatChannelType.Key"/>.</param>
         /// <returns>The <see cref="ChatChannelType.Key"/>.</returns>
-        public static string GetChatChannelTypeKey( int groupTypeId )
+        internal static string GetChatChannelTypeKey( int groupTypeId )
         {
             return $"{ChatChannelTypeKeyPrefix}{groupTypeId}";
         }
@@ -293,7 +295,7 @@ namespace Rock.Communication.Chat
         /// </summary>
         /// <param name="chatChannelTypeKey">The <see cref="ChatChannelType.Key"/> for which to get the <see cref="GroupType"/> identifier.</param>
         /// <returns>The <see cref="GroupType"/> identifier or <see langword="null"/> if unable to parse.</returns>
-        public static int? GetGroupTypeId( string chatChannelTypeKey )
+        internal static int? GetGroupTypeId( string chatChannelTypeKey )
         {
             if ( chatChannelTypeKey.IsNotNullOrWhiteSpace() )
             {
@@ -309,7 +311,7 @@ namespace Rock.Communication.Chat
         /// <param name="groupId">The <see cref="Group"/> identifier for which to get the <see cref="ChatChannel.Key"/>.</param>
         /// <param name="chatChannelKey">The <see cref="Group.ChatChannelKey"/> for which to get the <see cref="ChatChannel.Key"/>.</param>
         /// <returns>The <see cref="ChatChannel.Key"/> or <see langword="null"/>.</returns>
-        public static string GetChatChannelKey( int groupId, string chatChannelKey )
+        internal static string GetChatChannelKey( int groupId, string chatChannelKey )
         {
             if ( chatChannelKey.IsNotNullOrWhiteSpace() )
             {
@@ -324,7 +326,7 @@ namespace Rock.Communication.Chat
         /// </summary>
         /// <param name="chatChannelKey">The <see cref="ChatChannel.Key"/> for which to get the <see cref="Group"/> identifier.</param>
         /// <returns>The <see cref="Group"/> identifier or <see langword="null"/> if unable to parse.</returns>
-        public static int? GetGroupId( string chatChannelKey )
+        internal static int? GetGroupId( string chatChannelKey )
         {
             if ( chatChannelKey.IsNotNullOrWhiteSpace() )
             {
@@ -339,7 +341,7 @@ namespace Rock.Communication.Chat
         /// </summary>
         /// <param name="chatChannelKey">The <see cref="ChatChannel.Key"/> to check.</param>
         /// <returns>Whether the <see cref="ChatChannel"/> originated in Rock.</returns>
-        public static bool DidChatChannelOriginateInRock( string chatChannelKey )
+        internal static bool DidChatChannelOriginateInRock( string chatChannelKey )
         {
             return GetGroupId( chatChannelKey ).HasValue;
         }
@@ -349,7 +351,7 @@ namespace Rock.Communication.Chat
         /// </summary>
         /// <param name="personAliasGuid">The <see cref="PersonAlias"/> unique identifier for which to get the <see cref="ChatUser.Key"/>.</param>
         /// <returns>The <see cref="ChatUser.Key"/>.</returns>
-        public static string GetChatUserKey( Guid personAliasGuid )
+        internal static string GetChatUserKey( Guid personAliasGuid )
         {
             return $"{ChatUserKeyPrefix}{personAliasGuid}".ToLower();
         }
@@ -359,7 +361,7 @@ namespace Rock.Communication.Chat
         /// </summary>
         /// <param name="chatUserKey">The <see cref="ChatUser.Key"/> for which to get the <see cref="PersonAlias"/> unique identifier.</param>
         /// <returns>The <see cref="PersonAlias"/> unique identifier or <see langword="null"/> if unable to parse.</returns>
-        public static Guid? GetPersonAliasGuid( string chatUserKey )
+        internal static Guid? GetPersonAliasGuid( string chatUserKey )
         {
             if ( chatUserKey.IsNotNullOrWhiteSpace() )
             {
@@ -377,7 +379,7 @@ namespace Rock.Communication.Chat
         /// <returns>
         /// "<paramref name="chatChannelKey"/>|<paramref name="chatUserKey"/>" or <see langword="null"/> if either argument is not provided.
         /// </returns>
-        public static string GetChatChannelMemberKey( string chatChannelKey, string chatUserKey )
+        internal static string GetChatChannelMemberKey( string chatChannelKey, string chatUserKey )
         {
             if ( chatChannelKey.IsNullOrWhiteSpace() || chatUserKey.IsNullOrWhiteSpace() )
             {
@@ -392,7 +394,7 @@ namespace Rock.Communication.Chat
         /// chat system.
         /// </summary>
         /// <returns>A <see cref="ChatUser"/> representing the chat system user.</returns>
-        public static ChatUser GetChatSystemUser()
+        internal static ChatUser GetChatSystemUser()
         {
             return new ChatUser
             {
@@ -405,7 +407,7 @@ namespace Rock.Communication.Chat
         /// <summary>
         /// Initializes (or reinitializes) the <see cref="IChatProvider"/> instance managed by this chat helper.
         /// </summary>
-        public void InitializeChatProvider()
+        internal void InitializeChatProvider()
         {
             if ( !IsChatEnabled )
             {
@@ -424,7 +426,7 @@ namespace Rock.Communication.Chat
         /// </summary>
         /// <param name="chatChannelKey">The <see cref="ChatChannel.Key"/> for which to get the cache key.</param>
         /// <returns>The cache key or <see langword="null"/>.</returns>
-        public static string GetChatChannelGroupIdCacheKey( string chatChannelKey )
+        internal static string GetChatChannelGroupIdCacheKey( string chatChannelKey )
         {
             if ( chatChannelKey.IsNullOrWhiteSpace() )
             {
@@ -438,7 +440,7 @@ namespace Rock.Communication.Chat
         /// Tries to remove any cached chat channel resources.
         /// </summary>
         /// <param name="groupId">The <see cref="Group"/> identifier for which to remove cached chat channel resources.</param>
-        public static void TryRemoveCachedChatChannel( int groupId )
+        internal static void TryRemoveCachedChatChannel( int groupId )
         {
             var groupCache = GroupCache.Get( groupId );
             if ( groupCache != null )
@@ -467,7 +469,7 @@ namespace Rock.Communication.Chat
         /// A task representing the asynchronous operation, containing the <see cref="ChatUserAuthentication"/> or
         /// <see langword="null"/> if unable to find the <see cref="ChatUser"/> or get a token.
         /// </returns>
-        public async Task<ChatUserAuthentication> GetChatUserAuthenticationAsync( int personId, bool shouldCreate )
+        internal async Task<ChatUserAuthentication> GetChatUserAuthenticationAsync( int personId, bool shouldCreate )
         {
             ChatUserAuthentication auth = null;
 
@@ -544,7 +546,7 @@ namespace Rock.Communication.Chat
         /// <returns>
         /// A task representing the asynchronous operation, containing a <see cref="ChatSyncSetupResult"/>.
         /// </returns>
-        public async Task<ChatSyncSetupResult> EnsureChatProviderAppIsSetUpAsync()
+        internal async Task<ChatSyncSetupResult> EnsureChatProviderAppIsSetUpAsync()
         {
             var result = new ChatSyncSetupResult();
 
@@ -622,7 +624,7 @@ namespace Rock.Communication.Chat
         /// related <see cref="ChatChannel"/>s, <see cref="ChatChannelMember"/>s and messages in the external chat system!
         /// </para>
         /// </remarks>
-        public async Task<ChatSyncCrudResult> SyncGroupTypesToChatProviderAsync( List<GroupType> groupTypes )
+        internal async Task<ChatSyncCrudResult> SyncGroupTypesToChatProviderAsync( List<GroupType> groupTypes )
         {
             var result = new ChatSyncCrudResult();
 
@@ -869,7 +871,7 @@ namespace Rock.Communication.Chat
         /// <see cref="ChatChannelMember"/>s and messages in the external chat system!
         /// </para>
         /// </remarks>
-        public async Task<ChatSyncCrudResult> SyncGroupsToChatProviderAsync( List<SyncGroupToChatCommand> syncCommands, RockToChatGroupSyncConfig syncConfig = null )
+        internal async Task<ChatSyncCrudResult> SyncGroupsToChatProviderAsync( List<SyncGroupToChatCommand> syncCommands, RockToChatGroupSyncConfig syncConfig = null )
         {
             var result = new ChatSyncCrudResult();
 
@@ -1173,7 +1175,7 @@ namespace Rock.Communication.Chat
         /// NOT result in any changes being made to Rock <see cref="GroupMember"/>s, <see cref="Person"/>s or
         /// <see cref="PersonAlias"/>es.
         /// </remarks>
-        public async Task<ChatSyncCrudResult> SyncGroupMembersToChatProviderAsync( int groupId, RockToChatGroupSyncConfig groupSyncConfig = null )
+        internal async Task<ChatSyncCrudResult> SyncGroupMembersToChatProviderAsync( int groupId, RockToChatGroupSyncConfig groupSyncConfig = null )
         {
             if ( !IsChatEnabled || groupId <= 0 )
             {
@@ -1219,7 +1221,7 @@ namespace Rock.Communication.Chat
         /// NOT result in any changes being made to Rock <see cref="GroupMember"/>s, <see cref="Person"/>s or
         /// <see cref="PersonAlias"/>es.
         /// </remarks>
-        public async Task<ChatSyncCrudResult> SyncGroupMembersToChatProviderAsync( List<SyncGroupMemberToChatCommand> syncCommands, RockToChatGroupSyncConfig groupSyncConfig = null )
+        internal async Task<ChatSyncCrudResult> SyncGroupMembersToChatProviderAsync( List<SyncGroupMemberToChatCommand> syncCommands, RockToChatGroupSyncConfig groupSyncConfig = null )
         {
             var result = new ChatSyncCrudResult();
 
@@ -1943,7 +1945,7 @@ namespace Rock.Communication.Chat
         /// <returns>
         /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCreateOrUpdateUsersResult"/>.
         /// </returns>
-        public async Task<ChatSyncCreateOrUpdateUsersResult> CreateOrUpdateChatUsersAsync( List<SyncPersonToChatCommand> syncCommands )
+        internal async Task<ChatSyncCreateOrUpdateUsersResult> CreateOrUpdateChatUsersAsync( List<SyncPersonToChatCommand> syncCommands )
         {
             var result = new ChatSyncCreateOrUpdateUsersResult();
 
@@ -2135,7 +2137,7 @@ namespace Rock.Communication.Chat
         /// chat-specific <see cref="PersonAlias"/> records will also be cleared.
         /// </para>
         /// </remarks>
-        public async Task<ChatSyncCrudResult> DeleteMergedChatUsersAsync( int? personId = null )
+        internal async Task<ChatSyncCrudResult> DeleteMergedChatUsersAsync( int? personId = null )
         {
             var result = new ChatSyncCrudResult();
 
@@ -2234,7 +2236,7 @@ namespace Rock.Communication.Chat
         /// For <see cref="ChatUser"/>s who are successfully deleted in the external chat system, their corresponding,
         /// chat-specific <see cref="PersonAlias"/> records will also be cleared.
         /// </remarks>
-        public async Task<ChatSyncCrudResult> DeleteChatUsersAsync( int personId, PersonAliasService personAliasService = null )
+        internal async Task<ChatSyncCrudResult> DeleteChatUsersAsync( int personId, PersonAliasService personAliasService = null )
         {
             var result = new ChatSyncCrudResult();
 
@@ -2296,7 +2298,7 @@ namespace Rock.Communication.Chat
         #region Synchronization: From Chat Provider To Rock
 
         /// <inheritdoc cref="IChatProvider.ValidateWebhookRequestAsync(HttpRequestMessage)"/>
-        public async Task<WebhookValidationResult> ValidateWebhookRequestAsync( HttpRequestMessage request )
+        internal async Task<WebhookValidationResult> ValidateWebhookRequestAsync( HttpRequestMessage request )
         {
             if ( !IsChatEnabled )
             {
@@ -2341,7 +2343,7 @@ namespace Rock.Communication.Chat
         /// </summary>
         /// <param name="webhookRequests">The list of webhook requests to handle.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task HandleChatWebhookRequestsAsync( List<ChatWebhookRequest> webhookRequests )
+        internal async Task HandleChatWebhookRequestsAsync( List<ChatWebhookRequest> webhookRequests )
         {
             if ( !IsChatEnabled || webhookRequests?.Any() != true )
             {
@@ -2375,7 +2377,7 @@ namespace Rock.Communication.Chat
         /// <returns>
         /// A task representing the asynchronous operation, containing a <see cref="GetChatChannelsResult"/>.
         /// </returns>
-        public async Task<GetChatChannelsResult> GetAllChatChannelsAsync()
+        internal async Task<GetChatChannelsResult> GetAllChatChannelsAsync()
         {
             var result = new GetChatChannelsResult();
 
@@ -2417,7 +2419,7 @@ namespace Rock.Communication.Chat
         /// <returns>
         /// A task representing the asynchronous operation, containing a <see cref="GetChatChannelMembersResult"/>.
         /// </returns>
-        public async Task<GetChatChannelMembersResult> GetChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey )
+        internal async Task<GetChatChannelMembersResult> GetChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey )
         {
             var result = new GetChatChannelMembersResult
             {
@@ -2461,7 +2463,7 @@ namespace Rock.Communication.Chat
         /// <returns>
         /// An asynchronous task representing the operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
-        public async Task<ChatSyncCrudResult> DeleteRockChatUsersMissingFromChatProviderAsync()
+        internal async Task<ChatSyncCrudResult> DeleteRockChatUsersMissingFromChatProviderAsync()
         {
             var result = new ChatSyncCrudResult();
 
@@ -2527,7 +2529,7 @@ namespace Rock.Communication.Chat
         /// being made to the external chat system.
         /// </para>
         /// </remarks>
-        public async Task SyncFromChatToRockAsync( List<ChatToRockSyncCommand> syncCommands )
+        internal async Task SyncFromChatToRockAsync( List<ChatToRockSyncCommand> syncCommands )
         {
             syncCommands = syncCommands
                 ?.Where( c => c?.ShouldRetry == true )
@@ -2629,7 +2631,7 @@ namespace Rock.Communication.Chat
         /// <returns>
         /// A task representing the asynchronous operation, containing a <see cref="ChatUserMessageCountsByChatChannelResult"/>.
         /// </returns>
-        public async Task<ChatUserMessageCountsByChatChannelResult> GetChatUserMessageCountsByChatChannelKeyAsync( DateTime messageDate )
+        internal async Task<ChatUserMessageCountsByChatChannelResult> GetChatUserMessageCountsByChatChannelKeyAsync( DateTime messageDate )
         {
             var result = new ChatUserMessageCountsByChatChannelResult { MessageDate = messageDate };
 
@@ -2665,7 +2667,7 @@ namespace Rock.Communication.Chat
 
         #endregion Interactions
 
-        #endregion Public Methods
+        #endregion Internal Methods
 
         #region Private Methods
 

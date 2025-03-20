@@ -141,7 +141,7 @@ namespace Rock.Model
         /// Gets a Queryable of chat-specific <see cref="Group"/>s, regardless of whether they're currently chat-enabled.
         /// </summary>
         /// <returns>A Queryable of chat-specific <see cref="Group"/>s.</returns>
-        /// <remarks>This will include archived, chat-specific <see cref="Group"/>s.</remarks>
+        /// <remarks>This will include archived and inactive, chat-specific <see cref="Group"/>s.</remarks>
         internal IQueryable<Group> GetChatChannelGroupsQuery()
         {
             return AsNoFilter()
@@ -200,7 +200,7 @@ namespace Rock.Model
         /// Gets a Queryable of all <see cref="Group"/>s that are currently chat-enabled.
         /// </summary>
         /// <returns>A Queryable of all <see cref="Group"/>s that are currently chat-enabled.</returns>
-        /// <remarks>This will include archived, chat-enabled <see cref="Group"/>s.</remarks>
+        /// <remarks>This will include archived and inactive, chat-enabled <see cref="Group"/>s.</remarks>
         internal IQueryable<Group> GetChatEnabledGroupsQuery()
         {
             return AsNoFilter()

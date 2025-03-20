@@ -25,6 +25,7 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
 
+using Rock.Communication.Chat;
 using Rock.Data;
 using Rock.Enums.Crm;
 using Rock.Lava;
@@ -1001,6 +1002,20 @@ namespace Rock.Model
             get
             {
                 return Aliases.FirstOrDefault( a => a.AliasPersonId == Id );
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="Person"/> has a chat-specific <see cref="PersonAlias"/>,
+        /// indicating they have a presence in Rock's chat system.
+        /// </summary>
+        [NotMapped]
+        [LavaVisible]
+        public virtual bool HasChatAlias
+        {
+            get
+            {
+                return Aliases.Any( a => a.Name == ChatHelper.ChatPersonAliasName );
             }
         }
 
