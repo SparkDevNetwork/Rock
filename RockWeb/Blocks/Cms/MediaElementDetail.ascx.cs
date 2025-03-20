@@ -332,10 +332,40 @@ namespace RockWeb.Blocks.Cms
             mediaElement.FileDataJson = FileDataState.ToJson();
             rockContext.SaveChanges();
 
-            NavigateToCurrentPageReference( new Dictionary<string, string>
+            NavigateToCurrentPageReferenceWithReplace( new Dictionary<string, string>
             {
                 { PageParameterKey.MediaElementId, mediaElement.Id.ToString() }
             } );
+        }
+
+        /// <summary>
+        /// This method will remove the given replaceQueryParameters from the pageReference.Parameters
+        /// and add the given replaceQueryParameters to the pageReference.QueryString.
+        /// </summary>
+        /// <remarks>
+        /// The reason this was needed is because the MediaElementId with a "0" is in the pageRef's Parameters
+        /// when adding a new item, and we don't want to preserve that once the new item has been saved. Instead
+        /// we redirect and replace the 0 with the new (non 0) MediaElementId value.
+        /// </remarks>
+        /// <param name="replaceQueryParameters"> The query parameters to replace and add to the page reference. </param>
+        /// <returns></returns>
+        protected bool NavigateToCurrentPageReferenceWithReplace( Dictionary<string, string> replaceQueryParameters = null )
+        {
+            var pageReference = new Rock.Web.PageReference( this.CurrentPageReference );
+            pageReference.QueryString = new System.Collections.Specialized.NameValueCollection( pageReference.QueryString );
+            if ( replaceQueryParameters != null )
+            {
+                foreach ( var qryParam in replaceQueryParameters )
+                {
+                    if ( pageReference.Parameters[qryParam.Key] != null )
+                    {
+                        pageReference.Parameters.Remove( qryParam.Key );
+                    }
+                    pageReference.QueryString[qryParam.Key] = qryParam.Value;
+                }
+            }
+
+            return NavigateToPage( pageReference );
         }
 
         /// <summary>

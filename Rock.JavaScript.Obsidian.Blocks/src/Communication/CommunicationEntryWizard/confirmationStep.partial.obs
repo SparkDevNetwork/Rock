@@ -122,7 +122,8 @@
             </template>
 
             <template #footerActions>
-                <RockButton :disabled="isSaving || isSending"
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowLeft'"
+                            :disabled="isSaving || isSending"
                             @click="onPreviousClicked()">Previous</RockButton>
             </template>
 
@@ -219,6 +220,7 @@ dl:not(.dl-horizontal) dt:first-child {
     import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { vShortcut } from "@Obsidian/Directives/shortcut";
     import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -228,6 +230,11 @@ dl:not(.dl-horizontal) dt:first-child {
     const props = defineProps({
         allowedMediums: {
             type: Object as PropType<CommunicationType[]>,
+            required: true
+        },
+
+        areNavigationShortcutsDisabled: {
+            type: Boolean as PropType<boolean>,
             required: true
         },
 

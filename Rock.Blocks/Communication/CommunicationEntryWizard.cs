@@ -148,10 +148,26 @@ namespace Rock.Blocks.Communication
     [CategoryField( "Personalization Segment Category",
         Key = AttributeKey.PersonalizationSegmentCategory,
         Description = "Choose a category of Personalization Segments to be displayed.",
-        EntityType = typeof ( PersonalizationSegment ),
+        EntityType = typeof( PersonalizationSegment ),
         DefaultValue = SystemGuid.Category.PERSONALIZATION_SEGMENT_COMMUNICATIONS,
         IsRequired = true,
         Order = 14 )]
+
+    [IntegerField(
+        "Minimum Short Link Token Length",
+        Key = AttributeKey.MinimumShortLinkTokenLength,
+        Description = "The minimum number of characters for short link tokens.",
+        IsRequired = false,
+        DefaultIntegerValue = 7,
+        Order = 15 )]
+
+   [BooleanField( "Disable Navigation Shortcuts",
+       Key = AttributeKey.DisableNavigationShortcuts,
+       Description = "When enabled, the block will turn off the keyboard shortcuts (arrow keys) used to navigate the steps.",
+       DefaultBooleanValue = false,
+       IsRequired = false,
+       Category = BlockAttributeCategory.Advanced,
+       Order = 100 )]
 
     #endregion Block Attributes
 
@@ -180,6 +196,17 @@ namespace Rock.Blocks.Communication
             public const string EnablePersonParameter = "EnablePersonParameter";
             public const string DisableAddingIndividualsToRecipientLists = "DisableAddingIndividualsToRecipientLists";
             public const string PersonalizationSegmentCategory = "PersonalizationSegmentCategory";
+            public const string MinimumShortLinkTokenLength = "MinimumShortLinkTokenLength";
+            public const string DisableNavigationShortcuts = "DisableNavigationShortcuts";
+        }
+
+        /// <summary>
+        /// Categories to use for Block Attributes
+        /// </summary>
+        private static class BlockAttributeCategory
+        {
+            public const string Advanced = "Advanced";
+
         }
 
         #endregion Attribute Keys
@@ -237,14 +264,18 @@ namespace Rock.Blocks.Communication
         private string EnabledLavaCommandsAttributeValue => GetAttributeValue( AttributeKey.EnabledLavaCommands );
 
         private Guid ImageBinaryFileTypeGuid => GetAttributeValue( AttributeKey.ImageBinaryFileType ).AsGuidOrNull() ?? SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
-        
+
         private int MaxSmsImageWidth => GetAttributeValue( AttributeKey.MaxSMSImageWidth ).AsIntegerOrNull() ?? 600;
-        
+
         private bool ShowDuplicatePreventionOption => GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
+
+        private bool AreNavigationShortcutsDisabled => GetAttributeValue( AttributeKey.DisableNavigationShortcuts ).AsBoolean();
 
         private Guid PersonalizationSegmentCategoryGuid => GetAttributeValue( AttributeKey.PersonalizationSegmentCategory ).AsGuid();
 
         private string SimpleCommunicationPageUrl => this.GetLinkedPageUrl( AttributeKey.SimpleCommunicationPage );
+
+        private int MinimumShortLinkTokenLength => this.GetAttributeValue( AttributeKey.MinimumShortLinkTokenLength ).AsInteger();
 
         /// <summary>
         /// Gets the Communication entity key passed to the "Communication" or "CommunicationId" page parameter.
@@ -328,19 +359,14 @@ namespace Rock.Blocks.Communication
             }
             else
             {
+                box.AreNavigationShortcutsDisabled = this.AreNavigationShortcutsDisabled;
                 box.AttachmentBinaryFileTypeGuid = this.AttachmentBinaryFileTypeGuid;
                 box.BulkEmailThreshold = GetBulkEmailThreshold();
                 box.CommunicationListGroups = GetCommunicationListGroupBags( this.RockContext, currentPerson );
 
-                Guid? defaultCommunicationListGroupGuid = null;
-                if ( ( communication?.Id ?? 0 ) == 0 )
-                {
-                    defaultCommunicationListGroupGuid = box.CommunicationListGroups?.Select( c => c.Value.AsGuidOrNull() ).FirstOrDefault();
-                }
-
                 var communicationTemplateInfoList = GetCommunicationTemplateInfoList( this.RockContext );
                 var communicationTemplateDetailBag = GetCommunicationTemplateDetailBag( communication, communicationTemplateInfoList, currentPerson );
-                var communicationBag = GetCommunicationBag( this.RockContext, communication, communicationTemplateDetailBag?.Guid, currentPerson, defaultCommunicationListGroupGuid );
+                var communicationBag = GetCommunicationBag( this.RockContext, communication, communicationTemplateDetailBag?.Guid, currentPerson );
                 var mediumBags = GetCommunicationMediumBags( currentPerson );
 
                 box.Communication = communicationBag;
@@ -354,11 +380,13 @@ namespace Rock.Blocks.Communication
                 box.MaxSmsImageWidth = this.MaxSmsImageWidth;
                 box.Mediums = mediumBags;
                 box.MergeFields = GetCommunicationMergeFields( communication );
+                box.MinimumShortLinkTokenLength = this.MinimumShortLinkTokenLength;
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.PersonalizationSegments = GetPersonalizationSegments( this.RockContext );
                 box.PushApplications = GetPushApplications( this.RockContext, mediumBags );
                 box.Recipients = GetRecipientBags( this.RockContext, communicationBag );
                 box.SecurityGrantToken = GetSecurityGrantToken();
+                box.ShortLinkSites = GetShortLinkEnabledSites();
                 box.SmsFromNumbers = GetSmsFromNumberBags( currentPerson );
                 // The Twilio transport was used by the old block to validate SMS attachments.
                 box.SmsAcceptedMimeTypes = Twilio.AcceptedMimeTypes.ToList();
@@ -658,7 +686,7 @@ namespace Rock.Blocks.Communication
                 PreviewHtml = previewHtml
             } );
         }
-        
+
         /// <summary>
         /// Saves an existing communication template with some overwritten fields.
         /// </summary>
@@ -683,7 +711,7 @@ namespace Rock.Blocks.Communication
             {
                 return ActionBadRequest( "Existing communication template was not found." );
             }
-            else if ( !existingCommunicationTemplate.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            else if ( existingCommunicationTemplate.IsSystem || !existingCommunicationTemplate.IsAuthorized( Authorization.EDIT, currentPerson ) )
             {
                 return ActionBadRequest( "You don't have edit access to the existing communication template." );
             }
@@ -734,7 +762,7 @@ namespace Rock.Blocks.Communication
                 .FirstOrDefault();
 
             var communicationTemplateListItemBag = ConvertToTemplateBag( communicationTemplateInfo );
-            var communicationTemplateDetailBag = GetCommunicationTemplateDetailBag( communicationTemplateInfo );            
+            var communicationTemplateDetailBag = GetCommunicationTemplateDetailBag( communicationTemplateInfo );
 
             return ActionOk( new CommunicationEntryWizardSaveCommunicationTemplateResponseBag
             {
@@ -827,7 +855,7 @@ namespace Rock.Blocks.Communication
             // Save the communication template.
             communicationTemplateService.Add( communicationTemplate );
             this.RockContext.SaveChanges();
-            
+
             // Create the response.
             // The client will receive both the detail and list item information.
             var communicationTemplateInfo = GetCommunicationTemplateInfoList(
@@ -840,13 +868,29 @@ namespace Rock.Blocks.Communication
                 .FirstOrDefault();
 
             var communicationTemplateListItemBag = ConvertToTemplateBag( communicationTemplateInfo );
-            var communicationTemplateDetailBag = GetCommunicationTemplateDetailBag( communicationTemplateInfo );            
+            var communicationTemplateDetailBag = GetCommunicationTemplateDetailBag( communicationTemplateInfo );
 
             return ActionOk( new CommunicationEntryWizardSaveCommunicationTemplateResponseBag
             {
                 CommunicationTemplateDetail = communicationTemplateDetailBag,
                 CommunicationTemplateListItem = communicationTemplateListItemBag
             } );
+        }
+
+        [BlockAction( "CheckShortLinkToken" )]
+        public BlockActionResult CheckShortLinkToken( CommunicationEntryWizardCheckShortLinkTokenBag bag )
+        {
+            var pageShortLinkService = new PageShortLinkService( this.RockContext );
+            var pageShortLink = pageShortLinkService.GetByToken( bag.Token, bag.SiteId );
+
+            if ( pageShortLink == null )
+            {
+                return ActionOk( bag.Token );
+            }
+            else
+            {
+                return ActionOk( pageShortLinkService.GetUniqueToken( bag.SiteId, 7 ) );
+            }
         }
 
         #endregion
@@ -1005,7 +1049,7 @@ namespace Rock.Blocks.Communication
                 return null;
             }
         }
-        
+
         /// <summary>
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
@@ -1043,6 +1087,22 @@ namespace Rock.Blocks.Communication
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
 
             return securityGrant.ToToken();
+        }
+
+        /// <summary>
+        /// Gets the sites enabled for shortening.
+        /// </summary>
+        private List<ListItemBag> GetShortLinkEnabledSites()
+        {
+            return SiteCache.All()
+                .Where( s => s.EnabledForShortening && s.SiteType == SiteType.Web )
+                .Select( s => new ListItemBag
+                {
+                    // Integer IDs should be passed here since they are used in Lava filters that require ints.
+                    Value = s.Id.ToString(),
+                    Text = s.Name
+                } )
+                .ToList();
         }
 
         /// <summary>
@@ -1145,6 +1205,7 @@ namespace Rock.Blocks.Communication
                 Category = communicationTemplateInfo.Category,
                 IsStarter = communicationTemplateInfo.CommunicationTemplate.IsStarter,
                 Description = communicationTemplateInfo.CommunicationTemplate.Description,
+                IsSystem = communicationTemplateInfo.CommunicationTemplate.IsSystem,
 
                 // Email fields
                 FromEmail = communicationTemplateInfo.CommunicationTemplate.FromEmail?.ResolveMergeFields( mergeFields ),

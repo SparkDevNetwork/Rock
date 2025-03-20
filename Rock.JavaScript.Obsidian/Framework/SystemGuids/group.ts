@@ -31,6 +31,12 @@ export const Group = {
     GroupCalendarAdministrators: "FDA9D63F-B0B1-43E8-8B82-0255E5D99F26",
     /** The Chat Administrators group guid */
     GroupChatAdministrators: "B06096FC-5E98-4DC9-A1EA-7FED844B65C5",
+    /** The group used to identify people who are globally banned from chat */
+    GroupChatBanList: "C9E3A59F-3B5E-43B1-9D97-191EF82D73C4",
+    /** The parent group for all chat direct messages. */
+    GroupChatDirectMessages: "79C99867-5244-43E7-A3BF-625186A77D20",
+    /** The parent group for all shared chat channels. */
+    GroupChatSharedChannels: "FE7ED8BF-CA24-471B-A509-E595A17E1B0E",
     /** The Communication Administrators Group guid */
     GroupCommunicationAdministrators: "B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B",
     /** The group of communication approvers */

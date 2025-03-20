@@ -6,39 +6,42 @@
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
                                 @delete="$emit('delete')">
-
-        <div class="row">
-            <div class="col-sm-12">
-                <InnerHtmlProperty :element="componentElement"
-                                   label="Code"
-                                   :mergeFields="mergeFields"
-                                   mode="code" />
+        <template v-if="componentHelper?.contentWrapper">
+            <div class="row">
+                <div class="col-sm-12">
+                    <InnerHtmlProperty :element="componentHelper.contentWrapper"
+                                       label="Code"
+                                       :mergeFields="mergeFields"
+                                       mode="code" />
+                </div>
             </div>
-        </div>
 
-        <div class="row">
-            <div class="col-sm-12">
-                <p class="text-muted text-sm mb-3">
-                    *Keep in mind: Most email clients do not support interactive elements like JavaScript or Flash. Use basic HTML for higher likelihood of compatibility
-                </p>
+            <div class="row">
+                <div class="col-sm-12">
+                    <p class="text-muted text-sm mb-3">
+                        *Keep in mind: Most email clients do not support interactive elements like JavaScript or Flash. Use basic HTML for higher likelihood of compatibility
+                    </p>
+                </div>
             </div>
-        </div>
 
-        <div class="row">
-            <div class="col-sm-12">
-                <MarginProperty :element="componentElement" />
+            <div class="row">
+                <div class="col-sm-12">
+                    <PaddingProperty :element="componentHelper.marginWrapper.td"
+                                     label="Margin" />
+                </div>
             </div>
-        </div>
+        </template>
     </ComponentPropertyPanelBase>
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { PropType, ref, watch } from "vue";
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
     import InnerHtmlProperty from "../properties/innerHtmlProperty.partial.obs";
-    import MarginProperty from "../properties/marginProperty.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import { getCodeComponentHelper } from "../utils.partial";
 
-    defineProps({
+    const props = defineProps({
         componentElement: {
             type: Object as PropType<HTMLElement>,
             required: true
@@ -55,4 +58,19 @@
         (e: "complete"): void;
         (e: "delete"): void;
     }>();
+
+    // #region Values
+
+    const codeComponentHelper = getCodeComponentHelper();
+    const componentHelper = ref(codeComponentHelper.getElements(props.componentElement));
+
+    // #endregion Values
+
+    // #region Watchers
+
+    watch(() => props.componentElement, () => {
+        componentHelper.value = codeComponentHelper.getElements(props.componentElement);
+    });
+
+    // #endregion Watchers
 </script>

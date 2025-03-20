@@ -15,16 +15,24 @@
                              :isSearchVisible="isSearchVisible" />
         </div>
 
-        <div :class="{ 'grid-overflow': overflow, }">
+        <div class="grid-content-container"
+             :class="{ 'grid-overflow': overflow, }">
 
-            <div :class="{ 'sticky-column-header': !overflow }">
-                <slot name="gridHeaderPrepend" />
+            <div class="grid-header-container"
+                 :class="{ 'sticky-column-header': !overflow }">
+                <div v-if="$slots.gridHeaderPrepend"
+                     class="grid-header-prepend">
+                    <slot name="gridHeaderPrepend" />
+                </div>
                 <ColumnHeaderRow :columns="visibleColumnDefinitions"
                                  v-model:columnFilters="columnFilterValues"
                                  v-model:columnSort="columnSortDirection"
                                  :grid="gridState"
                                  :light="light" />
-                <slot name="gridHeaderAppend" />
+                <div v-if="$slots.gridHeaderAppend"
+                     class="grid-header-append">
+                    <slot name="gridHeaderAppend" />
+                </div>
             </div>
 
             <div class="grid-body" v-if="loadingData">
@@ -81,7 +89,10 @@
         </div>
 
         <div class="grid-footing">
-            <slot name="gridFooterPrepend" />
+            <div v-if="$slots.gridFooterPrepend"
+                 class="grid-footer-prepend">
+                <slot name="gridFooterPrepend" />
+            </div>
 
             <template v-if="!isFooterHidden">
                 <PagerRow v-if="isPagerRowVisible"
@@ -96,7 +107,10 @@
                                 :gridActions="gridActions" />
             </template>
 
-            <slot name="gridFooterAppend" />
+            <div v-if="$slots.gridFooterAppend"
+                 class="grid-footer-append">
+                <slot name="gridFooterAppend" />
+            </div>
         </div>
     </div>
 </template>
@@ -248,8 +262,8 @@
 .grid-column-header {
     position: relative;
     display: flex;
-    justify-content: center;
     align-items: center;
+    word-break: break-word;
     font-size: 14px;
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
     min-width: 120px;
@@ -402,6 +416,7 @@
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
     line-height: 1.4;
     align-self: stretch;
+    word-break: break-word;
     background-color: inherit;
     text-overflow: ellipsis;
     overflow: hidden;

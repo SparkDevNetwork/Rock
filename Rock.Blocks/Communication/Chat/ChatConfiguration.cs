@@ -82,7 +82,7 @@ namespace Rock.Blocks.Communication.Chat
             }
 
             var oldConfig = GetCurrentChatConfigurationBag();
-            var shouldReinitialize = oldConfig.ApiKey != bag.ApiKey || oldConfig.ApiSecret != bag.ApiSecret;
+            var shouldReinitializeChatProvider = oldConfig.ApiKey != bag.ApiKey || oldConfig.ApiSecret != bag.ApiSecret;
 
             SaveChatConfigurationToSystemSettings( bag );
 
@@ -93,12 +93,14 @@ namespace Rock.Blocks.Communication.Chat
                 using ( var rockContext = new RockContext() )
                 using ( var chatHelper = new ChatHelper( rockContext ) )
                 {
-                    if ( shouldReinitialize )
-                    {
-                        chatHelper.InitializeChatProvider();
-                    }
+                    chatHelper.Reinitialize( shouldReinitializeChatProvider );
 
-                    await chatHelper.EnsureChatProviderAppIsSetUpAsync();
+                    var isSetUpResult = await chatHelper.EnsureChatProviderAppIsSetUpAsync();
+                    if ( isSetUpResult?.IsSetUp != true )
+                    {
+                        // There's no point in trying to sync the group types if initial setup failed.
+                        return;
+                    }
 
                     // We'll only sync chat-enabled group types as a part of this configuration save, as there is no
                     // good way to warn the individual of any previously-synced channel types that might become deleted
@@ -127,16 +129,6 @@ namespace Rock.Blocks.Communication.Chat
         {
             var chatConfiguration = ChatHelper.GetChatConfiguration();
 
-            ListItemBag welcomeWorkflowType = null;
-            if ( chatConfiguration.WelcomeWorkflowTypeGuid.HasValue )
-            {
-                var welcomeWorkflowTypeCache = WorkflowTypeCache.Get( chatConfiguration.WelcomeWorkflowTypeGuid.Value );
-                if ( welcomeWorkflowTypeCache != null )
-                {
-                    welcomeWorkflowType = welcomeWorkflowTypeCache.ToListItemBag();
-                }
-            }
-
             List<ListItemBag> chatBadgeDataViews = null;
             if ( chatConfiguration.ChatBadgeDataViewGuids?.Any() == true )
             {
@@ -158,7 +150,6 @@ namespace Rock.Blocks.Communication.Chat
                 ApiSecret = chatConfiguration.ApiSecret,
                 AreChatProfilesVisible = chatConfiguration.AreChatProfilesVisible,
                 IsOpenDirectMessagingAllowed = chatConfiguration.IsOpenDirectMessagingAllowed,
-                WelcomeWorkflowType = welcomeWorkflowType,
                 ChatBadgeDataViews = chatBadgeDataViews
             };
         }
@@ -181,16 +172,6 @@ namespace Rock.Blocks.Communication.Chat
         /// <param name="bag">The chat configuration to save to system settings.</param>
         private void SaveChatConfigurationToSystemSettings( ChatConfigurationBag bag )
         {
-            Guid? welcomeWorkflowTypeGuid = null;
-            if ( bag.WelcomeWorkflowType != null )
-            {
-                var welcomeWorkflowTypeCache = WorkflowTypeCache.Get( bag.WelcomeWorkflowType.Value );
-                if ( welcomeWorkflowTypeCache != null )
-                {
-                    welcomeWorkflowTypeGuid = welcomeWorkflowTypeCache.Guid;
-                }
-            }
-
             List<Guid> chatBadgeDataViewGuids = null;
             if ( bag.ChatBadgeDataViews?.Any() == true )
             {
@@ -206,14 +187,18 @@ namespace Rock.Blocks.Communication.Chat
                 }
             }
 
+            // Get the system user GUID from the current (pre-save) config so we always have the latest value, since
+            // this isn't managed by the UI.
+            var preSaveChatConfiguration = ChatHelper.GetChatConfiguration();
+
             var chatConfiguration = new Rock.Communication.Chat.ChatConfiguration
             {
                 ApiKey = bag.ApiKey,
                 ApiSecret = bag.ApiSecret,
                 AreChatProfilesVisible = bag.AreChatProfilesVisible,
                 IsOpenDirectMessagingAllowed = bag.IsOpenDirectMessagingAllowed,
-                WelcomeWorkflowTypeGuid = welcomeWorkflowTypeGuid,
-                ChatBadgeDataViewGuids = chatBadgeDataViewGuids
+                ChatBadgeDataViewGuids = chatBadgeDataViewGuids,
+                SystemUserGuid = preSaveChatConfiguration.SystemUserGuid
             };
 
             ChatHelper.SaveChatConfiguration( chatConfiguration );

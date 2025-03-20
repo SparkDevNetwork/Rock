@@ -519,6 +519,22 @@
                         </div>
                     </Rock:PanelWidget>
 
+                    <Rock:PanelWidget ID="wpChat" runat="server" Title="Chat">
+                        <Rock:NotificationBox ID="nbChatRunSyncJob" runat="server" NotificationBoxType="Info" Text="You'll need to run the Chat Sync Job after saving, for these changes to take affect in chat channels of this type." />
+                        <Rock:NotificationBox ID="nbDeleteChatChannels" runat="server" NotificationBoxType="Warning" Visible="false" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbIsChatAllowed" runat="server" Label="Is Chat Allowed" Help="If enabled, groups of this type are allowed to participate in the chat system as a chat channel." AutoPostBack="true" OnCheckedChanged="cbIsChatAllowed_CheckedChanged" />
+                                <Rock:RockCheckBox ID="cbIsChatEnabledForAllGroups" runat="server" Label="Is Chat Enabled For All Groups" Help="If enabled, all groups of this type have the chat feature enabled by default." />
+                                <Rock:RockCheckBox ID="cbIsLeavingChatChannelAllowed" runat="server" Label="Is Leaving Chat Channel Allowed" Help="If enabled, individuals are allowed to leave chat channels of this type." />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbIsChatChannelPublic" runat="server" Label="Is Chat Channel Public" Help="If enabled, chat channels of this type are public. A public channel is visible to everyone when performing a search. This also implies that the channel may be joined by any person via the chat application." />
+                                <Rock:RockCheckBox ID="cbIsChatChannelAlwaysShown" runat="server" Label="Is Chat Channel Always Shown" Help="If enabled, chat channels of this type are always shown in the channel list even if the person has not joined the channel. This also implies that the channel may be joined by any person via the chat application." />
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
+
                     <Rock:PanelWidget ID="wpDisplay" runat="server" Title="Display Options">
                         <div class="row">
                             <div class="col-md-6">

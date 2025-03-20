@@ -3,8 +3,8 @@
 
     <Panel :hasTitle="false">
         <div class="row">
-            <div class="col-md-3 col-lg-2" >
-                <ul class="list-group" >
+            <div class="col-md-3 col-lg-2">
+                <ul class="list-group">
                     <li v-for="(page, index) in pages" :key="index" @click="selectCategory(page, index)" class="list-group-item leading-snug cursor-pointer" :class="currentCategoryIndex === index ? selectedCategoryClasses : ''">{{ page.title }}</li>
                 </ul>
             </div>
@@ -30,12 +30,12 @@
                 </div>
                 <div v-for="(category, index) in categorySections" :key="index" style="width: 100%;">
                     <div v-if="category.children && category.children.length > 0 && filteredSettings(category).length > 0">
-                        <h2 >{{ category.title }}</h2>
+                        <h2>{{ category.title }}</h2>
                         <div class="list-as-blocks">
                             <ul class="mb-5">
-                                <li v-for="(setting, index) in filteredSettings(category)" :key="index" >
-                                    <a :href="setting.url ?? parentUrl" v-if="setting.pageDisplayDescription" :title="setting.description ?? ''">
-                                            <i v-if="setting.icon != ''" :class="setting.icon"></i>
+                                <li v-for="(setting, index) in filteredSettings(category)" :key="index">
+                                    <a :href="setting.url ?? parentUrl" :title="getTitle(setting)">
+                                        <i v-if="setting.icon !== ''" :class="setting.icon"></i>
                                         <h3>{{ setting.title }}</h3>
                                     </a>
                                 </li>
@@ -106,6 +106,10 @@
         return sortedCategories.value.filter(c => c.title === currentCategoryTitle.value || currentCategoryTitle.value === "All");
     });
 
+    const getTitle = (settings: PageSearchPageBag): string => {
+        return settings.pageDisplayDescription ? settings.description ?? "" : "";
+    };
+
     // #endregion
 
     // #region Functions
@@ -151,9 +155,7 @@
 </script>
 
 <style scoped>
-
 .search-container input {
     width: 100%;
 }
-
 </style>

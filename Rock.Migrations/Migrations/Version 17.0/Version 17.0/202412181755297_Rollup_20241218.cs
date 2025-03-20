@@ -1483,7 +1483,7 @@ WHERE [Guid] = '571B1191-7F6A-4C9F-8953-1C5B14274F3F'
                 name: "Rock Update Helper v17.0 - Interaction Index Post Migration Job",
                 description: "This job adds the IX_InteractionSessionId_CreatedDateTime index on the Interaction Table.",
                 jobType: "Rock.Jobs.PostV17InteractionIndexPostMigration", cronExpression: "0 0 21 1/1 * ? *",
-                guid: "9984C806-FAEE-4005-973B-9FBE21948972" );
+                guid: SystemGuid.ServiceJob.DATA_MIGRATIONS_170_INTERACTION_INDEX_POST_MIGRATION_JOB );
         }
 
         /// <summary>
@@ -15784,7 +15784,7 @@ WHERE ([Guid]='1E6785C0-7D92-49A7-9E15-68E113399152')
         private void UndoObsidianChop_SwapBlockUp()
         {
             UndoObsidianChop_RegisterBlockAttributesForSwap();
-            UndoObsidianChop_SwapObsidianBlocks();
+            //UndoObsidianChop_SwapObsidianBlocks();
         }
 
         private void UndoObsidianChop_RegisterBlockAttributesForSwap()
@@ -16530,52 +16530,55 @@ END" );
 
             #region Delete Legacy Peer Network Groups and Group Type
 
-            try
-            {
-                Sql( @"
-DECLARE @GroupTypeId INT = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E');
+            // This code was moved to the PostV17AddAndUpdatePeerNetworkIndexes job
+            // on 2025-03-17 to reduce the time it takes migrations to run and
+            // reduce the chance of a timeout error.
+//            try
+//            {
+//                Sql( @"
+//DECLARE @GroupTypeId INT = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E');
 
--- [GroupMember] records tied to these groups will cascade-delete.
-DELETE [Group] WHERE [GroupTypeId] = @GroupTypeId;" );
+//-- [GroupMember] records tied to these groups will cascade-delete.
+//DELETE [Group] WHERE [GroupTypeId] = @GroupTypeId;" );
 
-                RockMigrationHelper.DeleteGroupType( "8C0E5852-F08F-4327-9AA5-87800A6AB53E" );
-            }
-            catch ( Exception ex )
-            {
-                // This could be risky, as there might be unforeseen foreign key relationships to the records we're
-                // trying to delete here. If there's an exception, log it and move on. It's not detrimental for these
-                // records to remain in the database. But let's at least try to hide this group type from display in
-                // lists and navigation, and ensure it doesn't take part in the new Peer Network functionality.
-                Sql( @"
-DECLARE @GroupTypeId INT = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E');
+//                RockMigrationHelper.DeleteGroupType( "8C0E5852-F08F-4327-9AA5-87800A6AB53E" );
+//            }
+//            catch ( Exception ex )
+//            {
+//                // This could be risky, as there might be unforeseen foreign key relationships to the records we're
+//                // trying to delete here. If there's an exception, log it and move on. It's not detrimental for these
+//                // records to remain in the database. But let's at least try to hide this group type from display in
+//                // lists and navigation, and ensure it doesn't take part in the new Peer Network functionality.
+//                Sql( @"
+//DECLARE @GroupTypeId INT = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E');
 
-UPDATE [GroupType]
-SET [ShowInGroupList] = 0
-    , [ShowInNavigation] = 0
-    , [ModifiedDateTime] = GETDATE()
-    , [IsPeerNetworkEnabled] = 0
-    , [RelationshipStrength] = 0
-    , [RelationshipGrowthEnabled] = 0
-    , [LeaderToLeaderRelationshipMultiplier] = 0
-    , [LeaderToNonLeaderRelationshipMultiplier] = 0
-    , [NonLeaderToLeaderRelationshipMultiplier] = 0
-    , [NonLeaderToNonLeaderRelationshipMultiplier] = 0
-WHERE [Id] = @GroupTypeId;
+//UPDATE [GroupType]
+//SET [ShowInGroupList] = 0
+//    , [ShowInNavigation] = 0
+//    , [ModifiedDateTime] = GETDATE()
+//    , [IsPeerNetworkEnabled] = 0
+//    , [RelationshipStrength] = 0
+//    , [RelationshipGrowthEnabled] = 0
+//    , [LeaderToLeaderRelationshipMultiplier] = 0
+//    , [LeaderToNonLeaderRelationshipMultiplier] = 0
+//    , [NonLeaderToLeaderRelationshipMultiplier] = 0
+//    , [NonLeaderToNonLeaderRelationshipMultiplier] = 0
+//WHERE [Id] = @GroupTypeId;
 
-UPDATE [Group]
-SET [IsActive] = 0
-    , [ModifiedDateTime] = GETDATE()
-    , [RelationshipStrengthOverride] = NULL
-    , [RelationshipGrowthEnabledOverride] = NULL
-    , [LeaderToLeaderRelationshipMultiplierOverride] = NULL
-    , [LeaderToNonLeaderRelationshipMultiplierOverride] = NULL
-    , [NonLeaderToLeaderRelationshipMultiplierOverride] = NULL
-    , [NonLeaderToNonLeaderRelationshipMultiplierOverride] = NULL
-WHERE [GroupTypeId] = @GroupTypeId;" );
+//UPDATE [Group]
+//SET [IsActive] = 0
+//    , [ModifiedDateTime] = GETDATE()
+//    , [RelationshipStrengthOverride] = NULL
+//    , [RelationshipGrowthEnabledOverride] = NULL
+//    , [LeaderToLeaderRelationshipMultiplierOverride] = NULL
+//    , [LeaderToNonLeaderRelationshipMultiplierOverride] = NULL
+//    , [NonLeaderToLeaderRelationshipMultiplierOverride] = NULL
+//    , [NonLeaderToNonLeaderRelationshipMultiplierOverride] = NULL
+//WHERE [GroupTypeId] = @GroupTypeId;" );
 
-                var exception = new Exception( "Unable to delete legacy Peer Network Groups and Group Type.", ex );
-                ExceptionLogService.LogException( exception );
-            }
+//                var exception = new Exception( "Unable to delete legacy Peer Network Groups and Group Type.", ex );
+//                ExceptionLogService.LogException( exception );
+//            }
 
             #endregion Delete Legacy Peer Network Groups and Group Type
         }

@@ -155,6 +155,14 @@ namespace Rock.Mobile
         public int? ProfilePageId { get; set; }
 
         /// <summary>
+        /// Gets or sets the chat page identifier.
+        /// </summary>
+        /// <value>
+        /// The chat page identifier.
+        /// </value>
+        public int? ChatPageId { get; set; }
+
+        /// <summary>
         /// Gets or sets the person attribute categories.
         /// </summary>
         /// <value>

@@ -58,6 +58,9 @@ export type CommunicationEntryWizardCommunicationTemplateDetailBag = {
     /** Gets or sets a value indicating whether this is a starter template. */
     isStarter: boolean;
 
+    /** Gets or sets a value indicating whether this is a system template. */
+    isSystem: boolean;
+
     /** Gets or sets a value indicating whether this communication template can be used with the Communication Entry Wizard block. */
     isWizardSupported: boolean;
 

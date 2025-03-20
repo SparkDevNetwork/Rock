@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Rock.Model;
+using Rock.Utilities;
 
 namespace Rock.Communication.Chat.DTO
 {
@@ -46,5 +47,21 @@ namespace Rock.Communication.Chat.DTO
         /// The corresponding <see cref="DataView.IconCssClass"/>.
         /// </value>
         public string IconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the badge background color.
+        /// </summary>
+        /// <value>
+        /// The <see cref="ColorPair.BackgroundColor"/> from the corresponding <see cref="DataView.HighlightColor"/>.
+        /// </value>
+        public string BackgroundColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the badge foreground color.
+        /// </summary>
+        /// <value>
+        /// The <see cref="ColorPair.ForegroundColor"/> from the corresponding <see cref="DataView.HighlightColor"/>.
+        /// </value>
+        public string ForegroundColor { get; set; }
     }
 }

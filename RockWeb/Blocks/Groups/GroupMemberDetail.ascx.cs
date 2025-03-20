@@ -22,10 +22,13 @@ using System.Linq;
 using System.Net.Http;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Communication.Chat;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -687,6 +690,17 @@ namespace RockWeb.Blocks.Groups
 
             rblCommunicationPreference.SetValue( ( ( int ) groupMember.CommunicationPreference ).ToString() );
             rblCommunicationPreference.Enabled = !readOnly;
+
+            if ( ChatHelper.IsChatEnabled )
+            {
+                cbIsChatMuted.Checked = groupMember.IsChatMuted;
+                cbIsChatBanned.Checked = groupMember.IsChatBanned;
+                pnlChatPreferences.Visible = true;
+            }
+            else
+            {
+                pnlChatPreferences.Visible = false;
+            }
 
             var registrations = new RegistrationRegistrantService( rockContext )
                 .Queryable().AsNoTracking()
@@ -1667,6 +1681,12 @@ namespace RockWeb.Blocks.Groups
                 groupMember.Note = tbNote.Text;
                 groupMember.GroupMemberStatus = rblStatus.SelectedValueAsEnum<GroupMemberStatus>();
                 groupMember.CommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
+
+                if ( ChatHelper.IsChatEnabled )
+                {
+                    groupMember.IsChatMuted = cbIsChatMuted.Checked;
+                    groupMember.IsChatBanned = cbIsChatBanned.Checked;
+                }
 
                 if ( cbIsNotified.Visible )
                 {

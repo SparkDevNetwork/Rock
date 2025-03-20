@@ -170,6 +170,33 @@ namespace Rock.Model
         public string SentMessage { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this communication caused the recipient to unsubscribe.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this communication caused the recipient to unsubscribe; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool CausedUnsubscribe { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the datetime when the recipient unsubscribed.
+        /// </summary>
+        /// <value>
+        /// The unsubscribe date time.
+        /// </value>
+        [DataMember]
+        public DateTime? UnsubscribeDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unsubscribe level.
+        /// </summary>
+        /// <value>
+        /// The unsubscribe level.
+        /// </value>
+        [DataMember]
+        public UnsubscribeLevel UnsubscribeLevel { get; set; }
+
+        /// <summary>
         /// Gets or sets the personal device identifier.
         /// </summary>
         /// <value>

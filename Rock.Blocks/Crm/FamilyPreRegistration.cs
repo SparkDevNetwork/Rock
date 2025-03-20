@@ -865,7 +865,7 @@ namespace Rock.Blocks.Crm
             {
                 var scheduleDate = new FamilyPreRegistrationScheduleDateBag
                 {
-                    Text = sortedScheduleDate.ToString( "dddd, MM/dd" ),
+                    Text = $"{sortedScheduleDate:dddd}, {sortedScheduleDate:d}",
                     Value = sortedScheduleDate.ToString( "s" ),
                     ScheduleTimes = new List<ListItemBag>()
                 };

@@ -420,7 +420,7 @@ namespace RockWeb.Blocks.Event
 
                 }
 
-                gRegistrations.DataSource = outstandingBalances;
+                gRegistrations.DataSource = outstandingBalances.ToList();
                 gRegistrations.DataBind();
             }
         }

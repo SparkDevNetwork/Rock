@@ -1,0 +1,28 @@
+<template>
+    <DropDownList v-model="contentChannelType"
+                  :items="contentChannelTypeOptions"
+                  label="Content Channel Type"
+                  :showBlankItem="false" />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { ref, watch } from "vue";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps(dataViewSelectProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const contentChannelTypeOptions = safeParseJson<ListItemBag[]>(props.modelValue.contentChannelTypeOptions);
+
+    const contentChannelType = ref(props.modelValue.contentChannelType ?? "");
+
+    watch(contentChannelType, () => {
+        emit("update:modelValue", { ...props.modelValue, contentChannelType: contentChannelType.value });
+    });
+</script>

@@ -49,6 +49,7 @@ using Rock.Model;
 using Rock.Rest.Controllers;
 using Rock.Rest.Filters;
 using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.Storage;
 using Rock.Storage.AssetStorage;
 using Rock.Utility;
@@ -790,7 +791,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.VIEW ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.VIEW ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -870,7 +871,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.VIEW ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.VIEW ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -913,7 +914,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.VIEW ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.VIEW ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -972,7 +973,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.DELETE ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.DELETE ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1030,7 +1031,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.EDIT ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.EDIT ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1117,7 +1118,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.EDIT ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.EDIT ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1156,7 +1157,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.EDIT ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.EDIT ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1205,7 +1206,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.DELETE ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.DELETE ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1260,7 +1261,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.VIEW ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.VIEW ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1331,7 +1332,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.EDIT ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.EDIT ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1381,7 +1382,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.EDIT ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.EDIT ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1457,7 +1458,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.VIEW ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.VIEW ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -7974,10 +7975,13 @@ namespace Rock.Rest.v2
                 .Where( p => p.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( p, Security.Authorization.VIEW ) == true )
                 .ToList();
             List<TreeItemBag> pageItemList = new List<TreeItemBag>();
+            Func<Page, string> getTreeItemValue = options.UseIntegerIds
+                ? new Func<Page, string>( p => p.Id.ToString() )
+                : new Func<Page, string>( p => p.Guid.ToString() );
             foreach ( var page in pageList )
             {
                 var pageItem = new TreeItemBag();
-                pageItem.Value = page.Guid.ToString();
+                pageItem.Value = getTreeItemValue( page );
                 pageItem.Text = page.InternalName;
 
                 pageItemList.Add( pageItem );
@@ -7989,14 +7993,15 @@ namespace Rock.Rest.v2
             var qryHasChildren = service
                 .Where( p =>
                     p.ParentPageId.HasValue &&
-                    resultIds.Contains( p.ParentPageId.Value ) )
-                .Select( p => p.ParentPage.Guid )
-                .Distinct()
-                .ToList();
+                    resultIds.Contains( p.ParentPageId.Value ) );
+
+            var pageIdentifiersWithChildren = options.UseIntegerIds
+                ? qryHasChildren.Select( p => p.ParentPage.Id.ToString() ).Distinct().ToList()
+                : qryHasChildren.Select( p => p.ParentPage.Guid.ToString() ).Distinct().ToList();
 
             foreach ( var g in pageItemList )
             {
-                var hasChildren = qryHasChildren.Any( a => a.ToString() == g.Value );
+                var hasChildren = pageIdentifiersWithChildren.Any( a => a == g.Value );
                 g.HasChildren = hasChildren;
                 g.IsFolder = hasChildren;
                 g.IconCssClass = "fa fa-file-o";
@@ -9402,23 +9407,6 @@ namespace Rock.Rest.v2
             {
                 ToolsScript = structuredContentToolsConfiguration
             } );
-        }
-
-        /// <summary>
-        /// Gets the value of structured content as HTML.
-        /// </summary>
-        /// <param name="content">The raw content of the StructuredContentEditor.</param>
-        /// <returns>The structured content converted to HTML.</returns>
-        [HttpPost]
-        [Route( "StructuredContentAsHtml" )]
-        [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( string ) )]
-        [Rock.SystemGuid.RestActionGuid( "aec4bf60-bdcc-44e6-b7c5-8c019612deb6" )]
-        public IActionResult StructuredContentAsHtml( [FromBody] object content )
-        {
-            var contentAsHtml = new StructuredContentHelper( content.ToString() ).Render();
-            return Ok( contentAsHtml );
         }
 
         #endregion

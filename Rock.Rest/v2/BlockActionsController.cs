@@ -208,10 +208,15 @@ namespace Rock.Rest.v2
 #error Not implemented yet.
 #endif
 
-                //
-                // Ensure the user has access to both the page and block.
-                //
-                if ( !pageCache.IsAuthorized( Security.Authorization.VIEW, person ) || !blockCache.IsAuthorized( Security.Authorization.VIEW, person ) )
+                // Ensure the user has access to both the page and block. For
+                // block permissions, we accept VIEW, EDIT, or ADMINISTRATE.
+                // This is done on purpose so that we match the behavior of the
+                // page rendering, which does the same.
+                var canViewBlock = blockCache.IsAuthorized( Security.Authorization.VIEW, person )
+                    || blockCache.IsAuthorized( Security.Authorization.EDIT, person )
+                    || blockCache.IsAuthorized( Security.Authorization.ADMINISTRATE, person );
+
+                if ( !pageCache.IsAuthorized( Security.Authorization.VIEW, person ) || !canViewBlock )
                 {
                     return new StatusCodeResult( HttpStatusCode.Unauthorized, controller );
                 }
@@ -277,6 +282,12 @@ namespace Rock.Rest.v2
                                 if ( actionContext?.PageParameters != null )
                                 {
                                     rockBlock.RequestContext.SetPageParameters( actionContext.PageParameters );
+                                }
+
+                                // Restore the interaction session if we have one.
+                                if ( actionContext?.SessionGuid != null )
+                                {
+                                    requestContext.SessionGuid = actionContext.SessionGuid.Value;
                                 }
 
                                 if ( ( actionContext?.InteractionGuid ).HasValue )

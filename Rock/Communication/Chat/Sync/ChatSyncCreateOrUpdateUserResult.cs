@@ -36,11 +36,6 @@ namespace Rock.Communication.Chat.Sync
         public string ChatUserKey { get; set; }
 
         /// <summary>
-        /// Gets or sets whether this <see cref="ChatUser"/> belongs to the `rock_admin` role in the external chat system.
-        /// </summary>
-        public bool IsAdmin { get; set; }
-
-        /// <summary>
         /// Gets or sets the <see cref="ChatSyncType"/> that was performed on this <see cref="ChatUser"/> within the
         /// external chat system.
         /// </summary>

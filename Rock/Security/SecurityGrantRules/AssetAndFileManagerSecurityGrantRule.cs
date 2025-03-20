@@ -50,8 +50,35 @@ namespace Rock.Security.SecurityGrantRules
         /// <inheritdoc/>
         public override bool IsAccessGranted( object obj, string action )
         {
-            // Grant all access to anyone with a token.
-            return true;
+            // Only the asset manager API endpoints will pass an instance of
+            // the AssetAndFileManagerAccess class. In that case we authorize.
+            return obj is AssetAndFileManagerAccess;
+        }
+
+        #endregion
+
+        #region Singleton
+
+        /// <summary>
+        /// This grant rule doesn't have an entity or other specific object to
+        /// check when authorizing. So instead we use this singleton class to
+        /// be the object. If the object being authorized is an instance of
+        /// this class, then we authorize.
+        /// </summary>
+        internal sealed class AssetAndFileManagerAccess
+        {
+            /// <summary>
+            /// The singleton that will be used by API endpoints when authorizing
+            /// requests to the asset manager stuff.
+            /// </summary>
+            public static AssetAndFileManagerAccess Instance { get; } = new AssetAndFileManagerAccess();
+
+            /// <summary>
+            /// This prevents creating additional instances of this class.
+            /// </summary>
+            private AssetAndFileManagerAccess()
+            {
+            }
         }
 
         #endregion

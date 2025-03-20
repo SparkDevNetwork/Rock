@@ -90,7 +90,7 @@ namespace Rock.Model
                     CheckInDirector.SendRefreshKioskConfiguration();
                 }
 
-                if ( ChatHelper.IsChatEnabled )
+                if ( RockContext.IsRockToChatSyncEnabled && ChatHelper.IsChatEnabled )
                 {
                     Task.Run( async () =>
                     {

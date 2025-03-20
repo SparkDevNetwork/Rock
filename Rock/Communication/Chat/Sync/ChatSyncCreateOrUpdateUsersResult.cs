@@ -23,6 +23,7 @@ namespace Rock.Communication.Chat.Sync
     /// <summary>
     /// Represents the result of creating or updating a list of <see cref="ChatUser"/>s within the external chat system.
     /// </summary>
+    /// <seealso cref="ChatSyncResultBase"/>
     internal class ChatSyncCreateOrUpdateUsersResult : ChatSyncResultBase
     {
         /// <summary>

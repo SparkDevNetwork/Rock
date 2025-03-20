@@ -25,8 +25,16 @@ namespace Rock.Web.UI.Controls
     /// Wraps an Obsidian component for use inside a WebForms block. This provides
     /// a basic dictionary of strings for the data.
     /// </summary>
-    public class ObsidianDataComponentWrapper : CompositeControl, INamingContainer
+    public class ObsidianDataComponentWrapper : CompositeControl, INamingContainer, IHasValidationGroup
     {
+        /// <summary>
+        /// The custom validator is used to trigger validation of Obsidian
+        /// controls embedded inside a WebForms control. There is logic in the
+        /// initializeDataComponentWrapper() function that will wire up a
+        /// proxy between the Obsidian components and the WebForms validation.
+        /// </summary>
+        private CustomValidator _validator;
+
         /// <summary>
         /// The URL to load the Obsidian component from.
         /// </summary>
@@ -94,6 +102,21 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <inheritdoc/>
+        public string ValidationGroup
+        {
+            get
+            {
+                EnsureChildControls();
+                return _validator.ValidationGroup;
+            }
+            set
+            {
+                EnsureChildControls();
+                _validator.ValidationGroup = value;
+            }
+        }
+
+        /// <inheritdoc/>
         protected override object SaveViewState()
         {
             ViewState[nameof( ComponentUrl )] = ComponentUrl;
@@ -123,11 +146,23 @@ namespace Rock.Web.UI.Controls
                 ID = "hfConfigurationProperties",
                 Value = "{}"
             } );
+
+            _validator = new CustomValidator
+            {
+                ID = "cvData",
+                ErrorMessage = "One or more fields are invalid.",
+                Display = ValidatorDisplay.None
+            };
+            Controls.Add( _validator );
         }
 
         /// <inheritdoc/>
         protected override void OnPreRender( EventArgs e )
         {
+            // Use a unique validation function so we don't conflict with
+            // other embedded Obsidian components.
+            _validator.ClientValidationFunction = $"validator_{ClientID}";
+
             var script = $@"
 Obsidian.onReady(() => {{
     System.import(""@Obsidian/Templates/rockPage.js"").then(module => {{

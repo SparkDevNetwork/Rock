@@ -102,6 +102,14 @@
             default: false
         },
 
+        /**
+         * Whether to use integer ids.
+         */
+        useIntegerIds: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         ...standardRockFormFieldProps
     });
 
@@ -222,6 +230,7 @@
         prov.securityGrantToken = props.securityGrantToken;
         prov.hidePageGuids = props.hidePageGuids;
         prov.siteType = props.siteType;
+        prov.useIntegerIds = props.useIntegerIds;
 
         if (internalPageValue.value) {
             if (Array.isArray(internalPageValue.value)) {

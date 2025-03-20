@@ -203,7 +203,7 @@ namespace Rock.Blocks.Core
             var bag = GetCommonEntityBag( entity );
             bag.Description = entity.Description.ConvertMarkdownToHtml();
 
-            bag.DefinedTypeAttributes = GetAttributes( entity.Id, RockContext ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttributeViewModel( a ) );
+            bag.DefinedTypeAttributes = GetAttributes( entity.Id, RockContext ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttribute( a ) );
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
             if ( entity.CategorizedValuesEnabled == true )
             {
@@ -516,7 +516,7 @@ namespace Rock.Blocks.Core
             string qualifierValue = Rock.Utility.IdHasher.Instance.GetId( idKey ).ToString();
             var entityTypeIdDefinedType = EntityTypeCache.GetId<DefinedValue>();
             var attribute = Helper.SaveAttributeEdits( attributebag, entityTypeIdDefinedType, "DefinedTypeId", qualifierValue, RockContext );
-            attributebag = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute );
+            attributebag = PublicAttributeHelper.GetPublicEditableAttribute( attribute );
             return ActionOk( attributebag );
         }
 

@@ -110,6 +110,7 @@
     <Compile Include="Communication\Chat\ChatRole.cs" />
     <Compile Include="Communication\Chat\ChatSyncType.cs" />
     <Compile Include="Communication\CommunicationMessageFilter.cs" />
+    <Compile Include="Communication\UnsubscribeLevel.cs" />
     <Compile Include="Communication\CommunicationRecipientStatus.cs" />
     <Compile Include="Communication\CommunicationStatus.cs" />
     <Compile Include="Configuration\DatabasePlatform.cs" />
@@ -225,6 +226,8 @@
     <Compile Include="Mobile\MobileNavigationActionType.cs" />
     <Compile Include="Net\CookieSameSiteMode.cs" />
     <Compile Include="Net\ResponseElementLocation.cs" />
+    <Compile Include="Observability\FeatureFlags.cs" />
+    <Compile Include="Observability\TraceLevel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reporting\ComparisonType.cs" />
     <Compile Include="Reporting\FieldFilterSourceType.cs" />

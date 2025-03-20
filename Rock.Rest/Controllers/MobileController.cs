@@ -22,9 +22,13 @@ using System.ServiceModel.Channels;
 using System.Threading.Tasks;
 using System.Web.Http;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Common.Mobile;
+using Rock.Common.Mobile.Blocks.Communication.Chat;
 using Rock.Common.Mobile.Enums;
 using Rock.Communication.Chat;
+using Rock.Logging;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -127,16 +131,22 @@ namespace Rock.Rest.Controllers
                 launchPacket.CurrentPerson = MobileHelper.GetMobilePerson( person, site );
                 launchPacket.CurrentPerson.AuthToken = MobileHelper.GetAuthenticationToken( principal.Identity.Name );
 
-                using( var chatHelper = new ChatHelper() )
+                if( ChatHelper.IsChatEnabled )
                 {
-                    var chatAuth = await chatHelper.GetChatUserAuthenticationAsync( person.Id );
-
-                    launchPacket.ChatPerson = new ChatPersonBag
+                    using ( var chatHelper = new ChatHelper() )
                     {
-                        Token = chatAuth.Token,
-                        UserId = chatAuth.ChatUserKey
-                    };
-                }
+                        var chatAuth = await chatHelper.GetChatUserAuthenticationAsync( person.Id, false );
+
+                        if ( chatAuth != null )
+                        {
+                            launchPacket.ChatPerson = new ChatPersonBag
+                            {
+                                Token = chatAuth.Token,
+                                UserId = chatAuth.ChatUserKey
+                            };
+                        }
+                    }
+                }                
 
                 UserLoginService.UpdateLastLogin( principal.Identity.Name );
             }

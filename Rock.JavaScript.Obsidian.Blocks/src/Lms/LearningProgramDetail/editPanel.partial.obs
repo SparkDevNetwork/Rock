@@ -113,7 +113,7 @@
                                 <WorkflowTypePicker
                                                     v-model="completionWorkflowType"
                                                     label="Completion Workflow Type"
-                                                    help="The workflow to launch when an individual completes the requirements for a program." />
+                                                    help="The workflow to launch when an individual completes the requirements for a program. The 'Person' and 'LearningProgram' will also be passed as workflow attributes." />
                             </div>
                         </div>
                     </Panel>

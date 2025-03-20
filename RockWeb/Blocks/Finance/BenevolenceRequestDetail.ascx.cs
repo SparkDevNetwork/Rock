@@ -404,10 +404,16 @@ namespace RockWeb.Blocks.Finance
 
                     if ( _isNewRecord )
                     {
+                        var personIdParam = PageParameter( PageParameterKey.PersonId );
                         var queryParams = new Dictionary<string, string>
                         {
                             { "BenevolenceRequestId", this._benevolenceRequestId.ToString() }
                         };
+
+                        if ( !string.IsNullOrWhiteSpace( personIdParam ) )
+                        {
+                            queryParams.Add( PageParameterKey.PersonId, personIdParam );
+                        }
 
                         NavigateToCurrentPage( queryParams );
                     }
@@ -499,7 +505,15 @@ namespace RockWeb.Blocks.Finance
         {
             if ( _isNewRecord )
             {
-                NavigateToParentPage();
+                var parameters = new Dictionary<string, string>();
+                var personIdParam = PageParameter( PageParameterKey.PersonId );
+
+                if ( !string.IsNullOrWhiteSpace( personIdParam ) )
+                {
+                    parameters.Add( PageParameterKey.PersonId, personIdParam );
+                }
+
+                NavigateToParentPage( parameters );
             }
             else
             {

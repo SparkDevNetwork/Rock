@@ -457,5 +457,10 @@ namespace Rock.SystemGuid
         /// The Job to run Post v17.0 Update Person PrimaryPersonAliasGuid.
         /// </summary>
         public const string DATA_MIGRATIONS_170_UPDATE_PERSON_PRIMARY_PERSON_ALIAS_GUID = "11A4E70F-899F-4B1D-BB25-12768E487A24";
+
+        /// <summary>
+        /// The Job to run Post v17.0 Interaction Index Migration .
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_INTERACTION_INDEX_POST_MIGRATION_JOB = "9984C806-FAEE-4005-973B-9FBE21948972";
     }
 }

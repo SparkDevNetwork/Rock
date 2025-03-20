@@ -358,7 +358,7 @@ namespace Rock
                 } )
                 .Where( av => !enforceSecurity || IsAttributeAuthorized( entity, ref entityAuthorized, av.Attribute, Authorization.EDIT, currentPerson ) )
                 .Where( av => attributeFilter == null || attributeFilter( av.Attribute ) )
-                .ToDictionary( av => av.Attribute.Key, av => PublicAttributeHelper.GetPublicEditValue( av.Attribute, av.Value ) );
+                .ToDictionary( av => av.Attribute.Key, av => PublicAttributeHelper.GetPublicValueForEdit( av.Attribute, av.Value ) );
         }
 
         /// <summary>

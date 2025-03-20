@@ -25,9 +25,11 @@ using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
+using Rock.Communication.Chat;
 using Rock.Data;
 using Rock.Enums.Group;
 using Rock.Security;
+using Rock.SystemGuid;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
@@ -345,6 +347,11 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
+            if ( ChatHelper.IsChatEnabled && entityState == EntityState.Deleted )
+            {
+                ChatHelper.TryRemoveCachedChatChannel( this.Id );
+            }
+
             GroupCache.UpdateCachedEntity( Id, entityState );
 
             // If the group changed, and it was a security group, flush the security for the group
@@ -649,21 +656,17 @@ namespace Rock.Model
         /// will be used.
         /// </summary>
         /// <returns>Whether chat is enabled for this group.</returns>
-        internal bool GetIsChatEnabled()
+        [RockInternal( "17.1", true )]
+        public bool GetIsChatEnabled()
         {
-            bool groupTypeIsChatAllowed;
-            bool groupTypeIsChatEnabledForAllGroups;
+            var groupTypeIsChatAllowed = false;
+            var groupTypeIsChatEnabledForAllGroups = false;
 
             var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
             if ( groupTypeCache != null )
             {
                 groupTypeIsChatAllowed = groupTypeCache.IsChatAllowed;
                 groupTypeIsChatEnabledForAllGroups = groupTypeCache.IsChatEnabledForAllGroups;
-            }
-            else
-            {
-                groupTypeIsChatAllowed = this.GroupType?.IsChatAllowed ?? false;
-                groupTypeIsChatEnabledForAllGroups = this.GroupType?.IsChatEnabledForAllGroups ?? false;
             }
 
             if ( !groupTypeIsChatAllowed )
@@ -685,7 +688,8 @@ namespace Rock.Model
         /// then the value of <see cref="GroupType.IsLeavingChatChannelAllowed"/> will be used.
         /// </summary>
         /// <returns>Whether individuals are allowed to leave this chat channel.</returns>
-        internal bool GetIsLeavingChatChannelAllowed()
+        [RockInternal( "17.1", true )]
+        public bool GetIsLeavingChatChannelAllowed()
         {
             if ( this.IsLeavingChatChannelAllowedOverride.HasValue )
             {
@@ -698,7 +702,7 @@ namespace Rock.Model
                 return groupTypeCache.IsLeavingChatChannelAllowed;
             }
 
-            return this.GroupType?.IsLeavingChatChannelAllowed ?? false;
+            return false;
         }
 
         /// <summary>
@@ -708,7 +712,8 @@ namespace Rock.Model
         /// <see cref="GroupType.IsChatChannelPublic"/> will be used.
         /// </summary>
         /// <returns>Whether this chat channel is public, and may be joined by any person.</returns>
-        internal bool GetIsChatChannelPublic()
+        [RockInternal( "17.1", true )]
+        public bool GetIsChatChannelPublic()
         {
             if ( this.IsChatChannelPublicOverride.HasValue )
             {
@@ -721,7 +726,7 @@ namespace Rock.Model
                 return groupTypeCache.IsChatChannelPublic;
             }
 
-            return this.GroupType?.IsChatChannelPublic ?? false;
+            return false;
         }
 
         /// <summary>
@@ -731,7 +736,8 @@ namespace Rock.Model
         /// <see cref="GroupType.IsChatChannelAlwaysShown"/> will be used.
         /// </summary>
         /// <returns>Whether this chat channel is always shown in the channel list, and may be joined by any person.</returns>
-        internal bool GetIsChatChannelAlwaysShown()
+        [RockInternal( "17.1", true )]
+        public bool GetIsChatChannelAlwaysShown()
         {
             if ( this.IsChatChannelAlwaysShownOverride.HasValue )
             {
@@ -744,7 +750,19 @@ namespace Rock.Model
                 return groupTypeCache.IsChatChannelAlwaysShown;
             }
 
-            return this.GroupType?.IsChatChannelAlwaysShown ?? false;
+            return false;
+        }
+
+        /// <summary>
+        /// Gets whether this chat channel is active.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if <see cref="GetIsChatEnabled"/>, <see cref="IsActive"/> and NOT <see cref="IsArchived"/>;
+        /// otherwise, <see langword="false"/>.
+        /// </returns>
+        internal bool GetIsChatChannelActive()
+        {
+            return this.GetIsChatEnabled() && this.IsActive && !this.IsArchived;
         }
 
         #endregion

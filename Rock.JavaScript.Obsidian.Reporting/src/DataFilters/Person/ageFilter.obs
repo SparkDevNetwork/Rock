@@ -1,0 +1,84 @@
+<template>
+    <div class="row">
+        <div class="col-md-4">
+            <DropDownList v-model="comparisonType" :items="comparisonItems" disableLabel />
+        </div>
+        <div class="col-md-8">
+            <NumberBox v-if="valueType == 'single'" v-model="age" disableLabel />
+            <NumberRangeBox v-else-if="valueType == 'double'" v-model="ageRange" disableLabel />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import NumberRangeBox from "@Obsidian/Controls/numberRangeBox.obs";
+    import { computed, ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import { NumberRangeModelValue } from "@Obsidian/Types/Controls/numberRangeBox";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
+    const age = ref<number | null>(props.modelValue.age ? parseInt(props.modelValue.age, 10) || null : null);
+    const ageRange = ref<NumberRangeModelValue>(convertDelimitedRangeValueToNumberRangeModelValue(props.modelValue.ageRange));
+
+    const comparisonItems = getFilteredComparisonTypeOptions(
+        ComparisonType.EqualTo,
+        ComparisonType.NotEqualTo,
+        ComparisonType.IsBlank,
+        ComparisonType.IsNotBlank,
+        ComparisonType.GreaterThan,
+        ComparisonType.GreaterThanOrEqualTo,
+        ComparisonType.LessThan,
+        ComparisonType.LessThanOrEqualTo,
+        ComparisonType.Between
+    );
+
+    const valueType = computed(() => {
+        switch (comparisonType.value) {
+            case ComparisonType.EqualTo.toString():
+            case ComparisonType.NotEqualTo.toString():
+            case ComparisonType.GreaterThan.toString():
+            case ComparisonType.GreaterThanOrEqualTo.toString():
+            case ComparisonType.LessThan.toString():
+            case ComparisonType.LessThanOrEqualTo.toString():
+                return "single";
+            case ComparisonType.Between.toString():
+                return "double";
+            default:
+                return "none";
+        }
+    });
+
+    function convertDelimitedRangeValueToNumberRangeModelValue(delimited?: string | null): NumberRangeModelValue {
+        let strVal = delimited?.trim().split(",");
+        if (!strVal || strVal.length < 2) {
+            return {
+                lower: null,
+                upper: null
+            };
+        }
+
+        return {
+            lower: toNumberOrNull(strVal[0] ?? null),
+            upper: toNumberOrNull(strVal[1] ?? null)
+        };
+    }
+
+    watch([comparisonType, age, ageRange], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            comparisonType: comparisonType.value,
+            age: `${age.value ?? ""}`,
+            ageRange: `${ageRange.value.lower ?? ""},${ageRange.value.upper ?? ""}`,
+        });
+    });
+</script>

@@ -755,7 +755,14 @@ This can be due to multiple threads updating the same attribute at the same time
                         if ( !String.IsNullOrWhiteSpace( attribute.DefaultValue ) &&
                             String.IsNullOrWhiteSpace( attributeValues[attribute.Key].Value ) )
                         {
-                            attributeValues[attribute.Key].Value = attribute.DefaultValue;
+                            attributeValues[attribute.Key] = new AttributeValueCache( attribute.Id,
+                                entity?.Id,
+                                attribute.DefaultValue,
+                                attribute.DefaultPersistedTextValue,
+                                attribute.DefaultPersistedHtmlValue,
+                                attribute.DefaultPersistedCondensedTextValue,
+                                attribute.DefaultPersistedCondensedHtmlValue,
+                                attribute.IsDefaultPersistedValueDirty );
                         }
                     }
                 }
@@ -1059,7 +1066,14 @@ This can be due to multiple threads updating the same attribute at the same time
                     }
                     else if ( attributeValues[attribute.Key].Value.IsNullOrWhiteSpace() && !attribute.DefaultValue.IsNullOrWhiteSpace() )
                     {
-                        attributeValues[attribute.Key].Value = attribute.DefaultValue;
+                        attributeValues[attribute.Key] = new AttributeValueCache( attribute.Id,
+                            entity?.Id,
+                            attribute.DefaultValue,
+                            attribute.DefaultPersistedTextValue,
+                            attribute.DefaultPersistedHtmlValue,
+                            attribute.DefaultPersistedCondensedTextValue,
+                            attribute.DefaultPersistedCondensedHtmlValue,
+                            attribute.IsDefaultPersistedValueDirty );
                     }
                 }
 
@@ -1417,7 +1431,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
         /// <remarks>
         /// If a <paramref name="rockContext"/> is included, this method will save any previous changes made to the context.
         /// </remarks>
-        internal static Rock.Model.Attribute SaveAttributeEdits( PublicEditableAttributeBag attribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
+        public static Rock.Model.Attribute SaveAttributeEdits( PublicEditableAttributeBag attribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
 

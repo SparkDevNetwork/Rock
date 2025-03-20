@@ -30,6 +30,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Box containing initialization information for the Communication Entry Wizard block. */
 export type CommunicationEntryWizardInitializationBox = {
+    /** Gets or sets a value indicating whether navigation shortcuts are disabled. */
+    areNavigationShortcutsDisabled: boolean;
+
     /** Gets or sets the file type to use for communication attachments. */
     attachmentBinaryFileTypeGuid: Guid;
 
@@ -81,6 +84,9 @@ export type CommunicationEntryWizardInitializationBox = {
 
     mergeFields?: string[] | null;
 
+    /** Gets or sets the minimum number of characters for short link tokens. */
+    minimumShortLinkTokenLength: number;
+
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 
@@ -94,6 +100,9 @@ export type CommunicationEntryWizardInitializationBox = {
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
+
+    /** Gets or sets the sites enabled for shortening. */
+    shortLinkSites?: ListItemBag[] | null;
 
     /** Gets or sets the SMS accepted MIME types. */
     smsAcceptedMimeTypes?: string[] | null;

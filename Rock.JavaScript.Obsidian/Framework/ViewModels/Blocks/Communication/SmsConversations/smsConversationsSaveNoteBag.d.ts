@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/saveNoteRequestBag";
+import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Controls/saveNoteRequestBag";
 
 /** The Save Note Bag for SMS Conversations */
 export type SmsConversationsSaveNoteBag = {
