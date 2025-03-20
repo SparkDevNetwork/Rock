@@ -52,6 +52,10 @@
         (e: "update:submit", value: boolean): void;
     }>();
 
+    defineExpose({
+        submitForm
+    });
+
     // #region Values
 
     const visibleErrors = ref<FormError[]>([]);
@@ -86,12 +90,46 @@
         }
     });
 
-    provideFormState(formState);
-
     // #region Functions
 
     function onInternalSubmit(): void {
+        submitForm();
+    }
+
+    /**
+     * Submits the form and waits until both validation and the onSubmit
+     * callback have completed before returning.
+     */
+    async function submitForm(): Promise<void> {
+        // Prevent double submits.
+        if (submit.value) {
+            return;
+        }
+
         submit.value = true;
+
+        try {
+            formState.submitCount++;
+
+            // Update the visible errors.
+            visibleErrors.value = errorValues.value;
+            emit("visibleValidationChanged", visibleErrors.value);
+
+            if (Object.keys(errors.value).length === 0) {
+                const submitHandler = props.onSubmit;
+
+                if (submitHandler) {
+                    const result = submitHandler();
+
+                    if (isPromise(result)) {
+                        await result;
+                    }
+                }
+            }
+        }
+        finally {
+            submit.value = false;
+        }
     }
 
     // #endregion Functions
@@ -100,38 +138,14 @@
 
     // Watch for requests to submit from the parent component.
     watch(() => props.submit, () => {
-        if (submit.value !== props.submit) {
-            submit.value = props.submit;
+        // submitForm() will bail if we are already submitting.
+        if (props.submit) {
+            submitForm();
         }
     });
 
-    // Watch for any submit actions and check the validation.
-    watch(submit, async () => {
-        if (submit.value) {
-            formState.submitCount++;
-
-            // Update the visible errors.
-            visibleErrors.value = errorValues.value;
-            emit("visibleValidationChanged", visibleErrors.value);
-
-            try {
-                if (Object.keys(errors.value).length === 0) {
-                    const submitHandler = props.onSubmit;
-
-                    if (submitHandler) {
-                        const result = submitHandler();
-
-                        if (isPromise(result)) {
-                            await result;
-                        }
-                    }
-                }
-            }
-            finally {
-                submit.value = false;
-            }
-        }
-
+    // Watch for any submit state changes and emit new value.
+    watch(submit, () => {
         emit("update:submit", submit.value);
     });
 
@@ -163,4 +177,6 @@
     });
 
     // #endregion Watchers
+
+    provideFormState(formState);
 </script>
