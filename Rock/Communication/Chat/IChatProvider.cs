@@ -63,12 +63,12 @@ namespace Rock.Communication.Chat
         /// <summary>
         /// Gets the default permission grants per app role.
         /// </summary>
-        Dictionary<string, List<string>> DefaultAppGrantsByRole { get; }
+        Dictionary<string, List<string>> GetDefaultAppGrantsByRole();
 
         /// <summary>
         /// Gets the default permission grants per channel type role.
         /// </summary>
-        Dictionary<string, List<string>> DefaultChannelTypeGrantsByRole { get; }
+        Dictionary<string, List<string>> GetDefaultChannelTypeGrantsByRole();
 
         /// <summary>
         /// Ensures that all required, app-scoped roles exist in the external chat system. Creates any missing roles if

@@ -53,6 +53,38 @@ namespace Rock.Communication.Chat
         #region Fields
 
         /// <summary>
+        /// A lock object for thread-safe saving of chat configuration to system settings.
+        /// </summary>
+        private static readonly object _saveChatConfigurationLock = new object();
+
+        /// <summary>
+        /// A helper method to lazily get or create the chat system user GUID.
+        /// </summary>
+        /// <returns>The lazy, chat system user GUID.</returns>
+        private static Lazy<Guid> GetOrCreateChatSystemUserGuid()
+        {
+            lock ( _saveChatConfigurationLock )
+            {
+                return new Lazy<Guid>( () =>
+                {
+                    var chatConfiguration = GetChatConfiguration();
+                    if ( !chatConfiguration.SystemUserGuid.HasValue )
+                    {
+                        chatConfiguration.SystemUserGuid = Guid.NewGuid();
+                        SaveChatConfiguration( chatConfiguration );
+                    }
+
+                    return chatConfiguration.SystemUserGuid.Value;
+                } );
+            }
+        }
+
+        /// <summary>
+        /// The backing field for the <see cref="ChatSystemUserGuid"/> property.
+        /// </summary>
+        private static Lazy<Guid> _chatSystemUserGuid = GetOrCreateChatSystemUserGuid();
+
+        /// <summary>
         /// The backing field for the <see cref="RequiredAppRoles"/> property.
         /// </summary>
         private static readonly Lazy<List<string>> _requiredAppRoles = new Lazy<List<string>>( () =>
@@ -132,6 +164,11 @@ namespace Rock.Communication.Chat
                     && chatConfiguration.ApiSecret.IsNotNullOrWhiteSpace();
             }
         }
+
+        /// <summary>
+        /// Gets the chat system user GUID.
+        /// </summary>
+        internal static Guid ChatSystemUserGuid => _chatSystemUserGuid.Value;
 
         /// <summary>
         /// Gets a list of required, app-scoped roles that should exist in the external chat system.
@@ -235,8 +272,6 @@ namespace Rock.Communication.Chat
             ChatProvider = RockApp.Current.GetChatProvider();
             ChatProvider.RockToChatSyncConfig = RockToChatSyncConfig;
             ChatProvider.ChatToRockSyncConfig = ChatToRockSyncConfig;
-
-            InitializeChatProvider();
         }
 
         /// <inheritdoc/>
@@ -289,7 +324,10 @@ namespace Rock.Communication.Chat
                 chatConfiguration.ApiSecret = Encryption.EncryptString( chatConfiguration.ApiSecret );
             }
 
-            Rock.Web.SystemSettings.SetValue( SystemSetting.CHAT_CONFIGURATION, chatConfiguration.ToJson() );
+            lock ( _saveChatConfigurationLock )
+            {
+                Rock.Web.SystemSettings.SetValue( SystemSetting.CHAT_CONFIGURATION, chatConfiguration.ToJson() );
+            }
         }
 
         /// <summary>
@@ -410,23 +448,34 @@ namespace Rock.Communication.Chat
         {
             return new ChatUser
             {
-                Key = "rock-chat-synchronizer",
+                Key = $"rock-chat-synchronizer-{ChatSystemUserGuid}".ToLower(),
                 Name = "Rock Chat Synchronizer",
                 IsAdmin = true
             };
         }
 
         /// <summary>
-        /// Initializes (or reinitializes) the <see cref="IChatProvider"/> instance managed by this chat helper.
+        /// Releases static <see cref="ChatHelper"/> values (e.g. <see cref="ChatConfiguration"/>) when updated values
+        /// should be loaded into memory.
         /// </summary>
-        internal void InitializeChatProvider()
+        /// <param name="shouldReinitializeChatProvider">Whether to also reinitialize the <see cref="IChatProvider"/>.</param>"/>
+        internal void Reinitialize( bool shouldReinitializeChatProvider = true )
         {
             if ( !IsChatEnabled )
             {
                 return;
             }
 
-            ChatProvider.Initialize();
+            lock ( _saveChatConfigurationLock )
+            {
+                _chatSystemUserGuid = GetOrCreateChatSystemUserGuid();
+            }
+
+            if ( shouldReinitializeChatProvider )
+            {
+
+                ChatProvider.Initialize();
+            }
         }
 
         #endregion Configuration & Keys
@@ -766,7 +815,7 @@ namespace Rock.Communication.Chat
                                     }
 
                                     List<string> defaultRoleGrants = null;
-                                    ChatProvider.DefaultChannelTypeGrantsByRole?.TryGetValue( role, out defaultRoleGrants );
+                                    ChatProvider.GetDefaultChannelTypeGrantsByRole()?.TryGetValue( role, out defaultRoleGrants );
 
                                     if ( defaultRoleGrants?.Any() == true )
                                     {
