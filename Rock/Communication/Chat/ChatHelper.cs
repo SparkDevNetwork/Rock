@@ -80,6 +80,8 @@ namespace Rock.Communication.Chat
             {
                 { SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS, GroupCache.GetId( SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid() ) ?? 0 },
                 { SystemGuid.Group.GROUP_CHAT_BAN_LIST, GroupCache.GetId( SystemGuid.Group.GROUP_CHAT_BAN_LIST.AsGuid() ) ?? 0 },
+                { SystemGuid.Group.GROUP_CHAT_DIRECT_MESSAGES, GroupCache.GetId( SystemGuid.Group.GROUP_CHAT_DIRECT_MESSAGES.AsGuid() ) ?? 0 },
+                { SystemGuid.Group.GROUP_CHAT_SHARED_CHANNELS, GroupCache.GetId( SystemGuid.Group.GROUP_CHAT_SHARED_CHANNELS.AsGuid() ) ?? 0 }
             };
         } );
 
@@ -145,6 +147,16 @@ namespace Rock.Communication.Chat
         /// Gets the <see cref="Group"/> identifier for the chat ban list group.
         /// </summary>
         internal static int ChatBanListGroupId => _systemGroupIdsByGuid.Value[SystemGuid.Group.GROUP_CHAT_BAN_LIST];
+
+        /// <summary>
+        /// Gets the <see cref="Group"/> identifier for the chat direct messages group.
+        /// </summary>
+        internal static int ChatDirectMessagesGroupId => _systemGroupIdsByGuid.Value[SystemGuid.Group.GROUP_CHAT_DIRECT_MESSAGES];
+
+        /// <summary>
+        /// Gets the <see cref="Group"/> identifier for the chat shared channels group.
+        /// </summary>
+        internal static int ChatSharedChannelsGroupId => _systemGroupIdsByGuid.Value[SystemGuid.Group.GROUP_CHAT_SHARED_CHANNELS];
 
         /// <summary>
         /// Gets the URL to which the external chat provider should send webhook requests.
@@ -876,8 +888,15 @@ namespace Rock.Communication.Chat
             var result = new ChatSyncCrudResult();
 
             // Validate commands.
+            // Allow the "Chat Administrators" system group, but EXCLUDE sync commands for the other system chat groups.
             syncCommands = syncCommands
-                ?.Where( c => c?.GroupTypeId > 0 && c?.GroupId > 0 )
+                ?.Where( c =>
+                    c?.GroupTypeId > 0
+                    && c.GroupId > 0
+                    && c.GroupId != ChatBanListGroupId
+                    && c.GroupId != ChatDirectMessagesGroupId
+                    && c.GroupId != ChatSharedChannelsGroupId
+                )
                 .ToList();
 
             if ( !IsChatEnabled || syncCommands?.Any() != true )
@@ -1226,8 +1245,15 @@ namespace Rock.Communication.Chat
             var result = new ChatSyncCrudResult();
 
             // Validate commands.
+            // Allow the "Chat Administrators" and "Ban List" system groups (as they're handled below) but EXCLUDE sync
+            // commands for the other system chat groups.
             syncCommands = syncCommands
-                ?.Where( c => c?.GroupId > 0 && c.PersonId > 0 )
+                ?.Where( c =>
+                    c?.GroupId > 0
+                    && c.PersonId > 0
+                    && c.GroupId != ChatDirectMessagesGroupId
+                    && c.GroupId != ChatSharedChannelsGroupId
+                )
                 .ToList();
 
             if ( !IsChatEnabled || syncCommands?.Any() != true )
@@ -3652,6 +3678,7 @@ namespace Rock.Communication.Chat
 
                         var newGroup = new Group
                         {
+                            ParentGroupId = ChatDirectMessagesGroupId,
                             Name = syncCommand.GroupName,
                             GroupTypeId = groupTypeId.Value,
                             ChatChannelKey = syncCommand.ChatChannelKey,
