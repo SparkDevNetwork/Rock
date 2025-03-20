@@ -38,7 +38,7 @@ namespace Rock.Communication.Chat.Sync
         /// <summary>
         /// Gets or sets the maximum number of times to attempt a chat-to-Rock sync command before giving up.
         /// </summary>
-        public int AttemptLimit { get; private set; }
+        public virtual int AttemptLimit { get; set; } = 5;
 
         /// <summary>
         /// Gets or sets the type of synchronization to perform.
@@ -120,11 +120,9 @@ namespace Rock.Communication.Chat.Sync
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatToRockSyncCommand"/> class.
         /// </summary>
-        /// <param name="attemptLimit">The maximum number of times to attempt a chat-to-Rock sync command before giving up.</param>
         /// <param name="chatSyncType">The type of synchronization to perform.</param>
-        public ChatToRockSyncCommand( int attemptLimit, ChatSyncType chatSyncType )
+        public ChatToRockSyncCommand( ChatSyncType chatSyncType )
         {
-            AttemptLimit = attemptLimit;
             ChatSyncType = chatSyncType;
         }
     }

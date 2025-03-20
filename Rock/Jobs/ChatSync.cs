@@ -821,8 +821,9 @@ namespace Rock.Jobs
                 }
 
                 // We have everything we need to create this group; add a sync command.
-                var syncCommand = new SyncChatChannelToRockCommand( attemptLimit: 1, ChatSyncType.Create )
+                var syncCommand = new SyncChatChannelToRockCommand( ChatSyncType.Create )
                 {
+                    AttemptLimit = 1,
                     GroupTypeId = groupTypeId,
                     ChatChannelKey = chatChannel.Key,
                     GroupName = chatChannel.Name,
@@ -897,8 +898,9 @@ namespace Rock.Jobs
                     var chatRole = EnumExtensions.ConvertToEnumOrNull<ChatRole>( channelMember.Role );
 
                     // We have everything we need to create this member; add a sync command.
-                    var syncCommand = new SyncChatChannelMemberToRockCommand( attemptLimit: 1, ChatSyncType.Create )
+                    var syncCommand = new SyncChatChannelMemberToRockCommand( ChatSyncType.Create )
                     {
+                        AttemptLimit = 1,
                         GroupId = groupId,
                         ChatChannelKey = chatChannelKey,
                         ChatPersonKey = channelMember.ChatUserKey,

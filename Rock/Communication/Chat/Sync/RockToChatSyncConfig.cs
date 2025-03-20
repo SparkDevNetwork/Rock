@@ -14,10 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
-using Rock.Communication.Chat.DTO;
-using Rock.Model;
-
 namespace Rock.Communication.Chat.Sync
 {
     /// <summary>
@@ -40,7 +36,6 @@ namespace Rock.Communication.Chat.Sync
         /// This is an internal property used for testing. It will most likely be removed in a future version of Rock.
         /// </para>
         /// </remarks>
-        [RockInternal( "17.0" )]
         public bool ShouldEnforceDefaultGrantsPerRole { get; set; }
 
         /// <summary>
@@ -57,7 +52,6 @@ namespace Rock.Communication.Chat.Sync
         /// This is an internal property used for testing. It will most likely be removed in a future version of Rock.
         /// </para>
         /// </remarks>
-        [RockInternal( "17.0" )]
         public bool ShouldEnforceDefaultSettings { get; set; }
     }
 }
