@@ -1553,6 +1553,7 @@ Obsidian.onReady(() => {{
             pageId: {_pageCache.Id},
             pageGuid: '{_pageCache.Guid}',
             pageParameters: {sanitizedPageParameters.ToJson()},
+            sessionGuid: '{RequestContext.SessionGuid}',
             interactionGuid: '{RequestContext.RelatedInteractionGuid}',
             currentPerson: {currentPersonJson},
             isAnonymousVisitor: {( isAnonymousVisitor ? "true" : "false" )},
