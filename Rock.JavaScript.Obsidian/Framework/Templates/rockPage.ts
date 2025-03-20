@@ -455,7 +455,7 @@ export async function showCustomBlockAction(actionFileUrl: string, pageGuid: str
                 return await httpCall<T>("POST", url, params, data);
             };
 
-            const invokeBlockAction = createInvokeBlockAction(post, pageGuid, blockGuid, store.state.pageParameters, store.state.interactionGuid);
+            const invokeBlockAction = createInvokeBlockAction(post, pageGuid, blockGuid, store.state.pageParameters, store.state.sessionGuid, store.state.interactionGuid);
 
             provideHttp({
                 doApiCall,
