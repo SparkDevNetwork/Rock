@@ -30,6 +30,7 @@ using Rock.Communication.Chat.Exceptions;
 using Rock.Communication.Chat.Sync;
 using Rock.Enums.Communication.Chat;
 using Rock.Logging;
+using Rock.SystemKey;
 using Rock.Transactions;
 
 using StreamChat.Clients;
@@ -211,59 +212,81 @@ namespace Rock.Communication.Chat
         // https://getstream.io/chat/docs/dotnet-csharp/permissions_reference/#scope-app
 
         /// <summary>
+        /// A helper method to lazily get or create the default app-scoped permission grants by role.
+        /// </summary>
+        /// <returns>The lazy, default app-scoped permission grants by role.</returns>
+        private static Lazy<Dictionary<string, List<string>>> GetOrCreateDefaultAppGrantsByRole()
+        {
+            return new Lazy<Dictionary<string, List<string>>>( () =>
+            {
+                lock ( _initializationLock )
+                {
+                    var grantsJson = Rock.Web.SystemSettings.GetValue( SystemSetting.CHAT_STREAM_GRANTS_APP_SCOPED );
+                    var grants = grantsJson.FromJsonOrNull<Dictionary<string, List<string>>>();
+
+                    if ( grants == null )
+                    {
+                        grants = new Dictionary<string, List<string>>
+                        {
+                            {
+                                ChatRole.User.GetDescription(),
+                                new List<string>
+                                {
+                                    // The following were taken from the default "app (global scope)" > "user" grants.
+                                    "close-poll-owner",
+                                    "create-poll-any-team",
+                                    "delete-poll-owner",
+                                    "flag-user",
+                                    "mute-user",
+                                    "query-polls-owner",
+                                    "search-user",
+                                    "update-poll-owner",
+                                    "update-user-owner"
+                                }
+                            },
+                            {
+                                ChatRole.Administrator.GetDescription(),
+                                new List<string>
+                                {
+                                    // The following were taken from the default "app (global scope)" > "global_admin" grants.
+                                    "close-poll-any-team",
+                                    "create-block-list-any-team",
+                                    "create-poll-any-team",
+                                    "delete-block-list-any-team",
+                                    "delete-moderation-config-any-team",
+                                    "delete-poll-any-team",
+                                    "flag-user-any-team",
+                                    "mute-user-any-team",
+                                    "query-moderation-review-queue-any-team",
+                                    "query-polls-owner-any-team",
+                                    "read-block-lists-any-team",
+                                    "read-flag-reports-any-team",
+                                    "read-moderation-config-any-team",
+                                    "search-user-any-team",
+                                    "submit-moderation-action-any-team",
+                                    "update-block-list-any-team",
+                                    "update-flag-report-any-team",
+                                    "update-poll-any-team",
+                                    "update-user-owner",
+                                    "upsert-moderation-config-any-team",
+                                    // The following have been added as needed.
+                                    "ban-user" // Admins SHOULD be able to ban any user.
+                                }
+                            }
+                        };
+
+                        Rock.Web.SystemSettings.SetValue( SystemSetting.CHAT_STREAM_GRANTS_APP_SCOPED, grants.ToJson() );
+                    }
+
+                    return grants;
+                }
+            } );
+        }
+
+        /// <summary>
         /// The backing field for the <see cref="DefaultAppGrantsByRole"/> property.
         /// </summary>
-        private readonly Lazy<Dictionary<string, List<string>>> _defaultAppGrantsByRole = new Lazy<Dictionary<string, List<string>>>( () =>
-        {
-            return new Dictionary<string, List<string>>
-            {
-                {
-                    ChatRole.User.GetDescription(),
-                    new List<string>
-                    {
-                        // The following were taken from the default "app (global scope)" > "user" grants.
-                        "close-poll-owner",
-                        "create-poll-any-team",
-                        "delete-poll-owner",
-                        "flag-user",
-                        "mute-user",
-                        "query-polls-owner",
-                        "search-user",
-                        "update-poll-owner",
-                        "update-user-owner"
-                    }
-                },
-                {
-                    ChatRole.Administrator.GetDescription(),
-                    new List<string>
-                    {
-                        // The following were taken from the default "app (global scope)" > "global_admin" grants.
-                        "close-poll-any-team",
-                        "create-block-list-any-team",
-                        "create-poll-any-team",
-                        "delete-block-list-any-team",
-                        "delete-moderation-config-any-team",
-                        "delete-poll-any-team",
-                        "flag-user-any-team",
-                        "mute-user-any-team",
-                        "query-moderation-review-queue-any-team",
-                        "query-polls-owner-any-team",
-                        "read-block-lists-any-team",
-                        "read-flag-reports-any-team",
-                        "read-moderation-config-any-team",
-                        "search-user-any-team",
-                        "submit-moderation-action-any-team",
-                        "update-block-list-any-team",
-                        "update-flag-report-any-team",
-                        "update-poll-any-team",
-                        "update-user-owner",
-                        "upsert-moderation-config-any-team",
-                        // The following have been added as needed.
-                        "ban-user" // Admins SHOULD be able to ban any user.
-                    }
-                }
-            };
-        } );
+        private static Lazy<Dictionary<string, List<string>>> _defaultAppGrantsByRole = GetOrCreateDefaultAppGrantsByRole();
 
         // The best way to see default "messaging"-scoped permission grants is to query Stream's "ListChannelTypes"
         // Swagger endpoint while targeting a newly-created, unmodified app.
@@ -273,168 +296,190 @@ namespace Rock.Communication.Chat
         // https://getstream.io/chat/docs/dotnet-csharp/permissions_reference/#scope-messaging
 
         /// <summary>
+        /// A helper method to lazily get or create the default channel type-scoped permission grants by role.
+        /// </summary>
+        /// <returns>The lazy, default channel type-scoped permission grants by role.</returns>
+        private static Lazy<Dictionary<string, List<string>>> GetOrCreateDefaultChannelTypeGrantsByRole()
+        {
+            return new Lazy<Dictionary<string, List<string>>>( () =>
+            {
+                lock ( _initializationLock )
+                {
+                    var grantsJson = Rock.Web.SystemSettings.GetValue( SystemSetting.CHAT_STREAM_GRANTS_CHANNEL_TYPE_SCOPED );
+                    var grants = grantsJson.FromJsonOrNull<Dictionary<string, List<string>>>();
+
+                    if ( grants == null )
+                    {
+                        grants = new Dictionary<string, List<string>>
+                        {
+                            {
+                                ChatRole.User.GetDescription(),
+                                new List<string>
+                                {
+                                    // The following were taken from the default "messaging (Channel Type scope)" > "channel_member" grants.
+                                    "add-links",
+                                    "cast-vote",
+                                    "create-attachment",
+                                    "create-call",
+                                    "create-mention",
+                                    "create-message",
+                                    "create-reaction",
+                                    "create-reply",
+                                    "flag-message",
+                                    "join-call",
+                                    "mute-channel",
+                                    "pin-message",
+                                    "query-votes",
+                                    "read-channel",
+                                    "read-channel-members",
+                                    "remove-own-channel-membership",
+                                    "run-message-action",
+                                    "send-custom-event",
+                                    "send-poll",
+                                    "upload-attachment",
+                                    // The following were taken from the default "messaging (Channel Type scope)" > "user" grants.
+                                    // (with redundant grants commented out)
+                                    //"add-links-owner",
+                                    //"create-attachment-owner",
+                                    "create-channel",
+                                    //"create-mention-owner",
+                                    //"create-message-owner",
+                                    //"create-reaction-owner",
+                                    //"create-reply-owner",
+                                    "delete-attachment-owner",
+                                    //"delete-channel-owner", // We're not going to allow ANY channel deletions from the client.
+                                    "delete-message-owner",
+                                    "delete-reaction-owner",
+                                    //"flag-message-owner",
+                                    //"mute-channel-owner",
+                                    //"pin-message-owner",
+                                    //"query-votes",
+                                    //"read-channel-members-owner",
+                                    //"read-channel-owner",
+                                    "recreate-channel-owner",
+                                    //"remove-own-channel-membership-owner",
+                                    //"run-message-action-owner",
+                                    //"send-custom-event-owner",
+                                    //"send-poll",
+                                    "truncate-channel-owner",
+                                    "update-channel-members-owner",
+                                    "update-channel-owner",
+                                    "update-message-owner",
+                                    "update-thread-owner",
+                                    //"upload-attachment-owner"
+                                }
+                            },
+                            {
+                                ChatRole.Moderator.GetDescription(),
+                                new List<string>
+                                {
+                                    // The following were taken from the default "messaging (Channel Type scope)" > "moderator" grants.
+                                    "add-links",
+                                    "ban-channel-member",
+                                    "ban-user",
+                                    "cast-vote",
+                                    "create-attachment",
+                                    "create-call",
+                                    "create-channel",
+                                    "create-mention",
+                                    "create-message",
+                                    "create-reaction",
+                                    "create-reply",
+                                    "create-restricted-visibility-message",
+                                    "create-system-message",
+                                    "delete-attachment",
+                                    //"delete-channel-owner", // We're not going to allow ANY channel deletions from the client.
+                                    "delete-message",
+                                    "delete-reaction",
+                                    "flag-message",
+                                    "join-call",
+                                    "mute-channel",
+                                    "pin-message",
+                                    "query-votes",
+                                    "read-channel",
+                                    "read-channel-members",
+                                    "read-message-flags",
+                                    "recreate-channel-owner",
+                                    "remove-own-channel-membership",
+                                    "run-message-action",
+                                    "send-custom-event",
+                                    "send-poll",
+                                    "skip-channel-cooldown",
+                                    "skip-message-moderation",
+                                    "truncate-channel-owner",
+                                    "unblock-message",
+                                    "update-channel",
+                                    "update-channel-cooldown",
+                                    "update-channel-frozen",
+                                    //"update-channel-members", // Moderators should NOT be able to manage members for channels they didn't create (this should be done within Rock).
+                                    "update-channel-members-owner", // But they SHOULD be able to manage members for channels they personally create within Stream.
+                                    "update-message",
+                                    "update-thread",
+                                    "upload-attachment"
+                                }
+                            },
+                            {
+                                ChatRole.Administrator.GetDescription(),
+                                new List<string>
+                                {
+                                    // The following were taken from the default "messaging (Channel Type scope)" > "admin" grants.
+                                    "add-links",
+                                    "ban-channel-member",
+                                    "ban-user",
+                                    "cast-vote",
+                                    "create-attachment",
+                                    "create-call",
+                                    "create-channel",
+                                    "create-mention",
+                                    "create-message",
+                                    "create-reaction",
+                                    "create-reply",
+                                    "create-restricted-visibility-message",
+                                    "create-system-message",
+                                    "delete-attachment",
+                                    //"delete-channel", // We're not going to allow ANY channel deletions from the client.
+                                    "delete-message",
+                                    "delete-reaction",
+                                    "flag-message",
+                                    "join-call",
+                                    "mute-channel",
+                                    "pin-message",
+                                    "query-votes",
+                                    "read-channel",
+                                    "read-channel-members",
+                                    "read-message-flags",
+                                    "recreate-channel",
+                                    "remove-own-channel-membership",
+                                    "run-message-action",
+                                    "send-custom-event",
+                                    "send-poll",
+                                    "skip-channel-cooldown",
+                                    "skip-message-moderation",
+                                    "truncate-channel",
+                                    "unblock-message",
+                                    "update-channel",
+                                    "update-channel-cooldown",
+                                    "update-channel-frozen",
+                                    "update-channel-members",
+                                    "update-message",
+                                    "update-thread",
+                                    "upload-attachment"
+                                }
+                            }
+                        };
+
+                        Rock.Web.SystemSettings.SetValue( SystemSetting.CHAT_STREAM_GRANTS_CHANNEL_TYPE_SCOPED, grants.ToJson() );
+                    }
+
+                    return grants;
+                }
+            } );
+        }
+
+        /// <summary>
         /// The backing field for the <see cref="DefaultChannelTypeGrantsByRole"/> property.
         /// </summary>
-        private readonly Lazy<Dictionary<string, List<string>>> _defaultChannelTypeGrantsByRole = new Lazy<Dictionary<string, List<string>>>( () =>
-        {
-            return new Dictionary<string, List<string>>
-            {
-                {
-                    ChatRole.User.GetDescription(),
-                    new List<string>
-                    {
-                        // The following were taken from the default "messaging (Channel Type scope)" > "channel_member" grants.
-                        "add-links",
-                        "cast-vote",
-                        "create-attachment",
-                        "create-call",
-                        "create-mention",
-                        "create-message",
-                        "create-reaction",
-                        "create-reply",
-                        "flag-message",
-                        "join-call",
-                        "mute-channel",
-                        "pin-message",
-                        "query-votes",
-                        "read-channel",
-                        "read-channel-members",
-                        "remove-own-channel-membership",
-                        "run-message-action",
-                        "send-custom-event",
-                        "send-poll",
-                        "upload-attachment",
-                        // The following were taken from the default "messaging (Channel Type scope)" > "user" grants.
-                        // (with redundant grants commented out)
-                        //"add-links-owner",
-                        //"create-attachment-owner",
-                        "create-channel",
-                        //"create-mention-owner",
-                        //"create-message-owner",
-                        //"create-reaction-owner",
-                        //"create-reply-owner",
-                        "delete-attachment-owner",
-                        //"delete-channel-owner", // We're not going to allow ANY channel deletions from the client.
-                        "delete-message-owner",
-                        "delete-reaction-owner",
-                        //"flag-message-owner",
-                        //"mute-channel-owner",
-                        //"pin-message-owner",
-                        //"query-votes",
-                        //"read-channel-members-owner",
-                        //"read-channel-owner",
-                        "recreate-channel-owner",
-                        //"remove-own-channel-membership-owner",
-                        //"run-message-action-owner",
-                        //"send-custom-event-owner",
-                        //"send-poll",
-                        "truncate-channel-owner",
-                        "update-channel-members-owner",
-                        "update-channel-owner",
-                        "update-message-owner",
-                        "update-thread-owner",
-                        //"upload-attachment-owner"
-                    }
-                },
-                {
-                    ChatRole.Moderator.GetDescription(),
-                    new List<string>
-                    {
-                        // The following were taken from the default "messaging (Channel Type scope)" > "moderator" grants.
-                        "add-links",
-                        "ban-channel-member",
-                        "ban-user",
-                        "cast-vote",
-                        "create-attachment",
-                        "create-call",
-                        "create-channel",
-                        "create-mention",
-                        "create-message",
-                        "create-reaction",
-                        "create-reply",
-                        "create-restricted-visibility-message",
-                        "create-system-message",
-                        "delete-attachment",
-                        //"delete-channel-owner", // We're not going to allow ANY channel deletions from the client.
-                        "delete-message",
-                        "delete-reaction",
-                        "flag-message",
-                        "join-call",
-                        "mute-channel",
-                        "pin-message",
-                        "query-votes",
-                        "read-channel",
-                        "read-channel-members",
-                        "read-message-flags",
-                        "recreate-channel-owner",
-                        "remove-own-channel-membership",
-                        "run-message-action",
-                        "send-custom-event",
-                        "send-poll",
-                        "skip-channel-cooldown",
-                        "skip-message-moderation",
-                        "truncate-channel-owner",
-                        "unblock-message",
-                        "update-channel",
-                        "update-channel-cooldown",
-                        "update-channel-frozen",
-                        //"update-channel-members", // Moderators should NOT be able to manage members for channels they didn't create (this should be done within Rock).
-                        "update-channel-members-owner", // But they SHOULD be able to manage members for channels they personally create within Stream.
-                        "update-message",
-                        "update-thread",
-                        "upload-attachment"
-                    }
-                },
-                {
-                    ChatRole.Administrator.GetDescription(),
-                    new List<string>
-                    {
-                        // The following were taken from the default "messaging (Channel Type scope)" > "admin" grants.
-                        "add-links",
-                        "ban-channel-member",
-                        "ban-user",
-                        "cast-vote",
-                        "create-attachment",
-                        "create-call",
-                        "create-channel",
-                        "create-mention",
-                        "create-message",
-                        "create-reaction",
-                        "create-reply",
-                        "create-restricted-visibility-message",
-                        "create-system-message",
-                        "delete-attachment",
-                        //"delete-channel", // We're not going to allow ANY channel deletions from the client.
-                        "delete-message",
-                        "delete-reaction",
-                        "flag-message",
-                        "join-call",
-                        "mute-channel",
-                        "pin-message",
-                        "query-votes",
-                        "read-channel",
-                        "read-channel-members",
-                        "read-message-flags",
-                        "recreate-channel",
-                        "remove-own-channel-membership",
-                        "run-message-action",
-                        "send-custom-event",
-                        "send-poll",
-                        "skip-channel-cooldown",
-                        "skip-message-moderation",
-                        "truncate-channel",
-                        "unblock-message",
-                        "update-channel",
-                        "update-channel-cooldown",
-                        "update-channel-frozen",
-                        "update-channel-members",
-                        "update-message",
-                        "update-thread",
-                        "upload-attachment"
-                    }
-                }
-            };
-        } );
+        private static Lazy<Dictionary<string, List<string>>> _defaultChannelTypeGrantsByRole = GetOrCreateDefaultChannelTypeGrantsByRole();
 
         /// <summary>
         /// The backing field for the <see cref="UnrecoverableErrorCodes"/> property.
@@ -576,6 +621,16 @@ namespace Rock.Communication.Chat
         private IMessageClient MessageClient => _messageClient.Value;
 
         /// <summary>
+        /// Gets the default, app-scoped permission grants by role.
+        /// </summary>
+        public static Dictionary<string, List<string>> DefaultAppGrantsByRole => _defaultAppGrantsByRole.Value;
+
+        /// <summary>
+        /// Gets the default, channel type-scoped permission grants by role.
+        /// </summary>
+        public static Dictionary<string, List<string>> DefaultChannelTypeGrantsByRole => _defaultChannelTypeGrantsByRole.Value;
+
+        /// <summary>
         /// Gets the "unrecoverable" error codes that can be returned by Stream's API.
         /// </summary>
         private List<int> UnrecoverableErrorCodes => _unrecoverableErrorCodes.Value;
@@ -671,6 +726,9 @@ namespace Rock.Communication.Chat
                 _channelClient = new Lazy<IChannelClient>( () => _clientFactory.Value.GetChannelClient() );
                 _userClient = new Lazy<IUserClient>( () => _clientFactory.Value.GetUserClient() );
                 _messageClient = new Lazy<IMessageClient>( () => _clientFactory.Value.GetMessageClient() );
+
+                _defaultAppGrantsByRole = GetOrCreateDefaultAppGrantsByRole();
+                _defaultChannelTypeGrantsByRole = GetOrCreateDefaultChannelTypeGrantsByRole();
             }
         }
 
@@ -725,10 +783,16 @@ namespace Rock.Communication.Chat
         #region Roles & Permission Grants
 
         /// <inheritdoc/>
-        public Dictionary<string, List<string>> DefaultAppGrantsByRole => _defaultAppGrantsByRole.Value;
+        public Dictionary<string, List<string>> GetDefaultAppGrantsByRole()
+        {
+            return DefaultAppGrantsByRole;
+        }
 
         /// <inheritdoc/>
-        public Dictionary<string, List<string>> DefaultChannelTypeGrantsByRole => _defaultChannelTypeGrantsByRole.Value;
+        public Dictionary<string, List<string>> GetDefaultChannelTypeGrantsByRole()
+        {
+            return DefaultChannelTypeGrantsByRole;
+        }
 
         /// <inheritdoc/>
         public async Task<ChatSyncSetupResult> EnsureAppRolesExistAsync()

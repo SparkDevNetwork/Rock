@@ -428,5 +428,15 @@ namespace Rock.SystemKey
         /// Job settings for <see cref="Rock.Jobs.ChatSync"/>
         /// </summary>
         public const string CHAT_SYNC_JOB_SETTINGS = "core_ChatSyncJobSettings";
+
+        /// <summary>
+        /// App-scoped Stream chat permission grants.
+        /// </summary>
+        public const string CHAT_STREAM_GRANTS_APP_SCOPED = "core_ChatStreamGrantsAppScoped";
+
+        /// <summary>
+        /// Channel Type-scoped Stream chat permission grants.
+        /// </summary>
+        public const string CHAT_STREAM_GRANTS_CHANNEL_TYPE_SCOPED = "core_ChatStreamGrantsChannelTypeScoped";
     }
 }
