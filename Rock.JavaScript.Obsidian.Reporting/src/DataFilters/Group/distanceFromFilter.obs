@@ -1,0 +1,35 @@
+<template>
+    <DropDownList v-model="locationTypeGuid" :items="locationTypes" label="Location Type" showBlankItem />
+    <LocationPicker v-model="location" label="Location" />
+    <NumberBox v-model="miles" label="Miles" />
+</template>
+
+<script setup lang="ts">
+    import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const locationTypes = ref<ListItemBag[]>(safeParseJson(props.modelValue.locationTypes) ?? []);
+    const locationTypeGuid = ref<string>(props.modelValue.locationTypeGuid ?? "");
+    const location = ref<AddressControlBag | ListItemBag | string | undefined>(safeParseJson(props.modelValue.location));
+    const miles = ref<number | null>(props.modelValue.miles ? parseInt(props.modelValue.miles, 10) || null : null);
+
+    watch([locationTypeGuid, location, miles], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            locationTypeGuid: locationTypeGuid.value,
+            location: JSON.stringify(location.value),
+            miles: `${miles.value ?? ""}`,
+        });
+    });
+</script>
