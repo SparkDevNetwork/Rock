@@ -610,6 +610,11 @@
                     <div class="col-md-6">
                         <Rock:NumberBox ID="nbMinimumRequired" runat="server" NumberType="Integer" Label="Minimum Required" Help="The minimum number of people with this role that group should allow." />
                         <Rock:NumberBox ID="nbMaximumAllowed" runat="server" NumberType="Integer" Label="Maximum Allowed" Help="The maximum number of people with this role that group should allow." />
+                        <Rock:RockDropDownList ID="ddlChatRole" runat="server" Label="Chat Role" Help="The role of the chat individual, to be synchronized with the external chat system.">
+                            <asp:ListItem Value="0" Text="Member" />
+                            <asp:ListItem Value="1" Text="Moderator" />
+                            <asp:ListItem Value="2" Text="Administrator" />
+                        </Rock:RockDropDownList>
                         <asp:CustomValidator ID="cvAllowed" runat="server" Display="None" OnServerValidate="cvAllowed_ServerValidate"
                             ValidationGroup="Roles" ErrorMessage="The Minimum Required should be less than Maximum Allowed." />
                         <asp:PlaceHolder ID="phGroupTypeRoleAttributes" runat="server" />

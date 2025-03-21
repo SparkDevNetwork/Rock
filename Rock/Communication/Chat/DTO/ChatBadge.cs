@@ -25,6 +25,11 @@ namespace Rock.Communication.Chat.DTO
     internal class ChatBadge
     {
         /// <summary>
+        /// Gets a simple string concatenation hash of this badge's content.
+        /// </summary>
+        public string BadgeHash => $"{Key}|{Name}|{IconCssClass}|{BackgroundColor}|{ForegroundColor}";
+
+        /// <summary>
         /// Gets or sets the badge key.
         /// </summary>
         /// <value>

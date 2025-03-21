@@ -5388,5 +5388,22 @@ AND GroupTypeId = ${familyGroupType.Id}
                     }
                 );
         }
+
+        /// <summary>
+        /// Gets the Rock <see cref="Person"/> for the provided <see cref="ChatUser.Key"/>.
+        /// </summary>
+        /// <param name="chatUserKey">The <see cref="ChatUser.Key"/> of the <see cref="Person"/> to get.</param>
+        /// <returns>The Rock <see cref="Person"/> or <see langword="null"/> if no matching <see cref="Person"/> found.</returns>
+        internal Person GetByChatUserKey( string chatUserKey )
+        {
+            if ( chatUserKey == null )
+            {
+                return null;
+            }
+
+            return Queryable()
+                .Where( p => p.Aliases.Any( a => a.ForeignKey == chatUserKey ) )
+                .FirstOrDefault();
+        }
     }
 }
