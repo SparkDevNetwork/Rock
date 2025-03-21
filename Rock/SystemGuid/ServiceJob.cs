@@ -462,5 +462,10 @@ namespace Rock.SystemGuid
         /// The Job to run Post v17.0 Interaction Index Migration .
         /// </summary>
         public const string DATA_MIGRATIONS_170_INTERACTION_INDEX_POST_MIGRATION_JOB = "9984C806-FAEE-4005-973B-9FBE21948972";
+
+        /// <summary>
+        /// The job for performing synchronization tasks between Rock and the external chat system.
+        /// </summary>
+        public const string CHAT_SYNC_JOB = "80202290-66DF-4289-8938-4FA6B84E3EE2";
     }
 }

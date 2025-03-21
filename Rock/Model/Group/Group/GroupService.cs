@@ -23,6 +23,7 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Text;
 
+using Rock.Attribute;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
 using Rock.Data;
@@ -142,7 +143,8 @@ namespace Rock.Model
         /// </summary>
         /// <returns>A Queryable of chat-specific <see cref="Group"/>s.</returns>
         /// <remarks>This will include archived and inactive, chat-specific <see cref="Group"/>s.</remarks>
-        internal IQueryable<Group> GetChatChannelGroupsQuery()
+        [RockInternal( "17.1", true )]
+        public IQueryable<Group> GetChatChannelGroupsQuery()
         {
             return AsNoFilter()
                 .Where( g =>

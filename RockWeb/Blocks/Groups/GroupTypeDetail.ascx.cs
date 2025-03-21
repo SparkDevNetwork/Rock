@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
 
 using Rock;
@@ -27,6 +28,7 @@ using Rock.Attribute;
 using Rock.Communication.Chat;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
 using Rock.Model;
 using Rock.Security;
@@ -1726,6 +1728,9 @@ namespace RockWeb.Blocks.Groups
                 memberTerm.Pluralize(),
                 groupTerm );
 
+            ddlChatRole.SetValue( groupTypeRole.ChatRole.ConvertToInt() );
+            ddlChatRole.Visible = ChatHelper.IsChatEnabled && cbIsChatAllowed.Checked;
+
             ShowDialog( "GroupTypeRoles", true );
         }
 
@@ -1804,6 +1809,7 @@ namespace RockWeb.Blocks.Groups
             groupTypeRole.IsExcludedFromPeerNetwork = cbIsExcludedFromPeerNetwork.Checked;
             groupTypeRole.MinCount = nbMinimumRequired.Text.AsIntegerOrNull();
             groupTypeRole.MaxCount = nbMaximumAllowed.Text.AsIntegerOrNull();
+            groupTypeRole.ChatRole = ddlChatRole.SelectedValueAsEnum<ChatRole>();
             groupTypeRole.LoadAttributes();
 
             Helper.GetEditValues( phGroupTypeRoleAttributes, groupTypeRole );

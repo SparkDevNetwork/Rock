@@ -129,5 +129,10 @@ namespace Rock.SystemGuid
         /// Chat Shared Channel group type guid
         /// </summary>
         public const string GROUPTYPE_CHAT_SHARED_CHANNEL = "268D4802-24C7-4891-890E-71313BEE17B1";
+
+        /// <summary>
+        /// Hidden Application Group group type guid
+        /// </summary>
+        public const string GROUPTYPE_HIDDEN_APPLICATION_GROUP = "2C6F2847-B404-4595-AB35-CE42F2303868";
     }
 }

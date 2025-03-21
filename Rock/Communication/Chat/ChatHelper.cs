@@ -2096,8 +2096,8 @@ namespace Rock.Communication.Chat
                         return false;
                     }
 
-                    var badgeSet1 = new HashSet<string>( badges1.Select( b => $"{b?.Key}|{b?.Name}|{b?.IconCssClass}" ) );
-                    var badgeSet2 = new HashSet<string>( badges2.Select( b => $"{b?.Key}|{b?.Name}|{b?.IconCssClass}" ) );
+                    var badgeSet1 = new HashSet<string>( badges1.Select( b => b?.BadgeHash ) );
+                    var badgeSet2 = new HashSet<string>( badges2.Select( b => b?.BadgeHash ) );
 
                     return badgeSet1.SetEquals( badgeSet2 );
                 }
