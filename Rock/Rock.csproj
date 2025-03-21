@@ -719,6 +719,8 @@
     <Compile Include="Cms\RestControllerMetadata.cs" />
     <Compile Include="Communication\Chat\DTO\ChatUserAuthentication.cs" />
     <Compile Include="Communication\Chat\DTO\RockChatGroup.cs" />
+    <Compile Include="Communication\Chat\Exceptions\ChatAccountInvalidException.cs" />
+    <Compile Include="Communication\Chat\Exceptions\ChatAccountSuspendedException.cs" />
     <Compile Include="Communication\Chat\Exceptions\ChatSyncException.cs" />
     <Compile Include="Communication\Chat\Exceptions\ChatWebhookParseException.cs" />
     <Compile Include="Communication\Chat\Sync\ChatSyncBanResult.cs" />

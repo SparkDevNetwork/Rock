@@ -782,6 +782,9 @@ namespace Rock.Jobs
             // Collect any Rock groups along the way, whose members should be synced.
             var groupsRequiringMemberSync = new List<GroupCache>();
 
+            // Collect any Stream channels along the way, that originated in Rock, yet somehow no longer have a Rock group representation.
+            var channelQueryableKeysToDelete = new List<string>();
+
             var chatToRockGroupsResult = new ChatSyncCrudResult();
             var chatToRockGroupsExceptions = new List<Exception>();
             var chatToRockGroupsCommands = new List<SyncChatChannelToRockCommand>();
@@ -807,9 +810,10 @@ namespace Rock.Jobs
 
                 if ( ChatHelper.DidChatChannelOriginateInRock( chatChannel.Key ) )
                 {
-                    // Ignore channels that originated (but no longer exist) in Rock. This means something unexpected
-                    // happened in the upstream sync processes, as the channel should have already been deleted from
-                    // the external chat system. We're not going to re-create it here.
+                    // This means something unexpected happened in the upstream sync processes, as the channel should
+                    // have already been deleted from the external chat system. We're not going to re-create it here,
+                    // but we will delete it externally.
+                    channelQueryableKeysToDelete.Add( chatChannel.QueryableKey );
                     continue;
                 }
 
@@ -854,6 +858,12 @@ namespace Rock.Jobs
                         channelSyncCrudResult.Unique.Select( id => GroupCache.Get( id.ToString() ) )
                     );
                 }
+            }
+
+            // Try to delete any external chat channels that somehow still exist when they shouldn't.
+            if ( channelQueryableKeysToDelete.Any() )
+            {
+                await chatHelper.DeleteChatChannelsAsync( channelQueryableKeysToDelete );
             }
 
             // ------------------------------------------
