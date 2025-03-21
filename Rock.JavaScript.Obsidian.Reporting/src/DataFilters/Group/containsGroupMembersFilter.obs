@@ -2,9 +2,9 @@
     <div class="row">
         <div class="col-sm-6">
             <DataViewPicker v-model="dataView"
-                            label="Contains People from this Data View"
-                            help="A Person Data View that provides the set of possible Group Members."
-                            :entityTypeGuid="EntityType.Person"
+                            label="Contains Group Members from this Data View"
+                            help="A Group Member Data View that provides the set of possible Group Members."
+                            :entityTypeGuid="EntityType.GroupMember"
                             showBlankItem />
         </div>
     </div>

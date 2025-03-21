@@ -183,7 +183,7 @@ namespace Rock.Reporting.DataFilter.Group
             var settings = new FilterSettings();
 
             settings.PersonDataViewGuid = data.GetValueOrNull( "dataView" )?.FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
-            settings.PersonCountComparison = ( ComparisonType ) data.GetValueOrNull( "comparisonType" )?.AsIntegerOrNull();
+            settings.PersonCountComparison = ( ComparisonType ) ( data.GetValueOrNull( "comparisonType" )?.AsIntegerOrNull() ?? 1 );
             settings.PersonCount = data.GetValueOrDefault( "count", "0" ).AsInteger();
 
             return settings.ToSelectionString();
