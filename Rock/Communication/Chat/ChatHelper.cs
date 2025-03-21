@@ -58,6 +58,16 @@ namespace Rock.Communication.Chat
         private static readonly object _saveChatConfigurationLock = new object();
 
         /// <summary>
+        ///  A lock object for thread-safe logging of an "unrecoverable" chat account exception.
+        /// </summary>
+        private static readonly object _accountUnrecoverableExceptionLock = new object();
+
+        /// <summary>
+        /// A bit to track whether an "unrecoverable" chat account exception has already been logged.
+        /// </summary>
+        private static volatile bool _hasLoggedAccountUnrecoverableException = false;
+
+        /// <summary>
         /// A helper method to lazily get or create the chat system user GUID.
         /// </summary>
         /// <returns>The lazy, chat system user GUID.</returns>
@@ -158,6 +168,11 @@ namespace Rock.Communication.Chat
         {
             get
             {
+                if ( _hasLoggedAccountUnrecoverableException )
+                {
+                    return false;
+                }
+
                 var chatConfiguration = GetChatConfiguration();
 
                 return chatConfiguration.ApiKey.IsNotNullOrWhiteSpace()
@@ -324,6 +339,56 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
+        /// Reports that the external chat provider account is invalid.
+        /// </summary>
+        /// <param name="ex">The exception - if any - received from the external chat provider.</param>
+        internal static void ReportAccountInvalidResponseReceived( Exception ex = null )
+        {
+            if ( !_hasLoggedAccountUnrecoverableException )
+            {
+                lock ( _accountUnrecoverableExceptionLock )
+                {
+                    if ( !_hasLoggedAccountUnrecoverableException )
+                    {
+                        var accountInvalidException = new ChatAccountInvalidException(
+                            "A response was received from the external chat provider indicating the account is invalid. Double-check the API key and secret.",
+                            ex
+                        );
+
+                        ExceptionLogService.LogException( accountInvalidException );
+
+                        _hasLoggedAccountUnrecoverableException = true;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reports that the external chat provider account has been suspended.
+        /// </summary>
+        /// <param name="ex">The exception - if any - received from the external chat provider.</param>
+        internal static void ReportAccountSuspendedResponseReceived( Exception ex = null )
+        {
+            if ( !_hasLoggedAccountUnrecoverableException )
+            {
+                lock ( _accountUnrecoverableExceptionLock )
+                {
+                    if ( !_hasLoggedAccountUnrecoverableException )
+                    {
+                        var accountSuspendedException = new ChatAccountSuspendedException(
+                            "A response was received from the external chat provider indicating the account has been suspended.",
+                            ex
+                        );
+
+                        ExceptionLogService.LogException( accountSuspendedException );
+
+                        _hasLoggedAccountUnrecoverableException = true;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the <see cref="ChatChannelType.Key"/> for the provided <see cref="GroupType"/> identifier.
         /// </summary>
         /// <param name="groupTypeId">The <see cref="GroupType"/> identifier for which to get the <see cref="ChatChannelType.Key"/>.</param>
@@ -454,6 +519,11 @@ namespace Rock.Communication.Chat
         /// <param name="shouldReinitializeChatProvider">Whether to also reinitialize the <see cref="IChatProvider"/>.</param>"/>
         internal void Reinitialize( bool shouldReinitializeChatProvider = true )
         {
+            lock ( _accountUnrecoverableExceptionLock )
+            {
+                _hasLoggedAccountUnrecoverableException = false;
+            }
+
             if ( !IsChatEnabled )
             {
                 return;
@@ -1218,6 +1288,39 @@ namespace Rock.Communication.Chat
             {
                 result.Exception = ex;
                 Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", syncCommands, syncConfig );
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc cref="IChatProvider.DeleteChatChannelsAsync(List{string})"/>
+        internal async Task<ChatSyncCrudResult> DeleteChatChannelsAsync( List<string> chatChannelQueryableKeys )
+        {
+            var result = new ChatSyncCrudResult();
+
+            if ( !IsChatEnabled || chatChannelQueryableKeys?.Any() != true )
+            {
+                return result;
+            }
+
+            var structuredLog = "ChatChannelQueryableKeys: {@ChatChannelQueryableKeys}";
+            var logMessagePrefix = $"{LogMessagePrefix} {nameof( DeleteChatChannelsAsync ).SplitCase()} failed";
+
+            try
+            {
+                var deleteResult = await ChatProvider.DeleteChatChannelsAsync( chatChannelQueryableKeys );
+                if ( deleteResult == null || deleteResult.HasException )
+                {
+                    result.Exception = deleteResult?.Exception;
+                    Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.DeleteChatChannelsAsync )}'. {structuredLog}", chatChannelQueryableKeys );
+
+                    return result;
+                }
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+                Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", chatChannelQueryableKeys );
             }
 
             return result;
