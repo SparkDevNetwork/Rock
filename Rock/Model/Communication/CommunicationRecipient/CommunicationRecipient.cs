@@ -194,7 +194,7 @@ namespace Rock.Model
         /// The unsubscribe level.
         /// </value>
         [DataMember]
-        public UnsubscribeLevel UnsubscribeLevel { get; set; }
+        public UnsubscribeLevel? UnsubscribeLevel { get; set; }
 
         /// <summary>
         /// Gets or sets the personal device identifier.
