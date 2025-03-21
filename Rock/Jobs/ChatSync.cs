@@ -59,9 +59,9 @@ namespace Rock.Jobs
         DefaultBooleanValue = true,
         Order = 2 )]
 
-    [BooleanField( "Delete Merged Chat Person Records",
+    [BooleanField( "Delete Merged Chat Individuals",
         Key = AttributeKey.DeleteMergedChatUsers,
-        Description = "Determines if non-prevailing, merged chat person records should be deleted in the external chat system. If enabled, when two people in Rock have been merged, and both had an associated chat person record, the non-prevailing chat person record will be deleted from the external chat system to ensure other people can send future messages to only the prevailing chat person record.",
+        Description = "Determines if non-prevailing, merged chat individuals should be deleted in the external chat system. If enabled, when two people in Rock have been merged, and both had an associated chat individual, the non-prevailing chat individual will be deleted from the external chat system to ensure other people can send future messages to only the prevailing chat individual.",
         IsRequired = false,
         DefaultBooleanValue = true,
         Order = 3 )]
@@ -707,22 +707,22 @@ namespace Rock.Jobs
 
             rockToChatUsersStopwatch.Stop();
 
-            taskResult = CreateAndAddNewTaskResult( section, "Rock People to Chat Person Records", rockToChatUsersStopwatch.Elapsed );
+            taskResult = CreateAndAddNewTaskResult( section, "Rock People to Chat Individuals", rockToChatUsersStopwatch.Elapsed );
 
             if ( rockToChatUsersExceptions.Any() )
             {
                 taskResult.Exception = ChatHelper.GetFirstOrAggregateException(
                     rockToChatUsersExceptions,
-                    "Exceptions occurred while syncing Rock People to Chat Person records."
+                    "Exceptions occurred while syncing Rock People to Chat Individuals."
                 );
             }
 
-            AddCrudDetailsToTaskResult( taskResult, rockToChatUsersResult, "Chat Person" );
+            AddCrudDetailsToTaskResult( taskResult, rockToChatUsersResult, "Chat Individual" );
 
             if ( globallyBannedChatUserKeys.Any() )
             {
                 var count = globallyBannedChatUserKeys.Count;
-                taskResult.Details.Add( $"{count:N0} {"Chat Person".PluralizeIf( count > 1 )} Globally Banned" );
+                taskResult.Details.Add( $"{count:N0} {"Chat Individual".PluralizeIf( count > 1 )} Globally Banned" );
             }
 
             #endregion 1) Rock-to-Chat Sync
@@ -1059,7 +1059,7 @@ namespace Rock.Jobs
                 var taskResult = CreateAndAddNewTaskResult( section, "Missing Chat-to-Rock Mapping Data", TimeSpan.Zero );
                 taskResult.IsWarning = true;
 
-                Log( LogLevel.Warning, "No Chat Person Key-to-Rock Person Alias ID mappings found. Unable to create Interactions, as we won't be able to map a given Chat Channel back to a Rock Group." );
+                Log( LogLevel.Warning, "No Chat Individual Key-to-Rock Person Alias ID mappings found. Unable to create Interactions, as we won't be able to map a given Chat Channel back to a Rock Group." );
 
                 // There's no reason to continue if we have no mappings.
                 return;
@@ -1168,7 +1168,7 @@ namespace Rock.Jobs
                         {
                             if ( chatUserKeysSkipped.Add( chatUserKey ) )
                             {
-                                Log( LogLevel.Warning, $"No Rock Person Alias ID found for Chat Person Key '{chatUserKey}'. Unable to create Interactions for this Chat Person." );
+                                Log( LogLevel.Warning, $"No Rock Person Alias ID found for Chat Individual Key '{chatUserKey}'. Unable to create Interactions for this Chat Individual." );
                             }
 
                             continue;
@@ -1216,14 +1216,14 @@ namespace Rock.Jobs
         #region Delete Merged Chat Users
 
         /// <summary>
-        /// Deletes non-prevailing chat person records that have been merged with other Rock people.
+        /// Deletes non-prevailing chat individuals that have been merged with other Rock people.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="chatHelper">The chat helper.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task DeleteMergedChatUsersAsync( RockContext rockContext, ChatHelper chatHelper )
         {
-            var section = CreateAndAddResultSection( "Delete Merged Chat Person Records:" );
+            var section = CreateAndAddResultSection( "Delete Merged Chat Individuals:" );
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -1239,7 +1239,7 @@ namespace Rock.Jobs
             }
 
             var count = mergeResult.Deleted.Count;
-            CreateAndAddNewTaskResult( section, $"{count:N0} Merged Chat Person {"Record".PluralizeIf( count > 1 )} {CrudMessage.Deleted}", stopwatch.Elapsed );
+            CreateAndAddNewTaskResult( section, $"{count:N0} Merged Chat Individual {"Record".PluralizeIf( count > 1 )} {CrudMessage.Deleted}", stopwatch.Elapsed );
         }
 
         #endregion Delete Merged Chat Users
