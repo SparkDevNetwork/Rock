@@ -28,6 +28,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
+            JPH_AddMissingChatGroupTypeAssociations_20250321_Up();
             JPH_MoveChatBanListGroup_20250321_Up();
             JPH_SeedChatSyncJob_20250321_Up();
         }
@@ -39,6 +40,15 @@ namespace Rock.Plugin.HotFixes
         {
             JPH_MoveChatBanListGroup_20250321_Down();
             JPH_SeedChatSyncJob_20250321_Down();
+        }
+
+        /// <summary>
+        /// JPH: Add missing chat group type associations to the chat system groups - up.
+        /// </summary>
+        private void JPH_AddMissingChatGroupTypeAssociations_20250321_Up()
+        {
+            RockMigrationHelper.AddGroupTypeAssociation( SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE, SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE );
+            RockMigrationHelper.AddGroupTypeAssociation( SystemGuid.GroupType.GROUPTYPE_CHAT_SHARED_CHANNEL, SystemGuid.GroupType.GROUPTYPE_CHAT_SHARED_CHANNEL );
         }
 
         /// <summary>
@@ -62,6 +72,8 @@ namespace Rock.Plugin.HotFixes
                 groupTypePurposeValueGuid: null,
                 guid: Rock.SystemGuid.GroupType.GROUPTYPE_HIDDEN_APPLICATION_GROUP,
                 isSystem: true );
+
+            RockMigrationHelper.AddGroupTypeAssociation( Rock.SystemGuid.GroupType.GROUPTYPE_HIDDEN_APPLICATION_GROUP, Rock.SystemGuid.GroupType.GROUPTYPE_HIDDEN_APPLICATION_GROUP );
 
             // Add default "Member" group type role to the "Hidden Application Group" group type.
             RockMigrationHelper.UpdateGroupTypeRole( Rock.SystemGuid.GroupType.GROUPTYPE_HIDDEN_APPLICATION_GROUP, "Member", "Member of a group", order: 0, maxCount: null, minCount: null, guid: Rock.SystemGuid.GroupRole.GROUP_ROLE_HIDDEN_APPLICATION_GROUP_MEMBER, isSystem: true, isLeader: false, isDefaultGroupTypeRole: true );
