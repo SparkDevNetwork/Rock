@@ -590,6 +590,12 @@ namespace Rock.Communication.Chat
             return auth;
         }
 
+        /// <inheritdoc cref="PersonService.GetByChatUserKey(string)"/>
+        internal Person GetPerson( string chatUserKey )
+        {
+            return new PersonService( RockContext ).GetByChatUserKey( chatUserKey );
+        }
+
         #endregion Authentication
 
         #region Synchronization: From Rock To Chat Provider
