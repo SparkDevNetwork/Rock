@@ -414,11 +414,11 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
-        /// Gets the <see cref="ChatChannel.Key"/> for the provided <see cref="GroupCache"/>.
+        /// Gets the <see cref="ChatChannel.Key"/> for the provided <paramref name="groupId"/> and <paramref name="chatChannelKey"/>.
         /// </summary>
         /// <param name="groupId">The <see cref="Group"/> identifier for which to get the <see cref="ChatChannel.Key"/>.</param>
         /// <param name="chatChannelKey">The <see cref="Group.ChatChannelKey"/> for which to get the <see cref="ChatChannel.Key"/>.</param>
-        /// <returns>The <see cref="ChatChannel.Key"/> or <see langword="null"/>.</returns>
+        /// <returns>The <see cref="ChatChannel.Key"/>.</returns>
         internal static string GetChatChannelKey( int groupId, string chatChannelKey )
         {
             if ( chatChannelKey.IsNotNullOrWhiteSpace() )
@@ -784,6 +784,8 @@ namespace Rock.Communication.Chat
                 var channelTypesToUpdate = new List<ChatChannelType>();
                 var channelTypesToDelete = new List<string>();
 
+                var groupService = new GroupService( RockContext );
+
                 // A mapping dictionary and local function to add a group type to the outgoing results collection only
                 // AFTER we know it's been successfully synced with the external chat system.
                 var groupTypeIdByChannelTypeKeys = new Dictionary<string, int>();
@@ -918,9 +920,60 @@ namespace Rock.Communication.Chat
                     }
                     else if ( existingChannelType != null )
                     {
-                        // For each non-chat-enabled group type, delete any corresponding channel type in the external
-                        // chat system.
-                        channelTypesToDelete.Add( channelType.Key );
+                        // If this channel type has [or has ever had] any channels [that are currently chat-enabled or
+                        // not], we'll simply deactivate those channels in the external chat system and NOT delete the
+                        // channel type.
+                        var groups = groupService.GetChatChannelGroupsQuery( groupType.Id ).ToList();
+                        if ( groups?.Any() == true )
+                        {
+                            var groupSyncCommands = groups
+                                .Select( g =>
+                                    new SyncGroupToChatCommand
+                                    {
+                                        GroupTypeId = groupType.Id,
+                                        GroupId = g.Id,
+                                        ChatChannelKey = g.ChatChannelKey
+                                    }
+                                )
+                                .ToList();
+
+                            /*
+                                3/18/2025 - JPH
+
+                                Regarding De/Reactivating chat channels:
+
+                                While the majority of this `ChatHelper` code is external chat provider-agnostic, the topic of
+                                deactivating/reactivating channels (or disabling/re-enabling, as Stream calls it) should be
+                                carefully considered if we move away from Stream.
+
+                                With Stream, it's as simple as setting a `disabled` property on the channel and running it through
+                                the standard update call. With other providers, it might not be this simple, and might require
+                                additional API calls, at which point, we should enhance the `IChatProvider` contract accordingly.
+
+                                Reason: Call out risk of switching to a different external chat provider.
+                            */
+
+                            var syncGroupsResult = await SyncGroupsToChatProviderAsync( groupSyncCommands );
+                            if ( syncGroupsResult != null )
+                            {
+                                // Add the channel sync results to the outgoing result (for chat sync job logging).
+                                result.InnerResults.Add( syncGroupsResult );
+                            }
+                        }
+                        else
+                        {
+                            /*
+                                3/24/2025 - JPH
+
+                                We've decided - for now - to never programmatically delete channel types in the external
+                                chat system. This will need to be done manually, through the external chat system's UI.
+
+                                Reason: Never programmatically delete channel types in the external chat system.
+                            */
+
+                            // Delete any corresponding channel type in the external chat system.
+                            //channelTypesToDelete.Add( channelType.Key );
+                        }
                     }
                 }
 
@@ -1066,6 +1119,9 @@ namespace Rock.Communication.Chat
                 var channelsToUpdate = new List<ChatChannel>();
                 var channelsToDelete = new List<string>();
 
+                // Keep track of the groups that need channel keys saved in the Rock database.
+                var saveChatChannelKeyByGroupIds = new Dictionary<int, string>();
+
                 // Keep track of the channels that should and should NOT trigger a group member sync.
                 var channelsToTriggerGroupMemberSync = new List<ChatChannel>();
                 var queryableKeysToAvoidGroupMemberSync = new HashSet<string>();
@@ -1102,8 +1158,8 @@ namespace Rock.Communication.Chat
                     Regarding De/Reactivating chat channels:
 
                     While the majority of this `ChatHelper` code is external chat provider-agnostic, the topic of
-                    deactivating/reactivating (or disabling/re-enabling, as Stream calls it) should be carefully
-                    considered if we move away from Stream.
+                    deactivating/reactivating channels (or disabling/re-enabling, as Stream calls it) should be
+                    carefully considered if we move away from Stream.
 
                     With Stream, it's as simple as setting a `disabled` property on the channel and running it through
                     the standard update call. With other providers, it might not be this simple, and might require
@@ -1197,9 +1253,17 @@ namespace Rock.Communication.Chat
                             AddGroupToResult( channel.QueryableKey, ChatSyncType.Skip );
                         }
                     }
+                    else
+                    {
+                        // If we got here, this group did not already have a corresponding chat channel and is not chat-enabled.
+                        // Since it wasn't added to one of the CRUD collections, it will be filtered out from the sync operations below.
+                        continue;
+                    }
 
-                    // Else, if we got here, this group did not already have a corresponding chat channel and is not chat-enabled.
-                    // Since it wasn't added to one of the CRUD collections, it's been filtered out from the sync operations below.
+                    if ( rockChatGroup.ShouldSaveChatChannelKeyInRock )
+                    {
+                        saveChatChannelKeyByGroupIds.TryAdd( rockChatGroup.GroupId, rockChatGroup.ChatChannelKey );
+                    }
                 }
 
                 // Don't let individual CRUD failures cause all to fail.
@@ -1268,6 +1332,34 @@ namespace Rock.Communication.Chat
                     Logger.LogError( result.Exception, $"{logMessagePrefix}. {structuredLog}", syncCommands, syncConfig );
                 }
 
+                // Do we have any groups that need channel keys saved in the Rock database?
+                if ( saveChatChannelKeyByGroupIds.Any() )
+                {
+                    var updateGroupIds = saveChatChannelKeyByGroupIds.Keys.ToList();
+                    var updateGroups = GetGroupQuery( updateGroupIds ).ToList();
+                    var shouldSaveUpdates = false;
+
+                    foreach ( var updateGroup in updateGroups )
+                    {
+                        if ( saveChatChannelKeyByGroupIds.TryGetValue( updateGroup.Id, out var chatChannelKey ) )
+                        {
+                            if ( updateGroup.ChatChannelKey == chatChannelKey )
+                            {
+                                continue;
+                            }
+
+                            updateGroup.ChatChannelKey = chatChannelKey;
+                            shouldSaveUpdates = true;
+                        }
+                    }
+
+                    if ( shouldSaveUpdates )
+                    {
+                        RockContext.SaveChanges();
+                    }
+                }
+
+                // Do we have any groups whose group members should be synced to channel members?
                 foreach ( var channel in channelsToTriggerGroupMemberSync )
                 {
                     // Try to sync the group members.
@@ -3096,58 +3188,32 @@ namespace Rock.Communication.Chat
         /// </returns>
         private List<RockChatGroup> GetRockChatGroups( List<SyncGroupToChatCommand> syncCommands )
         {
-            // We always want to include archived groups, as they'll be considered inactive chat channels.
-            var groupQry = new GroupService( RockContext ).AsNoFilter();
-
-            // Get the distinct group IDs represented within the commands.
+            // Get the distinct group IDs represented within the commands, and the corresponding group queryable.
             var groupIds = syncCommands.Select( c => c.GroupId ).Distinct().ToList();
-            if ( groupIds.Count == 1 )
-            {
-                // Most performant: limit queries to just this group.
-                var firstGroupId = groupIds.First();
-                groupQry = groupQry.Where( g => g.Id == firstGroupId );
-            }
-            else if ( groupIds.Count < 1000 )
-            {
-                // For fewer than 1k groups, allow a SQL `WHERE...IN` clause.
-                groupQry = groupQry.Where( g => groupIds.Contains( g.Id ) );
-            }
-            else
-            {
-                // For 1k or more groups, create and join to an entity set.
-                var entitySetOptions = new AddEntitySetActionOptions
-                {
-                    Name = $"{nameof( ChatHelper )}_{nameof( GetRockChatGroups )}",
-                    EntityTypeId = EntityTypeCache.Get<Group>().Id,
-                    EntityIdList = groupIds,
-                    ExpiryInMinutes = 20
-                };
-
-                var entitySetService = new EntitySetService( RockContext );
-                var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
-                var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
-
-                groupQry = groupQry.Where( g => entitySetItemQry.Contains( g.Id ) );
-            }
+            var groupQry = GetGroupQuery( groupIds );
 
             // Get all groups matching the provided commands.
             var dbRockChatGroups = groupQry
                 .AsEnumerable() // Materialize the query.
                 .Select( g =>
-                    new RockChatGroup
+                {
+                    var chatChannelKey = GetChatChannelKey( g.Id, g.ChatChannelKey );
+
+                    return new RockChatGroup
                     {
                         GroupTypeId = g.GroupTypeId,
                         GroupId = g.Id,
                         ChatChannelTypeKey = GetChatChannelTypeKey( g.GroupTypeId ),
-                        ChatChannelKey = GetChatChannelKey( g.Id, g.ChatChannelKey ),
+                        ChatChannelKey = chatChannelKey,
+                        ShouldSaveChatChannelKeyInRock = g.ChatChannelKey != chatChannelKey,
                         Name = g.Name,
                         IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
                         IsPublic = g.GetIsChatChannelPublic(),
                         IsAlwaysShown = g.GetIsChatChannelAlwaysShown(),
                         IsChatEnabled = g.GetIsChatEnabled(),
                         IsChatChannelActive = g.GetIsChatChannelActive()
-                    }
-                )
+                    };
+                } )
                 .ToList();
 
             var rockChatGroups = new List<RockChatGroup>();
@@ -3180,6 +3246,7 @@ namespace Rock.Communication.Chat
                 // Copy the database values to the outgoing group.
                 rockChatGroup.ChatChannelTypeKey = dbRockChatGroup.ChatChannelTypeKey;
                 rockChatGroup.ChatChannelKey = dbRockChatGroup.ChatChannelKey;
+                rockChatGroup.ShouldSaveChatChannelKeyInRock = dbRockChatGroup.ShouldSaveChatChannelKeyInRock;
                 rockChatGroup.Name = dbRockChatGroup.Name;
                 rockChatGroup.IsLeavingAllowed = dbRockChatGroup.IsLeavingAllowed;
                 rockChatGroup.IsPublic = dbRockChatGroup.IsPublic;
@@ -3189,6 +3256,49 @@ namespace Rock.Communication.Chat
             }
 
             return rockChatGroups;
+        }
+
+        /// <summary>
+        /// Gets a query of all <see cref="Group"/>s, for the provided <see cref="Group"/> identifiers.
+        /// </summary>
+        /// <param name="groupIds">The identifiers of the <see cref="Group"/>s for which to get a query.</param>
+        /// <returns>A query of all <see cref="Group"/>s, for the provided <see cref="Group"/> identifiers.</returns>
+        /// <remarks>
+        /// The most performant query approach will be chosen, based on the count of <see cref="Group"/> identifiers provided.
+        /// </remarks>
+        private IQueryable<Group> GetGroupQuery( List<int> groupIds )
+        {
+            // We always want to include archived groups, as they'll be considered inactive chat channels.
+            var groupQry = new GroupService( RockContext ).AsNoFilter();
+
+            if ( groupIds.Count == 1 )
+            {
+                // Most performant: limit queries to just this group.
+                var firstGroupId = groupIds.First();
+                return groupQry.Where( g => g.Id == firstGroupId );
+            }
+            else if ( groupIds.Count < 1000 )
+            {
+                // For fewer than 1k groups, allow a SQL `WHERE...IN` clause.
+                return groupQry.Where( g => groupIds.Contains( g.Id ) );
+            }
+            else
+            {
+                // For 1k or more groups, create and join to an entity set.
+                var entitySetOptions = new AddEntitySetActionOptions
+                {
+                    Name = $"{nameof( ChatHelper )}_{nameof( GetGroupQuery )}",
+                    EntityTypeId = EntityTypeCache.Get<Group>().Id,
+                    EntityIdList = groupIds,
+                    ExpiryInMinutes = 20
+                };
+
+                var entitySetService = new EntitySetService( RockContext );
+                var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
+                var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
+
+                return groupQry.Where( g => entitySetItemQry.Contains( g.Id ) );
+            }
         }
 
         /// <summary>
