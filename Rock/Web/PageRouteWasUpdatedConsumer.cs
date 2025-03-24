@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus;
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
@@ -27,6 +29,7 @@ namespace Rock.Web
     /// <summary>
     /// Page Route Was Updated Consumer
     /// </summary>
+    [RockLoggingCategory]
     public sealed class PageRouteWasUpdatedConsumer : RockConsumer<PageRouteEventQueue, PageRouteWasUpdatedMessage>
     {
         /// <summary>
@@ -49,12 +52,12 @@ namespace Rock.Web
 
                 if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Bus, logMessage );
+                    Logger.LogError( logMessage );
                     ExceptionLogService.LogException( new BusException( logMessage ) );
                 }
                 else
                 {
-                    RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
+                    Logger.LogDebug( logMessage );
                 }
 
                 return;
@@ -63,11 +66,11 @@ namespace Rock.Web
             // Do not reregister the routes is the message was sent from this node as that has already been done.
             if ( RockMessageBus.IsFromSelf( message ) )
             {
-                RockLogger.Log.Debug( RockLogDomains.Bus, $"Skipping 'Page Route Was Updated Message' because this node ({message.SenderNodeName}) was the publisher." );
+                Logger.LogDebug( $"Skipping 'Page Route Was Updated Message' because this node ({message.SenderNodeName}) was the publisher." );
                 return;
             }
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, $"Consumed 'Page Route Was Updated Message' on node {RockMessageBus.NodeName}." );
+            Logger.LogDebug( $"Consumed 'Page Route Was Updated Message' on node {RockMessageBus.NodeName}." );
             RockRouteHandler.RemoveRockPageRoutes();
             RockRouteHandler.RegisterRoutes();
         }

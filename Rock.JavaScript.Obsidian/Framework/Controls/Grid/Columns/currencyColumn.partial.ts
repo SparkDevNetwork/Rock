@@ -43,6 +43,9 @@ function getExportValue(row: Record<string, unknown>, column: ColumnDefinition):
     return value;
 }
 
+/**
+ * Displays a cell value formatted as a currency.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,

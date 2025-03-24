@@ -148,7 +148,7 @@ namespace Rock.CheckIn.v2.Labels
                 }
                 else
                 {
-                    var builder = new FieldFilterExpressionBuilder();
+                    var builder = new CheckInFieldFilterBuilder();
 
                     _isMatchFunction = builder.GetIsMatchFunction( Field.ConditionalVisibility, labelData.GetType() );
                 }

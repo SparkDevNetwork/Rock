@@ -19,7 +19,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 using Rock.Field;
 using Rock.ViewModels.Utility;
@@ -28,10 +27,10 @@ using Rock.Web.Cache;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Marked internal until we have decision on this being the final name and
-    /// location for these methods.
+    /// Provides various methods for working with attributes and values in
+    /// the context of being sent to a client application.
     /// </summary>
-    internal static class PublicAttributeHelper
+    public static class PublicAttributeHelper
     {
         #region Fields
 
@@ -48,13 +47,14 @@ namespace Rock.Attribute
         #region Methods
 
         /// <summary>
-        /// Gets the public editable attribute view model. This contains all the
-        /// information required for the individual to make changes to the attribute.
+        /// Gets the public editable attribute bag. This contains all the
+        /// information required for the individual to make changes to the
+        /// attribute itself.
         /// </summary>
         /// <remarks>This is for editing the attribute itself, not the attribute value.</remarks>
         /// <param name="attribute">The attribute that will be represented.</param>
         /// <returns>A <see cref="PublicEditableAttributeBag"/> that represents the attribute.</returns>
-        internal static PublicEditableAttributeBag GetPublicEditableAttributeViewModel( Rock.Model.Attribute attribute )
+        public static PublicEditableAttributeBag GetPublicEditableAttribute( Rock.Model.Attribute attribute )
         {
             var fieldTypeCache = FieldTypeCache.Get( attribute.FieldTypeId );
             var configurationValues = attribute.AttributeQualifiers.ToDictionary( q => q.Key, q => q.Value );
@@ -79,8 +79,11 @@ namespace Rock.Attribute
                 IsSystem = attribute.IsSystem,
                 IsShowInGrid = attribute.IsGridColumn,
                 IsShowOnBulk = attribute.ShowOnBulk,
+                IsSuppressHistoryLogging = attribute.IsSuppressHistoryLogging,
                 FieldTypeGuid = fieldTypeCache.ControlFieldTypeGuid,
                 RealFieldTypeGuid = fieldTypeCache.Guid,
+                IconCssClass = attribute.IconCssClass,
+                AttributeColor = attribute.AttributeColor,
                 Categories = attribute.Categories
                     .Select( c => new ListItemBag
                     {
@@ -94,26 +97,13 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Converts an Attribute Value to a view model that can be sent to a
-        /// public device for the purpose of viewing the value.
-        /// </summary>
-        /// <param name="attributeValue">The attribute value.</param>
-        /// <returns>A <see cref="PublicAttributeBag"/> instance that contains details about the attribute but not the value.</returns>
-        internal static PublicAttributeBag GetPublicAttributeForView( AttributeValueCache attributeValue )
-        {
-            var attribute = AttributeCache.Get( attributeValue.AttributeId );
-
-            return GetPublicAttributeForView( attribute, attributeValue.Value );
-        }
-
-        /// <summary>
         /// Converts an Attribute and value to a view model that can be sent to a
         /// public device for the purpose of viewing the value.
         /// </summary>
         /// <param name="attribute">The attribute the value is associated with.</param>
         /// <param name="value">The value to be encoded for public use.</param>
         /// <returns>A <see cref="PublicAttributeBag"/> instance that contains details about the attribute but not the value.</returns>
-        internal static PublicAttributeBag GetPublicAttributeForView( AttributeCache attribute, string value )
+        public static PublicAttributeBag GetPublicAttributeForView( AttributeCache attribute, string value )
         {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 
@@ -137,25 +127,12 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Converts an Attribute Value to a view model that can be sent to a
-        /// public device for the purpose of editing the value.
-        /// </summary>
-        /// <param name="attributeValue">The attribute value.</param>
-        /// <returns>A <see cref="PublicAttributeBag"/> instance that contains details about the attribute but not the value.</returns>
-        internal static PublicAttributeBag GetPublicAttributeForEdit( AttributeValueCache attributeValue )
-        {
-            var attribute = AttributeCache.Get( attributeValue.AttributeId );
-
-            return GetPublicAttributeForEdit( attribute );
-        }
-
-        /// <summary>
         /// Converts an Attribute  to a view model that can be sent to a public
         /// device for the purpose of editing a value.
         /// </summary>
         /// <returns>A <see cref="PublicAttributeBag"/> instance that contains details about the attribute but not the value.</returns>
         /// <returns>A <see cref="PublicAttributeBag"/> instance.</returns>
-        internal static PublicAttributeBag GetPublicAttributeForEdit( AttributeCache attribute )
+        public static PublicAttributeBag GetPublicAttributeForEdit( AttributeCache attribute )
         {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 
@@ -187,7 +164,7 @@ namespace Rock.Attribute
         /// <param name="attribute">The attribute being set.</param>
         /// <param name="publicValue">The value provided by a public device.</param>
         /// <returns>A string value.</returns>
-        internal static string GetPrivateValue( AttributeCache attribute, string publicValue )
+        public static string GetPrivateValue( AttributeCache attribute, string publicValue )
         {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 
@@ -201,7 +178,7 @@ namespace Rock.Attribute
         /// <param name="attribute">The attribute being set.</param>
         /// <param name="privateValue">The value that came from the database.</param>
         /// <returns>A string value.</returns>
-        internal static string GetPublicValueForView( AttributeCache attribute, string privateValue )
+        public static string GetPublicValueForView( AttributeCache attribute, string privateValue )
         {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 
@@ -215,7 +192,7 @@ namespace Rock.Attribute
         /// <param name="attribute">The attribute being set.</param>
         /// <param name="privateValue">The value that came from the database.</param>
         /// <returns>A string value.</returns>
-        internal static string GetPublicEditValue( AttributeCache attribute, string privateValue )
+        public static string GetPublicValueForEdit( AttributeCache attribute, string privateValue )
         {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 

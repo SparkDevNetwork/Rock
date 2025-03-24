@@ -25,13 +25,26 @@ using Rock.Utility;
 
 namespace Rock.Model
 {
+    /*
+    12/16/2024 - DSH
+
+    The LearningClass model participates in the the TPT (Table-Per-Type) pattern. This
+    can cause some rare unexpected results. See the engineering note above the
+    Group class for details.
+    */
+
     /// <summary>
     /// Represents a learning class (an instance of a course for a given semester).
     /// </summary>
+    /// <remarks>
+    /// WARNING - This class inherits from another model, Group, but this Table-Per-Type
+    /// (TPT) inheritance strategy should not be used and is not supported for plugins.
+    /// </remarks>
     [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Due to inheritance from Group.
     [RockDomain( "LMS" )]
     [Table( "LearningClass" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_CLASS )]
     public partial class LearningClass : Group
     {
@@ -87,18 +100,18 @@ namespace Rock.Model
         public virtual LearningGradingSystem LearningGradingSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets a collection of <see cref="Rock.Model.LearningActivity">activities</see> for the class.
+        /// Gets or sets a collection of <see cref="Rock.Model.LearningClassActivity">activities</see> for the class.
         /// </summary>
         /// <value>
-        /// A collection of the <see cref="Rock.Model.LearningActivity">activities</see> for the LearningClass.
+        /// A collection of the <see cref="Rock.Model.LearningClassActivity">activities</see> for the LearningClass.
         /// </value>
-        public virtual ICollection<LearningActivity> LearningActivities
+        public virtual ICollection<LearningClassActivity> LearningClassActivities
         {
-            get { return _learningActivities ?? ( _learningActivities = new Collection<LearningActivity>() ); }
-            set { _learningActivities = value; }
+            get { return _learningClassActivities ?? ( _learningClassActivities = new Collection<LearningClassActivity>() ); }
+            set { _learningClassActivities = value; }
         }
 
-        private ICollection<LearningActivity> _learningActivities;
+        private ICollection<LearningClassActivity> _learningClassActivities;
 
         /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.LearningParticipant">participants</see> for the class.
@@ -155,6 +168,22 @@ namespace Rock.Model
             return Name;
         }
 
+        /// <summary>
+        /// Gets the entity object type's friendly name
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the entity object type's friendly name.
+        /// </value>
+        [NotAudited]
+        public new static string FriendlyTypeName
+        {
+            get
+            {
+                // Because Entity.FriendlyTypeName would show the base class type name.
+                return "Learning Class";
+            }
+        }
+
         #endregion
     }
 
@@ -173,7 +202,7 @@ namespace Rock.Model
             this.HasOptional( a => a.LearningSemester ).WithMany( a => a.LearningClasses ).HasForeignKey( a => a.LearningSemesterId ).WillCascadeOnDelete( false );
             this.HasRequired( a => a.LearningCourse ).WithMany( a => a.LearningClasses ).HasForeignKey( a => a.LearningCourseId ).WillCascadeOnDelete( true );
 
-            // We don't intend to allow deletion of an in-use grading system at this time, therefore do not cascade delete as an additiona protection.
+            // We don't intend to allow deletion of an in-use grading system at this time, therefore as an additional protection do not cascade deletes.
             this.HasRequired( a => a.LearningGradingSystem ).WithMany( a => a.LearningClasses ).HasForeignKey( a => a.LearningGradingSystemId ).WillCascadeOnDelete( false );
         }
     }

@@ -129,7 +129,19 @@ namespace Rock.CheckIn.v2
             var groupLocations = locations
                 .SelectMany( l => GroupLocationCache.AllForLocationId( l.Id ) )
                 .DistinctBy( glc => glc.Id )
-                .Where( glc => activeAreaIds.Contains( GroupCache.Get( glc.GroupId, rockContext )?.GroupTypeId ?? 0 ) )
+                .Where( glc =>
+                {
+                    var groupCache = GroupCache.Get( glc.GroupId, rockContext );
+
+                    // If the group itself is not active then it is not a valid
+                    // option for check-in.
+                    if ( groupCache == null || !groupCache.IsActive )
+                    {
+                        return false;
+                    }
+
+                    return activeAreaIds.Contains( groupCache.GroupTypeId );
+                } )
                 .OrderBy( glc => glc.Order )
                 .ToList();
 

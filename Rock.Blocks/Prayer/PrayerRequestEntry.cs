@@ -19,6 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Logging;
@@ -33,7 +36,7 @@ namespace Rock.Blocks.Prayer
     [DisplayName( "Prayer Request Entry" )]
     [Category( "Prayer" )]
     [Description( "Allows prayer requests to be added via visitors on the website." )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -640,7 +643,7 @@ namespace Rock.Blocks.Prayer
                 if ( bag.AttributeValues?.Any() == true )
                 {
                     prayerRequest.LoadAttributes( rockContext );
-                    prayerRequest.SetPublicAttributeValues( bag.AttributeValues, currentPerson );
+                    prayerRequest.SetPublicAttributeValues( bag.AttributeValues, currentPerson, enforceSecurity: false );
                 }
 
                 if ( !prayerRequest.IsValid )
@@ -787,7 +790,7 @@ namespace Rock.Blocks.Prayer
             // Load the attributes.
             var prayerRequest = new PrayerRequest { Id = 0 };
             prayerRequest.LoadAttributes();
-            box.Attributes = prayerRequest.GetPublicAttributesForEdit( currentPerson );
+            box.Attributes = prayerRequest.GetPublicAttributesForEdit( currentPerson, enforceSecurity: false );
 
             return box;
         }
@@ -884,7 +887,7 @@ namespace Rock.Blocks.Prayer
                 }
                 catch ( Exception ex )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Prayer, ex, "Unable to start workflow after prayer request was created." );
+                    Logger.LogError( ex, "Unable to start workflow after prayer request was created." );
                 }
             }
         }

@@ -21,7 +21,7 @@ using Rock.ViewModels.Utility;
 namespace Rock.ViewModels.Blocks.Communication.NcoaProcess
 {
     /// <summary>
-    /// 
+    /// The Process data used to pass to NCOA
     /// </summary>
     public class NcoaProcessBag
     {

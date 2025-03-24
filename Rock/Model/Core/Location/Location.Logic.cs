@@ -18,11 +18,16 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+
+using Microsoft.SqlServer.Types;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -336,6 +341,38 @@ namespace Rock.Model
         public static DbGeography GetGeoPoint( double latitude, double longitude )
         {
             return DbGeography.FromText( $"POINT({longitude} {latitude})" );
+        }
+
+        /// <summary>
+        /// Gets a <see cref="SqlGeography"/> <see cref="SqlParameter"/> from the specified latitude and longitude.
+        /// </summary>
+        /// <param name="parameterName">The name of the sql parameter.</param>
+        /// <param name="latitude">The latitude.</param>
+        /// <param name="longitude">The longitude.</param>
+        /// <returns>A <see cref="SqlGeography"/> <see cref="SqlParameter"/>.</returns>
+        internal static SqlParameter GetGeographySqlParameter( string parameterName, double latitude, double longitude )
+        {
+            var geography = GetGeoPoint( latitude, longitude );
+            return GetGeographySqlParameter( parameterName, geography );
+        }
+
+        /// <summary>
+        /// Gets a <see cref="SqlGeography"/> <see cref="SqlParameter"/> from the specified geography.
+        /// </summary>
+        /// <param name="parameterName">The name of the sql parameter.</param>
+        /// <param name="geography">The geography.</param>
+        /// <returns>A <see cref="SqlGeography"/> <see cref="SqlParameter"/>.</returns>
+        internal static SqlParameter GetGeographySqlParameter( string parameterName, DbGeography geography )
+        {
+            // https://stackoverflow.com/a/45099842 (Use SqlGeography instead of DbGeography)
+            // https://stackoverflow.com/a/23187033 (Entity Framework: SqlGeography vs DbGeography)
+            return new SqlParameter
+            {
+                ParameterName = parameterName,
+                Value = SqlGeography.Parse( geography.AsText() ),
+                SqlDbType = SqlDbType.Udt,
+                UdtTypeName = "geography"
+            };
         }
 
         /// <summary>

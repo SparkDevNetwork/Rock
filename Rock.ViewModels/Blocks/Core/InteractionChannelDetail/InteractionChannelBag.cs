@@ -38,7 +38,7 @@ namespace Rock.ViewModels.Blocks.Core.InteractionChannelDetail
         /// <summary>
         /// Gets or sets the length of time (in minutes) that components of this channel should be cached
         /// </summary>
-        public string ComponentCacheDuration { get; set; }
+        public int? ComponentCacheDuration { get; set; }
 
         /// <summary>
         /// Gets or sets the component detail template.
@@ -53,7 +53,7 @@ namespace Rock.ViewModels.Blocks.Core.InteractionChannelDetail
         /// <summary>
         /// Gets or sets the engagement strength.
         /// </summary>
-        public string EngagementStrength { get; set; }
+        public int? EngagementStrength { get; set; }
 
         /// <summary>
         /// Gets or sets the interaction custom 1 label.
@@ -93,7 +93,7 @@ namespace Rock.ViewModels.Blocks.Core.InteractionChannelDetail
         /// <summary>
         /// Gets or sets the retention days.
         /// </summary>
-        public string RetentionDuration { get; set; }
+        public int? RetentionDuration { get; set; }
 
         /// <summary>
         /// Gets or sets the session list template.

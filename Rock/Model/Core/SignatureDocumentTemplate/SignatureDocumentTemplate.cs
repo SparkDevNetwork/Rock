@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "SignatureDocumentTemplate" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "3F9828CC-8224-4AB0-98A5-6D60001EBE32")]
     public partial class SignatureDocumentTemplate : Model<SignatureDocumentTemplate>, IHasActiveFlag
     {

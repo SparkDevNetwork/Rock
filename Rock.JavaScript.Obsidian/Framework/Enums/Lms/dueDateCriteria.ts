@@ -24,7 +24,7 @@
 /** Determines the method for calculating the due date. */
 export const DueDateCriteria = {
     /** A specific date. */
-    Specific: 0,
+    SpecificDate: 0,
 
     /** An offset of the class start date. */
     ClassStartOffset: 1,
@@ -38,7 +38,7 @@ export const DueDateCriteria = {
 
 /** Determines the method for calculating the due date. */
 export const DueDateCriteriaDescription: Record<number, string> = {
-    0: "Specific",
+    0: "Specific Date",
 
     1: "Class Start Offset",
 

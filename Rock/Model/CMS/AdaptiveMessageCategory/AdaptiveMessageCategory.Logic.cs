@@ -16,86 +16,61 @@
 //
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
     public partial class AdaptiveMessageCategory
-    {  /// <summary>
-       /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
-       /// </summary>
-       /// <param name="action">The action.</param>
-       /// <param name="person">The person.</param>
-       /// <returns>
-       ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
-       /// </returns>
+    {
+        /// <inheritdoc/>
         public virtual bool IsAuthorized( string action, Person person )
         {
-            if ( this.AdaptiveMessage != null )
-            {
-                return this.AdaptiveMessage.IsAuthorized( action, person );
-            }
-            else
-            {
-                return action == Rock.Security.Authorization.VIEW;
-            }
+            return Authorization.Authorized( this, action, person );
         }
 
-        /// <summary>
-        /// If a user or role is not specifically allowed or denied to perform the selected action,
-        /// return <c>true</c> if they should be allowed anyway or <c>false</c> if not.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public virtual bool IsAllowedByDefault( string action )
         {
-            return this.AdaptiveMessage.IsAllowedByDefault( action );
+            return action == Authorization.VIEW;
         }
 
-        /// <summary>
-        /// A parent authority.  A user is specifically allowed or denied access to
-        /// this object based on the Metric ParentAuthority of the current object.
-        /// </summary>
-        public virtual Security.ISecured ParentAuthority
+        /// <inheritdoc/>
+        public virtual ISecured ParentAuthority
         {
             get
             {
-                return this.AdaptiveMessage.ParentAuthority;
+                // Attempt to mirror what would happen in Model<T>.
+                if ( AdaptiveMessage != null )
+                {
+                    return AdaptiveMessage;
+                }
+                else if ( this.Id == 0 )
+                {
+                    return new GlobalDefault();
+                }
+                else
+                {
+                    return new AdaptiveMessageCategory();
+                }
             }
         }
 
-        /// <summary>
-        /// Determines whether the specified action is private (Only the current user has access).
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
-        /// </returns>
+        /// <inheritdoc/>
         public virtual bool IsPrivate( string action, Person person )
         {
-            return this.AdaptiveMessage.IsPrivate( action, person );
+            return Authorization.IsPrivate( this, action, person );
         }
 
-        /// <summary>
-        /// Makes the action on the current entity private (Only the current user will have access).
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
+        /// <inheritdoc/>
         public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
         {
-            this.AdaptiveMessage.MakePrivate( action, person, rockContext );
+            Authorization.MakePrivate( this, action, person, rockContext );
         }
 
-        /// <summary>
-        /// If action on the current entity is private, removes security that made it private.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
+        /// <inheritdoc/>
         public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
         {
-            this.AdaptiveMessage.MakeUnPrivate( action, person, rockContext );
+            Authorization.MakeUnPrivate( this, action, person, rockContext );
         }
     }
 }

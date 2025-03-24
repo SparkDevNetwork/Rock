@@ -16,6 +16,7 @@
 //
 
 export const enum NavigationUrlKey {
-    ParentPage = "ParentPage",
-    AdaptationDetailPage = "AdaptationDetailPage"
+    CurrentPage = "CurrentPage",
+    AdaptationDetailPage = "AdaptationDetailPage",
+    CurrentPageWithoutMessageId = "CurrentPageWithoutMessageId"
 }

@@ -28,6 +28,14 @@ using Z.EntityFramework.Plus;
 
 namespace Rock.Model
 {
+    /*
+    12/16/2024 - DSH
+
+    The GroupMember model participates in the the TPT (Table-Per-Type) pattern. This
+    can cause some rare unexpected results. See the engineering note above the
+    Group class for details.
+    */
+
     /// <summary>
     /// The data access/service class for <see cref="Rock.Model.GroupMember"/> entity objects. 
     /// </summary>
@@ -1024,7 +1032,6 @@ namespace Rock.Model
         /// <param name="amtOfWeeks">The amt of weeks.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
-        [RockInternal( "1.15" )]
         internal static IQueryable<GroupMember> WhereMembersWithNoAttendanceForNumberOfWeeks( IQueryable<GroupMember> members, int groupId, int amtOfWeeks, RockContext rockContext )
         {
             var attendanceOccurenceService = new AttendanceService( rockContext );
@@ -1051,7 +1058,6 @@ namespace Rock.Model
         /// <param name="amtOfWeeks">The amt of weeks.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
-        [RockInternal( "1.15" )]
         internal static IQueryable<GroupMember> WhereMembersWhoFirstAttendedWithinNumberOfWeeks( IQueryable<GroupMember> members, int groupId, int amtOfWeeks, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
@@ -1088,7 +1094,6 @@ namespace Rock.Model
         /// <param name="amtOfWeeks">The amt of weeks.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
-        [RockInternal( "1.15" )]
         internal static IQueryable<GroupMember> WhereMembersWhoAttendedWithinNumberOfWeeks( IQueryable<GroupMember> members, int groupId, int amtOfWeeks, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();

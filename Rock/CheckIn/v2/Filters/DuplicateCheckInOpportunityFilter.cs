@@ -50,6 +50,7 @@ namespace Rock.CheckIn.v2.Filters
                 var today = RockDateTime.Today;
                 var attendances = Person.RecentAttendances
                     .Where( a => a.StartDateTime.Date == today
+                        && a.DidAttend
                         && !a.EndDateTime.HasValue )
                     .Select( a => a.ScheduleId );
 

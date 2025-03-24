@@ -6,7 +6,7 @@
                 :btnType="BtnType.Authentication"
                 :class="login.cssClass + ' btn-authentication-v2'"
                 :disabled="disabled"
-                @click="onExternalLoginClick(login)">{{ login.text }}</RockButton>
+                @click="onExternalLoginClick(login)"><span>{{ login.text }}</span></RockButton>
 </template>
 
 <script setup lang="ts">

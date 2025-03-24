@@ -16,6 +16,8 @@
 
 using System;
 
+using Rock.Security;
+
 namespace Rock.Model
 {
     public partial class Reminder
@@ -89,6 +91,13 @@ namespace Rock.Model
         }
 
         #endregion Properties
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => ReminderType ?? base.ParentAuthority;
+
+        #endregion
 
         #region Public Methods
 
@@ -169,7 +178,14 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return $"Reminder: {this.ReminderType.Name}";
+            if ( this.ReminderType != null )
+            {
+                return $"Reminder: {this.ReminderType.Name}";
+            }
+            else
+            {
+                return base.ToString();
+            }
         }
 
         #endregion Public Methods

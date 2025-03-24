@@ -2,7 +2,7 @@
 <template>
     <BaseAsyncPicker v-model="internalValue"
                      v-bind="standardProps"
-                     :label="label"
+                     :label="fullLabel"
                      :displayStyle="displayStyle"
                      :items="actualItems" />
 </template>
@@ -19,6 +19,16 @@
         /** The currently selected campus value(s). */
         modelValue: {
             type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
+        },
+
+        labelPrefix: {
+            type: String,
+            required: false
+        },
+
+        labelSuffix: {
+            type: String,
             required: false
         },
 
@@ -47,6 +57,10 @@
      */
     const actualItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
         return loadedItems.value || loadOptions;
+    });
+
+    const fullLabel = computed((): string => {
+        return `${props.labelPrefix ? props.labelPrefix + " " : ""}${label.value}${props.labelSuffix ? " " + props.labelSuffix : ""}`;
     });
 
     // #endregion

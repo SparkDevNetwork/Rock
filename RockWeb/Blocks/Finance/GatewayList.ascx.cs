@@ -54,6 +54,7 @@ namespace RockWeb.Blocks.Finance
 
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
+            rGridGateway.EntityTypeId = EntityTypeCache.GetId<Rock.Model.FinancialGateway>();
             rGridGateway.DataKeyNames = new string[] { "Id" };
             rGridGateway.Actions.ShowAdd = canEdit;
             rGridGateway.Actions.AddClick += rGridGateway_Add;
@@ -100,6 +101,8 @@ namespace RockWeb.Blocks.Finance
         {
             var parms = new Dictionary<string, string>();
             parms.Add( "GatewayId", e.RowKeyValue.ToString() );
+            parms.Add( "autoEdit", "true" );
+            parms.Add( "returnUrl", Request.RawUrl );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 

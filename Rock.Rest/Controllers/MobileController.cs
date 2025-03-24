@@ -19,10 +19,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.ServiceModel.Channels;
+using System.Threading.Tasks;
 using System.Web.Http;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Common.Mobile;
+using Rock.Common.Mobile.Blocks.Communication.Chat;
 using Rock.Common.Mobile.Enums;
+using Rock.Communication.Chat;
+using Rock.Logging;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -75,7 +81,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "BA9E7BA3-FCC1-4B1D-9FA1-A9946076B361" )]
-        public IHttpActionResult GetLaunchPacket( string deviceIdentifier = null, bool? notificationsEnabled = null )
+        public async Task<IHttpActionResult> GetLaunchPacket( string deviceIdentifier = null, bool? notificationsEnabled = null )
         {
             var site = MobileHelper.GetCurrentApplicationSite();
             var additionalSettings = site?.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
@@ -122,17 +128,30 @@ namespace Rock.Rest.Controllers
 
             if ( person != null )
             {
-                //var principal = ControllerContext.Request.GetUserPrincipal();
-
                 launchPacket.CurrentPerson = MobileHelper.GetMobilePerson( person, site );
                 launchPacket.CurrentPerson.AuthToken = MobileHelper.GetAuthenticationToken( principal.Identity.Name );
+
+                if( ChatHelper.IsChatEnabled )
+                {
+                    using ( var chatHelper = new ChatHelper() )
+                    {
+                        var chatAuth = await chatHelper.GetChatUserAuthenticationAsync( person.Id, false );
+
+                        if ( chatAuth != null )
+                        {
+                            launchPacket.ChatPerson = new ChatPersonBag
+                            {
+                                Token = chatAuth.Token,
+                                UserId = chatAuth.ChatUserKey
+                            };
+                        }
+                    }
+                }                
 
                 UserLoginService.UpdateLastLogin( principal.Identity.Name );
             }
 
-            //
             // Get or create the personal device.
-            //
             if ( deviceIdentifier.IsNotNullOrWhiteSpace() )
             {
                 var mobileDeviceTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_MOBILE ).Id;

@@ -41,7 +41,7 @@
     import { BusinessContactBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessContactList/businessContactBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./BusinessContactList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
+    import { reactive, ref, watch, computed } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useStore } from "@Obsidian/PageState";
 

@@ -193,6 +193,6 @@ export function provideSuspense(provider: ISuspenseProvider): void {
  * @returns The suspense provider if one was defined; otherwise undefined.
  */
 export function useSuspense(): ISuspenseProvider | undefined {
-    return inject<ISuspenseProvider>(suspenseSymbol);
+    return inject<ISuspenseProvider | undefined>(suspenseSymbol, undefined);
 }
 

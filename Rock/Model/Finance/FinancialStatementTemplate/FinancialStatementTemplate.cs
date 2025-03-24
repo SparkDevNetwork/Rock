@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialStatementTemplate" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "85442202-13BC-46C5-B1E9-43018DEA20F1")]
     public partial class FinancialStatementTemplate : Model<FinancialStatementTemplate>, IHasActiveFlag
     {

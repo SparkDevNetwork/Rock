@@ -25,21 +25,6 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Gets the merge objects that can be used in the SQL Expression
-        /// </summary>
-        /// <param name="group">The group.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "Use GetMergeObjects(group, person) instead", true )]
-        public Dictionary<string, object> GetMergeObjects( Group group )
-        {
-            Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
-            mergeObjects.Add( "Group", group );
-            mergeObjects.Add( "GroupRequirementType", this );
-            return mergeObjects;
-        }
-
-        /// <summary>
         /// Gets the merge objects that can be used in the SQL Expression. Set the person parameter if checking a specific person, otherwise pass person as null.
         /// </summary>
         /// <param name="group">The group.</param>

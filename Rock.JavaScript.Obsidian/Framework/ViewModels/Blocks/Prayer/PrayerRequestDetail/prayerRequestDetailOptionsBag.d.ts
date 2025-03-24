@@ -22,6 +22,12 @@
 //
 
 export type PrayerRequestDetailOptionsBag = {
+    /** Pass the AIDisclaimer block attribute to the front end */
+    aiDisclaimer?: string | null;
+
+    /** Pass the EnableAIDisclaimer block attribute to the front end */
+    isAIDisclaimerEnabled: boolean;
+
     /** Pass the value of the RequireCampus block attribute to the front end */
     isCampusRequired: boolean;
 

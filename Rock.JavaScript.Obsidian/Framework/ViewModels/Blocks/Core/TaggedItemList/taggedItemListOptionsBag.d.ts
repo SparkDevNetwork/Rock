@@ -23,24 +23,24 @@
 
 /** Represents options for a tagged item list. */
 export type TaggedItemListOptionsBag = {
-    /** Gets or sets the globally unique identifier of the entity type. */
+    /** Gets the Entity Type GUID. */
     entityTypeGuid?: string | null;
 
-    /** Gets or sets the name of the entity type. */
+    /** Gets the Entity Type Name. */
     entityTypeName?: string | null;
 
-    /** Gets or sets a value indicating whether the block is hidden. */
+    /** Gets if the block needs to be hidden. */
     isBlockHidden: boolean;
 
-    /** Gets or sets a value indicating whether this is a person tag. */
+    /** Gets if the Tag is a Person Tag. */
     isPersonTag: boolean;
 
-    /** Gets or sets the tag identifier. */
+    /** Gets the Tag Id. */
     tagId: number;
 
-    /** Gets or sets the name of the tag. */
+    /** Gets the tag Name. */
     tagName?: string | null;
 
-    /** Gets or sets the title. */
+    /** Gets the title. */
     title?: string | null;
 };

@@ -15,11 +15,15 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.IpAddress.Classes
 {
     /// <summary>
     /// POCO for storing the information we need to write an Interaction Session Location
     /// </summary>
+    [RockObsolete( "1.17" )]
+    [Obsolete( "Use IpGeolocation instead." )]
     public class IpLocation
     {
         /// <summary>
@@ -122,9 +126,10 @@ namespace Rock.IpAddress.Classes
     /// <summary>
     /// Enum for describing why the address is invalid
     /// </summary>
+    [RockObsolete( "1.17" )]
+    [Obsolete( "Use IpGeolocationErrorCode instead." )]
     public enum IpLocationErrorCode
     {
-
         /// <summary>
         /// No error exists
         /// </summary>

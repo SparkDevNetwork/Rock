@@ -81,7 +81,7 @@
         provider.limitToSchedulingEnabled = props.limitToSchedulingEnabled;
         provider.limitToRSVPEnabled = props.limitToRSVPEnabled;
         provider.securityGrantToken = securityGrantToken.value;
-
+        
         itemProvider.value = provider;
     }
 

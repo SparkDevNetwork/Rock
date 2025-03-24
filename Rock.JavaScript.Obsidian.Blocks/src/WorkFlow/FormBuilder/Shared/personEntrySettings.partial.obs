@@ -35,6 +35,7 @@
 
             <div :class="columnClass">
                 <CheckBox v-model="includeInactiveCampus"
+                          v-if="showCampus"
                           label="Include Inactive" />
             </div>
 

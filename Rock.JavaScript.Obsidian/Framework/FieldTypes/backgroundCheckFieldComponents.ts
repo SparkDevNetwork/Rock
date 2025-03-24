@@ -69,7 +69,7 @@ export const EditComponent = defineComponent({
 
         watch(() => fileValue.value, () => {
             emit("update:modelValue", `${entityType.value.value},${entityType.value.text},${fileValue.value?.value ?? ""},${fileValue.value?.text ?? ""}`);
-        },{ deep: true });
+        }, { deep: true });
 
         watch(() => textValue.value, () => {
             emit("update:modelValue", `${entityType.value.value},${entityType.value.text},${textValue.value ?? ""}`);
@@ -78,10 +78,10 @@ export const EditComponent = defineComponent({
         // If the entity type changes emit the now empty values so the previous default value is overidden. This way if the default value is not set
         // the now empty value is saved.
         watch(() => entityType.value, () => {
-            if(entityType.value?.value?.toLowerCase() == EntityType.ProtectMyMinistryProvider.toLowerCase()) {
+            if (entityType.value?.value?.toLowerCase() == EntityType.ProtectMyMinistryProvider.toLowerCase()) {
                 emit("update:modelValue", `${entityType.value.value},${entityType.value.text},${fileValue.value?.value ?? ""},${fileValue.value?.text ?? ""}`);
             }
-            else{
+            else {
                 emit("update:modelValue", `${entityType.value.value},${entityType.value.text},${textValue.value ?? ""}`);
             }
         });
@@ -95,7 +95,7 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-    <ComponentPicker label="Component" v-model="entityType" containerType="Rock.Security.BackgroundCheckContainer" showBlankItem />
+    <ComponentPicker v-model="entityType" v-bind="$attrs" containerType="Rock.Security.BackgroundCheckContainer" showBlankItem />
     <div v-if="entityType?.value">
         <FileUploader v-if="isFile"
             v-model="fileValue"

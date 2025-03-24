@@ -84,15 +84,34 @@ export class Surface {
      *
      * @returns A new position that is guaranteed to be inside the bounds.
      */
-    public getBoundedPosition(pos: Konva.Vector2d, size: Konva.Vector2d, disableSnap?: boolean): Konva.Vector2d {
+    public getBoundedPosition(pos: Konva.Vector2d, size: Konva.Vector2d, disableSnap: boolean, rotation: number): Konva.Vector2d {
         if (!this.stage) {
             return pos;
         }
 
+        function swapSize() {
+            const a = width;
+            width = height;
+            height = a;
+        }
+
         let newX = pos.x;
         let newY = pos.y;
-        const width = size.x;
-        const height = size.y;
+        let width = size.x;
+        let height = size.y;
+
+        if (rotation === 90) {
+            swapSize();
+            newX -= width;
+        }
+        else if (rotation === 180) {
+            newX -= width;
+            newY -= height;
+        }
+        else if (rotation === -90) {
+            swapSize();
+            newY -= height;
+        }
 
         if (width >= 0) {
             // Clamp the x position to the left edge of the label.
@@ -152,6 +171,17 @@ export class Surface {
             }
         }
 
+        if (rotation === 90 && height >= 0) {
+            newX += width;
+        }
+        else if (rotation === 180) {
+            newX += width;
+            newY += height;
+        }
+        else if (rotation === -90) {
+            newY += height;
+        }
+
         return {
             x: newX,
             y: newY
@@ -177,7 +207,7 @@ export class Surface {
             height = this.points()[3];
         }
 
-        return this.getBoundedPosition(pos, { x: width, y: height });
+        return this.getBoundedPosition(pos, { x: width, y: height }, false, node.rotation());
     }
 }
 

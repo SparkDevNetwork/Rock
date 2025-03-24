@@ -14,15 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Configuration;
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Tests.Integration.TestFramework;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Tests.Shared.TestFramework.Database.Initializer;
 
-namespace Rock.Tests.Integration.TestData
+namespace Rock.Tests.Integration.TestData.Tests
 {
     /// <summary>
     /// Actions that can be used to create LocalDb databases for Rock application testing.

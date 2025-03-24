@@ -33,7 +33,21 @@ namespace Rock.ViewModels.Blocks.WebFarm.WebFarmSettings
         /// <value>
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
-        public bool IsActive { get; set; }
+        public bool IsEnabled { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether the web farm has a valid key.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the web farm has a valid key; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasValidKey { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether the web farm is running.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the web farm instance is running; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsRunning { get; set; }
         /// <summary>
         /// Gets or sets the web farm key.
         /// </summary>
@@ -85,21 +99,5 @@ namespace Rock.ViewModels.Blocks.WebFarm.WebFarmSettings
         ///   <c>true</c> if this instance is in memory transport; otherwise, <c>false</c>.
         /// </value>
         public bool IsInMemoryTransport { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the web farm has a valid key.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if the web farm has a valid key; otherwise, <c>false</c>.
-        /// </value>
-        public bool HasValidKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the web farm is running.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if the web farm instance is running; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsRunning { get; set; }
     }
 }

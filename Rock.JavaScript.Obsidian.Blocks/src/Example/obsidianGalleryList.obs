@@ -34,9 +34,9 @@
 
             <template #skeleton>
                 <div class="d-flex flex-fill align-items-center">
-                    <div class="mr-2 flex-shrink-0 skeleton skeleton-xs"
-                         style="width: 24px; height: 24px; border-radius: 12px;" />
-                    <div class="skeleton skeleton-text skeleton-sm skeleton-rounded flex-grow-1" />
+                    <div class="mr-2 flex-shrink-0 skeleton skeleton-avatar"
+                         style="width: 24px; height: 24px;" />
+                    <div class="skeleton skeleton-text flex-grow-1" />
                 </div>
             </template>
 

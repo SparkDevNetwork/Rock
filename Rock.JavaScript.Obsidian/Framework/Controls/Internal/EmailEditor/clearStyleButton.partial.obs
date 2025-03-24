@@ -1,0 +1,23 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <i class="clear-style-button fa fa-times" role="button" aria-label="Clear" title="Clear"></i>
+</template>
+
+<style scoped>
+.clear-style-button {
+    color: var(--color-interface-medium);
+    opacity: .55;
+    cursor: pointer;
+    margin-left: var(--spacing-small);
+    vertical-align: middle;
+    transition: opacity 0.3s ease;
+}
+
+.clear-style-button:hover {
+    opacity: 1;
+}
+</style>
+
+<script setup lang="ts">
+    // empty
+</script>

@@ -104,8 +104,9 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
     }
 
     const rootElement = document.getElementById(config.rootElementId);
+    const wrapperElement = rootElement?.querySelector<HTMLElement>(".obsidian-block-wrapper");
 
-    if (!rootElement) {
+    if (!rootElement || !wrapperElement) {
         throw "Could not initialize Obsidian block because the root element was not found.";
     }
 
@@ -125,8 +126,8 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
     const name = `Root${config.blockFileUrl.replace(/\//g, ".")}`;
     const staticContent = ref<Node[]>([]);
 
-    while (rootElement.firstChild !== null) {
-        const node = rootElement.firstChild;
+    while (wrapperElement.firstChild !== null) {
+        const node = wrapperElement.firstChild;
         node.remove();
         staticContent.value.push(node);
     }
@@ -158,6 +159,19 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
                 }
 
                 isLoaded = true;
+
+                if (rootElement.classList.contains("obsidian-block-has-placeholder")) {
+                    wrapperElement.style.padding = "1px 0px";
+                    const realHeight = wrapperElement.getBoundingClientRect().height - 2;
+                    wrapperElement.style.padding = "";
+
+                    rootElement.style.height = `${realHeight}px`;
+                    setTimeout(() => {
+                        rootElement.querySelector(".obsidian-block-placeholder")?.remove();
+                        rootElement.style.height = "";
+                        rootElement.classList.remove("obsidian-block-has-placeholder");
+                    }, 200);
+                }
 
                 rootElement.classList.remove("obsidian-block-loading");
 
@@ -211,7 +225,7 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
 
     app.directive("content", contentDirective);
     app.component("v-style", developerStyle);
-    app.mount(rootElement);
+    app.mount(wrapperElement);
 
     return app;
 }
@@ -221,12 +235,6 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
 * @param url
 */
 export function showShortLink(url: string): void {
-
-    // create an iframe
-    // set width and height = 400
-    // set postiion to abs
-    // set the src attribute
-
     const rootElement = document.createElement("div");
     const modalPopup = document.createElement("div");
     const modalPopupContentPanel = document.createElement("div");
@@ -268,15 +276,133 @@ export function showShortLink(url: string): void {
     iframe.style.overflowY = "clip";
     const iframeResizer = new ResizeObserver((event) => {
         const iframeBody = event[0].target;
-        iframe.style.height = (iframeBody.scrollHeight?.toString() + "px") ?? "25vh";
+        iframe.style.height = iframeBody.scrollHeight.toString() + "px";
     });
     iframe.onload = () => {
-        if(!iframe?.contentWindow?.document?.documentElement) {
+        if (!iframe?.contentWindow?.document?.documentElement) {
             return;
         }
-        iframe.style.height = (iframe.contentWindow.document.body.scrollHeight?.toString() + "px") ?? "25vh";
+        iframe.style.height = iframe.contentWindow.document.body.scrollHeight.toString() + "px";
         iframeResizer.observe(iframe.contentWindow.document.body);
     };
+}
+
+/**
+ * This is an internal method that will be removed in the future. It serves the
+ * ObsidianDataComponentWrapper WebForms control to initialize an Obsidian
+ * component inside a WebForms component.
+ *
+ * @param url The URL of the Obsidian component to load.
+ * @param rootElementId The identifier of the DOM node to mount the component on.
+ * @param componentDataId The identifier of the DOM node that contains the component data.
+ * @param componentPropertiesId The identifier of the DOM node that contains the additional component properties.
+ */
+export async function initializeDataComponentWrapper(url: string, rootElementId: string, componentDataId: string, componentPropertiesId: string | undefined): Promise<void> {
+    const componentUrl = `${url}.js`;
+    let component: Component | null = null;
+    let errorMessage = "";
+
+    const rootElement = document.getElementById(rootElementId);
+
+    if (!rootElement) {
+        throw new Error("Could not initialize Obsidian component because the root element was not found.");
+    }
+
+    try {
+        const componentModule = await import(componentUrl);
+        component = componentModule ?
+            (componentModule.default || componentModule) :
+            null;
+    }
+    catch (e) {
+        // Log the error, but continue setting up the app so the UI will show the user an error
+        console.error(e);
+        errorMessage = `${e}`;
+    }
+
+    const name = `Root${componentUrl.replace(/\//g, ".")}`;
+
+    const app = createApp({
+        name,
+        setup() {
+            let componentData: Record<string, string> = {};
+            let componentProperties: Record<string, unknown> = {};
+
+            try {
+                const componentDataElement = document.getElementById(componentDataId) as HTMLInputElement;
+
+                componentData = JSON.parse(componentDataElement.value) ?? {};
+            }
+            catch (e) {
+                if (!errorMessage) {
+                    errorMessage = `${e}`;
+                }
+            }
+
+            if (componentPropertiesId) {
+                try {
+                    const componentPropertiesElement = document.getElementById(componentPropertiesId) as HTMLInputElement;
+
+                    componentProperties = JSON.parse(componentPropertiesElement.value) ?? {};
+                }
+                catch (e) {
+                    if (!errorMessage) {
+                        errorMessage = `${e}`;
+                    }
+                }
+            }
+
+            function onUpdateComponentData(data: Record<string, string>): void {
+                const componentDataElement = document.getElementById(componentDataId) as HTMLInputElement;
+
+                if (componentDataElement) {
+                    componentDataElement.value = JSON.stringify(data);
+                }
+            }
+
+            return {
+                component: component ? markRaw(component) : null,
+                componentData,
+                componentProperties,
+                onUpdateComponentData,
+                errorMessage
+            };
+        },
+
+        // Note: We are using a custom alert so there is not a dependency on
+        // the Controls package.
+        template: `
+<div v-if="errorMessage" class="alert alert-danger">
+    <strong>Error Initializing Component</strong>
+    <br />
+    {{errorMessage}}
+</div>
+<component v-else :is="component" :modelValue="componentData" @update:modelValue="onUpdateComponentData" v-bind="componentProperties" />`
+    });
+
+    app.mount(rootElement);
+
+    // This monitors for a WebForms postback that has removed the old DOM
+    // tree. The app will then be unmounted to free memory and remove even
+    // listeners that may have been installed.
+    const observer = new MutationObserver(mutations => {
+        let removed = false;
+
+        for (const mutation of mutations) {
+            for (const node of mutation.removedNodes) {
+                if (node == rootElement || node.contains(rootElement)) {
+                    removed = true;
+                }
+            }
+        }
+
+        if (removed) {
+            app.unmount();
+            observer.disconnect();
+        }
+    });
+
+    observer.observe(document.body, { subtree: true, childList: true });
 }
 
 /**

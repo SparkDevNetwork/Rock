@@ -1,0 +1,153 @@
+<template>
+    <TabbedModal v-model="isVisible"
+                 v-model:selectedTab="selectedTab"
+                 :tabs="['Shared', 'Personal']"
+                 title="Insert Snippet"
+                 saveText="Insert"
+                 :isSaveButtonDisabled="!selectedSnippet"
+                 @save="onSave"
+                 @closeModal="resetForm">
+        <template #prepend>
+            <NotificationBox v-if="!isNullOrWhiteSpace(errorMessage)" alertType="danger">
+                {{ errorMessage }}
+            </NotificationBox>
+        </template>
+        <template #tabpane="{ item }">
+            <template v-if="item === selectedTab">
+                <div class="row">
+                    <div v-show="hasCategories" class="col-lg-4 col-md-5 col-sm-12 p-3">
+                        <CategoryTree v-model="selectedCategory"
+                                      v-model:hasCategories="hasCategories"
+                                      :entityTypeGuid="EntityType.Snippet"
+                                      :enableDeselect="true"
+                                      height="250px" />
+                    </div>
+                    <div class="col-sm-12 overflow-visible scrollbar-thin overflow-y-auto p-3" :class="hasCategories ? 'col-lg-8 col-md-7' : ''" style="height: 250px;">
+                        <div class="btn-grid-container" v-if="filteredSnippetBags.length > 0">
+                            <RockButton v-for="snippetBag in filteredSnippetBags"
+                                        @click="selectedSnippet = snippetBag.snippet?.value ?? ''"
+                                        :class="['text-truncate', { 'selected-snippet-btn': snippetBag.snippet?.value === selectedSnippet }]">
+                                {{ snippetBag.snippet?.text }}
+                            </RockButton>
+                        </div>
+                        <div v-else class="d-flex flex-column justify-content-center h-100 text-muted text-semibold text-center">
+                            <span>No Snippets Configured</span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </template>
+    </TabbedModal>
+</template>
+
+<style scoped>
+.btn-grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+    gap: 10px;
+    justify-items: stretch;
+}
+
+.selected-snippet-btn,
+.selected-snippet-btn,
+.selected-snippet-btn {
+    border-color: var(--focus-state-border-color);
+    border: var(--focus-state-border);
+    box-shadow: var(--focus-state-shadow);
+    background-color: var(--theme-light);
+}
+
+/* Copied from CategoryTree */
+.scrollbar-thin {
+    scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-button {
+    display: none;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #858585;
+    border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #6b6b6b;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+    background-color: #f0f0f0;
+    border-radius: 4px;
+}
+</style>
+
+<script setup lang="ts">
+    import { SnippetBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsConversations/snippetBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { PropType, ref, watch, computed } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TabbedModal from "@Obsidian/Controls/tabbedModal.obs";
+    import CategoryTree from "@Obsidian/Controls/categoryTree.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        snippetBags: {
+            type: Array as PropType<SnippetBag[]>,
+            required: true
+        },
+
+        errorMessage: {
+            type: String as PropType<string>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "insertSnippet", value: string): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+    const selectedCategory = ref<ListItemBag>();
+    const selectedTab = ref<string>();
+    const selectedSnippet = ref<string>("");
+
+    const hasCategories = ref(true);
+
+    const errorMessage = computed(() => props.errorMessage);
+    const filteredSnippetBags = computed(() => {
+        return props.snippetBags.filter(s => s.snippetVisibility === selectedTab.value && (selectedCategory.value?.value ? s.categories?.find(category => category === selectedCategory.value?.value) : true));
+    });
+
+    function onSave(): void {
+        if (selectedSnippet.value) {
+            emit("insertSnippet", selectedSnippet.value);
+            resetForm();
+        }
+    }
+
+    function resetForm(): void {
+        selectedCategory.value = undefined;
+        selectedSnippet.value = "";
+    }
+
+    watch(filteredSnippetBags, () => {
+        // If the selected snipppet is no longer available in the filtered Snippet options then we need to deselect it.
+        if (!filteredSnippetBags.value.find(b => b.snippet?.value === selectedSnippet.value)) {
+            selectedSnippet.value = "";
+        }
+    });
+</script>

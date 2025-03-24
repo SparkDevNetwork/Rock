@@ -60,6 +60,11 @@ namespace Rock.Search.Person
         /// <inheritdoc/>
         public override IOrderedQueryable<object> SearchQuery( string searchTerm )
         {
+            if ( searchTerm.IsSingleSpecialCharacter() )
+            {
+                return Enumerable.Empty<object>().AsQueryable().OrderBy( _ => true );
+            }
+
             var rockContext = new RockContext();
             var phoneNumberService = new PhoneNumberService( rockContext );
             var personService = new PersonService( rockContext );
@@ -79,7 +84,7 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            return new PhoneNumberService( new RockContext() ).GetNumbersBySearchterm( searchterm );
+            return searchterm.IsSingleSpecialCharacter() ? Enumerable.Empty<string>().AsQueryable() : new PhoneNumberService( new RockContext() ).GetNumbersBySearchterm( searchterm );
         }
     }
 }

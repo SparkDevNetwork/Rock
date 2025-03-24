@@ -28,6 +28,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Security;
 using Rock.Tasks;
+using System.Collections.Generic;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -49,6 +50,20 @@ namespace RockWeb.Blocks.Crm
             public const string DetailPage = "DetailPage";
         }
         #endregion Attribute Keys
+
+        #region PageParameterKeys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string SignalTypeId = "SignalTypeId";
+            public const string ReturnUrl = "returnUrl";
+            public const string AutoEdit = "autoEdit";
+        }
+
+        #endregion PageParameterKey
 
         #region Base Control Methods
 
@@ -114,7 +129,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPersonSignalType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "SignalTypeId", e.RowKeyId );
+            var queryParams = new Dictionary<string, string>();
+            queryParams.AddOrReplace( PageParameterKey.SignalTypeId, e.RowKeyId.ToString() );
+            queryParams.AddOrReplace( PageParameterKey.AutoEdit, "true" );
+            queryParams.AddOrReplace( PageParameterKey.ReturnUrl, Request.RawUrl );
+            NavigateToLinkedPage( AttributeKey.DetailPage, queryParams );
         }
 
         /// <summary>
@@ -183,10 +202,11 @@ namespace RockWeb.Blocks.Crm
             var service = new SignalTypeService( rockContext );
             var signalTypes = service.Queryable().OrderBy( b => b.Order );
 
-            service.Reorder( signalTypes.ToList(), e.OldIndex, e.NewIndex );
+            var ids = service.Reorder( signalTypes.ToList(), e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
             BindGrid();
+            RecalculateSignals( rockContext, ids.Distinct() );
         }
 
         /// <summary>
@@ -211,6 +231,44 @@ namespace RockWeb.Blocks.Crm
             gPersonSignalType.DataSource = new SignalTypeService( new RockContext() )
                 .Queryable().OrderBy( b => b.Order ).ToList();
             gPersonSignalType.DataBind();
+        }
+
+        /// <summary>
+        /// Recalculates the signals for persons with those signal since the order has changed.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="signalTypeIds">The signal type ids.</param>
+        private static void RecalculateSignals( RockContext rockContext, IEnumerable<int> signalTypeIds )
+        {
+            var people = new PersonSignalService( rockContext ).Queryable()
+                .Where( s => signalTypeIds.Contains( s.SignalTypeId ) )
+                .Select( s => s.PersonId )
+                .AsEnumerable()
+                .Distinct()
+                .ToList();
+
+            //
+            // If less than 250 people with this signal type then just update them all now,
+            // otherwise put something in the rock queue to take care of it.
+            //
+            if ( people.Count < 250 )
+            {
+                new PersonService( rockContext ).Queryable()
+                    .Where( p => people.Contains( p.Id ) )
+                    .ToList()
+                    .ForEach( p => p.CalculateSignals() );
+
+                rockContext.SaveChanges();
+            }
+            else
+            {
+                var updatePersonSignalTypesMsg = new UpdatePersonSignalTypes.Message()
+                {
+                    PersonIds = people
+                };
+
+                updatePersonSignalTypesMsg.Send();
+            }
         }
 
         #endregion

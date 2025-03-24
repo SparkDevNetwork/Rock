@@ -137,21 +137,6 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
         }
 
         /// <summary>
-        /// Gets the count of weeks in the specified year.
-        /// https://stackoverflow.com/a/17391168
-        /// </summary>
-        /// <param name="year">The year for which to determine the count of weeks.</param>
-        /// <param name="calendarWeekRule">The calendar week rule.</param>
-        /// <param name="firstDayOfWeek">The first day of the week.</param>
-        /// <returns>The count of weeks in the specified year.</returns>
-        private static int GetWeeksInYear( int year, System.Globalization.CalendarWeekRule calendarWeekRule, System.DayOfWeek firstDayOfWeek )
-        {
-            var lastDayOfYear = new DateTime( year, 12, 31 );
-            var calendar = System.Globalization.DateTimeFormatInfo.CurrentInfo.Calendar;
-            return calendar.GetWeekOfYear( lastDayOfYear, calendarWeekRule, firstDayOfWeek );
-        }
-
-        /// <summary>
         /// Populates the AnalyticsSourceDate table (and associated Views). It will first empty the AnalyticsSourceDate table if there is already data in it.
         /// </summary>
         /// <param name="fiscalStartMonth">The fiscal start month.</param>
@@ -238,21 +223,14 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
 
                 /* Fiscal Calendar Stuff */
 
+                int fiscalYear = GetFiscalYear( fiscalStartMonth, generateDate );
+                var fiscalYearStart = GetFirstDayOfFiscalYear( generateDate, fiscalStartMonth );
+
                 // figure out the fiscalMonthNumber and QTR.  For example, if the Fiscal Start Month is April, and Today is April 1st, the Fiscal Month Number would be 1
-                int fiscalMonthNumber = new System.DateTime( generateDate.Year, generateDate.Month, 1 ).AddMonths( 1 - fiscalStartMonth ).Month;
+                int fiscalMonthNumber = new DateTime( generateDate.Year, generateDate.Month, 1 ).AddMonths( 1 - fiscalStartMonth ).Month;
                 int fiscalQuarter = ( fiscalMonthNumber + 2 ) / 3;
 
-                int fiscalYear = GetFiscalYear( fiscalStartMonth, generateDate );
-
-                DateTime fiscalStartDate = new DateTime( generateDate.Year, fiscalStartMonth, 1 );
-
-                // see http://www.filemaker.com/help/12/fmp/en/html/func_ref1.31.28.html and do it that way, except using RockDateTime.FirstDayOfWeek
-                int fiscalWeekOffset = fiscalStartDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstFourDayWeek, RockDateTime.FirstDayOfWeek ) - 1;
-                int fiscalWeek = generateDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstFourDayWeek, RockDateTime.FirstDayOfWeek ) - fiscalWeekOffset;
-                int weeksInYear = GetWeeksInYear( fiscalYear, System.Globalization.CalendarWeekRule.FirstFourDayWeek, RockDateTime.FirstDayOfWeek );
-                fiscalWeek = fiscalWeek < 1 ? fiscalWeek + weeksInYear : fiscalWeek;
-
-                analyticsSourceDate.FiscalWeek = fiscalWeek;
+                analyticsSourceDate.FiscalWeek = GetFiscalWeek( generateDate, 4, RockDateTime.FirstDayOfWeek, 4 );
                 analyticsSourceDate.FiscalWeekNumberInYear = generateDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstFourDayWeek, RockDateTime.FirstDayOfWeek );
                 analyticsSourceDate.FiscalMonth = generateDate.ToString( "MMMM" );
                 analyticsSourceDate.FiscalMonthAbbreviated = generateDate.ToString( "MMM" );
@@ -272,15 +250,15 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
                 }
                 else
                 {
-                    if ( fiscalStartDate <= generateDate )
+                    if ( fiscalYearStart <= generateDate )
                     {
                         // fiscal start is the same year as the generated date year
-                        analyticsSourceDate.DayNumberInFiscalYear = ( generateDate - fiscalStartDate ).Days + 1;
+                        analyticsSourceDate.DayNumberInFiscalYear = ( generateDate - fiscalYearStart ).Days + 1;
                     }
                     else
                     {
                         // fiscal start is the year previous to the generated date year
-                        analyticsSourceDate.DayNumberInFiscalYear = ( generateDate - fiscalStartDate.AddYears( -1 ) ).Days + 1;
+                        analyticsSourceDate.DayNumberInFiscalYear = ( generateDate - fiscalYearStart.AddYears( -1 ) ).Days + 1;
                     }
                 }
 
@@ -344,6 +322,104 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
                 // Update the Sunday of the Year data
                 rockContext.Database.ExecuteSqlCommand( SundayOfTheYearSql );
             }
+        }
+
+        /// <summary>
+        /// This method calculates the fiscal week number of a specifed date.
+        /// </summary>
+        /// <param name="date">The date to calculate the fiscal week for.</param>
+        /// <param name="fiscalYearStartMonth">The number of the month that represents the start of the fiscal calendar (e.g., April = 4).</param>
+        /// <param name="firstDayOfWeek">The first day of the week (<see cref="RockDateTime.FirstDayOfWeek"/>).</param>
+        /// <param name="minimumDaysRequiredInFirstWeek">The minimum number of days that need to be in the starting week for it to count as the first week.</param>
+        /// <returns></returns>
+        private static int GetFiscalWeek( DateTime date, int fiscalYearStartMonth, DayOfWeek firstDayOfWeek, int minimumDaysRequiredInFirstWeek = 4 )
+        {
+            var fiscalYearStart = GetFirstDayOfFiscalYear( date, fiscalYearStartMonth );
+            var fiscalYearWeekStart = GetDateOfFirstWeekOfFiscalYear( fiscalYearStart, firstDayOfWeek, minimumDaysRequiredInFirstWeek );
+
+            // If the fiscal year week start is greater than the date then the date is in the previous fiscal year
+            if ( date < fiscalYearWeekStart )
+            {
+                fiscalYearWeekStart = GetDateOfFirstWeekOfFiscalYear( fiscalYearStart.AddYears( -1 ), firstDayOfWeek, minimumDaysRequiredInFirstWeek );
+            }
+
+            // Get weeks since the start of the fiscal year
+            var weekNumber = GetWeekNumberFromDate( date, fiscalYearWeekStart, firstDayOfWeek );
+
+            return weekNumber;
+        }
+
+        /// <summary>
+        /// Gets the first date the fiscal year for a specified date.
+        /// </summary>
+        /// <param name="date">The date.</param>
+        /// <param name="fiscalYearStartMonth">The number of the month that represents the start of the fiscal calendar (e.g., April = 4).</param>
+        /// <returns></returns>
+        private static DateTime GetFirstDayOfFiscalYear( DateTime date, int fiscalYearStartMonth )
+        {
+            int fiscalStartYear = date.Month >= fiscalYearStartMonth ||
+                 ( date.Month == fiscalYearStartMonth && date.Day >= 1 )
+                 ? date.Year
+                 : date.Year - 1;
+
+            return new DateTime( fiscalStartYear, fiscalYearStartMonth, 1 );
+        }
+
+
+        /// <summary>
+        /// Gets the date of the start of the first week of the fiscal year. If the week does not have the
+        /// miniumum number of days required in the first week then we'll use the next week.
+        /// </summary>
+        /// <param name="fiscalStartDate">The date the fiscal year began.</param>
+        /// <param name="firstDayOfWeek">The first day of the week (<see cref="RockDateTime.FirstDayOfWeek"/>).</param>
+        /// <param name="minimumDaysRequiredInFirstWeek">The minimum number of days that need to be in the starting week for it to count as the first week.</param>
+        /// <returns></returns>
+        private static DateTime GetDateOfFirstWeekOfFiscalYear( DateTime fiscalStartDate, DayOfWeek firstDayOfWeek, int minimumDaysRequiredInFirstWeek = 4 )
+        {
+
+            // Get the start of the week for first day of the fiscal year
+            var fiscalWeekStart = GetFirstDayOfWeek( fiscalStartDate, firstDayOfWeek );
+
+            // Get the number of days in the first week of the fiscal year
+            var daysInFirstFiscalWeek = 7 - ( fiscalStartDate - fiscalWeekStart ).Days;
+
+            // If we don't have the minimum number of days in the week then move the first week of the fiscal year
+            // to the next week
+            if ( daysInFirstFiscalWeek < minimumDaysRequiredInFirstWeek )
+            {
+                return fiscalWeekStart.AddDays( 7 );
+            }
+
+            return fiscalStartDate;
+        }
+
+        /// <summary>
+        /// Calculates the first date of a week.
+        /// </summary>
+        /// <param name="date">The date to calculate the fiscal week for.</param>
+        /// <param name="firstDayOfWeek">The first day of the week (<see cref="RockDateTime.FirstDayOfWeek"/>).</param>
+        /// <returns></returns>
+        private static DateTime GetFirstDayOfWeek( DateTime date, DayOfWeek firstDayOfWeek )
+        {
+            int daysToSubtract = ( ( int ) date.DayOfWeek - ( int ) firstDayOfWeek + 7 ) % 7;
+            return date.AddDays( -daysToSubtract );
+        }
+
+        /// <summary>
+        /// Calculates the week number for a specific date, based on a starting date (the beginning of a fiscal year).
+        /// </summary>
+        /// <param name="date">The date.</param>
+        /// <param name="beginningDate">The start date to compare (i.e., the beginning of the fiscal year).</param>
+        /// <param name="firstDayOfWeek">The first day of the week (<see cref="RockDateTime.FirstDayOfWeek"/>).</param>
+        /// <returns></returns>
+        private static int GetWeekNumberFromDate( DateTime date, DateTime beginningDate, DayOfWeek firstDayOfWeek )
+        {
+            var weekStartDate = GetFirstDayOfWeek( date, firstDayOfWeek );
+            var beginningDateWeekStart = GetFirstDayOfWeek( beginningDate, firstDayOfWeek );
+
+            var daysBetween = weekStartDate - beginningDateWeekStart;
+
+            return ( daysBetween.Days / 7 ) + 1;
         }
     }
 }

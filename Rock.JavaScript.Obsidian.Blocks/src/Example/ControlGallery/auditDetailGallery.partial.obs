@@ -1,0 +1,37 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode">
+
+        <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <TextBox label="Entity Type Guid" v-model="entityTypeGuid" />
+                </div>
+
+                <div class="col-md-4">
+                    <TextBox label="Entity Key" v-model="entityKey" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { useStore } from "@Obsidian/PageState";
+    import { Guid } from "@Obsidian/Types";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    const store = useStore();
+
+    const entityTypeGuid = ref<Guid>(EntityType.Person);
+    const entityKey = ref(store.state.currentPerson?.idKey ?? "");
+    const importCode = getSfcControlImportPath("auditDetail");
+    const exampleCode = `<AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`;
+</script>

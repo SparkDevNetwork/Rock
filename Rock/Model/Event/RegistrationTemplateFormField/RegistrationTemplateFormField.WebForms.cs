@@ -137,7 +137,7 @@ namespace Rock.Model
                     var bpBirthday = new BirthdayPicker
                     {
                         ID = "bpBirthday",
-                        Label = "Birthday",
+                        Label = "Birth Date",
                         Required = field.IsRequired,
                         ValidationGroup = validationGroup,
                         SelectedDate = setValue && fieldValue != null ? fieldValue as DateTime? : null

@@ -19,13 +19,16 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
+using Rock.AI.Classes.Moderations;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.AI;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -115,12 +118,12 @@ namespace RockWeb.Blocks.Prayer
 
             // Is the Approved columnn supposed to show?
             var showApprovedColumn = GetAttributeValue( "ShowApprovedColumn" ).AsBoolean();
-            gPrayerRequests.GetColumnByHeaderText( "Approved?" ).Visible = showApprovedColumn;
+            gPrayerRequests.GetColumnByHeaderText( "Approved" ).Visible = showApprovedColumn;
 
             // But if showing, check if the person is not authorized to approve and hide the column anyhow
             if ( showApprovedColumn && !IsUserAuthorized( Authorization.APPROVE ) )
             {
-                gPrayerRequests.GetColumnByHeaderText( "Approved?" ).Visible = false;
+                gPrayerRequests.GetColumnByHeaderText( "Approved" ).Visible = false;
             }
 
             AddDynamicControls();
@@ -748,6 +751,38 @@ namespace RockWeb.Blocks.Prayer
         }
 
         /// <summary>
+        /// Get the tooltip text for a given ModerationFlag.
+        /// </summary>
+        /// <param name="flag">The given moderation flag</param>
+        /// <returns>The Tooltip text</returns>
+        private string GetTooltipTextForFlag( ModerationFlags flag )
+        {
+            switch ( flag )
+            {
+                case ModerationFlags.Hate:
+                    return "Flagged for hate. ";
+
+                case ModerationFlags.Threat:
+                    return "Flagged for threatening content. ";
+
+                case ModerationFlags.SelfHarm:
+                    return "Flagged for self-harm. ";
+
+                case ModerationFlags.Sexual:
+                    return "Flagged for sexual content. ";
+
+                case ModerationFlags.SexualMinor:
+                    return "Flagged for sexual content involving minors. ";
+
+                case ModerationFlags.Violent:
+                    return "Flagged for violent content. ";
+
+                default:
+                    return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Handles the GridRebind event of the gPrayerRequests control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -772,6 +807,30 @@ namespace RockWeb.Blocks.Prayer
                 if (lFullname != null && prayerRequest != null)
                 {
                     lFullname.Text = prayerRequest.FirstName + " " + prayerRequest.LastName;
+                }
+
+                var tooltipText = string.Empty;
+
+                foreach ( ModerationFlags flag in Enum.GetValues( typeof( ModerationFlags ) ) )
+                {
+                    if ( flag != ModerationFlags.None && prayerRequest.ModerationFlags.HasFlag( flag ) )
+                    {
+                        var flagText = flag.ToString().SplitCase();
+                        tooltipText += GetTooltipTextForFlag( flag );
+                    }
+                }
+
+                if ( tooltipText.IsNotNullOrWhiteSpace() )
+                {
+                    // Ensure the column is visible.
+                    rtfModerationFlags.Visible = true;
+
+                    // Find the row control and add the icon to it for the self-harm flag.
+                    var lModerationFlags = e.Row.FindControl( "lModerationFlags" ) as RockLiteral;
+                    if (lModerationFlags != null )
+                    {
+                        lModerationFlags.Text = $"<i class=\"fa fa-exclamation-triangle text-warning\" data-toggle=\"tooltip\" data-trigger=\"hover\" data-delay=\"250\" title=\"{tooltipText}\" ></i>";
+                    }
                 }
             }
         }

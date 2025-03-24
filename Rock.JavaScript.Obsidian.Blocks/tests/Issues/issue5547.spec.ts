@@ -1,8 +1,9 @@
 import RegistrationEntry from "../../src/Event/registrationEntry.obs";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { mockBlockActions, mountBlock } from "../blocks";
 import { HttpResult } from "@Obsidian/Types/Utility/http";
 import { Guid } from "@Obsidian/Types";
-import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
+import { waitFor } from "../utils";
 
 function getConfigurationValues(): RegistrationEntryInitializationBox {
     // This is weird, but we have to do this because the block actually
@@ -76,9 +77,14 @@ describe("Issue 5547", () => {
         expect(noConditionalField).toBeDefined();
         expect(noConditionalField.isVisible()).toBe(true);
 
-        await registrant.findAll(".toggle-container a")
-            .filter(node => node.text() === "Yes")[0]
-            .trigger("click");
+        const yesButton = await waitFor(() => {
+            const yesButton = registrant.findAll(".toggle-container a")
+                .filter(node => node.text() === "Yes")[0];
+            expect(yesButton).toBeDefined();
+            return yesButton;
+        });
+
+        await yesButton.trigger("click");
 
         const yesConditionalField = registrant.findAll("label")
             .filter(node => node.text().startsWith("If yes, which flavor do you like best?"))[0];
@@ -559,8 +565,9 @@ const configurationValues: RegistrationEntryInitializationBox = {
             "disabled": null
         }
     ],
+    "hideProgressBar": false,
     "showSmsOptIn": false,
     "isPaymentPlanAllowed": false,
     "isPaymentPlanConfigured": false,
-    "hideProgressBar": false
+    "disableCaptchaSupport": true
 };

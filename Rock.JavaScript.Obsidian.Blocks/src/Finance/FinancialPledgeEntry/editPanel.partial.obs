@@ -16,7 +16,7 @@
             </div>
 
             <div v-else>
-                <TextBox label="First Name" v-model="firstName" :rules="['nospecialcharacters', 'noemojisorspecialfonts']" />
+                <FirstNameTextBox label="First Name" v-model="firstName" :rules="['nospecialcharacters', 'noemojisorspecialfonts']" />
                 <TextBox label="Last Name" v-model="lastName" :rules="['nospecialcharacters', 'noemojisorspecialfonts']" />
                 <EmailBox label="Email" v-model="email" rules="required" />
                 <PhoneNumberDetails v-for="(value, key) in phoneNumbers" :key="key" v-model="phoneNumbers[key]" />
@@ -57,6 +57,7 @@
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
     import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";

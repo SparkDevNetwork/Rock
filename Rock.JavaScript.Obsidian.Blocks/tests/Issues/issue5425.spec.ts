@@ -1,9 +1,9 @@
 import { HttpResult } from "@Obsidian/Types/Utility/http";
 import RegistrationEntry from "../../src/Event/registrationEntry.obs";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { mockBlockActions, mountBlock } from "../blocks";
 import { waitFor } from "../utils";
 import { Guid } from "@Obsidian/Types";
-import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 
 function getConfigurationValues(): RegistrationEntryInitializationBox {
     // This is weird, but we have to do this because the block actually
@@ -105,7 +105,7 @@ const configurationValues: RegistrationEntryInitializationBox = {
         "discountAmount": 0.0,
         "discountPercentage": 0.0,
         "discountMaxRegistrants": 0.0,
-        "previouslyPaid": 0.0,
+        "previouslyPaid": 0.0
     },
     "isUnauthorized": false,
     "instructionsHtml": "",
@@ -384,5 +384,6 @@ const configurationValues: RegistrationEntryInitializationBox = {
     "hideProgressBar": false,
     "showSmsOptIn": false,
     "isPaymentPlanAllowed": false,
-    "isPaymentPlanConfigured": false
+    "isPaymentPlanConfigured": false,
+    "disableCaptchaSupport": true
 };

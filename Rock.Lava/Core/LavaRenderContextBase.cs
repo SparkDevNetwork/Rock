@@ -102,7 +102,7 @@ namespace Rock.Lava
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="scope"></param>
-        public abstract void SetMergeField( string key, object value, LavaContextRelativeScopeSpecifier scope = LavaContextRelativeScopeSpecifier.Current );
+        public abstract void SetMergeField( string key, object value, LavaContextRelativeScopeSpecifier scope = LavaContextRelativeScopeSpecifier.Default );
 
         /// <summary>
         /// Sets the user-defined variables in the current context that are internally available to custom filters and tags.

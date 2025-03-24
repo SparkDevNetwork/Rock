@@ -29,7 +29,8 @@ namespace Rock.Field.Types
     /// <summary>
     /// Lava Field Type.  Stored as text
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LAVA )]
     public class LavaFieldType : CodeEditorFieldType, IEntityContextFieldType
     {

@@ -1,10 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="!isValidAttendanceOccurrence" :alertType="AlertType.Warning">
-        Unable to schedule this occurrence.
-    </NotificationBox>
-
-    <div v-else class="location js-schedule-location">
+    <div class="location js-schedule-location">
         <div class="d-flex">
             <span class="d-block text-sm">
                 {{ title }}
@@ -89,7 +85,7 @@
     // #region Values
 
     const isSelectingIndividuals = ref(false);
-    const isLoadingResources = ref(true);
+    const isLoadingResources = ref(false);
     const getResourcesWarningMessage = ref("");
     const updateResourceWarningMessage = ref("");
 
@@ -109,10 +105,6 @@
 
     const attendanceOccurrenceId = computed((): number => {
         return props.occurrence?.attendanceOccurrenceId ?? 0;
-    });
-
-    const isValidAttendanceOccurrence = computed((): boolean => {
-        return attendanceOccurrenceId.value > 0;
     });
 
     const confirmedCount = computed((): number => {
@@ -172,6 +164,10 @@
     // #region Functions
 
     async function getCurrentResources(): Promise<void> {
+        if (!attendanceOccurrenceId.value) {
+            return;
+        }
+
         isLoadingResources.value = true;
         getResourcesWarningMessage.value = "";
         updateResourceWarningMessage.value = "";
@@ -199,7 +195,7 @@
     function onResourceUpdated(action: ResourceAction): void {
         getCurrentResources();
 
-        if (action === ResourceAction.Remove) {
+        if (action === ResourceAction.Remove && attendanceOccurrenceId.value) {
             emit("resourceListUpdated", attendanceOccurrenceId.value);
         }
     }
@@ -222,7 +218,10 @@
     watch(isSelectingIndividuals, () => {
         if (!isSelectingIndividuals.value) {
             getCurrentResources();
-            emit("resourceListUpdated", attendanceOccurrenceId.value);
+
+            if (attendanceOccurrenceId.value) {
+                emit("resourceListUpdated", attendanceOccurrenceId.value);
+            }
         }
     });
 

@@ -1,0 +1,196 @@
+<template>
+    <GalleryAndResult :value="{ modelValue: value, items: items }" :importCode="importCode" :exampleCode="exampleCode" enableReflection hasMultipleValues>
+
+        <CustomSelect v-model="value" :items="items" itemKey="id" label="Custom Select" wrapperClass="my-select" itemClass="my-item">
+            <template #default="{ item }">
+                <div class="d-flex align-items-center">
+                    <i :class="`fa ${item.icon} fa-lg mr-3 ${value === item ? 'text-primary' : 'text-muted'}`"></i>
+                    <div>
+                        <h3 class="my-0">{{ item.title }}</h3>
+                        <p class="text-muted">{{ item.description }}</p>
+                    </div>
+                </div>
+            </template>
+
+            <template #placeholder>
+                <p class="text-muted">Tap here to select an item</p>
+            </template>
+        </CustomSelect>
+
+        <template #props>
+            <h5>CustomSelect Props</h5>
+            <table class="table table-striped mb-4">
+                <thead>
+                    <tr>
+                        <th>Prop</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>modelValue</code></td>
+                        <td><code>TItem | null</code></td>
+                        <td>null</td>
+                        <td>The <code>v-model</code> for providing/receiving the selected item. The type is determined by the elements of the <code>items</code> prop.</td>
+                    </tr>
+                    <tr>
+                        <td><code>items</code></td>
+                        <td><code>TItem[]</code></td>
+                        <td><em>Required</em></td>
+                        <td>The list of items to choose from. No specific type is required, but must be an object with some sort of unique identifier property.</td>
+                    </tr>
+                    <tr>
+                        <td><code>itemKey</code></td>
+                        <td>String</td>
+                        <td>"id"</td>
+                        <td>The name of the property on the items that will be used as the unique identifier.</td>
+                    </tr>
+                    <tr>
+                        <td><code>wrapperClass</code></td>
+                        <td>String</td>
+                        <td>""</td>
+                        <td>CSS class(es) that will be applied to the element wrapping the list of items. Useful for custom styling.</td>
+                    </tr>
+                    <tr>
+                        <td><code>itemClass</code></td>
+                        <td><code>String | (item: TItem | null) => boolean</code></td>
+                        <td>""</td>
+                        <td>a string or a function that returns the CSS class(es) that will be applied to the element wrapping the individual items. Useful for custom styling.</td>
+                    </tr>
+                    <tr>
+                        <td><code>selectedClass</code></td>
+                        <td>String</td>
+                        <td>"selected"</td>
+                        <td>CSS class(es) that will be applied to the element wrapping the individual item that is selected. Useful for custom styling.</td>
+                    </tr>
+                    <tr>
+                        <td><code>mobileThreshold</code></td>
+                        <td>Number</td>
+                        <td>480</td>
+                        <td>The viewport width at which to switch to a mobile-friendly display.</td>
+                    </tr>
+                    <tr>
+                        <td><code>disabledKey</code></td>
+                        <td><code>String | (item: TItem | null) => boolean</code></td>
+                        <td>"isDisabled"</td>
+                        <td>The name of a property or a function accepting the item that returns a boolean signifying this item should not be selectable.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <RockFormFieldPropsTable />
+
+            <h4 class="mt-0 mb-3">Slots</h4>
+
+            <table class="table table-striped mb-4">
+                <thead>
+                    <tr>
+                        <th>Slot Name</th>
+                        <th>Scoped Variables</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>default</td>
+                        <td><code>{ item }</code></td>
+                        <td>This slot is used to render an individual item from the <code>items</code> list. The scoped variable is an item from the <code>items</code> prop.</td>
+                    </tr>
+                    <tr>
+                        <td>placeholder</td>
+                        <td><em>none</em></td>
+                        <td>This slot is used to render a placeholder item in the mobile view when no items are selected.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+
+        </template>
+
+        <template #usageNotes>
+            <h5>Note on Styles</h5>
+
+            <p>
+                This control has relatively limited styling. You may wish to provide your own styles to customize
+                the look and feel of the control. Use the <code>wrapperClass</code> and <code>itemClass</code> props to
+                add classes you can use to style the control. The sample control above uses "my-item" as the
+                <code>itemClass</code> prop along with the following CSS:
+            </p>
+
+            <CodeSample language="css" :code="sampleCSS" />
+        </template>
+    </GalleryAndResult>
+</template>
+
+<style>
+.my-item {
+    border-bottom: 1px solid var(--color-interface-soft);
+    transition: background-color 0.15s ease-in-out;
+}
+
+.my-item .fa {
+    transition: color 0.15s ease-in-out;
+}
+
+.my-item.selected {
+    background: var(--color-interface-softer);
+}
+
+.my-item:last-child {
+    border-bottom: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import RockFormFieldPropsTable from "./rockFormFieldPropsTable.partial.obs";
+    import CustomSelect from "@Obsidian/Controls/customSelect.obs";
+    import CodeSample from "./common/codeSample.partial.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const items = ref([
+        { id: "matthew", title: "Matthew", description: "The gospel according to Matthew", isDisabled: false, icon: "fa-book" },
+        { id: "mark", title: "Mark", description: "The gospel according to Mark", isDisabled: false, icon: "fa-cross" },
+        { id: "luke", title: "Luke", description: "The gospel according to Luke", isDisabled: false, icon: "fa-church" },
+        { id: "john", title: "John", description: "The gospel according to John", isDisabled: true, icon: "fa-praying-hands" }
+    ]);
+
+    const value = ref(null);
+
+    const importCode = getSfcControlImportPath("customSelect");
+    const exampleCode = computed(() => `<CustomSelect v-model="value" :items="items" itemKey="id">
+<template #default="{ item }">
+    <div class="d-flex align-items-center">
+        <i :class="\`fa \${item.icon} fa-lg mr-3 \${value === item ? 'text-primary' : 'text-muted'}\`"></i>
+        <div>
+            <h3 class="my-0">{{ item.title }}</h3>
+            <p class="text-muted">{{ item.description }}</p>
+        </div>
+    </div>
+</template>
+
+<template #placeholder>
+    <p class="text-muted">Tap here to select an item</p>
+</template>
+</CustomSelect>`);
+
+    const sampleCSS = `.my-item {
+    border-bottom: 1px solid var(--color-interface-soft);
+    transition: background-color 0.15s ease-in-out;
+}
+
+.my-item .fa {
+    transition: color 0.15s ease-in-out;
+}
+
+.my-item.selected {
+    background: var(--color-interface-softer);
+}
+
+.my-item:last-child {
+    border-bottom: 0;
+}`;
+</script>

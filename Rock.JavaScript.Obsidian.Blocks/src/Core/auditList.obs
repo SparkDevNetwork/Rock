@@ -14,7 +14,7 @@
                     field="auditType"
                     :filter="pickExistingValueFilter"
                     visiblePriority="xs"
-                    width="5%" />
+                    width="2%" />
 
         <TextColumn name="entityType"
                     title="Entity Type"
@@ -35,14 +35,15 @@
                     field="title"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="5%" />
+                    itemClass="wrap-text"
+                    width="15%" />
 
         <NumberColumn name="properties"
                       title="Properties Updated"
                       field="properties"
                       :filter="numberValueFilter"
                       visiblePriority="xs"
-                      width="2%" />
+                      width="5%" />
 
         <DateTimeColumn name="dateTime"
                         title="When"
@@ -61,11 +62,16 @@
 
     <AuditDetailsModal :modelValue="auditDetails" />
 </template>
+<style>
+.wrap-text {
+    line-break: anywhere;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { textValueFilter, numberValueFilter, PersonColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { textValueFilter, numberValueFilter, PersonColumn, NumberColumn, TextColumn, DateTimeColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { AuditDetail } from "./AuditList/types.partial";

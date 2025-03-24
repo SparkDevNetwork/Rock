@@ -23,6 +23,8 @@ namespace Rock.Logging
     /// <summary>
     /// Interface that is used be the RockLogger to store configuration data.
     /// </summary>
+    [Obsolete( "This is not used and will be removed in the future." )]
+    [RockObsolete( "1.17" )]
     public interface IRockLogConfiguration
     {
         /// <summary>
@@ -31,6 +33,8 @@ namespace Rock.Logging
         /// <value>
         /// The log level.
         /// </value>
+        [Obsolete( "This is not used and will be removed in the future." )]
+        [RockObsolete( "1.17" )]
         RockLogLevel LogLevel { get; set; }
         /// <summary>
         /// Gets or sets the maximum size of the file.
@@ -52,6 +56,8 @@ namespace Rock.Logging
         /// <value>
         /// The domains to log.
         /// </value>
+        [Obsolete( "This is not used and will be removed in the future." )]
+        [RockObsolete( "1.17" )]
         List<string> DomainsToLog { get; set; }
         /// <summary>
         /// Gets or sets the log path.

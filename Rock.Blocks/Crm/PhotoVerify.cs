@@ -15,7 +15,7 @@ namespace Rock.Blocks.Crm
     [DisplayName( "Verify Photo" )]
     [Category( "CRM" )]
     [Description( "Allows uploaded photos to be verified." )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [IntegerField(
         "Photo Size",

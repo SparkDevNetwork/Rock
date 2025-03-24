@@ -124,7 +124,6 @@
             lastName: "",
             phoneNumbers: [...config.phoneNumbers ?? []]
         },
-        fullName: null,
         selectedPersonId: null,
         state: config.state
     });
@@ -225,7 +224,14 @@
                 lastName: registrationInfo.value.personInfo?.lastName
             };
 
-            const result = await invokeBlockAction<void>("ForgotUsername", { bag });
+            const actionContext: BlockActionContextBag = {};
+
+            if (captchaElement.value) {
+                actionContext.captcha = await captchaElement.value.getToken();
+                captchaElement.value.refreshToken();
+            }
+
+            const result = await invokeBlockAction<void>("ForgotUsername", { bag }, actionContext);
 
             if (!result?.isSuccess) {
                 showError(result?.errorMessage || "An unexpected error occurred.");

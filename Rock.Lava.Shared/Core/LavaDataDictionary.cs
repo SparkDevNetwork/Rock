@@ -59,6 +59,21 @@ namespace Rock.Lava
             return new LavaDataDictionary( dictionary );
         }
 
+        /// <summary>
+        /// Create a new instance containing the specified key/value pair.
+        /// </summary>
+        /// <param name="key">The key of the new entry that will be added to the dictionary.</param>
+        /// <param name="value">The value of the new entry that will be added to the dictionary.</param>
+        /// <returns></returns>
+        public static LavaDataDictionary FromKeyValue( string key, object value )
+        {
+            var dictionary = new LavaDataDictionary
+            {
+                { key, value }
+            };
+            return dictionary;
+        }
+
         #endregion
 
         #region Constructors

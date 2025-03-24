@@ -1,0 +1,72 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <EntityTypePicker label="Entity Type"
+                          v-model="value"
+                          :multiple="multiple"
+                          :columnCount="columnCount"
+                          :includeGlobalOption="includeGlobalOption"
+                          :enhanceForLongLists="enhanceForLongLists"
+                          :displayStyle="displayStyle"
+                          :showBlankItem="showBlankItem"
+                          :entityTypeGuids="['5c144b51-3d2e-4bc2-b6c7-7e4cb890e15f', '72657ed8-d16e-492e-ac12-144c5e7567e7']" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+
+                <div class="col-md-3">
+                    <CheckBox label="Include Global Option" v-model="includeGlobalOption" />
+                </div>
+
+                <div class="col-md-3">
+                    <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+                </div>
+
+                <div class="col-md-3">
+                    <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+                </div>
+
+                <div class="col-md-3">
+                    <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+                </div>
+            </div>
+
+            <p class="mt-3 text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import { getSfcControlImportPath, displayStyleItems } from "./common/utils.partial";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    const columnCount = ref(0);
+    const displayStyle = ref(PickerDisplayStyle.Auto);
+    const enhanceForLongLists = ref(false);
+    const includeGlobalOption = ref(false);
+    const multiple = ref(false);
+    const showBlankItem = ref(false);
+    const value = ref({ value: EntityType.Person, text: "Person" });
+    const importCode = getSfcControlImportPath("entityTypePicker");
+    const exampleCode = `<EntityTypePicker label="Entity Type" v-model="value" :multiple="false" :includeGlobalOption="false" />`;
+</script>

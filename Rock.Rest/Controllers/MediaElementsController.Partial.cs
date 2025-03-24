@@ -314,6 +314,14 @@ namespace Rock.Rest.Controllers
                 interactionService.Add( interaction );
             }
 
+            // This is a temporary debugging statement to help determine why
+            // some Watch actions from, seemingly, anonymous visitors are
+            // ending up with a null PersonAliasId on the interaction. -dsh 2024/09/18.
+            if ( !personAliasId.HasValue )
+            {
+                ExceptionLogService.LogApiException( new Exception( $"[Debug] PersonAliasId not found in PostWatchInteraction ({interaction.Guid})" ), Request );
+            }
+
             rockContext.SaveChanges();
 
             mediaInteraction.InteractionGuid = interaction.Guid;

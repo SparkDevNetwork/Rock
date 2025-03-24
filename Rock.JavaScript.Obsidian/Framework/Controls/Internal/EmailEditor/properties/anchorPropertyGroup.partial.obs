@@ -1,0 +1,130 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div class="col-sm-12">
+            <DropDownList v-model="linkType"
+                          :items="linkTypeItems"
+                          label="Link Type"
+                          :showBlankItem="false"
+                          @update:modelValue="onLinkTypeUpdated" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <TextBox v-model="href"
+                     label="Link"
+                     @blur="onHrefBlurred">
+                <template #inputGroupPrepend>
+                    <span class="input-group-addon">
+                        <i class="fa fa-link"></i>
+                    </span>
+                </template>
+            </TextBox>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { get } from "../utils.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    type LinkType = "url" | "email" | "tel";
+
+    const linkTypeItems: ListItemBag[] = [
+        {
+            value: get<LinkType>("url"),
+            text: "URL"
+        },
+        {
+            value: get<LinkType>("tel"),
+            text: "Tel"
+        },
+        {
+            value: get<LinkType>("email"),
+            text: "Email"
+        },
+    ];
+
+    // #region Values
+
+    const href = ref<string>(getHrefFromElement(props.element));
+    const linkType = ref<LinkType>(getLinkTypeFromHref(href.value));
+
+    // #endregion Values
+
+    // #region Functions
+
+    function getHrefFromElement(element: HTMLElement): string {
+        return element.getAttribute("href") ?? "";
+    }
+
+    function getLinkTypeFromHref(href: string): LinkType {
+        if (href.startsWith("mailto:")) {
+            return "email";
+        }
+        else if (href.startsWith("tel:")) {
+            return "tel";
+        }
+        else {
+            return "url";
+        }
+    }
+
+    function getHrefProtocolPrefixFromLinkType(linkType: LinkType): string {
+        switch (linkType) {
+            case "email":
+                return "mailto:";
+            case "tel":
+                return "tel:";
+            case "url":
+            default:
+                return "https://";
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onLinkTypeUpdated(): void {
+        // When the link type changes, set the href to the protocol prefix.
+        href.value = getHrefProtocolPrefixFromLinkType(linkType.value);
+    }
+
+    function onHrefBlurred(): void {
+        const expectedProtocolPrefix = getHrefProtocolPrefixFromLinkType(linkType.value);
+
+        if (!href.value) {
+            href.value = expectedProtocolPrefix;
+        }
+        else if (!href.value.startsWith(expectedProtocolPrefix)) {
+            // Prepend the protocol if it is missing.
+            href.value = `${expectedProtocolPrefix}${href.value}`;
+        }
+
+        // Update the element href attribute.
+        props.element.setAttribute("href", href.value);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.element, () => {
+        linkType.value = getLinkTypeFromHref(props.element.getAttribute("href") ?? "");
+        href.value = props.element.getAttribute("href") || getHrefProtocolPrefixFromLinkType(linkType.value);
+    });
+
+    // #endregion
+</script>

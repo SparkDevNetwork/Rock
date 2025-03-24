@@ -94,19 +94,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns the active <see cref="Rock.Model.HtmlContent"/> for a specific <see cref="Rock.Model.Block"/> and/or EntityContext.
-        /// </summary>
-        /// <param name="blockId">A <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Block"/>.</param>
-        /// <param name="entityValue">A <see cref="System.String" /> representing the entityValue.</param>
-        /// <returns>The active <see cref="Rock.Model.HtmlContent"/> for the specified <see cref="Rock.Model.Block"/> and/or EntityContext.</returns>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use GetActiveContentHtml if you only need the HTML or GetActiveContentQueryable.FirstOrDefault() if you want the whole record" )]
-        public HtmlContent GetActiveContent( int blockId, string entityValue )
-        {
-            return GetActiveContentQueryable( blockId, entityValue ).FirstOrDefault();
-        }
-
-        /// <summary>
         /// Gets the active html content record (approved and within the start/expire daterange) ordered by the most recent approval date
         /// </summary>
         /// <param name="blockId">The block identifier.</param>

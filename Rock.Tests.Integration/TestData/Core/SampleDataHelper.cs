@@ -16,10 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
-using Rock.Tests.Integration.Crm.Prayer;
-using Rock.Tests.Integration.Crm.Steps;
 
-namespace Rock.Tests.Integration
+using Rock.Tests.Integration.TestData.Engagement;
+
+namespace Rock.Tests.Integration.TestData.Core
 {
     /// <summary>
     /// Manages feature-based sets of sample data in a Rock database for the purpose of integration testing.

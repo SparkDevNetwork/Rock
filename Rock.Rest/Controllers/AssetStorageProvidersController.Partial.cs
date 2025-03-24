@@ -38,6 +38,16 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "4D7B4AE1-82F3-46B9-99E3-BAE03B2EDFAA" )]
         public IQueryable<TreeViewItem> GetChildren( string assetFolderId )
         {
+            return GetAssetFolderChildren( assetFolderId );
+        }
+
+        /// <summary>
+        /// Gets the children.
+        /// </summary>
+        /// <param name="assetFolderId">The asset folder identifier.</param>
+        /// <returns></returns>
+        internal static IQueryable<TreeViewItem> GetAssetFolderChildren( string assetFolderId )
+        {
             var treeViewItemList = new List<TreeViewItem>();
             if ( assetFolderId == "0" )
             {

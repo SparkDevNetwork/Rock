@@ -460,10 +460,10 @@ namespace RockWeb.Blocks.Finance
                         e.Row.AddCssClass( "js-has-transactions" );
                     }
 
-                    // Hide delete button if the batch is closed.
+                    // Hide delete button if the batch is closed or if the batch is automated
                     var deleteField = gBatchList.Columns.OfType<DeleteField>().First();
                     var cell = ( e.Row.Cells[gBatchList.GetColumnIndex( deleteField )] as DataControlFieldCell ).Controls[0];
-                    if ( batchRow.Status == BatchStatus.Closed && cell != null )
+                    if ( ( batchRow.Status == BatchStatus.Closed || batchRow.IsAutomated ) && cell != null )
                     {
                         cell.Visible = false;
                     }
@@ -769,6 +769,7 @@ namespace RockWeb.Blocks.Finance
                     Status = b.Status,
                     UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue ),
                     BatchNote = b.Note,
+                    IsAutomated = b.IsAutomated,
                     AccountSummaryList = b.Transactions
                         .SelectMany( t => t.TransactionDetails )
                         .GroupBy( d => d.AccountId )
@@ -1122,6 +1123,8 @@ namespace RockWeb.Blocks.Finance
                     return notes.ToString();
                 }
             }
+
+            public bool IsAutomated;
         }
 
         #endregion

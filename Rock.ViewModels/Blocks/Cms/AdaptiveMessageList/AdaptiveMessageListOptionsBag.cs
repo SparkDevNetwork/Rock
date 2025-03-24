@@ -22,5 +22,14 @@ namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageList
     /// </summary>
     public class AdaptiveMessageListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether the grid should be visible.
+        /// The grid will not be displayed if the 'FilterCategoryFromQueryString' block setting is set to true
+        /// and no CategoryId is provided in the URL.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is grid visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsGridVisible { get; set; }
     }
 }

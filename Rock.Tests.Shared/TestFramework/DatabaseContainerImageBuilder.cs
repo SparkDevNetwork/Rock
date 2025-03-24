@@ -11,6 +11,8 @@ using Docker.DotNet.Models;
 
 using DotNet.Testcontainers.Containers;
 
+using Rock.Jobs;
+using Rock.Migrations.RockStartup;
 using Rock.Model;
 using Rock.Tests.Shared.Lava;
 using Rock.Utility;
@@ -43,8 +45,11 @@ namespace Rock.Tests.Shared.TestFramework
                     All = true
                 } );
 
+                var currentMigrationNumber = long.Parse( GetTargetMigration().Truncate( 15, false ) );
+
                 var latestImage = images.SelectMany( img => img.RepoTags )
                     .Where( t => t.StartsWith( $"{RepositoryName}:" ) )
+                    .Where( t => long.TryParse( t.Substring( 26 ), out var migrationNumber ) && migrationNumber <= currentMigrationNumber )
                     .OrderByDescending( t => t )
                     .FirstOrDefault();
 
@@ -67,8 +72,9 @@ namespace Rock.Tests.Shared.TestFramework
                 {
                     await BuildContainerAsync( container, upgrade );
                 }
-                catch
+                catch ( Exception ex )
                 {
+                    System.Diagnostics.Debug.WriteLine( ex.Message );
                     await container.DisposeAsync();
                     throw;
                 }
@@ -103,11 +109,13 @@ namespace Rock.Tests.Shared.TestFramework
 
             using ( var connection = new SqlConnection( connectionString ) )
             {
+                var dbName = "Rock";
+
                 await connection.OpenAsync();
 
                 if ( !upgrade )
                 {
-                    await CreateDatabaseAsync( connection, "Rock" );
+                    await CreateDatabaseAsync( connection, dbName );
                 }
 
                 var csb = new SqlConnectionStringBuilder( connectionString )
@@ -120,11 +128,17 @@ namespace Rock.Tests.Shared.TestFramework
 
                 MigrateDatabase( csb.ConnectionString );
 
+                RockDateTimeHelper.SynchronizeTimeZoneConfiguration( RockDateTime.OrgTimeZoneInfo.Id );
+
+                RunDataMigrationJobs();
+
                 // Install the sample data if it is configured.
                 if ( !upgrade && sampleDataUrl.IsNotNullOrWhiteSpace() )
                 {
                     AddSampleData( sampleDataUrl );
                 }
+
+                await CleanupDatabaseAsync( connection, dbName );
 
                 TestHelper.ConfigureRockApp( null );
             }
@@ -151,6 +165,38 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         }
 
         /// <summary>
+        /// Cleans up the database to make it smaller.
+        /// </summary>
+        /// <param name="connection">The connection to execute the command on.</param>
+        /// <param name="dbName">The name of the database to create.</param>
+        /// <returns>A task that indicates when the operation has completed.</returns>
+        private static async Task CleanupDatabaseAsync( SqlConnection connection, string dbName )
+        {
+            connection.ChangeDatabase( dbName );
+
+            // Delete the IdentityVerificationCodes. They take up about 150MB,
+            // which is roughly 30% of the database.
+            using ( var cmd = connection.CreateCommand() )
+            {
+                cmd.CommandTimeout = 180;
+                cmd.CommandText = "DELETE FROM [IdentityVerificationCode]";
+
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            // Shrink the database and log file to save space. When files
+            // are opened on the running image, it does a Copy-on-Write operation
+            // so we want these as small as possible.
+            using ( var cmd = connection.CreateCommand() )
+            {
+                cmd.CommandTimeout = 180;
+                cmd.CommandText = $"DBCC SHRINKDATABASE({dbName})";
+
+                await cmd.ExecuteNonQueryAsync();
+            }
+        }
+
+        /// <summary>
         /// Migrates the database.
         /// </summary>
         private static void MigrateDatabase( string connectionString )
@@ -170,7 +216,9 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
 
             try
             {
-                migrator.Update( targetMigrationName );
+                var decorator = new System.Data.Entity.Migrations.Infrastructure.MigratorLoggingDecorator( migrator, new BuilderMigrationLogger() );
+
+                decorator.Update( targetMigrationName );
 
                 LogHelper.Log( $"Migrate Database: complete." );
             }
@@ -213,6 +261,22 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         }
 
         /// <summary>
+        /// Runs the data migration run-once jobs.
+        /// </summary>
+        private static void RunDataMigrationJobs()
+        {
+            LogHelper.Log( $"Data Migration Jobs: running..." );
+
+            PostInstallDataMigrations.IsRunningFromUnitTest = true;
+            RockCleanup.IsRunningFromUnitTest = true;
+
+            var jobIds = DataMigrationsStartup.GetRunOnceJobIds();
+            DataMigrationsStartup.ExecuteRunOnceJobs( jobIds );
+
+            LogHelper.Log( $"Data Migration Jobs: complete" );
+        }
+
+        /// <summary>
         /// Adds the sample data to the currently configured database container.
         /// </summary>
         /// <param name="sampleDataUrl">The URL to get the sample data from.</param>
@@ -222,9 +286,8 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
 
             // Initialize the Lava Engine first, because it is needed by
             // the sample data loader.
-            LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: false, testDotLiquidEngine: false, testFluidEngine: true, loadShortcodes: false );
+            LavaIntegrationTestHelper.Initialize( testFluidEngine: true, loadShortcodes: false );
             LavaIntegrationTestHelper.GetEngineInstance( typeof( Rock.Lava.Fluid.FluidEngine ) );
-            Rock.Lava.LavaService.RockLiquidIsEnabled = false;
 
             // Make sure all Entity Types are registered.
             // This is necessary because some components are only registered at runtime,
@@ -237,23 +300,11 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 FabricateAttendance = true,
                 EnableGiving = true,
                 Password = "password",
-                RandomizerSeed = 42283823
+                RandomizerSeed = 42283823,
+                AttendanceCodeIssuedDateTime = RockDateTime.Now.AddDays( -1 )
             };
 
             factory.CreateFromXmlDocumentFile( sampleDataUrl, args );
-
-            // Run Rock Jobs to ensure calculated fields are updated.
-
-            new Rock.Jobs.PostInstallDataMigrations().InsertAnalyitcsSourceDateData( 300 );
-            ExecuteRockJob<Rock.Jobs.RockCleanup>();
-            ExecuteRockJob<Rock.Jobs.CalculateFamilyAnalytics>();
-            ExecuteRockJob<Rock.Jobs.ProcessBIAnalytics>( new Dictionary<string, string>
-            {
-                [Rock.Jobs.ProcessBIAnalytics.AttributeKey.ProcessPersonBIAnalytics] = "true",
-                [Rock.Jobs.ProcessBIAnalytics.AttributeKey.ProcessFamilyBIAnalytics] = "true",
-                [Rock.Jobs.ProcessBIAnalytics.AttributeKey.ProcessAttendanceBIAnalytics] = "true"
-            } );
-            ExecuteRockJob<Rock.Jobs.PostV141UpdateValueAsColumns>();
 
             // Set the sample data identifiers.
             SystemSettings.SetValue( SystemKey.SystemSetting.SAMPLEDATA_DATE, RockDateTime.Now.ToString() );
@@ -266,10 +317,12 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         /// </summary>
         /// <typeparam name="TJob">The job class to be executed.</typeparam>
         /// <param name="settings">The settings to pass to the job.</param>
-        private static void ExecuteRockJob<TJob>( Dictionary<string, string> settings = null )
+        private static void ExecuteRockJob<TJob>( Dictionary<string, string> settings = null, Action<TJob> configure = null )
             where TJob : Rock.Jobs.RockJob, new()
         {
             var job = new TJob();
+
+            configure?.Invoke( job );
 
             TestHelper.Log( $"Job Started: {typeof( TJob ).Name}..." );
             job.ExecuteInternal( settings ?? new Dictionary<string, string>() );
@@ -284,6 +337,32 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         public static string GetRepositoryAndTag()
         {
             return $"{RepositoryName}:{GetTargetMigration().Truncate( 15, false )}";
+        }
+
+        /// <summary>
+        /// Helper class to log migrations to the debug output. This can help
+        /// with debugging migrations that are failing during image build.
+        /// </summary>
+        private class BuilderMigrationLogger : System.Data.Entity.Migrations.Infrastructure.MigrationsLogger
+        {
+            /// <inheritdoc/>
+            public override void Info( string message )
+            {
+                if ( message.StartsWith( "Applying explicit migration:" ) )
+                {
+                    LogHelper.Log( message );
+                }
+            }
+
+            /// <inheritdoc/>
+            public override void Warning( string message )
+            {
+            }
+
+            /// <inheritdoc/>
+            public override void Verbose( string message )
+            {
+            }
         }
     }
 }

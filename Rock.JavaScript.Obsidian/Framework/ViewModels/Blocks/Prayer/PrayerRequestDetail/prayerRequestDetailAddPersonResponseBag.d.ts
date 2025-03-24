@@ -22,4 +22,12 @@
 //
 
 export type PrayerRequestDetailAddPersonResponseBag = {
+    /** Pass the value of the  email of the person to the front end */
+    email?: string | null;
+
+    /** Pass the value of the  Name of the person to the front end */
+    lastName?: string | null;
+
+    /** Pass the value of the Nick Name of the person to the front end */
+    nickName?: string | null;
 };

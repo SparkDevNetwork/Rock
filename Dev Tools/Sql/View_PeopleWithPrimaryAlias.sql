@@ -20,7 +20,7 @@ SELECT 'Person' AS [Entity]
     , p.[Guid] AS [PersonGuid]
     , pa.[Id] AS [PrimaryAliasId]
     , pa.[Guid] AS [PrimaryAliasGuid]
-    , CONCAT(p.[NickName], ' ', p.[LastName]) AS 'Name'
+    , CONCAT(p.[NickName], ' ', p.[LastName]) AS [Person]
     , CASE
         WHEN p.[AgeClassification] = 0 THEN 'Unknown'
         WHEN p.[AgeClassification] = 1 THEN 'Adult'

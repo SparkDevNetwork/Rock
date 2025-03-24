@@ -1,0 +1,189 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid
+          v-if="hasLoadedData"
+          :definition="config.gridDefinition ?? undefined"
+          :class="visibleCssClass"
+          :data="gridDataSource"
+          keyField="idKey"
+          :showMergeTemplate="false"
+          :showLaunchWorkflow="false"
+          :showExport="false"
+          itemTerm="Completion"
+          :entityTypeGuid="EntityType.LearningProgramCompletion"
+          stickyHeader
+          liveUpdates
+          @selectItem="onSelectItem">
+
+        <PersonColumn
+                      name="individual"
+                      title="Individual"
+                      field="individual"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
+                      visiblePriority="xs" />
+
+        <TextColumn
+                    name="campus"
+                    title="Campus"
+                    field="campus"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn
+                    v-if="config.options?.showSemesterColumn"
+                    name="semester"
+                    title="Semester"
+                    field="semester"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <DateColumn
+                    name="startDate"
+                    title="Start Date"
+                    field="startDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="sm" />
+
+        <DateColumn
+                    name="endDate"
+                    title="End Date"
+                    field="endDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="md" />
+
+        <Column
+                name="status"
+                title="Status"
+                field="status"
+                :filter="pickExistingValueFilter"
+                width="10%"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <span :class="'label label-' + statusLabelTypeMap[row.status] + ' category-label'">
+                    {{ CompletionStatusDescription[row.status] }}
+                </span>
+            </template>
+        </Column>
+
+        <Column
+                name="profile"
+                title=""
+                width="48px"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <i class="fa fa-user pr-3" @click="onPersonProfileClick(row.individual?.idKey)"></i>
+            </template>
+        </Column>
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { textValueFilter, dateValueFilter, pickExistingValueFilter, Column, TextColumn, DateColumn, PersonColumn } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { LearningProgramCompletionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramCompletionList/learningProgramCompletionListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./LearningProgramCompletionList/types.partial";
+    import { onMounted, reactive, ref } from "vue";
+    import { CompletionStatusDescription } from "@Obsidian/Enums/Lms/completionStatus";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
+
+    const config = useConfigurationValues<ListBlockBox<LearningProgramCompletionListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // Use the browser bus to listen for changes to edit mode for any blocks on the page.
+    const browserBus = useBlockBrowserBus();
+    const hasLoadedData = ref(false);
+    const visibleCssClass = ref("show");
+
+    // When another block on the page begins editing hide this block.
+    browserBus.subscribe(BlockMessages.BeginEdit, () => {
+        visibleCssClass.value = "hidden";
+    });
+
+    // When another block begins editing show this block.
+    browserBus.subscribe(BlockMessages.EndEdit, () => {
+        visibleCssClass.value = "show";
+        if (!hasLoadedData.value) {
+            gridDataSource.value = loadGridData();
+        }
+    });
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const statusLabelTypeMap: Array<string> = ["default", "default", "success", "warning"];
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["individual"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            hasLoadedData.value = true;
+
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onPersonProfileClick(idKey: string): void {
+        if (idKey?.length > 0) {
+            window.location.href = `/person/${idKey}`;
+        }
+    }
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key)
+                + "?autoEdit=true&returnUrl=" + encodeURIComponent(window.location.href);
+        }
+    }
+
+    // #endregion
+
+    onMounted(() => {
+        // Because the grid may be hidden when a primary block is hidden
+        // only load the grid data if visible. Additionally we need to
+        // give time for the autoEdit of detail blocks to emit browserBus events.
+        setTimeout(() => {
+            if (visibleCssClass.value === "show") {
+                gridDataSource.value = loadGridData();
+            }
+        }, 250);
+    });
+
+</script>

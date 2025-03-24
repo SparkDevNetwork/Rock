@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowAction" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "9CBF4BEC-5653-47F9-8E87-0D31C6CA5947")]
     public partial class WorkflowAction : Model<WorkflowAction>
     {

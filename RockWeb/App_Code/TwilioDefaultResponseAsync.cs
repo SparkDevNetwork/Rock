@@ -20,6 +20,8 @@ using System.Linq;
 using System.Threading;
 using System.Web;
 
+using Microsoft.Extensions.Logging;
+
 using Rock;
 using Rock.Data;
 using Rock.Logging;
@@ -33,6 +35,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
     private readonly object _state;
     private readonly AsyncCallback _callback;
     private readonly HttpContext _context;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Gets a value that indicates whether the asynchronous operation has completed.
@@ -89,19 +92,6 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
     }
 
     /// <summary>
-    /// The enable logging
-    /// </summary>
-    [Obsolete("The RockLogger checks if logging is enabled for Twilio when logging a message. If the logging status needs to be checked before creating a message use Rock.Logging.RockLogger.Log.ShouldLogEntry instead.")]
-    [RockObsolete("1.13")]
-    public bool EnableLogging
-    {
-        get
-        {
-            return RockLogger.Log.ShouldLogEntry( RockLogLevel.Debug, RockLogDomains.Communications );
-        }
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="TwilioDefaultResponseAsync"/> class.
     /// </summary>
     /// <param name="callback">The callback.</param>
@@ -113,6 +103,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
         _context = context;
         _state = state;
         _completed = false;
+        _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
     }
 
     /// <summary>
@@ -270,7 +261,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
     {
         if ( request.HttpMethod != "POST" )
         {
-            RockLogger.Log.Debug( RockLogDomains.Communications, "Request was not a post." );
+            _logger.LogDebug( "Request was not a post." );
             return false;
         }
 
@@ -291,7 +282,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
         var signature = request.Headers["X-Twilio-Signature"];
         if ( signature.IsNullOrWhiteSpace() )
         {
-            RockLogger.Log.Debug( RockLogDomains.Communications, "X-Twilio-Signature not found." );
+            _logger.LogDebug( "X-Twilio-Signature not found." );
             return false;
         }
 
@@ -303,7 +294,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
 
         if ( authToken.IsNullOrWhiteSpace() )
         {
-            RockLogger.Log.Debug( RockLogDomains.Communications, "No auth token found." );
+            _logger.LogDebug( "No auth token found." );
             return false;
         }
 
@@ -324,7 +315,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
 
         if ( !isValid )
         {
-            RockLogger.Log.Debug( RockLogDomains.Communications, "Authentication Failed: request.Url.AbsoluteUri: {0},  requestUrl: {1}  authToken: {2}", request.UrlProxySafe().AbsoluteUri, requestUrl, authToken );
+            _logger.LogDebug( "Authentication Failed: request.Url.AbsoluteUri: {0},  requestUrl: {1}  authToken: {2}", request.UrlProxySafe().AbsoluteUri, requestUrl, authToken );
         }
 
         return isValid;
@@ -332,7 +323,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
 
     private void LogRequest()
     {
-        if ( !RockLogger.Log.ShouldLogEntry( RockLogLevel.Debug, RockLogDomains.Communications ) )
+        if ( !_logger.IsEnabled( LogLevel.Debug ) )
         {
             return;
         }
@@ -345,7 +336,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
             formValues.Add( string.Format( "{0}: '{1}'", name, _context.Request.Form[name] ) );
         }
 
-        RockLogger.Log.Debug( RockLogDomains.Communications, formValues.AsDelimited( ", " ) );
+        _logger.LogDebug( formValues.AsDelimited( ", " ) );
     }
 
     /// <summary>

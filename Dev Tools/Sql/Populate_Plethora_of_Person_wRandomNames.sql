@@ -3,7 +3,7 @@
 SET NOCOUNT ON
 
 -- NOTE: Set @maxPerson to the number of people you want to add. Setting it as high as 99999 might take a minute or so
-DECLARE @maxPerson INT = 9999
+DECLARE @maxPerson INT = 15000
     ,@genderInt INT
     ,@countryCode nvarchar(3) = null
     ,@personRecordType INT = (
@@ -12099,6 +12099,13 @@ BEGIN
             ,NEWID()
             );
 
+        
+        DECLARE @personPrimaryAliasId INT = SCOPE_IDENTITY();
+
+        UPDATE Person SET
+            PrimaryAliasId = @personPrimaryAliasId 
+        WHERE Id = @personId
+
          IF (@personId%10 = 0) BEGIN
             DECLARE @userName NVARCHAR(255) = concat(@lastName, substring(@firstName, 1, 2));
             IF NOT EXISTS (SELECT * FROM UserLogin WHERE UserName = @userName) BEGIN
@@ -12251,6 +12258,12 @@ BEGIN
             ,@spousePersonGuid
             ,NEWID()
             );
+
+        DECLARE @spousePrimaryAliasId INT = SCOPE_IDENTITY();
+
+        UPDATE Person SET
+            PrimaryAliasId = @spousePrimaryAliasId
+        WHERE Id = @spousePersonId
 
         INSERT INTO [PhoneNumber] (
             IsSystem
@@ -12451,6 +12464,12 @@ BEGIN
 				,@kidPersonGuid
 				,NEWID()
 				);
+
+            DECLARE @kidPrimaryAliasId INT = SCOPE_IDENTITY();
+
+            UPDATE Person SET
+                PrimaryAliasId = @kidPrimaryAliasId
+            WHERE Id = @kidPersonId
 
 			INSERT INTO [GroupMember] (
 				IsSystem

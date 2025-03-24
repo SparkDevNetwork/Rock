@@ -28,7 +28,7 @@ declare
 -- Local variables
 declare
     @createdDateTime datetime = (select convert(date, SYSDATETIME()))
-    ,@createdByPersonAliasId int = (select pa.id from PersonAlias pa inner join Person p on pa.PersonId = p.Id where p.FirstName = 'Admin' and p.LastName = 'Admin');
+    ,@createdByPersonAliasId int = (SELECT pa.Id FROM PersonAlias pa JOIN Person p ON p.Id = pa.PersonId WHERE p.Guid = 'AD28DA19-4AF1-408F-9090-2672F8376F27');
 
 set nocount on
 

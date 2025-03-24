@@ -20,9 +20,20 @@ import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { List } from "@Obsidian/Utility/linq";
 import { FieldTypeBase } from "./fieldType";
 
+/**
+ * The key names for the configuration properties available when editing the
+ * configuration of a DefinedValue field type.
+ */
+export const enum ConfigurationPropertyKey {
+    /** The defined types available to be picked. */
+    DefinedTypes = "definedTypes"
+}
+
 export const enum ConfigurationValueKey {
     Values = "values",
-    DisplayDescription = "displaydescription"
+    DisplayDescription = "displaydescription",
+    DefinedType = "definedtype",
+    DefinedTypes = "definedTypes"
 }
 
 export type ValueItem = {
@@ -41,6 +52,11 @@ export type ClientValue = {
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
     return (await import("./definedValueRangeFieldComponents")).EditComponent;
+});
+
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./definedValueRangeFieldComponents")).ConfigurationComponent;
 });
 
 /**
@@ -96,6 +112,10 @@ export class DefinedValueRangeFieldType extends FieldTypeBase {
 
     public override getEditComponent(): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 
     public override isFilterable(): boolean {

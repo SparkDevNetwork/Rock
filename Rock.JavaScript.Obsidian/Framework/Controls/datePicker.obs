@@ -8,13 +8,13 @@
                     <div v-if="displayCurrentOption || isCurrent" class="input-group">
                         <div class="checkbox">
                             <label title="">
-                                <input type="checkbox" v-model="isCurrent" />
+                                <input type="checkbox" v-model="isCurrent" :disabled="field.disabled" />
                                 <span class="label-text">Current Date</span></label>
                         </div>
                     </div>
                 </div>
                 <div v-if="isCurrent && isCurrentDateOffset" class="form-row">
-                    <TextBox label="+- Days" v-model="currentDiff" inputClasses="input-width-md" help="Enter the number of days after the current date to use as the date. Use a negative number to specify days before." />
+                    <TextBox label="+- Days" v-model="currentDiff" inputClasses="input-width-md" help="Enter the number of days after the current date to use as the date. Use a negative number to specify days before." :disabled="field.disabled" />
                 </div>
             </div>
             <DatePickerBase v-else v-model.lazy="internalValue" :id="uniqueId" v-bind="{ ...field, ...basePickerProps }" :disabled="isCurrent || field.disabled" />

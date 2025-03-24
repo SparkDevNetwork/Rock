@@ -1,0 +1,57 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <RockForm v-model:submit="submit">
+            <AddressControl label="Address" v-model="value" :rules="required ? 'required' : ''" :disableFrontEndValidation="partial" :showCountry="showCountry" />
+
+            <RockButton @click="submit = true">Validate</RockButton>
+        </RockForm>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-sm-4">
+                    <CheckBox label="Required" v-model="required" />
+                </div>
+                <div class="col-sm-4">
+                    <CheckBox label="Allow Partial Addresses" v-model="partial" />
+                </div>
+                <div class="col-sm-4">
+                    <ButtonDropDownList label="Show Country" v-model="showCountrySelected" :items="showCountryOptions" help="If no value is passed in, the visibility of the Country field will depend on the 'Support International Addresses' Global Attribute setting." />
+                </div>
+            </div>
+            <p>All props match that of a <code>Rock Form Field</code></p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import AddressControl from "@Obsidian/Controls/addressControl.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const showCountrySelected = ref("default");
+    const showCountry = computed(() => {
+        return showCountrySelected.value == "true" ? true :
+            showCountrySelected.value == "false" ? false : null;
+    });
+
+    const value = ref({});
+    const submit = ref(false);
+    const required = ref(false);
+    const partial = ref(false);
+    const showCountryOptions = [
+        { text: "Default", value: "default" },
+        { text: "Yes", value: "true" },
+        { text: "No", value: "false" },
+    ];
+    const importCode = getSfcControlImportPath("addressControl");
+    const exampleCode = `<AddressControl label="Address" v-model="value" />`;
+</script>

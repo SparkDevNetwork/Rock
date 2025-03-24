@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "EventCalendarContentChannel" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "B8631058-DAC3-4164-9A50-9E732B0C3882")]
     public partial class EventCalendarContentChannel : Model<EventCalendarContentChannel>, ISecured
     {

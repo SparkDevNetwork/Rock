@@ -602,7 +602,9 @@ export class RockDateTime {
      * @returns An ISO8601 formatted string.
      */
     public toISOString(): string {
-        return this.dateTime.toISO();
+        // We never create an instance of RockDateTime if dateTime is not valid
+        // and that is the only time toISO() would return null.
+        return <string>this.dateTime.toISO();
     }
 
     /**
@@ -628,7 +630,7 @@ export class RockDateTime {
      */
     public toElapsedString(currentDateTime?: RockDateTime): string {
         const msPerSecond = 1000;
-        const msPerMinute= 1000 * 60;
+        const msPerMinute = 1000 * 60;
         const msPerHour = 1000 * 60 * 60;
         const hoursPerDay = 24;
         const daysPerYear = 365;
@@ -710,7 +712,9 @@ export class RockDateTime {
      * @returns A new string that conforms to RFC 1123
      */
     public toHTTPString(): string {
-        return this.dateTime.toHTTP();
+        // We never create an instance of RockDateTime if dateTime is not valid
+        // and that is the only time toHTTP() would return null.
+        return <string>this.dateTime.toHTTP();
     }
 
     /**
@@ -769,6 +773,7 @@ export class RockDateTime {
     }
 
     /**
+     * Obsolete. Use toElapsedString instead.
      * Calculates the elapsed time between this date and the reference date and
      * returns that difference in a human friendly way.
      *
@@ -784,8 +789,11 @@ export class RockDateTime {
         if (totalSeconds <= 1) {
             return "right now";
         }
-        else if (totalSeconds < 60) { // 1 minute
+        else if (totalSeconds < 60) { // less than 1 minute
             return `${totalSeconds} seconds ago`;
+        }
+        else if (totalSeconds >= 60 && totalSeconds <= 119) { // 1 minute ago
+            return "1 minute ago";
         }
         else if (totalSeconds < 3600) { // 1 hour
             return `${Math.floor(totalSeconds / 60)} minutes ago`;

@@ -131,6 +131,13 @@ namespace Rock.Blocks.Event
         DefaultBooleanValue = true,
         Order = 11 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Order = 17 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
@@ -154,6 +161,8 @@ namespace Rock.Blocks.Event
             public const string ForceEmailUpdate = "ForceEmailUpdate";
             public const string ShowFieldDescriptions = "ShowFieldDescriptions";
             public const string EnableSavedAccount = "EnableSavedAccount";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
+            public const string EnableACHForEvents = "Ach";
         }
 
         /// <summary>
@@ -487,6 +496,13 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult SubmitRegistration( RegistrationEntryArgsBag args )
         {
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+
+            if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
+            {
+                return ActionBadRequest( "Captcha was not valid." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 FixRegistrationArguments( args );
@@ -558,7 +574,8 @@ namespace Rock.Blocks.Event
                     // for the various support methods used.
                     context.Registration = new Registration
                     {
-                        RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId
+                        RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId,
+                        RegistrationTemplateId = context.RegistrationSettings.RegistrationTemplateId
                     };
 
                     if ( context.RegistrationSettings.RegistrarOption == RegistrarOption.UseLoggedInPerson && RequestContext.CurrentPerson != null )
@@ -1050,6 +1067,22 @@ namespace Rock.Blocks.Event
             return null;
         }
 
+        /// <inheritdoc/>
+        protected override string GetPlaceholderContent( RockClientType clientType )
+        {
+            if ( clientType == RockClientType.Web )
+            {
+                return @"
+   <div class=""skeleton skeleton-block w-lg mx-auto mb-4""></div>
+   <div class=""skeleton skeleton-heading w-md mx-auto""></div>
+   <div class=""skeleton skeleton-block w-sm mx-auto mt-5""></div>
+   <div class=""skeleton skeleton-button ml-auto""></div>
+";
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>
         /// Updates or Inserts the session.
         /// </summary>
@@ -1165,7 +1198,8 @@ namespace Rock.Blocks.Event
                 // This is a new registration
                 context.Registration = new Registration
                 {
-                    RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId
+                    RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId,
+                    RegistrationTemplateId = context.RegistrationSettings.RegistrationTemplateId
                 };
 
                 var registrationService = new RegistrationService( rockContext );
@@ -2268,12 +2302,12 @@ namespace Rock.Blocks.Event
 
             if ( entity == null )
             {
-                return PublicAttributeHelper.GetPublicEditValue( attribute, attribute.DefaultValue );
+                return PublicAttributeHelper.GetPublicValueForEdit( attribute, attribute.DefaultValue );
             }
 
             entity.LoadAttributes( rockContext );
 
-            return PublicAttributeHelper.GetPublicEditValue( attribute, entity.GetAttributeValue( attribute.Key ) );
+            return PublicAttributeHelper.GetPublicValueForEdit( attribute, entity.GetAttributeValue( attribute.Key ) );
         }
 
         /// <summary>
@@ -2995,7 +3029,6 @@ namespace Rock.Blocks.Event
                     }
                 }
 
-                // TODO JMH Should this be done even if the field is locked?
                 field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, fieldValue );
             }
 
@@ -3148,6 +3181,7 @@ namespace Rock.Blocks.Event
                 {
                     Guid = registrantInfo.Guid,
                     RegistrationId = context.Registration.Id,
+                    RegistrationTemplateId = context.Registration.RegistrationTemplateId.Value,
                     Cost = context.RegistrationSettings.PerRegistrantCost
                 };
                 registrantService.Add( registrant );
@@ -3843,7 +3877,7 @@ namespace Rock.Blocks.Event
                 var accountOptions = new SavedFinancialAccountOptions
                 {
                     FinancialGatewayGuids = new List<Guid> { financialGateway.Guid },
-                    CurrencyTypeGuids = GetAllowedCurrencyTypes( gatewayComponent ).Select( a => a.Guid ).ToList()
+                    CurrencyTypeGuids = GetAllowedCurrencyTypes( gatewayComponent, financialGateway ).Select( a => a.Guid ).ToList()
                 };
 
                 savedAccounts = savedAccountClientService.GetSavedFinancialAccountsForPersonAsAccountListItems( RequestContext.CurrentPerson.Id, accountOptions );
@@ -3892,7 +3926,7 @@ namespace Rock.Blocks.Event
                 session.FieldValues = session.FieldValues ?? new Dictionary<Guid, object>();
                 foreach ( var registrationAttribute in registrationAttributes )
                 {
-                    var defaultEditValue = PublicAttributeHelper.GetPublicEditValue( registrationAttribute, registrationAttribute.DefaultValue );
+                    var defaultEditValue = PublicAttributeHelper.GetPublicValueForEdit( registrationAttribute, registrationAttribute.DefaultValue );
 
                     session.FieldValues[registrationAttribute.Guid] = defaultEditValue;
                 }
@@ -3979,6 +4013,7 @@ namespace Rock.Blocks.Event
                 Campuses = campusClientService.GetCampusesAsListItems(),
                 MaritalStatuses = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_MARITAL_STATUS )
                     .DefinedValues
+                    .Where( v => v.IsActive )
                     .OrderBy( v => v.Order )
                     .Select( v => new ListItemBag
                     {
@@ -3988,6 +4023,7 @@ namespace Rock.Blocks.Event
                     .ToList(),
                 ConnectionStatuses = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS )
                     .DefinedValues
+                    .Where( v => v.IsActive )
                     .OrderBy( v => v.Order )
                     .Select( v => new ListItemBag
                     {
@@ -3997,6 +4033,7 @@ namespace Rock.Blocks.Event
                     .ToList(),
                 Grades = DefinedTypeCache.Get( SystemGuid.DefinedType.SCHOOL_GRADES )
                     .DefinedValues
+                    .Where( v => v.IsActive )
                     .OrderBy( v => v.Order )
                     .Select( v => new ListItemBag
                     {
@@ -4025,6 +4062,7 @@ namespace Rock.Blocks.Event
 
                 EnableSaveAccount = enableSavedAccount,
                 SavedAccounts = savedAccounts,
+                DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
 
                 // Payment plan
                 IsPaymentPlanAllowed = isPaymentPlanAllowed,
@@ -4719,10 +4757,11 @@ namespace Rock.Blocks.Event
         /// financial gateway.
         /// </summary>
         /// <param name="gatewayComponent">The gateway component that must support the currency types.</param>
+        /// <param name="financialGateway">The financial gateway.</param>
         /// <returns>A list of <see cref="DefinedValueCache"/> objects that represent the currency types.</returns>
-        private List<DefinedValueCache> GetAllowedCurrencyTypes( GatewayComponent gatewayComponent )
+        private List<DefinedValueCache> GetAllowedCurrencyTypes( GatewayComponent gatewayComponent, FinancialGateway financialGateway )
         {
-            var enableACH = true;// this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            var enableACH = gatewayComponent.GetAttributeValue( financialGateway, AttributeKey.EnableACHForEvents ).AsBoolean();
             var enableCreditCard = true;// this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
             var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
             var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
@@ -4977,7 +5016,7 @@ namespace Rock.Blocks.Event
             foreach ( var attribute in registrationAttributes )
             {
                 var value = registration.GetAttributeValue( attribute.Key );
-                value = PublicAttributeHelper.GetPublicEditValue( attribute, value );
+                value = PublicAttributeHelper.GetPublicValueForEdit( attribute, value );
 
                 session.FieldValues[attribute.Guid] = value;
             }
@@ -5057,6 +5096,7 @@ namespace Rock.Blocks.Event
             var currentPerson = GetCurrentPerson();
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || string.IsNullOrWhiteSpace( SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY ) );
 
             // Basic check on the args to see that they appear valid
             if ( args == null )

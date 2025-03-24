@@ -1,0 +1,148 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <template v-if="communicationTemplates.length">
+        <div class="communication-template-item-grid">
+            <div v-for="communicationTemplate in topCommunicationTemplates"
+                 :key="`${communicationTemplate.guid}${communicationTemplate.name}`"
+                 :class="{
+                     'communication-template-item': true,
+                     'selected': areEqual(communicationTemplate.guid, internalCommunicationTemplateGuid)
+                 }"
+                 @click="internalCommunicationTemplateGuid = communicationTemplate.guid">
+                <div class="communication-template-item-preview">
+                    <img :src="communicationTemplate.imageUrl ?? '/Assets/Images/communication-template-default.svg'" width="100%" />
+                </div>
+                <div class="communication-template-item-text">
+                    <label>{{ communicationTemplate.name }}</label>
+                    <p>{{ communicationTemplate.description }}</p>
+                </div>
+            </div>
+        </div>
+
+        <TransitionVerticalCollapse>
+            <div v-if="!isCollapsed" class="communication-template-item-grid">
+                <div v-for="communicationTemplate in bottomCommunicationTemplates"
+                     :key="`${communicationTemplate.guid}${communicationTemplate.name}`"
+                     :class="{
+                         'communication-template-item': true,
+                         'selected': areEqual(communicationTemplate.guid, internalCommunicationTemplateGuid)
+                     }"
+                     @click="internalCommunicationTemplateGuid = communicationTemplate.guid">
+                    <div class="communication-template-item-preview">
+                        <img :src="communicationTemplate.imageUrl ?? '/Assets/Images/communication-template-default.svg'" width="100%" />
+                    </div>
+                    <div class="communication-template-item-text">
+                        <label>{{ communicationTemplate.name }}</label>
+                        <p>{{ communicationTemplate.description }}</p>
+                    </div>
+                </div>
+            </div>
+        </TransitionVerticalCollapse>
+    </template>
+    <div v-else class="text-muted">
+        No templates found.
+    </div>
+</template>
+
+<style scoped>
+.communication-template-item-grid {
+    display: grid;
+    /* 3 equal columns */
+    grid-template-columns: repeat(v-bind(colsPerRow), 1fr);
+    gap: var(--spacing-large);
+}
+
+.communication-template-item-grid {
+    margin-top: var(--spacing-large);
+}
+
+.communication-template-item {
+    cursor: pointer;
+    padding: var(--spacing-medium);
+    padding-bottom: 0;
+    border: 1px solid var(--color-interface-soft);
+    min-height: 192px;
+    height: 192px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: var(--spacing-medium);
+    border-radius: var(--border-radius-base);
+}
+
+.communication-template-item.selected {
+    border: var(--focus-state-border);
+    box-shadow: var(--focus-state-shadow);
+}
+
+.communication-template-item-text label {
+    margin-bottom: var(--spacing-xsmall);
+}
+
+.communication-template-item-text p {
+    font-size: var(--font-size-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { useBreakpointHelper } from "./utils.partial";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { CommunicationEntryWizardCommunicationTemplateListItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateListItemBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { areEqual } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        communicationTemplates: {
+            type: Object as PropType<CommunicationEntryWizardCommunicationTemplateListItemBag[]>,
+            required: true
+        },
+
+        communicationTemplateGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            required: true
+        },
+
+        isCollapsed: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
+    }>();
+
+    const breakpointHelper = useBreakpointHelper();
+
+    // #region Values
+
+    const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const colsPerRow = computed<number>(() => {
+        if (breakpointHelper.value.isMdOrLarger) {
+            return 3;
+        }
+        else if (breakpointHelper.value.isSmOrLarger) {
+            return 2;
+        }
+        else {
+            return 1;
+        }
+    });
+
+    const topCommunicationTemplates = computed<CommunicationEntryWizardCommunicationTemplateListItemBag[]>(() => {
+        return props.communicationTemplates.slice(0, colsPerRow.value);
+    });
+
+    const bottomCommunicationTemplates = computed<CommunicationEntryWizardCommunicationTemplateListItemBag[]>(() => {
+        return props.communicationTemplates.slice(colsPerRow.value);
+    });
+
+    // #endregion Computed Values
+</script>

@@ -60,6 +60,13 @@ namespace Rock.CheckIn.v2.Filters
         /// <value>The person identifier.</value>
         protected Lazy<int> PersonId { get; }
 
+        /// <summary>
+        /// Determines if this filter should be skipped when performing a manual
+        /// override check-in. If <see cref="CheckInSession.IsOverrideEnabled"/>
+        /// and this both return <c>true</c>, then the filter will be skipped.
+        /// </summary>
+        public virtual bool IsSkippedDuringOverride => true;
+
         #endregion
 
         #region Constructors

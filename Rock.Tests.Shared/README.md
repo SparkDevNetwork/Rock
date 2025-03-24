@@ -9,6 +9,6 @@ The types of data stored in this project include:
 * Utility components that provide general functions for working with test data.
 
 This project is referenced by the following projects:
-* Rock.Tests.UnitTests
+* Rock.Tests
 * Rock.Tests.Integration
 

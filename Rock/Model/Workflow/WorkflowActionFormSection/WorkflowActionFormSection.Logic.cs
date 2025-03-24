@@ -17,6 +17,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -73,6 +74,13 @@ namespace Rock.Model
         {
             WorkflowActionFormSectionCache.UpdateCachedEntity( this.Id, entityState );
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => WorkflowActionForm ?? base.ParentAuthority;
 
         #endregion
     }

@@ -20,6 +20,9 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Blocks.Group.GroupAttendanceDetail;
@@ -28,6 +31,7 @@ using Rock.Model;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.GroupAttendanceDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -680,7 +684,7 @@ namespace Rock.Blocks.Group
 
                 if ( mergeTemplate == null )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Group, new Exception( "Error printing Attendance Roster: No merge template selected. Please configure an 'Attendance Roster Template' in the block settings." ) );
+                    Logger.LogError("Error printing Attendance Roster: No merge template selected. Please configure an 'Attendance Roster Template' in the block settings." );
                     return ActionBadRequest( "Unable to print Attendance Roster: No merge template selected. Please configure an 'Attendance Roster Template' in the block settings." );
                 }
 
@@ -688,7 +692,7 @@ namespace Rock.Blocks.Group
 
                 if ( mergeTemplateType == null )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Group, new Exception( "Error printing Attendance Roster: Unable to determine Merge Template Type from the 'Attendance Roster Template' in the block settings." ) );
+                    Logger.LogError( "Error printing Attendance Roster: Unable to determine Merge Template Type from the 'Attendance Roster Template' in the block settings." );
                     return ActionBadRequest( $"Error printing Attendance Roster: Unable to determine Merge Template Type from the 'Attendance Roster Template' in the block settings." );
                 }
 
@@ -700,15 +704,17 @@ namespace Rock.Blocks.Group
                 {
                     if ( mergeTemplateType.Exceptions.Count == 1 )
                     {
-                        RockLogger.Log.Error( RockLogDomains.Group, mergeTemplateType.Exceptions[0] );
+                        Logger.LogError( mergeTemplateType.Exceptions[0], mergeTemplateType.Exceptions[0].Message );
                     }
                     else if ( mergeTemplateType.Exceptions.Count > 50 )
                     {
-                        RockLogger.Log.Error( RockLogDomains.Group, new AggregateException( $"Exceptions merging template {mergeTemplate.Name}. See InnerExceptions for top 50.", mergeTemplateType.Exceptions.Take( 50 ).ToList() ) );
+                        var aggException = new AggregateException( $"Exceptions merging template {mergeTemplate.Name}. See InnerExceptions for top 50.", mergeTemplateType.Exceptions.Take( 50 ).ToList() );
+                        Logger.LogError( aggException, aggException.Message );
                     }
                     else
                     {
-                        RockLogger.Log.Error( RockLogDomains.Group, new AggregateException( $"Exceptions merging template {mergeTemplate.Name}. See InnerExceptions", mergeTemplateType.Exceptions.ToList() ) );
+                        var aggException = new AggregateException( $"Exceptions merging template {mergeTemplate.Name}. See InnerExceptions", mergeTemplateType.Exceptions.ToList() );
+                        Logger.LogError( aggException, aggException.Message );
                     }
                 }
 
@@ -1339,6 +1345,7 @@ namespace Rock.Blocks.Group
 
             var groupLocationSchedulesQuery = groupLocationsQuery
                 .SelectMany( gl => gl.Schedules )
+                .Where( a => a.IsActive )
                 .OrderBy( s => s.Name )
                 .Distinct();
 
@@ -1645,17 +1652,21 @@ namespace Rock.Blocks.Group
         /// </summary>
         private string GetBackPageUrl( OccurrenceData occurrenceData )
         {
+            var returnUrl = this.PageParameter( PageParameterKey.ReturnUrl );
+
+            // This was originally being added to the back button URL, but
+            // that prevented it from being used for it's normal purpose. So
+            // it was decided to treat it like a normal "returnUrl" parameter
+            // and just redirect to this URL when the back button is clicked.
+            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            {
+                return returnUrl;
+            }
+
             var queryParams = new Dictionary<string, string>
             {
                 { PageParameterKey.GroupId, occurrenceData.Group.Id.ToString() }
             };
-
-            var returnUrl = this.PageParameter( PageParameterKey.ReturnUrl );
-
-            if ( returnUrl.IsNotNullOrWhiteSpace() )
-            {
-                queryParams.Add( PageParameterKey.ReturnUrl, returnUrl );
-            }
 
             var groupTypeIds = this.GroupTypeIdsPageParameter;
 
@@ -2451,10 +2462,13 @@ namespace Rock.Blocks.Group
                         .Include( g => g.GroupType )
                         .Include( g => g.Schedule );
 
-                var groupId = this._block.GroupIdPageParameter.AsIntegerOrNull();
-                var groupGuid = this._block.GroupIdPageParameter.AsGuidOrNull();
+                var groupKey = this._block.GroupIdPageParameter;
+                var groupId =  groupKey.AsIntegerOrNull();
+                var allowPredictableIds = !this._block.PageCache.Layout.Site.DisablePredictableIds;
+                groupId = !groupId.HasValue ? IdHasher.Instance.GetId( groupKey ) : groupId.Value;
+                var groupGuid = groupKey.AsGuidOrNull();
 
-                if ( groupId.HasValue )
+                if ( groupId.HasValue && allowPredictableIds )
                 {
                     query = query.Where( g => g.Id == groupId.Value );
                 }
@@ -2462,7 +2476,9 @@ namespace Rock.Blocks.Group
                 {
                     query = query.Where( g => g.Guid == groupGuid.Value );
                 }
-                else
+
+
+                if ( groupId == null )
                 {
                     // The GroupId page parameter is not an integer ID
                     // nor a guid ID so return null.

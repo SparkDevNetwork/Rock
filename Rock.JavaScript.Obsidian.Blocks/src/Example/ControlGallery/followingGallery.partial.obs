@@ -1,0 +1,42 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <Following :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" :disabled="disabled" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Disabled" v-model="disabled" />
+                </div>
+
+                <div class="col-md-4">
+                    <TextBox label="Entity Type Guid" v-model="entityTypeGuid" />
+                </div>
+
+                <div class="col-md-4">
+                    <TextBox label="Entity Key" v-model="entityKey" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import Following from "@Obsidian/Controls/following.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { useStore } from "@Obsidian/PageState";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { Guid } from "@Obsidian/Types";
+
+    const store = useStore();
+
+    const disabled = ref(false);
+    const entityTypeGuid = ref<Guid>(EntityType.Person);
+    const entityKey = ref(store.state.currentPerson?.idKey ?? "");
+    const importCode = getSfcControlImportPath("following");
+    const exampleCode = `<Following :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`;
+</script>

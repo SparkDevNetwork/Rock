@@ -1,0 +1,38 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <Toggle label="Toggle" v-model="value" :trueText="trueText" :falseText="falseText" :btnSize="btnSize" />
+
+        <template #settings>
+            <TextBox label="True Text" v-model="trueText" />
+            <TextBox label="False Text" v-model="falseText" />
+            <DropDownList label="Button Size" v-model="btnSize" :items="sizeOptions" />
+
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const trueText = ref("On");
+    const falseText = ref("Off");
+    const btnSize = ref("sm");
+    const sizeOptions = [
+        { value: "lg", text: "Large" },
+        { value: "md", text: "Medium" },
+        { value: "sm", text: "Small" },
+        { value: "xs", text: "Extra Small" },
+    ];
+    const value = ref(false);
+    const importCode = getSfcControlImportPath("toggle");
+    const exampleCode = `<Toggle label="Toggle" v-model="value" trueText="On" falseText="Off" :btnSize="btnSize" />`;
+</script>

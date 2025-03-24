@@ -42,6 +42,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "DataViewFilter" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "507E646B-9943-4DD6-8FB7-8BA9F95E6BD0")]
     public partial class DataViewFilter : Model<DataViewFilter>, IDataViewFilterDefinition
     {

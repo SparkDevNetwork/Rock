@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// Abstract field type class used for enum fields
     /// </summary>
     [Serializable]
+    [Rock.Attribute.FieldTypeUsage( FieldTypeUsage.System )]
     public abstract class EnumFieldType<T> : FieldType where T : struct
     {
         private const string REPEAT_COLUMNS = "repeatColumns";

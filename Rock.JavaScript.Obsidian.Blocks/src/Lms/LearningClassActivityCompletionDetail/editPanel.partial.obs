@@ -1,0 +1,223 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-3">
+                <NumberBox v-model="pointsEarned"
+                           label="Points Earned"
+                           :minimumValue="0"
+                           disabled
+                           :rules="'required|lte:' + pointsPossible">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">
+                            out of {{ pointsPossible }}
+                        </span>
+                    </template>
+                </NumberBox>
+            </div>
+
+            <div class="col-md-3 col-md-offset-6">
+                <DatePicker v-model="dueDate"
+                            label="Due Date" />
+            </div>
+
+        </div>
+
+        <div class="student-comments-section" v-if="isStudentCommentingEnabled && studentComment">
+            <div class="form-group">
+                <RockLabel>Student Comment</RockLabel>
+                <div>{{ studentComment }}</div>
+            </div>
+        </div>
+
+        <div class="facilitator-comments-section">
+            <TextBox v-model="facilitatorComment"
+                     label="Facilitator Comment"
+                     textMode="multiline" />
+        </div>
+
+        <div class="activity-component-section">
+            <!-- Pass the configuration and completion json values to the component. -->
+            <activityTypeComponent
+                                   v-model:activityBag="activityBag"
+                                   v-model:completionBag="completionBag"
+                                   :screenToShow="screenToShow"
+                                   @completionValuesChanged="onCompletionValuesChanged"
+                                   @completed="onFacilitatorCompleted" />
+        </div>
+
+        <div ref="buttonsContainer" class="activity-footer-actions d-flex justify-content-end">
+            <RockButton
+                        v-if="screenToShow === ComponentScreen.Scoring"
+                        btnType="link"
+                        @click="switchToScreen(ComponentScreen.Summary)">
+                View Summary
+            </RockButton>
+            <RockButton
+                        v-if="screenToShow === ComponentScreen.Summary"
+                        btnType="primary"
+                        @click="switchToScreen(ComponentScreen.Scoring)">
+                Score
+            </RockButton>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { Component, nextTick, PropType, ref, watch } from "vue";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { defineAsyncComponent, propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import { CompletionExtraValues, ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
+    import { LearningClassActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityCompletionDetail/learningClassActivityCompletionBag";
+    import { LearningClassActivityCompletionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityCompletionDetail/learningClassActivityCompletionDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { LearningClassActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityDetail/learningClassActivityBag";
+    import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<LearningClassActivityCompletionBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LearningClassActivityCompletionDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningClassActivityCompletionBag>): void
+    }>();
+
+    // #region Values
+
+    // The dynamically imported activity component for the learning activity.
+    let activityTypeComponent: Component | null;
+
+    const activityBag = ref(props.modelValue.bag?.classActivityBag ?? {} as LearningClassActivityBag);
+    const completionBag = ref(props.modelValue.bag ?? {} as LearningClassActivityCompletionBag);
+
+    const dueDate = ref(completionBag.value.dueDate);
+    const isStudentCommentingEnabled = ref(activityBag.value.isStudentCommentingEnabled ?? false);
+    const studentComment = ref(completionBag.value.studentComment ?? "");
+    const pointsPossible = ref(activityBag.value?.points);
+    const isFacilitatorCompleted = propertyRef(completionBag.value.isFacilitatorCompleted ?? false, "IsFacilitatorCompleted");
+    const facilitatorComment = propertyRef(completionBag.value.facilitatorComment ?? "", "FacilitatorComments");
+    const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointsEarned");
+    const completionValues = propertyRef(completionBag.value.completionValues ?? {}, "ActivityComponentCompletionJson");
+    const wasCompletedOnTime = propertyRef(completionBag.value.wasCompletedOnTime ?? true, "WasCompletedOnTime");
+
+    const isAssignedToFacilitatorAndUngraded =
+        activityBag.value.assignTo === AssignTo.Facilitator
+        && !completionBag.value.gradedByPersonAlias?.value;
+
+    // Default to the scoring screen when the activity requires scoring
+    // or when assigned to the facilitator and not yet graded.
+    const screenToShow = ref(
+        completionBag.value.requiresScoring || isAssignedToFacilitatorAndUngraded ?
+            ComponentScreen.Scoring :
+            ComponentScreen.Summary);
+
+    const buttonsContainer = ref<HTMLDivElement>();
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [
+        completionValues
+        , dueDate
+        , isFacilitatorCompleted
+        , facilitatorComment
+        , pointsEarned
+        , wasCompletedOnTime
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    function switchToScreen(toScreen: ComponentScreen): void {
+        screenToShow.value = toScreen;
+        nextTick(() => {
+            // Scroll to the clicked button to prevent the screen from jumping.
+            if (buttonsContainer.value) {
+                buttonsContainer.value.scrollIntoView({ behavior: "auto", block: "center" });
+            }
+        });
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     *  The event handler for an activity that's completed by a Facilitator
+     *  This should apply only to the completion screen - when an activity
+     *  is assigned to a Facilitator rather than a student.
+     */
+    function onFacilitatorCompleted(successful: boolean): void {
+        if (successful && activityBag.value.assignTo === AssignTo.Facilitator) {
+            isFacilitatorCompleted.value = true;
+        }
+    }
+
+    function onCompletionValuesChanged(newValues: Record<string, string>, extra?: CompletionExtraValues): void {
+        completionValues.value = newValues;
+
+        if (extra) {
+            if (extra.pointsEarned !== undefined) {
+                pointsEarned.value = extra.pointsEarned;
+            }
+
+            // Binary file cannot be changed by facilitator so we don't check
+            // for it in the extra values.
+        }
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(completionValues, props.modelValue.bag?.completionValues ?? {});
+        updateRefValue(isFacilitatorCompleted, props.modelValue.bag?.isFacilitatorCompleted ?? false);
+        updateRefValue(facilitatorComment, props.modelValue.bag?.facilitatorComment ?? "");
+        updateRefValue(pointsEarned, props.modelValue.bag?.pointsEarned ?? 0);
+        updateRefValue(dueDate, props.modelValue.bag?.dueDate);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: ValidPropertiesBox<LearningClassActivityCompletionBag> = {
+            bag: { ...props.modelValue.bag } as LearningClassActivityCompletionBag
+        };
+
+        setPropertiesBoxValue(newValue, "completionValues", completionValues.value);
+        setPropertiesBoxValue(newValue, "isFacilitatorCompleted", isFacilitatorCompleted.value);
+        setPropertiesBoxValue(newValue, "facilitatorComment", facilitatorComment.value);
+        setPropertiesBoxValue(newValue, "pointsEarned", pointsEarned.value);
+        setPropertiesBoxValue(newValue, "dueDate", dueDate.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    watch(completionBag, () => {
+        updateRefValue(completionValues, completionBag.value.completionValues ?? {});
+    });
+
+    const componentUrl = activityBag.value.activityComponent?.componentUrl ?? "";
+
+    if (componentUrl.length > 0) {
+        activityTypeComponent = defineAsyncComponent(() => import(componentUrl));
+    }
+
+</script>

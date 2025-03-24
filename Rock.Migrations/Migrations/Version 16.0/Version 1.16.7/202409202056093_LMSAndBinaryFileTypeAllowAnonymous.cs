@@ -37,7 +37,7 @@ namespace Rock.Migrations
             AddForeignKey("dbo.LearningActivityCompletion", "GradedByPersonAliasId", "dbo.PersonAlias", "Id");
             AddForeignKey("dbo.LearningProgram", "DefaultLearningGradingSystemId", "dbo.LearningGradingSystem", "Id");
             DropColumn("dbo.LearningActivity", "DueDateCalculationMethod");
-            DropColumn("dbo.LearningActivity", "AvailableDateCalculationMethod");
+            DropColumn("dbo.LearningActivity", "AvailableDateCalculationMethod" );
         }
         
         /// <summary>

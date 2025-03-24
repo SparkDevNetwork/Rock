@@ -141,6 +141,20 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region LMS
+
+        /// <summary>
+        /// A facilitator in a class.
+        /// </summary>
+        public const string GROUPROLE_LMS_CLASS_FACILITATOR = "80F802CE-2F59-4AB1-ABD8-CFD7A009A00A";
+
+        /// <summary>
+        /// A student in a class.
+        /// </summary>
+        public const string GROUPROLE_LMS_CLASS_STUDENT = "FA3ACAC2-0377-484C-B888-974CA3BF2FF2";
+
+        #endregion
+
         #region Security Groups
 
         /// <summary>

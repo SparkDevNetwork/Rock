@@ -130,6 +130,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AbbreviatedName = source.AbbreviatedName;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.AllowSearch = source.AllowSearch;
             target.AttributeColor = source.AttributeColor;
             target.DefaultPersistedCondensedHtmlValue = source.DefaultPersistedCondensedHtmlValue;

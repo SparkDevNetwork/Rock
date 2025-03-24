@@ -39,6 +39,11 @@
                 </div>
 
                 <div class="col-md-4">
+                    <CheckBox v-model="autoFocus"
+                              label="Auto Focus" />
+                </div>
+
+                <div class="col-md-4">
                     <CheckBox v-model="includeUnapproved"
                               label="Include Unapproved"
                               help="Determines if unapproved items should be included in the search results." />
@@ -231,6 +236,7 @@
     const showFiltersPanel = ref(false);
     const showFullTextSearch = ref(false);
     const showSort = ref(false);
+    const autoFocus = ref(true);
     const enabledSortOrders = ref<string[]>([]);
     const trendingTerm = ref("");
     const filters = ref<FilterOptionsBag[]>([]);
@@ -286,6 +292,7 @@
             showFullTextSearch.value = result.data.settings.showFullTextSearch;
             showSort.value = result.data.settings.showSort;
             numberOfResults.value = result.data.settings.numberOfResults ?? null;
+            autoFocus.value = result.data.settings.autoFocus;
             searchOnLoad.value = result.data.settings.searchOnLoad;
             groupResultsBySource.value = result.data.settings.groupResultsBySource;
             enabledSortOrders.value = result.data.settings.enabledSortOrders ?? [];
@@ -346,6 +353,7 @@
         setCustomSettingsBoxValue(box, "showFiltersPanel", showFiltersPanel.value);
         setCustomSettingsBoxValue(box, "showFullTextSearch", showFullTextSearch.value);
         setCustomSettingsBoxValue(box, "showSort", showSort.value);
+        setCustomSettingsBoxValue(box, "autoFocus", autoFocus.value);
         setCustomSettingsBoxValue(box, "numberOfResults", numberOfResults.value);
         setCustomSettingsBoxValue(box, "searchOnLoad", searchOnLoad.value);
         setCustomSettingsBoxValue(box, "groupResultsBySource", groupResultsBySource.value);

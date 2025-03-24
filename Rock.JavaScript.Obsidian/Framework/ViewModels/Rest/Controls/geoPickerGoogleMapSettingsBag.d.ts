@@ -35,6 +35,9 @@ export type GeoPickerGoogleMapSettingsBag = {
     /** API key for using Google Maps */
     googleApiKey?: string | null;
 
+    /** Gets or sets the google map identifier. */
+    googleMapId?: string | null;
+
     /** Styles for how a Google Map should look */
     mapStyle?: string | null;
 

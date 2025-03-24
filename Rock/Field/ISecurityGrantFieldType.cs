@@ -34,5 +34,13 @@ namespace Rock.Field
         /// <param name="grant">The grant which the rules will be added to.</param>
         /// <param name="privateConfigurationValues">The private configuration values that describe the field.</param>
         void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues );
+
+        /// <summary>
+        /// Adds the rules to security grant that are needed by this field type
+        /// for it to function properly. The is used to get security grants for
+        /// new attributes being created.
+        /// </summary>
+        /// <param name="grant">The grant which the rules will be added to.</param>
+        void AddRulesToSecurityGrant( SecurityGrant grant );
     }
 }

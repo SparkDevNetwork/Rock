@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus.Queue;
 using Rock.Logging;
 
@@ -42,6 +44,7 @@ namespace Rock.Bus.Message
     /// <summary>
     /// </summary>
     /// <seealso cref="Rock.Bus.Message.IAuthorizationCacheWasUpdatedMessage" />
+    [RockLoggingCategory]
     public class AuthorizationCacheWasUpdatedMessage : IAuthorizationCacheWasUpdatedMessage
     {
         /// <summary>
@@ -90,7 +93,8 @@ namespace Rock.Bus.Message
 
             _ = RockMessageBus.PublishAsync<CacheEventQueue, AuthorizationCacheWasUpdatedMessage>( message );
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, $"Published Authorization Update message." );
+            RockLogger.LoggerFactory.CreateLogger<AuthorizationCacheWasUpdatedMessage>()
+                .LogDebug( "Published Authorization Update message." );
         }
     }
 }

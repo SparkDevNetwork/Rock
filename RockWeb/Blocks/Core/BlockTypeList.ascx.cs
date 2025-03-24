@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Core
                 cbExcludeSystem.Checked = !string.IsNullOrWhiteSpace( gfSettings.GetFilterPreference( "Exclude System" ) );
                 cbShowObsidianOnly.Checked = !string.IsNullOrWhiteSpace( gfSettings.GetFilterPreference( "Show Obsidian Only" ) );
 
-                BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
+                BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ) );
 
                 BindGrid();
             }
@@ -210,7 +210,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRefreshAll_Click( object sender, EventArgs e )
         {
-            BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page, true );
+            BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), true );
             BindGrid();
         }
 

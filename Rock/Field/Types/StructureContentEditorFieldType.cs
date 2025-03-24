@@ -33,11 +33,24 @@ namespace Rock.Field.Types
     /// Field type to encapsulate a structured content editor which allows
     /// the individual a nice UI interface to editing content.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.STRUCTURE_CONTENT_EDITOR )]
+    [IconSvg( @"<svg viewBox=""0 0 16 16"" xmlns=""http://www.w3.org/2000/svg""><path d=""M1.525 9.25H7.475C7.76375 9.25 8 8.96875 8 8.625V3.625C8 3.28125 7.76375 3 7.475 3H1.525C1.23625 3 1 3.28125 1 3.625V8.625C1 8.96875 1.23625 9.25 1.525 9.25ZM2.75 5.08333H6.25V7.16667H2.75V5.08333ZM1 12.375V11.125C1 10.7813 1.23625 10.5 1.525 10.5H7.475C7.76375 10.5 8 10.7813 8 11.125V12.375C8 12.7188 7.76375 13 7.475 13H1.525C1.23625 13 1 12.7188 1 12.375ZM9.4 12.375V11.125C9.4 10.7813 9.63625 10.5 9.925 10.5H14.475C14.7637 10.5 15 10.7813 15 11.125V12.375C15 12.7188 14.7637 13 14.475 13H9.925C9.63625 13 9.4 12.7188 9.4 12.375ZM9.4 4.875V3.625C9.4 3.28125 9.63625 3 9.925 3H14.475C14.7637 3 15 3.28125 15 3.625V4.875C15 5.21875 14.7637 5.5 14.475 5.5H9.925C9.63625 5.5 9.4 5.21875 9.4 4.875ZM9.4 8.625V7.375C9.4 7.03125 9.63625 6.75 9.925 6.75H14.475C14.7637 6.75 15 7.03125 15 7.375V8.625C15 8.96875 14.7637 9.25 14.475 9.25H9.925C9.63625 9.25 9.4 8.96875 9.4 8.625Z"" /></svg>" )]
     public class StructureContentEditorFieldType : FieldType
     {
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( publicValue.IsNullOrWhiteSpace() )
+            {
+                return "{}";
+            }
+
+            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
 
         /// <inheritdoc/>
         public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )

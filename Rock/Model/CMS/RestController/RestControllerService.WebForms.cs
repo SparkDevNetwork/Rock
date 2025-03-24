@@ -36,6 +36,7 @@ namespace Rock.Model
         {
             public string Name { get; set; }
             public string ClassName { get; set; }
+            public Type Type { get; set; }
             public Guid? ReflectedGuid { get; set; }
             public List<DiscoveredRestAction> DiscoveredRestActions { get; set; } = new List<DiscoveredRestAction>();
             public override string ToString()
@@ -98,6 +99,33 @@ namespace Rock.Model
                 return;
             }
 
+            // Look for any duplicate rest action unique identifiers and log
+            // them for the developer to look into.
+            var duplicateActionIdentifiers = explorer.ApiDescriptions
+                .Select( d => d.ActionDescriptor as ReflectedHttpActionDescriptor )
+                .Where( d => d != null )
+                .Select( d => new
+                {
+                    d.MethodInfo,
+                    d.MethodInfo?.GetCustomAttribute<Rock.SystemGuid.RestActionGuidAttribute>( inherit: false )?.Guid,
+                    d.ControllerDescriptor.ControllerType,
+                    d.MethodInfo.Name
+                } )
+                .Where( d => d.Guid.HasValue )
+                .GroupBy( d => d.Guid.Value )
+                // Only include groups with duplicate guids.
+                .Where( g => g.Count() > 1 )
+                // Only include groups where the duplicates aren't the same method.
+                .Where( g => g.GroupBy( d => d.MethodInfo ).Count() > 1 )
+                .ToList();
+
+            foreach ( var duplicateIdentifier in duplicateActionIdentifiers )
+            {
+                var methods = duplicateIdentifier.Select( d => $"{d.ControllerType.FullName}.{d.Name}" ).JoinStrings( " and " );
+
+                ExceptionLogService.LogException( new Exception( $"Found duplicate rest action guid '{duplicateIdentifier.Key}' on {methods}" ) );
+            }
+
             foreach ( var apiDescription in explorer.ApiDescriptions )
             {
                 var reflectedHttpActionDescriptor = ( ReflectedHttpActionDescriptor ) apiDescription.ActionDescriptor;
@@ -121,7 +149,8 @@ namespace Rock.Model
                     controller = new DiscoveredControllerFromReflection
                     {
                         Name = name,
-                        ClassName = fullClassName
+                        ClassName = fullClassName,
+                        Type = action.ControllerDescriptor.ControllerType
                     };
 
                     if ( controllerRockGuid.HasValue )
@@ -256,6 +285,17 @@ namespace Rock.Model
                         controller.Guid = discoveredController.ReflectedGuid.Value;
                     }
                 }
+
+                var metadata = controller.GetMetadata();
+
+                metadata.RoutePrefix = discoveredController.Type.GetCustomAttributesData()
+                    .Where( a => a.AttributeType.FullName == "System.Web.Http.RoutePrefixAttribute" && a.ConstructorArguments.Count == 1 )
+                    .Select( a => a.ConstructorArguments[0].Value as string )
+                    .FirstOrDefault();
+                metadata.Version = metadata.RoutePrefix?.StartsWith( "api/v2", StringComparison.OrdinalIgnoreCase ) == true ? 2 : 1;
+                metadata.SupportedActions = controller.CalculateSupportedActions( metadata, out _ );
+
+                controller.SetMetadata( metadata );
             }
 
             // Save all changes to the REST controllers.
@@ -311,7 +351,8 @@ namespace Rock.Model
                         action = new RestAction
                         {
                             ApiId = newFormatId,
-                            ControllerId = controller.Id
+                            ControllerId = controller.Id,
+                            Controller = controller
                         };
                         controller.Actions.Add( action );
                     }
@@ -341,6 +382,16 @@ namespace Rock.Model
                             action.Guid = discoveredAction.ReflectedGuid.Value;
                         }
                     }
+
+                    var metadata = action.GetMetadata();
+
+                    metadata.SecuredAction = discoveredAction.MethodInfo.GetCustomAttributesData()
+                        .Where( a => a.AttributeType.FullName == "Rock.Rest.Filters.SecuredAttribute" && a.ConstructorArguments.Count == 1 )
+                        .Select( a => a.ConstructorArguments[0].Value as string )
+                        .FirstOrDefault();
+                    metadata.SupportedActions = action.CalculateSupportedActions();
+
+                    action.SetMetadata( metadata );
                 }
             }
 

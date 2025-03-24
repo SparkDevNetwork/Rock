@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "PersonPreviousName" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "80AC80E1-F769-4E34-9937-E2FEEF2B60EE")]
     public partial class PersonPreviousName : Model<PersonPreviousName>
     {

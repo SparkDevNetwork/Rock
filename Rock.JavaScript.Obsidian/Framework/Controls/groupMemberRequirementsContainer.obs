@@ -1,0 +1,100 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="group-member-requirements-container">
+        <NotificationBox v-if="errorBoxes && errorBoxes.length > 0" v-for="box of errorBoxes" :key="box.text ?? ''" alertType="danger">
+            {{ box.text }}
+            <template #details>{{ box.details }}</template>
+        </NotificationBox>
+        <div v-for="category of categories" :key="category.id ?? 0" :class="`row d-flex flex-wrap requirement-category requirement-category-${category.id}`">
+            <div v-if="category.name?.trim()" class="col-xs-12">
+                <h5>{{ category.name }}</h5>
+            </div>
+            <GroupMemberRequirementCard v-for="requirement of category.memberRequirements"
+                                        :key="requirement.groupMemberRequirementGuid ?? 0"
+                                        :groupRequirementGuid="requirement.groupRequirementGuid ?? ''"
+                                        :groupMemberRequirementGuid="requirement.groupMemberRequirementGuid ?? ''"
+                                        :groupMemberGuid="groupMemberGuid"
+                                        :meetsGroupRequirement="requirement.meetsGroupRequirement"
+                                        :title="requirement.title ?? ''"
+                                        :typeIconCssClass="requirement.typeIconCssClass ?? ''"
+                                        :canOverride="requirement.canOverride"
+                                        :workflowEntryLinkedPageValue="workflowEntryLinkedPageValue"
+                                        :isSummaryHidden="isSummaryHidden"
+                                        :isInteractionDisabled="isInteractionDisabled"
+                                        @statusChanged="loadRequirementCardData" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import GroupMemberRequirementCard from "./Internal/groupMemberRequirementCard.obs";
+    import NotificationBox from "./notificationBox.obs";
+    import { GroupMemberRequirementContainerGetDataOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementContainerGetDataOptionsBag";
+    import { GroupMemberRequirementContainerGetDataResultsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementContainerGetDataResultsBag";
+    import { GroupMemberRequirementCategoryBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementCategoryBag";
+    import { GroupMemberRequirementErrorBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementErrorBag";
+    import { Guid } from "@Obsidian/Types";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        groupGuid: {
+            type: String as PropType<Guid | undefined>
+        },
+
+        /** The role of the group member */
+        groupRoleGuid: {
+            type: String as PropType<Guid | undefined>
+        },
+
+        groupMemberGuid: {
+            type: String as PropType<Guid | undefined>
+        },
+
+        /** The Guid of the person who is the group member */
+        personGuid: {
+            type: String as PropType<Guid | undefined>
+        },
+
+        workflowEntryLinkedPageValue: {
+            type: String
+        },
+
+        isInteractionDisabled: {
+            type: Boolean
+        },
+
+        isSummaryHidden: {
+            type: Boolean
+        }
+    });
+
+    const http = useHttp();
+
+    const errorBoxes = ref<GroupMemberRequirementErrorBag[]>([]);
+    const categories = ref<GroupMemberRequirementCategoryBag[]>([]);
+
+    /**
+     * Loads the items from the server.
+     */
+    async function loadRequirementCardData(): Promise<void> {
+        const options: GroupMemberRequirementContainerGetDataOptionsBag = {
+            groupGuid: props.groupGuid || emptyGuid,
+            groupRoleGuid: props.groupRoleGuid || emptyGuid,
+            personGuid: props.personGuid || emptyGuid
+        };
+        const result = await http.post<GroupMemberRequirementContainerGetDataResultsBag>("/api/v2/Controls/GroupMemberRequirementContainerGetData", undefined, options);
+
+        if (result.isSuccess && result.data) {
+            const data = result.data;
+            errorBoxes.value = data.errors ?? [];
+            categories.value = data.categorizedRequirements ?? [];
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+        }
+    }
+
+    loadRequirementCardData();
+</script>

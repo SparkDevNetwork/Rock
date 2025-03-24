@@ -1,0 +1,61 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <BadgeComponentPicker label="Badge Component"
+                              v-model="value"
+                              :multiple="multiple"
+                              :columnCount="columnCount"
+                              :enhanceForLongLists="enhanceForLongLists"
+                              :displayStyle="displayStyle"
+                              :showBlankItem="showBlankItem"
+                              :entityTypeGuid="entityTypeGuid?.value" />
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+                </div>
+                <div class="col-md-4">
+                    <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+                </div>
+                <div class="col-md-4">
+                    <EntityTypePicker label="For Entity Type" v-model="entityTypeGuid" enhanceForLongLists showBlankItem />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import BadgeComponentPicker from "@Obsidian/Controls/badgeComponentPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import { getSfcControlImportPath, displayStyleItems } from "./common/utils.partial";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+
+    const columnCount = ref(0);
+    const displayStyle = ref(PickerDisplayStyle.Auto);
+    const entityTypeGuid = ref();
+    const enhanceForLongLists = ref(false);
+    const multiple = ref(false);
+    const showBlankItem = ref(false);
+    const value = ref({});
+    const importCode = getSfcControlImportPath("badgeComponentPicker");
+    const exampleCode = `<BadgeComponentPicker label="Badge Component" v-model="value" />`;
+</script>

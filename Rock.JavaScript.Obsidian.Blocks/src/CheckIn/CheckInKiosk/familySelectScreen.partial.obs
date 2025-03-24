@@ -31,6 +31,7 @@
     import { asCommaAnd } from "@Obsidian/Utility/stringUtils";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EditFamilyResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/editFamilyResponseBag";
+    import { showDialog } from "@Obsidian/Utility/dialogs";
 
     const props = defineProps({
         configuration: {
@@ -122,7 +123,32 @@
             const newSession = await props.session.withFamily(family.id);
 
             if (!newSession.attendees || newSession.attendees.length === 0) {
-                await alert("There were not any family members in this family.", cancellationTokenSource.token);
+                if (newSession.configuration.kiosk?.isRegistrationModeEnabled) {
+                    const button = await showDialog({
+                        message: "There were not any eligible family members in this family.",
+                        buttons: [
+                            {
+                                key: "edit",
+                                label: "Edit Family",
+                                className: "btn btn-default"
+                            },
+                            {
+                                key: "ok",
+                                label: "OK",
+                                className: "btn btn-primary"
+                            }
+                        ],
+                        cancellationToken: cancellationTokenSource.token
+                    });
+
+                    if (button === "edit") {
+                        editFamily(family.id);
+                    }
+                }
+                else {
+                    await alert("There were not any eligible family members in this family.", cancellationTokenSource.token);
+                }
+
                 return;
             }
 
@@ -159,6 +185,26 @@
             };
 
             emit("editFamily", registrationData);
+        }
+        else {
+            await alert(response.errorMessage || UnexpectedErrorMessage, cancellationTokenSource.token);
+        }
+    }
+
+    /**
+     * Start the process of adding a new family to the system.
+     */
+    async function editFamily(familyId: string): Promise<void> {
+        const data = {
+            familyId: familyId,
+            kioskId: props.configuration.kiosk?.id,
+            templateId: props.session.configuration?.template?.id
+        };
+
+        const response = await invokeBlockAction<EditFamilyResponseBag>("EditFamily", data);
+
+        if (response.isSuccess && response.data) {
+            emit("editFamily", response.data as RegistrationScreenData);
         }
         else {
             await alert(response.errorMessage || UnexpectedErrorMessage, cancellationTokenSource.token);

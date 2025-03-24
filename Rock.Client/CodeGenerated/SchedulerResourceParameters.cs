@@ -38,11 +38,6 @@ namespace Rock.Client
         public Int32[] AttendanceOccurrenceLocationIds { get; set; }
 
         /// <summary />
-        // Made Obsolete in Rock "1.12"
-        [Obsolete( "Use AttendanceOccurrenceScheduleIds instead", false )]
-        public int AttendanceOccurrenceScheduleId { get; set; }
-
-        /// <summary />
         public Int32[] AttendanceOccurrenceScheduleIds { get; set; }
 
         /// <summary />
@@ -80,9 +75,6 @@ namespace Rock.Client
         {
             this.AttendanceOccurrenceGroupId = source.AttendanceOccurrenceGroupId;
             this.AttendanceOccurrenceLocationIds = source.AttendanceOccurrenceLocationIds;
-            #pragma warning disable 612, 618
-            this.AttendanceOccurrenceScheduleId = source.AttendanceOccurrenceScheduleId;
-            #pragma warning restore 612, 618
             this.AttendanceOccurrenceScheduleIds = source.AttendanceOccurrenceScheduleIds;
             this.AttendanceOccurrenceSundayDate = source.AttendanceOccurrenceSundayDate;
             this.GroupMemberFilterType = source.GroupMemberFilterType;

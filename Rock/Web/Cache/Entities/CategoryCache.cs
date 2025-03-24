@@ -270,6 +270,45 @@ namespace Rock.Web.Cache
             return Name;
         }
 
+        /// <summary>
+        /// Gets all <seealso cref="CategoryCache">Categories</seealso> for a specific entityTypeId.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <returns></returns>
+        public static CategoryCache[] AllForEntityType( int entityTypeId )
+        {
+            return GetByEntityType( entityTypeId );
+        }
+
+        /// <summary>
+        /// Gets a list of all <seealso cref="CategoryCache">Categories</seealso> for a specific entityType.
+        /// </summary>
+        /// <returns></returns>
+        public static CategoryCache[] AllForEntityType<T>()
+        {
+            var entityTypeId = EntityTypeCache.Get<T>()?.Id;
+            return AllForEntityType( entityTypeId ?? 0 );
+        }
+
+        /// <summary>
+        /// Gets all <seealso cref="CategoryCache">Categories</seealso> for a specific entityTypeId.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <returns></returns>
+        internal static CategoryCache[] GetByEntityType( int? entityTypeId )
+        {
+            var rockContext = new RockContext();
+            var Categorieservice = new CategoryService(rockContext);
+            var categoryIdList = Categorieservice.GetByEntityTypeId( entityTypeId )
+               .Select(c => c.Id)
+               .ToList();
+
+            var categories = GetMany( categoryIdList, rockContext )
+                .ToArray();
+
+            return categories;
+        }
+
         #endregion
 
     }

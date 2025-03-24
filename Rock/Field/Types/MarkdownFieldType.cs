@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -30,17 +31,50 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to edit text in Markdown format and rendered as processed Markdown
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MARKDOWN )]
     public class MarkdownFieldType : FieldType
     {
         #region Configuration
 
         private const string NUMBER_OF_ROWS = "numberofrows";
+        private const string HTML_VALUE = "htmlvalue";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            // Create a new dictionary to protect against the passed dictionary being changed after we are called.
+            var publicConfig = new Dictionary<string, string>( privateConfigurationValues );
+            publicConfig.AddOrReplace( HTML_VALUE, GetHtmlValue( value, privateConfigurationValues ) );
+            return publicConfig;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            // Create a new dictionary to protect against the passed dictionary being changed after we are called.
+            var privateConfig = new Dictionary<string, string>( publicConfigurationValues );
+            privateConfig.Remove( HTML_VALUE );
+
+            return privateConfig;
+        }
 
         #endregion
 
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue;
+        }
 
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )

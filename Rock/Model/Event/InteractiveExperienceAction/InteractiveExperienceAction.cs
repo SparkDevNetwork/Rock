@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "InteractiveExperienceAction" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "8635E7E7-3576-47FF-92DE-30A69EB5D011" )]
     public partial class InteractiveExperienceAction : Model<InteractiveExperienceAction>, IOrdered
     {
@@ -52,6 +53,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int ActionEntityTypeId { get; set; }
 
         /// <summary>
@@ -61,6 +63,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of the response visual.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? ResponseVisualEntityTypeId { get; set; }
 
         /// <summary>

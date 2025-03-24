@@ -17,23 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration
-{
-    public static partial class TestDataHelper
-    {
-        public static class Metrics
-        {
-
-        }
-    }
-}
-
-namespace Rock.Tests.Integration.Metrics
+namespace Rock.Tests.Integration.TestData.Metrics
 {
     /// <summary>
     /// Provides actions to manage Metrics data.

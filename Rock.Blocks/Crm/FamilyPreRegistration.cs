@@ -19,13 +19,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
-using Rock.ClientService.Core.Campus;
-using Rock.ClientService.Core.Campus.Options;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Enums.Blocks.Crm.FamilyPreRegistration;
-using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks.Crm.FamilyPreRegistration;
@@ -206,11 +206,18 @@ namespace Rock.Blocks.Crm
         Order = 18 )]
 
     [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Order = 19 )]
+
+    [BooleanField(
         "Prioritize Child Entry",
         Key = AttributeKey.PrioritizeChildEntry,
         Description = "Moves the Child panel above the Adult Information panel and starts with one child to be filled in.",
         IsRequired = false,
-        Order = 19 )]
+        Order = 20 )]
 
     #region Adult Category
 
@@ -362,6 +369,15 @@ namespace Rock.Blocks.Crm
         Category = CategoryKey.AdultFields,
         Order = 14 )]
 
+    [TextField(
+        "Adult Label",
+        Key = AttributeKey.AdultLabel,
+        Description = "The label that should be used when referring to adults on the form. Please provide this in the singular form.",
+        Category = CategoryKey.AdultFields,
+        DefaultValue = "Adult",
+        IsRequired = false,
+        Order = 15 )]
+
     #endregion
 
     #region Child Category
@@ -475,6 +491,16 @@ namespace Rock.Blocks.Crm
         DefaultValue = "Hide",
         Category = CategoryKey.ChildFields,
         Order = 10 )]
+
+    [TextField(
+        "Child Label",
+        Key = AttributeKey.ChildLabel,
+        Description = "The label that should be used when referring to children on the form. Please provide this in the singular form.",
+        DefaultValue = "Child",
+        IsRequired = false,
+        Category = CategoryKey.ChildFields,
+        Order = 11 )]
+
     #endregion
 
     #region Child Relationship Category
@@ -538,6 +564,7 @@ namespace Rock.Blocks.Crm
             public const string RedirectURL = "RedirectURL";
             public const string RequireCampus = "RequireCampus";
             public const string DisplaySmsOptIn = "DisplaySmsOptIn";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
             public const string PrioritizeChildEntry = "PrioritizeChildEntry";
 
             public const string AdultSuffix = "AdultSuffix";
@@ -555,6 +582,7 @@ namespace Rock.Blocks.Crm
             public const string CreateAccountDescription = "CreateAccountDescription";
             public const string RaceOption = "RaceOption";
             public const string EthnicityOption = "EthnicityOption";
+            public const string AdultLabel = "AdultLabel";
 
             public const string ChildSuffix = "ChildSuffix";
             public const string ChildGender = "ChildGender";
@@ -567,6 +595,7 @@ namespace Rock.Blocks.Crm
             public const string ChildProfilePhoto = "ChildProfilePhoto";
             public const string ChildRaceOption = "ChildRaceOption";
             public const string ChildEthnicityOption = "ChildEthnicityOption";
+            public const string ChildLabel = "ChildLabel";
 
             public const string Relationships = "Relationships";
             public const string FamilyRelationships = "FamilyRelationships";
@@ -638,6 +667,8 @@ namespace Rock.Blocks.Crm
         {
             public static string CampusGuid = "CampusGuid";
             public static string CampusId = "CampusId";
+            public static string Campus = "Campus";
+            public static string CampusCode = "CampusCode";
         }
 
         #endregion Attribute Keys, Categories and Values
@@ -834,7 +865,7 @@ namespace Rock.Blocks.Crm
             {
                 var scheduleDate = new FamilyPreRegistrationScheduleDateBag
                 {
-                    Text = sortedScheduleDate.ToString( "dddd, MM/dd" ),
+                    Text = $"{sortedScheduleDate:dddd}, {sortedScheduleDate:d}",
                     Value = sortedScheduleDate.ToString( "s" ),
                     ScheduleTimes = new List<ListItemBag>()
                 };
@@ -1386,7 +1417,7 @@ namespace Rock.Blocks.Crm
                             }
                             catch ( Exception ex )
                             {
-                                RockLogger.Log.Error( RockLogDomains.Crm, ex, ex.Message );
+                                Logger.LogError( ex, ex.Message );
                             }
                         }
                     }
@@ -1409,7 +1440,7 @@ namespace Rock.Blocks.Crm
                             }
                             catch ( Exception ex )
                             {
-                                RockLogger.Log.Error( RockLogDomains.Crm, ex, ex.Message );
+                                Logger.LogError( ex, ex.Message );
                             }
                         }
                     }
@@ -1618,15 +1649,10 @@ namespace Rock.Blocks.Crm
         {
             errorMessages = new List<string>();
 
-            if ( bag.FullName.IsNotNullOrWhiteSpace() )
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
             {
-                /* 03/22/2021 MDP
-
-                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
-
-                */
-
-                errorMessages.Add( "Invalid Form Value" );
+                errorMessages.Add( "Captcha was not valid." );
                 return false;
             }
 
@@ -1947,7 +1973,10 @@ namespace Rock.Blocks.Crm
                 ChildCommunicationPreferenceField = GetFieldBag( AttributeKey.ChildDisplayCommunicationPreference ),
                 ChildProfilePhotoField = GetFieldBag( AttributeKey.ChildProfilePhoto ),
                 ChildRaceField = GetFieldBag( AttributeKey.ChildRaceOption ),
-                ChildEthnicityField = GetFieldBag( AttributeKey.ChildEthnicityOption )
+                ChildEthnicityField = GetFieldBag( AttributeKey.ChildEthnicityOption ),
+                DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
+                AdultLabel = GetAttributeValue( AttributeKey.AdultLabel ),
+                ChildLabel = GetAttributeValue( AttributeKey.ChildLabel ),
             };
 
             using ( var rockContext = new RockContext() )
@@ -1969,8 +1998,8 @@ namespace Rock.Blocks.Crm
 
                 box.FamilyGuid = family.Guid;
                 var familyAttributes = GetFamilyAttributes( currentPerson );
-                box.FamilyAttributes = family.GetPublicAttributesForEdit( currentPerson, attributeFilter: f => familyAttributes.Any( a => a.Guid == f.Guid ) );
-                box.FamilyAttributeValues = family.GetPublicAttributeValuesForEdit( currentPerson, attributeFilter: f => familyAttributes.Any( a => a.Guid == f.Guid ) );
+                box.FamilyAttributes = family.GetPublicAttributesForEdit( currentPerson, enforceSecurity: false, attributeFilter: f => familyAttributes.Any( a => a.Guid == f.Guid ) );
+                box.FamilyAttributeValues = family.GetPublicAttributeValuesForEdit( currentPerson, enforceSecurity: false, attributeFilter: f => familyAttributes.Any( a => a.Guid == f.Guid ) );
 
                 var mockChild = new Person
                 {
@@ -2025,6 +2054,8 @@ namespace Rock.Blocks.Crm
         {
             var campusGuid = PageParameter( PageParameterKey.CampusGuid ).AsGuidOrNull();
             var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+            var campusIdKey = PageParameter( PageParameterKey.Campus );
+            var campusCode = PageParameter( PageParameterKey.CampusCode );
 
             CampusCache initialCampus = null;
 
@@ -2032,9 +2063,19 @@ namespace Rock.Blocks.Crm
             {
                 initialCampus = CampusCache.Get( campusGuid.Value );
             }
-            else if ( campusId.HasValue )
+            else if ( campusId.HasValue && !PageCache.Layout.Site.DisablePredictableIds )
             {
                 initialCampus = CampusCache.Get( campusId.Value );
+            }
+            else if ( !string.IsNullOrWhiteSpace( campusIdKey ) )
+            {
+                initialCampus = CampusCache.Get( campusIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            }
+            else if ( !string.IsNullOrWhiteSpace( campusCode ) )
+            {
+                var campuses = CampusCache.All( false );
+
+                initialCampus = campuses.Where( c => c.ShortCode.ToUpper() == campusCode.ToUpper() ).FirstOrDefault();
             }
 
             if ( initialCampus == null && this.DefaultCampusGuid != Guid.Empty )
@@ -2534,8 +2575,8 @@ namespace Rock.Blocks.Crm
 
             var bag = new FamilyPreRegistrationPersonBag
             {
-                Attributes = person.GetPublicAttributesForEdit( currentPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ) ),
-                AttributeValues = person.GetPublicAttributeValuesForEdit( currentPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ) ),
+                Attributes = person.GetPublicAttributesForEdit( currentPerson, enforceSecurity: false, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ) ),
+                AttributeValues = person.GetPublicAttributeValuesForEdit( currentPerson, enforceSecurity: false, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ) ),
                 BirthDate = person.BirthDate != null ?
                     new BirthdayPickerBag
                     {

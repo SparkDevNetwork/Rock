@@ -471,6 +471,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         public bool ShowSmsOptIn { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether captcha support should be disabled for this block.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [disable captcha support]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisableCaptchaSupport { get; set; }
+
+        /// <summary>
         /// Gets value indicating whether registrants should be able to pay their registration costs in multiple, scheduled installments.
         /// </summary>
         /// <value>

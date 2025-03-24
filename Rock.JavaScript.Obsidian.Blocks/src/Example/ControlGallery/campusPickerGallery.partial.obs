@@ -1,0 +1,94 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <CampusPicker label="Campus"
+                      v-model="value"
+                      :multiple="multiple"
+                      :columnCount="columnCount"
+                      :enhanceForLongLists="enhanceForLongLists"
+                      :displayStyle="displayStyle"
+                      :showBlankItem="showBlankItem"
+                      :forceVisible="forceVisible"
+                      :includeInactive="includeInactive"
+                      :campusStatusFilter="campusStatusFilter?.value"
+                      :campusTypeFilter="campusTypeFilter?.value" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+
+                <div class="col-md-4">
+                    <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+                </div>
+
+                <div class="col-md-4">
+                    <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+                </div>
+
+                <div class="col-md-4">
+                    <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Force Visible" v-model="forceVisible" />
+                </div>
+
+                <div class="col-md-4">
+                    <CheckBox label="Include Inactive" v-model="includeInactive" />
+                </div>
+
+                <div class="col-md-4">
+                    <DefinedValuePicker label="Campus Type Filter" v-model="campusTypeFilter" :definedTypeGuid="campusTypeDefinedTypeGuid" showBlankItem />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <DefinedValuePicker label="Campus Status Filter" v-model="campusStatusFilter" :definedTypeGuid="campusStatusDefinedTypeGuid" showBlankItem />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath, displayStyleItems } from "./common/utils.partial";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+
+    const columnCount = ref(0);
+    const displayStyle = ref(PickerDisplayStyle.Auto);
+    const enhanceForLongLists = ref(false);
+    const multiple = ref(false);
+    const showBlankItem = ref(true);
+    const value = ref<ListItemBag>({});
+    const forceVisible = ref(false);
+    const includeInactive = ref(false);
+    const campusStatusFilter = ref();
+    const campusTypeFilter = ref();
+    const campusStatusDefinedTypeGuid = DefinedType.CampusStatus;
+    const campusTypeDefinedTypeGuid = DefinedType.CampusType;
+    const importCode = getSfcControlImportPath("campusPicker");
+    const exampleCode = `<CampusPicker label="Campus" v-model="value" />`;
+</script>

@@ -73,7 +73,7 @@
 
         valueBuilder.addTextValue("Minimum Days To Retake", props.modelValue.minimumDaysToRetake ? props.modelValue.minimumDaysToRetake.toString() : "0");
 
-        valueBuilder.addTextValue("Valid Duration", props.modelValue.validDuration.toString());
+        valueBuilder.addTextValue("Valid Duration", props.modelValue.validDuration ? props.modelValue.validDuration.toString() : "0");
 
         return valueBuilder.build();
     });

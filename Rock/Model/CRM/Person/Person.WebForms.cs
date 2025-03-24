@@ -92,7 +92,7 @@ namespace Rock.Model
                         case EmailPreference.NoMassEmails:
                             {
                                 return string.Format(
-                                    "<span class='js-email-status email-status no-mass-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'><a class='{0}' href='{1}'>{2} {3} {4} <i class='fa fa-exchange'></i></a> </span>",
+                                    "<span class='js-email-status email-status no-mass-email'><a class='{0}' href='{1}'>{2} {3} {4} <i class='fa fa-exchange' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'></i></a> </span>",
                                     cssClass,
                                     emailLink,
                                     preText,
@@ -103,7 +103,7 @@ namespace Rock.Model
                         case EmailPreference.DoNotEmail:
                             {
                                 return string.Format(
-                                    "<span class='{0} js-email-status email-status do-not-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"Do Not Email\"'>{1} {2} {3} <i class='fa fa-ban'></i></span>",
+                                    "<span class='{0} js-email-status email-status do-not-email'>{1} {2} {3} <i class='fa fa-ban text-sm text-danger' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"Do Not Email\"'></i></span>",
                                     cssClass,
                                     preText,
                                     Email,
@@ -114,7 +114,7 @@ namespace Rock.Model
                 else
                 {
                     return string.Format(
-                        "<span class='js-email-status not-active email-status' data-toggle='tooltip' data-placement='top' title='Email is not active. {0}'>{1} <i class='fa fa-exclamation-triangle'></i></span>",
+                        "<span class='js-email-status not-active email-status'>{1} <i class='fa fa-exclamation-triangle' data-toggle='tooltip' data-placement='top' title='Email is not active. {0}'></i></span>",
                         HttpUtility.HtmlEncode( EmailNote ),
                         Email );
                 }

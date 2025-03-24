@@ -37,6 +37,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a person. Stored as PersonAlias.Guid
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.PERSON )]
     public class PersonFieldType : FieldType, IEntityFieldType, ILinkableFieldType, IEntityReferenceFieldType

@@ -1,0 +1,45 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Overlay :displayDelayMs="displayDelayMs"
+             :isAbsolute="isAbsolute"
+             :isVisible="isVisible"
+             :targetSelector="targetSelector"
+             :zIndex="zIndex"
+             v-bind="$attrs">
+        <LoadingIndicator />
+    </Overlay>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import Overlay from "./overlay.partial.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+
+    defineProps({
+        targetSelector: {
+            type: String as PropType<string>,
+            required: true,
+        },
+
+        isAbsolute: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        isVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: true
+        },
+
+        displayDelayMs: {
+            type: Number as PropType<number>,
+            default: 800
+        },
+
+        zIndex: {
+            type: Object as PropType<"auto" | "inherit" | number>,
+            default: 1000 as const
+        }
+    });
+</script>

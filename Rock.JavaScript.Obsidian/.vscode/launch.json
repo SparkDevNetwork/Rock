@@ -1,0 +1,56 @@
+{
+    "configurations": [
+        {
+            "name": "Debug Framework",
+            "request": "launch",
+            "port": 9222,
+            "type": "chrome",
+            "url": "http://localhost:6229",
+            "webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian}/dist/"
+        },
+        {
+            "name": "Debug Framework (Attach to existing Chrome)",
+            "request": "attach",
+            "port": 9222,
+            "type": "chrome",
+            "urlFilter": "http://localhost:6229*",
+            "webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian}/dist/"
+        },
+        {
+            "name": "Debug Blocks",
+            "request": "launch",
+            "port": 9222,
+            "type": "chrome",
+            "url": "http://localhost:6229",
+            "webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}/dist/"
+        },
+        {
+            "name": "Debug Blocks (Attach to existing Chrome)",
+            "request": "attach",
+            "port": 9222,
+            "type": "chrome",
+            "urlFilter": "http://localhost:6229*",
+            "webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}/dist/"
+        },
+        {
+            "type": "node",
+            "name": "vscode-jest-tests.v2",
+            "request": "launch",
+            "args": [
+                "test",
+                "--",
+                "--runInBand",
+                "--watchAll=false",
+                "--testNamePattern",
+                "${jest.testNamePattern}",
+                "--runTestsByPath",
+                "${jest.testFile}"
+            ],
+            "cwd": "${workspaceFolder:Rock.JavaScript.Obsidian}",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "disableOptimisticBPs": true,
+            "runtimeExecutable": "npm"
+        }
+    ]
+}

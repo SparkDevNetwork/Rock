@@ -32,6 +32,7 @@
     import { CampusDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusDetailOptionsBag";
     import { List } from "@Obsidian/Utility/linq";
     import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const props = defineProps({
         modelValue: {
@@ -81,6 +82,10 @@
 
         if (props.modelValue.campusStatusValue?.text) {
             valueBuilder.addTextValue("Status", props.modelValue.campusStatusValue.text);
+        }
+
+        if (props.modelValue.openedDate) {
+            valueBuilder.addTextValue("Opened Date", `${RockDateTime.parseISO(props.modelValue.openedDate)?.toASPString("d") ?? ""}`);
         }
 
         if (props.modelValue.shortCode) {
@@ -135,6 +140,10 @@
 
         if (props.modelValue.campusTypeValue?.text) {
             valueBuilder.addTextValue("Type", props.modelValue.campusTypeValue.text);
+        }
+
+        if (props.modelValue.closedDate) {
+            valueBuilder.addTextValue("Closed Date", `${RockDateTime.parseISO(props.modelValue.closedDate)?.toASPString("d") ?? ""}`);
         }
 
         if (props.modelValue.url) {

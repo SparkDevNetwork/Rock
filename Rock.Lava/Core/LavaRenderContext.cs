@@ -100,7 +100,7 @@ namespace Rock.Lava
             _internalFields.SetValue( key, value );
         }
 
-        public override void SetMergeField( string key, object value, LavaContextRelativeScopeSpecifier scope = LavaContextRelativeScopeSpecifier.Current )
+        public override void SetMergeField( string key, object value, LavaContextRelativeScopeSpecifier scope = LavaContextRelativeScopeSpecifier.Default )
         {
             _mergeFields.SetValue( key, value );
         }

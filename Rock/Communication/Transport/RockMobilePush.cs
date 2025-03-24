@@ -86,7 +86,7 @@ namespace Rock.Communication.Transport
         /// <summary>
         /// The current application lock.
         /// </summary>
-        private static object _currentAppLock = new object();
+        private static readonly object _currentAppLock = new object();
 
         #endregion
 

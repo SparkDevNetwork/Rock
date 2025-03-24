@@ -15,15 +15,12 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
-using Rock.AI.Classes.TextCompletions;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
 {
     /// <summary>
-    /// The Reponse object for moderation results category scores
+    /// The Response object for moderation results category scores
     /// </summary>
     internal class OpenAIModerationsResponseResultsCategoryScores
     {
@@ -44,7 +41,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
         /// <summary>
         /// Self-harm category result
         /// </summary>
-        [JsonProperty( "hate/threatening" )]
+        [JsonProperty( "self-harm" )]
         public double SelfHarm { get; set; }
 
         /// <summary>

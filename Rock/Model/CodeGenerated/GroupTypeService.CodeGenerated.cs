@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -102,6 +103,24 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( GroupType.GroupTypeQueryableAttributeValue ), nameof( GroupTypeAttributeValues ) )]
+    public partial class GroupType
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<GroupTypeQueryableAttributeValue> GroupTypeAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class GroupTypeQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -200,8 +219,13 @@ namespace Rock.Model
             target.IgnorePersonInactivated = source.IgnorePersonInactivated;
             target.InheritedGroupTypeId = source.InheritedGroupTypeId;
             target.IsCapacityRequired = source.IsCapacityRequired;
+            target.IsChatAllowed = source.IsChatAllowed;
+            target.IsChatChannelAlwaysShown = source.IsChatChannelAlwaysShown;
+            target.IsChatChannelPublic = source.IsChatChannelPublic;
+            target.IsChatEnabledForAllGroups = source.IsChatEnabledForAllGroups;
             target.IsConcurrentCheckInPrevented = source.IsConcurrentCheckInPrevented;
             target.IsIndexEnabled = source.IsIndexEnabled;
+            target.IsLeavingChatChannelAllowed = source.IsLeavingChatChannelAllowed;
             target.IsPeerNetworkEnabled = source.IsPeerNetworkEnabled;
             target.IsSchedulingEnabled = source.IsSchedulingEnabled;
             target.IsSystem = source.IsSystem;

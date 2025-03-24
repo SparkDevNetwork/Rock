@@ -17,6 +17,8 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
@@ -27,6 +29,7 @@ namespace Rock.Web.Cache
     /// <summary>
     /// Clear Referenced Entity Dependencies Consumer class.
     /// </summary>
+    [RockLoggingCategory]
     public sealed class ClearReferencedEntityDependenciesConsumer : RockConsumer<CacheEventQueue, ClearReferencedEntityDependenciesMessage>
     {
         /// <summary>
@@ -57,7 +60,7 @@ namespace Rock.Web.Cache
             If we later discover that this isn't OK, we'll revisit this decision and make any updates to make it OK again.
             */
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, $"Consumed Clear Referenced Entity Dependencies message from {message.SenderNodeName} node." );
+            Logger.LogDebug( $"Consumed Clear Referenced Entity Dependencies message from {message.SenderNodeName} node." );
 
             AttributeCache.ClearReferencedEntityDependencies();
         }

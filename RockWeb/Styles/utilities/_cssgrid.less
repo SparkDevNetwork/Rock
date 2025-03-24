@@ -1,0 +1,198 @@
+//
+// Utilities for common `css grid` values
+//
+
+.util-mix-css-grid(@breakpoint:"base") {
+
+  .setInfix(@bp) when (@bp = "base") {
+    @infix: ~"";
+    .display-breakpoints(@infix);
+  }
+
+  .setInfix(@bp) when (default()) {
+    @infix: ~"-@{breakpoint}";
+
+    .display-breakpoints(@infix);
+  }
+
+  .setInfix(@breakpoint);
+}
+
+.display-breakpoints(@infix) {
+
+  // Columns
+  .grid-cols@{infix}-1          { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  .grid-cols@{infix}-2          { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-cols@{infix}-3          { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid-cols@{infix}-4          { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .grid-cols@{infix}-5          { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .grid-cols@{infix}-6          { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .grid-cols@{infix}-7          { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .grid-cols@{infix}-8          { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+  .grid-cols@{infix}-9          { grid-template-columns: repeat(9, minmax(0, 1fr)); }
+  .grid-cols@{infix}-10         { grid-template-columns: repeat(10, minmax(0, 1fr)); }
+  .grid-cols@{infix}-11         { grid-template-columns: repeat(11 minmax(0, 1fr)); }
+  .grid-cols@{infix}-12         { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  .grid-cols@{infix}-none       { grid-template-columns: none; }
+  .grid-cols@{infix}-subgrid    { grid-template-columns: subgrid; }
+
+  // Column Span
+  .col-auto@{infix}             { grid-column: auto; }
+  .col-span@{infix}-1           { grid-column: span 1 e("/") span 1; }
+  .col-span@{infix}-2           { grid-column: span 2 e("/") span 2; }
+  .col-span@{infix}-3           { grid-column: span 3 e("/") span 3; }
+  .col-span@{infix}-4           { grid-column: span 4 e("/") span 4; }
+  .col-span@{infix}-5           { grid-column: span 5 e("/") span 5; }
+  .col-span@{infix}-6           { grid-column: span 6 e("/") span 6; }
+  .col-span@{infix}-7           { grid-column: span 7 e("/") span 7; }
+  .col-span@{infix}-8           { grid-column: span 8 e("/") span 8; }
+  .col-span@{infix}-9           { grid-column: span 9 e("/") span 9; }
+  .col-span@{infix}-10          { grid-column: span 10 e("/") span 10; }
+  .col-span@{infix}-11          { grid-column: span 11 e("/") span 11; }
+  .col-span@{infix}-12          { grid-column: span 12 e("/") span 12; }
+  .col-span@{infix}-full        { grid-column: 1 e("/") -1; }
+
+  // Column Start
+  .col-start@{infix}-1            { grid-column-start: 1; }
+  .col-start@{infix}-2            { grid-column-start: 2; }
+  .col-start@{infix}-3            { grid-column-start: 3; }
+  .col-start@{infix}-4            { grid-column-start: 4; }
+  .col-start@{infix}-5            { grid-column-start: 5; }
+  .col-start@{infix}-6            { grid-column-start: 6; }
+  .col-start@{infix}-7            { grid-column-start: 7; }
+  .col-start@{infix}-8            { grid-column-start: 8; }
+  .col-start@{infix}-9            { grid-column-start: 9; }
+  .col-start@{infix}-10           { grid-column-start: 10; }
+  .col-start@{infix}-11           { grid-column-start: 11; }
+  .col-start@{infix}-12           { grid-column-start: 12; }
+  .col-start@{infix}-13           { grid-column-start: 13; }
+  .col-start@{infix}-auto         { grid-column-start: auto; }
+
+  // Column End
+  .col-end@{infix}-1            { grid-column-end: 1; }
+  .col-end@{infix}-2            { grid-column-end: 2; }
+  .col-end@{infix}-3            { grid-column-end: 3; }
+  .col-end@{infix}-4            { grid-column-end: 4; }
+  .col-end@{infix}-5            { grid-column-end: 5; }
+  .col-end@{infix}-6            { grid-column-end: 6; }
+  .col-end@{infix}-7            { grid-column-end: 7; }
+  .col-end@{infix}-8            { grid-column-end: 8; }
+  .col-end@{infix}-9            { grid-column-end: 9; }
+  .col-end@{infix}-10           { grid-column-end: 10; }
+  .col-end@{infix}-11           { grid-column-end: 11; }
+  .col-end@{infix}-12           { grid-column-end: 12; }
+  .col-end@{infix}-13           { grid-column-end: 13; }
+  .col-end@{infix}-auto         { grid-column-end: auto; }
+
+  // Rows
+  .grid-rows@{infix}-1          { grid-template-rows: repeat(1, minmax(0, 1fr)); }
+  .grid-rows@{infix}-2          { grid-template-rows: repeat(2, minmax(0, 1fr)); }
+  .grid-rows@{infix}-3          { grid-template-rows: repeat(3, minmax(0, 1fr)); }
+  .grid-rows@{infix}-4          { grid-template-rows: repeat(4, minmax(0, 1fr)); }
+  .grid-rows@{infix}-5          { grid-template-rows: repeat(5, minmax(0, 1fr)); }
+  .grid-rows@{infix}-6          { grid-template-rows: repeat(6, minmax(0, 1fr)); }
+  .grid-rows@{infix}-7          { grid-template-rows: repeat(7, minmax(0, 1fr)); }
+  .grid-rows@{infix}-8          { grid-template-rows: repeat(8, minmax(0, 1fr)); }
+  .grid-rows@{infix}-9          { grid-template-rows: repeat(9, minmax(0, 1fr)); }
+  .grid-rows@{infix}-10         { grid-template-rows: repeat(10, minmax(0, 1fr)); }
+  .grid-rows@{infix}-11         { grid-template-rows: repeat(11 minmax(0, 1fr)); }
+  .grid-rows@{infix}-12         { grid-template-rows: repeat(12, minmax(0, 1fr)); }
+  .grid-rows@{infix}-none       { grid-template-rows: none; }
+  .grid-rows@{infix}-subgrid    { grid-template-rows: subgrid; }
+
+  // Row Span
+  .row-auto@{infix}             { grid-row: auto; }
+  .row-span@{infix}-1           { grid-row: span 1 e("/") span 1; }
+  .row-span@{infix}-2           { grid-row: span 2 e("/") span 2; }
+  .row-span@{infix}-3           { grid-row: span 3 e("/") span 3; }
+  .row-span@{infix}-4           { grid-row: span 4 e("/") span 4; }
+  .row-span@{infix}-5           { grid-row: span 5 e("/") span 5; }
+  .row-span@{infix}-6           { grid-row: span 6 e("/") span 6; }
+  .row-span@{infix}-7           { grid-row: span 7 e("/") span 7; }
+  .row-span@{infix}-8           { grid-row: span 8 e("/") span 8; }
+  .row-span@{infix}-9           { grid-row: span 9 e("/") span 9; }
+  .row-span@{infix}-10          { grid-row: span 10 e("/") span 10; }
+  .row-span@{infix}-11          { grid-row: span 11 e("/") span 11; }
+  .row-span@{infix}-12          { grid-row: span 12 e("/") span 12; }
+  .row-span@{infix}-full        { grid-row: 1 e("/") -1; }
+
+  // Row Start
+  .row-start@{infix}-1            { grid-row-start: 1; }
+  .row-start@{infix}-2            { grid-row-start: 2; }
+  .row-start@{infix}-3            { grid-row-start: 3; }
+  .row-start@{infix}-4            { grid-row-start: 4; }
+  .row-start@{infix}-5            { grid-row-start: 5; }
+  .row-start@{infix}-6            { grid-row-start: 6; }
+  .row-start@{infix}-7            { grid-row-start: 7; }
+  .row-start@{infix}-8            { grid-row-start: 8; }
+  .row-start@{infix}-9            { grid-row-start: 9; }
+  .row-start@{infix}-10           { grid-row-start: 10; }
+  .row-start@{infix}-11           { grid-row-start: 11; }
+  .row-start@{infix}-12           { grid-row-start: 12; }
+  .row-start@{infix}-13           { grid-row-start: 13; }
+  .row-start@{infix}-auto         { grid-row-start: auto; }
+
+  // Row End
+  .row-end@{infix}-1              { grid-row-end: 1; }
+  .row-end@{infix}-2              { grid-row-end: 2; }
+  .row-end@{infix}-3              { grid-row-end: 3; }
+  .row-end@{infix}-4              { grid-row-end: 4; }
+  .row-end@{infix}-5              { grid-row-end: 5; }
+  .row-end@{infix}-6              { grid-row-end: 6; }
+  .row-end@{infix}-7              { grid-row-end: 7; }
+  .row-end@{infix}-8              { grid-row-end: 8; }
+  .row-end@{infix}-9              { grid-row-end: 9; }
+  .row-end@{infix}-10             { grid-row-end: 10; }
+  .row-end@{infix}-11             { grid-row-end: 11; }
+  .row-end@{infix}-12             { grid-row-end: 12; }
+  .row-end@{infix}-13             { grid-row-end: 13; }
+  .row-end@{infix}-auto           { grid-row-end: auto; }
+
+  // Auto Flow
+  .grid-flow@{infix}-row          { grid-auto-flow: row; }
+  .grid-flow@{infix}-column       { grid-auto-flow: column; }
+  .grid-flow@{infix}-dense        { grid-auto-flow: dense; }
+  .grid-flow@{infix}-row-dense    { grid-auto-flow: row dense; }
+  .grid-flow@{infix}-col-dense    { grid-auto-flow: column dense; }
+
+  // Auto Columns
+  .auto-cols@{infix}-auto         { grid-auto-columns: auto; }
+  .auto-cols@{infix}-min          { grid-auto-columns: min-content; }
+  .auto-cols@{infix}-max          { grid-auto-columns: max-content; }
+  .auto-cols@{infix}-fr           { grid-auto-columns: minmax(0, 1fr); }
+
+  // Auto Rows
+  .auto-rows@{infix}-auto         { grid-auto-rows: auto; }
+  .auto-rows@{infix}-min          { grid-auto-rows: min-content; }
+  .auto-rows@{infix}-max          { grid-auto-rows: max-content; }
+  .auto-rows@{infix}-fr           { grid-auto-rows: minmax(0, 1fr); }
+
+  // Gap
+  .gap@{infix}-0                  { gap: 0px; }
+  .gap-x@{infix}-0                { column-gap: 0px; }
+  .gap-y@{infix}-0                { row-gap: 0px; }
+
+  .gap@{infix}-px                 { gap: 1px; }
+  .gap-x@{infix}-px               { column-gap: 1px; }
+  .gap-y@{infix}-px               { row-gap: 1px; }
+
+  .gap@{infix}-1                  { gap: @spacer * @spacing-1; }
+  .gap-x@{infix}-1                { column-gap: @spacer * @spacing-1; }
+  .gap-y@{infix}-1                { row-gap: @spacer * @spacing-1; }
+
+  .gap@{infix}-2                  { gap: @spacer * @spacing-2; }
+  .gap-x@{infix}-2                { column-gap: @spacer * @spacing-2; }
+  .gap-y@{infix}-2                { row-gap: @spacer * @spacing-2; }
+
+  .gap@{infix}-3                  { gap: @spacer * @spacing-3; }
+  .gap-x@{infix}-3                { column-gap: @spacer * @spacing-3; }
+  .gap-y@{infix}-3                { row-gap: @spacer * @spacing-3; }
+
+  .gap@{infix}-4                  { gap: @spacer * @spacing-4; }
+  .gap-x@{infix}-4                { column-gap: @spacer * @spacing-4; }
+  .gap-y@{infix}-4                { row-gap: @spacer * @spacing-4; }
+
+  .gap@{infix}-5                  { gap: @spacer * @spacing-5; }
+  .gap-x@{infix}-5                { column-gap: @spacer * @spacing-5; }
+  .gap-y@{infix}-5                { row-gap: @spacer * @spacing-5; }
+}

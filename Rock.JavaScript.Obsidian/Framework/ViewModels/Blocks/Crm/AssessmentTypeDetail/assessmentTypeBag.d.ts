@@ -65,5 +65,5 @@ export type AssessmentTypeBag = {
      * Gets or sets the number of days the assessment is valid for Rock.Model.AssessmentType.
      * How long (in days) is this assessment valid before it must be taken again.
      */
-    validDuration: number;
+    validDuration?: number | null;
 };

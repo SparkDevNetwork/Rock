@@ -3,4 +3,8 @@
     <BuildCommand>npm run build-fast</BuildCommand>
     <CleanCommand>npm run clean</CleanCommand>
   </PropertyGroup>
+
+  <Target Name="TriggerNpmInstallOnNextBuild" AfterTargets="CoreClean">
+    <Touch Files="$(PackageJsonDirectory)\package.json" />
+  </Target>
 </Project>

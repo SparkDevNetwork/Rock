@@ -56,10 +56,15 @@
                                 <Rock:RockDropDownList ID="ddlPersonSavedAccount" runat="server" Label="Giving Method" AutoPostBack="true" OnSelectedIndexChanged="ddlPersonSavedAccount_SelectedIndexChanged" />
                             </asp:Panel>
 
-                            <asp:Panel ID="pnlScheduledTransactionStartDate" runat="server">
-                                <Rock:DatePicker ID="dtpStartDate" runat="server" AllowPastDateSelection="false" Label="Start Date" />
-                            </asp:Panel>
+                            <div class="d-flex gap-3 flex-wrap">
+                                <asp:Panel ID="pnlScheduledTransactionStartDate" runat="server">
+                                    <Rock:DatePicker ID="dtpStartDate" runat="server" AllowPastDateSelection="false" Label="Start Date" />
+                                </asp:Panel>
 
+                                <asp:Panel ID="pnlScheduledTransactionEndDate" runat="server">
+                                    <Rock:DatePicker ID="dtpEndDate" runat="server" AllowPastDateSelection="false" Label="End Date" />
+                                </asp:Panel>
+                            </div>
                             <Rock:RockTextBox ID="tbCommentEntry" runat="server" Required="true" Label="Comment" />
 
                             <Rock:NotificationBox ID="nbPromptForAmountsWarning" runat="server" NotificationBoxType="Validation" Visible="false" />

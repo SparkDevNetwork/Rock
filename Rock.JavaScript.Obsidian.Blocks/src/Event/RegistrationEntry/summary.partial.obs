@@ -29,6 +29,8 @@
                 </ul>
             </div>
 
+            <Captcha v-if="!disableCaptchaSupport" ref="captchaElement" />
+
             <NotificationBox v-if="submitErrorMessage" alertType="danger">{{ submitErrorMessage }}</NotificationBox>
 
             <div class="actions text-right">
@@ -55,17 +57,21 @@
         RegistrationEntryTerms,
         getRegistrantBasicInfo, use
     } from "./utils.partial";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { Guid } from "@Obsidian/Types";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
     import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
     import { RegistrationEntrySuccessBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySuccessBag";
 
     const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
     const invokeBlockAction = useInvokeBlockAction();
     const registrationEntryState = use(CurrentRegistrationEntryState);
+    const disableCaptchaSupport = ref(registrationEntryState.viewModel.disableCaptchaSupport);
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
     const persistSession = use(PersistSession);
     const registrationEntryTerms = use(RegistrationEntryTerms);
 
@@ -227,9 +233,16 @@
     async function submit(): Promise<boolean> {
         submitErrorMessage.value = "";
 
+        const actionContext: BlockActionContextBag = {};
+
+        if (captchaElement.value) {
+            actionContext.captcha = await captchaElement.value.getToken();
+            captchaElement.value.refreshToken();
+        }
+
         const result = await invokeBlockAction<RegistrationEntrySuccessBag>("SubmitRegistration", {
             args: getRegistrationEntryBlockArgs()
-        });
+        }, actionContext);
 
         if (result.isError || !result.data) {
             submitErrorMessage.value = result.errorMessage || "Unknown error";

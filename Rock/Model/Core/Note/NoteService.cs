@@ -17,12 +17,18 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
 
 using AngleSharp.Dom;
 
+using Microsoft.Extensions.Logging;
+
+using Rock.AI.Classes.ChatCompletions;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Utility;
 using Rock.Web.Cache;
+using Rock.Web.Cache.Entities;
 
 namespace Rock.Model
 {
@@ -304,6 +310,57 @@ FROM [NoteCte];
             return newMentionPersonIds
                 .Except( oldMentionPersonIds )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Runs the Auto-Approve AI completion for the note type ( if configured ) and returns the result.
+        /// </summary>
+        /// <param name="note">The Note to run the potential AI Completion for.</param>
+        /// <returns>
+        ///     <c>true</c> if the Note should be approved;
+        ///     <c>false</c> if the Note should not be approved;
+        ///      null if the request wasn't sent or was unable to be parsed.
+        /// </returns>
+        public async Task<bool?> GetAIAutoApproval( Note note )
+        {
+            var rockContext = ( RockContext ) Context;
+            var noteType = note.NoteType ?? new NoteTypeService( rockContext ).Get( note.NoteTypeId );
+            if ( noteType == null )
+            {
+                return null;
+            }
+
+            var noteTypeAIApproval = noteType.GetAdditionalSettings<NoteType.AIApprovalSettings>();
+
+            // If there is no configuration or AI Approvals are not enabled, return null indicating no request sent.
+            if ( noteTypeAIApproval == null || !noteTypeAIApproval.EnabledAIApprovals )
+            {
+                return null;
+            }
+
+            // Get the configured component or the first active if none is specified.
+            var aiProvider = noteTypeAIApproval.AIProviderId.HasValue ? AIProviderCache.Get( noteTypeAIApproval.AIProviderId.Value )?.ToEntity() : new AIProviderService( rockContext ).GetActiveProvider();
+
+            // If no AI component is found, return null indicating no request sent.
+            if ( aiProvider == null )
+            {
+                Logger.LogWarning( $"A NoteType (NoteTypeId {noteType.Id}) was configured with AI Approval Settings, but no active provider is configured." );
+                return null;
+            }
+
+            // Get the AI Provider component for the AIProvider instance.
+            var aiProviderComponent = aiProvider.GetAIComponent();
+
+            // Create the Completions Request with messages then get the first response as a boolean (or null if unable to).
+            var completionsRequest = new ChatCompletionsRequest
+            {
+                Messages = noteTypeAIApproval.AIApprovalRequestMessages( note ),
+            };
+
+            var response = await aiProviderComponent.GetChatCompletions( aiProvider, completionsRequest );
+            var responseText = response.Choices?.FirstOrDefault().Text ?? string.Empty;
+
+            return responseText.ConvertToBooleanOrDefault();
         }
     }
 }

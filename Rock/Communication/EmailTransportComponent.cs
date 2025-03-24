@@ -22,6 +22,9 @@ using System.Net.Mail;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Communication.Transport;
 using Rock.Data;
 using Rock.Logging;
@@ -37,6 +40,7 @@ namespace Rock.Communication
     /// This abstract class implements the code needed to create an email with all of the validation, lava substitution, and error checking completed.
     /// </summary>
     /// <seealso cref="Rock.Communication.TransportComponent" />
+    [RockLoggingCategory]
     public abstract class EmailTransportComponent : TransportComponent
     {
         /// <summary>
@@ -193,7 +197,7 @@ namespace Rock.Communication
                     {
                         var getRecipientTimer = System.Diagnostics.Stopwatch.StartNew();
                         var recipient = GetNextPending( communication.Id, mediumEntityTypeId, communication.IsBulkCommunication );
-                        RockLogger.Log.Debug( RockLogDomains.Communications, "{0}: It took {1} ticks to get the next pending recipient.", nameof( SendAsync ), getRecipientTimer.ElapsedTicks );
+                        Logger.LogDebug( "{0}: It took {1} ticks to get the next pending recipient.", nameof( SendAsync ), getRecipientTimer.ElapsedTicks );
 
                         // This means we are done, break the loop
                         if ( recipient == null )
@@ -205,7 +209,7 @@ namespace Rock.Communication
                         var startMutexWait = System.Diagnostics.Stopwatch.StartNew();
                         await mutex.WaitAsync().ConfigureAwait( false );
 
-                        RockLogger.Log.Debug( RockLogDomains.Communications, "{0}: Starting to send {1} to {2} with a {3} tick wait.", nameof( SendAsync ), communication.Name, recipient.Id, startMutexWait.ElapsedTicks );
+                        Logger.LogDebug( "{0}: Starting to send {1} to {2} with a {3} tick wait.", nameof( SendAsync ), communication.Name, recipient.Id, startMutexWait.ElapsedTicks );
                         sendingTask.Add( ThrottleHelper.ThrottledExecute( () => SendToRecipientAsync( recipient.Id, communication, mediumEntityTypeId, mediumAttributes, mergeFields, templateEmailMessage, organizationEmail ), mutex ) );
                     }
 
@@ -264,6 +268,8 @@ namespace Rock.Communication
                     var result = SendEmail( recipientEmailMessage );
 
                     var sendMessageResult = HandleEmailSendResponse( rockMessageRecipient, recipientEmailMessage, result );
+
+                    emailMessage.LastCommunicationId = recipientEmailMessage.LastCommunicationId;
 
                     errorMessages.AddRange( sendMessageResult.Errors );
                 }
@@ -598,6 +604,7 @@ namespace Rock.Communication
             templateRockEmailMessage.ReplyToEmail = emailMessage.ReplyToEmail;
             templateRockEmailMessage.SystemCommunicationId = emailMessage.SystemCommunicationId;
             templateRockEmailMessage.CreateCommunicationRecord = emailMessage.CreateCommunicationRecord;
+            templateRockEmailMessage.CreateCommunicationRecordImmediately = emailMessage.CreateCommunicationRecordImmediately;
             templateRockEmailMessage.SendSeperatelyToEachRecipient = emailMessage.SendSeperatelyToEachRecipient;
             templateRockEmailMessage.ThemeRoot = emailMessage.ThemeRoot;
 
@@ -706,6 +713,7 @@ namespace Rock.Communication
             recipientEmail.CssInliningEnabled = emailMessage.CssInliningEnabled;
             recipientEmail.SendSeperatelyToEachRecipient = emailMessage.SendSeperatelyToEachRecipient;
             recipientEmail.ThemeRoot = emailMessage.ThemeRoot;
+            recipientEmail.CreateCommunicationRecordImmediately = emailMessage.CreateCommunicationRecordImmediately;
 
             // CC
             recipientEmail.CCEmails = emailMessage.CCEmails;
@@ -772,7 +780,7 @@ namespace Rock.Communication
                 if ( emailMessage.CssInliningEnabled )
                 {
                     // move styles inline to help it be compatible with more email clients
-                    body = body.ConvertHtmlStylesToInlineAttributes();
+                    body = body.ConvertHtmlStylesToInlineAttributes( true );
                 }
             }
 
@@ -926,7 +934,7 @@ namespace Rock.Communication
                 if ( emailMessage.CssInliningEnabled )
                 {
                     // move styles inline to help it be compatible with more email clients
-                    htmlBody = htmlBody.ConvertHtmlStylesToInlineAttributes();
+                    htmlBody = htmlBody.ConvertHtmlStylesToInlineAttributes( true );
                 }
 
                 // add the main Html content to the email
@@ -1204,7 +1212,7 @@ namespace Rock.Communication
                 rockContext.SaveChanges();
             }
 
-            RockLogger.Log.Debug( RockLogDomains.Communications, "{0}: Took {1} ticks to retrieve and send the email.", nameof( SendToRecipientAsync ), methodTimer.ElapsedTicks );
+            Logger.LogDebug( "{0}: Took {1} ticks to retrieve and send the email.", nameof( SendToRecipientAsync ), methodTimer.ElapsedTicks );
         }
 
         /// <summary>
@@ -1240,7 +1248,7 @@ namespace Rock.Communication
             }
 
             // Create the communication record
-            if ( recipientEmailMessage.CreateCommunicationRecord )
+            if ( recipientEmailMessage.CreateCommunicationRecordImmediately || recipientEmailMessage.CreateCommunicationRecord )
             {
                 var transaction = new SaveCommunicationTransaction(
                     rockMessageRecipient,
@@ -1254,7 +1262,22 @@ namespace Rock.Communication
 
                 transaction.RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull();
                 transaction.RecipientStatus = result.Status;
-                transaction.Enqueue();
+
+                if ( recipientEmailMessage.CreateCommunicationRecordImmediately )
+                {
+                    try
+                    {
+                        recipientEmailMessage.LastCommunicationId = transaction.ExecuteAndReturnCommunicationId();
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex );
+                    }
+                }
+                else
+                {
+                    transaction.Enqueue();
+                }
             }
 
             return sendResult;

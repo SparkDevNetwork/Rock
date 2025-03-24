@@ -59,9 +59,11 @@
             $results.removeClass("alert-danger").removeClass("alert-warning").removeClass("alert-success");
 
             if (status.errors && status.errors.length > 0) {
+                console.error(status.errors);
                 $results.addClass("alert-danger");
             }
             else if (status.warnings && status.warnings.length > 0) {
+                console.warn(status.warnings);
                 $results.addClass("alert-warning");
             }
             else {

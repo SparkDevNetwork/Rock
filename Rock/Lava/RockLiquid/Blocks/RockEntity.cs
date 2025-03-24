@@ -46,6 +46,8 @@ namespace Rock.Lava.RockLiquid.Blocks
     /// <summary>
     ///
     /// </summary>
+    [Obsolete( "Use the Fluid engine. See https://community.rockrms.com/connect/ending-support-for-dotliquid-lava-engine" )]
+    [RockObsolete( "1.14" )]
     public class RockEntity : RockLavaBlockBase
     {
         string _entityName = string.Empty;

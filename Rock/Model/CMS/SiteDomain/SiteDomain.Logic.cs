@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System.Data.Entity;
+
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -42,6 +44,13 @@ namespace Rock.Model
             // SiteCache has SiteDomains that could get stale if SiteDomains is modified
             SiteCache.UpdateCachedEntity( this.SiteId, EntityState.Detached );
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => Site ?? base.ParentAuthority;
 
         #endregion
     }

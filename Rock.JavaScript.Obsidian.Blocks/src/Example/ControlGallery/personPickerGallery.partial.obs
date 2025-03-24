@@ -27,10 +27,10 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
 
     const value = ref({});
 

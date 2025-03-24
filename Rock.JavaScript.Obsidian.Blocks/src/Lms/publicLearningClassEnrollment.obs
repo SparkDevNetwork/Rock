@@ -1,0 +1,116 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-html="headerHtml"></div>
+
+    <div class="enrollment-block-container d-flex flex-column justify-content-center center-block">
+        <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+        <!-- Error screen if there's an error. -->
+        <template v-if="errorHtml">
+            <div class="block-error-content d-flex flex-column">
+                <div v-html="errorHtml"></div>
+
+                <RockButton class="btn btn-primary mt-4 mb-2" @click.prevent="onNavigateToDetail">Back to Course Description</RockButton>
+                <JavaScriptAnchor class="text-center" @click.prevent="onNavigateToList">Back to Course List</JavaScriptAnchor>
+            </div>
+
+        </template>
+
+        <!-- Completion screen if there's no error. -->
+        <template v-else-if="completionHtml">
+            <div class="block-completion-content d-flex flex-column">
+                <div v-html="completionHtml"></div>
+
+
+                <RockButton class="btn btn-primary mt-4 mb-2" @click.prevent="onNavigateToWorkspace">Go to Class Workspace</RockButton>
+                <JavaScriptAnchor class="text-center" @click.prevent="onNavigateToList">Back to Course List</JavaScriptAnchor>
+            </div>
+        </template>
+
+        <!-- Confirmation/initial screen if there's no error or completion. -->
+        <template v-else>
+            <div class="block-confirmation-content d-flex flex-column mb-2">
+                <div class="block-confirmation-lava" v-html="confirmationHtml"></div>
+
+                <RockButton class="btn btn-primary mt-4 mb-2" @click.prevent="onEnroll">Confirm</RockButton>
+                <JavaScriptAnchor class="text-center" @click.prevent="onNavigateToDetail">Back to Course Description</JavaScriptAnchor>
+            </div>
+        </template>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PublicLearningClassEnrollmentBlockBox } from "@Obsidian/ViewModels/Blocks/Lms/publicLearningClassEnrollment/publicLearningClassEnrollmentBlockBox";
+    import { ref } from "vue";
+    import { NavigationUrlKey } from "./PublicLearningClassEnrollment/types.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor.obs";
+
+    const config = useConfigurationValues<PublicLearningClassEnrollmentBlockBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
+
+    const blockError = ref("");
+
+    const completionHtml = ref(config.completionHtml ?? "");
+    const confirmationHtml = ref(config.confirmationHtml ?? "");
+    const errorHtml = ref(config.enrollmentErrorHtml ?? "");
+    const headerHtml = ref(config.headerHtml ?? "");
+
+    /**
+     * Event handler for the Enroll button being clicked.
+     */
+    async function onEnroll(): Promise<void> {
+        errorHtml.value = "";
+        completionHtml.value = "";
+
+        const result = await invokeBlockAction<string>("Enroll");
+
+        if (result.isSuccess) {
+            if (result.statusCode === 200 && typeof result.data === "string") {
+                completionHtml.value = result.data;
+            }
+        }
+        else {
+            errorHtml.value = result.errorMessage ?? "Unknown error while trying to enroll.";
+        }
+    }
+
+    /**
+     * Event handler for the Return to Course Detail button being clicked.
+     */
+    async function onNavigateToDetail(): Promise<boolean | string> {
+        if (config.navigationUrls?.[NavigationUrlKey.CourseDetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.CourseDetailPage];
+        }
+
+        return false;
+    }
+
+    /**
+     * Event handler for the Return to Course Detail button being clicked.
+     */
+    async function onNavigateToList(): Promise<boolean | string> {
+        if (config.navigationUrls?.[NavigationUrlKey.CourseListPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.CourseListPage];
+        }
+
+        return false;
+    }
+
+    /**
+     * Event handler for the Return to Course Detail button being clicked.
+     */
+    async function onNavigateToWorkspace(): Promise<boolean | string> {
+        if (config.navigationUrls?.[NavigationUrlKey.ClassWorkspacePage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.ClassWorkspacePage];
+        }
+
+        return false;
+    }
+    // Handle any initial error conditions.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+</script>

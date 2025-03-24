@@ -75,6 +75,7 @@
     import { ScheduleCategoryExclusionBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleCategoryExclusionList/scheduleCategoryExclusionBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { reactive, ref } from "vue";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
 
     const config = useConfigurationValues<ListBlockBox<ScheduleCategoryExclusionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -169,6 +170,10 @@
      * Sends a request to the server the save the Schedule Exclusion.
      */
     async function onSaveExclusion(): Promise<void> {
+        if (isNullOrWhiteSpace(dateRange.value?.lowerValue) || isNullOrWhiteSpace(dateRange.value?.upperValue)) {
+            return await alert("The selected exclusion date is invalid. Please ensure both the From and To dates are selected.");
+        }
+
         const bag: ScheduleCategoryExclusionBag = {
             idKey: idKey.value,
             startDate: dateRange.value?.lowerValue,

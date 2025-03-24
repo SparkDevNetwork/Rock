@@ -66,10 +66,10 @@
                     <i class="fa fa-plus"></i>
                 </RockButton>
             </div>
+            <br />
         </template>
 
-        <!-- The Advanced Settings Panel would be toggled on in v17-->
-        <Panel v-show="false" title="Advanced Settings" hasCollapse>
+        <Panel title="Advanced Settings" hasCollapse>
             <div class="row">
                 <div class="col-md-6">
                     <DefinedValuePicker

@@ -38,6 +38,9 @@ export type DefinedValueBag = {
     /** Gets or sets the Description of the DefinedValue. */
     description?: string | null;
 
+    /** Gets or sets the identifier. */
+    id: number;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 

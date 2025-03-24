@@ -19,7 +19,7 @@ import { HttpResult } from "@Obsidian/Types/Utility/http";
 import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
 import { AddressControlValidateAddressOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/AddressControlValidateAddressOptionsBag";
 import { AddressControlValidateAddressResultsBag } from "@Obsidian/ViewModels/Rest/Controls/AddressControlValidateAddressResultsBag";
-import { post } from "./http";
+import { useHttp } from "./http";
 
 export function getDefaultAddressControlModel(): AddressControlBag {
     return {
@@ -29,9 +29,11 @@ export function getDefaultAddressControlModel(): AddressControlBag {
 }
 
 export function validateAddress(address: AddressControlValidateAddressOptionsBag): Promise<HttpResult<AddressControlValidateAddressResultsBag>> {
+    const post = useHttp().post;
     return post<AddressControlValidateAddressResultsBag>("/api/v2/Controls/AddressControlValidateAddress", undefined, address);
 }
 
 export function getAddressString(address: AddressControlBag): Promise<HttpResult<string>> {
+    const post = useHttp().post;
     return post<string>("/api/v2/Controls/AddressControlGetStreetAddressString", undefined, address);
 }

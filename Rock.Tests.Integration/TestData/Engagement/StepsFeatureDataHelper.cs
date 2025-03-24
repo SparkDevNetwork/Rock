@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -26,7 +27,7 @@ using Rock.Tests.Integration.TestFramework;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Crm.Steps
+namespace Rock.Tests.Integration.TestData.Engagement
 {
     public enum StepsFeatureTestDataSetSpecifier
     {

@@ -15,6 +15,9 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
@@ -23,6 +26,9 @@ namespace Rock.ViewModels.Rest.Controls
     /// </summary>
     public class EntityTypePickerGetEntityTypesOptionsBag
     {
-        /* Intentionally left blank for compatibility with future options. */
+        /// <summary>
+        /// List of GUIDs of Entity Types that you wish to include in the list. If blank, it will load all.
+        /// </summary>
+        public List<Guid> EntityTypeGuids { get; set; }
     }
 }

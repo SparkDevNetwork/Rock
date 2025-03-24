@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Public block for users to manage their accounts" )]
 
-    #region "Block Attributes"
+    #region Block Attributes
     [DefinedValueField(
         "Default Connection Status",
         Key = AttributeKey.DefaultConnectionStatus,

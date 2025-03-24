@@ -14,11 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
-using Rock.Data;
-using Rock.Logging;
-using Rock.Model;
-using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -26,6 +21,14 @@ using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Text;
+
+using Microsoft.Extensions.Logging;
+
+using Rock.Attribute;
+using Rock.Data;
+using Rock.Logging;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -42,6 +45,7 @@ namespace Rock.Jobs
         DefaultBooleanValue = false,
         Order = 0 )]
 
+    [RockLoggingCategory]
     public class CalculateGroupRequirements : RockJob
     {
         /// <summary>
@@ -235,8 +239,8 @@ namespace Rock.Jobs
                                         catch ( Exception ex )
                                         {
                                             // Record workflow exception as warning or debug for RockLog instead of creating multiple exception logs and ending.
-                                            Log( RockLogLevel.Warning, $"Could not launch workflow: '{workflowName}' with group requirement: '{groupRequirement}' for person.Id: {personGroupRequirementStatus.PersonId} so the workflow was skipped." );
-                                            Log( RockLogLevel.Debug, ex, "Error when launching workflow for requirement." );
+                                            Logger.LogWarning( $"Could not launch workflow: '{workflowName}' with group requirement: '{groupRequirement}' for person.Id: {personGroupRequirementStatus.PersonId} so the workflow was skipped." );
+                                            Logger.LogDebug( ex, "Error when launching workflow for requirement." );
 
                                             skippedWorkflowNames.Add( workflowName, true );
                                         }
@@ -251,8 +255,8 @@ namespace Rock.Jobs
                             catch ( Exception ex )
                             {
                                 // Record group member 'Person' exception as warning or debug for RockLog and continue job instead of adding to exception logs and ending.
-                                Log( RockLogLevel.Warning, $"Could not update group requirement result: '{groupRequirement}' for Person.Id: {personGroupRequirementStatus.PersonId} in Group: '{groupIdName.Name}' so the person was skipped." );
-                                Log( RockLogLevel.Debug, ex, "Error when calculating person for group requirement." );
+                                Logger.LogWarning( $"Could not update group requirement result: '{groupRequirement}' for Person.Id: {personGroupRequirementStatus.PersonId} in Group: '{groupIdName.Name}' so the person was skipped." );
+                                Logger.LogDebug( ex, "Error when calculating person for group requirement." );
 
                                 skippedPersonIds.Add( personGroupRequirementStatus.PersonId.ToString(), true );
                             }
@@ -261,8 +265,8 @@ namespace Rock.Jobs
                     catch ( Exception ex )
                     {
                         // Record group exception as warning or debug for RockLog and continue job instead of adding to exception logs and ending.
-                        Log( RockLogLevel.Warning, $"Could not update group when calculating group requirement: '{groupRequirement}' in Group '{groupIdName.Name}' (Group.Id: {groupIdName.Id}) so the group was skipped." );
-                        Log( RockLogLevel.Debug, ex, "Error when calculating group for requirement." );
+                        Logger.LogWarning( $"Could not update group when calculating group requirement: '{groupRequirement}' in Group '{groupIdName.Name}' (Group.Id: {groupIdName.Id}) so the group was skipped." );
+                        Logger.LogDebug( ex, "Error when calculating group for requirement." );
 
                         skippedGroupNames.Add( groupIdName.Name, true );
                     }
@@ -325,7 +329,7 @@ namespace Rock.Jobs
                     .GetByPersonIdRequirementIdGroupIdGroupRoleId( status.PersonId, status.GroupRequirement.Id, groupId, status.GroupRequirement.GroupRoleId );
                 if ( groupMemberRequirement == null )
                 {
-                    Log( RockLogLevel.Warning, $"Could not find group member requirement for group requirement: '{status.GroupRequirement}' for Person.Id: {status.PersonId} in Group.Id: {groupId} when attempting to launch workflow type: '{workflowTypeCache.Name}' so the workflow was not launched." );
+                    Logger.LogWarning( $"Could not find group member requirement for group requirement: '{status.GroupRequirement}' for Person.Id: {status.PersonId} in Group.Id: {groupId} when attempting to launch workflow type: '{workflowTypeCache.Name}' so the workflow was not launched." );
 
                     wasWorkflowSuccessful = false;
                     return;
@@ -343,7 +347,7 @@ namespace Rock.Jobs
 
                     if ( workflowErrors?.Any() == true )
                     {
-                        Log( RockLogLevel.Warning, $"Encountered workflow errors when calculating group requirement: '{status.GroupRequirement}' for workflow type: '{workflowTypeCache.Name}' for Person.Id: {status.PersonId} in Group.Id: {groupId}: {string.Join( "; ", workflowErrors )}" );
+                        Logger.LogWarning( $"Encountered workflow errors when calculating group requirement: '{status.GroupRequirement}' for workflow type: '{workflowTypeCache.Name}' for Person.Id: {status.PersonId} in Group.Id: {groupId}: {string.Join( "; ", workflowErrors )}" );
 
                         wasWorkflowSuccessful = false;
                     }

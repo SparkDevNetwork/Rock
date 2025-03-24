@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "Streak" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.STREAK )]
     public partial class Streak : Model<Streak>
     {
@@ -43,6 +44,7 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         [Index( "IX_StreakTypeId", IsUnique = false )]
         [Index( "IX_StreakTypeId_PersonAliasId", 0, IsUnique = true )]
+        [EnableAttributeQualification]
         public int StreakTypeId { get; set; }
 
         /// <summary>
@@ -86,7 +88,6 @@ namespace Rock.Model
         /// StartDate. More significant bits (going left) are more recent dates.
         /// </summary>
         [DataMember]
-        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public byte[] EngagementMap { get; set; }
 
         /// <summary>
@@ -94,7 +95,6 @@ namespace Rock.Model
         /// of the StreakType's StartDate. More significant bits (going left) are more recent dates.
         /// </summary>
         [DataMember]
-        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public byte[] ExclusionMap { get; set; }
 
         #endregion Entity Properties

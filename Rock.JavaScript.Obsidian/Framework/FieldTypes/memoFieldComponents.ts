@@ -20,8 +20,7 @@ import TextBox from "@Obsidian/Controls/textBox.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
-import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { toNumber } from "@Obsidian/Utility/numberUtils";
+import { toNumberOrNull, toNumber } from "@Obsidian/Utility/numberUtils";
 import { ConfigurationValueKey } from "./memoField.partial";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 

@@ -24,6 +24,7 @@
   <ItemGroup>
     <PackageReference Include="Humanizer.Core" Version="2.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
   </ItemGroup>
 
   <ItemGroup>

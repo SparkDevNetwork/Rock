@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupMemberAssignment" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "22BF14ED-E882-4BB0-9328-D12545BF5F61")]
     public partial class GroupMemberAssignment : Model<GroupMemberAssignment>
     {

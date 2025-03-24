@@ -275,7 +275,6 @@ namespace RockWeb.Blocks.Connection
             gConnectionRequestActivities.DataKeyNames = new string[] { "Guid" };
             gConnectionRequestActivities.Actions.AddClick += gConnectionRequestActivities_Add;
             gConnectionRequestActivities.GridRebind += gConnectionRequestActivities_GridRebind;
-            gConnectionRequestActivities.RowDataBound += gConnectionRequestActivities_RowDataBound;
 
             gConnectionRequestWorkflows.DataKeyNames = new string[] { "Guid" };
             gConnectionRequestWorkflows.GridRebind += gConnectionRequestWorkflows_GridRebind;
@@ -656,6 +655,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest = new ConnectionRequest();
                         connectionRequest.ConnectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
+                        connectionRequest.ConnectionTypeId = new ConnectionOpportunityService( rockContext ).Get( connectionRequest.ConnectionOpportunityId ).ConnectionTypeId;
 
                         if ( cpCampus.SelectedCampusId.HasValue )
                         {
@@ -940,6 +940,7 @@ namespace RockWeb.Blocks.Connection
 
                     ddlTransferOpportunity.Items.Clear();
                     foreach ( var opportunity in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities
+                        .Where( o => o.IsActive )
                         .OrderBy( o => o.Order )
                         .ThenBy( o => o.Name ) )
                     {
@@ -1063,6 +1064,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest.ConnectionOpportunity = connectionOpportunity;
                         connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
+                        connectionRequest.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
                     }
                 }
 
@@ -1084,6 +1086,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest.ConnectionOpportunity = connectionOpportunity;
                         connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
+                        connectionRequest.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
                     }
                 }
 
@@ -1105,6 +1108,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest.ConnectionOpportunity = connectionOpportunity;
                         connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
+                        connectionRequest.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
                     }
                 }
 
@@ -1175,6 +1179,7 @@ namespace RockWeb.Blocks.Connection
                         connectionRequestActivity.Note = tbTransferNote.Text;
                         connectionRequestActivityService.Add( connectionRequestActivity );
                         connectionRequest.ConnectionOpportunityId = newOpportunityId.Value;
+                        connectionRequest.ConnectionTypeId = newOpportunity.ConnectionTypeId;
 
                         if ( newOpportunity.ShowStatusOnTransfer && ddlTransferStatus.Visible )
                         {
@@ -2010,6 +2015,7 @@ namespace RockWeb.Blocks.Connection
                         connectionRequest = new ConnectionRequest();
                         connectionRequest.ConnectionOpportunity = connectionOpportunity;
                         connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
+                        connectionRequest.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
                         connectionRequest.ConnectionState = ConnectionState.Active;
                         connectionRequest.ConnectionStatus = connectionStatus;
                         connectionRequest.ConnectionStatusId = connectionStatus.Id;

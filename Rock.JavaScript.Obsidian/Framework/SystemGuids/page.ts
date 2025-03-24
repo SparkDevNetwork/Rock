@@ -29,11 +29,6 @@ export const Page = {
      */
     AbilityLevels: "9DD78A23-BE4B-474E-BCBC-F06AAABB67FA",
     /**
-     * Gets the Ability Select page guid
-     * ParentPage: Check-in
-     */
-    AbilitySelect: "A1CBDAA4-94DD-4156-8260-5A3781E39FD0",
-    /**
      * Gets the Account page guid
      * ParentPage: Rock Shop
      */
@@ -58,11 +53,6 @@ export const Page = {
      * ParentPage: Contributions
      */
     AddTransaction: "B1CA86DC-9890-4D26-8EBD-488044E1B3DD",
-    /**
-     * Gets the Admin page guid
-     * ParentPage: Check-in
-     */
-    AdminCheckIn: "7B7207D0-B905-4836-800E-A24DDC6FE445",
     /**
      * Gets the Admin Tools page guid
      * ParentPage: Internal Homepage
@@ -293,11 +283,6 @@ export const Page = {
      * ParentPage: 
      */
     CheckInRoot: "CDF2C599-D341-42FD-B7DC-CD402EA96050",
-    /**
-     * Gets the Check-in Type page guid
-     * ParentPage: 
-     */
-    CheckInType: "62C70118-0A6F-432A-9D84-A5296655CB9E",
     /**
      * Gets the Ability Select page guid
      * ParentPage: Check-in
@@ -700,11 +685,6 @@ export const Page = {
      */
     ExternalWorkflowEntry: "C58861DF-2D82-4E7A-AA5B-04165D2D34C2",
     /**
-     * Gets the Family Select page guid
-     * ParentPage: Check-in
-     */
-    FamilySelect: "10C97379-F719-4ACB-B8C6-651957B660A4",
-    /**
      * Gets the File Storage Providers page guid
      * ParentPage: System Settings
      */
@@ -858,11 +838,6 @@ export const Page = {
      */
     GroupSearchResults: "9C9CAD94-095E-4CC9-BC29-24BDE30492B2",
     /**
-     * Gets the Group Select page guid
-     * ParentPage: Check-in
-     */
-    GroupSelect: "6F0CB22B-E05B-42F1-A329-9219E81F6C34",
-    /**
      * Gets the Group Toolbox page guid
      * ParentPage: My Account
      */
@@ -872,11 +847,6 @@ export const Page = {
      * ParentPage: Group Types
      */
     GroupTypeDetail: "5CD8E024-710B-4EDE-8C8C-4C9E15E6AFAB",
-    /**
-     * Gets the Group Type Select page guid
-     * ParentPage: Check-in
-     */
-    GroupTypeSelect: "60E3EA1F-FD6B-4F0E-9C72-A9960E13427C",
     /**
      * Gets the Group Types page guid
      * ParentPage: General Settings
@@ -966,11 +936,6 @@ export const Page = {
      * ParentPage: Power Tools
      */
     LocationEditor: "47BFA50A-68D8-4841-849B-75AB3E5BCD6D",
-    /**
-     * Gets the Location Select page guid
-     * ParentPage: Check-in
-     */
-    LocationSelect: "043BB717-5799-446F-B8DA-30E575110B0C",
     /**
      * Gets the Location Services page guid
      * ParentPage: System Settings
@@ -1180,11 +1145,6 @@ export const Page = {
      * ParentPage: Support Pages
      */
     PersonSearch: "5E036ADE-C2A4-4988-B393-DAC58230F02E",
-    /**
-     * Gets the Person Select page guid
-     * ParentPage: Check-in
-     */
-    PersonSelect: "BB8CF87F-680F-48F9-9147-F4951E033D17",
     /**
      * Gets the Person Viewed Detail page guid
      * ParentPage: Security
@@ -1434,11 +1394,6 @@ export const Page = {
      */
     SchedulesGeneralSettings: "F5D6D7DD-FD5F-494C-83DC-E2AF63C705D1",
     /**
-     * Gets the Search page guid
-     * ParentPage: Check-in
-     */
-    Search: "D47858C0-0E6E-46DC-AE99-8EC84BA5F45F",
-    /**
      * Gets the Search Services page guid
      * ParentPage: System Settings
      */
@@ -1536,11 +1491,6 @@ export const Page = {
      */
     StreakTypes: "F81097ED-3C96-45F2-A4F8-7D4D4F3D17F3",
     /**
-     * Gets the Success page guid
-     * ParentPage: Check-in
-     */
-    Success: "E08230B8-35A4-40D6-A0BB-521418314DA9",
-    /**
      * Gets the Support Pages page guid (external site)
      * ParentPage: External Site
      */
@@ -1583,16 +1533,6 @@ export const Page = {
      */
     SystemEmailCategoriesSystemEmails: "66FAF7A6-7523-475C-A88D-51C75178A785",
     /**
-     * Gets the System Email Details page guid
-     * ParentPage: System Emails
-     */
-    SystemEmailDetails: "588C72A8-7DEC-405F-BA4A-FE64F87CB817",
-    /**
-     * Gets the System Emails page guid
-     * ParentPage: Communications
-     */
-    SystemEmails: "89B7A631-EA6F-4DA3-9380-04EE67B63E9E",
-    /**
      * Gets the System Information page guid
      * ParentPage: System Dialogs
      */
@@ -1624,11 +1564,6 @@ export const Page = {
     TagsManage: "2654EBE9-F585-4E64-93F3-102357F89660",
     /** Gets the Text To Give Setup page guid */
     TextToGiveSetup: "B7FE949A-B4B0-4AA7-B9E9-8818E7352CD1",
-    /**
-     * Gets the Time Select page guid
-     * ParentPage: Check-in
-     */
-    TimeSelect: "C0AFA081-B64E-4006-BFFC-A350A51AE4CC",
     /**
      * Gets the Tools page guid
      * ParentPage: Internal Homepage
@@ -1679,11 +1614,6 @@ export const Page = {
      * ParentPage: Tools
      */
     Website: "F7105BFE-B28C-41B6-9CE6-F1018D77DD8F",
-    /**
-     * Gets the Check-in Welcome page guid
-     * ParentPage: Check-in
-     */
-    Welcome: "432B615A-75FF-4B14-9C99-3E769F866950",
     /**
      * Gets the Workflow page guid
      * ParentPage: Tools

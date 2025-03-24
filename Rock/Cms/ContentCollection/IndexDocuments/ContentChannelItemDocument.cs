@@ -56,7 +56,9 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
                 SourceType = typeof( ContentChannel ).FullName,
                 ItemType = typeof( ContentChannelItem ).FullName,
                 RelevanceDateTime = contentChannelItem.StartDateTime,
-                Year = contentChannelItem.StartDateTime.Year
+                Year = contentChannelItem.StartDateTime.Year,
+                PrimarySlug = contentChannelItem.PrimarySlug,
+                ItemGlobalKey = contentChannelItem.ItemGlobalKey
             };
 
             var yearValue = document.Year.ToString();

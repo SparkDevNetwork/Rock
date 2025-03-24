@@ -1,0 +1,45 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <WorkflowPicker label="Choose a Workflow"
+                        v-model="value"
+                        :workflowTypeGuid="workflowTypeGuid?.value ?? undefined"
+                        :rules="required ? 'required' : ''"
+                        :disabled="disabled" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <WorkflowTypePicker label="Workflow Type" v-model="workflowTypeGuid" showBlankItem help="If this workflowTypeGuid prop is set, the Workflow Type selector will not be shown and the Workflows will be based on that type." />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Required" v-model="required" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Disabled" v-model="disabled" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import WorkflowPicker from "@Obsidian/Controls/workflowPicker.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const value = ref({
+        "value": "969b09e5-d830-46b7-86ab-2f0fbd12cf51",
+        "text": "New Request",
+        "category": null
+    });
+    const workflowTypeGuid = ref<ListItemBag>();
+    const required = ref(false);
+    const disabled = ref(false);
+    const importCode = getSfcControlImportPath("workflowPicker");
+    const exampleCode = `<WorkflowPicker label="Choose a Workflow" v-model="value" />`;
+</script>

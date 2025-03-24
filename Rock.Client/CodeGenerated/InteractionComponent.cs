@@ -44,11 +44,6 @@ namespace Rock.Client
         public string ChannelCustomIndexed1 { get; set; }
 
         /// <summary />
-        // Made Obsolete in Rock "1.11"
-        [Obsolete( "Use InteractionChannelId instead", false )]
-        public int ChannelId { get; set; }
-
-        /// <summary />
         public string ComponentData { get; set; }
 
         /// <summary />
@@ -110,9 +105,6 @@ namespace Rock.Client
             this.ChannelCustom1 = source.ChannelCustom1;
             this.ChannelCustom2 = source.ChannelCustom2;
             this.ChannelCustomIndexed1 = source.ChannelCustomIndexed1;
-            #pragma warning disable 612, 618
-            this.ChannelId = source.ChannelId;
-            #pragma warning restore 612, 618
             this.ComponentData = source.ComponentData;
             this.ComponentSummary = source.ComponentSummary;
             this.EntityId = source.EntityId;

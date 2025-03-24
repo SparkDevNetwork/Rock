@@ -119,7 +119,8 @@
     </Grid>
 
     <!-- Informational Note -->
-    <NotificationBox :alertType="'info'"
+    <NotificationBox v-if="isVisible"
+                     :alertType="'info'"
                      :dismissible="false"
                      :class="'mt-4'"
                      heading="Note">

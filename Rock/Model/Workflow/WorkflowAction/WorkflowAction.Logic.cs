@@ -358,20 +358,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a worklow attribute value.
-        /// </summary>
-        /// <param name="guid">The unique identifier.</param>
-        /// <param name="formatted">if set to <c>true</c> [formatted].</param>
-        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
-        /// <returns></returns>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use GetWorkflowAttributeValue instead (the one with the correct spelling)." )]
-        public string GetWorklowAttributeValue( Guid guid, bool formatted = false, bool condensed = false )
-        {
-            return GetWorkflowAttributeValue( guid, formatted, condensed );
-        }
-
-        /// <summary>
         /// Gets the person entry people that should be used for this action.
         /// </summary>
         /// <param name="rockContext">The rock context to use with database operations.</param>

@@ -66,7 +66,7 @@
                             </div>
                             <div class="row form-row">
                                 <div class="col-md-6">
-                                    <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birthday" />
+                                    <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birth Date" />
                                 </div>
                                 <div class="col-md-6">
                                     <%-- This YearPicker is needed for the GradePicker to work --%>

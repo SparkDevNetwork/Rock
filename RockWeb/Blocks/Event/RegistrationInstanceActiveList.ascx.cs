@@ -101,7 +101,6 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         protected void BindInstancesGrid()
         {
-
             pnlInstances.Visible = true;
 
             using ( var rockContext = new RockContext() )
@@ -112,9 +111,6 @@ namespace RockWeb.Blocks.Event
                         ( i.StartDateTime <= RockDateTime.Now || !i.StartDateTime.HasValue ) &&
                         ( i.EndDateTime > RockDateTime.Now || !i.EndDateTime.HasValue ) &&
                         i.IsActive )
-                    .AsEnumerable()
-                    .Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
-                    .AsQueryable()
                     .OrderBy( i => i.StartDateTime );
 
                 var sortProperty = gRegInstances.SortProperty;
@@ -133,13 +129,19 @@ namespace RockWeb.Blocks.Event
                         i.EndDateTime,
                         i.IsActive,
                         i.Details,
+                        RegistrationInstance = i,
                         Registrants = i.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Count()
                     } );
 
-                gRegInstances.SetLinqDataSource( qryResult );
+                // Filter by authorization after fetching from database for performance
+                var authorizedInstances = qryResult
+                    .AsEnumerable()
+                    .Where( g => g.RegistrationInstance.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                    .AsQueryable();
+
+                gRegInstances.SetLinqDataSource( authorizedInstances );
                 gRegInstances.DataBind();
             }
-
         }
 
         #endregion

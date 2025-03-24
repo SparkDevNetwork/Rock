@@ -20,7 +20,6 @@ using Rock.Web.UI.Controls;
 using System.Collections.Generic;
 using System.Linq;
 
-
 #if WEBFORMS
 using System.Web.UI;
 #endif
@@ -100,6 +99,7 @@ namespace Rock.Field.Types
             var value = PhoneNumber.FormattedNumber( countryCode, phone.Number, includeCountryCode );
             return value;
         }
+
 
         #region WebForms
 #if WEBFORMS

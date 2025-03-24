@@ -1,4 +1,4 @@
-﻿// <copyright>
+﻿﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,10 +39,8 @@ namespace Rock.Attribute
         public SystemCommunicationFieldAttribute( string name, string description = "", bool required = true, string defaultSystemCommunicationGuid = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultSystemCommunicationGuid, category, order, key, typeof( Rock.Field.Types.SystemCommunicationFieldType ).FullName )
         {
-
             IncludeInactive = false;
         }
-
 
         /// <summary>
         /// Gets or sets the default System Communication template unique identifier.

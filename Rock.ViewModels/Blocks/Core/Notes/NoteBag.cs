@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Model;
+
 namespace Rock.ViewModels.Blocks.Core.Notes
 {
     /// <summary>
@@ -132,6 +134,12 @@ namespace Rock.ViewModels.Blocks.Core.Notes
         /// </summary>
         /// <value>The name of the person that edited this note.</value>
         public string EditedByName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the approval status of this note.
+        /// </summary>
+        /// <value>The approval status of this note.</value>
+        public NoteApprovalStatus ApprovalStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the attribute values.

@@ -32,6 +32,14 @@
 
             </div>
 
+            <Rock:ModalDialog ID="mdRefreshWarning" runat="server" Title="Warning" OnCancelScript="">
+                <Content>
+                    <Rock:NotificationBox ID="nbRefreshMessage" NotificationBoxType="Warning" runat="server" Text="Error building Dataset object from the JSON generated from the Build Script" />
+                    <Rock:NotificationBox ID="nbRefreshMaxLengthWarning" NotificationBoxType="Info" runat="server" Visible="false" />
+                    <Rock:RockLiteral ID="lRefreshJson" runat="server" Label="" CssClass="js-preview-json" ViewStateMode="Disabled" />
+                </Content>
+            </Rock:ModalDialog>
+
             <Rock:ModalDialog ID="mdPreview" runat="server" Title="Preview the Dataset JSON" OnCancelScript="">
                 <Content>
                     <Rock:NotificationBox ID="nbPreviewMessage" runat="server" />

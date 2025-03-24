@@ -52,6 +52,8 @@
                             v-for="row in scheduleRows"
                             :key="row.entityGuid ?? ''"
                             :row="row"
+                            :confirmedButtonText="confirmedButtonText"
+                            :declineButtonText="declineButtonText"
                             :disabled="disabled || isLoadingCurrentSchedule"
                             @removeScheduleRow="onRemoveScheduleRow"
                             @personGroupScheduleFeedUrlUpdated="onPersonGroupScheduleFeedUrlUpdated" />
@@ -132,7 +134,17 @@
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        confirmedButtonText: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        declineButtonText: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
     });
 
     const emit = defineEmits<{

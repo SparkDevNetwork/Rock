@@ -450,6 +450,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             var phoneType = DefinedValueCache.Get( phoneNumber.NumberTypeValueId ?? 0 ).Value;
             var messaging = phoneNumber.IsMessagingEnabled ? @"<i class=""fa fa-comment text-muted text-sm ml-1""></i>" : string.Empty;
+            var formattedOptOutDate = phoneNumber.MessagingOptedOutDateTime?.ToString( "MMMM d, yyyy" );
+            var optedOutTooltip = phoneNumber.MessagingOptedOutDateTime != null ? $@"{phoneNumber.Person.NickName} opted out from messaging on {formattedOptOutDate}" : $"{phoneNumber.Person.NickName} opted out from messaging.";
+            var optedOut = phoneNumber.IsMessagingOptedOut ? $@"<i class=""fa fa-ban text-danger text-sm ml-1"" data-toggle=""tooltip"" data-placement=""top"" title=""{optedOutTooltip}"" aria-label=""{optedOutTooltip}""></i>" : string.Empty;
             string formattedNumber = phoneNumber.IsUnlisted ? "Unlisted" : PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number, showCountryCode );
 
             var phoneMarkup = formattedNumber;
@@ -477,6 +480,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             <dt>
                                 {phoneMarkup}
                                 {messaging}
+                                {optedOut}
                             </dt>
                             <dd>{phoneType}</dd>
                         </dl>

@@ -487,7 +487,14 @@ namespace Rock.Lava
                     && _targetObject != null )
             {
                 var lavaBaseType = typeof( LavaDataObject );
-                _instancePropertyInfoLookup = _targetObject.GetType().GetProperties().Where( a => a.DeclaringType != lavaBaseType ).ToDictionary( k => k.Name, v => v );
+
+                // Get the properties that should be visible in a Lava template.
+                var info = LavaDataHelper.GetLavaTypeInfo( _targetObject.GetType() );
+                var visibleProperties = info.VisiblePropertyNames;
+
+                _instancePropertyInfoLookup = _targetObject.GetType().GetProperties()
+                    .Where( a => visibleProperties.Contains( a.Name ) )
+                    .ToDictionary( k => k.Name, v => v );
             }
 
             return _instancePropertyInfoLookup;
@@ -790,21 +797,19 @@ namespace Rock.Lava
                 PropertyInfo prop;
                 bool getPropertyValue;
 
-                if ( obj == this )
-                {
-                    // Get the property accessor for this object.
-                    var properties = GetInstanceProperties();
-
-                    properties.TryGetValue( propName, out prop );
-
-                    getPropertyValue = true;
-                }
-                else if ( obj is LavaDataObjectInternal dataObject )
+                if ( obj is LavaDataObjectInternal dataObject )
                 {
                     // Get the property value for the dynamic object.
                     dataObject.GetPropertyValue( propName, true, out obj );
                     prop = null;
                     getPropertyValue = false;
+                }
+                else if ( obj is LavaDataObject )
+                {
+                    // Get the property accessor for this object.
+                    var properties = GetInstanceProperties();
+                    properties.TryGetValue( propName, out prop );
+                    getPropertyValue = true;
                 }
                 else
                 {

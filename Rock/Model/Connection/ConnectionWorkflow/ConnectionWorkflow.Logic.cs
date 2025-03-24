@@ -16,6 +16,7 @@
 //
 
 using Rock.Lava;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -42,6 +43,13 @@ namespace Rock.Model
                 return null;
             }
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => ConnectionType ?? ConnectionOpportunity ?? base.ParentAuthority;
 
         #endregion
     }

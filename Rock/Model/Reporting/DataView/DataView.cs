@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "DataView" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.DATAVIEW )]
     public partial class DataView : Model<DataView>, ICategorized, IDataViewDefinition
     {
@@ -73,6 +74,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the CategoryId of the <see cref="Rock.Model.Category"/> that this DataView belongs to. If it is not part of a Category this value will be null.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? CategoryId { get; set; }
 
         /// <summary>
@@ -83,6 +85,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int? EntityTypeId { get; set; }
 
         /// <summary>

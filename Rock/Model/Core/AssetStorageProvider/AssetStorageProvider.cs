@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AssetStorageProvider" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "E0B4BE77-B29F-4BD4-AE45-CF833AC3A482")]
     public partial class AssetStorageProvider : Model<AssetStorageProvider>, IHasActiveFlag, ICacheable
     {
@@ -63,6 +64,7 @@ namespace Rock.Model
         /// The entity type identifier.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? EntityTypeId { get; set; }
 
         /// <summary>

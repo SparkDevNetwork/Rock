@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "CommunicationResponse" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "DB449144-6045-4B11-AA55-ECF286B117A9" )]
     public partial class CommunicationResponse : Model<CommunicationResponse>
     {

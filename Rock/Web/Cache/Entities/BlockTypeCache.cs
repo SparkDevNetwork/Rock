@@ -19,7 +19,12 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.Serialization;
 
+using Microsoft.Extensions.Logging;
+
+using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Cms;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
 
@@ -31,6 +36,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [RockLoggingCategory]
     public class BlockTypeCache : ModelCache<BlockTypeCache, BlockType>
     {
 
@@ -114,6 +120,12 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public bool IsInstancePropertiesVerified { get; private set; }
+
+        /// <summary>
+        /// The flags for the <see cref="SiteType"/> this block supports.
+        /// </summary>
+        [RockInternal( "1.16.1" )]
+        public SiteTypeFlags SiteTypeFlags { get; set; }
 
         private ConcurrentDictionary<string, string> _securityActions = null;
 
@@ -203,6 +215,7 @@ namespace Rock.Web.Cache
             Description = blockType.Description;
             Category = blockType.Category;
             IsInstancePropertiesVerified = false;
+            SiteTypeFlags = blockType.SiteTypeFlags;
         }
 
         /// <summary>
@@ -269,6 +282,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the compiled type of this block type. If this is a legacy ASCX block then it
         /// is dynamically compiled (and cached), otherwise a lookup is done via Entity Type.
+        /// WARNING: This could be an expensive operation if the Types are not in the tempDirectory.
         /// </summary>
         /// <returns>A Type that represents the logic class of this block type.</returns>
         public Type GetCompiledType()
@@ -284,11 +298,11 @@ namespace Rock.Web.Cache
                     // Added some diagnostics to record where this code is being called from
                     // since our current exceptions are missing this detail.
                     var stackTrace = new System.Diagnostics.StackTrace( true );
-                    Logging.RockLogger.Log.Debug( Logging.RockLogDomains.Other, $"Path: {Path}" + System.Environment.NewLine + stackTrace.ToString() );
+                    RockLogger.LoggerFactory.CreateLogger<BlockTypeCache>()
+                        .LogDebug( ex, $"Path: {Path}" + System.Environment.NewLine + stackTrace.ToString() );
                     ExceptionLogService.LogException( ex );
                     return null;
                 }
-
             }
             else if ( EntityTypeId.HasValue )
             {

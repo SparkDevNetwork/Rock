@@ -134,22 +134,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Sets the note.
-        /// </summary>
-        /// <value>
-        /// The note.
-        /// </value>
-        [Obsolete( "Use SetNote instead" )]
-        [RockObsolete( "1.12" )]
-        public Rock.Model.Note Note
-        {
-            set
-            {
-                SetNote( value );
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the note type identifier.
         /// </summary>
         /// <value>
@@ -938,11 +922,6 @@ $@"Rock.controls.noteEditor.initialize({{
             note.EditedByPersonAliasId = currentPerson?.PrimaryAliasId;
             note.EditedDateTime = RockDateTime.Now;
             note.NoteUrl = this.RockBlock()?.CurrentPageReference?.BuildUrl();
-#pragma warning disable CS0618 // Type or member is obsolete
-            // Set this so anything doing direct SQL queries will still find
-            // the right set of notes.
-            note.ApprovalStatus = NoteApprovalStatus.Approved;
-#pragma warning restore CS0618 // Type or member is obsolete
 
             rockContext.SaveChanges();
             Rock.Attribute.Helper.SaveAttributeValues( note );

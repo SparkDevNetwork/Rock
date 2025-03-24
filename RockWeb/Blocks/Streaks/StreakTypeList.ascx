@@ -30,7 +30,6 @@
                             <Rock:DateTimeField HeaderText="Start Date" DataField="StartDate" SortExpression="StartDate" DataFormatString="{0:d}"  />
                             <Rock:RockBoundField DataField="EnrollmentCount" HeaderText="Enrollments" SortExpression="EnrollmentCount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                             <Rock:SecurityField TitleField="Name" />
-                            <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
                             <Rock:DeleteField OnClick="gStreakTypes_Delete" />
                         </Columns>
                     </Rock:Grid>

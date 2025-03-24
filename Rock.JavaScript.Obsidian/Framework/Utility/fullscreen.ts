@@ -35,7 +35,7 @@ declare global {
 
 /**
  * Request that the window enter true fullscreen mode for the given element.
- * 
+ *
  * @param element The element that will be the root of the fullscreen view.
  * @param exitCallback The function to call when leaving fullscreen mode.
  *
@@ -84,16 +84,23 @@ export async function enterFullscreen(element: HTMLElement, exitCallback?: (() =
 
 /**
  * Checks if any element is currently in fullscreen mode.
- * 
+ *
  * @returns True if an element is currently in fullscreen mode in the window; otherwise false.
  */
 export function isFullscreen(): boolean {
-    return !!document.fullscreenElement || !!document.mozFullScreenElement || !!document.webkitFullscreenElement;
+    return !!getFullscreenElement();
+}
+
+/**
+ * Gets the element that is currently the root of fullscreen mode.
+ */
+export function getFullscreenElement(): Element | undefined {
+    return document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement;
 }
 
 /**
  * Manually exits fullscreen mode.
- * 
+ *
  * @returns True if fullscreen mode was exited; otherwise false.
  */
 export async function exitFullscreen(): Promise<boolean> {

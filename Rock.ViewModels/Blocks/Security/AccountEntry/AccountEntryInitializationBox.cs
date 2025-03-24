@@ -162,6 +162,11 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         public bool IsGenderPickerShown { get; set; }
 
         /// <summary>
+        /// Indicating whether the Gender dropdown is required.
+        /// </summary>
+        public bool IsGenderPickerRequired { get; set; }
+
+        /// <summary>
         /// Gets or sets the person details if there is an identified user.
         /// </summary>
         /// <value>

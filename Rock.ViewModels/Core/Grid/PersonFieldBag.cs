@@ -26,6 +26,7 @@ namespace Rock.ViewModels.Core.Grid
         /// <summary>
         /// Gets or sets the hashed identifier key.
         /// </summary>
+        /// <value>The hashed identifier key.</value>
         public string IdKey { get; set; }
 
         /// <summary>

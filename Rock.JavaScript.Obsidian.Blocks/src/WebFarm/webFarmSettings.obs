@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -64,7 +64,7 @@
     // inform the server which incoming values have valid data in them.
     const validProperties = [
         "attributeValues",
-        "isActive",
+        "isEnabled",
         "webFarmKey",
         "lowerPollingLimit",
         "upperPollingLimit",
@@ -91,7 +91,7 @@
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
 
-        const isEnabled = webFarmSettingsViewBag.value?.isActive;
+        const isEnabled = webFarmSettingsViewBag.value?.isEnabled;
         const hasValidKey = webFarmSettingsViewBag.value?.hasValidKey;
         const isRunning = webFarmSettingsViewBag.value?.isRunning;
 
@@ -128,7 +128,7 @@
     });
 
     const options = computed((): WebFarmSettingsDetailOptionsBag => {
-        return config.options ?? {} as WebFarmSettingsDetailOptionsBag;
+        return config.options ?? {};
     });
 
     // #endregion

@@ -217,6 +217,14 @@ namespace Rock.Model
         /// <param name="theme">The theme to build.</param>
         internal static void BuildTheme( Theme theme )
         {
+            var websitePurposeValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.THEME_PURPOSE_WEBSITE_NEXTGEN.AsGuid() );
+            var checkinPurposeValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.THEME_PURPOSE_CHECKIN.AsGuid() );
+
+            if ( theme.PurposeValueId != websitePurposeValueId && theme.PurposeValueId != checkinPurposeValueId )
+            {
+                return;
+            }
+
             var customization = theme.GetAdditionalSettings<ThemeCustomizationSettings>();
 
             var webRoot = RockApp.Current.HostingSettings.WebRootPath;

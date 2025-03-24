@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Campus" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Analytics( false, true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CAMPUS )]
     public partial class Campus : Model<Campus>, IOrdered, ICacheable
@@ -164,6 +165,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.CAMPUS_STATUS )]
+        [EnableAttributeQualification]
         public int? CampusStatusValueId { get; set; }
 
         /// <summary>
@@ -174,6 +176,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.CAMPUS_TYPE )]
+        [EnableAttributeQualification]
         public int? CampusTypeValueId { get; set; }
 
         /// <summary>

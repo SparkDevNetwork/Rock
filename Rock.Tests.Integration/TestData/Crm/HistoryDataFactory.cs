@@ -15,16 +15,16 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.TestData
+namespace Rock.Tests.Integration.TestData.Crm
 {
     public class HistoryDataFactory //: SampleDataFactoryBase
     {

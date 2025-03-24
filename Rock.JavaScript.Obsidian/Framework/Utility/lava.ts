@@ -21,8 +21,21 @@ const engine = new Liquid({
     cache: true
 });
 
+const hasLavaCommandFieldsRegex: RegExp = /\{%.+%\}/;
+const hasLavaShortcodeFieldsRegex: RegExp = /\{\[.+\]\}/;
+
 export function resolveMergeFields(template: string, mergeFields: Record<string, unknown>): string {
     const tpl = engine.parse(template);
 
     return engine.renderSync(tpl, mergeFields);
+}
+
+/** Determines whether the string potentially has lava command {% %} fields in it. */
+export function hasLavaCommandFields(template: string): boolean {
+    return hasLavaCommandFieldsRegex.test(template);
+}
+
+/** Determines whether the string potentially has lava shortcode {[ ]} fields in it. */
+export function hasLavaShortcodeFields(template: string): boolean {
+    return hasLavaShortcodeFieldsRegex.test(template);
 }

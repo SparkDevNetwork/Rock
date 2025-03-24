@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialPaymentDetail" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "F3659077-43FD-4805-BC42-BC8A3F9C3008")]
     public partial class FinancialPaymentDetail : Model<FinancialPaymentDetail>
     {

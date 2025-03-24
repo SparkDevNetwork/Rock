@@ -1,24 +1,112 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <TreeItemPicker
-                    v-bind="standardFieldProps"
-                    v-model="internalValue"
-                    formGroupClasses="location-item-picker"
-                    iconCssClass="fa fa-file"
-                    :provider="itemProvider"
-                    :multiple="multiple"
-                    :autoExpand="true">
-    </TreeItemPicker>
+    <ContentDropDownPicker v-bind="standardFieldProps"
+                           @primaryButtonClicked="onSelect"
+                           @secondaryButtonClicked="onCancel"
+                           @clearButtonClicked="onClear"
+                           iconCssClass="fa fa-file fa-fw"
+                           :showClear="showClear"
+                           :modelValue="internalValues"
+                           :fullWidth="false"
+                           v-model:showPopup="showPopup">
+
+        <template #innerLabel><span class="selected-names">{{ selectedNames || blankValue }}</span></template>
+
+        <template #pickerContentHeader v-if="mode != 'preview' && enhanceForLongLists">
+            <div class="width-full">
+                <TextBox v-model="searchValue" size="small">
+                    <template #inputGroupAppend>
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" @click.prevent="search"><i class="fa fa-search"></i></button>
+                        </span>
+                    </template>
+                </TextBox>
+            </div>
+        </template>
+
+        <div v-show="mode == 'search'" class="treeview">
+            <Loading :isLoading="isLoading">
+                <div class="search-item js-search-item"
+                     :class="multiple ? 'checkbox' : 'radio'"
+                     v-for="option of searchItems"
+                     :key="option.value ?? 0">
+                    <label>
+                        <input class="checkbox js-chk-search"
+                               :type="multiple ? 'checkbox' : 'radio'"
+                               @change="selectSearchItem(option.value ?? '')"
+                               :checked="internalValues.includes(option.value ?? '')">
+                        <span class="label-text">
+                            <span class="text-color d-block">{{ option.text }}</span>
+                            <span class="text-muted text-sm" v-html="option.category || 'Top Level'"></span>
+                        </span>
+                    </label>
+                </div>
+            </Loading>
+        </div>
+
+        <TreeList v-show="mode == 'tree'"
+                  v-model="internalValues"
+                  :multiple="multiple"
+                  :provider="itemProvider"
+                  @update:items="onUpdateItems"
+                  @update:modelValue="selectItemOnClick"
+                  :disableFolderSelection="false"
+                  :autoExpand="true"
+                  :showChildCount="false"
+                  :isVisible="showPopup" />
+
+
+        <template #pickerContentSuperHeader v-if="$slots.pickerContentSuperHeader">
+            <slot name="pickerContentSuperHeader" />
+        </template>
+
+        <template #pickerContentHeading v-if="$slots.pickerContentHeading">
+            <slot name="pickerContentHeading" />
+        </template>
+        <template #mainPickerActions v-if="$slots.mainPickerActions">
+            <slot name="mainPickerActions" />
+        </template>
+        <template #primaryButtonLabel v-if="$slots.primaryButtonLabel">
+            <slot name="primaryButtonLabel" />
+        </template>
+        <template #secondaryButtonLabel v-if="$slots.secondaryButtonLabel">
+            <slot name="secondaryButtonLabel" />
+        </template>
+        <template #customPickerActions>
+            <button type="button"
+                    class="btn btn-link btn-xs picker-treeview"
+                    title="Tree View"
+                    v-if="mode == 'search'"
+                    @click.prevent="changeMode">
+                <i class="fa fa-sitemap"></i>
+            </button>
+        </template>
+        <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
+            <slot name="prepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #inputGroupPrepend="{ isInputGroupSupported }" v-if="$slots.inputGroupPrepend">
+            <slot name="inputGroupPrepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #append="{ isInputGroupSupported }" v-if="$slots.append">
+            <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+    </ContentDropDownPicker>
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { PropType, computed, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthroughWithPropUpdateCheck } from "@Obsidian/Utility/component";
     import { MergeFieldTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
-    import TreeItemPicker from "./treeItemPicker.obs";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import TreeList from "./treeList.obs";
+    import Loading from "./loading.obs";
+    import ContentDropDownPicker from "./contentDropDownPicker.obs";
+    import { useHttp } from "@Obsidian/Utility/http";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { forceToArray } from "@Obsidian/Utility/arrayUtils";
+    import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
+    import { MergeFieldPickerGetSearchedMergedFieldsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mergeFieldPickerGetSearchedMergedFieldsOptionsBag";
+    import TextBox from "./textBox.obs";
 
     const props = defineProps({
         modelValue: {
@@ -39,6 +127,17 @@
             default: false
         },
 
+        /** The optional value to show when nothing is selected. */
+        blankValue: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        enhanceForLongLists: {
+            type: Boolean,
+            default: true
+        },
+
         ...standardRockFormFieldProps
     });
 
@@ -49,6 +148,21 @@
     const standardFieldProps = useStandardRockFormFieldProps(props);
     const [internalValue, watchModelProp] = useVModelPassthroughWithPropUpdateCheck(props, "modelValue", emit);
     const securityGrantToken = useSecurityGrantToken();
+    const mode = ref<"search" | "preview" | "tree">("tree");
+    const isLoading = ref(false);
+    const showPopup = ref(false);
+    const http = useHttp();
+
+    let timeout: ReturnType<typeof setTimeout>;
+    function setLoading(val: boolean): void {
+        if (val) {
+            timeout = setTimeout(() => isLoading.value = val, 100);
+        }
+        else {
+            clearTimeout(timeout);
+            isLoading.value = val;
+        }
+    }
 
     // Configure the item provider with our settings.
     const itemProvider = ref(newItemProvider());
@@ -60,14 +174,135 @@
 
         if (internalValue.value) {
             if (Array.isArray(internalValue.value)) {
-                prov.selectedIds = internalValue.value.map(p => p?.value ?? emptyGuid);
+                prov.selectedIds = internalValue.value.map(p => p?.value ?? "");
             }
             else {
-                prov.selectedIds = [internalValue.value.value ?? emptyGuid];
+                prov.selectedIds = [internalValue.value.value ?? ""];
             }
         }
 
         return prov;
+    }
+
+    /**
+    * Our internal list of selected values. This must be kept seperate
+    * because we don't actually emit the new values until the user clicks
+    * the select button.
+    */
+    const internalValues = ref(forceToArray(props.modelValue, props.multiple).map(v => v.value ?? ""));
+
+    /**
+    * A flat array of items from the tree. This is used to quickly filter
+    * to just the selected items.
+    */
+    const flatItems = ref<TreeItemBag[]>([]);
+
+    /** Updates the model value from our internal value. */
+    const updateModelValue = (): void => {
+        // Create a new set of selected items to emit.
+        let newModelValue = flatItems.value
+            .filter(v => internalValues.value.includes(v.value ?? ""))
+            .map(v => {
+                return {
+                    value: v.value ?? "",
+                    text: v.text ?? ""
+                } as ListItemBag;
+            });
+
+        if (searchItems.value.length > 0) {
+            const selectedSearchItems = searchItems.value.filter(v => internalValues.value.includes(v.value ?? ""));
+            newModelValue = newModelValue.concat(selectedSearchItems);
+        }
+
+        // Helpful list of the values already in the new model value.
+        const knownValues = newModelValue.map(v => v.value);
+
+        // Determine which values need to be added from the tree list.
+        const additionalValues = internalValues.value
+            .filter(v => !knownValues.includes(v));
+
+        // Go through each additional value and find it in the tree list
+        // and add it to the new model value.
+        for (const v of additionalValues) {
+            const items = flatItems.value.filter(i => i.value === v);
+
+            if (items.length > 0 && items[0].value && items[0].text) {
+                newModelValue.push({
+                    value: items[0].value,
+                    text: items[0].text
+                });
+            }
+        }
+
+        // Emit the new value and close the popup.
+        if (props.multiple) {
+            emit("update:modelValue", newModelValue);
+        }
+        else {
+            emit("update:modelValue", newModelValue.length > 0 ? newModelValue[0] : null);
+        }
+    };
+
+    /**
+     * Determines the names of the currently selected items. This shows the
+     * names of the "save safe" items, meaning it is updated after the user
+     * clicks the select button. It does not update on the fly as they are
+     * selecting items.
+     */
+    const selectedNames = computed((): string => {
+        return forceToArray(props.modelValue, true).map(v => v.text).join(", ");
+    });
+
+    /** Determines if the clear button should be shown. */
+    const showClear = computed((): boolean => {
+        // Use modelValue since internalValues is used for the in-process
+        // popup, not the actual stored value.
+        return forceToArray(props.modelValue, props.multiple).length > 0;
+    });
+
+    /**
+    * Event handler for when the list of items in the tree list has been
+    * updated.
+    *
+    * @param newItems The new root items being used by the tree list.
+    */
+    const onUpdateItems = (newItems: TreeItemBag[]): void => {
+        // Update our flatItems array with the list of new items.
+        flatItems.value = flatten(newItems ?? [], i => i.children ?? []);
+    };
+
+    /**
+    * Event handler for when the clear button is clicked by the user.
+    */
+    const onClear = (): void => {
+        internalValues.value = [];
+        emit("update:modelValue", props.multiple ? [] : null);
+        showPopup.value = false;
+    };
+
+    /**
+     * Event handler for when the user clicks the cancel button. Hide the
+     * popup.
+     */
+    const onCancel = (): void => {
+        showPopup.value = false;
+    };
+
+    /**
+     * Event handler for when the user clicks the select button. Save the
+     * current selection and close the popup.
+     */
+    const onSelect = (): void => {
+        showPopup.value = false;
+        updateModelValue();
+        mode.value = "tree";
+        searchValue.value = "";
+    };
+
+    function changeMode(): void {
+        if (mode.value == "search") {
+            mode.value = "tree";
+        }
     }
 
     watch(() => props.additionalFields, (): void => {
@@ -77,4 +312,95 @@
     watchModelProp((): void => {
         itemProvider.value = newItemProvider();
     });
+
+    // The picker should select on item click when we are not selecting multiple items.
+    const selectItemOnClick = (): void => {
+        if (!props.multiple) {
+            onSelect();
+        }
+    };
+
+    // #region Search View
+
+    const searchValue = ref("");
+    const searchItems = ref<ListItemBag[]>([]);
+
+    /**
+     * Get the hierarchical list of parent pages of the selectedGuid
+     *
+     * @returns A list of GUIDs of the parent pages
+     */
+    async function search(): Promise<void> {
+        setLoading(true);
+        mode.value = "search";
+        const options: MergeFieldPickerGetSearchedMergedFieldsOptionsBag = {
+            searchTerm: searchValue.value,
+            additionalFields: props.additionalFields,
+            securityGrantToken: securityGrantToken.value
+        };
+
+        try {
+            const response = await http.post<ListItemBag[]>("/api/v2/Controls/MergeFieldPickerGetSearchedMergeFields", undefined, options);
+
+            if (response.isSuccess && response.data != null) {
+                searchItems.value = response.data.map(item => {
+                    return {
+                        text: item.text,
+                        value: item.value,
+                        category: item.category
+                    };
+                });
+            }
+            else {
+                searchItems.value = [];
+            }
+        }
+        finally {
+            setLoading(false);
+        }
+    }
+
+    /** Changes internal selected values when an item in the search results is selected */
+    function selectSearchItem(id: string): void {
+        if (props.multiple) {
+            if (internalValues.value.includes(id)) {
+                // Already exists. Remove it from list
+                const index = internalValues.value.indexOf(id);
+                internalValues.value.splice(index, 1);
+            }
+            else {
+                // Add to the list
+                internalValues.value.push(id);
+            }
+        }
+        else {
+            internalValues.value = [id];
+        }
+    }
+
+    // #endregion
+
+    /**
+     * Helper function to flatten an array of items that contains child items
+     * of the same type.
+     *
+     * @param source The source array of items to the flattened.
+     * @param childrenSource A callback function that retrieves the child items.
+     *
+     * @returns An array of all items and descendants.
+     */
+    function flatten<T>(source: T[], childrenSource: (value: T) => T[]): T[] {
+        let stack = [...source];
+        const flatArray: T[] = [];
+
+        for (let i = 0; i < stack.length; i++) {
+            const item = stack[i];
+
+            flatArray.push(item);
+
+            stack = stack.concat(childrenSource(item));
+        }
+
+        return flatArray;
+    }
 </script>

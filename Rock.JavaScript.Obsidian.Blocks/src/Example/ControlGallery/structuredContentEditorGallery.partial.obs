@@ -1,0 +1,46 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode">
+
+        <StructuredContentEditor v-model="value"
+                                 label="Structured Content Editor"
+                                 :toolsGuid="toolsGuid"
+                                 :rules="required ? 'required' : ''" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Required" v-model="required" />
+                </div>
+                <div class="col-md-4">
+                    <DefinedValuePicker v-model="toolsItemBag" :definedTypeGuid="toolsTypeGuid" label="Structured Content Editor Tools Value" lazyMode="eager" :multiple="false" />
+                </div>
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { Guid } from "@Obsidian/Types";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const required = ref(false);
+    const toolsItemBag = ref<ListItemBag | undefined>({
+        value: DefinedValue.StructureContentEditorDefault
+    });
+    const toolsGuid = computed<Guid | null>(() => toGuidOrNull(toolsItemBag.value?.value));
+    const toolsTypeGuid = DefinedType.StructuredContentEditorTools;
+
+    const value = ref("{}");
+    const importCode = getSfcControlImportPath("structuredContentEditor");
+    const exampleCode = computed(() => `<StructuredContentEditor v-model="value" label="StructuredContent Editor" :toolsGuid="${toolsGuid.value}" ${required.value ? 'rules="required" ' : ""}/>`);
+</script>

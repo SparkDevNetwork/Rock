@@ -16,6 +16,7 @@
 using System.ComponentModel.DataAnnotations;
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -39,5 +40,12 @@ namespace Rock.Model
                 return isValid;
             }
         }
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => AchievementType ?? base.ParentAuthority;
+
+        #endregion
     }
 }

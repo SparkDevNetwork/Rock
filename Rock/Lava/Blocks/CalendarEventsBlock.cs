@@ -63,6 +63,14 @@ namespace Rock.Lava.Blocks
         {
             try
             {
+                // first ensure that search commands are allowed in the context
+                if ( !this.IsAuthorized( context ) )
+                {
+                    result.Write( string.Format( LavaBlockBase.NotAuthorizedMessage, this.SourceElementName ) );
+                    base.OnRender( context, result );
+                    return;
+                }
+
                 var dataSource = new EventOccurrencesLavaDataSource();
 
                 _settings.ParseFromMarkup( _attributesMarkup, context );

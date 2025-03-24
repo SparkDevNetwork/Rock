@@ -1,0 +1,63 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RangeSlider v-model="internalValue"
+                 v-bind="$attrs"
+                 :min="min"
+                 @update:modelValue="onRangeSliderUpdated">
+        <template #besideLabel>
+            <ClearStyleButton v-if="!isNullish(valueProvider.value)" @click="onClearClicked" />
+        </template>
+    </RangeSlider>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ClearStyleButton from "../clearStyleButton.partial.obs";
+    import { ValueProvider } from "../types.partial";
+    import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        valueProvider: {
+            type: Object as PropType<ValueProvider<number | null | undefined>>,
+            required: true
+        },
+
+        min: {
+            type: Number as PropType<number>,
+            default: 0
+        }
+    });
+
+    // The RangeSlider will emit an updated value if we pass in null or undefined,
+    // which could make the provider think the value changed by the user.
+    // Keep track of the initialization state so the value provider only gets actual changes.
+    let isRangeSliderInitialized: boolean = false;
+
+    // #region Computed Props
+
+    const internalValue = computed<number>({
+        get(): number {
+            return props.valueProvider.value ?? props.min;
+        },
+        set(value: number): void {
+            if (isRangeSliderInitialized) {
+                props.valueProvider.value = value;
+            }
+        }
+    });
+
+    // #endregion Computed Props
+
+    // #region Event Handlers
+
+    function onRangeSliderUpdated(): void {
+        isRangeSliderInitialized = true;
+    }
+
+    function onClearClicked(): void {
+        props.valueProvider.value = null;
+    }
+
+    // #endregion Event Handlers
+</script>

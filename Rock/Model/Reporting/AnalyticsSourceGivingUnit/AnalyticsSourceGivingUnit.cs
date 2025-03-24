@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsSourceGivingUnit" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [HideFromReporting]
     [Rock.SystemGuid.EntityTypeGuid( "05103BCB-B164-4591-9129-F949A58C04B1")]
     public class AnalyticsSourceGivingUnit : Entity<AnalyticsSourceGivingUnit>

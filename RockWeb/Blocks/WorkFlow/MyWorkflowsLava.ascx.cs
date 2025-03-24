@@ -133,7 +133,7 @@ namespace RockWeb.Blocks.WorkFlow
                         actions = GetActions( rockContext );
                     }
 
-                    var mergeFields = new Dictionary<string, object>();
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
                     mergeFields.Add( "Role", role );
                     mergeFields.Add( "Actions", actions.OrderByDescending( a => a.CreatedDateTime ) );
                     mergeFields.Add( "PanelTitle", panelTitle );

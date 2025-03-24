@@ -1,0 +1,43 @@
+<template>
+    <GalleryAndResult :value="{ 'output:modelValue': items, 'input:items': mediaItems }"
+                      hasMultipleValues
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <MediaSelector label="MediaSelector" v-model="items" :mediaItems="mediaItems" :mode="modeNum" />
+
+        <template #settings>
+            <KeyValueList label="Media Items" v-model="mediaItems" />
+            <DropDownList label="Mode" v-model="mode" :items="modeOptions" />
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import MediaSelector from "@Obsidian/Controls/mediaSelector.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+
+    const items = ref([""]);
+    const mediaItems = [] as KeyValueItem[];
+    const modeOptions = [
+        {
+            text: "Image",
+            value: "0"
+        },
+        {
+            text: "Audio",
+            value: "1"
+        }
+    ] as ListItemBag[];
+    const mode = ref(MediaSelectorMode.Image.toString());
+    const modeNum = computed(() => parseInt(mode.value, 10) as MediaSelectorMode);
+    const importCode = getSfcControlImportPath("mediaSelector");
+    const exampleCode = `<MediaSelector label="MediaSelector" v-model="value" :mediaItems="mediaItems" :itemWidth="itemWidth" />`;
+</script>

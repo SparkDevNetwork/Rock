@@ -22,5 +22,13 @@ namespace Rock.ViewModels.Blocks.Prayer.PrayerCommentList
     /// </summary>
     public class PrayerCommentListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether or not the Category Filter is visible
+        /// There are hidden if the FilterCategoryFromQueryString block setting is set to true.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the Category Filter should be visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCategoryFilterVisible { get; set; }
     }
 }

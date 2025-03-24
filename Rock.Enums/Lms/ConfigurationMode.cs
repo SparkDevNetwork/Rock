@@ -24,11 +24,13 @@ namespace Rock.Enums.Lms
         /// <summary>
         /// Academic calendar mode.
         /// </summary>
+        [EnumOrder( 1 )]
         AcademicCalendar = 0,
 
         /// <summary>
         /// On-demand learning mode.
         /// </summary>
+        [EnumOrder( 0 )]
         OnDemandLearning = 1
     }
 }

@@ -67,7 +67,9 @@ function getQuickFilterValue(row: Record<string, unknown>, column: ColumnDefinit
     return RockDateTime.parseISO(value)?.toASPString("g");
 }
 
-
+/**
+ * Displays a cell value as a formatted short date and time value.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,

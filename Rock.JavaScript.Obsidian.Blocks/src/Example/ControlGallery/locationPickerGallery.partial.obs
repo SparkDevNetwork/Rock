@@ -1,0 +1,59 @@
+<template>
+    <GalleryAndResult :value="{ value, currentPickerMode }"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      hasMultipleValues
+                      enableReflection>
+
+        <LocationPicker label="Location" v-model="value" v-model:currentPickerMode="currentPickerMode" :allowedPickerModes="selectedAsNumber" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-6">
+                    <CheckBoxList v-model="selectedOptions" :items="options" label="Allowed Modes" horizontal />
+                </div>
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { SingleLocationPickerMode, LocationPickerModeFlag } from "@Obsidian/Enums/Controls/locationPickerMode";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const options = [{
+        text: "Location",
+        value: "2"
+    }, {
+        text: "Address",
+        value: "1"
+    }, {
+        text: "Point",
+        value: "4"
+    }, {
+        text: "Geo-fence",
+        value: "8"
+    }];
+
+    const selectedOptions = ref(["1", "2", "4", "8"]);
+
+    const selectedAsNumber = computed<LocationPickerModeFlag | undefined>(() => {
+        if (selectedOptions.value.length === 0) {
+            return undefined;
+        }
+
+        return selectedOptions.value.reduce((total, option) => {
+            return (total + parseInt(option, 10) as LocationPickerModeFlag);
+        }, 0 as LocationPickerModeFlag);
+    });
+
+    const value = ref(undefined);
+    const currentPickerMode = ref<SingleLocationPickerMode>(2);
+    const importCode = getSfcControlImportPath("locationPicker");
+    const exampleCode = `<LocationPicker label="Location" v-model="value" />`;
+</script>

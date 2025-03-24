@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
@@ -40,26 +41,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
-
-    [DefinedValueField(
-        "Connection Status",
-        Key = AttributeKeys.ConnectionStatus,
-        Description = "The connection status to use for new individuals (default = 'Prospect'.)",
-        DefinedTypeGuid = "2E6540EA-63F0-40FE-BE50-F2A84735E600",
-        IsRequired = true,
-        AllowMultiple = false,
-        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
-        Order = 11 )]
-
-    [DefinedValueField(
-        "Record Status",
-        Key = AttributeKeys.RecordStatus,
-        Description = "The record status to use for new individuals (default = 'Pending'.)",
-        DefinedTypeGuid = "8522BADD-2871-45A5-81DD-C76DA07E2E7E",
-        IsRequired = true,
-        AllowMultiple = false,
-        DefaultValue = "283999EC-7346-42E3-B807-BCE9B2BABB49",
-        Order = 12 )]
 
     [BooleanField(
         "Birthdate Show",
@@ -160,6 +141,44 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Key = AttributeKeys.Gender,
         Order = 10 )]
 
+    [DefinedValueField(
+        "Connection Status",
+        Key = AttributeKeys.ConnectionStatus,
+        Description = "The connection status to use for new individuals (default = 'Prospect'.)",
+        DefinedTypeGuid = "2E6540EA-63F0-40FE-BE50-F2A84735E600",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
+        Order = 11 )]
+
+    [DefinedValueField(
+        "Record Status",
+        Key = AttributeKeys.RecordStatus,
+        Description = "The record status to use for new individuals (default = 'Pending'.)",
+        DefinedTypeGuid = "8522BADD-2871-45A5-81DD-C76DA07E2E7E",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = "283999EC-7346-42E3-B807-BCE9B2BABB49",
+        Order = 12 )]
+
+    [DefinedValueField( "Display Campus Types",
+        Description = "The campus types that will be included in the list of campuses for the user to choose from. If the user's assigned campus is not part of the filtered list, it will be automatically added.",
+        DefinedTypeGuid = SystemGuid.DefinedType.CAMPUS_TYPE,
+        IsRequired = true,
+        DefaultValue = SystemGuid.DefinedValue.CAMPUS_TYPE_PHYSICAL,
+        AllowMultiple = true,
+        Key = AttributeKeys.DisplayCampusTypes,
+        Order = 13 )]
+
+    [DefinedValueField( "Display Campus Statuses",
+        Description = "The campus types that will be included in the list of campuses for the user to choose from.",
+        DefinedTypeGuid = SystemGuid.DefinedType.CAMPUS_STATUS,
+        IsRequired = true,
+        DefaultValue = SystemGuid.DefinedValue.CAMPUS_STATUS_OPEN,
+        AllowMultiple = true,
+        Key = AttributeKeys.DisplayCampusStatuses,
+        Order = 14 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_PROFILE_DETAILS_BLOCK_TYPE )]
@@ -171,6 +190,16 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </summary>
         public static class AttributeKeys
         {
+            /// <summary>
+            /// The display campus types key.
+            /// </summary>
+            public const string DisplayCampusTypes = "DisplayCampusTypes";
+                
+            /// <summary>
+            /// The display campus statuses key.
+            /// </summary>
+            public const string DisplayCampusStatuses = "DisplayCampusStatuses";
+
             /// <summary>
             /// The connection status key
             /// </summary>
@@ -247,6 +276,21 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </value>
         public VisibilityTriState GenderVisibility => GetAttributeValue( AttributeKeys.Gender ).ConvertToEnum<VisibilityTriState>();
 
+        /// <summary>
+        /// Gets the display campus type guids.
+        /// </summary>
+        /// <value>
+        /// The display campus type guids.
+        /// </value>
+        public List<Guid> DisplayCampusTypeGuids => GetAttributeValue( AttributeKeys.DisplayCampusTypes ).SplitDelimitedValues().AsGuidList();
+
+        /// <summary>
+        /// Gets the display campus status guids.
+        /// </summary>
+        /// <value>
+        /// The display campus status guids.
+        /// </value>
+        public List<Guid> DisplayCampusStatusGuids => GetAttributeValue( AttributeKeys.DisplayCampusStatuses ).SplitDelimitedValues().AsGuidList();
         #endregion
 
         #region IRockMobileBlockType Implementation
@@ -262,8 +306,12 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            return new
+            using ( var rockContext = new RockContext() )
             {
+                return new Rock.Common.Mobile.Blocks.Cms.ProfileDetails.Configuration
+                {
+                    Campuses = GetDisplayCampuses( rockContext ),
+                };
             };
         }
 
@@ -517,6 +565,41 @@ namespace Rock.Blocks.Types.Mobile.Cms
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Gets the list of campuses that should be displayed to the user to pick from.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// A list of <see cref="MobileCampus" /> objects.
+        /// </returns>
+        private List<MobileCampus> GetDisplayCampuses( RockContext rockContext )
+        {
+            // Get the campus status identifiers that will be used for
+            // filtering.
+            var campusStatusIds = DisplayCampusStatusGuids
+                .Select( a => DefinedValueCache.Get( a, rockContext )?.Id )
+                .Where( a => a != null )
+                .Cast<int>()
+                .ToList();
+            // Get the campus type identifiers that will be used for filtering.
+            var campusTypeIds = DisplayCampusTypeGuids
+                .Select( a => DefinedValueCache.Get( a, rockContext )?.Id )
+                .Where( a => a != null )
+                .Cast<int>()
+                .ToList();
+            // Get all the campuses that match the filters and then cast them
+            // to a MobileCampus type.
+            return CampusCache.All()
+                .Where( a => a.CampusStatusValueId.HasValue && campusStatusIds.Contains( a.CampusStatusValueId.Value ) )
+                .Where( a => a.CampusTypeValueId.HasValue && campusTypeIds.Contains( a.CampusTypeValueId.Value ) )
+                .Select( a => new MobileCampus
+                {
+                    Guid = a.Guid,
+                    Name = a.Name
+                } )
+                .ToList();
+        }
 
         /// <summary>
         /// Determines whether the current person is authorized to edit another person.

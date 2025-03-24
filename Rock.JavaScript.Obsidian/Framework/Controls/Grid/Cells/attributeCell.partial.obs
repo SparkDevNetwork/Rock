@@ -1,0 +1,23 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <HtmlCell v-bind="props" :selectValue="selectValue" />
+</template>
+
+<script setup lang="ts">
+    import HtmlCell from "./htmlCell.partial.obs";
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+
+    const props = defineProps(standardCellProps);
+
+    function selectValue(value: unknown): string | undefined {
+        if (!value || typeof value !== "object") {
+            return undefined;
+        }
+
+        if (!value["html"] || typeof value["html"] !== "string") {
+            return undefined;
+        }
+
+        return value["html"];
+    }
+</script>

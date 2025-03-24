@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Tasks;
 
 namespace Rock.Model
 {
@@ -29,6 +30,16 @@ namespace Rock.Model
                 if ( Entry.State == EntityContextState.Deleted )
                 {
                     new PersonalizationSegmentService( this.RockContext ).CleanupPersonAliasPersonalizationDataForSegmentsThatDontExist();
+                }
+
+                if ( ( Entry.State == EntityContextState.Added || Entry.State == EntityContextState.Modified ) && Entity.IsDirty )
+                {
+                    var message = new UpdatePersonAliasPersonalizationData.Message
+                    {
+                        PersonalizationSegmentId = Entity.Id,
+                    };
+
+                    message.Send();
                 }
             }
         }

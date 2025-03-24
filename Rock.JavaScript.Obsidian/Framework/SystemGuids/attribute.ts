@@ -29,6 +29,24 @@ export const Attribute = {
     AccumulativeAchievementStreakType: "BEDD14D0-450E-475C-8D9F-404DDE350530",
     /** The accumulative achievement time span in days */
     AccumulativeAchievementTimeSpanInDays: "1C0F4BE1-81E9-4974-A24E-2DFBA8320AE5",
+    /** The AI service to use for the Category. */
+    AiAutomationAiProvider: "6A1991F6-AB4A-4B92-9790-0E2ED62C079F",
+    /** Determines whether to auto-categorize the request based on the text. */
+    AiAutomationAutoCategorize: "6614A615-1744-4BC8-BBEC-12DB89A1E29C",
+    /** Determines whether the public appropriateness should be checked for the text. */
+    AiAutomationCheckPublicAppropriateness: "3C72AF29-9F11-4FE8-88AC-8A5FE3B8565A",
+    /** Determines whether child categories inherit the AI Automations of this category. */
+    AiAutomationChildCategoriesInheritConfiguration: "065ECB63-A468-4892-AAC4-39CC998EAA70",
+    /** Determines whether the emotional sentiment should be classified based on the text and provided sentiment options. */
+    AiAutomationClassifySentiment: "DDAE804B-A166-4302-812C-E12E29EB118B",
+    /** Determines if AI should moderate the request. */
+    AiAutomationEnableAiModeration: "7472FD09-E6A6-4857-BB41-A34ABA7676A3",
+    /** The workflow to launch if any of the moderation categories are found. */
+    AiAutomationModerationAlertWorkflowType: "4C9F5F7C-9A33-4588-9D2C-2C32553D3CD3",
+    /** Determines whether the AI should remove names from the text. */
+    AiAutomationRemoveNames: "0AAC2E68-CB3B-4123-AAB2-D087F1729C02",
+    /** Determines whether the AI should polish the text of the request. */
+    AiAutomationTextEnhancement: "6BF93B6F-0EC9-4CF0-8EC5-636F524C830A",
     /** The attendance type label */
     AttendanceTypeLabel: "6916359C-C168-4DBA-A893-365526C9F4C4",
     /** The binaryfiletype filestorage rootpath attribute */
@@ -131,12 +149,12 @@ export const Attribute = {
     GroupCommunicationListCategory: "E3810936-182E-2585-4F8E-030A0E18B27A",
     /** Group attribute for groups of GroupType CommunicationList to defined additional dataviews that can be used as communication segments */
     GroupCommunicationListSegments: "73A53BC1-2178-46A1-8413-C7A4DD49F0B4",
-    /** The groupmember (of a communication list) preferred communication medium */
-    GroupmemberCommunicationListPreferredCommunicationMedium: "D7941908-1F65-CC9B-416C-CCFABE4221B9",
     /** The Sign-up Group - Group Type's project type attribute */
     GrouptypeSignupGroupProjectType: "46FFBB10-6E4B-4B3A-A560-61B36C6B0E09",
     /** The Active attribute for the observability HTTP filter. */
     HttpModuleObservabilityActive: "DAC40EF2-1616-4E15-A897-8CCD7CF2C588",
+    /** the Active attribute for the rock gateway HTTP module. */
+    HttpModuleRockGatewayActive: "DAC40EF2-1616-4E15-A897-8CCD7CF2C588",
     /** Language in ISO639-1 */
     Iso6391: "F5E8B6D2-6483-0F8D-4C20-07C51E7548AD",
     /** Language in ISO639 */

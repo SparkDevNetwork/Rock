@@ -692,6 +692,9 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
             parameters.Add( "request", "Text" );
 
+            field = MobileHelper.GetEditAttributesXaml( request, null, parameters, false, RequestContext.CurrentPerson );
+            sb.AppendLine( field );
+
             if ( ShowPublicDisplayFlag )
             {
                 var isPublic = DefaultToPublic ? true : request?.IsPublic ?? false;
@@ -788,6 +791,8 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                 prayerRequest.Email = ( string ) parameters["email"];
                 prayerRequest.Text = ( string ) parameters["request"];
 
+                MobileHelper.UpdateEditAttributeValues( prayerRequest, parameters, null, null );
+
                 if ( ShowCampus )
                 {
                     if ( parameters.ContainsKey( "campus" ) )
@@ -871,10 +876,12 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                     }
                 }
 
-                //
                 // Save all changes to database.
-                //
-                rockContext.SaveChanges();
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    prayerRequest.SaveAttributeValues( rockContext );
+                } );
 
                 StartWorkflow( prayerRequest, rockContext );
             }

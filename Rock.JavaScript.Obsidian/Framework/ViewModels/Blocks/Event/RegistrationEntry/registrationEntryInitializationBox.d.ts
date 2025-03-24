@@ -61,6 +61,9 @@ export type RegistrationEntryInitializationBox = {
     /** Gets or sets the current person family unique identifier. */
     currentPersonFamilyGuid?: Guid | null;
 
+    /** Gets or sets a value indicating whether captcha support should be disabled for this block. */
+    disableCaptchaSupport: boolean;
+
     /** Gets or sets the discount code term. */
     discountCodeTerm?: string | null;
 

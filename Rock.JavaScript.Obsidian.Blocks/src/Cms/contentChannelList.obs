@@ -1,0 +1,265 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Content Channel"
+          :entityTypeGuid="EntityType.ContentChannel"
+          stickyHeader
+          liveUpdates
+          :gridSettings="true"
+          :gridSettingsActive="hasSettingsFilters"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @gridSettingsClick="onGridSettingClick"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="name"
+                    title="Channel"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="contentChannelType"
+                    title="Type"
+                    field="contentChannelType"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="md" />
+
+        <Column name="channelUrl"
+                title="Channel URL"
+                :filter="textValueFilter"
+                :quickFilterValue="getChannelUrlFilterValue"
+                :filterValue="getChannelUrlFilterValue"
+                width="20%"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <a v-if="row.channelUrl"
+                   :href="row.channelUrl"
+                   :onclick="(e: Event) => e.stopPropagation()">
+                    {{ row.channelUrl }}
+                </a>
+            </template>
+        </Column>
+
+        <NumberBadgeColumn name="totalItems"
+                           title="Total Items"
+                           field="totalItems"
+                           :infoMinimum="1"
+                           :filter="numberValueFilter"
+                           visiblePriority="md" />
+
+        <NumberBadgeColumn name="activeItems"
+                           title="Active Items"
+                           field="activeItems"
+                           :infoMinimum="1"
+                           :filter="numberValueFilter"
+                           visiblePriority="md" />
+
+        <Column name="itemLastCreated"
+                title="Last Item Created"
+                :sortValue="getLastItemCreatedSortValue"
+                visiblePriority="md">
+            <template #format="{ row }">
+                {{ getElapsedTime(row.itemLastCreated) }}
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <SecurityColumn />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :contentChannelTypeItems="config.options?.contentChannelTypeItems ?? []" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn, SecurityColumn, NumberBadgeColumn, pickExistingValueFilter, numberValueFilter, Column } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { ContentChannelListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelList/contentChannelListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./ContentChannelList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./ContentChannelList/gridSettingsModal.partial.obs";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const config = useConfigurationValues<ListBlockBox<ContentChannelListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        categories: JSON.parse(preferences.getValue(PreferenceKey.FilterCategories) || "[]"),
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return gridSettings.value.categories.length > 0;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+    * Gets the filter value to use for the settlement column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getChannelUrlFilterValue(row: Record<string, unknown>): string {
+        return row.channelUrl as string ?? "";
+    }
+
+    /**
+    * Gets the sort value to use for the variances column.
+    *
+    * @param row The row to be sorted.
+    */
+    function getLastItemCreatedSortValue(row: Record<string, unknown>): number {
+        const value = row.itemLastCreated as string;
+
+        if (!value) {
+            return 0;
+        }
+
+        const dateValue = RockDateTime.parseISO(value);
+        return dateValue?.toMilliseconds() ?? 0;
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    /**
+    * Watch for changes to the grid settings and update the preferences as needed.
+    */
+    watch(gridSettings, async () => {
+        // Set the preferences with the appropriate values
+        preferences.setValue(PreferenceKey.FilterCategories, JSON.stringify(gridSettings.value.categories));
+
+        // Save the preferences
+        await preferences.save();
+
+        // Reload the grid data
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string, state: IGridState): Promise<void> {
+        const row = state.rows.find(r => r["idKey"] === key) as Record<string, unknown>;
+
+        if (row) {
+            var totalItems = row["totalItems"] as number;
+            if (totalItems > 0) {
+
+                const reallyConfirmed = await confirm("This Channel has items. Are you sure that you want to delete this Channel and all of its items?");
+
+                if (!reallyConfirmed) {
+                    return;
+                }
+            }
+        }
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete content channel.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    *
+    */
+    function onGridSettingClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    /**
+     * Converts the passed date time value to a time elapsed string.
+     * @param value The date time value.
+     */
+    function getElapsedTime(value: string): string {
+        if (!value) {
+            return "";
+        }
+        const dateValue = RockDateTime.parseISO(value);
+        return dateValue ? dateValue.toElapsedString() : "";
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

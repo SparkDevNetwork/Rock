@@ -1,0 +1,47 @@
+<template>
+    <GalleryAndResult :value="date"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <DatePicker label="Date" v-model="date" :displayCurrentOption="displayCurrentOption" :isCurrentDateOffset="isCurrentDateOffset" :disabled="isDisabled" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-sm-4">
+                    <InlineCheckBox v-model="displayCurrentOption" label="Display Current Option" />
+                </div>
+                <div class="col-sm-4">
+                    <InlineCheckBox v-model="isCurrentDateOffset" label="Is Current Date Offset" />
+                </div>
+                <div class="col-sm-4">
+                    <InlineCheckBox v-model="isDisabled" label="Disable" />
+                </div>
+            </div>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const date = ref<string | null>(null);
+    const displayCurrentOption = ref(false);
+    const isCurrentDateOffset = ref(false);
+    const isDisabled = ref(false);
+    const importCode = getSfcControlImportPath("datePicker");
+    const exampleCode = `<DatePicker label="Date" v-model="date"
+:displayCurrentOption="false"
+:isCurrentDateOffset="false"
+:disableForceParse="false"
+:disableShowOnFocus="false"
+:disableHighlightToday="false"
+:disallowFutureDateSelection="false"
+:disallowPastDateSelection="false"
+:startView="startView"
+/>`;
+</script>

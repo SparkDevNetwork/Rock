@@ -22,12 +22,6 @@
 //
 
 export type AssessmentListBag = {
-    /** Gets or sets the assessment list. */
-    assessmentList?: string | null;
-
-    /** Gets or sets the error message. */
-    errorMessage?: string | null;
-
-    /** Gets or sets a value indicating whether this instance has content. */
-    hasContent: boolean;
+    /** Gets or sets the assessment list content. */
+    assessmentListContent?: string | null;
 };

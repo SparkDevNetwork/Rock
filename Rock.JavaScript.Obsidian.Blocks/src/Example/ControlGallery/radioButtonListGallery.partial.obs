@@ -1,0 +1,44 @@
+<template>
+    <GalleryAndResult :value="{ 'output:modelValue': value, 'input:items': options }"
+                      hasMultipleValues
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <RadioButtonList label="Radio List" v-model="value" :items="options" :horizontal="isHorizontal" :repeatColumns="repeatColumns" />
+
+        <template #settings>
+            <div class="row">
+                <NumberUpDown formGroupClasses="col-sm-6" label="Horizontal Columns" v-model="repeatColumns" :min="0" />
+                <Toggle formGroupClasses="col-sm-6" label="Horizontal" v-model="isHorizontal" />
+            </div>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const value = ref("a");
+    const isHorizontal = ref(false);
+    const repeatColumns = ref(0);
+    const options = [
+        { text: "A Text", value: "a" },
+        { text: "B Text", value: "b" },
+        { text: "C Text", value: "c" },
+        { text: "D Text", value: "d" },
+        { text: "E Text", value: "e" },
+        { text: "F Text", value: "f" },
+        { text: "G Text", value: "g" }
+    ] as ListItemBag[];
+
+    const importCode = getSfcControlImportPath("radioButtonList");
+    const exampleCode = `<RadioButtonList label="Radio List" v-model="value" :items="options" :horizontal="false" :repeatColumns="0" />`;
+</script>

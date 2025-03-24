@@ -1,0 +1,100 @@
+<template>
+    <Modal v-model="isVisible"
+           title="New Message"
+           cancelText="Cancel"
+           saveText="Send"
+           @save="onSave"
+           @closeModal="resetForm">
+        <NotificationBox v-if="errorMessage"
+                         alertType="warning"
+                         :dismissible="true"
+                         @dismiss="onMessageDismissed">{{ errorMessage }}</NotificationBox>
+        <div class="form-group">
+            <RockLabel class="control-label">From</RockLabel>
+            <div>
+                {{ props.selectedSystemPhoneName }}
+            </div>
+        </div>
+        <PersonPicker v-model="newRecipient"
+                      label="Recipient"
+                      rules="required" />
+        <div class="form-group">
+            <TextBox v-model="newMessageText"
+                     textMode="multiline"
+                     :rows="3"
+                     placeholder="Type a message"
+                     rules="required"
+                     label="Message"
+                     :disableLabel="true" />
+        </div>
+        <ImageUploader v-model="image"
+                       :binaryFileTypeGuid="BinaryFiletype.CommunicationAttachment"
+                       help="Optional image to include in the message."
+                       label="Image" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { SendMessageBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsConversations/sendMessageBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { PropType, ref, computed } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        selectedSystemPhoneName: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        errorMessage: {
+            type: String as PropType<string>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "save", value: SendMessageBag): void;
+        (e: "dismissMessage"): void
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+    const newRecipient = ref<ListItemBag>();
+    const newMessageText = ref<string>("");
+    const image = ref<ListItemBag>();
+
+    const errorMessage = computed(() => props.errorMessage);
+
+    function onSave(): void {
+        const bag = <SendMessageBag>{
+            attachmentGuid: image.value?.value,
+            message: newMessageText.value,
+            recipientPersonAliasIdKey: newRecipient.value?.value
+        };
+
+        resetForm();
+        emit("save", bag);
+    }
+
+    function onMessageDismissed(): void {
+        emit("dismissMessage");
+    }
+
+    function resetForm(): void {
+        newRecipient.value = undefined;
+        newMessageText.value = "";
+        image.value = undefined;
+    }
+</script>

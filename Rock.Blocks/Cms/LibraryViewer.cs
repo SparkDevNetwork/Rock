@@ -16,10 +16,13 @@
 //
 
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
+using Microsoft.Extensions.Logging;
+
+using Rock.Cms;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -27,7 +30,6 @@ using Rock.Model.CMS.ContentChannelItem.Options;
 using Rock.Utility.ContentLibraryApi;
 using Rock.ViewModels.Blocks.Cms.LibraryViewer;
 using Rock.Web.Cache;
-using Rock.Cms;
 
 namespace Rock.Blocks.Cms
 {
@@ -188,12 +190,12 @@ namespace Rock.Blocks.Cms
                 }
                 catch ( AddFromContentLibraryException ex )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Cms, ex, ex.Message );
+                    Logger.LogError( ex, ex.Message );
                     return ActionBadRequest( ex.Message );
                 }
                 catch ( Exception ex )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Cms, ex, ex.Message );
+                    Logger.LogError( ex, ex.Message );
                     return ActionInternalServerError( "An unexpected error occurred while downloading the item." );
                 }
             }

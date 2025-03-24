@@ -947,7 +947,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     var scheduleId = gls.Schedule.Id;
 
                     var participants = assignments
-                        .Where( a => a.LocationId == locationId && a.ScheduleId == scheduleId )
+                        .Where( a => a.LocationId == locationId && a.ScheduleId == scheduleId && a.GroupId == gls.Group.Id)
                         .ToList();
 
                     DateTime? nextStartDateTime = gls.Schedule.NextStartDateTime;

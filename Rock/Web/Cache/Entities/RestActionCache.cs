@@ -19,10 +19,11 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Attribute;
+using Rock.Cms;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Utility;
 
 namespace Rock.Web.Cache
 {
@@ -32,8 +33,12 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    public class RestActionCache : ModelCache<RestActionCache, RestAction>
+    public class RestActionCache : ModelCache<RestActionCache, RestAction>, IHasReadOnlyAdditionalSettings
     {
+        /// <summary>
+        /// The metadata that has been decoded for this action.
+        /// </summary>
+        private RestActionMetadata _metadata = new RestActionMetadata();
 
         #region Properties
 
@@ -105,6 +110,12 @@ namespace Rock.Web.Cache
         /// The cache control header.
         /// </value>
         public string CacheControlHeader { get; private set; }
+
+        /// <inheritdoc/>
+        [RockInternal( "17.0" )]
+        [DataMember]
+        public string AdditionalSettingsJson { get; private set; }
+
         #endregion
 
         #region Public Methods
@@ -126,6 +137,18 @@ namespace Rock.Web.Cache
             Path = restAction.Path;
             CacheControlHeader = restAction.CacheControlHeader.ToStringSafe();
             CacheControlHeaderSettings = restAction.CacheControlHeaderSettings;
+            AdditionalSettingsJson = restAction.AdditionalSettingsJson;
+
+            _metadata = this.GetAdditionalSettings<RestActionMetadata>();
+        }
+
+        /// <summary>
+        /// Gets the metadata for this instance.
+        /// </summary>
+        /// <returns>An instance of <see cref="RestActionMetadata"/> or <c>null</c>.</returns>
+        internal RestActionMetadata GetMetadata()
+        {
+            return _metadata;
         }
 
         /// <summary>

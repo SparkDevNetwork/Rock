@@ -75,5 +75,10 @@ namespace Rock.SystemGuid
         /// Interaction Channel GUID for adaptive messages.
         /// </summary>
         public const string ADAPTIVE_MESSAGES = "6F467CB2-586B-4963-B73B-9ACC42916549";
+
+        /// <summary>
+        /// Interaction Channel GUID for chat.
+        /// </summary>
+        public const string CHAT = "09E11442-C3F6-482B-8F7D-2454B1C43206";
     }
 }

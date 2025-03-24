@@ -34,8 +34,7 @@
                  v-model="purposeKey"
                  help="Optional parameter to describe what this URL represents in the interaction." />
 
-        <!-- The Advanced Settings Panel would be toggled on in v17-->
-        <Panel v-show="false" title="Advanced Settings" hasCollapse>
+        <Panel title="Advanced Settings" hasCollapse>
             <div class="row">
                 <div class="col-md-6">
                     <DefinedValuePicker

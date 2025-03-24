@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// Class that represents the LocationList field type.
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LOCATION_LIST )]
     public class LocationListFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

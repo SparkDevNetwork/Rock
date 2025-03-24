@@ -1,0 +1,35 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode">
+        <ProgressTracker :items="items" :currentIndex="value" />
+
+        <template #settings>
+            <NumberUpDown label="Index" v-model="value" :min="0" :max="10" />
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
+
+    const value = ref(0);
+    const items = [
+        { key: "S", title: "Start", subtitle: "The beginning" },
+        { key: "1", title: "Step 1", subtitle: "The first step" },
+        { key: "2", title: "Step 2", subtitle: "The second step" },
+        { key: "3", title: "Step 3", subtitle: "The third step" },
+        { key: "4", title: "Step 4", subtitle: "The fourth step" },
+        { key: "5", title: "Step 5", subtitle: "The fifth step" },
+        { key: "6", title: "Step 6", subtitle: "The sixth step" },
+        { key: "7", title: "Step 7", subtitle: "The seventh step" },
+        { key: "8", title: "Step 8", subtitle: "The eighth step" },
+        { key: "F", title: "Finish", subtitle: "The finish" }
+    ] as ProgressTrackerItem[];
+    const importCode = getSfcControlImportPath("progressTracker");
+    const exampleCode = `<ProgressTracker :items="items" :currentIndex="0" />`;
+</script>

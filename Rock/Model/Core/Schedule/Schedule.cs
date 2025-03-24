@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Schedule" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SCHEDULE )]
     public partial class Schedule : Model<Schedule>, ICategorized, IHasActiveFlag, IOrdered, ICacheable
     {
@@ -116,7 +117,6 @@ namespace Rock.Model
         /// The weekly time of day.
         /// </value>
         [DataMember]
-        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public TimeSpan? WeeklyTimeOfDay { get; set; }
 
         /// <summary>
@@ -128,6 +128,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [IncludeForReporting]
+        [EnableAttributeQualification]
         public int? CategoryId { get; set; }
 
         /// <summary>

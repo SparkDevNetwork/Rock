@@ -16,6 +16,7 @@
 //
 import { computed, defineComponent, inject, ref, watch } from "vue";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import ListBox from "@Obsidian/Controls/listBox.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -184,7 +185,8 @@ export const ConfigurationComponent = defineComponent({
     components: {
         DropDownList,
         TextBox,
-        NumberBox
+        NumberBox,
+        CheckBox
     },
 
     props: getFieldConfigurationProps(),
@@ -216,7 +218,7 @@ export const ConfigurationComponent = defineComponent({
          * @returns true if a new modelValue was emitted to the parent component.
          */
         const maybeUpdateModelValue = (): boolean => {
-            const newValue: Record<string, string> = {...props.modelValue};
+            const newValue: Record<string, string> = { ...props.modelValue };
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
@@ -268,7 +270,7 @@ export const ConfigurationComponent = defineComponent({
 
         // Watch for changes in properties that require new configuration
         // properties to be retrieved from the server.
-        watch([internalRawValues], () => {
+        watch([internalRawValues, enhanceForLongLists], () => {
             if (maybeUpdateModelValue()) {
                 emit("updateConfiguration");
             }
@@ -301,12 +303,13 @@ export const ConfigurationComponent = defineComponent({
         label="Enhance For Long Lists"
         help="When set, will render a searchable selection of options." />
 
-    <NumberBox
+    <NumberBox v-if="!enhanceForLongLists"
         v-model="repeatColumns"
         label="Columns"
         help="Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no enforced upper limit however the block this control is used in might add contraints due to available space." />
 
-    <DropDownList v-model="repeatDirection"
+    <DropDownList v-if="!enhanceForLongLists"
+        v-model="repeatDirection"
         label="Repeat Direction"
         help="The direction that the list options will be displayed."
         :items="repeatDirectionOptions"

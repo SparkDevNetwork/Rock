@@ -22,7 +22,7 @@
             <div class="col-md-9">
                 <div class="row">
                     <div class="col-md-6">
-                        <CampusPicker v-model="campus" label="Campus" includeInactive showBlankItem />
+                        <CampusPicker v-model="campus" label="Campus" includeInactive showBlankItem :forceVisible="true" />
                     </div>
                 </div>
 
@@ -45,7 +45,7 @@
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-xs-12 col-sm-6">
-                                <PhoneNumberBox label="Phone Number" v-model="phoneNumber" :countryCode="countryCode" />
+                                <PhoneNumberBox label="Phone Number" v-model="phoneNumber" v-model:countryCode="countryCode" />
                             </div>
                             <div class="col-xs-3">
                                 <CheckBox label="SMS" v-model="isSms" />
@@ -273,20 +273,20 @@
             bag: { ...props.modelValue.bag } as BusinessDetailBag
         };
 
-        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value),
-        setPropertiesBoxValue(newValue, "businessName", businessName.value),
-        setPropertiesBoxValue(newValue, "recordStatus", recordStatus.value),
-        setPropertiesBoxValue(newValue, "recordStatusReason", recordStatusReason.value),
-        setPropertiesBoxValue(newValue, "emailAddress", email.value),
-        setPropertiesBoxValue(newValue, "campus", campus.value),
-        setPropertiesBoxValue(newValue, "emailPreference", emailPreference.value),
-        setPropertiesBoxValue(newValue, "phoneNumber", phoneNumber.value),
-        setPropertiesBoxValue(newValue, "saveFormerAddressAsPreviousAddress", saveFormerAddress.value),
-        setPropertiesBoxValue(newValue, "isSmsChecked", isSms.value),
-        setPropertiesBoxValue(newValue, "isUnlistedChecked", isUnlisted.value),
-        setPropertiesBoxValue(newValue, "address", address.value),
-        setPropertiesBoxValue(newValue, "searchKeys", searchKeys.value),
-        setPropertiesBoxValue(newValue, "countryCode", countryCode.value),
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "businessName", businessName.value);
+        setPropertiesBoxValue(newValue, "recordStatus", recordStatus.value);
+        setPropertiesBoxValue(newValue, "recordStatusReason", recordStatusReason.value);
+        setPropertiesBoxValue(newValue, "emailAddress", email.value);
+        setPropertiesBoxValue(newValue, "campus", campus.value);
+        setPropertiesBoxValue(newValue, "emailPreference", emailPreference.value);
+        setPropertiesBoxValue(newValue, "phoneNumber", phoneNumber.value);
+        setPropertiesBoxValue(newValue, "saveFormerAddressAsPreviousAddress", saveFormerAddress.value);
+        setPropertiesBoxValue(newValue, "isSmsChecked", isSms.value);
+        setPropertiesBoxValue(newValue, "isUnlistedChecked", isUnlisted.value);
+        setPropertiesBoxValue(newValue, "address", address.value);
+        setPropertiesBoxValue(newValue, "searchKeys", searchKeys.value);
+        setPropertiesBoxValue(newValue, "countryCode", countryCode.value);
 
         emit("update:modelValue", newValue);
     }, { deep: true });

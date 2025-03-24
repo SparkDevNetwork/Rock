@@ -1,0 +1,77 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <RockButton :btnSize="btnSize" :btnType="btnType" @click="onClick" :isLoading="isLoading" :autoLoading="autoLoading" :autoDisable="autoDisable" :loadingText="loadingText" :isSquare="isSquare">
+            <i class="fa fa-cross" v-if="isSquare"></i>
+            <template v-else>Click Here to Fire Async Operation</template>
+        </RockButton>
+
+        <template #settings>
+            <div class="row">
+                <DropDownList formGroupClasses="col-md-3" label="Button Size" v-model="btnSize" :items="sizeOptions" :showBlankItem="false" />
+                <DropDownList formGroupClasses="col-md-3" label="Button Type" v-model="btnType" :items="typeOptions" :showBlankItem="false" />
+                <CheckBox formGroupClasses="col-md-3" label="Auto Loading Indicator" v-model="autoLoading" />
+                <CheckBox formGroupClasses="col-md-3" label="Auto Disable" v-model="autoDisable" />
+            </div>
+            <div class="row">
+                <CheckBox formGroupClasses="col-md-3" label="Force Loading" v-model="isLoading" />
+                <CheckBox formGroupClasses="col-md-3" label="Square" v-model="isSquare" />
+                <TextBox formGroupClasses="col-md-3" label="Loading Text" v-model="loadingText" />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const sizeOptions: ListItemBag[] = [
+        { text: "Default", value: BtnSize.Default },
+        { text: "ExtraSmall", value: BtnSize.ExtraSmall },
+        { text: "Small", value: BtnSize.Small },
+        { text: "Large", value: BtnSize.Large }
+    ];
+
+    const typeOptions: ListItemBag[] = [
+        { text: "Default", value: BtnType.Default },
+        { text: "Primary", value: BtnType.Primary },
+        { text: "Danger", value: BtnType.Danger },
+        { text: "Warning", value: BtnType.Warning },
+        { text: "Success", value: BtnType.Success },
+        { text: "Info", value: BtnType.Info },
+        { text: "Link", value: BtnType.Link },
+    ];
+
+    const btnSize = ref(BtnSize.Default);
+    const btnType = ref(BtnType.Default);
+    const onClick = (): Promise<void> => {
+        return new Promise((res) => setTimeout(() => {
+            res(undefined);
+            alert("done");
+        }, 3000));
+    };
+    const autoLoading = ref(false);
+    const autoDisable = ref(false);
+    const isLoading = ref(false);
+    const isSquare = ref(false);
+    const loadingText = ref("Loading...");
+    const importCode = `import RockButton, { BtnType, BtnSize } from "@Obsidian/Controls/rockButton.obs";`;
+    const exampleCode = `<RockButton
+    :btnSize="BtnSize.Default"
+    :btnType="BtnType.Default"
+    @click="onClick"
+    :isLoading="isLoading"
+    :autoLoading="autoLoading"
+    :autoDisable="autoDisable"
+    :loadingText="loadingText">
+    Button Text
+</RockButton>`;
+</script>

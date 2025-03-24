@@ -1,0 +1,42 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <WorkflowTypePicker label="Data Views"
+                            v-model="value"
+                            :multiple="multiple"
+                            :showBlankItem="showBlankItem"
+                            :includeInactiveItems="includeInactiveItems" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Include Inactive Items" v-model="includeInactiveItems" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const includeInactiveItems = ref(false);
+    const multiple = ref(false);
+    const showBlankItem = ref(false);
+    const value = ref(null);
+    const importCode = getSfcControlImportPath("workflowTypePicker");
+    const exampleCode = `<WorkflowTypePicker label="Data View" v-model="value" />`;
+</script>

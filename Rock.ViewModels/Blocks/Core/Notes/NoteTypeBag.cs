@@ -82,6 +82,12 @@ namespace Rock.ViewModels.Blocks.Core.Notes
         public bool IsMentionEnabled { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether notes of this type require approvals.
+        /// </summary>
+        /// <value><c>true</c> if notes of this type require approvals; otherwise, <c>false</c>.</value>
+        public bool RequiresApprovals { get; set; }
+
+        /// <summary>
         /// Gets or sets the attributes defined on this note type.
         /// </summary>
         /// <value>The attributes defined on this note type.</value>

@@ -112,5 +112,13 @@ namespace Rock.ViewModels.Blocks.Workflow.WorkflowTriggerDetail
         /// The qualifier columns.
         /// </value>
         public List<ListItemBag> QualifierColumns { get; set; }
+
+        /// <summary>
+        /// Gets or sets the readonly notification message.
+        /// </summary>
+        /// <value>
+        /// The readonly notification message.
+        /// </value>
+        public string ReadonlyNotificationMessage { get; set; }
     }
 }

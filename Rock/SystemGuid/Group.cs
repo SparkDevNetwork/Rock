@@ -104,7 +104,7 @@ namespace Rock.SystemGuid
         public const string GROUP_DATA_INTEGRITY_WORKER = "40517E10-0F2D-4C61-AA8D-BDE36D58C63A";
 
         /// <summary>
-        /// WEB - Admistration
+        /// WEB - Administration
         /// </summary>
         public const string GROUP_WEB_ADMINISTRATORS = "1918E74F-C00D-4DDD-94C4-2E7209CE12C3";
 
@@ -117,5 +117,15 @@ namespace Rock.SystemGuid
         /// A parent Group for all Sign-up Groups
         /// </summary>
         public const string GROUP_SIGNUP_GROUPS = "D649638A-EF91-42D8-9B38-32172D614A5F";
+
+        /// <summary>
+        /// The Chat Administrators group guid
+        /// </summary>
+        public const string GROUP_CHAT_ADMINISTRATORS = "B06096FC-5E98-4DC9-A1EA-7FED844B65C5";
+
+        /// <summary>
+        /// The group used to identify people who are globally banned from chat
+        /// </summary>
+        public const string GROUP_CHAT_BAN_LIST = "C9E3A59F-3B5E-43B1-9D97-191EF82D73C4";
     }
 }

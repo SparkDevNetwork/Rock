@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [Obsolete( "Use SystemCommunication instead." )]
     [RockObsolete( "1.10" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.None )]
     [Rock.SystemGuid.EntityTypeGuid( "B21FD119-893E-46C0-B42D-E4CDD5C8C49D")]
     public partial class SystemEmail : Model<SystemEmail>
     {

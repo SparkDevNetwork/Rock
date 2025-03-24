@@ -21,16 +21,45 @@ using System;
 using Rock.Web.Cache;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type used to display a dropdown list of streak types and allow a single selection.
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "F1411F4A-BD4B-4F80-9A83-94026C009F4D" )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.STREAK_TYPE )]
     public class StreakTypeFieldType : EntitySingleSelectionListFieldTypeBase<StreakType>, IEntityReferenceFieldType
     {
+        private const string VALUES_PUBLIC_KEY = "values";
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            using ( var rockContext = new RockContext() )
+            {
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = StreakTypeCache.All()
+                    .Where( s => s.IsActive )
+                    .OrderBy( o => o.Name )
+                    .Select( o => new ListItemBag
+                    {
+                        Value = o.Guid.ToString(),
+                        Text = o.Name
+                    } )
+                    .ToCamelCaseJson( false, true );
+            }
+
+            return publicConfigurationValues;
+        }
+
+        #endregion
+
         /// <summary>
         /// Returns a user-friendly description of the entity.
         /// </summary>

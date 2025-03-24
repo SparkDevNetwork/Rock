@@ -328,15 +328,17 @@ namespace Rock.Web.UI
         {
             List<RockTheme> themes = new List<RockTheme>();
 
-            DirectoryInfo themeDirectory = new DirectoryInfo( _themeDirectory );
-
-            var themeDirectories = themeDirectory.GetDirectories();
-
-            foreach ( var theme in themeDirectories )
+            if ( Directory.Exists( _themeDirectory ) )
             {
-                themes.Add( new RockTheme( theme.Name ) );
-            }
+                var themeDirectory = new DirectoryInfo( _themeDirectory );
 
+                var themeDirectories = themeDirectory.GetDirectories();
+
+                foreach ( var theme in themeDirectories )
+                {
+                    themes.Add( new RockTheme( theme.Name ) );
+                }
+            }
             return themes;
         }
 

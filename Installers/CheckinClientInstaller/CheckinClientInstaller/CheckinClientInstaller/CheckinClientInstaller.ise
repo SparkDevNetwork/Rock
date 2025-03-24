@@ -4418,9 +4418,9 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>PROGMSG_IIS_ROLLBACKVROOTS</td><td>##IDS_PROGMSG_IIS_ROLLBACKVROOTS##</td><td/></row>
 		<row><td>PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS</td><td>##IDS_PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS##</td><td/></row>
 		<row><td>PROGRAMFILETOLAUNCHATEND</td><td>[INSTALLDIR]CheckinClient.Primary output</td><td/></row>
-		<row><td>ProductCode</td><td>{3EEB7BC8-9862-4571-8E35-D59E4361D4E9}</td><td/></row>
+		<row><td>ProductCode</td><td>{2FFBF8E0-0520-4CE2-A6AC-D689291E1103}</td><td/></row>
 		<row><td>ProductName</td><td>Rock RMS Check-in Client</td><td/></row>
-		<row><td>ProductVersion</td><td>1.13.8.0</td><td/></row>
+		<row><td>ProductVersion</td><td>1.14.0.0</td><td/></row>
 		<row><td>ProgressType0</td><td>install</td><td/></row>
 		<row><td>ProgressType1</td><td>Installing</td><td/></row>
 		<row><td>ProgressType2</td><td>installed</td><td/></row>
@@ -4708,7 +4708,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="S255">Remove</col>
 		<col def="s72">ActionProperty</col>
 		<col def="S72">ISDisplayName</col>
-		<row><td>{D30DAA14-C26B-4BFC-A1C9-8CFD4126BE40}</td><td></td><td>1.13.8.0</td><td></td><td>0</td><td/><td>ISACTIONPROP1</td><td>UpgradeFromPrevious</td></row>
+		<row><td>{D30DAA14-C26B-4BFC-A1C9-8CFD4126BE40}</td><td></td><td>1.14.0.0</td><td></td><td>0</td><td/><td>ISACTIONPROP1</td><td>UpgradeFromPrevious</td></row>
 	</table>
 
 	<table name="Verb">

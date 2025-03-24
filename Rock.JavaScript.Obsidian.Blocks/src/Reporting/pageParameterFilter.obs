@@ -5,6 +5,7 @@
     </NotificationBox>
 
     <Panel v-else type="block"
+           class="panel-page-parameter-filter"
            :hasTitle="config.isBlockTitleVisible"
            :title="title"
            :titleIconCssClass="titleIconCssClass">
@@ -13,11 +14,13 @@
             {{ blockActionErrorMessage }}
         </NotificationBox>
 
-        <AttributeValuesContainer v-model="publicFilterValues"
-                                  :isEditMode="true"
-                                  :attributes="publicFilters"
-                                  :showCategoryLabel="false"
-                                  :numberOfColumns="config.filtersPerRow" />
+        <div :id="avcInstanceId" class="page-parameter-filter-attributes">
+            <AttributeValuesContainer v-model="publicFilterValues"
+                                      :isEditMode="true"
+                                      :attributes="publicFilters"
+                                      :showCategoryLabel="false"
+                                      :numberOfColumns="config.filtersPerRow" />
+        </div>
 
         <RockButton v-if="config.isFilterButtonVisible"
                     :btnType="BtnType.Primary"
@@ -36,8 +39,15 @@
     </Panel>
 </template>
 
+<!-- These styles cannot be scoped since they're targeting nested elements. -->
+<style>
+.panel-page-parameter-filter > .panel-heading .panel-title i {
+    display: inline-block;
+}
+</style>
+
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, Ref, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, onMounted, Ref, ref, watch } from "vue";
     import { FilterSelectionAction, NavigationUrlKey } from "./PageParameterFilter/types.partial";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -50,7 +60,7 @@
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { PageMessages, useBrowserBus } from "@Obsidian/Utility/browserBus";
     import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
-    import { areEqual } from "@Obsidian/Utility/guid";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
     import { debounceAsync } from "@Obsidian/Utility/util";
     import { PageParameterFilterInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/PageParameterFilter/pageParameterFilterInitializationBox";
     import { GetUpdatedFiltersRequestBag } from "@Obsidian/ViewModels/Blocks/Reporting/PageParameterFilter/getUpdatedFiltersRequestBag";
@@ -88,6 +98,8 @@
 
     // #region Values
 
+    const avcInstanceId = ref(newGuid());
+
     const title = ref(config.blockTitleText ?? "");
     const titleIconCssClass = ref(config.blockTitleIconCssClass ?? "");
 
@@ -95,9 +107,8 @@
     const publicFilterValues = ref<Record<string, string>>(config.publicFilterValues ?? {});
     const filterPageParameters = ref<Record<string, string>>(config.filterPageParameters ?? {});
     const filterKeysWithStartupValues = ref<string[]>(config.filterKeysWithStartupValues ?? []);
-
     const filterSelectionAction = ref<string>(config.filterSelectionAction || FilterSelectionAction.DoNothing);
-    const redirectUrl = ref(config.navigationUrls?.[NavigationUrlKey.RedirectPage] || null);
+    const navigationUrls = ref<Record<string, string>>(config.navigationUrls ?? {});
 
     const blockActionErrorMessage = ref("");
 
@@ -136,6 +147,10 @@
 
     const anyFilterPageParametersWithValues = computed((): boolean => {
         return !!filterPageParamKeysWithValues.value.length;
+    });
+
+    const redirectPageUrl = computed((): string | null => {
+        return navigationUrls.value[NavigationUrlKey.RedirectPage] || null;
     });
 
     const ignoreWatchers = computed((): boolean => {
@@ -246,14 +261,14 @@
         blockActionErrorMessage.value = "";
 
         updateFilterRefs(ignoreWatchersForFilterUpdate, result.data);
+        updateQueryString();
 
-        if (config.isLegacyReloadEnabled || redirectUrl.value) {
-            redirectOrReload(redirectUrl.value);
+        if (config.isLegacyReloadEnabled || redirectPageUrl.value) {
+            redirectOrReload(redirectPageUrl.value);
             return;
         }
 
         publishQueryStringChangedMessage();
-        updateQueryString();
     }
 
     /**
@@ -329,6 +344,7 @@
         blockActionErrorMessage.value = "";
 
         updateFilterRefs(ignoreWatchersForFilterReset, result.data);
+        updateQueryString();
 
         if (config.isLegacyReloadEnabled) {
             // Reload the page with the default filter values.
@@ -337,7 +353,6 @@
         }
 
         publishQueryStringChangedMessage();
-        updateQueryString();
     }
 
     /**
@@ -348,18 +363,18 @@
     const onResetFiltersDebounce = debounceAsync(resetFilters, { eager: true });
 
     /**
-     * Redirects the browswer to the specified URL or reloads the current URL,
-     * while applying the current query string parameters in either case.
+     * Redirects the browser to the specified URL or reloads the current URL,
+     * while applying the current query string parameters.
      *
      * @param url The URL to redirect to. If not provided, will reload the
-     * current URL.
+     * current URL while applying the current query string parameters.
      */
     function redirectOrReload(url?: string | null): void {
         if (!url) {
-            url = `${window.location.origin}${window.location.pathname}`;
+            url = `${window.location.origin}${window.location.pathname}${buildQueryString().queryString}`;
         }
 
-        window.location.href = `${url}${buildQueryString().queryString}`;
+        window.location.href = url;
     }
 
     /**
@@ -403,6 +418,7 @@
         // do here.
         publicFilters.value = updatedFilters.publicFilters ?? {};
         filterPageParameters.value = updatedFilters.filterPageParameters ?? {};
+        navigationUrls.value = updatedFilters.navigationUrls ?? {};
 
         // Temporarily disable the watchers so we don't repeatedly fire change
         // handlers.
@@ -469,6 +485,24 @@
         await onResetFiltersDebounce(filterCancellationTokenSource.token);
     }
 
+    /**
+     * Event handler for when a key down event occurs anywhere in the document.
+     *
+     * @param event The keyboard event.
+     */
+    async function onDocumentKeyDown(event: KeyboardEvent): Promise<void> {
+        const parentElement = document.getElementById(avcInstanceId.value);
+        if (
+            !(event.target instanceof HTMLElement)      // Ensure the target is an HTMLElement.
+            || !parentElement?.contains(event.target)   // Ensure the target is a descendant of this attribute values container.
+            || event.key !== "Enter"                    // Ignore all but the enter/return key.
+        ) {
+            return;
+        }
+
+        await onApplyFiltersClick();
+    }
+
     // #endregion Event Handlers
 
     // #region Watchers
@@ -498,12 +532,19 @@
 
     // #region Lifecycle Hooks
 
+    onMounted(() => {
+        document.addEventListener("keydown", onDocumentKeyDown);
+    });
+
     onBeforeUnmount(() => {
         // Cancel any in-progress loading of data.
         filterCancellationTokenSource?.cancel();
 
         // Remove browser bus event listeners.
         browserBus.dispose();
+
+        // Remove the keydown event listener.
+        document.removeEventListener("keydown", onDocumentKeyDown);
     });
 
     // #endregion Lifecycle Hooks

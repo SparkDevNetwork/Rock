@@ -166,13 +166,13 @@ namespace Rock.CodeGeneration.Utility
             // Check if date type.
             if ( _dateTypes.Contains( PropertyType ) )
             {
-                return $".AddDateTimeField( \"{FriendlyName.CamelCase()}\", a => a.{Name} )";
+                return $".AddDateTimeField( \"{FriendlyName.ToCamelCase()}\", a => a.{Name} )";
             }
 
             // Check if Person.
             if ( PropertyType == typeof( Rock.Model.PersonAlias ) )
             {
-                return $".AddPersonField( \"{FriendlyName.CamelCase()}\", a => a.{Name}?.Person )";
+                return $".AddPersonField( \"{FriendlyName.ToCamelCase()}\", a => a.{Name}?.Person )";
             }
 
             // Check if generic entity.
@@ -180,35 +180,35 @@ namespace Rock.CodeGeneration.Utility
             {
                 if ( PropertyType.GetProperty( "Name" ) != null )
                 {
-                    return $".AddTextField( \"{FriendlyName.CamelCase()}\", a => a.{Name}?.Name )";
+                    return $".AddTextField( \"{FriendlyName.ToCamelCase()}\", a => a.{Name}?.Name )";
                 }
                 else if ( PropertyType.GetProperty( "Title" ) != null )
                 {
-                    return $".AddTextField( \"{FriendlyName.CamelCase()}\", a => a.{Name}?.Title )";
+                    return $".AddTextField( \"{FriendlyName.ToCamelCase()}\", a => a.{Name}?.Title )";
                 }
                 else if ( PropertyType == typeof( Rock.Model.DefinedValue ) )
                 {
-                    return $".AddTextField( \"{FriendlyName.CamelCase()}\", a => a.{Name}?.Value )";
+                    return $".AddTextField( \"{FriendlyName.ToCamelCase()}\", a => a.{Name}?.Value )";
                 }
                 else
                 {
-                    return $".AddTextField( \"{FriendlyName.CamelCase()}\", a => throw new NotSupportedException() )";
+                    return $".AddTextField( \"{FriendlyName.ToCamelCase()}\", a => throw new NotSupportedException() )";
                 }
             }
 
             // Check for string type.
             if ( PropertyType == typeof( string ) )
             {
-                return $".AddTextField( \"{FriendlyName.CamelCase()}\", a => a.{Name} )";
+                return $".AddTextField( \"{FriendlyName.ToCamelCase()}\", a => a.{Name} )";
             }
 
             // Check if it is a simple primitive type.
             if ( _primitiveTypes.Contains( PropertyType ) )
             {
-                return $".AddField( \"{FriendlyName.CamelCase()}\", a => a.{Name} )";
+                return $".AddField( \"{FriendlyName.ToCamelCase()}\", a => a.{Name} )";
             }
 
-            return $".AddField( \"{FriendlyName.CamelCase()}, a => throw new NotSupportedException() )";
+            return $".AddField( \"{FriendlyName.ToCamelCase()}, a => throw new NotSupportedException() )";
         }
 
         /// <summary>
@@ -222,9 +222,9 @@ namespace Rock.CodeGeneration.Utility
             if ( PropertyType == typeof( string ) || PropertyType == typeof( Guid ) || PropertyType == typeof( Guid? ) )
             {
                 return $@"
-        <TextColumn name=""{FriendlyName.CamelCase()}""
+        <TextColumn name=""{FriendlyName.ToCamelCase()}""
                     title=""{FriendlyName.SplitCase()}""
-                    field=""{FriendlyName.CamelCase()}""
+                    field=""{FriendlyName.ToCamelCase()}""
                     :filter=""textValueFilter""
                     visiblePriority=""xs"" />".Trim();
             }
@@ -233,9 +233,9 @@ namespace Rock.CodeGeneration.Utility
             if ( _numericTypes.Contains( PropertyType ) )
             {
                 return $@"
-        <NumberColumn name=""{FriendlyName.CamelCase()}""
+        <NumberColumn name=""{FriendlyName.ToCamelCase()}""
                        title=""{FriendlyName.SplitCase()}""
-                       field=""{FriendlyName.CamelCase()}""
+                       field=""{FriendlyName.ToCamelCase()}""
                        :filter=""numberValueFilter""
                        visiblePriority=""xs"" />".Trim();
             }
@@ -244,9 +244,9 @@ namespace Rock.CodeGeneration.Utility
             if ( PropertyType == typeof( bool ) || PropertyType == typeof( bool? ) )
             {
                 return $@"
-        <BooleanColumn name=""{FriendlyName.CamelCase()}""
+        <BooleanColumn name=""{FriendlyName.ToCamelCase()}""
                        title=""{FriendlyName.SplitCase()}""
-                       field=""{FriendlyName.CamelCase()}""
+                       field=""{FriendlyName.ToCamelCase()}""
                        visiblePriority=""xs"" />".Trim();
             }
 
@@ -254,9 +254,9 @@ namespace Rock.CodeGeneration.Utility
             if ( _dateTypes.Contains( PropertyType ) )
             {
                 return $@"
-        <DateColumn name=""{FriendlyName.CamelCase()}""
+        <DateColumn name=""{FriendlyName.ToCamelCase()}""
                     title=""{FriendlyName.SplitCase()}""
-                    field=""{FriendlyName.CamelCase()}""
+                    field=""{FriendlyName.ToCamelCase()}""
                     :filter=""dateValueFilter""
                     visiblePriority=""xs"" />".Trim();
             }
@@ -265,9 +265,9 @@ namespace Rock.CodeGeneration.Utility
             if ( PropertyType == typeof( PersonAlias ) )
             {
                 return $@"
-        <PersonColumn name=""{FriendlyName.CamelCase()}""
+        <PersonColumn name=""{FriendlyName.ToCamelCase()}""
                       title=""{FriendlyName.SplitCase()}""
-                      field=""{FriendlyName.CamelCase()}""
+                      field=""{FriendlyName.ToCamelCase()}""
                       :filter=""pickExistingValueFilter""
                       visiblePriority=""xs"" />".Trim();
             }
@@ -276,19 +276,19 @@ namespace Rock.CodeGeneration.Utility
             if ( typeof( IEntity ).IsAssignableFrom( PropertyType ) )
             {
                 return $@"
-        <TextColumn name=""{FriendlyName.CamelCase()}""
+        <TextColumn name=""{FriendlyName.ToCamelCase()}""
                     title=""{FriendlyName.SplitCase()}""
-                    field=""{FriendlyName.CamelCase()}""
+                    field=""{FriendlyName.ToCamelCase()}""
                     :filter=""textValueFilter""
                     visiblePriority=""xs"" />".Trim();
             }
 
             return $@"
-        <Column name=""{FriendlyName.CamelCase()}""
+        <Column name=""{FriendlyName.ToCamelCase()}""
                 title=""{FriendlyName.SplitCase()}""
                 visiblePriority=""xs"">
             <template #format=""{{ row }}"">
-                {{{{ row.{FriendlyName.CamelCase()} }}}}
+                {{{{ row.{FriendlyName.ToCamelCase()} }}}}
             </template>
         </Column>
 ".Trim();

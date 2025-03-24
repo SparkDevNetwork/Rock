@@ -63,8 +63,6 @@ namespace Rock.Workflow.Action.CheckIn
                 dataViewAttributeKey = AttributeCache.Get( dataViewAttributeGuid, rockContext ).Key;
             }
 
-            var dataViewService = new DataViewService( rockContext );
-
             var family = checkInState.CheckIn.CurrentFamily;
             if ( family != null )
             {
@@ -89,7 +87,7 @@ namespace Rock.Workflow.Action.CheckIn
 
                             foreach ( var dataviewGuid in dataviewGuids.SplitDelimitedValues() )
                             {
-                                DataView dataview = dataViewService.Get( dataviewGuid.AsGuid() );
+                                var dataview = DataViewCache.Get( dataviewGuid.AsGuid() );
                                 if ( dataview == null )
                                 {
                                     continue;
@@ -115,29 +113,24 @@ namespace Rock.Workflow.Action.CheckIn
                                 else
                                 {
                                     //Qry dataview
-                                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                                    var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
                                     {
                                         DatabaseTimeoutSeconds = 30
                                     };
 
-                                    var approvedPeopleQry = dataview.GetQuery( dataViewGetQueryArgs );
+                                    var approvedPeopleList = dataview.GetEntityIds( dataViewGetQueryArgs );
 
-                                    if ( approvedPeopleQry != null )
+                                    if ( approvedPeopleList != null && !approvedPeopleList.Contains( person.Person.Id ) )
                                     {
-                                        var approvedPeopleList = approvedPeopleQry.Select( e => e.Id ).ToList();
-
-                                        if ( approvedPeopleList != null && !approvedPeopleList.Contains( person.Person.Id ) )
+                                        if ( remove )
                                         {
-                                            if ( remove )
-                                            {
-                                                groupType.Groups.Remove( group );
-                                            }
-                                            else
-                                            {
-                                                group.ExcludedByFilter = true;
-                                            }
-                                            break;
+                                            groupType.Groups.Remove( group );
                                         }
+                                        else
+                                        {
+                                            group.ExcludedByFilter = true;
+                                        }
+                                        break;
                                     }
                                 }
                             }

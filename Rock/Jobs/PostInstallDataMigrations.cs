@@ -39,6 +39,13 @@ namespace Rock.Jobs
         DefaultIntegerValue = 3600 )]
     public class PostInstallDataMigrations : RockJob
     {
+        /// <summary>
+        /// This is used to disable certain features that don't play well with
+        /// running from inside a unit test. This includes things like network
+        /// operations or steps which modify on-disk content.
+        /// </summary>
+        static internal bool IsRunningFromUnitTest { get; set; }
+
         private static class AttributeKey
         {
             public const string CommandTimeout = "CommandTimeout";
@@ -49,7 +56,7 @@ namespace Rock.Jobs
             // get the configured timeout, or default to 60 minutes if it is blank
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
 
-            InsertAnalyitcsSourceDateData( commandTimeout );
+            InsertAnalyticsSourceDateData( commandTimeout );
             InsertIdentityVerificationCodeData( commandTimeout );
             InsertAnalyticsSourceZipCodeData( commandTimeout );
 
@@ -72,7 +79,7 @@ namespace Rock.Jobs
             }
         }
 
-        internal void InsertAnalyitcsSourceDateData( int commandTimeout )
+        internal void InsertAnalyticsSourceDateData( int commandTimeout )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -88,6 +95,12 @@ namespace Rock.Jobs
 
         private void InsertAnalyticsSourceZipCodeData( int commandTimeout )
         {
+            // This tries to access a file on disk that doesn't exist for the unit test.
+            if ( IsRunningFromUnitTest )
+            {
+                return;
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 rockContext.Database.CommandTimeout = commandTimeout;

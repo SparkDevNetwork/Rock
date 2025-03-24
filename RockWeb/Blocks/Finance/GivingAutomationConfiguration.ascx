@@ -253,7 +253,7 @@
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-md-5">
-                                <Rock:NumberBox ID="nbAmountSensitivityScale" CssClass="input-width-xl" runat="server" NumberType="Double" Label="Amount Sensitivity Scale" ValidationGroup="vgAlertDetails" Help="The number of interquartile ranges below or above the median amount the gift must be to trigger the alert. A recommended value for classification of outliers is 1.5." />
+                                <Rock:NumberBox ID="nbAmountSensitivityScale" CssClass="input-width-xl" runat="server" NumberType="Double" Label="Amount Sensitivity Scale" ValidationGroup="vgAlertDetails" Help="The number of interquartile ranges below or above the median amount the gift must be to trigger the alert. A recommended value for classification of outliers is 1.5. Leave blank to ignore the sensitivity criteria." />
                             </div>
                             <div class="col-md-7 text-sm">
                                 <asp:Literal ID="lAmountSensitivityScaleHelp" runat="server" />
@@ -262,7 +262,7 @@
                         <hr>
                         <div class="row">
                             <div class="col-md-5">
-                                <Rock:NumberBox ID="nbFrequencySensitivityScale" CssClass="input-width-xl" runat="server" NumberType="Double" Label="Frequency Sensitivity Scale" ValidationGroup="vgAlertDetails" Help="The number of standard deviations below or above the mean the gift must be to trigger the alert. A value of 2 would classify the extreme 5% as outliers." />
+                                <Rock:NumberBox ID="nbFrequencySensitivityScale" CssClass="input-width-xl" runat="server" NumberType="Double" Label="Frequency Sensitivity Scale" ValidationGroup="vgAlertDetails" Help="The number of standard deviations below or above the mean the gift must be to trigger the alert. A value of 2 would classify the extreme 5% as outliers. Leave blank to ignore the sensitivity criteria." />
                             </div>
                             <div class="col-md-7 text-sm">
                                 <asp:Literal ID="lFrequencySensitivityScaleHelp" runat="server" />

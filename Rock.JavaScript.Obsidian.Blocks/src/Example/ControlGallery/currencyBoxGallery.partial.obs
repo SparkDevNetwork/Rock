@@ -12,10 +12,10 @@
                     <DefinedValuePicker definedTypeGuid="B9F3D359-4365-4594-BCEE-D23FA824FB81" label="Currency" v-model="currency" />
                 </div>
                 <div class="col-md-3">
-                    <TextBox label="Minimum Value" v-model="minimumValue" help="The effect of this is no noticeable in this gallery, but it affects validation." />
+                    <TextBox label="Minimum Value" v-model="minimumValue" help="The effect of this is not noticeable in this gallery, but it affects validation." />
                 </div>
                 <div class="col-md-3">
-                    <TextBox label="Maximum Value" v-model="maximumValue" help="The effect of this is no noticeable in this gallery, but it affects validation." />
+                    <TextBox label="Maximum Value" v-model="maximumValue" help="The effect of this is not noticeable in this gallery, but it affects validation." />
                 </div>
             </div>
             <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
@@ -26,11 +26,11 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";

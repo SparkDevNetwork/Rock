@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentTopic" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.None )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONTENT_TOPIC)]
     public partial class ContentTopic : Model<ContentTopic>, IOrdered
     {

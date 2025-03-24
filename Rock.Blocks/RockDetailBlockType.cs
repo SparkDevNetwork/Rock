@@ -36,7 +36,7 @@ namespace Rock.Blocks
         /// <returns>The entity to be viewed or edited on the page.</returns>
         protected TEntity GetInitialEntity<TEntity, TService>( RockContext rockContext, string entityIdKey )
             where TService : Service<TEntity>
-            where TEntity : Rock.Data.Entity<TEntity>, new()
+            where TEntity : class, Rock.Data.IEntity, new()
         {
             var entityId = RequestContext.GetPageParameter( entityIdKey );
             var id = !PageCache.Layout.Site.DisablePredictableIds ? entityId.AsIntegerOrNull() : null;

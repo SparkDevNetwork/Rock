@@ -22,4 +22,10 @@
 //
 
 export type AdaptiveMessageListOptionsBag = {
+    /**
+     * Gets or sets a value indicating whether the grid should be visible.
+     * The grid will not be displayed if the 'FilterCategoryFromQueryString' block setting is set to true
+     * and no CategoryId is provided in the URL.
+     */
+    isGridVisible: boolean;
 };

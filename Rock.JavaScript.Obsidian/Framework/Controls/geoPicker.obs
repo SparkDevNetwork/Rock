@@ -1,17 +1,16 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentDropDownPicker
-                           v-bind="formFieldProps"
+    <ContentDropDownPicker v-bind="formFieldProps"
                            :modelValue="pickerValue"
                            iconCssClass="fa fa-map-marker"
                            pickerClass="picker-geography"
                            :showClear="!!pickerValue"
                            primaryButtonLabel="Done"
                            v-model:isFullscreen="isFullscreen"
+                           v-model:showPopup="internalShowPopup"
                            @primaryButtonClicked="select"
                            @secondaryButtonClicked="cancel"
                            @clearButtonClicked="clear"
-                           @update:showPopup="toggledPopup"
                            pickerContentBoxHeight="auto"
                            pickerContentHeadingText="Geography Picker"
                            disablePickerContentBoxScroll
@@ -22,8 +21,7 @@
             <span class="selected-names" v-html="pickerLabel"></span>
         </template>
 
-        <GeoPickerMap
-                      class="geo-picker-map"
+        <GeoPickerMap class="geo-picker-map"
                       v-model="mapValue"
                       :drawingMode="drawingMode"
                       :isExpanded="isFullscreen"
@@ -48,7 +46,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch, onBeforeMount } from "vue";
-    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import ContentDropDownPicker from "@Obsidian/Controls/contentDropDownPicker.obs";
     import GeoPickerMap from "@Obsidian/Controls/geoPickerMap.obs";
     import { DrawingMode } from "@Obsidian/Types/Controls/geo";
@@ -98,10 +96,18 @@
             type: String as PropType<DrawingMode>,
             required: true
         },
+
+        /**
+         * V-Model of whether the popup area is opened.
+         */
+        showPopup: {
+            type: Boolean
+        }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: string): void
+        (e: "update:showPopup", value: boolean): void
     }>();
 
     // #region Values
@@ -113,6 +119,8 @@
 
     const isFullscreen = ref(false);
     const formFieldProps = useStandardRockFormFieldProps(props);
+
+    const internalShowPopup = useVModelPassthrough(props, "showPopup", emit);
 
     // #endregion
 
@@ -149,16 +157,16 @@
         pickerLabel.value = "";
     }
 
-    // If we close the popup when it was fullscreen, take it out of fullscreen
-    function toggledPopup(isShowing): void {
-        if (!isShowing) {
-            isFullscreen.value = false;
-        }
-    }
-
     // #endregion
 
     // #region Watchers
+
+    // If we close the popup when it was fullscreen, take it out of fullscreen
+    watch(internalShowPopup, () => {
+        if (!internalShowPopup.value) {
+            isFullscreen.value = false;
+        }
+    });
 
     watch(() => props.modelValue, () => {
         mapValue.value = props.modelValue;

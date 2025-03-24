@@ -1,0 +1,46 @@
+<template>
+    <GalleryAndResult :value="{ 'output:modelValue': value, 'input:items': options }"
+                      hasMultipleValues
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <DropDownList label="Select" v-model="value" :items="options" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
+
+        <template #settings>
+            <div class="row">
+                <CheckBox formGroupClasses="col-sm-4" label="Show Blank Item" v-model="showBlankItem" />
+                <CheckBox formGroupClasses="col-sm-4" label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+                <CheckBox formGroupClasses="col-sm-4" label="Grouped" v-model="grouped" />
+                <CheckBox formGroupClasses="col-sm-4" label="Multiple" v-model="multiple" />
+            </div>
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const options: ListItemBag[] = [
+        { text: "A Text", value: "a", category: "First" },
+        { text: "B Text", value: "b", category: "First" },
+        { text: "C Text", value: "c", category: "Second" },
+        { text: "D Text", value: "d", category: "Second", disabled: true }
+    ];
+
+    const enhanceForLongLists = ref(false);
+    const showBlankItem = ref(true);
+    const grouped = ref(false);
+    const multiple = ref(false);
+    const value = ref<string>("");
+    const importCode = getSfcControlImportPath("dropDownList");
+    const exampleCode = `<DropDownList label="Select" v-model="value" :items="options" :showBlankItem="true" :enhanceForLongLists="false" :grouped="false" :multiple="false" />`;
+</script>

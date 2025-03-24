@@ -64,6 +64,9 @@ export type WorkflowTriggerBag = {
     /** Gets or sets the qualifier columns. */
     qualifierColumns?: ListItemBag[] | null;
 
+    /** Gets or sets the readonly notification message. */
+    readonlyNotificationMessage?: string | null;
+
     /** Gets or sets a value indicating whether [show previous and alt qualifier value text boxes]. */
     showPreviousAndAltQualifierValueTextBoxes: boolean;
 

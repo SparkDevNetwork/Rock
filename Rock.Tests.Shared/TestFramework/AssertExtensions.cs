@@ -105,6 +105,23 @@ namespace Rock.Tests.Shared
             Assert.IsFalse( value.Contains( substring ), $"The result \"{ value }\" contains the unexpected value \"{ substring }\"." );
         }
 
+        public static void StartsWith( this Assert assert, string expectedValue, string actualValue )
+        {
+            if ( actualValue.StartsWith( expectedValue ) )
+            {
+                return;
+            }
+
+            if ( actualValue.Length <= 40 )
+            {
+                throw new AssertFailedException( $"Expected \"{actualValue}\" to start with \"{expectedValue}\"." );
+            }
+            else
+            {
+                throw new AssertFailedException( $"Expected \"{actualValue.SubstringSafe( 0, 40 )}...\" to start with \"{expectedValue}\"." );
+            }
+        }
+
         public static void Matches( this Assert assert, System.String value, System.Text.RegularExpressions.Regex pattern )
         {
             StringAssert.Matches( value, pattern );

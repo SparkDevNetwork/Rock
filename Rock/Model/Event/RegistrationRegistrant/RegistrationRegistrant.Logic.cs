@@ -14,13 +14,11 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Lava;
-using Rock.Web.Cache;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -190,59 +188,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Get a list of all inherited Attributes that should be applied to this entity.
-        /// </summary>
-        /// <returns>A list of all inherited AttributeCache objects.</returns>
-        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
-        {
-            var registrationTemplateId = RegistrationTemplateId;
-
-            // If this instance hasn't been saved yet, it might not have this
-            // auto generated value set yet.
-            if ( registrationTemplateId == 0 )
-            {
-                if ( Registration == null )
-                {
-                    registrationTemplateId = new RegistrationService( rockContext ).Queryable()
-                        .Where( r => r.Id == RegistrationId )
-                        .Select( r => r.RegistrationInstance.RegistrationTemplateId )
-                        .FirstOrDefault();
-                }
-                else
-                {
-                    if ( Registration.RegistrationInstance == null )
-                    {
-                        registrationTemplateId = new RegistrationInstanceService( rockContext ).Queryable()
-                            .Where( rt => rt.Id == Registration.RegistrationInstanceId )
-                            .Select( rt => rt.RegistrationTemplateId )
-                            .FirstOrDefault();
-                    }
-                    else
-                    {
-                        registrationTemplateId = Registration.RegistrationInstance.RegistrationTemplateId;
-                    }
-                }
-            }
-
-            if ( registrationTemplateId == 0 )
-            {
-                return null;
-            }
-
-            // Get all attributes there were defined for instance's template.
-            var attributes = new List<AttributeCache>();
-            foreach ( var entityTypeAttribute in AttributeCache.GetByEntityType( TypeId )
-                .Where( e =>
-                    e.EntityTypeQualifierColumn == "RegistrationTemplateId" &&
-                    e.EntityTypeQualifierValue.AsInteger() == registrationTemplateId ) )
-            {
-                attributes.Add( entityTypeAttribute );
-            }
-
-            return attributes;
-        }
-
-        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -261,5 +206,12 @@ namespace Rock.Model
         }
 
         #endregion Methods
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => Registration ?? base.ParentAuthority;
+
+        #endregion
     }
 }

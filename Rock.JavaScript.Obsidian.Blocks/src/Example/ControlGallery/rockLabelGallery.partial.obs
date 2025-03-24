@@ -1,0 +1,14 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+        <RockLabel help="This is the help message">This is a Rock Label. Hover icon for help.</RockLabel>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const importCode = getSfcControlImportPath("rockLabel");
+    const exampleCode = `<RockLabel help="More Info">A Label</RockLabel>`;
+</script>

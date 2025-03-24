@@ -1,0 +1,37 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <InteractionChannelInteractionComponentPicker v-model="value"
+                                                      label="Interaction Channel > Interaction Component"
+                                                      :defaultInteractionChannelGuid="interactionChannelGuid?.value" />
+
+        <template #settings>
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <InteractionChannelPicker label="Default Interaction Channel" v-model="interactionChannelGuid" showBlankItem />
+                </div>
+            </div>
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import InteractionChannelInteractionComponentPicker from "@Obsidian/Controls/interactionChannelInteractionComponentPicker.obs";
+    import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const interactionChannelGuid = ref<ListItemBag>();
+    const value = ref({
+        "value": "1d6d3e3c-131c-4ed9-befe-b34f3c3da7d3",
+        "text": "Calendar",
+        "category": null
+    });
+    const importCode = getSfcControlImportPath("interactionChannelInteractionComponentPicker");
+    const exampleCode = `<InteractionChannelInteractionComponentPicker label="Interaction Channel > Interaction Component" v-model="value" />`;
+</script>

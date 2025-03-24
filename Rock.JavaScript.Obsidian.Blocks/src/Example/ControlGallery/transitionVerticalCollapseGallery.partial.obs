@@ -1,0 +1,22 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+    <RockButton btnType="primary" class="mb-3" @click="showContent = !showContent">Show Content</RockButton>
+    <TransitionVerticalCollapse>
+        <div v-if="showContent">God so loved the world...</div>
+    </TransitionVerticalCollapse>
+</GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const showContent = ref(false);
+            const importCode = getSfcControlImportPath("transitionVerticalCollapse");
+            const exampleCode = `<TransitionVerticalCollapse>
+    <div v-if="showContent">Content to transition in</div>
+</TransitionVerticalCollapse>`;
+</script>

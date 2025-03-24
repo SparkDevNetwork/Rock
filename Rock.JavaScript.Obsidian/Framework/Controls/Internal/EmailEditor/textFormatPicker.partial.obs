@@ -1,0 +1,159 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-bind="standardFieldProps"
+                   :modelValue="internalFontStyle"
+                   :disableLabel="!label"
+                   name="textFormatGroup">
+        <div class="btn-group">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="getItemButtonType(!!internalFontWeight && internalFontWeight !== 'normal')"
+                        title="Bold"
+                        @click="onFontWeightToggled()"><i class="fa fa-bold"></i></RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="getItemButtonType(internalTextDecoration === 'underline')"
+                        title="Underline"
+                        @click="onTextDecorationToggled()"><i class="fa fa-underline"></i></RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="getItemButtonType(internalFontStyle === 'italic')"
+                        title="Italic"
+                        @click="onFontStyleToggled()"><i class="fa fa-italic"></i></RockButton>
+        </div>
+        <ClearStyleButton v-if="!isNullish(fontStyleProvider.value) || !isNullish(fontWeightProvider.value) || !isNullish(textDecorationProvider.value)"
+                          @click="onClearClicked" />
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ClearStyleButton from "./clearStyleButton.partial.obs";
+    import { ValueProvider } from "./types.partial";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        ...standardRockFormFieldProps,
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Text Format"
+        },
+
+        fontWeightProvider: {
+            type: Object as PropType<ValueProvider<string | null | undefined>>,
+            required: true
+        },
+
+        textDecorationProvider: {
+            type: Object as PropType<ValueProvider<string | null | undefined>>,
+            required: true
+        },
+
+        fontStyleProvider: {
+            type: Object as PropType<ValueProvider<string | null | undefined>>,
+            required: true
+        }
+    });
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+
+    const unselectedBtnType: BtnType = BtnType.Default;
+    const selectedBtnType: BtnType = BtnType.Primary;
+    const btnSize: BtnSize = BtnSize.Default;
+
+    // #region Computed Props
+
+    // Set the values from the element OR from the input CSS styles.
+    const internalFontWeight = computed<string | null | undefined>({
+        get(): string | null | undefined {
+            return props.fontWeightProvider.value;
+        },
+        set(newValue: string | null | undefined): void {
+            props.fontWeightProvider.value = newValue;
+        }
+    });
+
+    const internalTextDecoration = computed<string | null | undefined>({
+        get(): string | null | undefined {
+            return props.textDecorationProvider.value;
+        },
+        set(newValue: string | null | undefined): void {
+            props.textDecorationProvider.value = newValue;
+        }
+    });
+
+    const internalFontStyle = computed<string | null | undefined>({
+        get(): string | null | undefined {
+            return props.fontStyleProvider.value;
+        },
+        set(newValue: string | null | undefined): void {
+            props.fontStyleProvider.value = newValue;
+        }
+    });
+
+    // #endregion Computed Props
+
+    // #region Functions
+
+    /**
+     * Gets the selected or unselected button type for the button group buttons.
+     */
+    function getItemButtonType(isSelected: boolean): LiteralUnion<BtnType> {
+        return isSelected ? selectedBtnType : unselectedBtnType;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the font style control being toggled.
+     */
+    function onFontStyleToggled(): void {
+        const hasItalicFontStyle = internalFontStyle.value === "italic";
+        internalFontStyle.value = hasItalicFontStyle ? "normal" : "italic";
+    }
+
+    /**
+     * Event handler for the font weight control being toggled.
+     */
+    function onFontWeightToggled(): void {
+        const hasNonNormalFontWeight = !!internalFontWeight.value && internalFontWeight.value !== "normal";
+        internalFontWeight.value = hasNonNormalFontWeight ? "normal" : "bold";
+    }
+
+    /**
+     * Event handler for the text decoration control being toggled.
+     */
+    function onTextDecorationToggled(): void {
+        const hasUnderlineTextDecoration = internalTextDecoration.value === "underline";
+        internalTextDecoration.value = hasUnderlineTextDecoration ? "none" : "underline";
+    }
+
+    /**
+     * Event handler for the clear styles button being clicked.
+     *
+     * Deletes the property from the CSS style declarations.
+     */
+    function onClearClicked(): void {
+        internalFontStyle.value = null;
+        internalFontWeight.value = null;
+        internalTextDecoration.value = null;
+    }
+
+    // #endregion Event Handlers
+</script>

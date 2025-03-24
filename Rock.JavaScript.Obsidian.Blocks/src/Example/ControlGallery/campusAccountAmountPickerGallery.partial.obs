@@ -47,8 +47,8 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CampusAccountAmountPicker from "@Obsidian/Controls/campusAccountAmountPicker.obs";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
     import { Guid } from "@Obsidian/Types";
 
     const multiple = ref(false);

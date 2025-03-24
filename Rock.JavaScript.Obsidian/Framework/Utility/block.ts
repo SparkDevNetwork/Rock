@@ -28,6 +28,7 @@ import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validProperties
 import { IEntity } from "@Obsidian/ViewModels/entity";
 import { debounce } from "./util";
 import { BrowserBus, useBrowserBus } from "./browserBus";
+import { ICancellationToken } from "./cancellation";
 
 const blockReloadSymbol = Symbol();
 const configurationValuesChangedSymbol = Symbol();
@@ -95,7 +96,7 @@ export function useBlockActionUrl(): (actionName: string) => string {
  * @returns A function that can be used to provide the invoke block action.
  */
 export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, blockGuid: Guid, pageParameters: Record<string, string>, interactionGuid: Guid): InvokeBlockActionFunc {
-    async function invokeBlockAction<T>(actionName: string, data: HttpBodyData | undefined = undefined, actionContext: BlockActionContextBag | undefined = undefined): Promise<HttpResult<T>> {
+    async function invokeBlockAction<T>(actionName: string, data: HttpBodyData | undefined = undefined, actionContext: BlockActionContextBag | undefined = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> {
         let context: BlockActionContextBag = {};
 
         if (actionContext) {
@@ -105,10 +106,14 @@ export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, bloc
         context.pageParameters = pageParameters;
         context.interactionGuid = interactionGuid;
 
-        return await post<T>(`/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`, undefined, {
-            __context: context,
-            ...data
-        });
+        return await post<T>(
+            `/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`,
+            undefined,
+            {
+                __context: context,
+                ...data
+            },
+            cancellationToken);
     }
 
     return invokeBlockAction;
@@ -314,7 +319,10 @@ export function dispatchBlockEvent(eventName: string, blockGuid: Guid, eventData
  * @returns true if the event is a block event.
  */
 export function isBlockEvent<TData = undefined>(event: Event): event is CustomEvent<BlockEvent<TData>> {
-    return "guid" in event && "data" in event;
+    return event instanceof CustomEvent
+        && typeof event.detail === "object"
+        && "guid" in event.detail
+        && "data" in event.detail;
 }
 
 // #region Entity Detail Blocks
@@ -502,7 +510,7 @@ export function getSecurityGrant(token: string | null | undefined): SecurityGran
 /**
  * Provides the security grant to child components to use in their API calls.
  *
- * @param grant The grant ot provide to child components.
+ * @param grant The grant to provide to child components.
  */
 export function provideSecurityGrant(grant: SecurityGrant): void {
     provide(securityGrantSymbol, grant);

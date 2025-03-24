@@ -19,7 +19,14 @@ using System;
 namespace Rock.Security
 {
     /// <summary>
-    /// A class Attribute that can be used by objects that implement ISecured to add an additional security action or change the description of an action
+    /// <para>
+    /// An Attribute that can be used by objects that implement ISecured
+    /// to add an additional security action or change the description of an
+    /// action.
+    /// </para>
+    /// <para>
+    /// This is only supported by a few select object types in Rock.
+    /// </para>
     /// </summary>
     [AttributeUsage( AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true )]
     public class SecurityActionAttribute : System.Attribute
@@ -50,6 +57,5 @@ namespace Rock.Security
             this.Action = action;
             this.Description = description;
         }
-
     }
 }

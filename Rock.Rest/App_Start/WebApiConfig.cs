@@ -76,6 +76,7 @@ namespace Rock.Rest
 
             // register Swagger and its routes first
             Rock.Rest.Swagger.SwaggerConfig.Register( config );
+            Rock.Rest.Swagger.SwaggerConfigV2.Register( config );
 
             // Add API route for dataviews
             config.Routes.MapHttpRoute(

@@ -1,0 +1,692 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="screenToShow !== ComponentScreen.Completion"
+           :title="panelTitle"
+           :hasFullscreen="false"
+           :class="containerClasses">
+        <div v-if="screenToShow === ComponentScreen.Configuration">
+            <div class="assessment-term-section">
+                <TextBox v-model="assessmentTerm"
+                         :disabled="disabled"
+                         label="Assessment Term"
+                         help="How we should refer to this assessment." />
+            </div>
+
+            <StructuredContentEditor label="Header" v-model="header" :disabled="disabled" />
+
+            <div class="grading-configuration-section d-flex flex-column">
+                <div class="d-flex flex-row flex-fill mb-2">
+                    <SectionHeader title="Grading Configuration" description="" :isSeparatorHidden="true" />
+                    <a href="#" @click.prevent="showGradingHelpText = !showGradingHelpText" class="clickable-help"><i class="fa fa-info-circle text-info"></i></a>
+                </div>
+                <TransitionVerticalCollapse>
+                    <div v-if="showGradingHelpText" class="row">
+                        <div class="col-sm-12 mb-2">
+                            Assessment grading is highly configurable.
+                            The first setting is "Multiple Choice Weight," which defines the percentage of the total score attributed to multiple choice questions.
+                            Additionally, each short answer question is assigned a percentage weight contributing to the total score.
+                            The combined percentages must equal 100% to save the assessment.
+                        </div>
+                    </div>
+                </TransitionVerticalCollapse>
+                <div class="minor-fields-section">
+                    <div class="additional-settings-section"
+                         :class="weightErrorClasses">
+                        <NumberBox v-model="multipleChoiceWeight"
+                                   :decimalCount="0"
+                                   :disabled="disabled"
+                                   :min="0"
+                                   label="Multiple Choice Weight"
+                                   inputGroupClasses="input-width-md">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">%</span>
+                            </template>
+                        </NumberBox>
+                    </div>
+
+                    <div class="show-results-on-completion-section">
+                        <CheckBox v-model="showResultsOnCompletion" label="Show Results On Completion" :disabled="disabled" help="Select to show results summary immediately after assessment completion." />
+                    </div>
+
+                    <div class="show-missed-questions-on-results-section">
+                        <CheckBox v-model="showMissedQuestionsOnResults" label="Show Missed Questions On Results" :disabled="disabled" help="Select to include missed questions in the results summary shown immediately after assessment completion." />
+                    </div>
+                </div>
+            </div>
+            <div class="assessment-items-section">
+                <div class="assessment-items-title-bar">
+                    <h4 class="assessment-items-header">Assessment Items</h4>
+                    <div class="add-assessment-item-button-container">
+                        <button
+                                aria-label="Add an assessment item"
+                                :disabled="disabled"
+                                class="btn btn-default btn-xs align-items-center add-assessment-item-button"
+                                @click.prevent="addAssessmentItem(0)">
+                            <i class="fa fa-plus" aria-hidden="true"></i> Add Item
+                        </button>
+                    </div>
+                </div>
+                <div class="assessment-items-container" v-dragSource="dragOptions" v-dragTarget="dragOptions">
+                    <div class="well well-sm assessment-item-container" v-for="(item, index) in items" :key="item.uniqueId">
+                        <div class="assessment-item assessment-item-reorder-section">
+                            <i class="fa fa-bars reorder-handle" :style="reorderIconStyle"></i>
+
+                            <button aria-label="Remove this item" :disabled="disabled" class="btn btn-default btn-square remove-item-button" @click.prevent="items.splice(index, 1)">
+                                <i class="fa fa-times" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="assessment-item assessment-item-type-section">
+                            <DropDownList :modelValue="item.type?.toString() ?? ''" @update:modelValue="onItemTypeChanged(item, $event)" :disabled="disabled" :items="itemTypes" label="Type" :show-blank-item="false" />
+                        </div>
+                        <div class="assessment-item assessment-item-configuration-section">
+                            <AssessmentItemMultipleChoice v-if="item.type === AssessmentItemType.MultipleChoice" v-model="items[index]" :disabled="disabled" :screenToShow="screenToShow" rules="required" />
+                            <AssessmentItemSection v-if="item.type === AssessmentItemType.Section" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
+                            <AssessmentItemShortAnswer
+                                                       v-if="item.type === AssessmentItemType.ShortAnswer"
+                                                       :allAssessmentWeightsSumTo100="weightsSumTo100"
+                                                       v-model:weightsValidationKey="multiFieldWeightStateKey"
+                                                       v-model="items[index]"
+                                                       :disabled="disabled"
+                                                       :screenToShow="screenToShow"
+                                                       rules="required"
+                                                       :totalActivityPoints="activityBag.points" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="configuration-footer-buttons">
+                    <button v-if="items.length > 0"
+                            aria-label="Add an assessment item"
+                            :disabled="disabled"
+                            class="btn btn-default btn-xs align-items-center add-assessment-item-button"
+                            @click.prevent="addAssessmentItem(items.length - 1)">
+                        <i class="fa fa-plus" aria-hidden="true"></i> Add Item
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Scoring">
+            <div v-if="hasMultipleChoiceQuestions" class="assessment-items-container">
+                <div class="well well-sm assessment-item-container-scoring">
+                    <div class="scoring-screen-question-header question-header d-flex flex-fill">
+                        <div>
+                            <span class="question-section">Multiple Choice</span>
+                            <div class="answer-section text-muted"></div>
+                        </div>
+
+                        <NumberBox v-model="multipleChoicePointsEarned"
+                                   label="Score"
+                                   disabled
+                                   inputGroupClasses="input-width-lg">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">out of {{ multipleChoicePointsPossible }}</span>
+                            </template>
+                        </NumberBox>
+                    </div>
+                </div>
+            </div>
+
+            <div class="assessment-items-container" v-for="(item, index) of completedItems">
+                <div class="well well-sm assessment-item-container-scoring" v-if="item.type === AssessmentItemType.ShortAnswer">
+                    <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" :hasBeenGraded="hasBeenGraded" />
+                </div>
+            </div>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Summary">
+            <div class="assessment-item-is-completed" v-if="isStudentAssignedAndCompleted">
+                <h4 class="summary-title">Assessment Summary</h4>
+                <div class="summary-sub-title">Below is a review of how {{ assignee?.name ?? defaultAssigneeDescription }} completed this {{ assessmentTerm }}.</div>
+                <div class="assessment-item" v-for="(item, index) in completedItems">
+                    <div class="well well-sm assessment-item-container" v-if="typeNamesWithSummaryScreen.includes(item.type)">
+                        <AssessmentItemMultipleChoice v-if="item.type === AssessmentItemType.MultipleChoice" v-model="completedItems[index]" :screenToShow="screenToShow" />
+                        <AssessmentItemShortAnswer v-if="item.type === AssessmentItemType.ShortAnswer" v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" :hasBeenGraded="hasBeenGraded" />
+                    </div>
+                </div>
+            </div>
+            <div class="assessment-item-incomplete">
+                <NotificationBox v-if="!isStudentAssignedAndCompleted" alertType="warning">
+                    {{ assignee?.name ?? defaultAssigneeDescription }} has not completed this activity.
+                </NotificationBox>
+            </div>
+        </div>
+    </Panel>
+
+    <div class="assessment-content" v-if="screenToShow === ComponentScreen.Completion">
+        <fieldset v-if="isStudentAssignedAndIncomplete">
+            <div v-if="header" v-html="header"></div>
+
+            <div class="assessment-item-container assessment-items-section">
+                <div class="assessment-item" v-for="(item, index) in completedItems">
+                    <template v-if="item.type === AssessmentItemType.MultipleChoice">
+                        <AssessmentItemMultipleChoice v-model="completedItems[index]" :screenToShow="screenToShow" />
+                    </template>
+
+                    <template v-if="item.type === AssessmentItemType.Section">
+                        <AssessmentItemSection v-model="completedItems[index]" :screenToShow="screenToShow" />
+                    </template>
+
+                    <template v-if="item.type === AssessmentItemType.ShortAnswer">
+                        <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
+                    </template>
+                </div>
+            </div>
+
+            <div v-if="showStudentComment" class="optional-comments-container">
+                <TextBox v-model="studentComment" label="Optional Comments" textMode="multiline" :rows="4" />
+            </div>
+
+            <div class="footer-content-section mt-3">
+                <RockButton :btnType="BtnType.Primary" @click="onCompleted" :autoDisable="true" :disabled="unansweredQuestions || completeClicked">Complete</RockButton>
+            </div>
+        </fieldset>
+
+        <div class="assessment-content" v-if="isStudentAssignedAndCompleted">
+            <div class="student-completion-summary-header">
+                <h2> {{ activityBag.activityComponent?.name }} </h2>
+                <div class="summary-text">{{ headerSubText }}</div>
+            </div>
+
+            <div v-if="hasMultipleChoiceQuestions && showResultsOnCompletion" class="student-completion-summary">
+                <h4 class="results-summary-header">Results Summary</h4>
+                <div class="results-summary-section well well-sm">
+                    <h5>{{ resultSummarySubHeader }}</h5>
+                    <div class="multiple-choice-summary-text summary-text">
+                        {{ multipleChoiceSummaryText }}
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="hasMultipleChoiceQuestions && showMissedQuestionsOnResults && hasIncorrectResponses">
+                <div class="missed-questions-section">
+                    <h4 class="missed-questions-header">Missed Questions</h4>
+
+                    <div class="well well-sm student-completion-summary" v-for="question of incorrectMultipleChoiceItems">
+                        <h5 class="missed-question-text-section mb-1">
+                            {{ question.question }}
+                        </h5>
+                        <div class="student-response-section mb-1">
+                            <span>Your Answer: {{ question.response }}</span>
+                        </div>
+                        <div class="correct-response-section">
+                            <span>Correct Answer: {{ question.correctAnswer }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="continue-button-container mt-3">
+                <RockButton :btnType="BtnType.Primary" @click="emits('closed')">Continue</RockButton>
+            </div>
+        </div>
+    </div>
+
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, toValue, watch, } from "vue";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import AssessmentItemMultipleChoice from "./assessmentItemMultipleChoice.obs";
+    import AssessmentItemSection from "./assessmentItemSection.obs";
+    import AssessmentItemShortAnswer from "./assessmentItemShortAnswer.obs";
+    import { LearningClassActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityCompletionDetail/learningClassActivityCompletionBag";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
+    import { AssessmentItem, AssessmentItemType } from "./assessmentLearningActivity.partial";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
+    import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { useFormState } from "@Obsidian/Utility/form";
+
+    const enum SettingKey {
+        AssessmentTerm = "assessmentTerm",
+        Header = "header",
+        Items = "items",
+        MultipleChoiceWeight = "multipleChoiceWeight",
+        ShowMissedQuestionsOnResults = "showMissedQuestionsOnResults",
+        ShowResultsOnCompletion = "showResultsOnCompletion",
+    }
+
+    const enum CompletionKey {
+        CompletedItems = "completedItems",
+        MultipleChoiceWeight = "multipleChoiceWeight",
+    }
+
+    const formState = useFormState();
+
+    // Get the required props and emits for learning activity components.
+    const props = defineProps({ ...learningActivityProps });
+    const emits = defineEmits({ ...learningActivityEmits });
+
+    /**
+     * Because we potentially have  multiple fields whose validity is shared
+     * (all control values must add up to 100) we want their validity to
+     * be updated when any of their values change. We set this key to a new value
+     * when any of the one components changes it's value - forcing the others to
+     * re-check validity.
+     */
+    const multiFieldWeightStateKey = ref("");
+    const hasWeightError = ref(false);
+    const validationId = newGuid();
+
+    const showGradingHelpText = ref(false);
+
+    // #region Values
+
+    const disabled = ref(props.disabled ?? false);
+    const completeClicked = ref(false);
+
+    // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
+    const activityBag = computed(() => props.activityBag);
+    const completionBag = computed(() => props.completionBag ?? {} as LearningClassActivityCompletionBag);
+    const screenToShow = computed(() => props.screenToShow);
+
+    const studentComment = ref(completionBag.value.studentComment ?? "");
+    const showStudentComment = ref(activityBag.value?.isStudentCommentingEnabled);
+
+    /** Initialize the base component and destructure the refs we need for use in this component. */
+    const {
+        assignee,
+        assignTo,
+        containerClasses,
+        defaultAssigneeDescription,
+        hasBeenGraded,
+        panelTitle,
+    } = useLearningComponent(
+        activityBag,
+        completionBag,
+        screenToShow
+    );
+
+    const assessmentTerm = ref("");
+    const header = ref("");
+    const items = ref<(AssessmentItem)[]>([]);
+    const multipleChoiceWeight = ref<number | null>(0);
+    const showMissedQuestionsOnResults = ref(false);
+    const showResultsOnCompletion = ref(false);
+    const completedItems = ref<(AssessmentItem)[]>([]);
+    const multipleChoiceWeightAtCompletion = ref(0);
+
+    // If there are assessment items, sort them based on order.
+    if (items?.value) {
+        items.value.sort((a, b) => a.order - b.order);
+    }
+
+    // Add drag reorder functionality, updating the order on successful drop.
+    const dragOptions = useDragReorder(items, () => {
+        // Update the order of the items based on the current order.
+        items.value.forEach((item, index) => item.order = index);
+    });
+
+    const typeNamesWithSummaryScreen = [AssessmentItemType.MultipleChoice, AssessmentItemType.ShortAnswer];
+
+    // Create the item types for use by the drop down.
+    const itemTypes: ListItemBag[] = [
+        {
+            value: AssessmentItemType.MultipleChoice.toString(),
+            text: "Multiple Choice"
+        },
+        {
+            value: AssessmentItemType.Section.toString(),
+            text: "Section"
+        },
+        {
+            value: AssessmentItemType.ShortAnswer.toString(),
+            text: "Short Answer"
+        }
+    ];
+
+    // #endregion
+
+    // #region Functions
+
+    function parseSafe<T>(json: string | null | undefined): T | undefined {
+        if (!json) {
+            return undefined;
+        }
+
+        try {
+            return JSON.parse(json) as T;
+        }
+        catch {
+            return undefined;
+        }
+    }
+
+    function updateLocalValues(): void {
+        if (props.screenToShow === ComponentScreen.Configuration) {
+            assessmentTerm.value = props.activityBag.componentSettings?.[SettingKey.AssessmentTerm] ?? "Test";
+            header.value = props.activityBag.componentSettings?.[SettingKey.Header] ?? "";
+            updateRefValue(items, parseSafe<AssessmentItem[]>(props.activityBag.componentSettings?.[SettingKey.Items]) ?? []);
+            multipleChoiceWeight.value = toNumberOrNull(props.activityBag.componentSettings?.[SettingKey.MultipleChoiceWeight]) ?? 100;
+            showMissedQuestionsOnResults.value = asBooleanOrNull(props.activityBag.componentSettings?.[SettingKey.ShowMissedQuestionsOnResults]) ?? false;
+            showResultsOnCompletion.value = asBooleanOrNull(props.activityBag.componentSettings?.[SettingKey.ShowResultsOnCompletion]) ?? false;
+        }
+        else {
+            assessmentTerm.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.AssessmentTerm] ?? "Test";
+            header.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.Header] ?? "";
+            updateRefValue(items, parseSafe<AssessmentItem[]>(props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.Items]) ?? []);
+            multipleChoiceWeight.value = toNumberOrNull(props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.MultipleChoiceWeight]) ?? 100;
+            showMissedQuestionsOnResults.value = asBooleanOrNull(props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.ShowMissedQuestionsOnResults]) ?? false;
+            showResultsOnCompletion.value = asBooleanOrNull(props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.ShowResultsOnCompletion]) ?? false;
+
+            updateRefValue(completedItems, parseSafe<AssessmentItem[]>(props.completionBag?.completionValues?.[CompletionKey.CompletedItems]) ?? []);
+            multipleChoiceWeightAtCompletion.value = toNumberOrNull(props.completionBag?.completionValues?.[CompletionKey.MultipleChoiceWeight]) ?? 0;
+
+            studentComment.value = props.completionBag?.studentComment ?? "";
+        }
+    }
+
+    /** Adds an empty default item to the configuration. */
+    function addAssessmentItem(toIndex: number): void {
+        if (!Array.isArray(items.value)) {
+            items.value = [];
+        }
+
+        // Set the order to the specified index location or min/max if outside the bounds of the array.
+        const lastIndex = items.value?.length ?? 0;
+        const order = toIndex < 0 ? 0 : toIndex > lastIndex ? lastIndex : 0;
+
+        items.value.push({
+            type: AssessmentItemType.MultipleChoice,
+            order: order,
+            uniqueId: newGuid()
+        });
+    }
+
+    /**
+     * Gets a list of completion items for the individual.
+     * For complete activities this will take the configuration values from the
+     * completed activity; otherwise from the activity's configuration.
+     */
+    function getItemsForStudentCompletion(): AssessmentItem[] {
+        return toValue((toValue(items.value) ?? [])
+            .map(i => {
+                const completedItem = toValue(completedItems.value?.find(c => c.uniqueId === i.uniqueId));
+                i.response = completedItem?.response ?? "";
+                i.pointsEarned = completedItem?.pointsEarned ?? 0;
+
+                return i;
+            }));
+    }
+
+    function onCompleted(): void {
+        emits("completed", true);
+        completeClicked.value = true;
+    }
+
+    /** Validation rule for ensuring that all weights add up to 100 for the assessment item. */
+    function weightsSumTo100(): string | true {
+        // If there are no weights configured return true.
+        if (!Array.isArray(allWeights.value) || allWeights.value.length === 0) {
+            return true;
+        }
+
+        // Sum matches Sum To, should pass.
+        if (sumOfAllWeights.value === 100) {
+            return true;
+        }
+
+        return `All weights must add up to 100`;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onItemTypeChanged(item: AssessmentItem, value: string | string[]): void {
+        if (typeof value === "string") {
+            item.type = Number(value) as AssessmentItemType;
+        }
+    }
+
+    // #endregion
+
+
+    // #region Computed Values
+
+    const isStudentAssignedAndCompleted = computed(() =>
+        assignTo.value === AssignTo.Student && toValue(completionBag)?.isStudentCompleted === true
+    );
+
+    const isStudentAssignedAndIncomplete = computed(() =>
+        assignTo.value === AssignTo.Student && toValue(completionBag)?.isStudentCompleted !== true
+    );
+
+    const shortAnswerItems = computed(() =>
+        completedItems.value.filter(i => i.type === AssessmentItemType.ShortAnswer)
+    );
+
+    const multipleChoiceItems = computed(() =>
+        completedItems.value.filter(i => i.type === AssessmentItemType.MultipleChoice)
+    );
+
+    const correctMultipleChoiceItems = computed(() => multipleChoiceItems.value.filter(i => i.response === i.correctAnswer));
+
+    /** The list of multiple choice items that were incorrect (excludes questions that were added after completion, if any). */
+    const incorrectMultipleChoiceItems = computed(() => multipleChoiceItems.value.filter(i => i.response !== i.correctAnswer));
+
+    const multipleChoiceItemCount = computed(() => multipleChoiceItems.value.length);
+    const correctMultipleChoiceItemCount = computed(() => correctMultipleChoiceItems.value.length);
+    const hasMultipleChoiceQuestions = computed(() => multipleChoiceItemCount.value > 0);
+    const hasShortAnswerQuestions = computed(() => shortAnswerItems.value.length > 0);
+    const hasIncorrectResponses = computed(() => incorrectMultipleChoiceItems.value.length > 0);
+    const gradePercent = computed(() => totalPointsEarned.value / activityBag.value.points * 100);
+
+    const multipleChoicePointsEarned = computed((): number => {
+        const availableMultipleChoicePoints = activityBag.value.points * ((multipleChoiceWeight.value ?? 0) / 100);
+
+        return Math.round(multipleChoiceGradePercent.value * availableMultipleChoicePoints * 100) / 100;
+    });
+
+    const multipleChoicePointsPossible = computed((): number => {
+        return (multipleChoiceWeight.value ?? 0) * activityBag.value.points / 100;
+    });
+
+    /**
+     * The calculated points earned.
+     * Automatically graded multiple choice items are added to the currently scored short answer items (if any).
+     * */
+    const totalPointsEarned = computed(() => {
+        // Each short answer score * weight * points possible
+        // Points possible is the total activity points possible * the individual question weight.
+        const earnedShortAnswerPoints = shortAnswerItems.value
+            .map(i => {
+                const pointsPossible = i.pointsPossible ?? 0;
+                const pointsEarned = i.pointsEarned ?? 0;
+                const questionWeight = i.questionWeight ?? 0;
+
+                return pointsPossible > 0
+                    ? (pointsEarned / Number(i.pointsPossible)) * (questionWeight / 100) * activityBag.value.points
+                    : 0;
+            })
+            .reduce((prev, cur) => cur + prev, 0);
+
+        return Math.round((multipleChoicePointsEarned.value + earnedShortAnswerPoints));
+    });
+
+    const multipleChoiceGradePercent = computed(() => {
+        if (correctMultipleChoiceItemCount.value === 0 || multipleChoiceItemCount.value === 0) {
+            // Either correct responses or total questions are 0 so we know there's no calculation.
+            return 0;
+        }
+        else if (multipleChoiceWeight.value === 0) {
+            // If the multiple choice weight is 0 consider all questions correct.
+            return 1;
+        }
+        else {
+            // Calculate the percent correct.
+            return correctMultipleChoiceItemCount.value / multipleChoiceItemCount.value;
+        }
+    });
+
+    const headerSubText = computed(() => {
+        if (multipleChoiceItems.value.length === 0 || !showResultsOnCompletion.value) {
+            return `Thank you for completing this ${assessmentTerm.value}`;
+        }
+        return showMissedQuestionsOnResults.value === true ?
+            `Below are your ${assessmentTerm.value} results, including any missed questions.` :
+            `Below are your ${assessmentTerm.value} results.`;
+    });
+
+    const resultSummarySubHeader = computed(() =>
+        hasBeenGraded.value === true ?
+            `Score: ${gradePercent.value}%` :
+            `Multiple Choice Score: ${correctMultipleChoiceItemCount.value} of ${multipleChoiceItemCount.value} correct.`
+    );
+
+    const allWeights = computed(() =>
+        items.value.filter(i => i.type === AssessmentItemType.ShortAnswer)
+            .map(i => i.questionWeight)
+            .concat(multipleChoiceWeight.value)
+    );
+
+    const multipleChoiceSummaryText = computed(() => {
+        const questionsCorrectSentence = `You answered ${correctMultipleChoiceItemCount.value} out of ${multipleChoiceItemCount.value} multiple choice questions correctly.`;
+        const missedQuestionSentence = hasIncorrectResponses.value === true && showMissedQuestionsOnResults.value === true ?
+            "Below are the questions you missed, along with the correct answers." :
+            "";
+
+        return hasShortAnswerQuestions.value === true ?
+            `${questionsCorrectSentence} ${missedQuestionSentence} Grade will be released upon short answers being graded by facilitator.` :
+            `${questionsCorrectSentence} ${missedQuestionSentence}`;
+    });
+
+    /** Contains the custom style values to apply to the icon. */
+    const reorderIconStyle = computed((): Record<string, string> => {
+        const onlyOneItem = !(items.value?.length > 1);
+        const disableReordering = disabled.value === true || onlyOneItem;
+
+        // Use a not-allowed cursor to indicate to the user when reordering is disabled.
+        return {
+            cursor: disableReordering ? "not-allowed" : "grab",
+            opacity: disableReordering ? "0.25" : "1"
+        };
+    });
+
+    const assessmentItemTypesRequiringResponse = [AssessmentItemType.MultipleChoice, AssessmentItemType.ShortAnswer];
+    /** Determines whether the there are any items without a response. */
+    const unansweredQuestions = computed(() =>
+        (completedItems.value ?? []).some(i => assessmentItemTypesRequiringResponse.includes(i.type) && (i.response ?? "").length === 0)
+    );
+
+    /** Gets the combined value of all weights. */
+    const sumOfAllWeights = computed(() => allWeights.value?.reduce((prev, cur) => (prev ?? 0) + (cur ?? 0)) ?? 0);
+
+    /** The error classes to apply to the weight number box. */
+    const weightErrorClasses = computed((): string[] => {
+        if (!formState || formState.submitCount < 1) {
+            return [];
+        }
+
+        return hasWeightError.value ? ["has-error"] : [];
+    });
+
+    // #endregion
+
+    function updateWeightErrorState(): void {
+        const error = weightsSumTo100();
+
+        if (error !== true) {
+            formState?.setError(validationId, "Multiple Choice Weight", error);
+            hasWeightError.value = true;
+        }
+        else {
+            formState?.setError(validationId, "Multiple Choice Weight", "");
+            hasWeightError.value = false;
+        }
+    }
+
+    /** Watch for modified component settings. */
+    const debouncedActivityBagEmits = debounce(() => {
+        const newValues = {
+            ...props.activityBag.componentSettings
+        };
+
+        newValues[SettingKey.AssessmentTerm] = assessmentTerm.value;
+        newValues[SettingKey.Header] = header.value;
+        newValues[SettingKey.Items] = JSON.stringify(items.value);
+        newValues[SettingKey.MultipleChoiceWeight] = (multipleChoiceWeight.value ?? 0).toString();
+        newValues[SettingKey.ShowMissedQuestionsOnResults] = asTrueOrFalseString(showMissedQuestionsOnResults.value);
+        newValues[SettingKey.ShowResultsOnCompletion] = asTrueOrFalseString(showResultsOnCompletion.value);
+
+        emits("activitySettingsChanged", newValues);
+    });
+
+    watch([
+        assessmentTerm,
+        header,
+        items,
+        multipleChoiceWeight,
+        shortAnswerItems,
+        showMissedQuestionsOnResults,
+        showResultsOnCompletion
+    ], () => {
+        if (screenToShow.value === ComponentScreen.Configuration) {
+            // handleMultiFieldWeightValidity();
+            debouncedActivityBagEmits();
+        }
+    }, { deep: true });
+
+    /** Watch for modified component completion. */
+    watch([completedItems, multipleChoiceWeight, totalPointsEarned], () => {
+        const newValues = {
+            ...props.completionBag?.completionValues
+        };
+
+        newValues[CompletionKey.CompletedItems] = JSON.stringify(completedItems.value);
+        newValues[CompletionKey.MultipleChoiceWeight] = (multipleChoiceWeight.value ?? 0).toString();
+
+        emits("completionValuesChanged", newValues, {
+            pointsEarned: totalPointsEarned.value
+        });
+    }, { deep: true });
+
+    watch(multipleChoiceWeight, () => {
+        multiFieldWeightStateKey.value = newGuid();
+        updateWeightErrorState();
+    });
+
+    watch(multiFieldWeightStateKey, () => {
+        updateWeightErrorState();
+    });
+
+    watch(studentComment, () => {
+        emits("commentChanged", studentComment.value);
+    });
+
+    watch(() => [props.activityBag, props.completionBag], () => {
+        updateLocalValues();
+    });
+
+    updateLocalValues();
+
+    // If the individual hasn't completed the assessment ensure we are using
+    // the latest configuration; otherwise use the assessment that was saved
+    // at the time of completion (In case the facilitator has since updated the assessment).
+    if (isStudentAssignedAndCompleted.value !== true) {
+        completedItems.value = getItemsForStudentCompletion();
+    }
+    else {
+        // If the assessment has been completed use the weights
+        // that were configured at the time of completion (if present).
+        if (multipleChoiceWeightAtCompletion) {
+            multipleChoiceWeight.value = multipleChoiceWeightAtCompletion.value;
+        }
+    }
+</script>

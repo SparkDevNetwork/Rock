@@ -18,6 +18,8 @@ namespace Rock.Mobile.JsonFields
 {
     /// <summary>
     /// The format to use for the attribute.
+    /// This is copied to Rock.Enums/Controls/AttributeFormat.cs. If any changes are made here,
+    /// they may need to be copied there as well.
     /// </summary>
     public enum AttributeFormat
     {

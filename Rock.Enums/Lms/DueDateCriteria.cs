@@ -24,7 +24,7 @@ namespace Rock.Enums.Lms
         /// <summary>
         /// A specific date.
         /// </summary>
-        Specific = 0,
+        SpecificDate = 0,
 
         /// <summary>
         /// An offset of the class start date.

@@ -4,6 +4,9 @@ import JavaScriptAnchor from "../../Framework/Controls/javaScriptAnchor.obs";
 import assert = require("assert");
 
 describe("Toggle", () => {
+    const offButtonIndex = 0;
+    const onButtonIndex = 1;
+
     it("should show default css on ON BUTTON active if no onButtonActiveCssClass prop provided", () => {
         const wrapper = mount(Toggle, {
             props: {
@@ -13,7 +16,7 @@ describe("Toggle", () => {
                 falseText: "FalseText"
             }
         });
-        const onButton = wrapper.findAllComponents(JavaScriptAnchor)[0];
+        const onButton = wrapper.findAllComponents(JavaScriptAnchor)[onButtonIndex];
         assert.deepStrictEqual(onButton.classes(), ["active", "btn", "btn-primary"]);
     });
 
@@ -26,7 +29,7 @@ describe("Toggle", () => {
                 falseText: "FalseText"
             }
         });
-        const offButton = wrapper.findAllComponents(JavaScriptAnchor)[1];
+        const offButton = wrapper.findAllComponents(JavaScriptAnchor)[offButtonIndex];
         assert.deepStrictEqual(offButton.classes(), ["active", "btn", "btn-primary"]);
     });
 
@@ -40,7 +43,7 @@ describe("Toggle", () => {
                 onButtonActiveCssClass: "btn-success"
             }
         });
-        const onButton = wrapper.findAllComponents(JavaScriptAnchor)[0];
+        const onButton = wrapper.findAllComponents(JavaScriptAnchor)[onButtonIndex];
         assert.deepStrictEqual(onButton.classes(), ["active", "btn", "btn-primary", "btn-success"]);
     });
 
@@ -54,7 +57,7 @@ describe("Toggle", () => {
                 offButtonActiveCssClass: "btn-warning"
             }
         });
-        const offButton = wrapper.findAllComponents(JavaScriptAnchor)[1];
+        const offButton = wrapper.findAllComponents(JavaScriptAnchor)[offButtonIndex];
         assert.deepStrictEqual(offButton.classes(), ["active", "btn", "btn-primary", "btn-warning"]);
     });
 });

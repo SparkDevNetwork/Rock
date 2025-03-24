@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as Category.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian)]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CATEGORY )]
     public class CategoryFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
@@ -177,7 +178,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            if ( publicConfigurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
+            if ( usage != ConfigurationValueUsage.View && publicConfigurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
             {
                 var entityTypeName = publicConfigurationValues[ENTITY_TYPE_NAME_KEY];
                 var entityType = EntityTypeCache.Get( entityTypeName );

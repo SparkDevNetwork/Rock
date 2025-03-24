@@ -55,6 +55,9 @@ export type NoteTypeBag = {
     /** Gets or sets the name. */
     name?: string | null;
 
+    /** Gets or sets a value indicating whether notes of this type require approvals. */
+    requiresApprovals: boolean;
+
     /** Gets or sets a value indicating whether the person can select this note type. */
     userSelectable: boolean;
 };

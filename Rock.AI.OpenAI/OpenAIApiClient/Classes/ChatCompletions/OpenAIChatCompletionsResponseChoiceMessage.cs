@@ -16,7 +16,7 @@
 //
 
 using Newtonsoft.Json;
-using Rock.AI.Classes.TextCompletions;
+
 using Rock.AI.OpenAI.OpenAIApiClient.Enums;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
@@ -29,7 +29,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
         #region Properties
 
         /// <summary>
-        /// The text reponse for the completion.
+        /// The text response for the completion.
         /// </summary>
         [JsonProperty( "role" )]
         public OpenAIChatMessageRole Role { get; set; }

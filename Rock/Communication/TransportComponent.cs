@@ -128,7 +128,13 @@ namespace Rock.Communication
             }
 
             string value = content.ResolveMergeFields( mergeFields, person, enabledLavaCommands );
-            value = value.ReplaceWordChars();
+
+            /*  JME 9/27/2023 
+                We used to remove special characters from email as in 'the old days' email infrastructure
+                and clients did not support Unicode characters and would replace these with broken symbols.
+                Removing this per Issue #2818
+            */
+            // value = value.ReplaceWordChars();
 
             if ( themeRoot.IsNotNullOrWhiteSpace() )
             {

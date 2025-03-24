@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Note" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.NOTE )]
     public partial class Note : Model<Note>
     {
@@ -55,6 +56,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember]
+        [EnableAttributeQualification]
         public int NoteTypeId { get; set; }
 
         /// <summary>
@@ -89,7 +91,7 @@ namespace Rock.Model
         /// Gets or sets a flag indicating if this note should be pinned to top
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this note is an alert; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this note is pinned; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsPinned { get; set; }
@@ -129,8 +131,6 @@ namespace Rock.Model
         /// The approval status.
         /// </value>
         [DataMember]
-        [Obsolete( "This property is no longer used and will be removed in the future." )]
-        [RockObsolete( "1.16" )]
         public NoteApprovalStatus ApprovalStatus { get; set; }
 
         /// <summary>
@@ -152,8 +152,6 @@ namespace Rock.Model
         /// The approved date.
         /// </value>
         [DataMember]
-        [Obsolete( "This property is no longer used and will be removed in the future." )]
-        [RockObsolete( "1.16" )]
         public DateTime? ApprovedDateTime { get; set; }
 
         /// <summary>

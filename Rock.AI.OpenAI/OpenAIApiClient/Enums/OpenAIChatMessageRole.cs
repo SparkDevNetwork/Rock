@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Enums
 {
@@ -15,7 +10,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Enums
         /// <summary>
         /// Represents the message sent by the user, which usually includes questions, statements, or conversation prompts.
         /// </summary>
-        [Description("user")]
+        [Description( "user" )]
         User = 0,
         /// <summary>
         /// Represents a system instruction or directive, usually setting the context or providing guidelines for the AI's behavior in the conversation.

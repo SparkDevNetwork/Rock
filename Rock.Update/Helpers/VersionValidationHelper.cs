@@ -119,39 +119,6 @@ namespace Rock.Update.Helpers
         }
 
         /// <summary>
-        /// Checks the SQL server version and returns false if not at the needed
-        /// level to proceed.
-        /// </summary>
-        /// <returns></returns>
-        [Obsolete( "No longer required after successful update to v1.11.0" )]
-        [RockObsolete( "1.11.1" )]
-        public static bool CheckSqlServerVersionGreaterThenSqlServer2012()
-        {
-            var isOk = false;
-            var sqlVersion = string.Empty;
-
-            try
-            {
-                sqlVersion = DbService.ExecuteScaler( "SELECT SERVERPROPERTY('productversion')" ).ToString();
-                var versionParts = sqlVersion.Split( '.' );
-
-                int.TryParse( versionParts[0], out var majorVersion );
-
-                if ( majorVersion > 11 )
-                {
-                    isOk = true;
-                }
-            }
-            catch
-            {
-                // This would be pretty bad, but regardless we'll just
-                // return the isOk (not) and let the caller proceed.
-            }
-
-            return isOk;
-        }
-
-        /// <summary>
         /// Validates the version install.
         /// </summary>
         /// <param name="targetVersion">The target version.</param>
@@ -186,16 +153,6 @@ namespace Rock.Update.Helpers
             {
                 throw new VersionValidationException( $"Version {targetVersion} requires Microsoft SQL Azure or Microsoft Sql Server 2016 or greater." );
             }
-
-            // Read the LavaSupportLevel setting for the current database.
-            // The setting is removed by the v1.16 migration process, so this check is only relevant for databases prior to that version.
-#pragma warning disable CS0618 // Type or member is obsolete
-            var lavaSupportLevel = GlobalAttributesCache.Value( "core.LavaSupportLevel" ).ConvertToEnumOrNull<Lava.LavaSupportLevel>() ?? Lava.LavaSupportLevel.NoLegacy;
-            if ( isTargetVersionGreaterThan15 && lavaSupportLevel != Lava.LavaSupportLevel.NoLegacy )
-            {
-                throw new VersionValidationException( $"Version {targetVersion} requires a Lava Support Level of 'NoLegacy'." );
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
 
             var isTargetVersionGreaterThan16 = targetVersion.Major > 1 || targetVersion.Minor > 16;
             if ( isTargetVersionGreaterThan16 && RockApp.Current.GetCurrentLavaEngineName() != "Fluid" )

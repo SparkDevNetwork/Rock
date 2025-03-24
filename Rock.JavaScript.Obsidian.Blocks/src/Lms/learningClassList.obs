@@ -1,0 +1,325 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid
+          v-if="hasLoadedData"
+          :class="visibleCssClass"
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          :title="gridTitle"
+          :entityTypeGuid="EntityType.LearningClass"
+          :isCountMessageVisible="false"
+          stickyHeader
+          :expectedRowCount="config.expectedRowCount ?? undefined"
+          liveUpdates
+          :onAddItem="config.isAddEnabled && hasValidCourse ? onAddItem : undefined"
+          :onSelectItem="onRowClick"
+          @deleteClick="onDeleteClick">
+
+        <TextColumn
+                    v-if="config.options?.showCourseColumn"
+                    name="course"
+                    title="Course"
+                    field="course"
+                    :filter="textValueFilter"
+                    width="25%"
+                    visiblePriority="xs">
+        </TextColumn>
+
+        <TextColumn
+                    name="className"
+                    title="Class"
+                    field="className"
+                    :filter="textValueFilter"
+                    width="10%"
+                    visiblePriority="xs">
+        </TextColumn>
+
+        <TextColumn
+                    v-if="config.options?.showCourseColumn"
+                    name="code"
+                    title="Code"
+                    field="code"
+                    :filter="textValueFilter"
+                    width="10%"
+                    visiblePriority="lg">
+        </TextColumn>
+
+        <TextColumn
+                    v-if="config.options?.showSemesterColumn"
+                    name="semester"
+                    title="Semester"
+                    field="semester"
+                    :filter="textValueFilter"
+                    width="10%"
+                    visiblePriority="md">
+        </TextColumn>
+
+        <TextColumn
+                    name="facilitators"
+                    title="Facilitators"
+                    field="facilitators"
+                    :filter="textValueFilter"
+                    width="20%"
+                    visiblePriority="lg">
+        </TextColumn>
+
+        <TextColumn
+                    v-if="config.options?.showLocationColumn"
+                    name="location"
+                    title="Location"
+                    field="location"
+                    :filter="textValueFilter"
+                    width="10%"
+                    visiblePriority="sm">
+        </TextColumn>
+
+        <TextColumn
+                    v-if="config.options?.showScheduleColumn"
+                    name="schedule"
+                    title="Schedule"
+                    field="schedule"
+                    :filter="textValueFilter"
+                    width="10%"
+                    visiblePriority="sm">
+        </TextColumn>
+
+        <Column name="students"
+                title="Students"
+                field="students"
+                :filter="numberValueFilter"
+                width="10%"
+                visiblePriority="lg">
+        </Column>
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       :filter="booleanValueFilter"
+                       width="2%"
+                       visiblePriority="lg">
+        </BooleanColumn>
+
+        <BooleanColumn name="isPublic"
+                       title="Public"
+                       field="isPublic"
+                       :filter="booleanValueFilter"
+                       width="2%"
+                       visiblePriority="lg">
+        </BooleanColumn>
+
+        <ButtonColumn name="copy"
+                      iconClass="fa fa-clone"
+                      width="52"
+                      :excludeFromExport="true"
+                      @click="onCopyClick" />
+
+        <SecurityColumn />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" :disableConfirmation="true" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { numberValueFilter, textValueFilter, ButtonColumn, Column, TextColumn, DeleteColumn, SecurityColumn, BooleanColumn, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { LearningClassListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassList/learningClassListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./LearningClassList/types.partial";
+    import { computed, onMounted, reactive, ref } from "vue";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+
+    const config = useConfigurationValues<ListBlockBox<LearningClassListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    // Because this block may be used without a learningCourse page parameter
+    // we may need to dynamically include that value in the detail page navigation.
+    const courseIdKeyColumnName = "learningCourseIdKey";
+    const courseIdPlaceholder = "((LearningCourseIdKey))";
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const hasValidCourse = ref(config.options?.hasValidCourse || false);
+    const gridTitle = computed(() => config.options?.hasValidCourse ? "Classes" : "Current Classes");
+
+    // Use the browser bus to listen for changes to edit mode for any blocks on the page.
+    const browserBus = useBlockBrowserBus();
+    const hasLoadedData = ref(false);
+    const visibleCssClass = ref("show");
+
+    // When another block on the page begins editing hide this block.
+    browserBus.subscribe(BlockMessages.BeginEdit, () => {
+        visibleCssClass.value = "hidden";
+    });
+
+    // When another block begins editing show this block.
+    browserBus.subscribe(BlockMessages.EndEdit, () => {
+        visibleCssClass.value = "show";
+        if (!hasLoadedData.value) {
+            gridDataSource.value = loadGridData();
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            hasLoadedData.value = true;
+
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+    * Called when a row's copy button has been clicked by the individual.
+    * This sends a request to the server to create a new learning class
+    * based on the clicked entity and redirects the user to the specified
+    * detail page with the learning class id.
+    */
+    async function onCopyClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Copy", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (result.data) {
+                window.location.href = result.data;
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to copy learning class.");
+        }
+    }
+
+
+    /**
+     * Called when a row's delete button has been clicked by the individual.
+     * This will confirm the delete and if the class contains any
+     * student completions it will confirm a second time.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const learningClass = gridData?.rows?.find(r => r.idKey === key);
+        const className = learningClass?.["className"] as string ?? "";
+
+        const initialConfirmationMessage = className.length > 0 ?
+            `Are you sure you wish to delete the ${className} class?` :
+            "Are you sure you wish to delete the class?";
+
+        const confirmed = await confirm(initialConfirmationMessage);
+
+        if (!confirmed) {
+            return;
+        }
+
+        // If there are student completions - ensure the individual
+        // is aware that the delete will remove completed activities.
+        let hasCompletions = true;
+        const hasCompletionsResult = await invokeBlockAction<string>("HasStudentCompletions", {
+            key
+        });
+
+        if (hasCompletionsResult.isSuccess) {
+            hasCompletions = asBoolean(hasCompletionsResult.data);
+        }
+        else {
+            await alert(hasCompletionsResult.errorMessage ?? "Unknown error while trying to check learning class student completions.");
+            return;
+        }
+
+        if (hasCompletions) {
+            const confirmationMessage = className.length > 0 ?
+                `The ${className} class has students with completed activities. Are you sure you want to delete this class and all its related information?` :
+                "The class has students with completed activities. Are you sure you want to delete this class and all its related information?";
+
+            const confirmedDelete = await confirm(confirmationMessage);
+
+            if (!confirmedDelete) {
+                return;
+            }
+        }
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete the class.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        onRowClick("0");
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onRowClick(idKey: string): void {
+        let detailPageUrl = config.navigationUrls?.[NavigationUrlKey.DetailPage] ?? "";
+
+        if (detailPageUrl.length > 0) {
+            if (detailPageUrl.includes(courseIdPlaceholder)) {
+                detailPageUrl = detailPageUrl.replace(courseIdPlaceholder, getCourseIdForKey(idKey));
+            }
+
+            window.location.href = detailPageUrl.replace("((Key))", idKey);
+        }
+    }
+
+    function getCourseIdForKey(idKey: string): string {
+        const row = gridData?.rows?.find(r => r.idKey === idKey);
+        if (row != null) {
+            return row[courseIdKeyColumnName] as string;
+        }
+
+        return "";
+    }
+    // #endregion
+
+    onMounted(() => {
+        // Because the grid may be hidden when a primary block is hidden
+        // only load the grid data if visible. Additionally we need to
+        // give time for the autoEdit of detail blocks to emit browserBus events.
+        setTimeout(() => {
+            if (visibleCssClass.value === "show") {
+                gridDataSource.value = loadGridData();
+            }
+        }, 250);
+    });
+
+</script>

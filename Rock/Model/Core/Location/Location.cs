@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Location" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "0D6410AD-C83C-47AC-AF3D-616D09EDF63B")]
     public partial class Location : Model<Location>, IHasActiveFlag, ICacheable
     {
@@ -78,6 +79,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.LOCATION_TYPE )]
+        [EnableAttributeQualification]
         public int? LocationTypeValueId { get; set; }
 
         /// <summary>

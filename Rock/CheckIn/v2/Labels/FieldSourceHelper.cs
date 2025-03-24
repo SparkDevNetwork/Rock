@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.CheckIn.v2.Labels.Formatters;
+using Rock.Data;
 using Rock.Enums.CheckIn.Labels;
 using Rock.Enums.Reporting;
 using Rock.Field;
@@ -195,7 +196,19 @@ namespace Rock.CheckIn.v2.Labels
         /// <returns>A list of field data sources.</returns>
         private static List<FieldDataSource> GetPersonLabelAttendeeInfoDataSources()
         {
-            return GetStandardPersonAttendeeInfoDataSources();
+            var dataSources = GetStandardPersonAttendeeInfoDataSources();
+
+            dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
+            {
+                Key = "2f84cd62-64ac-45e7-84dd-7413bfd105cc",
+                Name = "Checked-in By",
+                TextSubType = TextFieldSubType.AttendeeInfo,
+                Category = "Common",
+                Formatter = FullNameDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.PersonAttendance.FirstOrDefault()?.CheckedInByPerson
+            } );
+
+            return dataSources;
         }
 
         /// <summary>
@@ -278,6 +291,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Schedule Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
                 ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Schedule.GetNextCheckInStartTime( a.StartDateTime ) )
             } );
 
@@ -517,6 +531,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Schedule Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
                 ValueFunc = ( source, field, printRequest ) => source.Attendance.Schedule?.GetNextCheckInStartTime( source.Attendance.StartDateTime )
             } );
 
@@ -527,6 +542,16 @@ namespace Rock.CheckIn.v2.Labels
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 ValueFunc = ( source, field, printRequest ) => source.Attendance.SecurityCode
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
+            {
+                Key = "dcd1f627-51f2-4ea2-8ed7-364fd54e3a86",
+                Name = "Checked-in By",
+                TextSubType = TextFieldSubType.AttendeeInfo,
+                Category = "Common",
+                Formatter = FullNameDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.CheckedInByPerson
             } );
 
             return dataSources;
@@ -1104,6 +1129,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Schedule Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
                 ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Schedule.GetNextCheckInStartTime( a.StartDateTime ) )
             } );
 
@@ -1116,23 +1142,14 @@ namespace Rock.CheckIn.v2.Labels
                 ValueFunc = ( source, field, printRequest ) => source.SecurityCode
             } );
 
-
-            dataSources.Add( new MultiValueFieldDataSource<PersonLocationLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<PersonLocationLabelData>
             {
-                Key = "6fca79e1-5d42-4598-9ec4-bf9c0f727862",
-                Name = "Schedule Name",
-                TextSubType = TextFieldSubType.CheckInInfo,
+                Key = "deedd609-9902-4fd2-a5b1-ef7c2374e398",
+                Name = "Checked-in By",
+                TextSubType = TextFieldSubType.AttendeeInfo,
                 Category = "Common",
-                ValuesFunc = ( source, field, printRequest ) => source.LocationAttendance.Select( a => a.Location.Name )
-            } );
-
-            dataSources.Add( new MultiValueFieldDataSource<PersonLocationLabelData>
-            {
-                Key = "b9e605ed-1b8e-4fee-9c72-44e81dcde985",
-                Name = "Schedule Time",
-                TextSubType = TextFieldSubType.CheckInInfo,
-                Category = "Common",
-                ValuesFunc = ( source, field, printRequest ) => source.LocationAttendance.Select( a => a.Schedule.GetNextCheckInStartTime( a.StartDateTime ) )
+                Formatter = FullNameDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.PersonAttendance.FirstOrDefault()?.CheckedInByPerson
             } );
 
             return dataSources;
@@ -1207,6 +1224,16 @@ namespace Rock.CheckIn.v2.Labels
                 Category = "Common",
                 Formatter = WeekdayDateDataFormatter.Instance,
                 ValueFunc = ( source, field, printRequest ) => source.Person?.ThisYearsBirthdate
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<ILabelDataHasPerson>
+            {
+                Key = "0d4bc3ed-e590-41da-b82f-231b8f59d0dc",
+                Name = "Parents",
+                TextSubType = TextFieldSubType.AttendeeInfo,
+                Category = "Common",
+                Formatter = FullNameDataFormatter.Instance,
+                ValuesFunc = ( source, field, printRequest ) => GetParentsOfPerson( source.Person, printRequest.RockContext )
             } );
 
             var personDataSources = GetPersonDataSources();
@@ -1574,6 +1601,10 @@ namespace Rock.CheckIn.v2.Labels
                 {
                     type = typeof( CheckoutLabelData );
                 }
+                else if ( labelType == LabelType.PersonLocation )
+                {
+                    type = typeof( PersonLocationLabelData );
+                }
 
                 // This could also check a whitelist of allowed paths to make sure
                 // they are not building filters to things they shouldn't, but since
@@ -1598,11 +1629,18 @@ namespace Rock.CheckIn.v2.Labels
 
                 var entityField = EntityHelper.GetEntityFieldForProperty( property );
 
+                // Do some special checks for property types that are supported
+                // by the CheckInFieldFilterBuilder that aren't supported
+                // normally. Map to the best field type so we can build the UI.
                 if ( entityField.FieldType == null )
                 {
                     if ( typeof( ICollection<string> ).IsAssignableFrom( property.PropertyType ) )
                     {
                         entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.TEXT );
+                    }
+                    else if ( typeof( ICollection<int> ).IsAssignableFrom( property.PropertyType ) )
+                    {
+                        entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.INTEGER );
                     }
                     else if ( property.PropertyType == typeof( double ) || property.PropertyType == typeof( double? ) )
                     {
@@ -1614,6 +1652,35 @@ namespace Rock.CheckIn.v2.Labels
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the parents of the person. If the person is one of the parents
+        /// then an empty list is returned.
+        /// </summary>
+        /// <param name="person">The person whose parents should be retrieved.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A list of parent person objects.</returns>
+        private static List<Person> GetParentsOfPerson( Person person, RockContext rockContext )
+        {
+            // This logic is duplicated from the Parents lava filter.
+            if ( person != null )
+            {
+                var adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+                var parents = new PersonService( rockContext )
+                    .GetFamilyMembers( person.Id, includeSelf: true )
+                    .Where( m => m.GroupRole.Guid == adultGuid )
+                    .Select( a => a.Person )
+                    .ToList();
+
+                // If the list includes the target Person, they are a parent themselves.
+                if ( !parents.Any( c => c.Id == person.Id ) )
+                {
+                    return parents.ToList();
+                }
+            }
+
+            return new List<Person>();
         }
     }
 }

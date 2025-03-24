@@ -1,0 +1,354 @@
+<template>
+    <Panel :title="systemCommunicationName" class="panel-analytics">
+        <div class="row row-eq-height-md">
+            <!-- Left Menu -->
+            <div class="col-md-3 filter-options">
+                <div class="form-group static-control ">
+                    <label class="control-label">System Communication</label>
+                    <div class="control-wrapper">
+                        <div class="form-control-static">
+                            {{ systemCommunicationName }}
+                        </div>
+                    </div>
+                </div>
+                <!-- Dropdown for Message Date -->
+                <DropDownList v-if="hasSendDate && messageDateOptions.length > 0"
+                              v-model="selectedMessageDate"
+                              :items="messageDateOptions"
+                              :showBlankItem="false"
+                              label="Message Date"
+                              rules="required"
+                              help="Date to use when previewing the message. The default date is today's date." />
+
+                <!-- Person Picker -->
+                <PersonPicker v-model="targetPerson"
+                              @update:selectedPersonChanged="handlePersonUpdate"
+                              :isClearable="targetPerson?.value !== store.state.currentPerson?.primaryAliasGuid"
+                              label="Target Person"
+                              help="Person used to customize the email preview." />
+            </div>
+
+            <!-- Email Preview -->
+            <div class="col-md-9">
+                <NotificationBox alertType="danger" v-if="initializationErrorMessage">
+                    {{ initializationErrorMessage }}
+                </NotificationBox>
+                <div class="card shadow card-message-preview" :class="{ 'mobile-preview': isMobileView }">
+                    <div class="card-header bg-white py-2 px-0">
+                        <!-- Email Preview Headers -->
+                        <div class="row no-gutters p-2">
+                            <div class="col-xs-3 text-right">
+                                <span class="text-muted pr-md-4 text-nowrap">From</span>
+                            </div>
+                            <div class="col-xs-9">
+                                <span class="text-semibold">{{ fromName }}</span> <span class="text-muted">{{ emailFrom }}</span>
+                            </div>
+                        </div>
+                        <div class="row no-gutters p-2">
+                            <div class="col-xs-3 text-right"><span class="text-muted pr-md-4 text-nowrap">Subject</span></div>
+                            <div class="col-xs-9 text-semibold">{{ emailSubject }}</div>
+                        </div>
+                        <div class="row no-gutters p-2">
+                            <div class="col-xs-3 text-right"><span class="text-muted pr-md-4 text-nowrap">Date</span></div>
+                            <div class="col-xs-9 text-semibold">{{ emailDate }}</div>
+                        </div>
+                    </div>
+                    <div class="card-header py-1 bg-white position-relative d-flex justify-content-end">
+                        <div class="inset-0 d-flex align-items-center justify-content-center">
+                            <div class="btn-group btn-group-view-control" role="group" aria-label="View Mode">
+                                <RockButton :btnSize="'xs'" :btnType="isMobileView ? 'default' : 'info'" @click="isMobileView = false">Desktop</RockButton>
+                                <RockButton :btnSize="'xs'" :btnType="isMobileView ? 'info' : 'default'" @click="isMobileView = true">Mobile</RockButton>
+                            </div>
+                        </div>
+                        <div class="justify-self-end z-10">
+                            <RockButton btnType="primary" btnSize="xs" @click="openSendTestModal" :disabled="isDisabled">Send Test</RockButton>
+                        </div>
+                    </div>
+                    <!-- Email Preview Content -->
+                    <div v-if="emailContent"
+                        class="email-preview js-email-preview overflow-auto"
+                        style="position: relative; height: 720px;">
+
+                        <!-- The iframe srcdoc is dynamically updated with the email content -->
+                        <iframe name="emailPreview"
+                                :srcdoc="emailContent"
+                                class="emaileditor-iframe inset-0 w-100 h-100 js-emailpreview-iframe email-wrapper email-content-desktop styled-scroll"
+                                frameborder="0"
+                                border="0"
+                                cellspacing="0"
+                                scrolling="no">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Panel>
+
+    <!-- Modal for Sending Test Email -->
+    <Modal v-model="isSendTestModalVisible"
+           title="Send Test Email"
+           @save="sendTest"
+           @closeModal="onCloseModal"
+           saveText="Send"
+           :isSaveButtonDisabled="isDisabled">
+        <div v-if="emailError">
+            <NotificationBox alertType="danger" :dismissible="true">
+                {{ emailMessage }}
+            </NotificationBox>
+        </div>
+        <EmailBox v-model="testEmail" label="Email" rules="required" help="This will temporarily change your email address during the test, but it will be changed back after the test is complete." />
+        <div v-if="emailSuccess">
+            <NotificationBox alertType="info">
+                {{ emailMessage }}
+            </NotificationBox>
+        </div>
+    </Modal>
+</template>
+
+<style scoped>
+.card-message-preview {
+    max-width: 874px;
+    margin: 16px auto;
+}
+.mobile-preview {
+    max-width: 414px;
+}
+
+.mobile-preview .email-content :deep(.wrapper) {
+    display: block !important;
+    padding-right: 0 !important;
+}
+
+.mobile-preview .email-content :deep(table.body) {
+    width: 100%;
+}
+
+.mobile-preview .email-content :deep(table.row.header) {
+    width: 100%;
+}
+
+.mobile-preview .email-content :deep(table.twelve.columns),
+.mobile-preview .email-content :deep(table.row),
+.mobile-preview .email-content :deep(table.row.footer) {
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+.mobile-preview .email-content :deep(table.container) {
+    width: 95% !important;
+}
+
+.mobile-preview .email-content :deep(table.six.columns) {
+    width: 100% !important;
+}
+
+.mobile-preview .email-content :deep(table.six.columns td.right-text-pad) {
+    padding-left: 10px !important;
+}
+
+.mobile-preview .email-content :deep(p), .mobile-preview .email-content :deep(td) {
+    width: 100% !important;
+}
+
+.mobile-preview .email-content :deep(center) {
+    min-width: 0 !important;
+    width: 100% !important;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { SystemCommunicationPreviewInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/SystemCommunicationPreview/systemCommunicationPreviewInitializationBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { useStore } from "@Obsidian/PageState";
+
+    // #region Values
+
+    const store = useStore();
+    const config = useConfigurationValues<SystemCommunicationPreviewInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const targetPerson = ref<ListItemBag | undefined>(config?.targetPersonBag ?? undefined);
+    const targetPersonIdKey = ref<string>((config.targetPersonIdKey || store.state.currentPerson?.idKey) ?? "");
+    const hasSendDate = ref<boolean>(config?.hasSendDate);
+    const systemCommunicationName = ref<string>(config?.title || "System Communication Preview");
+    const fromName = ref<string | null | undefined>(config?.fromName);
+    const fromEmail = ref<string>(config?.from ?? "");
+    const emailSubject = ref<string | null | undefined>(config?.subject);
+    const emailContent = ref<string | null | undefined>(config?.body);
+    const testEmail = ref<string>(store.state.currentPerson?.email ?? "");
+    const selectedMessageDate = ref<string>(config?.publicationDate ?? "");
+    const systemCommunicationId = ref<number>(0);
+    const isSendTestModalVisible = ref<boolean>(false);
+    const messageDateOptions = ref<ListItemBag[]>(config?.dateOptions ?? []);
+    const isMobileView = ref<boolean>(false);
+    const emailError = ref<boolean>(false);
+    const emailSuccess = ref<boolean>(false);
+    const emailMessage = ref<string>("");
+    const initializationErrorMessage = ref<string | null | undefined>(config?.errorMessage);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const emailFrom = computed(() => {
+        // Use the default email if config.from is null or an empty string
+        const emailAddress = fromEmail.value?.trim() || "info@organizationname.com";
+        return `<${emailAddress}>`;
+    });
+
+    const emailDate = computed(() => messageDateOptions.value.find(d => d.value === selectedMessageDate.value)?.text || RockDateTime.now().toASPString("MMMM d, yyyy"));
+
+    const isDisabled = computed<boolean>(() => initializationErrorMessage.value ? true : false);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Opens the modal for sending a test email upon user entering a valid email
+     */
+    function openSendTestModal(): void {
+        isSendTestModalVisible.value = true;
+    }
+
+    /**
+     * Calls the updatePreview logic and sets the person picker back to the current person if a person was cleared.
+     */
+    async function handlePersonUpdate(personBag: ListItemBag | undefined, personIdKey: string | undefined): Promise<void> {
+        if (personBag && personIdKey) {
+            targetPerson.value = personBag;
+            targetPersonIdKey.value = personIdKey ?? "";
+        }
+        else {
+            targetPerson.value = {
+                text: store.state.currentPerson?.fullName,
+                value: store.state.currentPerson?.primaryAliasGuid
+            };
+            targetPersonIdKey.value = store.state.currentPerson?.idKey ?? "";
+        }
+
+        await updatePreview();
+    }
+
+    /**
+     * Updates the preview content based on the selected Person and message date if provided
+     */
+    async function updatePreview(): Promise<void> {
+        try {
+            const box: SystemCommunicationPreviewInitializationBox = {
+                id: systemCommunicationId.value,
+                targetPersonIdKey: (targetPersonIdKey.value || store.state.currentPerson?.idKey) ?? "",
+                publicationDate: selectedMessageDate.value,
+                hasSendDate: hasSendDate.value
+            };
+
+            const result = await invokeBlockAction<SystemCommunicationPreviewInitializationBox>("SetSystemCommunication", { box });
+
+            if (result.isSuccess && result.data) {
+                emailContent.value = result.data.body;
+                emailSubject.value = result.data.subject;
+
+                updateEmailFrom(result.data.fromName || "", result.data.from || "");
+            }
+
+            updateUrlParameters();
+        }
+        catch (error) {
+            console.error("Error updating preview:", error);
+        }
+    }
+
+    /**
+     * Updates the From Name and From Email fields
+     * @param newFromName The new From Name
+     * @param newFromEmail The new From Email
+     */
+    function updateEmailFrom(newFromName: string, newFromEmail: string): void {
+        fromName.value = newFromName;
+        fromEmail.value = newFromEmail;
+    }
+
+    function onCloseModal(): void {
+        emailSuccess.value = false;
+        emailError.value = false;
+    }
+
+    /**
+     * Sends a test email to the entered email address
+     */
+    async function sendTest(): Promise<void> {
+        emailError.value = false;
+        emailSuccess.value = false;
+
+        // Invoke block action to send test email
+        try {
+            const box: SystemCommunicationPreviewInitializationBox = {
+                id: systemCommunicationId.value,
+                email: testEmail.value,
+                targetPersonIdKey: (targetPersonIdKey.value || store.state.currentPerson?.idKey) ?? "",
+                hasSendDate: hasSendDate.value,
+                publicationDate: selectedMessageDate.value
+            };
+
+            const result = await invokeBlockAction("SendTestEmail", { box });
+
+            if (result.isSuccess) {
+                emailSuccess.value = true;
+                emailMessage.value = `Email submitted to ${testEmail.value}.`;
+            }
+            else {
+                emailError.value = true;
+                emailMessage.value = result.errorMessage || "Failed to send email.";
+            }
+        }
+        catch (error) {
+            emailError.value = true;
+            emailMessage.value = "Failed to send email.";
+            console.error("Error sending test email:", error);
+        }
+    }
+
+    /**
+     * Updates the URL parameters with the selected Person and message date
+     */
+    function updateUrlParameters (): void {
+        const queryParams = new URLSearchParams(window.location.search);
+        // The systems communication ID will be retrieved from the URL parameters
+        const systemCommunicationIdParam = queryParams.get("SystemCommunicationId");
+        systemCommunicationId.value = systemCommunicationIdParam ? parseInt(systemCommunicationIdParam) : 0;
+
+        queryParams.set("TargetPersonIdKey", targetPersonIdKey.value);
+        queryParams.set("PublicationDate", selectedMessageDate.value);
+
+        history.pushState(null, "", "?" + queryParams.toString());
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    // Watcher for changes to the date dropdown and person picker
+    watch(selectedMessageDate, () => {
+        updatePreview();
+    });
+
+    // #endregion
+
+    function onInit(): void {
+        updateUrlParameters();
+    }
+
+    onInit();
+    onConfigurationValuesChanged(useReloadBlock());
+
+</script>

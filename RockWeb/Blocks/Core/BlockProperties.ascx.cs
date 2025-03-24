@@ -34,6 +34,8 @@ using Rock.Web.UI.Controls;
 using System.Text;
 using Rock.Web;
 using Rock.Lava;
+using Rock.Core;
+using Rock.Enums.Cms;
 
 namespace RockWeb.Blocks.Core
 {
@@ -307,6 +309,8 @@ namespace RockWeb.Blocks.Core
             {
                 if ( _block.Attributes != null )
                 {
+                    var expectedSiteTypeFlags = GetSiteTypeFlagsForBlock( _block );
+
                     avcAdvancedAttributes.IncludedCategoryNames = new string[] { "advanced" };
                     avcAdvancedAttributes.AddEditControls( _block );
 
@@ -314,6 +318,14 @@ namespace RockWeb.Blocks.Core
                     avcMobileAttributes.AddEditControls( _block );
 
                     avcAttributes.ExcludedCategoryNames = new string[] { "advanced", "customsetting", "custommobile" };
+                    avcAttributes.ExcludedAttributes = _block.Attributes.Select( a => a.Value )
+                        .Where( a =>
+                        {
+                            var siteTypes = a.GetAdditionalSettings<AttributeDisplaySettings>().SiteTypes;
+
+                            return siteTypes != SiteTypeFlags.None && !siteTypes.HasFlag( expectedSiteTypeFlags );
+                        } )
+                        .ToArray();
                     avcAttributes.AddEditControls( _block );
                 }
 
@@ -652,6 +664,35 @@ namespace RockWeb.Blocks.Core
             {
                 kvp.Value.Visible = CurrentTab.Equals( kvp.Key.CustomSettingsTitle );
             }
+        }
+
+        /// <summary>
+        /// Get the site type of the block as a flags enumeration value.
+        /// </summary>
+        /// <param name="block">The block to inspect.</param>
+        /// <returns>A single flag value from <see cref="SiteTypeFlags"/>.</returns>
+        private static SiteTypeFlags GetSiteTypeFlagsForBlock( BlockCache block )
+        {
+            var page = block.Page;
+            var layout = block.Layout;
+            var site = block.Site;
+
+            if ( page != null )
+            {
+                site = SiteCache.Get( page.SiteId );
+            }
+            else if ( layout != null )
+            {
+                site = SiteCache.Get( layout.SiteId );
+            }
+
+            // This shouldn't happen, but if it does assume a web site.
+            if ( site == null )
+            {
+                return SiteTypeFlags.Web;
+            }
+
+            return site.SiteType.ConvertToFlags();
         }
 
         #endregion

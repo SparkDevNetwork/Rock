@@ -19,11 +19,13 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 #endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Field.Types
@@ -32,10 +34,15 @@ namespace Rock.Field.Types
     /// Video file field type
     /// Stored as BinaryFile.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.VIDEO_FILE )]
     public class VideoFileFieldType : FileFieldType, IEntityReferenceFieldType
     {
+        private const string FILE_PATH = "filePath";
+        private const string MIME_TYPE = "mimeType";
+        private const string FILE_NAME = "fileName";
+        private const string FILE_GUID = "fileGuid";
 
         #region Formatting
 
@@ -56,6 +63,64 @@ namespace Rock.Field.Types
 
                 return binaryFileName ?? string.Empty;
             }
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return new BinaryFileService( new Data.RockContext() )
+                .Get( privateValue.AsGuid() )
+                .ToListItemBag()
+                .ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Extract the raw value.
+            return publicValue.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+            var binaryFileGuid = privateValue.AsGuidOrNull();
+
+            if ( !binaryFileGuid.HasValue )
+            {
+                return publicConfigurationValues;
+            }
+
+            // Configuration to help display the HTML value on the remote device.
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileService = new BinaryFileService( rockContext );
+                var binaryFileInfo = binaryFileService.GetSelect( binaryFileGuid.Value, bf => new
+                {
+                    bf.FileName,
+                    bf.MimeType
+                } );
+
+                publicConfigurationValues[FILE_NAME] = binaryFileInfo.FileName;
+                publicConfigurationValues[MIME_TYPE] = binaryFileInfo.MimeType;
+                publicConfigurationValues[FILE_PATH] = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                publicConfigurationValues[FILE_GUID] = binaryFileGuid.ToString();
+            }
+
+            return publicConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            return new Dictionary<string, string>();
         }
 
         /// <inheritdoc/>
@@ -89,7 +154,7 @@ namespace Rock.Field.Types
                     // NOTE: Flash and Silverlight might crash if we don't set width and height. However, that makes responsive stuff not work
                     string htmlFormat = @"
 <video 
-    src='{0}}'
+    src='{0}'
     class='js-media-video'
     type='{1}'
     controls='controls'

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     /// </summary>
     [RockDomain( "CRM" )]
     [Table( "Badge" )]
+    [CodeGenerateRest]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.BADGE )]
     public partial class Badge : Model<Badge>, IOrdered, ICacheable, IHasActiveFlag
@@ -54,6 +55,7 @@ namespace Rock.Model
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int BadgeComponentEntityTypeId { get; set; }
 
         /// <summary>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "ConnectionOpportunityConnectorGroup" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "2ADBE499-C9EC-479B-B33B-6E92BDE09FD1")]
     public partial class ConnectionOpportunityConnectorGroup : Model<ConnectionOpportunityConnectorGroup>
     {

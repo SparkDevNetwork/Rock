@@ -1,6 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-
     <NotificationBox v-if="errorMessage" :alertType="alertType">{{ errorMessage }}</NotificationBox>
 
     <NotificationBox v-if="config.isOptOutSuccessful" alertType="success">
@@ -11,28 +10,17 @@
 <script setup lang="ts">
     import { ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
     import { PhotoOptOutBag } from "@Obsidian/ViewModels/Blocks/Crm/PhotoOptOut/PhotoOptOutBag";
 
     const config = useConfigurationValues<PhotoOptOutBag>();
+    const reloadBlock = useReloadBlock();
 
     // #region Values
 
     const errorMessage = ref("");
     const successMessage = ref(config?.successMessage ?? "You've been opted out and should no longer receive photo requests from us.");
     const alertType = ref(config?.alertType ?? "danger");
-
-    // #endregion
-
-    // #region Computed Values
-
-    // #endregion
-
-    // #region Functions
-
-    // #endregion
-
-    // #region Event Handlers
 
     // #endregion
 
@@ -43,4 +31,6 @@
     else if (!config) {
         errorMessage.value = "We could not find your record in our system. Please contact our office at the number below.";
     }
+
+    onConfigurationValuesChanged(reloadBlock);
 </script>

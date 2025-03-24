@@ -15,10 +15,28 @@
 // </copyright>
 //
 
+using Rock.Security;
+
 namespace Rock.Model
 {
     public partial class PrayerRequest
     {
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority
+        {
+            // This intentionally just calls the base ParentAuthority. It was
+            // discussed if this should inherit from Category so that security
+            // "works". However, the decision was made not to because
+            // PrayerRequests weren't really meant to have security. Meaning,
+            // there was no intent to be able to say "Ted is allowed to see
+            // prayer requests except those from this category".
+            get => base.ParentAuthority;
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets  full name of the person for who the prayer request is about.
         /// </summary>
@@ -59,6 +77,24 @@ namespace Rock.Model
             {
                 return string.Format( "{0} - {1:MM/dd/yy}", FullName, EnteredDateTime );
             }
+        }
+
+        /// <summary>
+        /// The <see cref="Rock.Web.SystemSettings" /> configuration object for prayer request AI completions.
+        /// Identified by the <seealso cref="SystemKey.SystemSetting.PRAYER_REQUEST_AI_COMPLETIONS"/>.
+        /// </summary>
+        public class PrayerRequestAICompletions
+        {
+            /// <summary>
+            /// The Lava template to be used for generating the text formatting AI completion request.
+            /// </summary>
+            public string PrayerRequestFormatterTemplate { get; set; }
+
+            /// <summary>
+            /// The Lava template to be used for generating the analysis completion request
+            /// for a prayer request (e.g. Sentiment Classification, auto-cateogrization etc.).
+            /// </summary>
+            public string PrayerRequestAnalyzerTemplate { get; set; }
         }
     }
 }

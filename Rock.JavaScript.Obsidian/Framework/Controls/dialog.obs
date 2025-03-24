@@ -1,10 +1,10 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <teleport to="body" v-if="modelValue">
-        <div class="modal-backdrop fade in" style="z-index: 1060;"></div>
+    <teleport to="body" v-if="showOverlay">
+        <div class="modal-backdrop fade" style="z-index: 1060;"></div>
 
-        <div @click="shake" class="modal-scrollable" style="z-index: 1060;">
-            <div @click.stop ref="modalDiv" class="modal fade in" :class="{ 'animated shake': doShake }" tabindex="-1" role="dialog" style="display: block;">
+        <div @click="maybeClose('click')" @keydown.esc="maybeClose('key')" class="modal-scrollable" style="z-index: 1060;">
+            <div @click.stop ref="modalDiv" class="modal fade" :class="{ 'animated shake': doShake, 'in': fadeIn }" tabindex="-1" role="dialog" style="display: block;">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div v-if="hasHeader" class="modal-header">
@@ -38,6 +38,11 @@
         dismissible: {
             type: Boolean as PropType<boolean>,
             default: true
+        },
+
+        enableOuterDismiss: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -46,10 +51,12 @@
     }>();
 
     const slots = useSlots();
+    const showOverlay = ref(props.modelValue);
     const doShake = ref(false);
     const modalDiv = ref<HTMLElement | null>(null);
 
     const hasHeader = computed(() => !!slots.header);
+    const fadeIn = ref(props.modelValue);
 
     const close = (): void => {
         emit("update:modelValue", false);
@@ -62,16 +69,51 @@
         }
     };
 
-    const centerOnScreen = (): void => {
+    const maybeClose = (event: "key" | "click"): void => {
+        if (props.enableOuterDismiss) {
+            return close();
+        }
+
+        if (event === "click") {
+            shake();
+        }
+    };
+
+    const animateIn = (): void => {
+        showOverlay.value = true;
+
         nextTick(() => {
+            fadeIn.value = true;
+
             if (!modalDiv.value) {
                 return;
             }
 
             const height = modalDiv.value.offsetHeight;
-            const margin = height / 2;
-            modalDiv.value.style.marginTop = `-${margin}px`;
+            const bodyHeight = document.body.offsetHeight;
+
+            // Pin it to the top if the modal is taller than the body so we don't end up making it impossible to see
+            // the top of it because of too large of a negative margin.
+            if (bodyHeight < height) {
+                modalDiv.value.style.marginTop = "0";
+                modalDiv.value.style.top = "0";
+            }
+            else {
+                modalDiv.value.style.marginTop = `-${height / 2}px`;
+            }
         });
+    };
+
+    const animateOut = (): void => {
+        fadeIn.value = false;
+
+        if (!modalDiv.value) {
+            showOverlay.value = false;
+            return;
+        }
+
+        // Wait for the animation to finish before removing the modal
+        setTimeout(() => showOverlay.value = false, 300);
     };
 
     if (props.modelValue) {
@@ -80,8 +122,12 @@
 
     watch(() => props.modelValue, () => {
         trackModalState(props.modelValue);
+
         if (props.modelValue) {
-            centerOnScreen();
+            animateIn();
+        }
+        else {
+            animateOut();
         }
     });
 </script>

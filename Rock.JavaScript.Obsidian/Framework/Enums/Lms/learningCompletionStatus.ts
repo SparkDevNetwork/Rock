@@ -26,7 +26,7 @@ export const LearningCompletionStatus = {
     /** The class is not yet complete. */
     Incomplete: 0,
 
-    /** The class has been compelted with a failing grade. */
+    /** The class has been completed with a failing grade. */
     Fail: 1,
 
     /** The class has been completed with a passing grade. */

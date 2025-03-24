@@ -51,7 +51,7 @@ function watchProject(project: string, postBuildScript: string): void {
 
     // Override watchFile so we can intercept the callback. This allows us
     // to delay additional builds until the post-build script has completed.
-    host.watchFile = (path: string, callback: ts.FileWatcherCallback, pollingInterval?: number, options?: ts.CompilerOptions): ts.FileWatcher => {
+    host.watchFile = (path: string, callback: ts.FileWatcherCallback, pollingInterval?: number, options?: ts.WatchOptions): ts.FileWatcher => {
         return origWatchFile(path, (fileName: string, eventKind: ts.FileWatcherEventKind) => {
             if (buildStart === 0) {
                 callback(fileName, eventKind);
@@ -64,7 +64,7 @@ function watchProject(project: string, postBuildScript: string): void {
 
     // Override watchDirectory so we can intercept the callback. This allows us
     // to delay additional builds until the post-build script has completed.
-    host.watchDirectory = (path: string, callback: ts.DirectoryWatcherCallback, recursive?: boolean, options?: ts.CompilerOptions): ts.FileWatcher => {
+    host.watchDirectory = (path: string, callback: ts.DirectoryWatcherCallback, recursive?: boolean, options?: ts.WatchOptions): ts.FileWatcher => {
         return origWatchDirectory(path, (fileName: string) => {
             if (buildStart === 0) {
                 callback(fileName);

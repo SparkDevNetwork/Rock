@@ -24,7 +24,7 @@
                                          v-html="config.errorMessage" />
                     </div>
 
-                    <div :class="['row', isMobile ? 'mobile-layout' : 'd-flex']">
+                    <div :class="['login-container', 'row', isMobile ? 'mobile-layout' : 'd-flex']">
                         <div v-if="isAnyExternalAuthProviderVisible || areBothInternalAuthProvidersVisible"
                             :class="['login-methods', isMobileForced ? 'col-sm-12' : 'col-sm-5', 'remote-logins']">
                             <ExternalLogin v-if="isAnyExternalAuthProviderVisible"

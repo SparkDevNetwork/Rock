@@ -352,14 +352,14 @@ namespace RockWeb.Blocks.Crm
                         var lIcons = e.Row.FindControl( "lIcons" ) as Literal;
 
                         var iconsHtml = new StringBuilder();
-                        
+
                         foreach ( var icon in person.DataViewIcons )
                         {
                             var tooltip = string.Format( "{0} meets the conditions of the {1} data view.", person.NickName, icon.DataViewName );
 
-                            if (!string.IsNullOrWhiteSpace(icon.IconCssClass))
+                            if ( !string.IsNullOrWhiteSpace( icon.IconCssClass ) )
                             {
-                                iconsHtml.AppendLine( string.Format("<i style=\"color:{0}\" class=\"fa-3x fa-fw {1}\" data-toggle=\"tooltip\" title=\"{2}\"></i>", icon.HighlightColor, icon.IconCssClass, tooltip ));
+                                iconsHtml.AppendLine( string.Format( "<i style=\"color:{0}\" class=\"fa-3x fa-fw {1}\" data-toggle=\"tooltip\" title=\"{2}\"></i>", icon.HighlightColor, icon.IconCssClass, tooltip ) );
                             }
                             else
                             {
@@ -388,6 +388,7 @@ namespace RockWeb.Blocks.Crm
             string type = PageParameter( "SearchType" );
             string term = PageParameter( "SearchTerm" );
 
+
             if ( !string.IsNullOrWhiteSpace( type ) && !string.IsNullOrWhiteSpace( term ) )
             {
                 term = term.Trim();
@@ -396,84 +397,90 @@ namespace RockWeb.Blocks.Crm
 
                 var personService = new PersonService( rockContext );
                 IQueryable<Person> people = null;
-
-                switch ( type.ToLower() )
-                {
-                    case ( "name" ):
-                        {
-                            bool allowFirstNameOnly = false;
-                            if ( !bool.TryParse( PageParameter( "AllowFirstNameOnly" ), out allowFirstNameOnly ) )
-                            {
-                                allowFirstNameOnly = false;
-                            }
-                            people = personService.GetByFullName( term, allowFirstNameOnly, true );
-                            break;
-                        }
-                    case ( "phone" ):
-                        {
-                            var phoneService = new PhoneNumberService( rockContext );
-                            var phoneNumberPersonIds = phoneService.GetPersonIdsByNumber( term );
-                            people = personService.Queryable( new PersonService.PersonQueryOptions { IncludeNameless = true } ).Where( p => phoneNumberPersonIds.Contains( p.Id ) );
-                            break;
-                        }
-                    case ( "address" ):
-                        {
-                            var groupMemberService = new GroupMemberService( rockContext );
-                            var groupMemberPersonIds = groupMemberService.GetPersonIdsByHomeAddress( term );
-                            people = personService.Queryable().Where( p => groupMemberPersonIds.Contains( p.Id ) );
-                            break;
-                        }
-                    case ( "email" ):
-                        {
-                            var emailSearchTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
-                            var searchKeyQry = new PersonSearchKeyService( rockContext ).Queryable();
-                            people = personService.Queryable()
-                                .Where( p => term != "" && p.Email.Contains( term ) );
-                            break;
-                        }
-                    case ( "birthdate" ):
-                        {
-                            DateTime? birthDate = Request.QueryString["birthdate"].AsDateTime();
-                            int? personId = Request.QueryString["person-id"].AsIntegerOrNull();
-                            if ( birthDate == null )
-                            {
-                                birthDate = term.AsDateTime();
-                            }
-
-                            if ( personId.HasValue )
-                            {
-                                people = personService.Queryable().Where( a => a.Id == personId.Value );
-                            }
-                            else
-                            {
-                                people = personService.Queryable().Where( p => p.BirthDate.HasValue && birthDate.HasValue && p.BirthDate == birthDate.Value );
-                            }
-
-                            break;
-                        }
-                }
-
                 IEnumerable<int> personIdList;
 
-                if ( type.ToLower() == "email" )
+                if ( !term.IsSingleSpecialCharacter() )
                 {
-                    /*
-                      SK: 01/26/2023
-                      We restructured this part to use this at this stage in order to fix the deadlock issue found in the Spark website.
-                    */
-                    var emailSearchTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
-                    var searchKeyQry = new PersonSearchKeyService( rockContext )
-                        .Queryable( "PersonAlias" )
-                        .Where( a => emailSearchTypeValueId.HasValue
-                                                 && a.PersonAliasId.HasValue
-                                                 && a.SearchTypeValueId == emailSearchTypeValueId.Value
-                                                 && a.SearchValue.Contains( term ) );
-                    personIdList = people.Select( p => p.Id ).Concat( searchKeyQry.Select( a => a.PersonAlias.PersonId ) );
-                    personIdList = personIdList.Distinct();
+                    switch ( type.ToLower() )
+                    {
+                        case ( "name" ):
+                            {
+                                bool allowFirstNameOnly = false;
+                                if ( !bool.TryParse( PageParameter( "AllowFirstNameOnly" ), out allowFirstNameOnly ) )
+                                {
+                                    allowFirstNameOnly = false;
+                                }
+                                people = personService.GetByFullName( term, allowFirstNameOnly, true );
+                                break;
+                            }
+                        case ( "phone" ):
+                            {
+                                var phoneService = new PhoneNumberService( rockContext );
+                                var phoneNumberPersonIds = phoneService.GetPersonIdsByNumber( term );
+                                people = personService.Queryable( new PersonService.PersonQueryOptions { IncludeNameless = true } ).Where( p => phoneNumberPersonIds.Contains( p.Id ) );
+                                break;
+                            }
+                        case ( "address" ):
+                            {
+                                var groupMemberService = new GroupMemberService( rockContext );
+                                var groupMemberPersonIds = groupMemberService.GetPersonIdsByHomeAddress( term );
+                                people = personService.Queryable().Where( p => groupMemberPersonIds.Contains( p.Id ) );
+                                break;
+                            }
+                        case ( "email" ):
+                            {
+                                var emailSearchTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
+                                var searchKeyQry = new PersonSearchKeyService( rockContext ).Queryable();
+                                people = personService.Queryable()
+                                    .Where( p => term != "" && p.Email.Contains( term ) );
+                                break;
+                            }
+                        case ( "birthdate" ):
+                            {
+                                DateTime? birthDate = Request.QueryString["birthdate"].AsDateTime();
+                                int? personId = Request.QueryString["person-id"].AsIntegerOrNull();
+                                if ( birthDate == null )
+                                {
+                                    birthDate = term.AsDateTime();
+                                }
+
+                                if ( personId.HasValue )
+                                {
+                                    people = personService.Queryable().Where( a => a.Id == personId.Value );
+                                }
+                                else
+                                {
+                                    people = personService.Queryable().Where( p => p.BirthDate.HasValue && birthDate.HasValue && p.BirthDate == birthDate.Value );
+                                }
+
+                                break;
+                            }
+                    }
+
+                    if ( type.ToLower() == "email" )
+                    {
+                        /*
+                          SK: 01/26/2023
+                          We restructured this part to use this at this stage in order to fix the deadlock issue found in the Spark website.
+                        */
+                        var emailSearchTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
+                        var searchKeyQry = new PersonSearchKeyService( rockContext )
+                            .Queryable( "PersonAlias" )
+                            .Where( a => emailSearchTypeValueId.HasValue
+                                                     && a.PersonAliasId.HasValue
+                                                     && a.SearchTypeValueId == emailSearchTypeValueId.Value
+                                                     && a.SearchValue.Contains( term ) );
+                        personIdList = people.Select( p => p.Id ).Concat( searchKeyQry.Select( a => a.PersonAlias.PersonId ) );
+                        personIdList = personIdList.Distinct();
+                    }
+                    else
+                    {
+                        personIdList = people.Select( p => p.Id ).Distinct();
+                    }
                 }
                 else
                 {
-                    personIdList = people.Select( p => p.Id ).Distinct();
+                    personIdList = Enumerable.Empty<int>();
                 }
 
                 // just leave the personIdList as a Queryable if it is over 10000 so that we don't throw a SQL exception due to the big list of ids
@@ -596,7 +603,7 @@ namespace RockWeb.Blocks.Crm
                         } )
                         .ToList();
 
-                    var icons = new List<DataViewIconResult> ();
+                    var icons = new List<DataViewIconResult>();
 
                     var dataViewIds = dataViews.Select( d => d.DataViewId ).ToList();
 
@@ -644,9 +651,9 @@ namespace RockWeb.Blocks.Crm
                          );
 
                     // Add the complete list of icons for every person.
-                    foreach (var person in personList)
+                    foreach ( var person in personList )
                     {
-                        person.DataViewIcons = leftJoinResult.Where( l => l.PersonId == person.Id ).OrderByDescending( i => i.CountInDataView ).Select(l => l.Icon ).ToList();
+                        person.DataViewIcons = leftJoinResult.Where( l => l.PersonId == person.Id ).OrderByDescending( i => i.CountInDataView ).Select( l => l.Icon ).ToList();
                     }
                 }
 
@@ -725,7 +732,8 @@ namespace RockWeb.Blocks.Crm
         /// <summary>
         /// Gets or sets the initials of the person.
         /// </summary>
-        public string Initials {
+        public string Initials
+        {
             get
             {
                 return $"{NickName.Truncate( 1, false )}{LastName.Truncate( 1, false )}";

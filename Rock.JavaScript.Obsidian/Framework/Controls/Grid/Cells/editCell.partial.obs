@@ -11,10 +11,24 @@
 <script setup lang="ts">
     import { standardCellProps } from "@Obsidian/Core/Controls/grid";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
-    import { ref } from "vue";
+    import { computed, ref } from "vue";
 
     const props = defineProps(standardCellProps);
-    const isDisabled = ref(false);
+    const isEditing = ref(false);
+
+    const isDisabled = computed((): boolean => {
+        if (isEditing.value) {
+            return true;
+        }
+
+        if (typeof props.column.props.rowDisabled === "function") {
+            if (props.column.props.rowDisabled(props.row, props.grid)) {
+                return true;
+            }
+        }
+
+        return false;
+    });
 
     async function onClick(event: Event): Promise<void> {
         const key = props.grid.getRowKey(props.row);
@@ -30,7 +44,7 @@
         }
 
         // Disable the button until we have finished processing.
-        isDisabled.value = true;
+        isEditing.value = true;
 
         try {
             const result = props.column.props.onClick(key);
@@ -42,7 +56,7 @@
         }
         finally {
             // Re-enable the button once we are all done.
-            isDisabled.value = false;
+            isEditing.value = false;
         }
     }
 </script>

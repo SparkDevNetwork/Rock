@@ -37,6 +37,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of connection types
     /// Stored as ConnectionType.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONNECTION_TYPE )]
     public class ConnectionTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

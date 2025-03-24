@@ -13,8 +13,8 @@
                         <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Logs Found" AllowCustomPaging="true" ShowPaginationText="false">
                             <Columns>
                                 <Rock:RockBoundField DataField="DateTime" HeaderText="Date" />
-                                <Rock:RockBoundField DataField="Level" HeaderText="Level" />
-                                <Rock:RockBoundField DataField="Domain" HeaderText="Domain" />
+                                <Rock:RockBoundField DataField="LogLevel" HeaderText="Level" />
+                                <Rock:RockBoundField DataField="Category" HeaderText="Category" />
                                 <Rock:RockBoundField DataField="Message" HeaderText="Message" />
                                 <Rock:RockBoundField DataField="SerializedException" HeaderText="Exception" />
                             </Columns>

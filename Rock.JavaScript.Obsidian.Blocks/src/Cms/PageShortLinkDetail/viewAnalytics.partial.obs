@@ -12,8 +12,7 @@
                           :showBlankItem="false" />
         </div>
 
-        <!-- Will be made visible in v17. -->
-        <div v-if="true" class="col-lg-3 col-md-3 col-sm-6">
+        <div class="col-lg-3 col-md-3 col-sm-6">
             <DropDownList label="Partition By"
                           v-model="partitionBy"
                           :items="partitionByItems"

@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "NotificationMessage" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "239ADD2E-2DBF-46A7-BD28-4A2A201D4E7B" )]
     public partial class NotificationMessage : Entity<NotificationMessage>
     {

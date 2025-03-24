@@ -125,28 +125,93 @@ export class TransformHelper {
         let newWidth = this.node.width() * this.node.scaleX();
         let newHeight = this.node.height() * this.node.scaleY();
 
+        const rotation = Math.round(this.node.rotation());
+
         // If this is a left side anchor then attempt to snap the x position,
         // otherwise if it is a right anchor then attempt to snap the width.
         if (leftAnchor) {
-            const snap = this.surface.snapPixel(newX);
+            if (rotation === 90) {
+                const snap = this.surface.snapPixel(newY);
 
-            newWidth += newX - snap;
-            newX = snap;
+                newWidth += newY - snap;
+                newY = snap;
+            }
+            else if (rotation === 180) {
+                const snap = this.surface.snapPixel(newX);
+
+                newWidth += snap - newX;
+                newX = snap;
+            }
+            else if (rotation === -90) {
+                const snap = this.surface.snapPixel(newY);
+
+                newWidth -= newY - snap;
+                newY = snap;
+            }
+            else {
+                const snap = this.surface.snapPixel(newX);
+
+                newWidth += newX - snap;
+                newX = snap;
+            }
         }
         else if (rightAnchor) {
-            newWidth = this.surface.snapPixel(newX + newWidth) - newX;
+            if (rotation === 90) {
+                newWidth = this.surface.snapPixel(newY + newWidth) - newY;
+            }
+            else if (rotation === 180) {
+                newWidth = newX - this.surface.snapPixel(newX - newWidth);
+
+            }
+            else if (rotation === -90) {
+                newWidth = newY - this.surface.snapPixel(newY - newWidth);
+            }
+            else {
+                newWidth = this.surface.snapPixel(newX + newWidth) - newX;
+            }
         }
 
         // If this is a top side anchor then attempt to snap the y position,
         // otherwise if it is a bottom anchor then attempt to snap the height.
         if (topAnchor) {
-            const snap = this.surface.snapPixel(newY);
+            if (rotation === 90) {
+                const snap = this.surface.snapPixel(newX);
 
-            newHeight += newY - snap;
-            newY = snap;
+                newHeight += snap - newX;
+                newX = snap;
+            }
+            else if (rotation === 180) {
+                const snap = this.surface.snapPixel(newY);
+
+                newHeight -= newY - snap;
+                newY = snap;
+            }
+            else if (rotation === -90) {
+                const snap = this.surface.snapPixel(newX);
+
+                newHeight += newX - snap;
+                newX = snap;
+            }
+            else {
+                const snap = this.surface.snapPixel(newY);
+
+                newHeight += newY - snap;
+                newY = snap;
+            }
         }
         else if (bottomAnchor) {
-            newHeight = this.surface.snapPixel(newY + newHeight) - newY;
+            if (rotation === 90) {
+                newHeight = newX - this.surface.snapPixel(newX - newHeight);
+            }
+            else if (rotation === 180) {
+                newHeight = newY - this.surface.snapPixel(newY - newHeight);
+            }
+            else if (rotation === -90) {
+                newHeight = this.surface.snapPixel(newX + newHeight) - newX;
+            }
+            else {
+                newHeight = this.surface.snapPixel(newY + newHeight) - newY;
+            }
         }
 
         // If this is a left anchor then clamp the x position to the left

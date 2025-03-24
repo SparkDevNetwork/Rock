@@ -14,45 +14,54 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+
 using Rock.Enums.Lms;
+using Rock.Security;
 
 namespace Rock.Model
 {
     public partial class LearningProgram
     {
+        /// <inheritdoc/>
+        public override bool IsAuthorized( string action, Rock.Model.Person person )
+        {
+            // Check to see if user is authorized using normal authorization rules
+            bool authorized = base.IsAuthorized( action, person );
 
-    }
+            if ( authorized )
+            {
+                return authorized;
+            }
 
-    /// <summary>
-    /// POCO for encapsulating KPIs for a given <see cref="LearningProgram"/> .
-    /// </summary>
-    public class LearningProgramKpis
-    {
+            // Authorize "ViewGrades" when the person has "EditGrades".
+            if ( action == Authorization.VIEW_GRADES )
+            {
+                // We only need to check for the additional action, "EditGrades" because
+                // the call to base.IsAuthorized would already have checked for "ViewGrades".
+                var isAuthorizedToEditGrades = Authorization.Authorized( this, Authorization.EDIT_GRADES, person );
+
+                if ( isAuthorizedToEditGrades )
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>
-        ///     Gets or sets the number of active classes in the Program.
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
         /// </summary>
-        /// <remarks>
-        ///     Currently defined as the number of unique learning class Ids for the program
-        ///     where the semester has started, but not ended and the class "isActive".
-        /// </remarks>
-        public int ActiveClasses { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the number of active students in the Program.
-        /// </summary>
-        /// <remarks>
-        ///     Currently defined as the number of unique student person Ids enrolled in any class
-        ///     within the program where the <see cref="LearningCompletionStatus"/> is incomplete.
-        /// </remarks>
-        public int ActiveStudents { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the number of students who have completed this Program.
-        /// </summary>
-        /// <remarks>
-        ///     Currently defined as the number of unique program completions for the program
-        ///     where the <see cref="CompletionStatus"/> is "Completed".
-        /// </remarks>
-        public int Completions { get; set; }
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( Authorization.VIEW_GRADES, "The roles and/or users that have access to view grades." );
+                supportedActions.AddOrReplace( Authorization.EDIT_GRADES, "The roles and/or users that have access to edit grades." );
+                return supportedActions;
+            }
+        }
     }
 }

@@ -27,6 +27,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Select multiple Badges from a checkbox list. Stored as a comma-delimited list of Badge Guids
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REMINDER_TYPES )]
     public class ReminderTypesFieldType : SelectFromListFieldType

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StepWorkflowTrigger" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "55C1D610-D42F-4E08-9CD9-1EC9801BC4E3")]
     public partial class StepWorkflowTrigger : Model<StepWorkflowTrigger>, IHasActiveFlag
     {

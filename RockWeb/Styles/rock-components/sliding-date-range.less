@@ -7,8 +7,12 @@
   .input-size(@input-height-small; @padding-small-vertical; @padding-small-horizontal; @font-size-small; @line-height-small; @input-border-radius-small);
 }
 
-.slidingdaterange-select,
-.slidingdaterange-number,
-.slidingdaterange-daterange .input-group {
-  margin-bottom: 6px;
+.form-control-group {
+  .picker-daterange.slidingdaterange-daterange {
+    > div {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xsmall);
+    }
+  }
 }

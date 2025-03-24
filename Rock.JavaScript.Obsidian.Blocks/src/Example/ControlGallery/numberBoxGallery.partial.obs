@@ -1,0 +1,40 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <RockForm>
+            <NumberBox label="Number" v-model="value" :minimumValue="numericMinimumValue" :maximumValue="numericMaximumValue" />
+            <RockButton btnType="primary" type="submit">Test Validation</RockButton>
+        </RockForm>
+
+        <template #settings>
+            <TextBox label="Minimum Value" v-model="minimumValue" />
+            <TextBox label="Maximum Value" v-model="maximumValue" />
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+
+    const minimumValue = ref("0");
+    const maximumValue = ref("1");
+    const value = ref(42);
+
+    const numericMinimumValue = computed((): number => toNumber(minimumValue.value));
+    const numericMaximumValue = computed((): number => toNumber(maximumValue.value));
+
+    const importCode = getSfcControlImportPath("numberBox");
+    const exampleCode = `<NumberBox label="Number" v-model="value" :minimumValue="minimumValue" :maximumValue="maximumValue" />`;
+</script>
