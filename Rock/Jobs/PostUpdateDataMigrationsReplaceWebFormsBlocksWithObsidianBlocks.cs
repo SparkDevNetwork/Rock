@@ -254,10 +254,8 @@ namespace Rock.Jobs
         {
             var oldBlockTypeId = BlockTypeCache.GetId( oldBlockTypeGuid );
             // If the old block is not found in the Cache, it mostly likely was deleted in a previous migration in a previous version.
-            // So we merely log it to the exception table and continue
             if ( !oldBlockTypeId.HasValue )
             {
-                ExceptionLogService.LogException( $"BlockType could not be found for guid '{oldBlockTypeGuid}' for the current block" );
                 return;
             }
 
