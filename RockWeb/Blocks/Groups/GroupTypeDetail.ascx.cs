@@ -3335,7 +3335,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbIsChatAllowed_CheckedChanged( object sender, EventArgs e )
         {
-            nbDeleteChatChannels.Visible = false;
+            nbDisableChatChannels.Visible = false;
 
             var isChatAllowed = cbIsChatAllowed.Checked;
 
@@ -3353,8 +3353,8 @@ namespace RockWeb.Blocks.Groups
 
                 if ( count > 0 )
                 {
-                    nbDeleteChatChannels.Text = $"{count:N0} chat {"channel".PluralizeIf( count > 1 )} will be deleted if you disable chat for this group type.";
-                    nbDeleteChatChannels.Visible = true;
+                    nbDisableChatChannels.Text = $"{count:N0} chat {"channel".PluralizeIf( count > 1 )} will be immediately disabled if you disable chat for this group type.";
+                    nbDisableChatChannels.Visible = true;
                 }
             }
         }

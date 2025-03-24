@@ -368,10 +368,7 @@ namespace Rock.Communication.Chat
                                     "update-channel-owner",
                                     "update-message-owner",
                                     "update-thread-owner",
-                                    //"upload-attachment-owner",
-
-                                    // The following have been added as needed.
-                                    "leave-channel", // The UI will combine this with per-channel leaving allowances.
+                                    //"upload-attachment-owner"
                                 }
                             },
                             {
@@ -420,10 +417,7 @@ namespace Rock.Communication.Chat
                                     "update-channel-members-owner", // But they SHOULD be able to manage members for channels they personally create within Stream.
                                     "update-message",
                                     "update-thread",
-                                    "upload-attachment",
-
-                                    // The following have been added as needed.
-                                    "leave-channel", // The UI will combine this with per-channel leaving allowances.
+                                    "upload-attachment"
                                 }
                             },
                             {
@@ -471,10 +465,7 @@ namespace Rock.Communication.Chat
                                     "update-channel-members",
                                     "update-message",
                                     "update-thread",
-                                    "upload-attachment",
-
-                                    // The following have been added as needed.
-                                    "leave-channel", // The UI will combine this with per-channel leaving allowances.
+                                    "upload-attachment"
                                 }
                             }
                         };
@@ -3135,6 +3126,18 @@ namespace Rock.Communication.Chat
                 {
                     if ( ex is StreamChatException streamChatException )
                     {
+                        if ( streamChatException.ErrorCode == 2 )
+                        {
+                            ChatHelper.ReportAccountInvalidResponseReceived( streamChatException );
+                            throw;
+                        }
+
+                        if ( streamChatException.ErrorCode == 99 )
+                        {
+                            ChatHelper.ReportAccountSuspendedResponseReceived( streamChatException );
+                            throw;
+                        }
+
                         /*
                             3/7/2025 - JPH
 
@@ -3154,7 +3157,7 @@ namespace Rock.Communication.Chat
                             Reason: Know when to retry for "eventual consistency" scenarios vs. handling differently.
                         */
 
-                        // First, attempt to detect if Rock is syncing a chat user who's been deleted in Stream.
+                        // Attempt to detect if Rock is syncing a chat user who's been deleted in Stream.
                         if ( streamChatException.ErrorCode == 16 )
                         {
                             /*

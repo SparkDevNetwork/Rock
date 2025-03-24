@@ -521,7 +521,7 @@
 
                     <Rock:PanelWidget ID="wpChat" runat="server" Title="Chat">
                         <Rock:NotificationBox ID="nbChatRunSyncJob" runat="server" NotificationBoxType="Info" Text="You'll need to run the Chat Sync Job after saving, for these changes to take affect in chat channels of this type." />
-                        <Rock:NotificationBox ID="nbDeleteChatChannels" runat="server" NotificationBoxType="Warning" Visible="false" />
+                        <Rock:NotificationBox ID="nbDisableChatChannels" runat="server" NotificationBoxType="Warning" Visible="false" />
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsChatAllowed" runat="server" Label="Is Chat Allowed" Help="If enabled, groups of this type are allowed to participate in the chat system as a chat channel." AutoPostBack="true" OnCheckedChanged="cbIsChatAllowed_CheckedChanged" />

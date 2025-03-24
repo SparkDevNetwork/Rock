@@ -156,9 +156,11 @@ namespace Rock.Jobs
             if ( !ChatHelper.IsChatEnabled )
             {
                 var section = CreateAndAddResultSection( null ); // No section title.
-                CreateAndAddNewTaskResult( section, "Chat is not enabled.", TimeSpan.Zero );
 
-                ReportResults();
+                var taskResult = CreateAndAddNewTaskResult( section, "Chat is not enabled.", TimeSpan.Zero );
+                taskResult.IsWarning = true;
+
+                ReportResults( showWarningInstructions: false );
                 return;
             }
 
@@ -782,6 +784,9 @@ namespace Rock.Jobs
             // Collect any Rock groups along the way, whose members should be synced.
             var groupsRequiringMemberSync = new List<GroupCache>();
 
+            // Collect any Stream channels along the way, that originated in Rock, yet somehow no longer have a Rock group representation.
+            var channelQueryableKeysToDelete = new List<string>();
+
             var chatToRockGroupsResult = new ChatSyncCrudResult();
             var chatToRockGroupsExceptions = new List<Exception>();
             var chatToRockGroupsCommands = new List<SyncChatChannelToRockCommand>();
@@ -807,9 +812,10 @@ namespace Rock.Jobs
 
                 if ( ChatHelper.DidChatChannelOriginateInRock( chatChannel.Key ) )
                 {
-                    // Ignore channels that originated (but no longer exist) in Rock. This means something unexpected
-                    // happened in the upstream sync processes, as the channel should have already been deleted from
-                    // the external chat system. We're not going to re-create it here.
+                    // This means something unexpected happened in the upstream sync processes, as the channel should
+                    // have already been deleted from the external chat system. We're not going to re-create it here,
+                    // but we will delete it externally.
+                    channelQueryableKeysToDelete.Add( chatChannel.QueryableKey );
                     continue;
                 }
 
@@ -851,9 +857,15 @@ namespace Rock.Jobs
 
                     // Sync the members for any groups that were synced.
                     groupsRequiringMemberSync.AddRange(
-                        channelSyncCrudResult.Unique.Select( id => GroupCache.Get( id.ToString() ) )
+                        channelSyncCrudResult.Unique.Select( id => GroupCache.Get( id.AsInteger() ) )
                     );
                 }
+            }
+
+            // Try to delete any external chat channels that somehow still exist when they shouldn't.
+            if ( channelQueryableKeysToDelete.Any() )
+            {
+                await chatHelper.DeleteChatChannelsAsync( channelQueryableKeysToDelete );
             }
 
             // ------------------------------------------
@@ -1334,8 +1346,9 @@ namespace Rock.Jobs
         /// <summary>
         /// Reports the results of this job run.
         /// </summary>
+        /// <param name="showWarningInstructions">Whether to show further instructions in the case of warnings.</param>
         /// <exception cref="RockJobWarningException">If any <see cref="ChatSyncTaskResult"/> has an <see cref="Exception"/>.</exception>
-        private void ReportResults()
+        private void ReportResults( bool showWarningInstructions = true )
         {
             var jobSummaryBuilder = new StringBuilder();
 
@@ -1376,7 +1389,7 @@ namespace Rock.Jobs
                 jobSummaryBuilder.AppendLine( string.Empty );
                 jobSummaryBuilder.AppendLine( "<i class='fa fa-circle text-danger'></i> Some tasks have errors. View Rock's Exception List for more details. You can also enable 'Error' verbosity level for 'Chat' domains in Rock Logs and re-run this job to get a full list of issues." );
             }
-            else if ( anyWarnings )
+            else if ( anyWarnings && showWarningInstructions )
             {
                 jobSummaryBuilder.AppendLine( string.Empty );
                 jobSummaryBuilder.AppendLine( "<i class='fa fa-circle text-warning'></i> Some tasks completed with warnings. Enable 'Warning' verbosity level for all 'Chat' domains in Rock Logs and re-run this job to get a full list of issues." );
