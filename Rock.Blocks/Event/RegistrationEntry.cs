@@ -3470,12 +3470,14 @@ namespace Rock.Blocks.Event
             {
                 var attribute = AttributeCache.Get( field.AttributeId.Value );
 
-
                 if ( attribute is null )
                 {
                     continue;
                 }
+
                 var newValue = registrantInfo.FieldValues.GetValueOrNull( field.Guid ).ToStringSafe();
+                newValue = PublicAttributeHelper.GetPrivateValue( attribute, newValue );
+
                 var attributeValue = new AttributeValueCache( field.AttributeId.Value, null, newValue );
                 attributes.Add( attribute.Key, attribute );
                 attributeValues.Add( attribute.Key, attributeValue );
