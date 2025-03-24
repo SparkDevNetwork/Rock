@@ -114,6 +114,18 @@ namespace Rock.Communication.Chat
         } );
 
         /// <summary>
+        /// A lazy-loaded dictionary of system group type identifiers by their GUID strings.
+        /// </summary>
+        private static readonly Lazy<Dictionary<string, int>> _systemGroupTypeIdsByGuid = new Lazy<Dictionary<string, int>>( () =>
+        {
+            return new Dictionary<string, int>
+            {
+                { SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE, GroupTypeCache.GetId( SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE.AsGuid() ) ?? 0 },
+                { SystemGuid.GroupType.GROUPTYPE_CHAT_SHARED_CHANNEL, GroupTypeCache.GetId( SystemGuid.GroupType.GROUPTYPE_CHAT_SHARED_CHANNEL.AsGuid() ) ?? 0 },
+            };
+        } );
+
+        /// <summary>
         /// A lazy-loaded dictionary of system group identifiers by their GUID strings.
         /// </summary>
         private static readonly Lazy<Dictionary<string, int>> _systemGroupIdsByGuid = new Lazy<Dictionary<string, int>>( () =>
@@ -191,6 +203,16 @@ namespace Rock.Communication.Chat
         internal static List<string> RequiredAppRoles => _requiredAppRoles.Value;
 
         /// <summary>
+        /// Gets the <see cref="GroupType"/> identifier for the chat direct message group type.
+        /// </summary>
+        internal static int ChatDirectMessageGroupTypeId => _systemGroupTypeIdsByGuid.Value[SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE];
+
+        /// <summary>
+        /// Gets the <see cref="GroupType"/> identifier for the chat shared channel group type.
+        /// </summary>
+        internal static int ChatSharedChannelGroupTypeId => _systemGroupTypeIdsByGuid.Value[SystemGuid.GroupType.GROUPTYPE_CHAT_SHARED_CHANNEL];
+
+        /// <summary>
         /// Gets the <see cref="Group"/> identifier for the chat administrators group.
         /// </summary>
         internal static int ChatAdministratorsGroupId => _systemGroupIdsByGuid.Value[SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS];
@@ -201,14 +223,19 @@ namespace Rock.Communication.Chat
         internal static int ChatBanListGroupId => _systemGroupIdsByGuid.Value[SystemGuid.Group.GROUP_CHAT_BAN_LIST];
 
         /// <summary>
-        /// Gets the <see cref="Group"/> identifier for the chat direct messages group.
+        /// Gets the <see cref="Group"/> identifier for the parent chat direct messages group.
         /// </summary>
         internal static int ChatDirectMessagesGroupId => _systemGroupIdsByGuid.Value[SystemGuid.Group.GROUP_CHAT_DIRECT_MESSAGES];
 
         /// <summary>
-        /// Gets the <see cref="Group"/> identifier for the chat shared channels group.
+        /// Gets the <see cref="Group"/> identifier for the parent chat shared channels group.
         /// </summary>
         internal static int ChatSharedChannelsGroupId => _systemGroupIdsByGuid.Value[SystemGuid.Group.GROUP_CHAT_SHARED_CHANNELS];
+
+        /// <summary>
+        /// Gets the value to use for <see cref="Group.Name"/>, for groups that are children of the parent direct messages group.
+        /// </summary>
+        internal static string ChatDirectMessageGroupName => "Chat Direct Message";
 
         /// <summary>
         /// Gets the URL to which the external chat provider should send webhook requests.
@@ -513,11 +540,10 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
-        /// Releases static <see cref="ChatHelper"/> values (e.g. <see cref="ChatConfiguration"/>) when updated values
-        /// should be loaded into memory.
+        /// Releases static <see cref="ChatHelper"/> and <see cref="IChatProvider"/> values (e.g. <see cref="ChatConfiguration"/>)
+        /// when updated values should be loaded into memory.
         /// </summary>
-        /// <param name="shouldReinitializeChatProvider">Whether to also reinitialize the <see cref="IChatProvider"/>.</param>"/>
-        internal void Reinitialize( bool shouldReinitializeChatProvider = true )
+        internal void Reinitialize()
         {
             lock ( _accountUnrecoverableExceptionLock )
             {
@@ -534,11 +560,7 @@ namespace Rock.Communication.Chat
                 _chatSystemUserGuid = GetOrCreateChatSystemUserGuid();
             }
 
-            if ( shouldReinitializeChatProvider )
-            {
-
-                ChatProvider.Initialize();
-            }
+            ChatProvider.Initialize();
         }
 
         #endregion Configuration & Keys
@@ -3545,12 +3567,21 @@ namespace Rock.Communication.Chat
                 return null;
             }
 
+            var key = GetChatChannelKey( rockChatGroup.GroupId, rockChatGroup.ChatChannelKey );
+
+            // We don't want to accidentally sync placeholder names (for those channels that originated in the
+            // external chat system) back to that system, so only set the name value for those channels that
+            // originated in Rock.
+            var name = DidChatChannelOriginateInRock( key )
+                ? rockChatGroup.Name
+                : null;
+
             return new ChatChannel
             {
-                Key = GetChatChannelKey( rockChatGroup.GroupId, rockChatGroup.ChatChannelKey ),
+                Key = key,
                 ChatChannelTypeKey = GetChatChannelTypeKey( rockChatGroup.GroupTypeId ),
                 QueryableKey = ChatProvider.GetQueryableChatChannelKey( rockChatGroup ),
-                Name = rockChatGroup.Name,
+                Name = name,
                 IsLeavingAllowed = rockChatGroup.IsLeavingAllowed,
                 IsPublic = rockChatGroup.IsPublic,
                 IsAlwaysShown = rockChatGroup.IsAlwaysShown,
@@ -3581,7 +3612,7 @@ namespace Rock.Communication.Chat
             return new ChatChannelMember
             {
                 ChatChannelTypeKey = chatChannelTypeKey,
-                ChatChannelKey = chatChannelTypeKey,
+                ChatChannelKey = chatChannelKey,
                 ChatUserKey = chatUserKey,
                 Role = rockChatChannelMember.ChatRole.GetDescription(),
                 IsChatMuted = rockChatChannelMember.IsChatMuted,
@@ -3931,6 +3962,20 @@ namespace Rock.Communication.Chat
 
                     var groupNotFoundMsg = $"Rock group with chat channel key '{syncCommand.ChatChannelKey}' could not be found.";
 
+                    var groupName = syncCommand.GroupName;
+                    if ( groupName.IsNullOrWhiteSpace() )
+                    {
+                        if ( syncCommand.GroupTypeId == ChatDirectMessageGroupTypeId )
+                        {
+                            groupName = ChatDirectMessageGroupName;
+                        }
+                        else
+                        {
+                            // This isn't ideal, but we need a value to use for the required Rock group name field.
+                            groupName = syncCommand.ChatChannelKey;
+                        }
+                    }
+
                     if ( syncCommand.ChatSyncType == ChatSyncType.Create )
                     {
                         if ( group != null )
@@ -3944,7 +3989,7 @@ namespace Rock.Communication.Chat
                         var newGroup = new Group
                         {
                             ParentGroupId = ChatDirectMessagesGroupId,
-                            Name = syncCommand.GroupName,
+                            Name = groupName,
                             GroupTypeId = groupTypeId.Value,
                             ChatChannelKey = syncCommand.ChatChannelKey,
                             IsActive = syncCommand.IsActive
@@ -3967,7 +4012,7 @@ namespace Rock.Communication.Chat
                         }
 
                         // Update the group (but only if needed).
-                        if ( group.Name == syncCommand.GroupName )
+                        if ( group.Name == groupName )
                         {
                             result.Skipped.Add( groupId.ToString() );
                             syncCommand.MarkAsSkipped();
@@ -3983,7 +4028,7 @@ namespace Rock.Communication.Chat
                             Reason: Rock should be the system of truth for `IsActive` & `IsArchived` status, for existing groups.
                          */
 
-                        group.Name = syncCommand.GroupName;
+                        group.Name = groupName;
 
                         rockContext.SaveChanges();
 
