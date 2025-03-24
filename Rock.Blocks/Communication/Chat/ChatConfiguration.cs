@@ -81,9 +81,6 @@ namespace Rock.Blocks.Communication.Chat
                 return ActionBadRequest();
             }
 
-            var oldConfig = GetCurrentChatConfigurationBag();
-            var shouldReinitializeChatProvider = oldConfig.ApiKey != bag.ApiKey || oldConfig.ApiSecret != bag.ApiSecret;
-
             SaveChatConfigurationToSystemSettings( bag );
 
             // Perform an app settings and group type sync to the external chat system in a background task, as it could
@@ -93,7 +90,7 @@ namespace Rock.Blocks.Communication.Chat
                 using ( var rockContext = new RockContext() )
                 using ( var chatHelper = new ChatHelper( rockContext ) )
                 {
-                    chatHelper.Reinitialize( shouldReinitializeChatProvider );
+                    chatHelper.Reinitialize();
 
                     var isSetUpResult = await chatHelper.EnsureChatProviderAppIsSetUpAsync();
                     if ( isSetUpResult?.IsSetUp != true )

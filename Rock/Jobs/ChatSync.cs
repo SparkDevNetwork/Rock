@@ -1159,10 +1159,14 @@ namespace Rock.Jobs
                         continue;
                     }
 
-                    // Ensure we have an interaction component for this group.
+                    // Ensure we have an interaction component for this group (while lumping all DMs into a single component).
+                    var componentName = rockChatGroup.GroupTypeId == ChatHelper.ChatDirectMessageGroupTypeId
+                        ? ChatHelper.ChatDirectMessageGroupName
+                        : rockChatGroup.Name;
+
                     var interactionComponentId = InteractionComponentCache.GetOrCreateComponentIdByName(
                         interactionChannelId,
-                        componentName: rockChatGroup.Name
+                        componentName
                     );
 
                     foreach ( var chatUserMessageCountsKvp in chatUserMessageCounts )
