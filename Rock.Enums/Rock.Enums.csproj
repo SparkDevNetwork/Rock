@@ -236,6 +236,7 @@
     <Compile Include="Reporting\ReportFieldType.cs" />
     <Compile Include="Reporting\UnitType.cs" />
     <Compile Include="Blocks\Security\ConfirmAccount\ConfirmAccountViewType.cs" />
+    <Compile Include="Security\LoginFailureReason.cs" />
     <Compile Include="WebFarm\LogSeverity.cs" />
     <Compile Include="WebFarm\LogType.cs" />
     <Compile Include="Workflow\WorkflowActionFormShowHideOption.cs" />
