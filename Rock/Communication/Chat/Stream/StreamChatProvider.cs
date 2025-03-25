@@ -3372,7 +3372,11 @@ namespace Rock.Communication.Chat
                 CreatedBy = TryConvertToStreamUserRequest( ChatHelper.GetChatSystemUser() ),
             };
 
-            channelRequest.SetData( ChannelDataKey.Name, chatChannel.Name ?? string.Empty );
+            if ( chatChannel.Name.IsNotNullOrWhiteSpace() )
+            {
+                channelRequest.SetData( ChannelDataKey.Name, chatChannel.Name );
+            }
+
             channelRequest.SetData( ChannelDataKey.IsLeavingAllowed, chatChannel.IsLeavingAllowed );
             channelRequest.SetData( ChannelDataKey.IsPublic, chatChannel.IsPublic );
             channelRequest.SetData( ChannelDataKey.IsAlwaysShown, chatChannel.IsAlwaysShown );
@@ -3444,6 +3448,7 @@ namespace Rock.Communication.Chat
                 return null;
             }
 
+            var name = channel.GetDataOrDefault<string>( ChannelDataKey.Name, null );
             var isChannelDisabled = channel.GetDataOrDefault( ChannelDataKey.Disabled, false );
 
             return new ChatChannel
@@ -3451,7 +3456,7 @@ namespace Rock.Communication.Chat
                 Key = channel.Id,
                 ChatChannelTypeKey = channel.Type,
                 QueryableKey = channel.Cid,
-                Name = channel.GetDataOrDefault( ChannelDataKey.Name, channel.Cid ),
+                Name = name,
                 IsLeavingAllowed = channel.GetDataOrDefault( ChannelDataKey.IsLeavingAllowed, false ),
                 IsPublic = channel.GetDataOrDefault( ChannelDataKey.IsPublic, false ),
                 IsAlwaysShown = channel.GetDataOrDefault( ChannelDataKey.IsAlwaysShown, false ),
@@ -3561,16 +3566,12 @@ namespace Rock.Communication.Chat
 
             if ( chatSyncType != ChatSyncType.Delete )
             {
+                // Try to get the channel's name.
                 var groupName = json[WebhookJsonProperty.Channel]?[WebhookJsonProperty.Name]?.ToString();
-                if ( groupName.IsNullOrWhiteSpace() )
+                if ( groupName.IsNotNullOrWhiteSpace() )
                 {
-                    // If a channel name wasn't provided, we'll fall back to using the channel ID for the name. This
-                    // isn't ideal, but we need a value to use for the required Rock group name field.
-                    groupName = chatGroupIdentifiers.ChannelKey;
+                    channelSyncCommand.GroupName = groupName;
                 }
-
-                // Assign the group name to the sync command.
-                channelSyncCommand.GroupName = groupName;
 
                 // Try to get the channel's disabled status.
                 var disabledToken = json[WebhookJsonProperty.Disabled];
