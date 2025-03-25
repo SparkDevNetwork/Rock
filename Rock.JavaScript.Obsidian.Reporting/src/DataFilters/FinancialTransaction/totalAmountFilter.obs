@@ -16,6 +16,7 @@
     import { dataViewFilterProps } from "@Obsidian/Utility/component";
     import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
     import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
     const props = defineProps(dataViewFilterProps);
     const emit = defineEmits<{
@@ -23,7 +24,7 @@
     }>();
 
     const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
-    const amount = ref<number | null>(props.modelValue.amount ? parseInt(props.modelValue.amount, 10) || null : null);
+    const amount = ref<number | null>(toNumberOrNull(props.modelValue.amount));
 
     const comparisonItems = getFilteredComparisonTypeOptions(
         ComparisonType.EqualTo,

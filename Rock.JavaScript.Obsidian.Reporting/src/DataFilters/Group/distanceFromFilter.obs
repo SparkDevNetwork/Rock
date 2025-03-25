@@ -13,6 +13,7 @@
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
     const props = defineProps(dataViewFilterProps);
     const emit = defineEmits<{
@@ -22,7 +23,7 @@
     const locationTypes = ref<ListItemBag[]>(safeParseJson(props.modelValue.locationTypes) ?? []);
     const locationTypeGuid = ref<string>(props.modelValue.locationTypeGuid ?? "");
     const location = ref<AddressControlBag | ListItemBag | string | undefined>(safeParseJson(props.modelValue.location));
-    const miles = ref<number | null>(props.modelValue.miles ? parseInt(props.modelValue.miles, 10) || null : null);
+    const miles = ref<number | null>(toNumberOrNull(props.modelValue.miles));
 
     watch([locationTypeGuid, location, miles], () => {
         emit("update:modelValue", {

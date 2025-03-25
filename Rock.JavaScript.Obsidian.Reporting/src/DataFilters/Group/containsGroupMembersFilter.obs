@@ -32,6 +32,7 @@
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
     const props = defineProps(dataViewFilterProps);
     const emit = defineEmits<{
@@ -40,7 +41,7 @@
 
     const dataView = ref<ListItemBag[]>(safeParseJson(props.modelValue.dataView) ?? []);
     const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
-    const count = ref<number | null>(props.modelValue.count ? parseInt(props.modelValue.count, 10) || null : null);
+    const count = ref<number | null>(toNumberOrNull(props.modelValue.count));
 
     const comparisonItems = getFilteredComparisonTypeOptions(
         ComparisonType.EqualTo,
