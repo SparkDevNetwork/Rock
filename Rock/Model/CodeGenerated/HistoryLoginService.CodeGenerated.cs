@@ -29,15 +29,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// UserLogin Service class
+    /// HistoryLogin Service class
     /// </summary>
-    public partial class UserLoginService : Service<UserLogin>
+    public partial class HistoryLoginService : Service<HistoryLogin>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="UserLoginService"/> class
+        /// Initializes a new instance of the <see cref="HistoryLoginService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public UserLoginService(RockContext context) : base(context)
+        public HistoryLoginService(RockContext context) : base(context)
         {
         }
 
@@ -49,17 +49,15 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( UserLogin item, out string errorMessage )
+        public bool CanDelete( HistoryLogin item, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            // ignoring HistoryLogin,UserLoginId
             return true;
         }
     }
 
-    [HasQueryableAttributes( typeof( UserLogin.UserLoginQueryableAttributeValue ), nameof( UserLoginAttributeValues ) )]
-    public partial class UserLogin
+    [HasQueryableAttributes( typeof( HistoryLogin.HistoryLoginQueryableAttributeValue ), nameof( HistoryLoginAttributeValues ) )]
+    public partial class HistoryLogin
     {
         /// <summary>
         /// Gets the entity attribute values. This should only be used inside
@@ -68,10 +66,10 @@ namespace Rock.Model
         /// or selecting values. Do <b>not</b> use it for accessing the
         /// attributes after the entity has been loaded.
         /// </summary>
-        public virtual ICollection<UserLoginQueryableAttributeValue> UserLoginAttributeValues { get; set; } 
+        public virtual ICollection<HistoryLoginQueryableAttributeValue> HistoryLoginAttributeValues { get; set; } 
 
         /// <inheritdoc/>
-        public class UserLoginQueryableAttributeValue : QueryableAttributeValue
+        public class HistoryLoginQueryableAttributeValue : QueryableAttributeValue
         {
         }
     }
@@ -79,36 +77,36 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class UserLoginExtensionMethods
+    public static partial class HistoryLoginExtensionMethods
     {
         /// <summary>
-        /// Clones this UserLogin object to a new UserLogin object
+        /// Clones this HistoryLogin object to a new HistoryLogin object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static UserLogin Clone( this UserLogin source, bool deepCopy )
+        public static HistoryLogin Clone( this HistoryLogin source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as UserLogin;
+                return source.Clone() as HistoryLogin;
             }
             else
             {
-                var target = new UserLogin();
+                var target = new HistoryLogin();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this UserLogin object to a new UserLogin object with default values for the properties in the Entity and Model base classes.
+        /// Clones this HistoryLogin object to a new HistoryLogin object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static UserLogin CloneWithoutIdentity( this UserLogin source )
+        public static HistoryLogin CloneWithoutIdentity( this HistoryLogin source )
         {
-            var target = new UserLogin();
+            var target = new HistoryLogin();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -125,31 +123,28 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another UserLogin object to this UserLogin object
+        /// Copies the properties from another HistoryLogin object to this HistoryLogin object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this UserLogin target, UserLogin source )
+        public static void CopyPropertiesFrom( this HistoryLogin target, HistoryLogin source )
         {
             target.Id = source.Id;
-            target.ApiKey = source.ApiKey;
-            target.EntityTypeId = source.EntityTypeId;
-            target.FailedPasswordAttemptCount = source.FailedPasswordAttemptCount;
-            target.FailedPasswordAttemptWindowStartDateTime = source.FailedPasswordAttemptWindowStartDateTime;
+            target.AuthClientClientId = source.AuthClientClientId;
+            target.ClientIpAddress = source.ClientIpAddress;
+            target.DestinationUrl = source.DestinationUrl;
+            target.ExternalSource = source.ExternalSource;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.IsConfirmed = source.IsConfirmed;
-            target.IsLockedOut = source.IsLockedOut;
-            target.IsOnLine = source.IsOnLine;
-            target.IsPasswordChangeRequired = source.IsPasswordChangeRequired;
-            target.LastActivityDateTime = source.LastActivityDateTime;
-            target.LastLockedOutDateTime = source.LastLockedOutDateTime;
-            target.LastLoginDateTime = source.LastLoginDateTime;
-            target.LastPasswordChangedDateTime = source.LastPasswordChangedDateTime;
-            target.LastPasswordExpirationWarningDateTime = source.LastPasswordExpirationWarningDateTime;
-            target.Password = source.Password;
-            target.PersonId = source.PersonId;
+            target.LoginAttemptDateTime = source.LoginAttemptDateTime;
+            target.LoginFailureMessage = source.LoginFailureMessage;
+            target.LoginFailureReason = source.LoginFailureReason;
+            target.PersonAliasId = source.PersonAliasId;
+            target.RelatedDataJson = source.RelatedDataJson;
+            target.SourceSiteId = source.SourceSiteId;
+            target.UserLoginId = source.UserLoginId;
             target.UserName = source.UserName;
+            target.WasLoginSuccessful = source.WasLoginSuccessful;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -1350,6 +1350,7 @@
     <Compile Include="Model\CMS\MediaFolder\MediaFolder.Logic.cs" />
     <Compile Include="Model\CMS\PageRoute\PageRoute.Logic.cs" />
     <Compile Include="Model\CodeGenerated\EmailSectionService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\HistoryLoginService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\LearningActivityService.CodeGenerated.cs" />
     <Compile Include="Model\Communication\CommunicationAttachment\CommunicationAttachment.Logic.cs" />
     <Compile Include="Model\Communication\CommunicationResponseAttachment\CommunicationResponseAttachment.Logic.cs" />
@@ -1415,6 +1416,8 @@
     <Compile Include="Model\Reporting\MetricPartition\MetricPartition.Logic.cs" />
     <Compile Include="Model\Reporting\MetricValuePartition\MetricValuePartition.Logic.cs" />
     <Compile Include="Model\Reporting\ReportField\ReportField.Logic.cs" />
+    <Compile Include="Model\Security\History\HistoryLogin.cs" />
+    <Compile Include="Model\Security\History\HistoryLogin.Logic.cs" />
     <Compile Include="Net\Geolocation\IpGeoException.cs" />
     <Compile Include="Net\Geolocation\IpGeolocation.cs" />
     <Compile Include="Net\Geolocation\IpGeoLookup.cs" />
@@ -1879,6 +1882,7 @@
     <Compile Include="Security\Authentication\Passwordless\PasswordlessAuthenticationState.cs" />
     <Compile Include="Security\ExcludeSecurityActionsAttribute.cs" />
     <Compile Include="Security\GlobalRestrictedDefault.cs" />
+    <Compile Include="Security\HistoryLoginRelatedData.cs" />
     <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
     <Compile Include="SystemGuid\EmailSection.cs" />
