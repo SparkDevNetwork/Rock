@@ -3549,14 +3549,6 @@ namespace RockWeb.Blocks.Connection
             cblRequestModalViewModeManualRequirements.Items.Clear();
             lRequestModalViewModeRequirementsLabels.Text = string.Empty;
 
-            // If the connect button will not be shown, then there is no need to show the requirements
-            if ( !request.CanConnect )
-            {
-                cblRequestModalViewModeManualRequirements.Visible = false;
-                rcwRequestModalViewModeRequirements.Visible = false;
-                return;
-            }
-
             // Get the requirements
             var requirementsResults = GetGroupRequirementStatuses( request );
             rcwRequestModalViewModeRequirements.Visible = requirementsResults.Any();
