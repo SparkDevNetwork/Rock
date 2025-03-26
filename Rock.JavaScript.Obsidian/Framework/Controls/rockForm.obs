@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, reactive, ref, watch } from "vue";
+    import { PropType, reactive, ref, watch, onBeforeUnmount } from "vue";
     import { FormError, FormState, provideFormState } from "@Obsidian/Utility/form";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import RockValidation from "./rockValidation.obs";
@@ -177,6 +177,18 @@
     });
 
     // #endregion Watchers
+
+    /**
+     * If the component is unmounted while a submit is in progress (e.g., modal is closed mid-submit),
+     * the form's internal `submit.value` may still be true. In that case, emit `update:submit = false`
+     * so the parent-side v-model is properly reset. Otherwise, the parent stays stuck at true,
+     * and future submits won't be triggered due to no observable change.
+     */
+    onBeforeUnmount(() => {
+        if (submit.value) {
+            emit("update:submit", false);
+        }
+    });
 
     provideFormState(formState);
 </script>

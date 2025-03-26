@@ -300,6 +300,9 @@
             // the submit button is next clicked.
             validationErrors.value = [];
         }
+        else {
+            internalSubmit.value = false;
+        }
 
         internalModalVisible.value = props.modelValue;
     });
