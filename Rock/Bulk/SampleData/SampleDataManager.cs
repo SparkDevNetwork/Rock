@@ -75,7 +75,7 @@ namespace Rock.Utility
         /// Create a new instance.
         /// </summary>
         [Obsolete( "This is not used and will be removed in the future." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public SampleDataManager( IRockLogger logDevice )
             : this( ( ILogger ) null )
         {
@@ -278,7 +278,7 @@ namespace Rock.Utility
         /// The log device used to record processing details.
         /// </summary>
         [Obsolete( "This is not used and will be removed in the future." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public IRockLogger LogDevice => null;
 
         /// <summary>
