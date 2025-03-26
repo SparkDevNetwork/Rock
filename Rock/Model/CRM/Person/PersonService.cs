@@ -3566,7 +3566,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         [Obsolete( "Peer Networks can now be found in the PeerNetwork table, and are no longer tied to Groups." )]
         public Group GetPeerNetworkGroup( int personId )
         {

@@ -530,7 +530,7 @@ namespace Rock.Model
         /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
         /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
         /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
-        [RockObsolete( "1.17.1" )]
+        [RockObsolete( "17.1" )]
         [Obsolete( "This method is deprecated and will be removed in a future version. Please use the overload without the System.Web.UI.Page parameter." )]
         public static void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, bool refreshAll = false )
         {

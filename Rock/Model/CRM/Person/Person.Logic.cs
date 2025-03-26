@@ -652,7 +652,7 @@ namespace Rock.Model
             Reason: To replace this with a method of the same name having a nullable return value.
         */
         [Obsolete( "Use the DaysToBirthdayOrNull property instead." )]
-        [RockObsolete( "1.17" )] // IMPORTANT: Refer to the engineering note above.
+        [RockObsolete( "17.0" )] // IMPORTANT: Refer to the engineering note above.
         public virtual int DaysToBirthday
         {
             get
@@ -749,7 +749,7 @@ namespace Rock.Model
             Reason: To replace this with a method of the same name having a nullable return value.
         */
         [Obsolete("Use the DaysToAnniversaryOrNull property instead.")]
-        [RockObsolete( "1.17" )] // IMPORTANT: Refer to the engineering note above.
+        [RockObsolete( "17.0" )] // IMPORTANT: Refer to the engineering note above.
         public virtual int DaysToAnniversary
         {
             get

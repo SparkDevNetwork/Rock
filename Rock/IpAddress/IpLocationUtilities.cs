@@ -27,7 +27,7 @@ namespace Rock.IpAddress
     /// <summary>
     /// Utilities to help work with IP Address locations
     /// </summary>
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     [Obsolete( "Use IpGeoLookup instead." )]
     public static class IpLocationUtilities
     {
