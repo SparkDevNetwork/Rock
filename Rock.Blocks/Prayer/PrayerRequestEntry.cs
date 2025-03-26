@@ -643,7 +643,7 @@ namespace Rock.Blocks.Prayer
                 if ( bag.AttributeValues?.Any() == true )
                 {
                     prayerRequest.LoadAttributes( rockContext );
-                    prayerRequest.SetPublicAttributeValues( bag.AttributeValues, currentPerson, enforceSecurity: false );
+                    prayerRequest.SetPublicAttributeValues( bag.AttributeValues, currentPerson, enforceSecurity: false, attributeFilter: IsPublicAttribute );
                 }
 
                 if ( !prayerRequest.IsValid )
@@ -790,7 +790,7 @@ namespace Rock.Blocks.Prayer
             // Load the attributes.
             var prayerRequest = new PrayerRequest { Id = 0 };
             prayerRequest.LoadAttributes();
-            box.Attributes = prayerRequest.GetPublicAttributesForEdit( currentPerson, enforceSecurity: false );
+            box.Attributes = prayerRequest.GetPublicAttributesForEdit( currentPerson, enforceSecurity: false, attributeFilter: IsPublicAttribute );
 
             return box;
         }
@@ -828,6 +828,16 @@ namespace Rock.Blocks.Prayer
             }
 
             return !errors.Any();
+        }
+
+        /// <summary>
+        /// Determines whether the attribute is public.
+        /// </summary>
+        /// <param name="attributeCache">The attribute to check.</param>
+        /// <returns>Whether the attribute is public.</returns>
+        private bool IsPublicAttribute( AttributeCache attributeCache )
+        {
+            return attributeCache.IsPublic;
         }
 
         /// <summary>
