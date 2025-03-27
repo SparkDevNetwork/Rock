@@ -2210,7 +2210,7 @@ mission. We are so grateful for your commitment.</p>
                             }
 
                             var contributionTotal = new FinancialTransactionDetailService( rockContext )
-                            .GetContributionsForGroupMemberList( transactionEntityTypeId, familyMemberGroupMembersInCurrentGroup.Select( m => m.Id ).ToList() );
+                                .GetContributionsForGroupMemberList( transactionEntityTypeId, familyMemberGroupMembersInCurrentGroup.Select( m => m.Id ).ToList() );
                             mergeFields.Add( "FundraisingGoal", groupFundraisingGoal );
                             mergeFields.Add( "AmountRaised", contributionTotal );
                         }

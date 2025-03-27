@@ -311,20 +311,37 @@ namespace RockWeb.Blocks.Fundraising
 
                     if ( groupMember.Group.GetAttributeValue( "CapFundraisingAmount" ).AsBoolean() )
                     {
+                        var amountLeft = 0.00M;
                         var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
 
-                        var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
-                                    .Where( d => d.EntityTypeId == entityTypeIdGroupMember
-                                            && d.EntityId == groupMemberId )
-                                    .Sum( a => ( decimal? ) a.Amount ) ?? 0.00M;
-
-                        var individualFundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
-                        if ( !individualFundraisingGoal.HasValue )
+                        if ( participationMode == ParticipationType.Family )
                         {
-                            individualFundraisingGoal = groupMember.Group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                            GroupService groupService = new GroupService( rockContext );
+                            var familyMemberGroupMembersInCurrentGroup = groupService.GroupMembersInAnotherGroup( groupMember.Person.GetFamily(), groupMember.Group );
+                            decimal groupFundraisingGoal = 0;
+                            foreach ( var member in familyMemberGroupMembersInCurrentGroup )
+                            {
+                                member.LoadAttributes( rockContext );
+                                member.Group.LoadAttributes( rockContext );
+                                groupFundraisingGoal += member.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull() ?? member.Group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull() ?? 0;
+                            }
+
+                            var contributionTotal = new FinancialTransactionDetailService( rockContext )
+                                .GetContributionsForGroupMemberList( entityTypeIdGroupMember, familyMemberGroupMembersInCurrentGroup.Select( m => m.Id ).ToList() );
+
+                            amountLeft = groupFundraisingGoal - contributionTotal;
+                        }
+                        else
+                        {
+                            var memberFundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull() ?? groupMember.Group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull() ?? 0;
+                            var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
+                                .Where( d => d.EntityTypeId == entityTypeIdGroupMember
+                                        && d.EntityId == groupMemberId )
+                                .Sum( a => ( decimal? ) a.Amount ) ?? 0.00M;
+
+                            amountLeft = memberFundraisingGoal - contributionTotal;
                         }
 
-                        var amountLeft = individualFundraisingGoal - contributionTotal;
                         queryParams.Add( "AmountLimit", amountLeft.ToString() );
                     }
 
