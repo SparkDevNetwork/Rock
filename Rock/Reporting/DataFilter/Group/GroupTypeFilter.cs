@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -23,6 +24,8 @@ using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,7 +37,7 @@ namespace Rock.Reporting.DataFilter.Group
     [Description( "Filter groups by group type" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Type Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "6880CE3A-366B-4D21-8CAC-DEC7D18173C3")]
+    [Rock.SystemGuid.EntityTypeGuid( "6880CE3A-366B-4D21-8CAC-DEC7D18173C3" )]
     public class GroupTypeFilter : DataFilterComponent
     {
         #region Properties
@@ -59,6 +62,35 @@ namespace Rock.Reporting.DataFilter.Group
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Group/groupTypeFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            ListItemBag groupType = GroupTypeCache
+                .Get( selection.AsGuidOrNull() ?? Guid.Empty )
+                ?.ToListItemBag();
+
+            return new Dictionary<string, string>
+            {
+                ["groupType"] = groupType?.ToCamelCaseJson( false, true )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var groupTypeJson = data.GetValueOrDefault( "groupType", string.Empty );
+            var groupType = groupTypeJson.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
+
+            return groupType;
         }
 
         #endregion
@@ -179,7 +211,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var groupType = new GroupTypeService( new RockContext() ).Get( selectionValues[0].AsGuid());
+                var groupType = new GroupTypeService( new RockContext() ).Get( selectionValues[0].AsGuid() );
                 if ( groupType != null )
                 {
                     ( controls[0] as GroupTypePicker ).SetValue( groupType.Id );
@@ -207,7 +239,7 @@ function() {
                     groupTypeId = groupType.Id;
                 }
 
-                var qry = new GroupService( (RockContext)serviceInstance.Context ).Queryable()
+                var qry = new GroupService( ( RockContext ) serviceInstance.Context ).Queryable()
                     .Where( p => p.GroupTypeId == groupTypeId );
 
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Group>( qry, parameterExpression, "p" );
