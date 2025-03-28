@@ -17,7 +17,7 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumber, toNumberOrNull } from "./numberUtils";
-import { SlidingDateRangeType as RangeType, SlidingDateRangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
+import { SlidingDateRangeType as RangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
 import { TimeUnitType as TimeUnit } from "@Obsidian/Enums/Controls/timeUnitType";
 import { DayOfWeek, RockDateTime } from "./rockDateTime";
 
