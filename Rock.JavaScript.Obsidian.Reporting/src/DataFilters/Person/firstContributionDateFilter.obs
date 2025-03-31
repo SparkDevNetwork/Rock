@@ -1,0 +1,42 @@
+<template>
+    <AccountPicker v-model="accounts"
+                   label="Accounts"
+                   multiple />
+    <SlidingDateRangePicker v-model="dateRange"
+                            label="Date Range"
+                            help="The date range of the transactions using the 'Sunday Date' of each transaction"
+                            rules="required" />
+    <CheckBox v-model="useSundayDate"
+              label="Use Sunday Date"
+              help="Use the Sunday Date instead of the actual transaction date." />
+</template>
+
+<script setup lang="ts">
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { SlidingDateRange, parseSlidingDateRangeString, slidingDateRangeToString, RangeType } from "@Obsidian/Utility/slidingDateRange";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const accounts = ref<ListItemBag[]>(safeParseJson(props.modelValue.accounts) ?? []);
+    const useSundayDate = ref<boolean>(asBoolean(props.modelValue.useSundayDate));
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+
+    watch([accounts, useSundayDate, dateRange], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            accounts: JSON.stringify(accounts.value),
+            useSundayDate: asTrueOrFalseString(useSundayDate.value),
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: RangeType.All }),
+        });
+    });
+</script>

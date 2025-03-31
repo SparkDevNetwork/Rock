@@ -24,6 +24,8 @@ using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -38,7 +40,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based on the date of their first contribution " )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "First Contribution Date Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "B4B70487-E620-4BC1-8983-124578118BC0")]
+    [Rock.SystemGuid.EntityTypeGuid( "B4B70487-E620-4BC1-8983-124578118BC0" )]
     public class FirstContributionDateFilter : DataFilterComponent
     {
         #region Properties
@@ -63,6 +65,53 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/firstContributionDateFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
+
+            if ( selectionConfig == null )
+            {
+                return data;
+            }
+
+            var accounts = FinancialAccountCache.GetByGuids( selectionConfig.AccountGuids );
+            var accountBags = new List<ListItemBag>();
+
+            if ( accounts != null && accounts.Any() )
+            {
+                accountBags = accounts.Select( a => a.ToListItemBag() ).ToList();
+            }
+
+            return new Dictionary<string, string>
+            {
+                { "accounts", accountBags.ToCamelCaseJson(false, true) },
+                { "dateRange", selectionConfig.DelimitedValues },
+                { "useSundayDate", selectionConfig.UseSundayDate.ToTrueFalse() },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = new SelectionConfig();
+
+            var accounts = data.GetValueOrNull( "accounts" )?.FromJsonOrNull<List<ListItemBag>>() ?? new List<ListItemBag>();
+            selectionConfig.AccountGuids = accounts.Select( a => a.Value.AsGuid() ).ToList();
+            selectionConfig.DelimitedValues = data.GetValueOrDefault( "dateRange", "" );
+            selectionConfig.UseSundayDate = data.GetValueOrDefault( "useSundayDate", "False" ).AsBoolean();
+
+            return selectionConfig.ToJson();
         }
 
         #endregion Properties
@@ -242,7 +291,7 @@ function() {
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            var rockContext = (RockContext)serviceInstance.Context;
+            var rockContext = ( RockContext ) serviceInstance.Context;
 
             SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
             if ( selectionConfig == null )
@@ -340,6 +389,10 @@ function() {
                 get
                 {
                     return CreateSlidingDateRangePickerDelimitedValues();
+                }
+                set
+                {
+                    ParseDelimitedValuesToSlidingDateRange( value );
                 }
             }
 
@@ -451,7 +504,7 @@ function() {
                             if ( dateRangeValues.Count() > 1 )
                             {
                                 selectionConfig.EndDate = dateRangeValues[1].AsDateTime();
-                                if ( selectionConfig.EndDate.HasValue)
+                                if ( selectionConfig.EndDate.HasValue )
                                 {
                                     // This value would have been from the DatePicker which does not automatically add a day.
                                     selectionConfig.EndDate.Value.AddDays( 1 );
@@ -483,6 +536,28 @@ function() {
                     ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming | SlidingDateRangeType.Current ).HasFlag( this.DateRangeMode ) ? this.TimeUnit : ( TimeUnitType? ) null,
                     this.DateRangeMode == SlidingDateRangeType.DateRange ? this.StartDate : null,
                     this.DateRangeMode == SlidingDateRangeType.DateRange ? this.EndDate : null );
+            }
+
+            private void ParseDelimitedValuesToSlidingDateRange( string value )
+            {
+                string[] splitValues = ( value ?? string.Empty ).Split( '|' );
+
+                if ( splitValues.Length == 5 )
+                {
+                    this.DateRangeMode = splitValues[0].ConvertToEnum<SlidingDateRangeType>();
+                    this.NumberOfTimeUnits = splitValues[1].AsIntegerOrNull() ?? 1;
+                    this.TimeUnit = splitValues[2].ConvertToEnumOrNull<TimeUnitType>() ?? TimeUnitType.Hour;
+                    this.StartDate = splitValues[3].AsDateTime();
+                    this.EndDate = splitValues[4].AsDateTime();
+                }
+                else
+                {
+                    this.DateRangeMode = SlidingDateRangeType.All;
+                    this.NumberOfTimeUnits = 1;
+                    this.TimeUnit = TimeUnitType.Hour;
+                    this.StartDate = null;
+                    this.EndDate = null;
+                }
             }
         }
     }
