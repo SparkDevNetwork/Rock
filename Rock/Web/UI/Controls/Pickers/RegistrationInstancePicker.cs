@@ -326,6 +326,36 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            var selectedRegistrationTemplateId = _registrationTemplatePicker.SelectedValue.AsIntegerOrNull();
+            if ( selectedRegistrationTemplateId.HasValue && selectedRegistrationTemplateId.Value > 0 )
+            {
+                // Load the registration instances that correspond to the selected template.
+                // This populates the dropdown list (_ddlRegistrationInstance).
+                LoadRegistrationInstances( selectedRegistrationTemplateId.Value );
+
+                // If the page is posting back (i.e., user submitted the form or caused an event),
+                // we want to restore the selected registration instance value manually.
+                if ( Page.IsPostBack )
+                {
+                    // Get the raw posted value from the form using the dropdown's UniqueID.
+                    var postedValue = Page.Request[_ddlRegistrationInstance.UniqueID];
+                    if ( postedValue.IsNotNullOrWhiteSpace() && _ddlRegistrationInstance.Items.FindByValue( postedValue ) != null )
+                    {
+                        // Manually restore the selected value
+                        _ddlRegistrationInstance.SelectedValue = postedValue;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the SelectedItem event of the _registrationTemplatePicker control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
