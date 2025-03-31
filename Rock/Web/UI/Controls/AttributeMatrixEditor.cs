@@ -300,18 +300,6 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        /// <summary>
-        /// Gets or sets the matrix item identifier.
-        /// </summary>
-        /// <value>
-        /// The matrix item identifier.
-        /// </value>
-        public string MatrixItemId
-        {
-            get { return ViewState["MatrixItemId"] as string ; }
-            set { ViewState["MatrixItemId"] = value; }
-        }
-
         #endregion Properties
 
         #region Constructors
@@ -356,16 +344,6 @@ namespace Rock.Web.UI.Controls
                     AttributeMatrixGuid = attributeMatrixGuid = this.Page.Request.Params[_hfAttributeMatrixGuid.UniqueID].AsGuidOrNull();
                 }
 
-                var matrixItemId = MatrixItemId.AsIntegerOrNull();
-
-                // If the matrixItemId has value we are in edit mode, create the edit mode controls so their state can be preserved,
-                // this is necessary since they are created dynamically.
-                if ( matrixItemId.HasValue )
-                {
-                    AttributeMatrixGuid = this.Page.Request.Params[_hfAttributeMatrixGuid.UniqueID].AsGuidOrNull();
-                    EditMatrixItem( matrixItemId.Value, false );
-                }
-
                 BindGrid( attributeMatrixGuid );
             }
         }
@@ -377,6 +355,16 @@ namespace Rock.Web.UI.Controls
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
+
+            var matrixItemId = _hfMatrixItemId.Value.AsIntegerOrNull();
+
+            // If the matrixItemId has value we are in edit mode, create the edit mode controls so their state can be preserved,
+            // this is necessary since they are created dynamically.
+            if ( matrixItemId.HasValue )
+            {
+                AttributeMatrixGuid = this.Page.Request.Params[_hfAttributeMatrixGuid.UniqueID].AsGuidOrNull();
+                EditMatrixItem( matrixItemId.Value, false );
+            }
         }
 
         /// <summary>
@@ -579,7 +567,6 @@ namespace Rock.Web.UI.Controls
         private void EditMatrixItem( int matrixItemId, bool setValue = true )
         {
             _hfMatrixItemId.Value = matrixItemId.ToString();
-            MatrixItemId = matrixItemId.ToString();
 
             // make a temp attributeMatrixItem to see what Attributes they have
             AttributeMatrixItem attributeMatrixItem = null;
@@ -653,7 +640,6 @@ namespace Rock.Web.UI.Controls
             _gMatrixItems.Visible = true;
             _pnlEditMatrixItem.Visible = false;
             _hfMatrixItemId.Value = null;
-            MatrixItemId = null;
 
             BindGrid( this.AttributeMatrixGuid );
         }
@@ -668,7 +654,6 @@ namespace Rock.Web.UI.Controls
             _gMatrixItems.Visible = true;
             _pnlEditMatrixItem.Visible = false;
             _hfMatrixItemId.Value = null;
-            MatrixItemId = null;
         }
 
         #endregion EditMatrixItem
