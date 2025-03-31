@@ -75,6 +75,7 @@ namespace Rock.Communication.Chat
             public const string IsLeavingAllowed = "rock_leaving_allowed";
             public const string IsPublic = "rock_public";
             public const string IsAlwaysShown = "rock_always_shown";
+            public const string CampusId = "rock_campus_id";
         }
 
         /// <summary>
@@ -87,6 +88,7 @@ namespace Rock.Communication.Chat
             public const string IsProfileVisible = "rock_profile_public";
             public const string IsOpenDirectMessageAllowed = "rock_open_direct_message_allowed";
             public const string Badges = "rock_badges";
+            public const string CampusId = "rock_campus_id";
         }
 
         /// <summary>
@@ -3377,6 +3379,11 @@ namespace Rock.Communication.Chat
                 channelRequest.SetData( ChannelDataKey.Name, chatChannel.Name );
             }
 
+            if ( chatChannel.CampusId.HasValue )
+            {
+                channelRequest.SetData( ChannelDataKey.CampusId, chatChannel.CampusId.Value );
+            }
+
             channelRequest.SetData( ChannelDataKey.IsLeavingAllowed, chatChannel.IsLeavingAllowed );
             channelRequest.SetData( ChannelDataKey.IsPublic, chatChannel.IsPublic );
             channelRequest.SetData( ChannelDataKey.IsAlwaysShown, chatChannel.IsAlwaysShown );
@@ -3408,6 +3415,11 @@ namespace Rock.Communication.Chat
             request.SetData( UserDataKey.IsProfileVisible, chatUser.IsProfileVisible );
             request.SetData( UserDataKey.IsOpenDirectMessageAllowed, chatUser.IsOpenDirectMessageAllowed );
             request.SetData( UserDataKey.Badges, chatUser.Badges ?? new List<ChatBadge>() );
+
+            if ( chatUser.CampusId.HasValue )
+            {
+                request.SetData( UserDataKey.CampusId, chatUser.CampusId.Value );
+            }
 
             return request;
         }
@@ -3448,7 +3460,6 @@ namespace Rock.Communication.Chat
                 return null;
             }
 
-            var name = channel.GetDataOrDefault<string>( ChannelDataKey.Name, null );
             var isChannelDisabled = channel.GetDataOrDefault( ChannelDataKey.Disabled, false );
 
             return new ChatChannel
@@ -3456,7 +3467,8 @@ namespace Rock.Communication.Chat
                 Key = channel.Id,
                 ChatChannelTypeKey = channel.Type,
                 QueryableKey = channel.Cid,
-                Name = name,
+                Name = channel.GetDataOrDefault<string>( ChannelDataKey.Name, null ),
+                CampusId = channel.GetDataOrDefault<int?>( ChannelDataKey.CampusId, null ),
                 IsLeavingAllowed = channel.GetDataOrDefault( ChannelDataKey.IsLeavingAllowed, false ),
                 IsPublic = channel.GetDataOrDefault( ChannelDataKey.IsPublic, false ),
                 IsAlwaysShown = channel.GetDataOrDefault( ChannelDataKey.IsAlwaysShown, false ),
@@ -3511,7 +3523,8 @@ namespace Rock.Communication.Chat
                 IsAdmin = user.Role.Equals( ChatRole.Administrator.GetDescription() ),
                 IsProfileVisible = user.GetDataOrDefault( UserDataKey.IsProfileVisible, false ),
                 IsOpenDirectMessageAllowed = user.GetDataOrDefault( UserDataKey.IsOpenDirectMessageAllowed, false ),
-                Badges = badges
+                Badges = badges,
+                CampusId = user.GetDataOrDefault<int?>( UserDataKey.CampusId, null )
             };
         }
 

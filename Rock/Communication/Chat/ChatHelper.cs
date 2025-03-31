@@ -1197,7 +1197,8 @@ namespace Rock.Communication.Chat
                         || lastSyncedChannel.IsLeavingAllowed != currentChannel.IsLeavingAllowed
                         || lastSyncedChannel.IsPublic != currentChannel.IsPublic
                         || lastSyncedChannel.IsAlwaysShown != currentChannel.IsAlwaysShown
-                        || lastSyncedChannel.IsActive != currentChannel.IsActive;
+                        || lastSyncedChannel.IsActive != currentChannel.IsActive
+                        || lastSyncedChannel.CampusId != currentChannel.CampusId;
                 }
 
                 foreach ( var rockChatGroup in rockChatGroups )
@@ -2345,7 +2346,8 @@ namespace Rock.Communication.Chat
                             || existingUser.PhotoUrl != chatUser.PhotoUrl
                             || existingUser.IsAdmin != chatUser.IsAdmin
                             || existingUser.IsProfileVisible != chatUser.IsProfileVisible
-                            || existingUser.IsOpenDirectMessageAllowed != chatUser.IsOpenDirectMessageAllowed;
+                            || existingUser.IsOpenDirectMessageAllowed != chatUser.IsOpenDirectMessageAllowed
+                            || existingUser.CampusId != chatUser.CampusId;
 
                         if ( !shouldUpdate )
                         {
@@ -3084,7 +3086,8 @@ namespace Rock.Communication.Chat
                         ? p.ChatAliases.OrderBy( a => a.Id ).First().Guid // Get the earliest chat alias in the case of multiple.
                         : ( Guid? ) null,
                     IsChatAdministrator = p.IsChatAdmin,
-                    Badges = new List<ChatBadge>()
+                    Badges = new List<ChatBadge>(),
+                    CampusId = p.Person.PrimaryCampusId
                 } )
                 .ToList();
 
@@ -3229,6 +3232,7 @@ namespace Rock.Communication.Chat
                         ChatChannelKey = chatChannelKey,
                         ShouldSaveChatChannelKeyInRock = g.ChatChannelKey != chatChannelKey,
                         Name = g.Name,
+                        CampusId = g.CampusId,
                         IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
                         IsPublic = g.GetIsChatChannelPublic(),
                         IsAlwaysShown = g.GetIsChatChannelAlwaysShown(),
@@ -3270,6 +3274,7 @@ namespace Rock.Communication.Chat
                 rockChatGroup.ChatChannelKey = dbRockChatGroup.ChatChannelKey;
                 rockChatGroup.ShouldSaveChatChannelKeyInRock = dbRockChatGroup.ShouldSaveChatChannelKeyInRock;
                 rockChatGroup.Name = dbRockChatGroup.Name;
+                rockChatGroup.CampusId = dbRockChatGroup.CampusId;
                 rockChatGroup.IsLeavingAllowed = dbRockChatGroup.IsLeavingAllowed;
                 rockChatGroup.IsPublic = dbRockChatGroup.IsPublic;
                 rockChatGroup.IsAlwaysShown = dbRockChatGroup.IsAlwaysShown;
@@ -3582,6 +3587,7 @@ namespace Rock.Communication.Chat
                 ChatChannelTypeKey = GetChatChannelTypeKey( rockChatGroup.GroupTypeId ),
                 QueryableKey = ChatProvider.GetQueryableChatChannelKey( rockChatGroup ),
                 Name = name,
+                CampusId = rockChatGroup.CampusId,
                 IsLeavingAllowed = rockChatGroup.IsLeavingAllowed,
                 IsPublic = rockChatGroup.IsPublic,
                 IsAlwaysShown = rockChatGroup.IsAlwaysShown,
@@ -3671,7 +3677,8 @@ namespace Rock.Communication.Chat
                 IsAdmin = rockChatUserPerson.IsChatAdministrator,
                 IsProfileVisible = isProfileVisible,
                 IsOpenDirectMessageAllowed = isOpenDirectMessageAllowed,
-                Badges = rockChatUserPerson.Badges
+                Badges = rockChatUserPerson.Badges,
+                CampusId = rockChatUserPerson.CampusId
             };
         }
 
