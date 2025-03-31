@@ -496,7 +496,7 @@ namespace RockWeb
                 {
                     HttpContext.Current = thisContext;
                     var currentUserName = UserLogin.GetCurrentUserName();
-                    UserLoginService.UpdateLastLogin( currentUserName );
+                    UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = currentUserName } );
                 } );
             }
             catch

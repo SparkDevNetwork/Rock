@@ -35,8 +35,8 @@ export const LoginFailureReason = {
     /** The login requires additional verification, such as two-factor authentication. */
     RequiresVerification: 3,
 
-    /** The password provided is incorrect. */
-    InvalidPassword: 4,
+    /** The credentials provided are incorrect. */
+    InvalidCredentials: 4,
 
     /** The password has expired. */
     PasswordChangeRequired: 5,
@@ -58,7 +58,7 @@ export const LoginFailureReasonDescription: Record<number, string> = {
 
     3: "Requires Verification",
 
-    4: "Invalid Password",
+    4: "Invalid Credentials",
 
     5: "Password Change Required",
 

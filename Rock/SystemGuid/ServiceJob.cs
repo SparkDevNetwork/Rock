@@ -467,5 +467,10 @@ namespace Rock.SystemGuid
         /// The job for performing synchronization tasks between Rock and the external chat system.
         /// </summary>
         public const string CHAT_SYNC_JOB = "80202290-66DF-4289-8938-4FA6B84E3EE2";
+
+        /// <summary>
+        /// The job to run Post v17.1 Data Migrations to migrate login history from the History table to the HistoryLogin table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_171_MIGRATE_LOGIN_HISTORY = "D5E7B461-748F-4A01-BA3F-FA7BEF6AC0F0";
     }
 }
