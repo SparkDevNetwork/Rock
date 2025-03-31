@@ -107,6 +107,20 @@ INCLUDE([PersonAliasId],[AuthClientClientId],[LoginFailureReason]);" );
             // This was already applied in a previous migration, but EF saw it as a change.
             // https://github.com/SparkDevNetwork/Rock/blob/4423274bac1cb56471d00a212a88bb8f59f9e358/Rock.Migrations/Migrations/Version%2017.0/Version%2017.0/202503131624313_UpdateCommunicationRecipientModel.cs#L34
             //AlterColumn( "dbo.CommunicationRecipient", "UnsubscribeLevel", c => c.Int() );
+
+            // Fix for issue #6241 to wrap the footer fragment in a conditional statement to prevent it from rendering when the RenderMedium is not 'Html'.
+            string oldStartingFragmentValue = "{ \"HtmlFragment\": \"<table ";
+            string newStartingFragmentValue = "{ \"HtmlFragment\": \"{% if RenderMedium != ''Html'' %}<table ";
+            string oldEndingFragmentValue = "</table>\\n\\n\\n\" }";
+            string newEndingFragmentValue = "</table>{% endif %}\\n\\n\\n\" }";
+
+            Sql( $@"
+            UPDATE [dbo].[FinancialStatementTemplate] 
+            SET [FooterSettingsJson] = REPLACE(
+                REPLACE( [FooterSettingsJson], '{oldStartingFragmentValue}', '{newStartingFragmentValue}'),
+                '{oldEndingFragmentValue}', '{newEndingFragmentValue}'
+            )
+            WHERE [Guid] = '4B93657A-DD5F-4D8A-A13F-1B4E9ADBDAD0'" );
         }
 
         /// <summary>
