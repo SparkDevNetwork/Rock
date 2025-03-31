@@ -508,7 +508,7 @@ namespace RockWeb.Blocks.Security
                     if ( user != null )
                     {
                         var userName = user.UserName;
-                        UserLoginService.UpdateLastLogin( userName );
+                        UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = userName } );
 
                         /*
                             10/20/2023 - JMH

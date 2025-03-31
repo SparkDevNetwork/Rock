@@ -146,9 +146,14 @@ namespace Rock.Rest.Controllers
                             };
                         }
                     }
-                }                
+                }
 
-                UserLoginService.UpdateLastLogin( principal.Identity.Name );
+                UserLoginService.UpdateLastLogin(
+                    new UpdateLastLoginArgs {
+                        UserName = principal.Identity.Name,
+                        SourceSiteIdOverride = site.Id
+                    }
+                );
             }
 
             // Get or create the personal device.

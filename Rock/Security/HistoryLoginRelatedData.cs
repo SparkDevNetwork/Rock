@@ -37,5 +37,10 @@ namespace Rock.Security
         /// Gets or sets the full name of the person who was impersonating the person associated with the login history.
         /// </summary>
         public string ImpersonatedByPersonFullName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the optional context of the login attempt.
+        /// </summary>
+        public string LoginContext { get; set; }
     }
 }

@@ -44,9 +44,9 @@ namespace Rock.Enums.Security
         RequiresVerification = 3,
 
         /// <summary>
-        /// The password provided is incorrect.
+        /// The credentials provided are incorrect.
         /// </summary>
-        InvalidPassword = 4,
+        InvalidCredentials = 4,
 
         /// <summary>
         /// The password has expired.

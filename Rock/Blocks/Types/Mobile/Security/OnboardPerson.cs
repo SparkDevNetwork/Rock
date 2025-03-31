@@ -26,6 +26,7 @@ using Rock.Common.Mobile.Blocks.Security.OnboardPerson;
 using Rock.Common.Mobile.Enums;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Security;
@@ -1244,13 +1245,13 @@ namespace Rock.Blocks.Types.Mobile.Security
 
             string providedName = null;
 
-            if( person != null )
+            if ( person != null )
             {
-                if( person.NickName.IsNotNullOrWhiteSpace() )
+                if ( person.NickName.IsNotNullOrWhiteSpace() )
                 {
                     providedName = person.NickName;
                 }
-                else if( person.FirstName.IsNotNullOrWhiteSpace() )
+                else if ( person.FirstName.IsNotNullOrWhiteSpace() )
                 {
                     providedName = person.FirstName;
                 }
@@ -1618,8 +1619,31 @@ namespace Rock.Blocks.Types.Mobile.Security
                 Person person;
                 string refNumber;
 
+                // While this might not represent a current Rock person, it's the best we have at this point, and will
+                // be helpful when identifying failed onboarding attempts in the log.
+                var uniqueIdentifier = request?.Email.IsNotNullOrWhiteSpace() == true
+                    ? request.Email
+                    : request?.PhoneNumber;
+
+                // We'll supplement and save this as needed below.
+                var failedHistoryLogin = new HistoryLogin
+                {
+                    UserName = uniqueIdentifier,
+                    SourceSiteId = this.PageCache?.SiteId,
+                    WasLoginSuccessful = false,
+                    LoginFailureReason = LoginFailureReason.Other,
+                    LoginFailureMessage = "Rock Mobile Onboard Person"
+                }.WithContext( "Mobile Onboarding" );
+
                 if ( systemCommunication == null )
                 {
+                    // Only log this failure if we have a "username" to tie it to.
+                    if ( uniqueIdentifier.IsNotNullOrWhiteSpace() )
+                    {
+                        failedHistoryLogin.LoginFailureMessage += ": System Communication is not configured.";
+                        failedHistoryLogin.SaveAfterDelay();
+                    }
+
                     return ActionInternalServerError( "Invalid configuration." );
                 }
 
@@ -1656,9 +1680,16 @@ namespace Rock.Blocks.Types.Mobile.Security
                 // profile account that must not be used.
                 if ( person != null )
                 {
+                    // Supplement the history login record with the person's primary alias ID.
+                    failedHistoryLogin.PersonAliasId = person.PrimaryAliasId;
+
                     if ( DisableMatchingProtectionProfiles.Contains( person.AccountProtectionProfile ) )
                     {
-                        return ActionBadRequest( "It appears you have an account in our system that has security access which requires you to log in with a username and password." );
+                        var errorMessage = "It appears you have an account in our system that has security access which requires you to log in with a username and password.";
+                        failedHistoryLogin.LoginFailureMessage += ": {errorMessage}";
+                        failedHistoryLogin.SaveAfterDelay();
+
+                        return ActionBadRequest( errorMessage );
                     }
                 }
 
@@ -1679,8 +1710,18 @@ namespace Rock.Blocks.Types.Mobile.Security
                 // on in the event of an error.
                 if ( !success )
                 {
-                    return ActionInternalServerError( "Unable to send code." );
+                    var errorMessage = "Unable to send code.";
+                    failedHistoryLogin.LoginFailureMessage += ": {errorMessage}";
+                    failedHistoryLogin.SaveAfterDelay();
+
+                    return ActionInternalServerError( errorMessage );
                 }
+
+                // Even though onboarding was "successful" up to this point, go ahead and save a "failed" history login
+                // record, to track that verification is needed for onboarding to continue.
+                failedHistoryLogin.LoginFailureReason = LoginFailureReason.RequiresVerification;
+                failedHistoryLogin.LoginFailureMessage += $": Verification code sent via {( request.SendEmail ? "email" : "SMS" )}.";
+                failedHistoryLogin.SaveAfterDelay();
 
                 // Create our encrypted state to track where we are in the process.
                 var state = new EncryptedState
@@ -1735,9 +1776,28 @@ namespace Rock.Blocks.Types.Mobile.Security
 
                 if ( !isCodeValid )
                 {
+                    var errorMessage = "Unable to verify your code.";
+
+                    // Only create a history login record if we're able to identify this person.
+                    if ( state.MatchedPersonId.HasValue )
+                    {
+                        var personAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( state.MatchedPersonId.Value );
+                        if ( personAliasId.HasValue )
+                        {
+                            new HistoryLogin
+                            {
+                                SourceSiteId = this.PageCache?.SiteId,
+                                PersonAliasId = personAliasId,
+                                WasLoginSuccessful = false,
+                                LoginFailureReason = LoginFailureReason.InvalidCredentials,
+                                LoginFailureMessage = $"Rock Mobile Onboard Person: {errorMessage}"
+                            }.WithContext( "Mobile Onboarding" ).SaveAfterDelay();
+                        }
+                    }
+
                     return new BlockActionResult( System.Net.HttpStatusCode.Unauthorized )
                     {
-                        Error = "Unable to verify your code."
+                        Error = errorMessage
                     };
                 }
 
@@ -1844,7 +1904,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                         isSamePerson = false;
                     }
 
-                    if( person.LastName != request.Details.LastName )
+                    if ( person.LastName != request.Details.LastName )
                     {
                         isSamePerson = false;
                     }
@@ -1928,6 +1988,15 @@ namespace Rock.Blocks.Types.Mobile.Security
                     // they can log in.
                     mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( username );
 
+                    // Onboarding was successful; save a history login record.
+                    new HistoryLogin
+                    {
+                        UserName = username,
+                        PersonAliasId = mobilePerson.PersonAliasId,
+                        SourceSiteId = siteCache.Id,
+                        WasLoginSuccessful = true
+                    }.WithContext( "Mobile Onboarding" ).SaveAfterDelay();
+
                     return ActionOk( new CreatePersonResponse
                     {
                         IsSuccess = true,
@@ -1965,6 +2034,7 @@ namespace Rock.Blocks.Types.Mobile.Security
             {
                 var person = new PersonService( rockContext ).Get( RequestContext.CurrentPerson.Id );
                 var username = RequestContext.CurrentUser.UserName;
+                var siteCache = PageCache.Layout.Site;
 
                 if ( username == null )
                 {
@@ -2019,10 +2089,19 @@ namespace Rock.Blocks.Types.Mobile.Security
                     rockContext.SaveChanges();
                 } );
 
-                var mobilePerson = MobileHelper.GetMobilePerson( person, PageCache.Layout.Site );
+                var mobilePerson = MobileHelper.GetMobilePerson( person, siteCache );
 
                 // Set the authentication token so they get/stay logged in.
                 mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( username );
+
+                // Onboarding was successful; save a history login record.
+                new HistoryLogin
+                {
+                    UserName = username,
+                    PersonAliasId = mobilePerson.PersonAliasId,
+                    SourceSiteId = siteCache.Id,
+                    WasLoginSuccessful = true
+                }.WithContext( "Mobile Onboarding" ).SaveAfterDelay();
 
                 return ActionOk( new
                 {

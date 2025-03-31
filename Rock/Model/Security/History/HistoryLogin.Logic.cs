@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Net;
 using Rock.Security;
+using Rock.Web.UI;
 
 namespace Rock.Model
 {
@@ -106,6 +107,36 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Sets the provided <paramref name="loginContext"/> on the <see cref="RelatedDataJson"/>.
+        /// </summary>
+        /// <param name="loginContext">The context of the login attempt to set.</param>
+        /// <returns>The <see cref="HistoryLogin"/> instance on which the login context was set.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "17.0" )]
+        public HistoryLogin WithContext( string loginContext )
+        {
+            if ( loginContext.IsNullOrWhiteSpace() )
+            {
+                return this;
+            }
+
+            var relatedData = this.GetRelatedDataOrNull() ?? new HistoryLoginRelatedData();
+
+            relatedData.LoginContext = loginContext;
+
+            this.SetRelatedDataJson( relatedData );
+
+            return this;
+        }
+
+        /// <summary>
         /// Saves the history login to the database in a background task, after a short delay.
         /// </summary>
         /// <remarks>
@@ -133,7 +164,7 @@ namespace Rock.Model
         {
             try
             {
-                // Attempt to supplement the record with missing request info (client IP address and destination URL).
+                // Attempt to supplement the record with missing request info.
                 if ( HttpContext.Current?.Request != null || RockRequestContextAccessor.Current != null )
                 {
                     if ( this.ClientIpAddress.IsNullOrWhiteSpace() )
@@ -154,7 +185,19 @@ namespace Rock.Model
                             }
                         }
 
-                        this.ClientIpAddress = clientIPAddress;
+                        this.ClientIpAddress = HttpUtility.HtmlEncode( clientIPAddress );
+                    }
+
+                    if ( !this.SourceSiteId.HasValue )
+                    {
+                        // Get the source site ID from the NextGen request context.
+                        this.SourceSiteId = RockRequestContextAccessor.Current?.Page?.SiteId;
+
+                        if ( !this.SourceSiteId.HasValue && HttpContext.Current?.Handler is RockPage rockPage )
+                        {
+                            // Fall back to the legacy HTTP context.
+                            this.SourceSiteId = rockPage.Site?.Id;
+                        }
                     }
 
                     if ( this.DestinationUrl.IsNullOrWhiteSpace() )
