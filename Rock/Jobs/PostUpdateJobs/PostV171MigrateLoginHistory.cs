@@ -106,11 +106,14 @@ SELECT NEWID()                  -- [Guid]
         WHEN m.[RelatedData] IS NOT NULL
             AND CHARINDEX('from <span class=''field-value''>', m.[RelatedData]) > 0
             AND CHARINDEX('</span>', m.[RelatedData], CHARINDEX('from <span class=''field-value''>', m.[RelatedData])) > 0
-        THEN SUBSTRING(
-            m.[RelatedData],
-            CHARINDEX('from <span class=''field-value''>', m.[RelatedData]) + 31,
-            CHARINDEX('</span>', m.[RelatedData], CHARINDEX('from <span class=''field-value''>', m.[RelatedData])) 
-                - CHARINDEX('from <span class=''field-value''>', m.[RelatedData]) - 31
+        THEN LEFT(
+            SUBSTRING(
+                m.[RelatedData],
+                CHARINDEX('from <span class=''field-value''>', m.[RelatedData]) + 31,
+                CHARINDEX('</span>', m.[RelatedData], CHARINDEX('from <span class=''field-value''>', m.[RelatedData])) 
+                    - CHARINDEX('from <span class=''field-value''>', m.[RelatedData]) - 31
+            ),
+            45
         )
         ELSE NULL
       END
@@ -118,11 +121,14 @@ SELECT NEWID()                  -- [Guid]
         WHEN m.[RelatedData] IS NOT NULL
             AND CHARINDEX('to <span class=''field-value''>', m.[RelatedData]) > 0
             AND CHARINDEX('</span>', m.[RelatedData], CHARINDEX('to <span class=''field-value''>', m.[RelatedData])) > 0
-        THEN SUBSTRING(
-            m.[RelatedData],
-            CHARINDEX('to <span class=''field-value''>', m.[RelatedData]) + 29,
-            CHARINDEX('</span>', m.[RelatedData], CHARINDEX('to <span class=''field-value''>', m.[RelatedData]))
-                - CHARINDEX('to <span class=''field-value''>', m.[RelatedData]) - 29
+        THEN LEFT(
+            SUBSTRING(
+                m.[RelatedData],
+                CHARINDEX('to <span class=''field-value''>', m.[RelatedData]) + 29,
+                CHARINDEX('</span>', m.[RelatedData], CHARINDEX('to <span class=''field-value''>', m.[RelatedData]))
+                    - CHARINDEX('to <span class=''field-value''>', m.[RelatedData]) - 29
+            ),
+            2048
         )
         ELSE NULL
       END
