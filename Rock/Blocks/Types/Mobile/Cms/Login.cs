@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Login;
 using Rock.Common.Mobile.Security.Authentication;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Utility;
@@ -266,6 +267,15 @@ namespace Rock.Blocks.Types.Mobile.Cms
             userLogin.LastLoginDateTime = RockDateTime.Now;
 
             rockContext.SaveChanges();
+
+            new HistoryLogin
+            {
+                UserName = userLogin.UserName,
+                UserLoginId = userLogin.Id,
+                PersonAliasId = userLogin.Person?.PrimaryAliasId,
+                SourceSiteId = this.PageCache?.SiteId,
+                WasLoginSuccessful = true
+            }.SaveAfterDelay();
         }
 
         /// <summary>
@@ -616,6 +626,16 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 var userLoginService = new UserLoginService( rockContext );
                 var (state, userLogin) = userLoginService.GetAuthenticatedUserLogin( username, password );
 
+                // We'll supplement and save this as needed below.
+                var failedHistoryLogin = new HistoryLogin
+                {
+                    UserName = username,
+                    UserLoginId = userLogin?.Id,
+                    PersonAliasId = userLogin?.Person?.PrimaryAliasId,
+                    SourceSiteId = this.PageCache?.SiteId,
+                    WasLoginSuccessful = false
+                };
+
                 if ( state == UserLoginValidationState.Valid )
                 {
                     UpdateLastLoginDetails( userLogin, personalDeviceGuid, rockContext );
@@ -624,14 +644,27 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 }
                 else if ( state == UserLoginValidationState.LockedOut )
                 {
+                    failedHistoryLogin.LoginFailureReason = LoginFailureReason.LockedOut;
+                    failedHistoryLogin.SaveAfterDelay();
+
                     return ActionUnauthorized( GetLockedOutMessage() );
                 }
                 else if ( state == UserLoginValidationState.NotConfirmed && SendConfirmation( userLogin ) )
                 {
+                    failedHistoryLogin.LoginFailureReason = LoginFailureReason.UserNotConfirmed;
+                    failedHistoryLogin.SaveAfterDelay();
+
                     return ActionUnauthorized( GetUnconfirmedMessage() );
                 }
                 else
                 {
+                    var loginFailureReason = state == UserLoginValidationState.InvalidPassword
+                        ? LoginFailureReason.InvalidCredentials
+                        : LoginFailureReason.UserNotFound;
+
+                    failedHistoryLogin.LoginFailureReason = loginFailureReason;
+                    failedHistoryLogin.SaveAfterDelay();
+
                     return ActionUnauthorized( "We couldn't find an account with that username and password combination." );
                 }
             }
@@ -674,11 +707,25 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     return ActionBadRequest( "There was no corresponding username provided for the authentication provider." );
                 }
 
+                // We'll supplement and save this as needed below.
+                var failedHistoryLogin = new HistoryLogin
+                {
+                    UserName = usernameValue,
+                    SourceSiteId = this.PageCache?.SiteId,
+                    WasLoginSuccessful = false
+                };
+
                 var providerInfo = GetExternalAuthUserLoginInfo( provider, usernameValue );
 
                 if ( providerInfo == null )
                 {
-                    return ActionBadRequest( "There was no entity found for that authentication provider." );
+                    var errorMessage = "There was no entity found for that authentication provider.";
+
+                    failedHistoryLogin.LoginFailureReason = LoginFailureReason.Other;
+                    failedHistoryLogin.LoginFailureMessage = $"{errorMessage} ({provider.ConvertToString()})";
+                    failedHistoryLogin.SaveAfterDelay();
+
+                    return ActionBadRequest( errorMessage );
                 }
 
                 // Create or retrieve a Person using the information provided in the external authentication info bag.
@@ -688,12 +735,22 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 // Something went wrong or we didn't receive enough information to create a Person.
                 if ( userLogin == null )
                 {
+                    failedHistoryLogin.LoginFailureReason = LoginFailureReason.UserNotFound;
+                    failedHistoryLogin.SaveAfterDelay();
+
                     return ActionBadRequest( "There was an error when authenticating your request. Please ensure your external authentication provider is configured correctly." );
                 }
+
+                // We now know the IDs of the person attempting to authenticate.
+                failedHistoryLogin.UserLoginId = userLogin.Id;
+                failedHistoryLogin.PersonAliasId = userLogin.Person?.PrimaryAliasId;
 
                 // Make sure the login is confirmed, otherwise login is not allowed.
                 if ( userLogin.IsConfirmed != true )
                 {
+                    failedHistoryLogin.LoginFailureReason = LoginFailureReason.UserNotConfirmed;
+                    failedHistoryLogin.SaveAfterDelay();
+
                     SendConfirmation( userLogin );
                     return ActionBadRequest( GetUnconfirmedMessage() );
                 }
@@ -701,6 +758,9 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 // Make sure the login is not locked out.
                 if ( userLogin.IsLockedOut == true )
                 {
+                    failedHistoryLogin.LoginFailureReason = LoginFailureReason.LockedOut;
+                    failedHistoryLogin.SaveAfterDelay();
+
                     return ActionBadRequest( GetLockedOutMessage() );
                 }
 

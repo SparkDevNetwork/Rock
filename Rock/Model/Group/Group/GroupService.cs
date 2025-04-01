@@ -199,6 +199,7 @@ namespace Rock.Model
                         ChatChannelKey = chatChannelKey,
                         ShouldSaveChatChannelKeyInRock = g.ChatChannelKey != chatChannelKey,
                         Name = g.Name,
+                        CampusId = g.CampusId,
                         IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
                         IsPublic = g.GetIsChatChannelPublic(),
                         IsAlwaysShown = g.GetIsChatChannelAlwaysShown(),

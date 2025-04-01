@@ -49,6 +49,9 @@ namespace Rock.Communication.Chat.DTO
         /// </value>
         public string Name { get; set; }
 
+        /// <inheritdoc cref="Group.CampusId"/>
+        public int? CampusId { get; set; }
+
         /// <inheritdoc cref="Group.GetIsLeavingChatChannelAllowed"/>
         public bool IsLeavingAllowed { get; set; }
 

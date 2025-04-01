@@ -775,6 +775,7 @@
     <Compile Include="Core\EntitySearch\EntitySearchSystemQuery.cs" />
     <Compile Include="Core\EntitySearch\IdKeyExpressionVisitor.cs" />
     <Compile Include="Communication\Chat\ChatConfiguration.cs" />
+    <Compile Include="Model\CRM\UserLogin\UpdateLastLoginArgs.cs" />
     <Compile Include="Data\AttributeValueExpressionVisitor.cs" />
     <Compile Include="Data\EnableAttributeQualificationAttribute.cs" />
     <Compile Include="Attribute\GroupMemberRequirementFieldAttribute.cs" />
@@ -1336,6 +1337,7 @@
     <Compile Include="Financial\ISettlementGateway.cs" />
     <Compile Include="Jobs\CalculatePeerNetwork.cs" />
     <Compile Include="Jobs\ChatSync.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV171MigrateLoginHistory.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17AddAndUpdatePeerNetworkIndexes.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdateHistoryTableEntityTypeIdIndexPostMigration.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdatePersonPrimaryAliasGuid.cs" />
@@ -1350,6 +1352,7 @@
     <Compile Include="Model\CMS\MediaFolder\MediaFolder.Logic.cs" />
     <Compile Include="Model\CMS\PageRoute\PageRoute.Logic.cs" />
     <Compile Include="Model\CodeGenerated\EmailSectionService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\HistoryLoginService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\LearningActivityService.CodeGenerated.cs" />
     <Compile Include="Model\Communication\CommunicationAttachment\CommunicationAttachment.Logic.cs" />
     <Compile Include="Model\Communication\CommunicationResponseAttachment\CommunicationResponseAttachment.Logic.cs" />
@@ -1415,6 +1418,8 @@
     <Compile Include="Model\Reporting\MetricPartition\MetricPartition.Logic.cs" />
     <Compile Include="Model\Reporting\MetricValuePartition\MetricValuePartition.Logic.cs" />
     <Compile Include="Model\Reporting\ReportField\ReportField.Logic.cs" />
+    <Compile Include="Model\Security\History\HistoryLogin.cs" />
+    <Compile Include="Model\Security\History\HistoryLogin.Logic.cs" />
     <Compile Include="Net\Geolocation\IpGeoException.cs" />
     <Compile Include="Net\Geolocation\IpGeolocation.cs" />
     <Compile Include="Net\Geolocation\IpGeoLookup.cs" />
@@ -1673,6 +1678,7 @@
     <Compile Include="Obsidian\UI\GridBuilderExtensions.cs" />
     <Compile Include="Obsidian\UI\GridBuilderGridOptions.cs" />
     <Compile Include="Obsidian\UI\GridHelper.cs" />
+    <Compile Include="Oidc\OidcHelper.cs" />
     <Compile Include="Personalization\PersonalizationRequestFilters\EnvironmentRequestFilter.cs" />
     <Compile Include="Net\IRequest.cs" />
     <Compile Include="Personalization\PersonalizationRequestFilters\GeolocationRequestFilter.cs" />
@@ -1746,6 +1752,7 @@
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
     <Compile Include="Plugin\HotFixes\226_UpdateIndexesForV16_8.cs" />
+    <Compile Include="Plugin\HotFixes\239_AddLoginHistoryPageAndBlocks.cs" />
     <Compile Include="Plugin\HotFixes\238_ChatSharedChannelDefaultGroupRole.cs" />
     <Compile Include="Plugin\HotFixes\237_ChatAdminImprovements.cs" />
     <Compile Include="Plugin\HotFixes\236_MigrationRollupsForV17_1_0.cs" />
@@ -1879,6 +1886,7 @@
     <Compile Include="Security\Authentication\Passwordless\PasswordlessAuthenticationState.cs" />
     <Compile Include="Security\ExcludeSecurityActionsAttribute.cs" />
     <Compile Include="Security\GlobalRestrictedDefault.cs" />
+    <Compile Include="Security\HistoryLoginRelatedData.cs" />
     <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
     <Compile Include="SystemGuid\EmailSection.cs" />

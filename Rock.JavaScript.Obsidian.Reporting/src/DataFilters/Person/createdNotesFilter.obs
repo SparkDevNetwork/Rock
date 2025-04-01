@@ -1,0 +1,50 @@
+<template>
+    <DropDownList v-model="noteTypes"
+                  :items="noteTypeOptions"
+                  label="Note Types"
+                  help="The type of note to filter by. Leave blank to include all note types."
+                  multiple
+                  enhanceForLongLists
+                  showBlankItem />
+    <SlidingDateRangePicker v-model="dateRange"
+                            label="Date Range"
+                            help="The date range that the note was created during." />
+    <NumberBox v-model="minimumCount"
+               label="Minimum Count"
+               help="The minimum number of notes created during the date range to be considered a match."
+               :minimumValue="1"
+               :decimalCount="0"
+               rules="required" />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { SlidingDateRange, parseSlidingDateRangeString, slidingDateRangeToString, RangeType } from "@Obsidian/Utility/slidingDateRange";
+    import { Guid } from "@Obsidian/Types";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const noteTypeOptions = ref<ListItemBag[]>(safeParseJson(props.modelValue.noteTypeOptions) ?? []);
+    const noteTypes = ref<Guid[]>(safeParseJson(props.modelValue.noteTypes) ?? []);
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+    const minimumCount = ref<number | null>(toNumberOrNull(props.modelValue.minimumCount));
+
+    watch([noteTypes, dateRange, minimumCount], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            noteTypes: JSON.stringify(noteTypes.value),
+            minimumCount: `${minimumCount.value ?? 1}`,
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: RangeType.All }),
+        });
+    });
+</script>

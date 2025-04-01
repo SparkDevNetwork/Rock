@@ -97,6 +97,8 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
         /// <inheritdoc/>
         public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/BenevolenceRequest/totalBenevolenceFilter.obs";
 
+        #endregion
+
         #region Configuration
 
         /// <inheritdoc/>
@@ -123,6 +125,8 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
         }
 
         #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Formats the selection.

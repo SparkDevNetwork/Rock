@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
@@ -23,8 +24,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -126,6 +130,49 @@ namespace Rock.Reporting.DataFilter.Group
         private int SignUpGroupGroupTypeId
         {
             get { return GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_SIGNUP_GROUP.AsGuid() ).ToIntSafe(); }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Group/signUpOpportunityHasNoMembersFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = SelectionConfig.Parse( selection );
+
+            var groupTypes = new GroupTypeService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( gt => gt.Id == this.SignUpGroupGroupTypeId || gt.InheritedGroupTypeId == this.SignUpGroupGroupTypeId )
+                    .Select( gt => new ListItemBag { Text = gt.Name, Value = gt.Guid.ToString() } )
+                    .ToList();
+
+            var data = new Dictionary<string, string>
+            {
+                { "groupTypeGuid", selectionConfig.GroupTypeGuid },
+                { "memberType", selectionConfig.MemberType },
+                { "hidePastOpportunities", selectionConfig.HidePastOpportunities.ToTrueFalse() },
+                { "groupTypes", groupTypes.ToCamelCaseJson(false, true) }
+            };
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = new SelectionConfig
+            {
+                GroupTypeGuid = data.GetValueOrDefault( "groupTypeGuid", string.Empty ),
+                MemberType = data.GetValueOrDefault( "memberType", string.Empty ),
+                HidePastOpportunities = data.GetValueOrDefault( "hidePastOpportunities", "False" ).AsBoolean(),
+            };
+
+            return selectionConfig.ToJson();
         }
 
         #endregion

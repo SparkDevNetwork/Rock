@@ -1,0 +1,25 @@
+<template>
+    <GroupTypePicker v-model="groupType"
+                     label="Group Type"
+                     showBlankItem />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps(dataViewSelectProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const groupType = ref<ListItemBag>(safeParseJson(props.modelValue.groupType ?? "{}") ?? {});
+
+    watch(groupType, () => {
+        emit("update:modelValue", { ...props.modelValue, groupType: JSON.stringify(groupType.value) });
+    });
+</script>

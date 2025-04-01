@@ -113,7 +113,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The Active attribute for the observability HTTP filter.
         /// </summary>
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         [Obsolete( "Use HTTP_MODULE_ROCK_GATEWAY_ACTIVE instead." )]
         public const string HTTP_MODULE_OBSERVABILITY_ACTIVE = "DAC40EF2-1616-4E15-A897-8CCD7CF2C588";
 

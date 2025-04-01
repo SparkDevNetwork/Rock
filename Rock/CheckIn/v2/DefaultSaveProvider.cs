@@ -945,6 +945,8 @@ namespace Rock.CheckIn.v2
                     IsPending = sessionRequest.IsPending,
                     FamilyId = familyId,
                     Kiosk = kiosk,
+                    SearchMode = sessionRequest.SearchMode,
+                    SearchTerm = sessionRequest.SearchTerm,
                     ClientIpAddress = clientIpAddress,
                     CheckedInByPersonAliasId = checkedInByPersonAliasId,
                     StartDateTime = now,

@@ -27,7 +27,7 @@
     }>();
 
     const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
-    const age = ref<number | null>(props.modelValue.age ? parseInt(props.modelValue.age, 10) || null : null);
+    const age = ref<number | null>(toNumberOrNull(props.modelValue.age));
     const ageRange = ref<NumberRangeModelValue>(convertDelimitedRangeValueToNumberRangeModelValue(props.modelValue.ageRange));
 
     const comparisonItems = getFilteredComparisonTypeOptions(

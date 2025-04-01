@@ -1052,7 +1052,7 @@ namespace Rock.Web.UI
                     // don't redirect if this is the change password page
                     if ( Site.ChangePasswordPageReference.PageId != this.PageId )
                     {
-                        Site.RedirectToChangePasswordPage( true, true );
+                        Site.RedirectToChangePasswordPage( true, true, user );
                     }
                 }
 
@@ -2333,7 +2333,7 @@ Obsidian.onReady(() => {{
             if ( impersonatedByUser != null )
             {
                 Authorization.SignOut();
-                UserLoginService.UpdateLastLogin( impersonatedByUser.UserName );
+                UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = impersonatedByUser.UserName } );
 
                 /*
                     10/23/2023 - JMH
@@ -2404,7 +2404,8 @@ Obsidian.onReady(() => {{
                         isImpersonated: true,
                         isTwoFactorAuthenticated: true );
                     CurrentUser = impersonatedPerson.GetImpersonatedUser();
-                    UserLoginService.UpdateLastLogin( "rckipid=" + impersonatedPersonKeyParam );
+                    UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = "rckipid=" + impersonatedPersonKeyParam } );
+
 
                     // reload page as the impersonated user (we probably could remove the token from the URL, but some blocks might be looking for rckipid in the PageParameters, so just leave it)
                     Response.Redirect( Request.RawUrl, false );
@@ -3552,7 +3553,7 @@ Sys.Application.add_load(function () {
         /// Converts the legacy, "structured" context cookies to a simpler, JSON format.
         /// </summary>
         [Obsolete( "Remove this method after a few major versions, hopefully allowing enough time to convert all legacy context cookies." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         private void ConvertLegacyContextCookiesToJSON()
         {
             // Find any cookies whose names start with the legacy cookie name prefix.

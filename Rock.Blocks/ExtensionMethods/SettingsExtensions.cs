@@ -18,8 +18,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Model;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -27,7 +30,8 @@ using Rock.Web.Cache;
 namespace Rock.Blocks
 {
     /// <summary>
-    /// Extension methods to convert between serialized <see cref="AttributeValue"/> values and their associated UI controls.
+    /// Extension methods to assist with getting and setting values between <see cref="AttributeValue"/> or
+    /// <see cref="PersonPreference"/> records and their associated UI controls.
     /// </summary>
     internal static class SettingsExtensions
     {
@@ -143,7 +147,7 @@ namespace Rock.Blocks
             return listItemBags;
         }
 
-        #endregion
+        #endregion Generic Converters: Not Entity-Specific
 
         #region Convenience Converters: Entity-Specific Usages of Generic Converters
 
@@ -175,7 +179,7 @@ namespace Rock.Blocks
             return campusGuidStrings.ToListItemBagListUsingCache( CampusCache.Get );
         }
 
-        #endregion
+        #endregion Campuses
 
         #region Categories
 
@@ -205,7 +209,7 @@ namespace Rock.Blocks
             return categoryGuidStrings.ToListItemBagListUsingCache( CategoryCache.Get );
         }
 
-        #endregion
+        #endregion Categories
 
         #region Defined Values
 
@@ -235,7 +239,7 @@ namespace Rock.Blocks
             return definedValueGuidStrings.ToListItemBagListUsingCache( DefinedValueCache.Get );
         }
 
-        #endregion
+        #endregion Defined Values
 
         #region Group Types
 
@@ -265,7 +269,7 @@ namespace Rock.Blocks
             return groupTypeGuidStrings.ToListItemBagListUsingCache( GroupTypeCache.Get );
         }
 
-        #endregion
+        #endregion Group Types
 
         #region Named Schedules
 
@@ -295,9 +299,9 @@ namespace Rock.Blocks
             return namedScheduleGuidStrings.ToListItemBagListUsingCache( NamedScheduleCache.Get );
         }
 
-        #endregion
+        #endregion Named Schedules
 
-        #endregion
+        #endregion Convenience Converters: Entity-Specific Usages of Generic Converters
 
         #region One-Off Converters with No Commonality
 
@@ -376,6 +380,126 @@ namespace Rock.Blocks
 
         #endregion
 
-        #endregion
+        #endregion One-Off Converters with No Commonality
+
+        #region Validators
+
+        #region SlidingDateRangeBag
+
+        /// <summary>
+        /// Ensures this <see cref="SlidingDateRangeBag"/> passes basic validation checks.
+        /// </summary>
+        /// <param name="toValidate">The <see cref="SlidingDateRangeBag"/> to validate.</param>
+        /// <param name="defaultIfInvalid">The default <see cref="SlidingDateRangeBag"/> to use if invalid.</param>
+        /// <returns>An object containing the validated <see cref="SlidingDateRangeBag"/> (or default if invalid) along
+        /// with the actual <see cref="DateRange"/> represented within.</returns>
+        public static ValidatedDateRange Validate( this SlidingDateRangeBag toValidate, SlidingDateRangeBag defaultIfInvalid )
+        {
+            // Validate the sliding date range bag as follows:
+            //
+            //  1) If no sliding date range bag provided, return the default.
+            //  2) If range type is specific date range (with selected start and end dates):
+            //      a) If end date < start date, set end date = start date.
+            //      b) If only a start date is selected, set end date = start date.
+            //      c) If only an end date is selected, set start date = end date.
+            //      d) If neither start nor end date are selected, return the default.
+            //  3) Allow any other valid selections (knowing they might represent an excessively-large range).
+
+            // A local function to assist with calculating the actual date range for a given sliding date range bag.
+            DateRange CalculateActualDateRange( SlidingDateRangeBag slidingDateRange )
+            {
+                var rangeType = slidingDateRange.RangeType.ToString();
+                var timeValue = slidingDateRange.TimeValue.ToString();
+                var timeUnit = slidingDateRange.TimeUnit.ToString();
+                var lowerDate = slidingDateRange.LowerDate.ToString();
+                var upperDate = slidingDateRange.UpperDate.ToString();
+
+                var delimitedValues = $"{rangeType}|{timeValue}|{timeUnit}|{lowerDate}|{upperDate}";
+
+                return RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( delimitedValues );
+            }
+
+            if ( toValidate == null )
+            {
+                return new ValidatedDateRange
+                {
+                    SlidingDateRangeBag = defaultIfInvalid,
+                    ActualDateRange = CalculateActualDateRange( defaultIfInvalid )
+                };
+            }
+
+            if ( toValidate.RangeType == SlidingDateRangeType.DateRange )
+            {
+                var lowerDate = toValidate.LowerDate;
+                var upperDate = toValidate.UpperDate;
+
+                if ( lowerDate.HasValue && upperDate.HasValue )
+                {
+                    if ( upperDate < lowerDate )
+                    {
+                        // Set end date = start date.
+                        toValidate.UpperDate = lowerDate;
+                    }
+                }
+                else if ( lowerDate.HasValue )
+                {
+                    // Set end date = start date.
+                    toValidate.UpperDate = lowerDate;
+                }
+                else if ( upperDate.HasValue )
+                {
+                    // Set start date = end date.
+                    toValidate.LowerDate = upperDate;
+                }
+                else
+                {
+                    // Return the default.
+                    return new ValidatedDateRange
+                    {
+                        SlidingDateRangeBag = defaultIfInvalid,
+                        ActualDateRange = CalculateActualDateRange( defaultIfInvalid )
+                    };
+                }
+            }
+
+            var actualDateRange = CalculateActualDateRange( toValidate );
+            if ( actualDateRange?.Start == null || actualDateRange?.End == null )
+            {
+                // If for some reason we don't have valid start and end dates at this point, return the default.
+                return new ValidatedDateRange
+                {
+                    SlidingDateRangeBag = defaultIfInvalid,
+                    ActualDateRange = CalculateActualDateRange( defaultIfInvalid )
+                };
+            }
+
+            // Otherwise, return the provided, validated sliding date range bag + actual date range.
+            return new ValidatedDateRange
+            {
+                SlidingDateRangeBag = toValidate,
+                ActualDateRange = actualDateRange
+            };
+        }
+
+        /// <summary>
+        /// A POCO to represent a validated <see cref="Rock.ViewModels.Controls.SlidingDateRangeBag"/> along with the
+        /// actual <see cref="DateRange"/> represented within.
+        /// </summary>
+        public class ValidatedDateRange
+        {
+            /// <summary>
+            /// The sliding date range bag.
+            /// </summary>
+            public SlidingDateRangeBag SlidingDateRangeBag { get; set; }
+
+            /// <summary>
+            /// The actual date range represented within the sliding date range bag.
+            /// </summary>
+            public DateRange ActualDateRange { get; set; }
+        }
+
+        #endregion SlidingDateRangeBag
+
+        #endregion Validators
     }
 }
