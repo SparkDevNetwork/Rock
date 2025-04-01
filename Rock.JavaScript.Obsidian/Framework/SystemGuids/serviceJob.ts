@@ -25,6 +25,8 @@
 export const ServiceJob = {
     /** The job for calculating peer networks for individuals. */
     CalculatePeerNetwork: "D3172560-0E8C-4E69-A477-56ABC018FEEF",
+    /** The job for performing synchronization tasks between Rock and the external chat system. */
+    ChatSyncJob: "80202290-66DF-4289-8938-4FA6B84E3EE2",
     /** The collect hosting metrics job - collect metrics regarding database connections, Etc. */
     CollectHostingMetrics: "36FA38CA-9DB0-40A8-BABD-5411121B4809",
     /** The data migrations 120 add communication get queued index */
@@ -156,6 +158,8 @@ export const ServiceJob = {
     DataMigrations170SwapWebformsBlocks: "AD8A38F7-1FCC-47CD-893F-9B4335DD7E08",
     /** The Job to run Post v17.0 Update Person PrimaryPersonAliasGuid. */
     DataMigrations170UpdatePersonPrimaryPersonAliasGuid: "11A4E70F-899F-4B1D-BB25-12768E487A24",
+    /** The job to run Post v17.1 Data Migrations to migrate login history from the History table to the HistoryLogin table. */
+    DataMigrations171MigrateLoginHistory: "D5E7B461-748F-4A01-BA3F-FA7BEF6AC0F0",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail
