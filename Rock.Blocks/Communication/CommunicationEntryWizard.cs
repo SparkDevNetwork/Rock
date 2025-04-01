@@ -2786,12 +2786,11 @@ namespace Rock.Blocks.Communication
         {
             using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Entry Wizard > Save As Draft" ) )
             {
-                // Overwrite the status to draft before saving.
-                bag.Status = CommunicationStatus.Draft;
-
                 var communication = SaveCommunication( rockContext, bag );
-
                 UpdateCommunicationRecipients( rockContext, bag, communication );
+
+                communication.Status = CommunicationStatus.Draft;
+                rockContext.SaveChanges();
 
                 activity?.AddTag( "rock.communication.id", communication.Id );
                 activity?.AddTag( "rock.communication.name", communication.Name );
