@@ -42,7 +42,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Page Parameter Filter" )]
     [Category( "Reporting" )]
     [Description( "Filter block that passes the filter values as query string parameters." )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
