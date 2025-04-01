@@ -23,6 +23,10 @@
 
 /** Group Role System Guids */
 export const GroupRole = {
+    /** The Member group member role for Application Group */
+    GroupRoleApplicationGroupMember: "09B14358-FA17-4D65-A8E9-03FA7312CD62",
+    /** The Member group member role for Hidden Application Group */
+    GroupRoleHiddenApplicationGroupMember: "2008B263-CD41-45F0-8033-26D949FC0DA7",
     /** The Administrator group member role for a Campus Team */
     GrouproleCampusTeamAdministrator: "07F857ED-C0D7-47B4-AB6C-9AFDFAE2ADD9",
     /** The Pastor group member role for a Campus Team */
