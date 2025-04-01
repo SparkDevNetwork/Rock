@@ -2069,9 +2069,8 @@ namespace Rock.Blocks.Communication
         /// <summary>
         /// Retrieves the allowed communication types based on block configuration and preferences.
         /// </summary>
-        /// <param name="forPicker">Indicates whether the allowed types are for a UI picker, affecting the returned results.</param>
         /// <returns>A list of <see cref="CommunicationType"/> values representing the allowed communication types.</returns>
-        private List<CommunicationType> GetAllowedCommunicationTypes( bool forPicker = false )
+        private List<CommunicationType> GetAllowedCommunicationTypes()
         {
             /*
                 JME 8/20/2021
@@ -2092,7 +2091,7 @@ namespace Rock.Blocks.Communication
             var communicationTypes = this.GetAttributeValue( AttributeKey.CommunicationTypes ).SplitDelimitedValues( false );
 
             var result = new List<CommunicationType>();
-            if ( !forPicker && communicationTypes.Contains( "Recipient Preference" ) )
+            if ( communicationTypes.Contains( "Recipient Preference" ) )
             {
                 result.Add( CommunicationType.RecipientPreference );
 
@@ -2121,11 +2120,6 @@ namespace Rock.Blocks.Communication
                 if ( communicationTypes.Contains( "Push" ) )
                 {
                     result.Add( CommunicationType.PushNotification );
-                }
-
-                if ( communicationTypes.Contains( "Recipient Preference" ) )
-                {
-                    result.Add( CommunicationType.RecipientPreference );
                 }
             }
             else
@@ -2221,7 +2215,7 @@ namespace Rock.Blocks.Communication
             var mediums = new List<ListItemBag>();
 
             // See what is allowed by the block settings
-            var allowedCommunicationTypes = GetAllowedCommunicationTypes( true );
+            var allowedCommunicationTypes = GetAllowedCommunicationTypes();
 
             var isEmailTransportEnabled = MediumContainer.HasActiveAndAuthorizedEmailTransport( currentPerson )
                 && allowedCommunicationTypes.Contains( CommunicationType.Email );
