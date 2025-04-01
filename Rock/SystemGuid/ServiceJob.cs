@@ -472,5 +472,10 @@ namespace Rock.SystemGuid
         /// The job to run Post v17.1 Data Migrations to migrate login history from the History table to the HistoryLogin table.
         /// </summary>
         public const string DATA_MIGRATIONS_171_MIGRATE_LOGIN_HISTORY = "D5E7B461-748F-4A01-BA3F-FA7BEF6AC0F0";
+
+        /// <summary>
+        /// The job to run Post v17.1 Data Migrations to update an existing index on the CommunicationRecipient table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_171_UPDATE_COMMUNICATIONRECIPIENT_INDEX = "EB00BD84-D89C-44B4-8C0C-56322074C9C4";
     }
 }

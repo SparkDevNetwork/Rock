@@ -37,5 +37,10 @@ namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
         /// The destination schedule for the clone operation
         /// </summary>
         public ListItemBag DestinationSchedule { get; set; }
+
+        /// <summary>
+        /// All existing GroupLocation/schedules (this is required to maintain state when making modifications prior to cloning).
+        /// </summary>
+        public List<GroupLocationsBag> CurrentScheduleConfiguration { get; set; }
     }
 }
