@@ -285,6 +285,13 @@ namespace Rock.Model
                                 .FirstOrDefault();
                         }
 
+                        // Enforce field length limitations.
+                        this.UserName = this.UserName.Truncate( 255 );
+                        this.ClientIpAddress = this.ClientIpAddress.Truncate( 45 );
+                        this.AuthClientClientId = this.AuthClientClientId.Truncate( 50 );
+                        this.ExternalSource = this.ExternalSource.Truncate( 200 );
+                        this.DestinationUrl = this.DestinationUrl.Truncate( 2048 );
+
                         var historyLoginService = new HistoryLoginService( rockContext );
                         historyLoginService.Add( this );
 
