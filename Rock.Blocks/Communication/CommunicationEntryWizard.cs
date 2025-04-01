@@ -932,78 +932,6 @@ namespace Rock.Blocks.Communication
             return GetCommunicationRecipientDetails( rockContext, communicationListGroupId, 1, segmentCriteria == SegmentCriteria.All ? 2 : 1, personalizationSegmentIds == null ? null : string.Join( ",", personalizationSegmentIds ) );
         }
 
-        class CommunicationEntryWizardRecipientInfo
-        {
-            /// <summary>
-            /// Gets or sets the <see cref="Person" /> id.
-            /// </summary>
-            public int Id { get; set; }
-
-            public string NickName { get; set; }
-
-            public string LastName { get; set; }
-
-            public int? PhotoId { get; set; }
-
-            public bool IsEmailEnabled { get; set; }
-
-            public string Email { get; set; }
-
-            public bool IsEmailActive { get; set; }
-
-            public string EmailNote { get; set; }
-
-            public int? ConnectionStatusValueId { get; set; }
-
-            public CommunicationType CommunicationPreference { get; set; }
-
-            public bool IsSmsEnabled { get; set; }
-
-            public string MobilePhoneNumber { get; set; }
-
-            public bool IsMessagingEnabled { get; set; }
-
-            public bool IsMessagingOptedOut { get; set; }
-
-            public bool IsPushEnabled { get; set; }
-
-            public string DeviceRegistrationId { get; set; }
-
-            public bool NotificationsEnabled { get; set; }
-
-            public int? SuffixValueId { get; set; }
-
-            public EmailPreference EmailPreference { get; set; }
-
-            /// <summary>
-            /// Gets or sets the record type <see cref="DefinedValue"/> id.
-            /// </summary>
-            /// <remarks>
-            /// Needed for nameless person check.
-            /// </remarks>
-            public int? RecordTypeValueId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the <see cref="PersonAlias"/> unique identifier.
-            /// </summary>
-            public Guid PersonAliasGuid { get; set; }
-
-            /// <summary>
-            /// Gets or sets the <see cref="PersonAlias"/> identifier.
-            /// </summary>
-            public int PersonAliasId { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether bulk email is allowed for this recipient.
-            /// </summary>
-            public bool IsBulkEmailEnabled { get; set; }
-
-            public AgeClassification AgeClassification { get; set; }
-
-            public int? Age { get; set; }
-
-            public Gender Gender { get; set; }
-        }
 
         /// <summary>
         /// Gets the giving analytics transaction data.
@@ -1768,14 +1696,14 @@ namespace Rock.Blocks.Communication
                 IsPushAllowed = i.IsPushEnabled,
                 IsSmsAllowed = i.IsSmsEnabled,
                 Name = Person.FormatFullName( i.NickName, i.LastName, i.SuffixValueId, i.RecordTypeValueId ),
-                PersonAliasGuid = i.PersonAliasGuid,
+                PersonAliasGuid = i.PrimaryAliasGuid,
                 PersonId = i.Id,
                 PhotoUrl = Person.GetPersonPhotoUrl(
                                     // Initials
                                     $"{i.NickName.Truncate( 1, false )}{i.LastName.Truncate( 1, false )}",
                                     i.PhotoId,
                                     i.Age,
-                                    i.Gender,
+                                    i.Gender ?? Gender.Unknown,
                                     i.RecordTypeValueId,
                                     i.AgeClassification,
                                     // Size
@@ -3063,7 +2991,7 @@ namespace Rock.Blocks.Communication
                     var recipients = GetCommunicationRecipientDetailsForList( rockContext, listId.Value, bag.SegmentCriteria, bag.PersonalizationSegmentIds );
 
                     return new PersonAliasService( rockContext )
-                        .GetByIds( recipients.Select( r => r.PersonAliasId ).ToList() )
+                        .GetByIds( recipients.Select( r => r.PrimaryAliasId ).ToList() )
                         .Include( p => p.Person )
                         .ToList();
                 }
@@ -3077,6 +3005,142 @@ namespace Rock.Blocks.Communication
         #endregion Methods
 
         #region Helper Types
+
+        /// <summary>
+        /// Represents the details of a communication recipient including contact preferences and identity data.
+        /// </summary>
+        private class CommunicationEntryWizardRecipientInfo
+        {
+            /// <summary>
+            /// Gets or sets the unique identifier of the person.
+            /// </summary>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person's nickname. May be null if not specified.
+            /// </summary>
+            public string NickName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person's last name.
+            /// </summary>
+            public string LastName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the ID of the person's profile photo, if available.
+            /// </summary>
+            public int? PhotoId { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether the person is eligible to receive email.
+            /// </summary>
+            public bool IsEmailEnabled { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person's email address. May be null or empty.
+            /// </summary>
+            public string Email { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether the person's email is active.
+            /// </summary>
+            public bool IsEmailActive { get; set; }
+
+            /// <summary>
+            /// Gets or sets any note or comment associated with the email. Optional.
+            /// </summary>
+            public string EmailNote { get; set; }
+
+            /// <summary>
+            /// Gets or sets the connection status defined value ID. Optional.
+            /// </summary>
+            public int? ConnectionStatusValueId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person's overall communication preference.
+            /// </summary>
+            public int? CommunicationPreference { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether the person can receive SMS messages.
+            /// </summary>
+            public bool IsSmsEnabled { get; set; }
+
+            /// <summary>
+            /// Gets or sets the formatted mobile phone number. May be null.
+            /// </summary>
+            public string MobilePhoneNumber { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether messaging is enabled for the phone number.
+            /// </summary>
+            public bool IsMessagingEnabled { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether the person has opted out of messaging.
+            /// </summary>
+            public bool IsMessagingOptedOut { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether the person has a registered device with push notifications enabled.
+            /// </summary>
+            public bool IsPushEnabled { get; set; }
+
+            /// <summary>
+            /// Gets or sets the device registration ID used for push notifications, if available.
+            /// </summary>
+            public string DeviceRegistrationId { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether notifications are enabled on the registered device.
+            /// </summary>
+            public bool NotificationsEnabled { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether the person is eligible to receive bulk emails.
+            /// </summary>
+            public bool IsBulkEmailEnabled { get; set; }
+
+            /// <summary>
+            /// Gets or sets the email preference value for the person.
+            /// </summary>
+            public int? EmailPreference { get; set; }
+
+            /// <summary>
+            /// Gets or sets the record type defined value ID (e.g., individual, business).
+            /// </summary>
+            public int? RecordTypeValueId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the suffix defined value ID (e.g., Jr., Sr.). Optional.
+            /// </summary>
+            public int? SuffixValueId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person's primary alias GUID. Guaranteed to be non-null.
+            /// </summary>
+            public Guid PrimaryAliasGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the ID of the person's primary alias.
+            /// </summary>
+            public int PrimaryAliasId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person's age classification (e.g., Adult, Child).
+            /// </summary>
+            public AgeClassification? AgeClassification { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person's age, if calculable.
+            /// </summary>
+            public int? Age { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person's gender. Optional.
+            /// </summary>
+            public Gender? Gender { get; set; }
+        }
 
         /// <summary>
         /// Represents a simplified person alias information structure used for recipient lookups.
@@ -3322,10 +3386,6 @@ namespace Rock.Blocks.Communication
                 rockContext.Entry( communication )
                     .Collection( c => c.Recipients )
                     .Load();
-
-                //AssignRecipientMediums( communication, updatedCommunicationRecipients, progressReporter );
-
-                //rockContext.SaveChanges();
                 
                 return communication;
             }
