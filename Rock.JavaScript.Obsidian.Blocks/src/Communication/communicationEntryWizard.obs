@@ -152,6 +152,8 @@
                               :communicationType="communicationType"
                               :emailAttachmentNames="emailAttachmentNames"
                               :emailTo="emailTo"
+                              :fromAddress="fromEmail"
+                              :fromName="fromName"
                               :futureSendDateTime="futureSendDateTime"
                               :isBulkCommunication="isBulkCommunication"
                               :message="message"
