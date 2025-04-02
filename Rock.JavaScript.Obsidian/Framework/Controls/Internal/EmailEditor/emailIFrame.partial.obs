@@ -1963,6 +1963,8 @@ ${createCssRuleset(":root", props.cssVariables)}
         if (draggingPlaceholderElement.value) {
             draggingPlaceholderElement.value.remove();
             draggingPlaceholderElement.value = null;
+            draggingElement.value = null;
+            draggingComponentTypeName.value = null;
         }
     }
 
