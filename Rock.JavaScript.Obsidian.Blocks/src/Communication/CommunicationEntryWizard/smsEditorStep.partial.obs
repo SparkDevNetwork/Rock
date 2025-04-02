@@ -42,7 +42,7 @@
                                     <div class="col-sm-12">
                                         <DropDownList v-model="smsFromSystemPhoneNumberGuidOrEmptyString"
                                                       :disabled="isSaving || isSendingTest"
-                                                      help="The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers)."
+                                                      help="The number to originate message from (configured under Admin Tools > Communications > System Phone Numbers)."
                                                       :items="smsFromNumbers"
                                                       label="From Number"
                                                       rules="required"
