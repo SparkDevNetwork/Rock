@@ -3,9 +3,9 @@
     <div class="email-editor-step">
         <Panel :hasFullscreen="true"
                :headerSecondaryActions="[{
-                   title: 'Save As Template', type: 'default',
-                   handler: onSaveAsTemplate
-               }]"
+                title: 'Save As Template', type: 'default',
+                handler: onSaveAsTemplate
+            }]"
                panelBodyCssClass="panel-body-wizard"
                type="block">
             <template #title>
@@ -16,6 +16,16 @@
                                         labelType="success">
                             The communication has been saved.
                             <button type="button" class="close btn-dismiss-alert" aria-label="Hide This Alert" @click.prevent="isSaveSuccessMessageShown = false">
+                                <i class="fa fa-times" aria-hidden="true"></i>
+                            </button>
+                        </HighlightLabel>
+
+                        <HighlightLabel v-if="isSendTestErrorMessageShown"
+                                        labelType="danger"
+                                        :dismissible="true"
+                                        @dismiss="isSendTestErrorMessageShown = false">
+                            <div v-html="sendTestErrorMessage" style="font-weight: var(--font-weight-regular)"></div>
+                            <button type="button" class="close btn-dismiss-alert" aria-label="Hide This Alert" @click.prevent="isSendTestErrorMessageShown = false">
                                 <i class="fa fa-times" aria-hidden="true"></i>
                             </button>
                         </HighlightLabel>
@@ -89,9 +99,9 @@
             <div class="preview">
                 <ButtonGroup v-model="previewDevice"
                              :items="[
-                                 { text: 'Desktop', value: 'desktop' },
-                                 { text: 'Mobile', value: 'mobile' }
-                             ]" />
+                                { text: 'Desktop', value: 'desktop' },
+                                { text: 'Mobile', value: 'mobile' }
+                            ]" />
 
                 <div :class="previewDevice === 'desktop' ? 'device-browser' : 'device-mobile'">
                     <iframe :srcdoc="previewHtml"></iframe>
@@ -170,6 +180,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.email-editor-panel-title-right {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-xsmall);
 }
 
 .btn-dismiss-alert {
@@ -309,6 +325,8 @@
     const isPreviewOpen = ref<boolean>(false);
     const previewDevice = ref<string>("desktop");
     const isSaveSuccessMessageShown = ref<boolean>(false);
+    const isSendTestErrorMessageShown = ref<boolean>(false);
+    const sendTestErrorMessage = ref<string>("");
     const isSaving = ref<boolean>(false);
     const isSendingTest = ref<boolean>(false);
     const isSendTestModalShown = ref<boolean>(false);
@@ -345,6 +363,7 @@
         }
 
         isSendingTest.value = true;
+        isSendTestErrorMessageShown.value = false;
 
         getHtmlRequest.value = {
             onSuccess({ html }): void {
@@ -353,8 +372,10 @@
                         isSendingTest.value = false;
                     },
 
-                    onError() {
+                    onError(error?: string | null | undefined) {
                         isSendingTest.value = false;
+                        isSendTestErrorMessageShown.value = true;
+                        sendTestErrorMessage.value = error ?? "An error occurred while sending the test email.";
                     }
                 });
             }

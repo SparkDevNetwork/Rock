@@ -945,8 +945,9 @@
             callbacks.onSuccess();
         }
         else {
-            console.error(result?.errorMessage ?? "The test communication failed to send.");
-            callbacks.onError();
+            const errorMessage = result?.errorMessage ?? "The test communication failed to send.";
+            console.error(errorMessage);
+            callbacks.onError(errorMessage);
         }
     }
 
