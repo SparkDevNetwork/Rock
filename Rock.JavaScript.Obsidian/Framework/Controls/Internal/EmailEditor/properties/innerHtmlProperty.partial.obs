@@ -2,6 +2,7 @@
 <template>
     <HtmlEditor v-if="mode === 'html'"
                 v-model="innerHtml"
+                :autocommitDelayMs="0"
                 :editorHeight="400"
                 :mergeFields="mergeFields ?? []"
                 :shortLinkCheckToken="shortLinkCheckToken"
