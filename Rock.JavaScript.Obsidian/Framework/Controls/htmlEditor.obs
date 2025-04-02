@@ -171,7 +171,7 @@
     import { debounce, isNullish } from "@Obsidian/Utility/util";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    type ToolbarConfig = "light" | "full";
+    type ToolbarConfig = "light" | "full" | "light-compact";
 
     const props = defineProps({
         /** The HTML value. */
@@ -481,7 +481,8 @@
             // https://www.tiny.cloud/docs/tinymce/6/available-toolbar-buttons/
             const toolbarConfigs: Record<ToolbarConfig, string> = {
                 "light": `${editSourceCodePlugin.value?.id} | bold italic strikethrough link ${shortLinkPlugin.value?.id} forecolor backcolor styles numlist bullist | removeformat | ${paragraphPlugin.value?.id} | ${mergeFieldPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPlugin.value?.id} | ${pasteAsPlainTextPlugin.value?.id} | undo redo`,
-                "full": `${editSourceCodePlugin.value?.id} | bold italic underline strikethrough numlist bullist link ${shortLinkPlugin.value?.id} | undo redo | removeformat | styles forecolor backcolor | fontfamily fontsize superscript subscript table hr | ${paragraphPlugin.value?.id} | ${mergeFieldPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPlugin.value?.id} | ${pasteAsPlainTextPlugin.value?.id} | help`
+                "light-compact": `${editSourceCodePlugin.value?.id} bold italic strikethrough link ${shortLinkPlugin.value?.id} forecolor backcolor styles numlist bullist ${paragraphPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPlugin.value?.id} removeformat ${pasteAsPlainTextPlugin.value?.id} ${mergeFieldPlugin.value?.id} undo redo`,
+                "full": `${editSourceCodePlugin.value?.id} | bold italic underline strikethrough numlist bullist link ${shortLinkPlugin.value?.id} | undo redo | removeformat | styles forecolor backcolor | fontfamily fontsize superscript subscript table hr | ${paragraphPlugin.value?.id} | ${mergeFieldPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPlugin.value?.id} | ${pasteAsPlainTextPlugin.value?.id} | help`,
             };
 
             // Get the default system font.
