@@ -22,6 +22,7 @@
 <style scoped>
 .flat-panel {
     border: none;
+    flex: 1;
 }
 
 .flat-panel.scrollable {
@@ -49,6 +50,7 @@
 
 .flat-panel-body.scrollable {
     overflow-y: auto;
+    flex: 1;
 }
 </style>
 
@@ -72,4 +74,3 @@
         }
     });
 </script>
-
