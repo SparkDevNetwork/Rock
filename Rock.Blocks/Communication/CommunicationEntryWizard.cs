@@ -346,6 +346,7 @@ namespace Rock.Blocks.Communication
         {
             var currentPerson = GetCurrentPerson();
             var communication = LoadCommunicationFromPageParameter( this.RockContext );
+            var communicationTemplateId = communication?.CommunicationTemplateId;
 
             var box = new CommunicationEntryWizardInitializationBox
             {
@@ -364,7 +365,11 @@ namespace Rock.Blocks.Communication
                 box.BulkEmailThreshold = GetBulkEmailThreshold();
                 box.CommunicationListGroups = GetCommunicationListGroupBags( this.RockContext, currentPerson );
 
-                var communicationTemplateInfoList = GetCommunicationTemplateInfoList( this.RockContext );
+                var communicationTemplateInfoList = GetCommunicationTemplateInfoList(
+                    this.RockContext,
+                    // Only include non-legacy templates or the template associated with the current communication.
+                    communicationTemplateQuery => communicationTemplateQuery.Where( ct => ct.Version != CommunicationTemplateVersion.Legacy || ( communicationTemplateId.HasValue && ct.Id == communicationTemplateId.Value ) )
+                );
                 var communicationTemplateDetailBag = GetCommunicationTemplateDetailBag( communication, communicationTemplateInfoList, currentPerson );
                 var communicationBag = GetCommunicationBag( this.RockContext, communication, communicationTemplateDetailBag?.Guid, currentPerson );
                 var mediumBags = GetCommunicationMediumBags( currentPerson );
@@ -715,6 +720,10 @@ namespace Rock.Blocks.Communication
             {
                 return ActionBadRequest( "You don't have edit access to the existing communication template." );
             }
+            else if ( existingCommunicationTemplate.Version == CommunicationTemplateVersion.Legacy )
+            {
+                return ActionBadRequest( "This legacy template can't be updated here. Use Save As New Template to create a version you can edit." );
+            }
 
             var imageFile = new BinaryFileService( this.RockContext ).Get( bag.ImageFile.Value.AsGuid() );
 
@@ -836,6 +845,7 @@ namespace Rock.Blocks.Communication
             communicationTemplate.Category = category;
             communicationTemplate.CategoryId = category.Id;
             communicationTemplate.IsStarter = bag.IsStarter;
+            communicationTemplate.Version = CommunicationTemplateVersion.Beta;
 
             if ( !communicationTemplate.IsValid )
             {
@@ -1547,7 +1557,6 @@ namespace Rock.Blocks.Communication
                 templateQuery = queryFilter( templateQuery );
             }
 
-            // Get the communication templates with 
             var communicationQuery = new CommunicationService( rockContext ).Queryable().AsNoTracking();
             var communicationTemplateInfoList = templateQuery
                 .GroupJoin(
