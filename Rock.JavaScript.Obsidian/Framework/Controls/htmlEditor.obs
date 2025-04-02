@@ -168,9 +168,10 @@
     import { providePluginsFeature } from "./NoteEditor/utils.partial";
     import { tinymce, Editor, EditorEvent, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { debounce, isNullish } from "@Obsidian/Utility/util";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    type ToolbarConfig = "light" | "full";
+    type ToolbarConfig = "light" | "full" | "light-compact";
 
     const props = defineProps({
         /** The HTML value. */
@@ -284,6 +285,21 @@
 
         shortLinkTokenMinLength: {
             type: Number as PropType<number | null | undefined>
+        },
+
+        /**
+         * The delay (in milliseconds) before uncommitted editor changes are automatically committed.
+         *
+         * "Uncommitted changes" are edits made by the user that have not yet triggered a change event—
+         * typically because the editor hasn't lost focus or reached an internal threshold.
+         *
+         * This setting is useful for syncing the model value shortly after the user stops typing.
+         * May affect performance with large content.
+         *
+         * Set to `null` or `undefined` to disable (default).
+         */
+        autocommitDelayMs: {
+            type: Number as PropType<number | null | undefined>
         }
     });
 
@@ -343,7 +359,20 @@
         return isEditorShown.value;
     }
 
-    // #endregion
+    const scheduleAutoCommit = computed<() => void>(() => {
+        if (isNullish(props.autocommitDelayMs)) {
+            return () => { /* Do nothing if the prop is nullish. */ };
+        }
+        else {
+            return debounce(
+                () => {
+                    tinyMceInstance.value?.execCommand("mceTriggerChange");
+                }, props.autocommitDelayMs
+            );
+        }
+    });
+
+    // #endregion Functions
 
     // #region Event Handlers
 
@@ -382,7 +411,7 @@
         isCodeEditorWarningShown.value = event.isPrevented;
     }
 
-    // #endregion
+    // #endregion Event Handlers
 
     // #region Watchers
 
@@ -452,6 +481,7 @@
             // https://www.tiny.cloud/docs/tinymce/6/available-toolbar-buttons/
             const toolbarConfigs: Record<ToolbarConfig, string> = {
                 "light": `${editSourceCodePlugin.value?.id} | bold italic strikethrough link ${shortLinkPlugin.value?.id} forecolor backcolor styles numlist bullist | removeformat | ${paragraphPlugin.value?.id} | ${mergeFieldPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPlugin.value?.id} | ${pasteAsPlainTextPlugin.value?.id} | undo redo`,
+                "light-compact": `${editSourceCodePlugin.value?.id} bold italic strikethrough link ${shortLinkPlugin.value?.id} forecolor backcolor styles numlist bullist ${paragraphPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPlugin.value?.id} removeformat ${pasteAsPlainTextPlugin.value?.id} ${mergeFieldPlugin.value?.id} undo redo`,
                 "full": `${editSourceCodePlugin.value?.id} | bold italic underline strikethrough numlist bullist link ${shortLinkPlugin.value?.id} | undo redo | removeformat | styles forecolor backcolor | fontfamily fontsize superscript subscript table hr | ${paragraphPlugin.value?.id} | ${mergeFieldPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPlugin.value?.id} | ${pasteAsPlainTextPlugin.value?.id} | help`,
             };
 
@@ -682,6 +712,11 @@
                             tinyMceValue.value = newValue;
                             internalValue.value = newValue;
                         }
+                    });
+
+                    // Automatically commit changes after a short delay to allow for typing.
+                    editor.on("input", (_e): void => {
+                        scheduleAutoCommit.value();
                     });
 
                     editor.on("focus", (): void => {

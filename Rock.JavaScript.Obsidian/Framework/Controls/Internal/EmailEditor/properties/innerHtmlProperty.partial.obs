@@ -2,11 +2,13 @@
 <template>
     <HtmlEditor v-if="mode === 'html'"
                 v-model="innerHtml"
-                :editorHeight="400"
+                :autocommitDelayMs="0"
+                :editorHeight="380"
                 :mergeFields="mergeFields ?? []"
                 :shortLinkCheckToken="shortLinkCheckToken"
                 :shortLinkSites="shortLinkSites"
-                :shortLinkTokenMinLength="shortLinkTokenMinLength" />
+                :shortLinkTokenMinLength="shortLinkTokenMinLength"
+                toolbar="light-compact" />
 
     <CodeEditor v-else-if="mode === 'code'"
                 v-model="innerHtml" />
