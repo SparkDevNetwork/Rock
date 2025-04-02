@@ -58,10 +58,35 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
+        /// Gets the deserialized <see cref="HistoryLoginRelatedData"/> from <paramref name="relatedDataJson"/> or
+        /// <see langword="null"/> if unable to parse.
+        /// </summary>
+        /// <param name="relatedDataJson">The related data JSON string.</param>
+        /// <returns>The deserialized <see cref="HistoryLoginRelatedData"/> or <see langword="null"/>.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "17.0" )]
+        public static HistoryLoginRelatedData GetRelatedDataOrNull( string relatedDataJson )
+        {
+            if ( relatedDataJson.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            return JsonConvert.DeserializeObject<HistoryLoginRelatedData>( relatedDataJson, JsonSerializerSettings );
+        }
+
+        /// <summary>
         /// Gets the deserialized <see cref="HistoryLoginRelatedData"/> from <see cref="RelatedDataJson"/> or
         /// <see langword="null"/> there is no related data.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The deserialized <see cref="HistoryLoginRelatedData"/> or <see langword="null"/>.</returns>
         /// <remarks>
         ///     <para>
         ///         <strong>This is an internal API</strong> that supports the Rock
@@ -73,12 +98,7 @@ namespace Rock.Model
         [RockInternal( "17.0" )]
         public HistoryLoginRelatedData GetRelatedDataOrNull()
         {
-            if ( this.RelatedDataJson.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
-            return JsonConvert.DeserializeObject<HistoryLoginRelatedData>( this.RelatedDataJson, JsonSerializerSettings );
+            return GetRelatedDataOrNull( this.RelatedDataJson );
         }
 
         /// <summary>
@@ -86,7 +106,7 @@ namespace Rock.Model
         /// the <see cref="RelatedDataJson"/> property. If <see langword="null"/> is provided, any existing related data
         /// will be cleared.
         /// </summary>
-        /// <param name="relatedData"></param>
+        /// <param name="relatedData">The <see cref="HistoryLoginRelatedData"/> to be serialized and set.</param>
         /// <remarks>
         ///     <para>
         ///         <strong>This is an internal API</strong> that supports the Rock

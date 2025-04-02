@@ -122,7 +122,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets any related data.
         /// <para>
-        /// DO NOT read from or write to this property directly. Instead, use the <see cref="GetRelatedDataOrNull"/>
+        /// DO NOT read from or write to this property directly. Instead, use the <see cref="GetRelatedDataOrNull()"/>
         /// and <see cref="SetRelatedDataJson(Security.HistoryLoginRelatedData)"/> methods to ensure data is properly
         /// serialized and deserialized to and from this property.
         /// </para>
