@@ -166,6 +166,7 @@ namespace Rock.Model
             target.SmsFromSystemPhoneNumberId = source.SmsFromSystemPhoneNumberId;
             target.SMSMessage = source.SMSMessage;
             target.Subject = source.Subject;
+            target.Version = source.Version;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
