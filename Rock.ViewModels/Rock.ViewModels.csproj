@@ -767,6 +767,7 @@
     <Compile Include="Blocks\Utility\RealTimeVisualizer\CustomSettingsOptionsBag.cs" />
     <Compile Include="Blocks\Utility\RealTimeVisualizer\ThemeListItemBag.cs" />
     <Compile Include="Blocks\Utility\RealTimeVisualizer\TopicAndChannelBag.cs" />
+    <Compile Include="Blocks\WorkFlow\WorkflowEntry\WorkflowEntryOptionsBag.cs" />
     <Compile Include="Blocks\WorkFlow\WorkflowList\WorkflowListOptionsBag.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormFieldShowHide.cs" />
     <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerBag.cs" />
@@ -1130,6 +1131,15 @@
     <Compile Include="Utility\TypeScriptTypeAttribute.cs" />
     <Compile Include="Utility\EntityBagBase.cs" />
     <Compile Include="Utility\ValidPropertiesBox.cs" />
+    <Compile Include="Workflow\EntryFormButtonBag.cs" />
+    <Compile Include="Workflow\EntryFormFieldBag.cs" />
+    <Compile Include="Workflow\EntryFormSectionBag.cs" />
+    <Compile Include="Workflow\InteractiveActionBag.cs" />
+    <Compile Include="Workflow\InteractiveActionDataBag.cs" />
+    <Compile Include="Workflow\InteractiveActionExceptionBag.cs" />
+    <Compile Include="Workflow\InteractiveMessageBag.cs" />
+    <Compile Include="Workflow\PersonEntryConfigurationBag.cs" />
+    <Compile Include="Workflow\PersonEntryValuesBag.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">

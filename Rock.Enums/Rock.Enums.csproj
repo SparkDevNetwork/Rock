@@ -242,8 +242,10 @@
     <Compile Include="Security\LoginFailureReason.cs" />
     <Compile Include="WebFarm\LogSeverity.cs" />
     <Compile Include="WebFarm\LogType.cs" />
+    <Compile Include="Workflow\InteractiveActionContinueMode.cs" />
     <Compile Include="Workflow\WorkflowActionFormShowHideOption.cs" />
     <Compile Include="Workflow\WorkflowActionFormPersonEntryOption.cs" />
+    <Compile Include="Workflow\InteractiveMessageType.cs" />
     <Compile Include="Workflow\WorkflowLoggingLevel.cs" />
     <Compile Include="Workflow\WorkflowTriggerType.cs" />
     <Compile Include="Workflow\WorkflowTriggerValueChangeType.cs" />

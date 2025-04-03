@@ -32,6 +32,7 @@ using Rock.ClientService.Finance.FinancialPersonSavedAccount;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
 using Rock.Data;
 using Rock.ElectronicSignature;
+using Rock.Field;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Pdf;
@@ -3776,34 +3777,16 @@ namespace Rock.Blocks.Event
                                 return null;
                             }
 
-                            var filterValues = new List<string>();
                             var fieldAttribute = AttributeCache.Get( comparedToField.AttributeId.Value );
-                            var fieldType = fieldAttribute?.FieldType?.Field;
-
-                            if ( fieldType == null )
-                            {
-                                return null;
-                            }
-
-                            var comparisonTypeValue = vr.ComparisonType.ConvertToString( false );
-                            if ( comparisonTypeValue != null )
-                            {
-                                // only add the comparisonTypeValue if it is specified, just like
-                                // the logic at https://github.com/SparkDevNetwork/Rock/blob/22f64416b2461c8a988faf4b6e556bc3dcb209d3/Rock/Field/FieldType.cs#L558
-                                filterValues.Add( comparisonTypeValue );
-                            }
-
-                            filterValues.Add( vr.ComparedToValue );
-
-                            var comparisonValue = fieldType.GetPublicFilterValue( filterValues.ToJson(), fieldAttribute.ConfigurationValues );
+                            var ruleBag = FieldVisibilityRule.GetPublicRuleBag( fieldAttribute, vr.ComparisonType, vr.ComparedToValue );
 
                             return new RegistrationEntryVisibilityBag
                             {
                                 ComparedToRegistrationTemplateFormFieldGuid = vr.ComparedToFormFieldGuid.Value,
                                 ComparisonValue = new PublicComparisonValueBag
                                 {
-                                    ComparisonType = ( int? ) comparisonValue.ComparisonType,
-                                    Value = comparisonValue.Value
+                                    ComparisonType = ( int? ) ruleBag.ComparisonType,
+                                    Value = ruleBag.Value
                                 }
                             };
                         } )
