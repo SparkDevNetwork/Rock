@@ -3379,11 +3379,7 @@ namespace Rock.Communication.Chat
                 channelRequest.SetData( ChannelDataKey.Name, chatChannel.Name );
             }
 
-            if ( chatChannel.CampusId.HasValue )
-            {
-                channelRequest.SetData( ChannelDataKey.CampusId, chatChannel.CampusId.Value );
-            }
-
+            channelRequest.SetData( ChannelDataKey.CampusId, chatChannel.CampusId ?? 0 );
             channelRequest.SetData( ChannelDataKey.IsLeavingAllowed, chatChannel.IsLeavingAllowed );
             channelRequest.SetData( ChannelDataKey.IsPublic, chatChannel.IsPublic );
             channelRequest.SetData( ChannelDataKey.IsAlwaysShown, chatChannel.IsAlwaysShown );
@@ -3415,11 +3411,7 @@ namespace Rock.Communication.Chat
             request.SetData( UserDataKey.IsProfileVisible, chatUser.IsProfileVisible );
             request.SetData( UserDataKey.IsOpenDirectMessageAllowed, chatUser.IsOpenDirectMessageAllowed );
             request.SetData( UserDataKey.Badges, chatUser.Badges ?? new List<ChatBadge>() );
-
-            if ( chatUser.CampusId.HasValue )
-            {
-                request.SetData( UserDataKey.CampusId, chatUser.CampusId.Value );
-            }
+            request.SetData( UserDataKey.CampusId, chatUser.CampusId ?? 0 );
 
             return request;
         }
@@ -3460,7 +3452,11 @@ namespace Rock.Communication.Chat
                 return null;
             }
 
-            var name = channel.GetDataOrDefault<string>( ChannelDataKey.Name, null );
+            var campusId = channel.GetDataOrDefault<int?>( ChannelDataKey.CampusId, null );
+
+            // A Stream rock_campus_id value of 0 represents a null campus ID in Rock.
+            campusId = ( campusId > 0 ) ? campusId : null;
+
             var isChannelDisabled = channel.GetDataOrDefault( ChannelDataKey.Disabled, false );
 
             return new ChatChannel
@@ -3469,7 +3465,7 @@ namespace Rock.Communication.Chat
                 ChatChannelTypeKey = channel.Type,
                 QueryableKey = channel.Cid,
                 Name = channel.GetDataOrDefault<string>( ChannelDataKey.Name, null ),
-                CampusId = channel.GetDataOrDefault<int?>( ChannelDataKey.CampusId, null ),
+                CampusId = campusId,
                 IsLeavingAllowed = channel.GetDataOrDefault( ChannelDataKey.IsLeavingAllowed, false ),
                 IsPublic = channel.GetDataOrDefault( ChannelDataKey.IsPublic, false ),
                 IsAlwaysShown = channel.GetDataOrDefault( ChannelDataKey.IsAlwaysShown, false ),
@@ -3516,6 +3512,11 @@ namespace Rock.Communication.Chat
 
             var badges = user.GetDataOrDefault( UserDataKey.Badges, new List<ChatBadge>() ) ?? new List<ChatBadge>();
 
+            var campusId = user.GetDataOrDefault<int?>( ChannelDataKey.CampusId, null );
+
+            // A Stream rock_campus_id value of 0 represents a null campus ID in Rock.
+            campusId = ( campusId > 0 ) ? campusId : null;
+
             return new ChatUser
             {
                 Key = user.Id,
@@ -3525,7 +3526,7 @@ namespace Rock.Communication.Chat
                 IsProfileVisible = user.GetDataOrDefault( UserDataKey.IsProfileVisible, false ),
                 IsOpenDirectMessageAllowed = user.GetDataOrDefault( UserDataKey.IsOpenDirectMessageAllowed, false ),
                 Badges = badges,
-                CampusId = user.GetDataOrDefault<int?>( UserDataKey.CampusId, null )
+                CampusId = campusId
             };
         }
 
