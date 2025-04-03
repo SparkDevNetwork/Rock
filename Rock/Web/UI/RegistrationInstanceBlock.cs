@@ -933,7 +933,7 @@ namespace Rock.Web.UI
 
                         // Add dynamic filter fields
                         var filterFieldControl = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, FILTER_ATTRIBUTE_PREFIX + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
-                        if ( ! attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        if ( !attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         {
                             continue;
                         }
