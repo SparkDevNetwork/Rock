@@ -383,7 +383,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             }
 
             _phActionAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( value, _phActionAttributes, true, ValidationGroup, new List<string>() { "Active", "Order" } );
+            Rock.Attribute.Helper.AddEditControls( value, _phActionAttributes, true, ValidationGroup, new List<string>() { "Active", "Order" }, false, null, true );
         }
 
         /// <summary>

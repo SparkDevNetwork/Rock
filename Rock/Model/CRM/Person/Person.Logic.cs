@@ -1299,10 +1299,22 @@ namespace Rock.Model
         /// Gets the phone number.
         /// </summary>
         /// <param name="phoneType">Type of the phone.</param>
-        /// <returns></returns>
+        /// <returns>The first matching <see cref="PhoneNumber"/> or <c>null</c> if none was found.</returns>
         public PhoneNumber GetPhoneNumber( Guid phoneType )
         {
             int numberTypeValueId = DefinedValueCache.GetId( phoneType ) ?? 0;
+            return PhoneNumbers?.FirstOrDefault( n => n.NumberTypeValueId == numberTypeValueId );
+        }
+
+        /// <summary>
+        /// Gets the phone number.
+        /// </summary>
+        /// <param name="phoneType">Type of the phone.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <returns>The first matching <see cref="PhoneNumber"/> or <c>null</c> if none was found.</returns>
+        public PhoneNumber GetPhoneNumber( Guid phoneType, RockContext rockContext )
+        {
+            int numberTypeValueId = DefinedValueCache.Get( phoneType, rockContext )?.Id ?? 0;
             return PhoneNumbers?.FirstOrDefault( n => n.NumberTypeValueId == numberTypeValueId );
         }
 

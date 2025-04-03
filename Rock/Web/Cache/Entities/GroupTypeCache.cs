@@ -1171,7 +1171,14 @@ namespace Rock.Web.Cache
         /// Gets the 'Family' Group Type.
         /// </summary>
         /// <returns></returns>
-        public static GroupTypeCache GetFamilyGroupType() => Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+        public static GroupTypeCache GetFamilyGroupType() => GetFamilyGroupType( null );
+
+        /// <summary>
+        /// Gets the 'Family' Group Type.
+        /// </summary>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <returns></returns>
+        public static GroupTypeCache GetFamilyGroupType( RockContext rockContext ) => Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), rockContext );
 
         /// <summary>
         /// Gets the 'Security Role' Group Type.

@@ -718,6 +718,9 @@
     <Compile Include="ClientService\Core\Note\NoteClientService.cs" />
     <Compile Include="Cms\RestActionMetadata.cs" />
     <Compile Include="Cms\RestControllerMetadata.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\AlertData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\AlertRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\IStructuredContentBlockLavaRenderer.cs" />
     <Compile Include="Communication\Chat\DTO\ChatUserAuthentication.cs" />
     <Compile Include="Communication\Chat\DTO\RockChatGroup.cs" />
     <Compile Include="Communication\Chat\Exceptions\ChatAccountInvalidException.cs" />
@@ -1322,6 +1325,7 @@
     <Compile Include="Field\Types\AdaptiveMessageFieldType.cs" />
     <Compile Include="Field\Types\AIProviderFieldType.cs" />
     <Compile Include="Field\Types\ColorSelectorFieldType.cs" />
+    <Compile Include="Field\Types\FinancialTransactionFieldType.cs" />
     <Compile Include="Field\Types\GroupMemberRequirementFieldType.cs" />
     <Compile Include="Field\Types\MediaSelectorFieldType.cs" />
     <Compile Include="Field\Types\PrayerRequestFieldType.cs" />
@@ -2972,7 +2976,6 @@
     <Compile Include="Blocks\Types\Mobile\Cms\Login.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\ProfileDetails.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\Register.cs" />
-    <Compile Include="Blocks\Types\Mobile\Cms\WorkflowEntry.cs" />
     <Compile Include="Communication\RockSMSMessageRecipient.cs" />
     <Compile Include="Communication\RockPushMessageRecipient.cs" />
     <Compile Include="Communication\RockEmailMessageRecipient.cs" />
@@ -4899,6 +4902,7 @@
     <Compile Include="Workflow\Action\Entity\SetEntityProperty.cs" />
     <Compile Include="Workflow\Action\Utility\UpdatePersistedDataset.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetFileAttributeFromLava.cs" />
+    <Compile Include="Workflow\Action\WorkflowControl\PaymentEntry.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />
     <Compile Include="Workflow\Action\Utility\RunSQL.cs" />
@@ -4947,6 +4951,9 @@
     <Compile Include="Workflow\FormBuilder\FormPersonEntrySettings.cs" />
     <Compile Include="Workflow\FormBuilder\FormSettings.cs" />
     <Compile Include="Workflow\FormBuilder\PersonEntryAdditionalSettings.cs" />
+    <Compile Include="Workflow\IInteractiveAction.cs" />
+    <Compile Include="Workflow\InteractiveActionResult.cs" />
+    <Compile Include="Workflow\WorkflowPersonEntryProcessor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\msvcr100.dll">

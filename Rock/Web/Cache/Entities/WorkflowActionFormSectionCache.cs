@@ -49,7 +49,7 @@ namespace Rock.Web.Cache
         public string SectionVisibilityRulesJSON
         {
             get => SectionVisibilityRules?.ToJson();
-            private set => SectionVisibilityRules = value?.FromJsonOrNull<FieldVisibilityRules>();
+            private set => SectionVisibilityRules = value?.FromJsonOrNull<FieldVisibilityRules>() ?? new FieldVisibilityRules();
         }
 
         /// <inheritdoc cref="WorkflowActionFormSection.Order"/>
