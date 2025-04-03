@@ -2,6 +2,7 @@
     <NumberBox v-model="communicationId" label="Communication ID" rules="required" />
     <DropDownList v-model="communicationStatus"
                   :items="communicationStatusOptions"
+                  :showBlankItem="false"
                   label="Communication Status"
                   help="Specifies the type of Communication Status that the recipient must have to be included in the result."
                   rules="required" />
