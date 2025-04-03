@@ -1626,7 +1626,8 @@ namespace Rock.Blocks.Communication
                 CategoryGuid = communicationTemplateInfo.Category?.Value.AsGuidOrNull(),
                 IsEmailSupported = communicationTemplateInfo.CommunicationTemplate.SupportsEmailWizard(),
                 IsSmsSupported = communicationTemplateInfo.CommunicationTemplate.HasSMSTemplate()
-                    || communicationTemplateInfo.CommunicationTemplate.Guid == SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid(),
+                    || communicationTemplateInfo.CommunicationTemplate.Guid == SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid()
+                    || communicationTemplateInfo.CommunicationTemplate.Guid == "6280214C-404E-4F4E-BC33-7A5D4CDF8DBC".AsGuid(), // TODO Replace with SystemGuid once preview status is removed.
                 Name = communicationTemplateInfo.CommunicationTemplate.Name,
                 Description = communicationTemplateInfo.CommunicationTemplate.Description,
                 ImageUrl = communicationTemplateInfo.CommunicationTemplate.ImageFileId.HasValue
