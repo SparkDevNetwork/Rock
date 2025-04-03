@@ -66,13 +66,13 @@
 
                                 <div class="row">
                                     <div class="col-sm-12">
-                                        <ImageUploader v-model="currentAttachment"
-                                                       :binaryFileTypeGuid="attachmentBinaryFileTypeGuid"
-                                                       :disabled="isSaving || isSendingTest"
-                                                       label="Attachments"
-                                                       :fileProcessor="smsAttachmentFileProcessor"
-                                                       :uploadAsTemporary="false"
-                                                       @update:modelValue="onAttachmentAdded" />
+                                        <FileUploader v-model="currentAttachment"
+                                                      :binaryFileTypeGuid="attachmentBinaryFileTypeGuid"
+                                                      :disabled="isSaving || isSendingTest"
+                                                      label="Attachments"
+                                                      :fileProcessor="smsAttachmentFileProcessor"
+                                                      :uploadAsTemporary="false"
+                                                      @update:modelValue="onAttachmentAdded" />
 
                                         <NotificationBox v-if="attachmentSizeMessage">{{ attachmentSizeMessage }}</NotificationBox>
                                         <NotificationBox v-if="mimeTypeMessageHtml" :alertType="mimeTypeAlertType" v-html="mimeTypeMessageHtml" />
@@ -190,7 +190,7 @@
     import { useBreakpointHelper } from "./utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
-    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
