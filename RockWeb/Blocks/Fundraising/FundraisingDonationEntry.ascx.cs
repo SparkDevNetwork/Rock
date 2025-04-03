@@ -309,6 +309,15 @@ namespace RockWeb.Blocks.Fundraising
                         queryParams.Add( "AccountIds", financialAccount.Id.ToString() );
                     }
 
+                    /*
+                         4/3/2025 - SMC
+
+                         This logic is duplicated in the Utility Payment Entry block. Any changes made here should also be applied there.
+                         When these blocks are migrated to Obsidian, this redundancy should be resolved to ensure the logic exists in only one place.
+
+                         Reason: Prevent code duplication and maintain consistency between blocks.
+                    */
+
                     if ( groupMember.Group.GetAttributeValue( "CapFundraisingAmount" ).AsBoolean() )
                     {
                         var amountLeft = 0.00M;

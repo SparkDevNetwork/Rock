@@ -2194,6 +2194,15 @@ mission. We are so grateful for your commitment.</p>
 
                     var participationMode = PageParameters().ContainsKey( PageParameterKey.ParticipationMode ) ? PageParameter( PageParameterKey.ParticipationMode ).AsIntegerOrNull() ?? 1 : 1;
 
+                    /*
+                         4/3/2025 - SMC
+
+                         This logic overlaps with logic in the Fundraising Donation Entry block. Any changes made here should also be applied there.
+                         When these blocks are migrated to Obsidian, this redundancy should be resolved to ensure the logic exists in only one place.
+
+                         Reason: Prevent code duplication and maintain consistency between blocks.
+                    */
+
                     if ( EntityTypeCache.Get( transactionEntityTypeId ).Guid == Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() )
                     {
                         var groupMember = new GroupMemberService( rockContext ).Get( transactionEntity.Guid );

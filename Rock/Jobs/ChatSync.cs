@@ -156,11 +156,9 @@ namespace Rock.Jobs
             if ( !ChatHelper.IsChatEnabled )
             {
                 var section = CreateAndAddResultSection( null ); // No section title.
-
                 var taskResult = CreateAndAddNewTaskResult( section, "Chat is not enabled.", TimeSpan.Zero );
-                taskResult.IsWarning = true;
 
-                ReportResults( showWarningInstructions: false );
+                ReportResults();
                 return;
             }
 
@@ -1350,9 +1348,8 @@ namespace Rock.Jobs
         /// <summary>
         /// Reports the results of this job run.
         /// </summary>
-        /// <param name="showWarningInstructions">Whether to show further instructions in the case of warnings.</param>
         /// <exception cref="RockJobWarningException">If any <see cref="ChatSyncTaskResult"/> has an <see cref="Exception"/>.</exception>
-        private void ReportResults( bool showWarningInstructions = true )
+        private void ReportResults()
         {
             var jobSummaryBuilder = new StringBuilder();
 
@@ -1393,7 +1390,7 @@ namespace Rock.Jobs
                 jobSummaryBuilder.AppendLine( string.Empty );
                 jobSummaryBuilder.AppendLine( "<i class='fa fa-circle text-danger'></i> Some tasks have errors. View Rock's Exception List for more details. You can also enable 'Error' verbosity level for 'Chat' domains in Rock Logs and re-run this job to get a full list of issues." );
             }
-            else if ( anyWarnings && showWarningInstructions )
+            else if ( anyWarnings )
             {
                 jobSummaryBuilder.AppendLine( string.Empty );
                 jobSummaryBuilder.AppendLine( "<i class='fa fa-circle text-warning'></i> Some tasks completed with warnings. Enable 'Warning' verbosity level for all 'Chat' domains in Rock Logs and re-run this job to get a full list of issues." );

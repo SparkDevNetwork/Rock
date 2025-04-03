@@ -691,7 +691,7 @@ namespace RockWeb.Blocks.Groups
             rblCommunicationPreference.SetValue( ( ( int ) groupMember.CommunicationPreference ).ToString() );
             rblCommunicationPreference.Enabled = !readOnly;
 
-            if ( ChatHelper.IsChatEnabled )
+            if ( ChatHelper.IsChatEnabled && group.GetIsChatEnabled() )
             {
                 cbIsChatMuted.Checked = groupMember.IsChatMuted;
                 cbIsChatBanned.Checked = groupMember.IsChatBanned;
@@ -1682,7 +1682,7 @@ namespace RockWeb.Blocks.Groups
                 groupMember.GroupMemberStatus = rblStatus.SelectedValueAsEnum<GroupMemberStatus>();
                 groupMember.CommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
 
-                if ( ChatHelper.IsChatEnabled )
+                if ( ChatHelper.IsChatEnabled && group.GetIsChatEnabled() )
                 {
                     groupMember.IsChatMuted = cbIsChatMuted.Checked;
                     groupMember.IsChatBanned = cbIsChatBanned.Checked;
