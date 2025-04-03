@@ -1144,12 +1144,12 @@ namespace Rock.Blocks.Communication
                 BccEmails = communicationTemplateInfo.CommunicationTemplate.BCCEmails,
                 Subject = communicationTemplateInfo.CommunicationTemplate.Subject,
                 Message = communicationTemplateInfo.CommunicationTemplate.Message?.ResolveMergeFields( mergeFields ),
-                EmailAttachmentBinaryFiles = communicationTemplateInfo.CommunicationTemplate.GetAttachments( CommunicationType.Email ).ToListItemBagList(),
+                EmailAttachmentBinaryFiles = communicationTemplateInfo.CommunicationTemplate.GetAttachments( CommunicationType.Email )?.Select( cta => cta.BinaryFile )?.ToListItemBagList(),
 
                 // SMS fields
                 SmsFromSystemPhoneNumberGuid = communicationTemplateInfo.SmsFromSystemPhoneNumberGuid,
                 SmsMessage = communicationTemplateInfo.CommunicationTemplate.SMSMessage,
-                SmsAttachmentBinaryFiles = communicationTemplateInfo.CommunicationTemplate.GetAttachments( CommunicationType.SMS ).ToListItemBagList(),
+                SmsAttachmentBinaryFiles = communicationTemplateInfo.CommunicationTemplate.GetAttachments( CommunicationType.SMS )?.Select( cta => cta.BinaryFile )?.ToListItemBagList(),
 
                 // Push fields                    
                 PushData = ConvertPushData( communicationTemplateInfo.CommunicationTemplate.PushData.FromJsonOrNull<PushData>() ),
@@ -1549,6 +1549,7 @@ namespace Rock.Blocks.Communication
             var templateQuery = new CommunicationTemplateService( rockContext )
                 .Queryable()
                 .AsNoTracking()
+                .Include( a => a.Attachments.Select( b => b.BinaryFile ) )
                 .Where( a => a.IsActive );
 
             // Apply external query filters.
