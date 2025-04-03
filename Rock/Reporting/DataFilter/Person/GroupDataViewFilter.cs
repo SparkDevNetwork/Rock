@@ -25,7 +25,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Utility;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -38,7 +40,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Select people according to their membership of Groups from a Group Data View." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Data View" )]
-    [Rock.SystemGuid.EntityTypeGuid( "09D0169F-BA45-4827-AD92-455E1B05B9F2")]
+    [Rock.SystemGuid.EntityTypeGuid( "09D0169F-BA45-4827-AD92-455E1B05B9F2" )]
     public class GroupDataViewFilter : DataFilterComponent, IRelatedChildDataView
     {
         #region Properties
@@ -63,6 +65,46 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Related Data Views"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/groupDataViewFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new SelectSettings( selection );
+            var result = new Dictionary<string, string>();
+
+            if ( selection.Trim() == string.Empty )
+            {
+                return result;
+            }
+
+            if ( settings.DataViewGuid.HasValue )
+            {
+                var dataView = DataViewCache.Get( settings.DataViewGuid.Value );
+                result.AddOrReplace( "dataView", dataView.ToListItemBag().ToCamelCaseJson( false, true ) );
+            }
+
+            result.AddOrReplace( "memberStatus", settings.MemberStatus?.ConvertToInt().ToString() );
+            result.AddOrReplace( "roleType", settings.RoleType?.ConvertToInt().ToString() );
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var dataViewBag = data.GetValueOrNull( "dataView" )?.FromJsonOrNull<ListItemBag>();
+
+            var selection = $"{dataViewBag?.Value}|{data.GetValueOrNull( "memberStatus" )}|{data.GetValueOrDefault( "roleType", "0" )}";
+
+            return selection;
         }
 
         #endregion
@@ -297,14 +339,14 @@ function ()
         public override string GetSelection( Type entityType, Control[] controls )
         {
             var dvpDataView = controls.GetByName<DataViewItemPicker>( _CtlDataView );
-            var ddlRoleType = controls.GetByName<RockDropDownList>( _CtlRoleType );
             var ddlGroupMemberStatus = controls.GetByName<RockDropDownList>( _CtlGroupStatus );
+            var ddlRoleType = controls.GetByName<RockDropDownList>( _CtlRoleType );
 
             var settings = new SelectSettings();
 
+            settings.DataViewGuid = DataComponentSettingsHelper.GetDataViewGuid( dvpDataView.SelectedValue );
             settings.MemberStatus = ddlGroupMemberStatus.SelectedValue.ConvertToEnumOrNull<GroupMemberStatus>();
             settings.RoleType = ddlRoleType.SelectedValue.ConvertToEnumOrNull<RoleTypeSpecifier>();
-            settings.DataViewGuid = DataComponentSettingsHelper.GetDataViewGuid( dvpDataView.SelectedValue );
 
             return settings.ToSelectionString();
         }
@@ -319,8 +361,8 @@ function ()
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
             var dvpDataView = controls.GetByName<DataViewItemPicker>( _CtlDataView );
-            var ddlRoleType = controls.GetByName<RockDropDownList>( _CtlRoleType );
             var ddlGroupMemberStatus = controls.GetByName<RockDropDownList>( _CtlGroupStatus );
+            var ddlRoleType = controls.GetByName<RockDropDownList>( _CtlRoleType );
 
             var settings = new SelectSettings( selection );
 
@@ -338,8 +380,8 @@ function ()
                 dvpDataView.SetValue( dataView );
             }
 
-            ddlRoleType.SelectedValue = settings.RoleType.ToStringSafe();
-            ddlGroupMemberStatus.SelectedValue = settings.MemberStatus.ToStringSafe();
+            ddlGroupMemberStatus.SelectedValue = settings.MemberStatus?.ConvertToInt().ToStringSafe();
+            ddlRoleType.SelectedValue = settings.RoleType?.ToStringSafe();
         }
 
         /// <summary>

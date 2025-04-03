@@ -1,0 +1,53 @@
+<template>
+    <DataViewPicker v-model="dataView"
+                    :entityTypeGuid="EntityType.Group"
+                    label="Is Member of Group from Data View"
+                    help="A Data View that filters the Groups included in the result. If no value is selected, any Groups that would be visible in a Group List will be included."
+                    showBlankItem />
+    <DropDownList v-model="memberStatus"
+                  :items="memberStatuses"
+                  label="with Group Member Status"
+                  help="Specifies the Status the Member must have to be included in the result. If no value is selected, Members of every Group Status will be shown."
+                  showBlankItem />
+    <DropDownList v-model="roleType"
+                  :items="roleTypeOptions"
+                  label="with Group Role Type"
+                  help="Specifies the type of Group Role the Member must have to be included in the result. If no value is selected, Members in every Role will be shown."
+                  showBlankItem />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { GroupMemberStatus } from "@Obsidian/Enums/Group/groupMemberStatus";
+
+    const props = defineProps(dataViewSelectProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const dataView = ref(safeParseJson<ListItemBag>(props.modelValue.dataView ?? ""));
+
+    const memberStatuses: ListItemBag[] = Object.keys(GroupMemberStatus).map((key) => {
+        return { text: key, value: GroupMemberStatus[key].toString() };
+    });
+    const memberStatus = ref<string>(props.modelValue.memberStatus ?? "");
+
+    const roleTypeOptions: ListItemBag[] = [{ text: "Leader", value: "1" }, { text: "Member", value: "2" }];
+    const roleType = ref<string>(props.modelValue.roleType ?? "");
+
+    watch([dataView, memberStatus, roleType], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            dataView: JSON.stringify(dataView.value),
+            memberStatus: memberStatus.value,
+            roleType: roleType.value || "0",
+        });
+    });
+</script>
