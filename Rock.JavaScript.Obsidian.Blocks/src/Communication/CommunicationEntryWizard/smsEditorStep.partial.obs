@@ -58,6 +58,7 @@
                                                           :mergeFields="mergeFields"
                                                           rules="required"
                                                           :shortLinkCheckToken="shortLinkCheckToken"
+                                                          :shortLinkGetPageId="shortLinkGetPageId"
                                                           :shortLinkSites="shortLinkSites"
                                                           :shortLinkTokenMinLength="shortLinkTokenMinLength"
                                                           toolbarLabel="Message" />
@@ -248,6 +249,11 @@
 
         shortLinkCheckToken: {
             type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>,
+            required: true
+        },
+
+        shortLinkGetPageId: {
+            type: Object as PropType<((pageGuid: Guid) => Promise<number | null | undefined>) | null | undefined>,
             required: true
         },
 

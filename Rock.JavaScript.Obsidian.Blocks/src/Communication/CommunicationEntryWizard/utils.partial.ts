@@ -96,6 +96,10 @@ export function useInvokeBlockActionHelper(): InvokeBlockActionHelper {
             return invokeBlockAction<string>("CheckShortLinkToken", { bag });
         },
 
+        getShortLinkPageId(pageGuid: Guid): Promise<HttpResult<number | null | undefined>> {
+            return invokeBlockAction<number | null | undefined>("GetShortLinkPageId", { pageGuid });
+        },
+
         saveMetricsReminder(bag: CommunicationEntryWizardSaveMetricsReminderRequestBag): Promise<HttpResult<void>> {
             return invokeBlockAction("SaveMetricsReminder", { bag });
         },

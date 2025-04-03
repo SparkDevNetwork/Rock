@@ -903,6 +903,31 @@ namespace Rock.Blocks.Communication
             }
         }
 
+        [BlockAction( "GetShortLinkPageId" )]
+        public BlockActionResult GetShortLinkPageId( Guid pageGuid )
+        {
+            var pageId = PageCache.GetId( pageGuid );
+
+            if ( pageId.HasValue )
+            {
+                return ActionOk( pageId.Value );
+            }
+            else
+            {
+                // Get directly from the database just in case.
+                pageId = new PageService( this.RockContext ).GetId( pageGuid );
+
+                if ( pageId.HasValue ) 
+                {
+                    return ActionOk( pageId.Value );
+                }
+                else
+                {
+                    return ActionNotFound();
+                }
+            }
+        }
+
         #endregion
 
         #region Methods

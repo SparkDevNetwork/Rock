@@ -7914,9 +7914,7 @@ namespace Rock.Rest.v2
                 .Where( p => p.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( p, Security.Authorization.VIEW ) == true )
                 .ToList();
             List<TreeItemBag> pageItemList = new List<TreeItemBag>();
-            Func<Page, string> getTreeItemValue = options.UseIntegerIds
-                ? new Func<Page, string>( p => p.Id.ToString() )
-                : new Func<Page, string>( p => p.Guid.ToString() );
+            Func<Page, string> getTreeItemValue = new Func<Page, string>( p => p.Guid.ToString() );
             foreach ( var page in pageList )
             {
                 var pageItem = new TreeItemBag();
@@ -7934,9 +7932,7 @@ namespace Rock.Rest.v2
                     p.ParentPageId.HasValue &&
                     resultIds.Contains( p.ParentPageId.Value ) );
 
-            var pageIdentifiersWithChildren = options.UseIntegerIds
-                ? qryHasChildren.Select( p => p.ParentPage.Id.ToString() ).Distinct().ToList()
-                : qryHasChildren.Select( p => p.ParentPage.Guid.ToString() ).Distinct().ToList();
+            var pageIdentifiersWithChildren = qryHasChildren.Select( p => p.ParentPage.Guid.ToString() ).Distinct().ToList();
 
             foreach ( var g in pageItemList )
             {
