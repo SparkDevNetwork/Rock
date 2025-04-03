@@ -1256,7 +1256,7 @@ namespace Rock.Communication.Chat
                                 }
                             }
                         }
-                        else if ( channel.IsActive )
+                        else if ( channel.IsActive && DidChatChannelOriginateInRock( channel.Key ) )
                         {
                             // This active channel doesn't exist yet in the external chat system; create it.
                             channelsToCreate.Add( channel );
