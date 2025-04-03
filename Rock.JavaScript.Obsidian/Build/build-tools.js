@@ -558,7 +558,7 @@ class DeclarationBuilder {
                 const duration = Math.floor(performance.now() - this.buildTasks[buildIndex].start);
                 const relativeFile = path.relative(process.cwd(), project.projectFile);
 
-                console.log(`Project '${relativeFile}' ${project.failed ? "failed to build" : "built"} in ${duration}ms.`);
+                console.log(`Project '${relativeFile}' ${project.failed ? "failed to build" : "built"} in ${duration.toLocaleString()}ms.`);
 
                 proc.stderr.pipe(process.stderr);
                 proc.stdout.pipe(process.stdout);
