@@ -208,8 +208,13 @@
         return showContentFormatDropdown.value && formatType.value === NoteFormatType.Structured.toString();
     });
 
+    /**
+     * 04/04/2025 - NLB - This is a temporary fix to hide the mentions checkbox until we decide when members can access it.
+     * Asana Ticket with more Details from Daniel H: https://app.asana.com/0/1208364266328691/1209885795399789/f
+     */
     const showEnableMentions = computed((): boolean => {
-        return showContentFormatDropdown.value && (formatType.value === NoteFormatType.Structured.toString() || formatType.value === NoteFormatType.Unknown.toString());
+        return false;
+        // return showContentFormatDropdown.value && (formatType.value === NoteFormatType.Structured.toString() || formatType.value === NoteFormatType.Unknown.toString());
     });
 
     function validateMaxReplyDepth(value: unknown): string | boolean {
