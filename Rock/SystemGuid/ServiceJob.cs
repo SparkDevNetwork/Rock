@@ -477,5 +477,10 @@ namespace Rock.SystemGuid
         /// The job to run Post v17.1 Data Migrations to update an existing index on the CommunicationRecipient table.
         /// </summary>
         public const string DATA_MIGRATIONS_171_UPDATE_COMMUNICATIONRECIPIENT_INDEX = "EB00BD84-D89C-44B4-8C0C-56322074C9C4";
+
+        /// <summary>
+        /// The job to run Post v17.1 Data Migrations to add an index on the CommunicationRecipient table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_171_ADD_COMMUNICATIONRECIPIENT_INDEX = "9C04D469-FB52-438E-B725-D4211139A933";
     }
 }
