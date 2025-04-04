@@ -376,6 +376,32 @@ export function createHash(str: string): number {
 }
 
 /**
+ * Generates a cryptographically strong SHA-256 hash of a given string.
+ *
+ * This is a secure hash function ideal for caching, fingerprinting, or comparing
+ * large or variable input data like HTML emails, templates, or user-generated content.
+ *
+ * - ✅ Collision-resistant
+ * - ✅ Safe for HTML/email body hashing
+ * - ❌ Slightly slower (async) but reliable for content comparison
+ *
+ * @param str - The input string to hash.
+ * @returns A Promise resolving to a 64-character hex-encoded SHA-256 hash string.
+ *
+ * @example
+ * const key = await createStrongHash("<html>Your email here</html>");
+ */
+export async function createHashSha256(str: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+
+    return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+}
+
+/**
  * Replaces all instances of `search` in `str` with `replace`.
  * @param str The source string.
  * @param search The string to search for.
