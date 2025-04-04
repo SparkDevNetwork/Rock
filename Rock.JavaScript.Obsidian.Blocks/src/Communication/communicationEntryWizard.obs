@@ -88,6 +88,7 @@
                              :recipientPersonIds="emailRecipients.map(e => e.personId)"
                              :recipientsLabel="emailRecipientsLabel"
                              :shortLinkCheckToken="onShortLinkCheckToken"
+                             :shortLinkGetPageId="onShortLinkGetPageId"
                              :shortLinkSites="config.shortLinkSites"
                              :shortLinkTokenMinLength="config.minimumShortLinkTokenLength"
                              :title="step"

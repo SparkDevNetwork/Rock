@@ -10,6 +10,7 @@
                        :mergeFields="mergeFields"
                        :recipientPersonIds="recipientPersonIds"
                        :shortLinkCheckToken="shortLinkCheckToken"
+                       :shortLinkGetPageId="shortLinkGetPageId"
                        :shortLinkSites="shortLinkSites"
                        :shortLinkTokenMinLength="shortLinkTokenMinLength"
                        :videoProviderNames="videoProviderNames"
@@ -127,6 +128,10 @@
 
         shortLinkCheckToken: {
             type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>
+        },
+
+        shortLinkGetPageId: {
+            type: Object as PropType<((pageGuid: Guid) => Promise<number | null | undefined>) | null | undefined>
         },
 
         shortLinkSites: {

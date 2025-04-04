@@ -65,6 +65,7 @@
 
             <ShortLinkPlugin ref="shortLinkPlugin"
                              :checkToken="shortLinkCheckToken"
+                             :getPageId="shortLinkGetPageId"
                              :sites="shortLinkSites"
                              :tokenMinLength="shortLinkTokenMinLength" />
         </template>
@@ -167,6 +168,7 @@
     import StylesheetsPlugin from "./NoteEditor/stylesheetsPlugin.partial.obs";
     import { providePluginsFeature } from "./NoteEditor/utils.partial";
     import { tinymce, Editor, EditorEvent, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";
+    import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { debounce, isNullish } from "@Obsidian/Utility/util";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -277,6 +279,10 @@
 
         shortLinkCheckToken: {
             type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>
+        },
+
+        shortLinkGetPageId: {
+            type: Object as PropType<((pageGuid: Guid) => Promise<number | null | undefined>) | null | undefined>
         },
 
         shortLinkSites: {
