@@ -15,6 +15,7 @@
                                        :mergeFields="mergeFields"
                                        mode="html"
                                        :shortLinkCheckToken="shortLinkCheckToken"
+                                       :shortLinkGetPageId="shortLinkGetPageId"
                                        :shortLinkSites="shortLinkSites"
                                        :shortLinkTokenMinLength="shortLinkTokenMinLength" />
                 </Accordion>
@@ -22,8 +23,8 @@
                 <Accordion title="Text Styling">
                     <FontPropertyGroup :element="componentHelper.contentWrapper"
                                        :visibilityOptions="{
-                                           isJustifyTextHidden: true
-                                       }" />
+                                        isJustifyTextHidden: true
+                                    }" />
 
                     <ColorPickerProperty label="Background Color"
                                          :valueProvider="backgroundColorProvider" />
@@ -66,6 +67,7 @@
     import PaddingProperty from "../properties/paddingProperty.partial.obs";
     import { createComponentBackgroundColorProvider } from "../providers.partial";
     import { getTextComponentHelper } from "../utils.partial";
+    import { Guid } from "@Obsidian/Types";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
@@ -81,6 +83,10 @@
 
         shortLinkCheckToken: {
             type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>
+        },
+
+        shortLinkGetPageId: {
+            type: Object as PropType<((pageGuid: Guid) => Promise<number | null | undefined>) | null | undefined>
         },
 
         shortLinkSites: {

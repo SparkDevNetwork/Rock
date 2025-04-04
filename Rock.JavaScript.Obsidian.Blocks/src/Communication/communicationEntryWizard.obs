@@ -88,6 +88,7 @@
                              :recipientPersonIds="emailRecipients.map(e => e.personId)"
                              :recipientsLabel="emailRecipientsLabel"
                              :shortLinkCheckToken="onShortLinkCheckToken"
+                             :shortLinkGetPageId="onShortLinkGetPageId"
                              :shortLinkSites="config.shortLinkSites"
                              :shortLinkTokenMinLength="config.minimumShortLinkTokenLength"
                              :title="step"
@@ -110,6 +111,7 @@
                            :nextStepTitle="nextStep"
                            :recipientsLabel="smsRecipientsLabel"
                            :shortLinkCheckToken="onShortLinkCheckToken"
+                           :shortLinkGetPageId="onShortLinkGetPageId"
                            :shortLinkSites="config.shortLinkSites"
                            :shortLinkTokenMinLength="config.minimumShortLinkTokenLength"
                            :smsAcceptedMimeTypes="config.smsAcceptedMimeTypes"
@@ -821,6 +823,17 @@
         else {
             // Something went wrong so just return the original token.
             return token;
+        }
+    }
+
+    async function onShortLinkGetPageId(pageGuid: Guid): Promise<number | null | undefined> {
+        const result = await invokeBlockAction.getShortLinkPageId(pageGuid);
+
+        if (result.isSuccess) {
+            return result.data;
+        }
+        else {
+            return null;
         }
     }
 
