@@ -903,6 +903,31 @@ namespace Rock.Blocks.Communication
             }
         }
 
+        [BlockAction( "GetShortLinkPageId" )]
+        public BlockActionResult GetShortLinkPageId( Guid pageGuid )
+        {
+            var pageId = PageCache.GetId( pageGuid );
+
+            if ( pageId.HasValue )
+            {
+                return ActionOk( pageId.Value );
+            }
+            else
+            {
+                // Get directly from the database just in case.
+                pageId = new PageService( this.RockContext ).GetId( pageGuid );
+
+                if ( pageId.HasValue ) 
+                {
+                    return ActionOk( pageId.Value );
+                }
+                else
+                {
+                    return ActionNotFound();
+                }
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -1144,12 +1169,12 @@ namespace Rock.Blocks.Communication
                 BccEmails = communicationTemplateInfo.CommunicationTemplate.BCCEmails,
                 Subject = communicationTemplateInfo.CommunicationTemplate.Subject,
                 Message = communicationTemplateInfo.CommunicationTemplate.Message?.ResolveMergeFields( mergeFields ),
-                EmailAttachmentBinaryFiles = communicationTemplateInfo.CommunicationTemplate.GetAttachments( CommunicationType.Email ).ToListItemBagList(),
+                EmailAttachmentBinaryFiles = communicationTemplateInfo.CommunicationTemplate.GetAttachments( CommunicationType.Email )?.Select( cta => cta.BinaryFile )?.ToListItemBagList(),
 
                 // SMS fields
                 SmsFromSystemPhoneNumberGuid = communicationTemplateInfo.SmsFromSystemPhoneNumberGuid,
                 SmsMessage = communicationTemplateInfo.CommunicationTemplate.SMSMessage,
-                SmsAttachmentBinaryFiles = communicationTemplateInfo.CommunicationTemplate.GetAttachments( CommunicationType.SMS ).ToListItemBagList(),
+                SmsAttachmentBinaryFiles = communicationTemplateInfo.CommunicationTemplate.GetAttachments( CommunicationType.SMS )?.Select( cta => cta.BinaryFile )?.ToListItemBagList(),
 
                 // Push fields                    
                 PushData = ConvertPushData( communicationTemplateInfo.CommunicationTemplate.PushData.FromJsonOrNull<PushData>() ),
@@ -1549,6 +1574,7 @@ namespace Rock.Blocks.Communication
             var templateQuery = new CommunicationTemplateService( rockContext )
                 .Queryable()
                 .AsNoTracking()
+                .Include( a => a.Attachments.Select( b => b.BinaryFile ) )
                 .Where( a => a.IsActive );
 
             // Apply external query filters.
@@ -1626,7 +1652,8 @@ namespace Rock.Blocks.Communication
                 CategoryGuid = communicationTemplateInfo.Category?.Value.AsGuidOrNull(),
                 IsEmailSupported = communicationTemplateInfo.CommunicationTemplate.SupportsEmailWizard(),
                 IsSmsSupported = communicationTemplateInfo.CommunicationTemplate.HasSMSTemplate()
-                    || communicationTemplateInfo.CommunicationTemplate.Guid == SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid(),
+                    || communicationTemplateInfo.CommunicationTemplate.Guid == SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid()
+                    || communicationTemplateInfo.CommunicationTemplate.Guid == "6280214C-404E-4F4E-BC33-7A5D4CDF8DBC".AsGuid(), // TODO Replace with SystemGuid once preview status is removed.
                 Name = communicationTemplateInfo.CommunicationTemplate.Name,
                 Description = communicationTemplateInfo.CommunicationTemplate.Description,
                 ImageUrl = communicationTemplateInfo.CommunicationTemplate.ImageFileId.HasValue

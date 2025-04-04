@@ -65,8 +65,7 @@
                 <div class="col-sm-3">
                     <PagePicker v-model="impersonationPage"
                                 help="Restrict the shortlink's impersonation to a specific page. Leave blank to allow all pages."
-                                label="Limit Impersonation to Page"
-                                :useIntegerIds="true" />
+                                label="Limit Impersonation to Page" />
                 </div>
             </div>
         </TransitionVerticalCollapse>
@@ -121,7 +120,7 @@
      *   });
      * (/script)
      */
-    import { computed, PropType, ref, watch } from "vue";
+    import { PropType, ref, watch } from "vue";
     import { getToolbarButton, usePluginHelper } from "./utils.partial";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -133,7 +132,10 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
     import { ValidationResult } from "@Obsidian/ValidationRules";
     import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
 
@@ -164,6 +166,11 @@
 
         tokenMinLength: {
             type: Number as PropType<number | null | undefined>
+        },
+
+        getPageId: {
+            type: Object as PropType<((pageGuid: Guid) => Promise<number | null | undefined>) | null | undefined>,
+            required: true
         }
     });
 
@@ -201,14 +208,27 @@
         return Array.isArray(someArray) && someArray.length > 1;
     }
 
-    const shortLinkLava = computed<string[]>(() => {
+    //#endregion
+
+    //#region Functions
+
+    async function getShortLinkLava(): Promise<string[]> {
         const siteId = getSelectedSiteIdOrSingleValue() || "null";
 
         if (isImpersonationEnabled.value) {
             const separator = destinationUrl.value.includes("?") ? "&" : "?";
             const expiryMinutes = `${impersonationExpirationMinutes.value ?? "null"}`;
             const usageLimit = `${impersonationMaxUsageLimit.value ?? "null"}`;
-            const pageId = impersonationPage.value?.page?.value || "null";
+            const pageGuid = toGuidOrNull(impersonationPage.value?.page?.value);
+            let pageId = "null";
+
+            if (!isNullish(pageGuid) && !isNullish(props.getPageId)) {
+                const pageIdResult = await props.getPageId(pageGuid);
+
+                if (!isNullish(pageIdResult)) {
+                    pageId = `${pageIdResult}`;
+                }
+            }
 
             return [
                 // Ensure all entries but the last one use '{%-' to ensure blank lines aren't added.
@@ -224,11 +244,7 @@
                 `{{ "${destinationUrl.value}" | CreateShortLink:'${token.value}',${siteId},${useSameToken} }}`
             ];
         }
-    });
-
-    //#endregion
-
-    //#region Functions
+    }
 
     function getSelectedSiteIdOrSingleValue(): string | null {
         if (siteIdOrEmptyString.value) {
@@ -341,7 +357,7 @@
                 token.value = await props.checkToken(token.value, siteId ?? 0);
             }
 
-            const shortLink = shortLinkLava.value.join("<br>");
+            const shortLink = (await getShortLinkLava()).join("<br>");
 
             if (shortLink) {
                 // Insert the merge field value into the editor at the current position.
