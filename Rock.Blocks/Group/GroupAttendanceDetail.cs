@@ -2499,7 +2499,7 @@ namespace Rock.Blocks.Group
 
                 var currentPerson = this._block.GetCurrentPerson();
 
-                if ( !group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson ) && !group.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                if ( !group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson ) && !group.IsAuthorized( Authorization.EDIT, currentPerson ) && !group.IsAuthorized( Authorization.TAKE_ATTENDANCE, currentPerson ) )
                 {
                     return null;
                 }
