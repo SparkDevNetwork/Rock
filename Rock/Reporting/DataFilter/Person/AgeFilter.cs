@@ -26,7 +26,6 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
-using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -76,7 +75,7 @@ namespace Rock.Reporting.DataFilter.Person
         {
             var selectionValues = selection.Split( '|' );
 
-            if ( selectionValues.Length > 0 )
+            if ( selectionValues.Length > 2 )
             {
                 return new Dictionary<string, string>
                 {
