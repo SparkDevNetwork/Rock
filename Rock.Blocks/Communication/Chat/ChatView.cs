@@ -86,6 +86,14 @@ namespace Rock.Blocks.Communication.Chat
                 return ActionUnauthorized( "You must be logged in to view your chat settings." );
             }
 
+            using ( var chatHelper = new ChatHelper( RockContext ) )
+            {
+                if ( chatHelper.IsPersonBanned( person.Id ) )
+                {
+                    return ActionForbidden( "You are banned from using chat." );
+                }
+            }
+
             // Pull default values from chat configuration.
             var chatConfig = ChatHelper.GetChatConfiguration();
             var isOpenDirectMessageAllowedDefaultValue = chatConfig.IsOpenDirectMessagingAllowed;
