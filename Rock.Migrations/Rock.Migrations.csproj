@@ -64,12 +64,12 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202503251838152_AddHistoryLoginModel.cs" />
-    <Compile Include="Migrations\202503251838152_AddHistoryLoginModel.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.Designer.cs">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP.cs" />
-    <Compile Include="Migrations\202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP.Designer.cs">
       <DependentUpon>202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503052051200_CodeGenerated_20250305.cs" />
@@ -2558,10 +2558,10 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202503251838152_AddHistoryLoginModel.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.resx">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP.resx">
       <DependentUpon>202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503052051200_CodeGenerated_20250305.resx">
@@ -4447,7 +4447,7 @@
     <None Include="Migrations\Version 16.0\Version 1.16.7\202410101546296_AddDefaultCheckInAdvertisement_Image.jpg">
       <DependentUpon>202410101546296_AddDefaultCheckInAdvertisement.cs</DependentUpon>
     </None>
-    <Content Include="Migrations\202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP_spCommunicationRecipientDetails.sql" />
+    <Content Include="Migrations\Version 17.0\Version 17.0\202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP_spCommunicationRecipientDetails.sql" />
     <Content Include="Migrations\Version 17.0\Version 17.0\202503011520245_AddNewCommunicationPreviewPageAndPersonalizationSegments_spCommunicationRecipientDetails.sql" />
     <Content Include="Migrations\Version 17.0\Version 17.0\202501152224140_ImprovePeerNetworkRelationshipTrends_spPeerNetwork_UpdateFollowing.sql" />
     <Content Include="Migrations\Version 16.0\Version 1.16.7\202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements_spFinance_PledgeAnalyticsQuery.sql" />
