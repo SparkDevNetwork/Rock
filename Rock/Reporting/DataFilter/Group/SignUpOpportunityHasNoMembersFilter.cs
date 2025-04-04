@@ -153,9 +153,9 @@ namespace Rock.Reporting.DataFilter.Group
 
             var data = new Dictionary<string, string>
             {
-                { "groupTypeGuid", selectionConfig.GroupTypeGuid },
-                { "memberType", selectionConfig.MemberType },
-                { "hidePastOpportunities", selectionConfig.HidePastOpportunities.ToTrueFalse() },
+                { "groupTypeGuid", selectionConfig?.GroupTypeGuid },
+                { "memberType", selectionConfig?.MemberType },
+                { "hidePastOpportunities", selectionConfig?.HidePastOpportunities.ToTrueFalse() },
                 { "groupTypes", groupTypes.ToCamelCaseJson(false, true) }
             };
 
