@@ -107,7 +107,8 @@
                                     {{ emailSection.name }}
                                 </h5>
 
-                                <DropDownMenu anchorButtonCssClass="btn-xs email-section-menu-button"
+                                <DropDownMenu align="right"
+                                              anchorButtonCssClass="btn-xs email-section-menu-button"
                                               :items="getEmailSectionMenuItems(emailSection)"
                                               @mousedown.stop />
                             </header>
