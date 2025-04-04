@@ -135,6 +135,7 @@
     <Compile Include="Event\RegistrationInstanceActiveList.cs" />
     <Compile Include="Core\ScheduleCategoryExclusionList.cs" />
     <Compile Include="Core\ScheduledJobHistoryList.cs" />
+    <Compile Include="Group\GroupPlacement.cs" />
     <Compile Include="Lms\LearningClassActivityCompletionDetail.cs" />
     <Compile Include="Lms\LearningClassActivityCompletionList.cs" />
     <Compile Include="Lms\LearningClassActivityDetail.cs" />

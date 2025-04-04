@@ -1,0 +1,29 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+
+    {{ config }}
+
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { GroupPlacementInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementInitializationBox";
+    import { onMounted, ref, nextTick, computed } from "vue";
+
+
+    // #region Values
+    const config = useConfigurationValues<GroupPlacementInitializationBox>();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+
+    // #endregion
+
+</script>

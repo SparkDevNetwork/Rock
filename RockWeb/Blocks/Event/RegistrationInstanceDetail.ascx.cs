@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 
 using Rock;
@@ -697,6 +698,25 @@ namespace RockWeb.Blocks.Event
             lDetails.Visible = !string.IsNullOrWhiteSpace( registrationInstance.Details );
             lDetails.Text = registrationInstance.Details;
             btnCopy.ToolTip = $"Copy { registrationInstance.Name }";
+
+            var rockContext = new RockContext();
+            var placementService = new RegistrationTemplatePlacementService( rockContext );
+            var rawPlacements = placementService
+                .Queryable()
+                .Where( p => p.RegistrationTemplateId == registrationInstance.RegistrationTemplateId )
+                .Select( p => new { p.Id, p.Name } )
+                .ToList();
+
+            var templatePlacements = rawPlacements
+                .Select( p => new
+                {
+                    Name = p.Name,
+                    Url = $"/GroupPlacement?RegistrationInstance={registrationInstance.Id}&RegistrationTemplatePlacement={p.Id}" // TODO - use well known
+                } )
+                .ToList();
+
+            rptGroupPlacements.DataSource = templatePlacements;
+            rptGroupPlacements.DataBind();
         }
 
         /// <summary>
