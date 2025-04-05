@@ -40,6 +40,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 
         public List<PersonBag> PlacementPeople { get; set; }
 
+        public string Title { get; set; }
+
         /// <summary>
         /// Gets or sets the error message, if any.
         /// </summary>

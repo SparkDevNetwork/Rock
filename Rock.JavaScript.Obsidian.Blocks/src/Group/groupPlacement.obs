@@ -1,28 +1,258 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
 
-    {{ config }}
+    <Panel type="block">
+        <template #title>
+            <div class="d-flex align-items-center">
+                <span class="clickable text-sm mr-3" @click="onBack">
+                    <i class="fa fa-chevron-left d-block"></i>
+                </span>
+                <h1 class="panel-title">
+                    {{ groupPlacementTitle }}
+                </h1>
+            </div>
+        </template>
+
+        <template #headerActions>
+            <div class="d-flex gap-1 mr-3">
+                <RockButton :btnType="BtnType.Default"
+                            :btnSize="BtnSize.Small"
+                            :isSquare="true"
+                            title="Sort Items"
+                            @click="sort">
+                    <i class="fa fa-sort"></i>
+                </RockButton>
+                <RockButton :btnType="BtnType.Default"
+                            :btnSize="BtnSize.Small"
+                            :isSquare="true"
+                            title="Gender Highlight"
+                            @click="highlightGender">
+                    <i class="fa fa-venus-mars"></i>
+                </RockButton>
+                <RockButton :btnType="BtnType.Default"
+                            :btnSize="BtnSize.Small"
+                            :isSquare="true"
+                            title="Toggle Details"
+                            @click="toggleDetails">
+                    <i class="fa fa-info-circle"></i>
+                </RockButton>
+                <RockButton :btnType="BtnType.Default"
+                            :btnSize="BtnSize.Small"
+                            :isSquare="true"
+                            title="Settings"
+                            @click="openPlacementConfigSettings">
+                    <i class="fa fa-cog"></i>
+                </RockButton>
+            </div>
+        </template>
+
+        <div class="w-100 h-100">
+            <div class="col-md-3 p-0">
+                <Panel type="block" title="People To Place">
+                    <template #headerActions>
+                        <RockButton :btnType="BtnType.Default"
+                                    :btnSize="BtnSize.Small"
+                                    :isSquare="true"
+                                    title="Search People"
+                                    class="mr-3"
+                                    @click="searchPeople">
+                            <i class="fa fa-search"></i>
+                        </RockButton>
+                    </template>
+
+                    <!-- TODO: See about adding "Filter" to drawer. -->
+                    <template #drawer>
+                        <div class="px-3">
+                            <div class="d-flex flex-column align-items-center">
+                                <TextBox v-model="exampleBox" label="Example" formGroupClasses="w-100" />
+                                <TextBox v-model="exampleBox" label="Example 2" formGroupClasses="w-100" />
+                                <TextBox v-model="exampleBox" label="Example 3" formGroupClasses="w-100" />
+                                <!-- Attributes go here -->
+                            </div>
+                            <RockButton :btnType="BtnType.Action"
+                                        :btnSize="BtnSize.ExtraSmall"
+                                        @click="applyPeopleFilter">
+                                Apply Filter
+                            </RockButton>
+                        </div>
+                    </template>
+
+                    <div class="d-flex justify-content-between align-items-center mx-3 ">
+                        <CheckBox v-model="areAllPeopleSelected"
+                                  label=""
+                                  text="Select All" />
+                        <span class="text-muted">{{ selectedPeopleCount }} Selected
+                            <i ref="selectionInfoElement"
+                               class="fa fa-info-circle cursor-pointer"
+                               data-toggle="tooltip"
+                               title="Ctrl (Mac: Cmd) + Click to select multiple people.">
+                            </i>
+                        </span>
+                    </div>
+
+                    <div class="col">
+                        <PersonCard v-for="(person, index) in config.placementPeople"
+                                    :key="index"
+                                    :isCardExpanded="areCardsExpanded"
+                                    :person="person"
+                                    @toggleCardExpansion="toggleCardExpansion" />
+                    </div>
+
+                </Panel>
+
+            </div>
+            <div class="col-md-9 p-0">
+                <Panel type="block" title="Destination Groups">
+                    <template #headerActions>
+                        <div class="d-flex gap-1 mr-3">
+                            <RockButton :btnType="BtnType.Default"
+                                        :btnSize="BtnSize.Small"
+                                        title="Add Group"
+                                        @click="addGroup">
+                                <i class="fa fa-group text-xs mr-2"></i>
+                                <span>Add Group</span>
+                            </RockButton>
+
+                            <RockButton :btnType="BtnType.Default"
+                                        :btnSize="BtnSize.Small"
+                                        :isSquare="true"
+                                        @click="toggleCardExpansion">
+                                <i :class="areCardsExpanded ? 'fa fa-angle-double-down' : 'fa fa-angle-double-up'"></i>
+                            </RockButton>
+                        </div>
+                    </template>
+
+                    <!-- TODO: See about adding "Filter" to drawer. -->
+                    <template #drawer>
+                        <div class="row">
+                            <div class="col-xs-12 col-md-6 col-lg-4">
+                                <TextBox v-model="exampleBox" label="Example" />
+                            </div>
+                            <div class="col-xs-12 col-md-6 col-lg-4">
+                                <TextBox v-model="exampleBox" label="Example 2" />
+                            </div>
+                            <div class="col-xs-12 col-md-6 col-lg-4">
+                                <TextBox v-model="exampleBox" label="Example 3" />
+                            </div>
+                            <div class="col-xs-12 col-md-6 col-lg-4">
+                                <TextBox v-model="exampleBox" label="Example 4" />
+                            </div>
+                            <!-- Attributes go here -->
+
+                        </div>
+                        <RockButton :btnType="BtnType.Action"
+                                    :btnSize="BtnSize.ExtraSmall"
+                                    @click="applyGroupFilter">
+                            Apply Filter
+                        </RockButton>
+                    </template>
+
+                </Panel>
+            </div>
+        </div>
+
+    </Panel>
 
 </template>
+
+<style scoped>
+:deep(.panel-body) {
+    padding: 0;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, usePersonPreferences } from "@Obsidian/Utility/block";
     import { GroupPlacementInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementInitializationBox";
-    import { onMounted, ref, nextTick, computed } from "vue";
+    import { onMounted, ref, nextTick, computed, watch } from "vue";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import PersonCard from "./GroupPlacement/personCard.partial.obs";
 
 
     // #region Values
     const config = useConfigurationValues<GroupPlacementInitializationBox>();
     const preferences = usePersonPreferences().blockPreferences;
+    const exampleBox = ref<string>("");
+
+    const areCardsExpanded = ref(false);
+    const areAllPeopleSelected = ref(false);
+    const selectedPeopleCount = ref(0);
+    const selectionInfoElement = ref<HTMLElement | undefined>();
+
+    console.log("GroupPlacementInitializationBox", config);
 
     // #endregion
 
     // #region Computed Values
 
+    const groupPlacementTitle = computed(() => {
+        return "Group Placement";
+    });
+
     // #endregion
 
     // #region Functions
 
+    function onBack(): void {
+        console.log("Back button clicked");
+        // window.history.back();
+    }
+
+    function sort(): void {
+        console.log("Sort button clicked");
+        // Implement sorting logic here
+    }
+
+    function highlightGender(): void {
+        console.log("Highlight gender");
+    }
+
+    function toggleDetails(): void {
+        console.log("Toggle details");
+    }
+
+    function openPlacementConfigSettings(): void {
+        console.log("Open placement config settings");
+    }
+
+    function searchPeople(): void {
+        console.log("Search people");
+    }
+
+    function addGroup(): void {
+        console.log("Add group");
+    }
+
+    function toggleCardExpansion(): void {
+        areCardsExpanded.value = !areCardsExpanded.value;
+        console.log("Card expansion toggled");
+    }
+
+    function applyPeopleFilter(): void {
+        console.log("Apply people filter with value:", exampleBox.value);
+        // Implement filter logic here
+    }
+
+    function applyGroupFilter(): void {
+        console.log("Apply group filter with value:", exampleBox.value);
+        // Implement filter logic here
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(selectionInfoElement, element => {
+        if (element) {
+            tooltip(element);
+        }
+    });
 
     // #endregion
 

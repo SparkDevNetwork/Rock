@@ -130,6 +130,7 @@ namespace Rock.Blocks.Group
             GroupPlacementInitializationBox box = new GroupPlacementInitializationBox();
             box.PlacementGroupType = new PlacementGroupTypeBag();
             box.SelectedPlacement = new PlacementBag();
+            box.Title = "Group Placement"; // TODO - convert to proper title
 
             var registrationTemplatePlacementId = GetIdFromPageParameter( PageParameterKey.RegistrationTemplatePlacementId );
             var registrationInstanceId = GetIdFromPageParameter( PageParameterKey.RegistrationInstanceId );
@@ -345,7 +346,10 @@ namespace Rock.Blocks.Group
                     PersonId = x.Person.Id,
                     RegistrationInstanceId = x.RegistrationInstance.Id,
                     AlreadyPlacedInGroup = x.AlreadyPlacedInGroup,
-                    FullName = x.Person.FullName,
+                    FirstName = x.Person.FirstName,
+                    Nickname = x.Person.NickName,
+                    LastName = x.Person.LastName,
+                    PhotoUrl = x.Person.PhotoUrl,
                     Gender = x.Person.Gender,
                     RegistrantId = x.Registrant.Id,
                     RegistrationInstancename = x.RegistrationInstance.Name,

@@ -57,6 +57,13 @@ namespace RockWeb.Blocks.Event
         IsRequired = false,
         Order = 1 )]
 
+    [LinkedPage(
+        "Group Placement Page",
+        Key = AttributeKey.GroupPlacementPage,
+        Description = "The page for managing group placements.",
+        IsRequired = false,
+        Order = 2 )]
+
     #endregion Block Attributes
     [Rock.SystemGuid.BlockTypeGuid( "22B67EDB-6D13-4D29-B722-DF45367AA3CB" )]
     public partial class RegistrationInstanceDetail : RegistrationInstanceBlock
@@ -74,6 +81,8 @@ namespace RockWeb.Blocks.Event
             public const string DefaultAccount = "DefaultAccount";
 
             public const string PaymentReminderPage = "PaymentReminderPage";
+
+            public const string GroupPlacementPage = "GroupPlacementPage";
         }
 
         #endregion Attribute Keys
@@ -699,24 +708,31 @@ namespace RockWeb.Blocks.Event
             lDetails.Text = registrationInstance.Details;
             btnCopy.ToolTip = $"Copy { registrationInstance.Name }";
 
-            var rockContext = new RockContext();
-            var placementService = new RegistrationTemplatePlacementService( rockContext );
-            var rawPlacements = placementService
-                .Queryable()
-                .Where( p => p.RegistrationTemplateId == registrationInstance.RegistrationTemplateId )
-                .Select( p => new { p.Id, p.Name } )
-                .ToList();
+            using ( var rockContext = new RockContext() )
+            {
+                var placementService = new RegistrationTemplatePlacementService( rockContext );
 
-            var templatePlacements = rawPlacements
-                .Select( p => new
-                {
-                    Name = p.Name,
-                    Url = $"/GroupPlacement?RegistrationInstance={registrationInstance.Id}&RegistrationTemplatePlacement={p.Id}" // TODO - use well known
-                } )
-                .ToList();
+                var rawPlacements = placementService
+                    .Queryable()
+                    .Where( p => p.RegistrationTemplateId == registrationInstance.RegistrationTemplateId )
+                    .Select( p => new { p.Id, p.Name } )
+                    .ToList();
 
-            rptGroupPlacements.DataSource = templatePlacements;
-            rptGroupPlacements.DataBind();
+                var templatePlacements = rawPlacements
+                    .Select( p => new
+                    {
+                        Name = p.Name,
+                        Url = LinkedPageUrl( AttributeKey.GroupPlacementPage, new Dictionary<string, string>
+                        {
+                { PageParameterKey.RegistrationInstanceId, registrationInstance.Id.ToString() },
+                { "RegistrationTemplatePlacementId", p.Id.ToString() }
+                        } )
+                    } )
+                    .ToList();
+
+                rptGroupPlacements.DataSource = templatePlacements;
+                rptGroupPlacements.DataBind();
+            }
         }
 
         /// <summary>

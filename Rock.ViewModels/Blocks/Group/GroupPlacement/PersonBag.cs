@@ -26,7 +26,11 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
     {
         public int PersonId { get; set; }
 
-        public string FullName { get; set; }
+        public string FirstName { get; set; }
+
+        public string Nickname { get; set; }
+
+        public string LastName { get; set; }
 
         public Gender Gender { get; set; }
 
@@ -37,6 +41,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         public int RegistrationInstanceId { get; set; }
 
         public bool AlreadyPlacedInGroup { get; set; }
+
+        public string PhotoUrl { get; set; }
 
         public Dictionary<string, string> Fees { get; set; }
 

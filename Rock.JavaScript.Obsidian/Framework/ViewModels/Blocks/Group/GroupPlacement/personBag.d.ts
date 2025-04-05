@@ -33,11 +33,17 @@ export type PersonBag = {
 
     fees?: Record<string, string> | null;
 
-    fullName?: string | null;
+    firstName?: string | null;
 
     gender: Gender;
 
+    lastName?: string | null;
+
+    nickname?: string | null;
+
     personId: number;
+
+    photoUrl?: string | null;
 
     registrantId: number;
 

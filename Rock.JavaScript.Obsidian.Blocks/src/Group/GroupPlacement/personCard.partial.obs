@@ -1,0 +1,32 @@
+<template>
+    <div class="d-flex justifiy-content-between align-items-center">
+        <div>
+            <div class="mr-3 flex-shrink-0"
+                 :style="{ 'width': '36px', 'height': '36px', 'border-radius': '18px', 'background-image': `url('${person.photoUrl}')`, 'background-size': 'cover' }">
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped></style>
+
+<script setup lang="ts">
+    import { PropType, ref, computed } from "vue";
+    import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
+
+    const props = defineProps({
+        isCardExpanded: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        person: {
+            type: Object as PropType<PersonBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "toggleCardExpansion"): void;
+    }>();
+
+</script>

@@ -46,4 +46,6 @@ export type GroupPlacementInitializationBox = {
     registrationTemplatePlacementId?: number | null;
 
     selectedPlacement?: PlacementBag | null;
+
+    title?: string | null;
 };
