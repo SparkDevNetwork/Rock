@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, reactive, ref, watch, onBeforeUnmount } from "vue";
+    import { nextTick, PropType, reactive, ref, watch, onBeforeUnmount } from "vue";
     import { FormError, FormState, provideFormState } from "@Obsidian/Utility/form";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import RockValidation from "./rockValidation.obs";
@@ -128,6 +128,9 @@
             }
         }
         finally {
+            // When there are errors, everything is synchronous, so the watchers aren't able to fire
+            // before we change `submit` again, so let them fire.
+            await nextTick();
             submit.value = false;
         }
     }
