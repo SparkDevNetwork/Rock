@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,8 +25,10 @@ using Rock.Model;
 using Rock.Web.UI.Controls;
 using System.Linq;
 using System.Linq.Expressions;
-using Newtonsoft.Json;
 using System.Collections.Generic;
+using Rock.Net;
+using Rock.Web.Cache;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Reporting.DataFilter.ConnectionRequest
 {
@@ -36,7 +38,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
     [Description( "Would allow filtering requests to a specific Connection Opportunity." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Connection Opportunity Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "A2B6B6D1-02FB-46A9-8588-1D93FE44E51E")]
+    [Rock.SystemGuid.EntityTypeGuid( "A2B6B6D1-02FB-46A9-8588-1D93FE44E51E" )]
     public class ConnectionOpportunityFilter : DataFilterComponent
     {
         #region Properties
@@ -61,6 +63,63 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/ConnectionRequest/connectionOpportunityFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
+            var connectionOpportunityOptions = new Dictionary<string, List<ListItemBag>>();
+
+            var connectionTypeOptions = ConnectionTypeCache.All()
+                .OrderBy( ct => ct.Order )
+                .ThenBy( ct => ct.Name )
+                .Select( ct => ct.ToListItemBag() )
+                .ToList();
+
+            var connectionTypeGuids = connectionTypeOptions.Select( ct => ct.Value.AsGuid() ).ToList();
+
+            foreach ( var ct in connectionTypeGuids )
+            {
+                var connectionOpportunities = new ConnectionOpportunityService( rockContext ).Queryable()
+                    .Where( co => co.ConnectionType.Guid == ct && co.IsActive )
+                    .OrderBy( co => co.Order )
+                    .ThenBy( co => co.Name )
+                    .ToList()
+                    .Select( co => co.ToListItemBag() )
+                    .ToList();
+                connectionOpportunityOptions.Add( ct.ToString(), connectionOpportunities );
+            }
+
+            var data = new Dictionary<string, string>
+            {
+                { "connectionTypeOptions", connectionTypeOptions.ToCamelCaseJson(false, true) },
+                { "connectionType", config?.ConnectionTypeGuid.ToString() },
+                { "connectionOpportunityOptions", connectionOpportunityOptions.ToCamelCaseJson(false, true) },
+                { "connectionOpportunity", config?.ConnectionOpportunityGuid.ToString() },
+            };
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = new SelectionConfig
+            {
+                ConnectionTypeGuid = data.GetValueOrNull( "connectionType" )?.AsGuid(),
+                ConnectionOpportunityGuid = data.GetValueOrNull( "connectionOpportunity" )?.AsGuid(),
+            };
+
+            return selectionConfig.ToJson();
         }
 
         #endregion
