@@ -186,6 +186,8 @@ function() {
             return result;
         }
 
+#if WEBFORMS
+
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -292,6 +294,8 @@ function() {
                 }
             }
         }
+
+#endif
 
         /// <summary>
         /// Gets the expression.

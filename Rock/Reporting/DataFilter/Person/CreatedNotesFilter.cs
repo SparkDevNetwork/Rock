@@ -229,6 +229,8 @@ namespace Rock.Reporting.DataFilter.Person
             return result;
         }
 
+#if WEBFORMS
+
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -321,6 +323,8 @@ namespace Rock.Reporting.DataFilter.Person
                 nbMinimumCount.IntegerValue = selectionConfig.MinimumCount;
             }
         }
+
+#endif
 
         /// <summary>
         /// Gets the expression.
