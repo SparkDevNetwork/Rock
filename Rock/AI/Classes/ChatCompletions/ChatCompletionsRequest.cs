@@ -43,5 +43,10 @@ namespace Rock.AI.Classes.ChatCompletions
         /// The maximum number of tokens the completion should be.
         /// </summary>
         public int MaxTokens { get; set; }
+
+        /// <summary>
+        /// Determines if the response should be streamed.
+        /// </summary>
+        public bool StreamResponse { get; set; } = false;
     }
 }

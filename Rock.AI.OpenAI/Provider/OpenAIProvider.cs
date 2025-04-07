@@ -18,6 +18,7 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Threading.Tasks;
 
 using Rock.AI.Classes.ChatCompletions;
@@ -98,6 +99,15 @@ namespace Rock.AI.OpenAI.Provider
 
             return response.AsTextCompletionsResponse();
         }
+
+        /// <inheritdoc/>
+        public override async Task StreamChatCompletions( AIProvider provider, ChatCompletionsRequest request, Stream writer )
+        {
+            request.StreamResponse = true;
+
+            var openAIApi = GetOpenAIApi( provider );
+            await openAIApi.StreamChatCompletions( new OpenAIChatCompletionsRequest( request ), writer );
+        } 
 
         /// <inheritdoc/>
         public override async Task<ChatCompletionsResponse> GetChatCompletions( AIProvider provider, ChatCompletionsRequest request )

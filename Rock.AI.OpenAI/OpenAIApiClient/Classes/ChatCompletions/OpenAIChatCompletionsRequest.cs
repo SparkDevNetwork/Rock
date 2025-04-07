@@ -93,7 +93,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
         /// Whether to stream the request.
         /// </summary>
         [JsonProperty( "stream" )]
-        public bool Stream { get; set; }
+        public bool StreamResponse { get; set; }
 
         /// <summary>
         /// Parameter that can be used to specify a sequence of tokens that the model should stop generating at.
@@ -110,6 +110,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
             this.Model = request.Model;
             this.Temperature = request.Temperature;
             this.MaxTokens = request.MaxTokens;
+            this.StreamResponse = request.StreamResponse;
 
             // Convert messages
             foreach ( var message in request.Messages )

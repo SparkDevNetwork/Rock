@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 using Rock.AI.Classes.ChatCompletions;
@@ -148,6 +149,19 @@ namespace Rock.AI.Provider
         /// <param name="request"></param>
         /// <returns></returns>
         public abstract Task<ChatCompletionsResponse> GetChatCompletions( AIProvider provider, ChatCompletionsRequest request );
+
+        /// <summary>
+        /// Streams the contents of the chat completions.
+        /// </summary>
+        /// <param name="provider"></param>
+        /// <param name="request"></param>
+        /// <param name="writer"></param>
+        /// <returns></returns>
+        public virtual Task StreamChatCompletions( AIProvider provider, ChatCompletionsRequest request, Stream writer )
+        {
+            // Providing a default implementation to prevent breaking change.
+            return Task.CompletedTask;
+        }
 
         /// <summary>
         /// Gets the moderation information for the given request.

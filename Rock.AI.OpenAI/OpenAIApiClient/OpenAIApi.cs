@@ -16,7 +16,13 @@
 //
 
 using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
+
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 using RestSharp;
 using RestSharp.Authenticators;
@@ -34,6 +40,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
 
         private RestClient _client = null;
         private string _organization = string.Empty;
+        private string _apiKey = null;
 
         #region Constructors
 
@@ -45,6 +52,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
         {
             _client = GetOpenAIClient( secretKey );
             _organization = organization;
+            _apiKey = secretKey;
         }
 
         /// <summary>
@@ -57,6 +65,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
         {
             _openAIApiHost = apiHostUrl;
             _organization = organization;
+            _apiKey = secretKey;
 
             _client = GetOpenAIClient( secretKey );
         }
@@ -135,6 +144,64 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
             string message = ParseErrorMessage( response );
 
             return new OpenAIChatCompletionsResponse() { IsSuccessful = false, ErrorMessage = message };
+        }
+
+        /// <summary>
+        /// Performs a chat completions request on the OpenAI API and streams the output.
+        /// </summary>
+        /// <param name="completionRequest"></param>
+        /// <param name="responseStream"></param>
+        /// <returns></returns>
+        internal async Task StreamChatCompletions( OpenAIChatCompletionsRequest completionRequest, Stream responseStream )
+        {
+            // RestSharp does not directly support streaming so we'll use HttpClient
+
+            var httpClient = new HttpClient();
+
+            var requestBody = completionRequest.ToJson();
+            var requestContent = new StringContent( requestBody, Encoding.UTF8, "application/json" );
+
+            var request = new HttpRequestMessage( HttpMethod.Post, $"{_openAIApiHost}/chat/completions" )
+            {
+                Headers =
+                {
+                    { "Authorization", $"Bearer {_apiKey}" }
+                },
+                Content = requestContent
+            };
+
+            var response = await httpClient.SendAsync( request, HttpCompletionOption.ResponseHeadersRead );
+            response.EnsureSuccessStatusCode();
+
+            var responseStreamFromOpenAI = await response.Content.ReadAsStreamAsync();
+            var reader = new StreamReader( responseStreamFromOpenAI );
+            var writer = new StreamWriter( responseStream ) { AutoFlush = true };
+
+            while ( !reader.EndOfStream )
+            {
+                var line = await reader.ReadLineAsync();
+                if ( line != null && line.StartsWith( "data: " ) )
+                {
+                    var jsonData = line.Substring( 6 ).Trim();
+                    if ( !string.IsNullOrEmpty( jsonData ) && jsonData != "[DONE]" )
+                    {
+                        try
+                        {
+                            var jsonElement = JsonConvert.DeserializeObject<JObject>( jsonData );
+                            if ( jsonElement?["choices"]?[0]?["delta"]?["content"] != null )
+                            {
+                                var chunk = jsonElement["choices"][0]["delta"]["content"].ToString();
+                                await writer.WriteAsync( chunk );
+                                await writer.FlushAsync();
+                            }
+                        }
+                        catch ( JsonException )
+                        {
+                            // Ignore any parsing errors
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
