@@ -40,6 +40,11 @@ namespace Rock.Web.Cache
 
         private AreaConfigurationData _checkInAreaData;
 
+        /// <summary>
+        /// The parent group type identifiers.
+        /// </summary>
+        private List<int> _parentGroupTypeIds;
+
         #region Properties
 
         /// <summary>
@@ -780,56 +785,13 @@ namespace Rock.Web.Cache
         /// <value>
         /// The parent group types.
         /// </value>
-        public List<GroupTypeCache> ParentGroupTypes
-        {
-            get
-            {
-                var parentGroupTypes = new List<GroupTypeCache>();
-
-                foreach ( var id in ParentGroupTypeIds )
-                {
-                    var groupType = Get( id );
-                    if ( groupType != null )
-                    {
-                        parentGroupTypes.Add( groupType );
-                    }
-                }
-
-                return parentGroupTypes;
-            }
-        }
+        public List<GroupTypeCache> ParentGroupTypes => GetParentGroupTypes( null );
 
         /// <summary>
-        /// Gets the parent group type identifiers.
+        /// Gets or sets the location type value ids.
         /// </summary>
         /// <value>
-        /// The parent group type identifiers.
-        /// </value>
-        private List<int> ParentGroupTypeIds
-        {
-            get
-            {
-                if ( _parentGroupTypeIds == null )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        _parentGroupTypeIds = new GroupTypeService( rockContext )
-                            .GetParentGroupTypes( Id )
-                            .Select( g => g.Id )
-                            .ToList();
-                    }
-                }
-
-                return _parentGroupTypeIds;
-            }
-        }
-        private List<int> _parentGroupTypeIds;
-
-        /// <summary>
-        /// Gets or sets the location type value i ds.
-        /// </summary>
-        /// <value>
-        /// The location type value i ds.
+        /// The location type value ids.
         /// </value>
         [DataMember]
         public List<int> LocationTypeValueIDs { get; private set; }
@@ -933,6 +895,65 @@ namespace Rock.Web.Cache
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Gets the parent group types. These come from group type association
+        /// rather than the single inherited group type.
+        /// </summary>
+        /// <param name="rockContext">The context to use when loading data from the database.</param>
+        /// <returns>A list of <see cref="GroupTypeCache"/> objects that represent the parent group types.</returns>
+        private List<GroupTypeCache> GetParentGroupTypes( RockContext rockContext )
+        {
+            var parentGroupTypes = new List<GroupTypeCache>();
+            RockContext ownedRockContext = null;
+
+            if ( rockContext == null )
+            {
+                ownedRockContext = rockContext = new RockContext();
+            }
+
+            foreach ( var id in GetParentGroupTypeIds( rockContext ) )
+            {
+                var groupType = Get( id, rockContext );
+
+                if ( groupType != null )
+                {
+                    parentGroupTypes.Add( groupType );
+                }
+            }
+
+            ownedRockContext?.Dispose();
+
+            return parentGroupTypes;
+        }
+
+        /// <summary>
+        /// Gets the parent group type identifiers. These come from group type
+        /// association rather than the single inherited group type.
+        /// </summary>
+        /// <param name="rockContext">The context to use when loading data from the database.</param>
+        /// <returns>A list of identifiers that represent the parent group types.</returns>
+        private List<int> GetParentGroupTypeIds( RockContext rockContext )
+        {
+            if ( _parentGroupTypeIds == null )
+            {
+                RockContext ownedRockContext = null;
+
+                if ( rockContext == null )
+                {
+                    ownedRockContext = rockContext = new RockContext();
+                }
+
+                _parentGroupTypeIds = new GroupTypeService( rockContext )
+                    .GetParentGroupTypes( Id )
+                    .Select( g => g.Id )
+                    .ToList();
+
+                ownedRockContext?.Dispose();
+            }
+
+            return _parentGroupTypeIds;
+        }
 
         /// <summary>
         /// Gets a list of all attributes defined for the GroupTypes specified that
@@ -1069,6 +1090,70 @@ namespace Rock.Web.Cache
             }
 
             return _checkInAreaData;
+        }
+
+        /// <summary>
+        /// Finds all root group types of this group type. This uses the group
+        /// type association tree which allows multiple parents.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>An enumeration of the root group types found for this group type.</returns>
+        internal IEnumerable<GroupTypeCache> GetRootGroupTypes( RockContext rockContext )
+        {
+            var checkinTemplatePurposeId = DefinedValueCache.Get( SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), rockContext )?.Id;
+
+            return GetRootGroupTypes( new List<int>(), checkinTemplatePurposeId, rockContext );
+        }
+
+        /// <summary>
+        /// Finds all root group types of this group type. This uses the group
+        /// type association tree which allows multiple parents.
+        /// </summary>
+        /// <param name="recursionCheck">A list of group type identifiers that have already been visited.</param>
+        /// <param name="checkinTemplatePurposeId">The purpose id to identify check-in templates, which are considered root. Pass <c>null</c> to disable this check.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>An enumeration of the root group types found for this group type.</returns>
+        private IEnumerable<GroupTypeCache> GetRootGroupTypes( List<int> recursionCheck, int? checkinTemplatePurposeId, RockContext rockContext )
+        {
+            // Check to see if this group type is already in the recursion check.
+            if ( recursionCheck.Contains( Id ) )
+            {
+                yield break;
+            }
+
+            // Add this group type to the recursion check so we don't run out of stack.
+            recursionCheck.Add( Id );
+
+            var parentGroupTypes = GetParentGroupTypes( rockContext );
+
+            if ( parentGroupTypes.Count == 0 )
+            {
+                // This is a root group type.
+                yield return this;
+            }
+
+            if ( parentGroupTypes.Count == 1 && parentGroupTypes[0].Id == Id )
+            {
+                // This is a root group type, it has a single parent and the parent
+                // is itself.
+                yield return this;
+            }
+
+            if ( GroupTypePurposeValueId.HasValue && checkinTemplatePurposeId == GroupTypePurposeValueId.Value )
+            {
+                // This is a root group type, special case check as all check-in
+                // configuration templates are considered root.
+                yield return this;
+            }
+
+            // Check the parent group types for this group type.
+            foreach ( var parentGroupType in parentGroupTypes )
+            {
+                foreach ( var gt in parentGroupType.GetRootGroupTypes( recursionCheck, checkinTemplatePurposeId, rockContext ) )
+                {
+                    yield return gt;
+                }
+            }
         }
 
         /// <summary>
