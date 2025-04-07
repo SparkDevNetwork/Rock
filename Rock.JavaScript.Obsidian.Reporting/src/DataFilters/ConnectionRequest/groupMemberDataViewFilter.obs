@@ -16,7 +16,7 @@
     import { ref, watch } from "vue";
     import { dataViewFilterProps } from "@Obsidian/Utility/component";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
-import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
 
     const props = defineProps(dataViewFilterProps);
     const emit = defineEmits<{
