@@ -16,7 +16,7 @@
 //
 
 import { ComputedRef, inject, InjectionKey, provide } from "vue";
-import { BreakpointHelper, InvokeBlockActionHelper, PersonPreferencesHelper } from "./types.partial";
+import { BreakpointHelper, Cache, CacheOptions, InvokeBlockActionHelper, PersonPreferencesHelper } from "./types.partial";
 import { Guid } from "@Obsidian/Types";
 import { HttpResult } from "@Obsidian/Types/Utility/http";
 import { useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
@@ -168,4 +168,60 @@ export function useInvokeBlockActionHelper(): InvokeBlockActionHelper {
 
 export function get<T>(value: T): T {
     return value;
+}
+
+export function useCache<T>({ maxSize }: CacheOptions): Cache<T> {
+    const cache = new Map<string, T>();
+    const usageQueue = new Set<string>();
+
+    function updateUsage(key: string): void {
+        usageQueue.delete(key);
+        usageQueue.add(key);
+    }
+
+    function has(key: string): boolean {
+        return cache.has(key);
+    }
+
+    function get(key: string): T | undefined {
+        if (!cache.has(key)) {
+            return;
+        }
+
+        // Ensure this key is the most recently used.
+        updateUsage(key);
+        return cache.get(key);
+    }
+
+    function set(key: string, value: T): void {
+        if (cache.size >= maxSize && !cache.has(key)) {
+            const oldestKey = usageQueue.values().next().value;
+
+            if (oldestKey !== undefined) {
+                cache.delete(oldestKey);
+                usageQueue.delete(oldestKey);
+            }
+        }
+
+        cache.set(key, value);
+        updateUsage(key);
+    }
+
+    function remove(key: string): void {
+        cache.delete(key);
+        usageQueue.delete(key);
+    }
+
+    function clear(): void {
+        cache.clear();
+        usageQueue.clear();
+    }
+
+    return {
+        has,
+        get,
+        set,
+        remove,
+        clear
+    };
 }

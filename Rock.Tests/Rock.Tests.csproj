@@ -326,6 +326,7 @@
     <Compile Include="Utility\TimeIntervalTests.cs" />
     <Compile Include="Utility\MethodRetryTests.cs" />
     <Compile Include="Utility\WebRequestHelperTests.cs" />
+    <Compile Include="Web\Cache\GroupTypeCacheTests.cs" />
     <Compile Include="Web\UI\Controls\KeyValueListTests.cs" />
     <Compile Include="Web\Cache\PageShortLinkCacheTests.cs" />
   </ItemGroup>

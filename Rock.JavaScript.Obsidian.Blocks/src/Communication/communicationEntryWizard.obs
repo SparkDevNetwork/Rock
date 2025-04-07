@@ -159,6 +159,7 @@
                               :futureSendDateTime="futureSendDateTime"
                               :isBulkCommunication="isBulkCommunication"
                               :message="message"
+                              :previewHtmlProcessor="previewHtmlProcessor"
                               :pushMessage="pushMessage"
                               :pushTitle="pushTitle"
                               :recipientsLabel="selectedMediumRecipientsLabel"
@@ -206,7 +207,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, nextTick, onMounted, ref, watch } from "vue";
+    import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
     import BreakpointObserver from "./CommunicationEntryWizard/breakpointObserver.partial.obs";
     import ChooseTemplateStep from "./CommunicationEntryWizard/chooseTemplateStep.partial.obs";
     import ConfirmationStep from "./CommunicationEntryWizard/confirmationStep.partial.obs";
@@ -219,7 +220,7 @@
     import SentStep from "./CommunicationEntryWizard/sentStep.partial.obs";
     import SmsEditorStep from "./CommunicationEntryWizard/smsEditorStep.partial.obs";
     import { BinaryFileAttachment, BlockActionCallbacks } from "./CommunicationEntryWizard/types.partial";
-    import { useInvokeBlockActionHelper, usePersonPreferencesHelper } from "./CommunicationEntryWizard/utils.partial";
+    import { useCache, useInvokeBlockActionHelper, usePersonPreferencesHelper } from "./CommunicationEntryWizard/utils.partial";
     import WizardStartStep from "./CommunicationEntryWizard/wizardStartStep.partial.obs";
     import { GetHtmlResponse } from "@Obsidian/Controls/emailEditor";
     import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
@@ -233,7 +234,7 @@
     import { areEqual, emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { HttpResult } from "@Obsidian/Types/Utility/http";
     import { getTopic } from "@Obsidian/Utility/realTime";
-    import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
+    import { createHashSha256, isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
     import { debounceAsync, isNullish } from "@Obsidian/Utility/util";
     import { CommunicationEntryWizardCheckShortLinkTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCheckShortLinkTokenBag";
     import { CommunicationEntryWizardCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationBag";
@@ -327,6 +328,10 @@
         "Communication Queued": () => null,
         "Communication Saved": () => null
     };
+
+    // Cache the last 10 resolved email messages to reduce
+    // the number of roundtrips to the server.
+    const messagePreviewCache = useCache<string | null | undefined>({ maxSize: 10 });
 
     // #region Values
 
@@ -965,20 +970,29 @@
     }
 
     async function previewHtmlProcessor(previewHtml: string): Promise<string | null | undefined> {
-        message.value = previewHtml;
-        const result = await invokeBlockAction.getEmailPreviewHtml(getCommunicationBag());
-
-        if (result.isSuccess && result.data) {
-            // Keep the browser communication up-to-date with the server communication.
-            if (result.data.communication) {
-                updateFieldsFromCommunicationBag(result.data.communication);
-            }
-
-            return result.data.previewHtml;
+        const hash = await createHashSha256(previewHtml);
+        console.log(hash);
+        if (messagePreviewCache.has(hash)) {
+            return messagePreviewCache.get(hash);
         }
         else {
-            console.error(result.errorMessage ?? "An error occurred.");
-            return (result.errorMessage ?? "An error occurred.");
+            message.value = previewHtml;
+            const result = await invokeBlockAction.getEmailPreviewHtml(getCommunicationBag());
+
+            if (result.isSuccess && result.data) {
+                // Keep the browser communication up-to-date with the server communication.
+                if (result.data.communication) {
+                    updateFieldsFromCommunicationBag(result.data.communication);
+                }
+
+                messagePreviewCache.set(hash, result.data.previewHtml);
+                return result.data.previewHtml;
+            }
+            else {
+                messagePreviewCache.remove(hash);
+                console.error(result.errorMessage ?? "An error occurred.");
+                return (result.errorMessage ?? "An error occurred.");
+            }
         }
     }
 
@@ -1272,5 +1286,9 @@
                 }
             }
         }
+    });
+
+    onUnmounted(() => {
+        messagePreviewCache.clear();
     });
 </script>
