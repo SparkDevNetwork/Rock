@@ -482,5 +482,11 @@ namespace Rock.SystemGuid
         /// The job to run Post v17.1 Data Migrations to add an index on the CommunicationRecipient table.
         /// </summary>
         public const string DATA_MIGRATIONS_171_ADD_COMMUNICATIONRECIPIENT_INDEX = "9C04D469-FB52-438E-B725-D4211139A933";
+
+        /// <summary>
+        /// The job to run Post v17.1 Data Migration to upset the Attendance Occurrence
+        /// table with RootGroupTypeId values for existing data.
+        /// </summary>
+        public const string DATA_MIGRATIONS_171_POPULATE_ATTENDANCE_ROOT_GROUP_TYPE = "e6755275-02ca-4159-af16-1e4cdcfa22d0";
     }
 }

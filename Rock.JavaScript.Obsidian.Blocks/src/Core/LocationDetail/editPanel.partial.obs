@@ -25,6 +25,19 @@
                               :grouped="false"
                               :multiple="false" />
 
+                <NumberBox label="Beacon Identifier"
+                           v-model="beaconId"
+                           help="Identifies which Bluetooth beacon device(s) are associated with this location. Must be between 1 and 65535. Used during check-in from mobile devices."
+                           autoDisable
+                           :minimumValue="1"
+                           :maximumValue="65535">
+                    <template #inputGroupAppend>
+                        <span class="input-group-btn">
+                            <RockButton class="btn btn-default" @click.prevent="onGenerateBeaconId" title="Generates the next available identifier.">Generate</RockButton>
+                        </span>
+                    </template>
+                </NumberBox>
+
                 <ImageEditor v-model="image" label="Image" noPictureUrl="/Assets/Images/no-picture.svg" :binaryFileTypeGuid="BinaryFiletype.LocationImage" />
 
                 <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
@@ -62,7 +75,7 @@
                                    label="Geo-Fence"
                                    drawingMode="Polygon"
                                    :mapStyleValueGuid="mapStyleGuid"
-                                   class="input-width-sm"/>
+                                   class="input-width-sm" />
                     </div>
                     <div v-if="areNamedLocationFeaturesEnabled" class="col-sm-5">
                         <TextBox label="Threshold"
@@ -92,6 +105,7 @@
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
@@ -106,6 +120,7 @@
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { alert } from "@Obsidian/Utility/dialogs";
 
     const props = defineProps({
         modelValue: {
@@ -134,6 +149,7 @@
     const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
     const locationTypeValue = propertyRef(props.modelValue?.bag?.locationTypeValue ?? null, "LocationTypeValueId");
     const printerDevice = propertyRef(props.modelValue?.bag?.printerDevice?.value ?? "", "PrinterDeviceId");
+    const beaconId = propertyRef(props.modelValue?.bag?.beaconId ?? null, "BeaconId");
     const isGeoPointLocked = propertyRef(props.modelValue?.bag?.isGeoPointLocked ?? false, "IsGeoPointLocked");
     const softRoomThreshold = propertyRef(props.modelValue?.bag?.softRoomThreshold ?? "", "SoftRoomThreshold");
     const firmRoomThreshold = propertyRef(props.modelValue?.bag?.firmRoomThreshold ?? "", "FirmRoomThreshold");
@@ -152,6 +168,7 @@
         parentLocation,
         locationTypeValue,
         printerDevice,
+        beaconId,
         isGeoPointLocked,
         softRoomThreshold,
         firmRoomThreshold,
@@ -225,6 +242,22 @@
         }
     }
 
+    /**
+     * Even thandler for when the individual clicks the Generate button on the
+     * Beacon Identifier field. This will generate the next available
+     * identifier for the location.
+     */
+    async function onGenerateBeaconId(): Promise<void> {
+        const result = await invokeBlockAction<{ beaconId: number }>("GenerateNextAvailableBeaconId");
+
+        if (result.isSuccess && result.data) {
+            beaconId.value = result.data.beaconId;
+        }
+        else {
+            await alert(result.errorMessage || "Unable to generate a new beacon identifier. Please try again later.");
+        }
+    }
+
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.
@@ -251,21 +284,22 @@
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, addressFields, ...propRefs], () => {
         const newValue: ValidPropertiesBox<LocationBag> = {
-            bag: { ...props.modelValue. bag} as LocationBag
+            bag: { ...props.modelValue.bag } as LocationBag
         };
-        setPropertiesBoxValue(newValue, "addressFields", addressFields.value),
-        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value),
-        setPropertiesBoxValue(newValue, "isActive", isActive.value),
-        setPropertiesBoxValue(newValue, "name", name.value),
-        setPropertiesBoxValue(newValue, "locationTypeValue", locationTypeValue.value),
-        setPropertiesBoxValue(newValue, "parentLocation", parentLocation.value),
-        setPropertiesBoxValue(newValue, "printerDevice", { value: printerDevice.value }),
-        setPropertiesBoxValue(newValue, "image", image.value),
-        setPropertiesBoxValue(newValue, "isGeoPointLocked", isGeoPointLocked.value),
-        setPropertiesBoxValue(newValue, "softRoomThreshold", softRoomThreshold.value),
-        setPropertiesBoxValue(newValue, "firmRoomThreshold", firmRoomThreshold.value),
-        setPropertiesBoxValue(newValue, "geoPoint_WellKnownText", geoPointWellKnownText.value),
-        setPropertiesBoxValue(newValue, "geoFence_WellKnownText", geoFenceWellKnownText.value),
+        setPropertiesBoxValue(newValue, "addressFields", addressFields.value);
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "locationTypeValue", locationTypeValue.value);
+        setPropertiesBoxValue(newValue, "parentLocation", parentLocation.value);
+        setPropertiesBoxValue(newValue, "printerDevice", { value: printerDevice.value });
+        setPropertiesBoxValue(newValue, "beaconId", beaconId.value);
+        setPropertiesBoxValue(newValue, "image", image.value);
+        setPropertiesBoxValue(newValue, "isGeoPointLocked", isGeoPointLocked.value);
+        setPropertiesBoxValue(newValue, "softRoomThreshold", softRoomThreshold.value);
+        setPropertiesBoxValue(newValue, "firmRoomThreshold", firmRoomThreshold.value);
+        setPropertiesBoxValue(newValue, "geoPoint_WellKnownText", geoPointWellKnownText.value);
+        setPropertiesBoxValue(newValue, "geoFence_WellKnownText", geoFenceWellKnownText.value);
 
         emit("update:modelValue", newValue);
     });
