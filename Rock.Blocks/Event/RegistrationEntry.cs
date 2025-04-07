@@ -133,6 +133,20 @@ namespace Rock.Blocks.Event
         Order = 11 )]
 
     [BooleanField(
+        "Enable ACH",
+        Key = AttributeKey.EnableACH,
+        Description = "Enabling this will also control which type of Saved Accounts can be used during the payment process.  The payment gateway must still be configured to support ACH payments.",
+        DefaultBooleanValue = true,
+        Order = 12 )]
+
+    [BooleanField(
+        "Enable Credit Card",
+        Key = AttributeKey.EnableCreditCard,
+        Description = "Enabling this will also control which type of Saved Accounts can be used during the payment process.  The payment gateway must still be configured to support Credit Card payments.",
+        DefaultBooleanValue = true,
+        Order = 13 )]
+
+    [BooleanField(
         "Disable Captcha Support",
         Key = AttributeKey.DisableCaptchaSupport,
         Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
@@ -162,8 +176,9 @@ namespace Rock.Blocks.Event
             public const string ForceEmailUpdate = "ForceEmailUpdate";
             public const string ShowFieldDescriptions = "ShowFieldDescriptions";
             public const string EnableSavedAccount = "EnableSavedAccount";
+            public const string EnableACH = "EnableACH";
+            public const string EnableCreditCard = "EnableCreditCard";
             public const string DisableCaptchaSupport = "DisableCaptchaSupport";
-            public const string EnableACHForEvents = "Ach";
         }
 
         /// <summary>
@@ -4763,19 +4778,19 @@ namespace Rock.Blocks.Event
         /// <returns>A list of <see cref="DefinedValueCache"/> objects that represent the currency types.</returns>
         private List<DefinedValueCache> GetAllowedCurrencyTypes( GatewayComponent gatewayComponent, FinancialGateway financialGateway )
         {
-            var enableACH = gatewayComponent.GetAttributeValue( financialGateway, AttributeKey.EnableACHForEvents ).AsBoolean();
-            var enableCreditCard = true;// this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
-            var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
-            var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
             var allowedCurrencyTypes = new List<DefinedValueCache>();
+            var enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            var enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
 
             // Conditionally enable credit card.
+            var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
             if ( enableCreditCard && gatewayComponent.SupportsSavedAccount( creditCardCurrency ) )
             {
                 allowedCurrencyTypes.Add( creditCardCurrency );
             }
 
             // Conditionally enable ACH.
+            var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
             if ( enableACH && gatewayComponent.SupportsSavedAccount( achCurrency ) )
             {
                 allowedCurrencyTypes.Add( achCurrency );
