@@ -468,7 +468,8 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                var group = PersonService.SaveNewPerson( person, rockContext );
+                // If the campus picker has a value, use it and make that the new person's primary campus.
+                var group = PersonService.SaveNewPerson( person, rockContext, cpEditCampus.SelectedCampusId );
 
                 SavePhoneNumbers( person.Id, homePhone, mobilePhone, workPhone, rockContext );
 
