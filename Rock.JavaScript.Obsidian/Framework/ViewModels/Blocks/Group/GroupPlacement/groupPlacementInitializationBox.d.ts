@@ -25,17 +25,24 @@ import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/pers
 import { PlacementBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementBag";
 import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
 import { PlacementGroupTypeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupTypeBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The SMS Conversations Initialization Box */
 export type GroupPlacementInitializationBox = {
     /** Gets or sets the error message, if any. */
     errorMessage?: string | null;
 
+    groupAttributes?: ListItemBag[] | null;
+
+    groupMemberAttributes?: ListItemBag[] | null;
+
     placementGroups?: PlacementGroupBag[] | null;
 
     placementGroupType?: PlacementGroupTypeBag | null;
 
     placementPeople?: PersonBag[] | null;
+
+    registrantAttributes?: ListItemBag[] | null;
 
     registrantId?: number | null;
 

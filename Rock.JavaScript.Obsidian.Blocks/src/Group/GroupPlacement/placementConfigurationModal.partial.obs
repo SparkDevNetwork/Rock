@@ -1,0 +1,113 @@
+<template>
+    <Modal v-model="isVisible"
+           title="Placement Configuration"
+           cancelText="Cancel"
+           saveText="Save"
+           @save="onSave"
+           @closeModal="resetForm">
+        <div class="row">
+            <div class="col-md-3">
+                <CampusPicker v-model="campus" label="Campus Filter" includeInactive showBlankItem :forceVisible="true" />
+            </div>
+        </div>
+        <Panel :modelValue="true"
+               title="People To Place Configuration"
+               :hasCollapse="true">
+            <CheckBox v-model="areFeesDisplayed" label="Show Fees" />
+            <DropdownList v-model="sourceAttributesToDisplay"
+                          label="Displayed Source Attributes"
+                          :items="registrantAttributes"
+                          :enhanceForLongLists="true"
+                          :multiple="true" />
+            <CheckBox v-model="areSourceAttributesDisplayedOnDestinationGroupMembers" text="Display Source Attributes on Destination Group Members" />
+        </Panel>
+        <Panel :modelValue="true"
+               title="Destination Group Configuration"
+               :hasCollapse="true">
+            <div class="row">
+                <div class="col-md-6">
+                    <DropdownList v-model="groupAttributesToDisplay"
+                                  label="Displayed Group Attributes"
+                                  :items="groupAttributes"
+                                  :enhanceForLongLists="true"
+                                  :multiple="true" />
+                </div>
+                <div class="col-md-6">
+                    <CheckBox v-model="areFullGroupsHidden" label="Hide Full Groups" />
+                </div>
+            </div>
+            <DropdownList v-model="groupMemberAttributesToDisplay"
+                          label="Displayed Group Member Attributes"
+                          :items="groupMemberAttributes"
+                          :enhanceForLongLists="true"
+                          :multiple="true" />
+        </Panel>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { PropType, ref, computed, watch, nextTick } from "vue";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    // import ListBox from "@Obsidian/Controls/listBox.obs"; - Does not work for enhanced functionality on modal.
+    import DropdownList from "@Obsidian/Controls/dropdownList.obs";
+    import { PlacementConfigurationSettings } from "./types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<PlacementConfigurationSettings>,
+            required: true
+        },
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        registrantAttributes: {
+            type: Array as PropType<ListItemBag[]>,
+            required: false
+        },
+        groupAttributes: {
+            type: Array as PropType<ListItemBag[]>,
+            required: false
+        },
+        groupMemberAttributes: {
+            type: Array as PropType<ListItemBag[]>,
+            required: false
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "update:visible", value: boolean): void;
+        // (e: "save", value: ): void;
+        (e: "dismissMessage"): void
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const campus = propertyRef(/*props.modelValue.campus ??*/ {}, "CampusId");
+    const areFeesDisplayed = propertyRef(/*props.modelValue.areFeesDisplayed ??*/ false, "AreFeesDisplayed");
+    const sourceAttributesToDisplay = propertyRef(/*props.modelValue.sourceAttributesToDisplay ??*/[], "SourceAttributesToDisplay");
+    const areSourceAttributesDisplayedOnDestinationGroupMembers = propertyRef(/*props.modelValue.areSourceAttributesDisplayedOnDestinationGroupMembers ??*/ false, "AreSourceAttributesDisplayedOnDestinationGroupMembers");
+    const groupAttributesToDisplay = propertyRef(/*props.modelValue.groupAttributesToDisplay ??*/[], "GroupAttributesToDisplay");
+    const areFullGroupsHidden = propertyRef(/*props.modelValue.areFullGroupsHidden ??*/ false, "AreFullGroupsHidden");
+    const groupMemberAttributesToDisplay = propertyRef(/*props.modelValue.groupMemberAttributesToDisplay ??*/[], "GroupMemberAttributesToDisplay");
+
+    function onSave(): void {
+
+        resetForm();
+        // emit("save", bag);
+    }
+
+    function onMessageDismissed(): void {
+        emit("dismissMessage");
+    }
+
+    function resetForm(): void {
+
+    }
+</script>

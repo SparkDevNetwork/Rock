@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
     /// <summary>
@@ -41,6 +43,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         public List<PersonBag> PlacementPeople { get; set; }
 
         public string Title { get; set; }
+
+        public List<ListItemBag> RegistrantAttributes { get; set; }
+
+        public List<ListItemBag> GroupAttributes { get; set; }
+
+        public List<ListItemBag> GroupMemberAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the error message, if any.

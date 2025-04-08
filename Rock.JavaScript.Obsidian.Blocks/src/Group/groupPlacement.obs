@@ -76,25 +76,24 @@
                             </RockButton>
                         </div>
                     </template>
-
-                    <div class="d-flex justify-content-between align-items-center mx-3 ">
-                        <CheckBox v-model="areAllPeopleSelected"
-                                  label=""
-                                  text="Select All" />
-                        <span class="text-muted">{{ selectedPeopleCount }} Selected
-                            <i ref="selectionInfoElement"
-                               class="fa fa-info-circle cursor-pointer"
-                               data-toggle="tooltip"
-                               title="Ctrl (Mac: Cmd) + Click to select multiple people.">
-                            </i>
-                        </span>
-                    </div>
-
-                    <div class="col">
+                    <div class="card-container">
+                        <div class="d-flex justify-content-between align-items-center" style="width: 300px;">
+                            <CheckBox v-model="areAllPeopleSelected"
+                                      label=""
+                                      text="Select All" />
+                            <span class="text-muted">{{ selectedPeopleCount }} Selected
+                                <i ref="selectionInfoElement"
+                                   class="fa fa-info-circle cursor-pointer"
+                                   data-toggle="tooltip"
+                                   title="Ctrl (Mac: Cmd) + Click to select multiple people.">
+                                </i>
+                            </span>
+                        </div>
                         <PersonCard v-for="(person, index) in config.placementPeople"
                                     :key="index"
                                     :isCardExpanded="areCardsExpanded"
                                     :person="person"
+                                    :index="index"
                                     @toggleCardExpansion="toggleCardExpansion" />
                     </div>
 
@@ -153,12 +152,405 @@
 
     </Panel>
 
+    <PlacementConfigurationModal v-model="isPlacementConfigModalVisible" :visible="isPlacementConfigModalVisible" :registrantAttributes="config.registrantAttributes ?? []" :groupAttributes="config.groupAttributes ?? []" :groupMemberAttributes="config.groupMemberAttributes ?? []" />
+
 </template>
 
 <style scoped>
 :deep(.panel-body) {
     padding: 0;
 }
+
+.card-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    background-color: rgba(245, 245, 245, 0.4);
+}
+
+/* from webforms css */
+
+/* .d-inline-block {
+    display: inline-block
+}
+
+.panel-groupplacement .registrant-area {
+    height: 100%;
+    padding-top: 15px;
+    padding-bottom: 15px
+}
+
+.panel-groupplacement .registrant-area > .row {
+    height: 100%
+}
+
+.dropzone.empty,
+.dropzone:empty {
+    position: relative;
+    padding: 41px 16px;
+    outline-offset: -16px
+}
+
+.dropzone.empty::after,
+.dropzone:empty::after {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    display: block;
+    width: 100%;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.4);
+    text-align: center;
+    content: attr(data-empty-label);
+    -webkit-transform: translateY(-50%);
+    -moz-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%)
+}
+
+.dropzone.droppable:empty {
+    outline: 2px dashed rgba(0, 0, 0, 0.1)
+}
+
+.registrant-search {
+    padding: 12px;
+    background: #fafafa
+}
+
+.group-placement-registrantlist .registrant .flex::before,
+.group-placement-registrantlist .registrant .flex .btn {
+    display: none
+}
+
+.group-placement-registrantlist .registrant.has-note .flex {
+    -ms-flex-direction: column !important;
+    flex-direction: column !important
+}
+
+.placement-capacity-label[data-status="over-capacity"] {
+    background-color: #d4442e
+}
+
+.placement-capacity-label[data-status="at-capacity"] {
+    background-color: #ee7624
+}
+
+.placement-capacity-label[data-status="near-capacity"] {
+    background-color: #ffc870
+}
+
+.placement-capacity-label[data-status="under-capacity"] {
+    background-color: #16c98d
+}
+
+.placement-capacity-label[data-status="none"] {
+    display: none
+}
+
+.gu-transit .container {
+    display: none
+}
+
+.scrollable {
+    position: relative;
+    overflow-x: auto;
+    overflow-y: auto
+}
+
+.group-role-container {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap
+}
+
+.group-role-container .registrant .details-container {
+    display: none
+}
+
+.group-role-container .registrant.gu-transit,
+.gu-mirror {
+    max-height: 38px
+}
+
+.group-role-container .registrant.gu-transit .hide-dragging,
+.gu-mirror .hide-dragging {
+    display: none
+}
+
+.resource-list {
+    position: sticky !important;
+    top: 16px;
+    max-height: calc(100vh - 32px)
+}
+
+@media (min-width:992px) {
+    .resource-list {
+        top: 96px;
+        max-height: calc(100vh - 112px)
+    }
+}
+
+.is-fullscreen .resource-list {
+    top: 16px;
+    max-height: calc(100vh - 100px)
+}
+
+.resource-list .panel-body {
+    position: relative;
+    display: -ms-flexbox !important;
+    display: flex !important;
+    flex: 0 1 auto !important;
+    -ms-flex-direction: column !important;
+    flex-direction: column !important;
+    overflow: hidden
+}
+
+.resource-list .scroll-list {
+    flex-shrink: 1 !important;
+    flex-grow: 1 !important;
+    height: 100%;
+    min-height: 0;
+    padding: 12px 6px 8px 12px;
+    overflow-y: scroll;
+    background-color: rgba(245, 245, 245, 0.4);
+    -ms-flex-positive: 1 !important;
+    -ms-flex-negative: 1 !important
+}
+
+.resource-list .scroll-list::-webkit-scrollbar {
+    width: 6px;
+    background-color: rgba(245, 245, 245, 0.4)
+}
+
+.resource-list .scroll-list::-webkit-scrollbar-thumb {
+    width: 6px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px
+}
+
+.resource-list .scroll-list::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3)
+}
+
+.person {
+    display: inline-flex;
+    -ms-flex: 0 0 33%;
+    flex: 0 0 33%;
+    flex-direction: column;
+    max-width: calc(33.333% - 8px);
+    margin: 0 8px 12px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    color: #343a40;
+    cursor: move;
+    cursor: -webkit-grab;
+    cursor: grab;
+    background-color: #fff;
+    border: 1px solid #dfe0e1;
+    border-radius: 4px;
+    box-shadow: 0 1px 0 #d1d2d7
+}
+
+.registrant-list .person {
+    display: flex;
+    flex-direction: column;
+    min-width: 100%;
+    margin-right: 0
+}
+
+.registrant-list .person[data-person-gender="1"] {
+    color: #4299e1;
+    background-color: #ebf8ff;
+    border-color: #4299e1
+}
+
+.registrant-list .person[data-person-gender="1"]:hover {
+    background-color: #d1efff
+}
+
+.registrant-list .person[data-person-gender="2"] {
+    color: #ed64a6;
+    background-color: #fff5f7;
+    border-color: #ed64a6
+}
+
+.registrant-list .person[data-person-gender="2"]:hover {
+    background-color: #ffdce3
+}
+
+.registrant-list .person .registrant-details {
+    display: block
+}
+
+.registrant-list .person .dropdown {
+    display: none
+}
+
+.placement-groups .person[data-person-gender="1"] {
+    color: #4299e1;
+    background-color: #ebf8ff;
+    border-color: #4299e1
+}
+
+.placement-groups .person[data-person-gender="1"]:hover {
+    background-color: #d1efff
+}
+
+.placement-groups .person[data-person-gender="2"] {
+    color: #ed64a6;
+    background-color: #fff5f7;
+    border-color: #ed64a6
+}
+
+.placement-groups .person[data-person-gender="2"]:hover {
+    background-color: #ffdce3
+}
+
+.person:hover {
+    background: rgba(85, 150, 230, 0.1)
+}
+
+.person[data-has-placement-error] {
+    color: #e55235;
+    background-color: #fcf2f1;
+    border-color: #d4442e
+}
+
+.person .person-container {
+    display: flex;
+    flex-wrap: nowrap;
+    -ms-flex-pack: justify !important;
+    justify-content: space-between !important
+}
+
+.person .details-container {
+    padding: 6px 8px;
+    color: #2d2e31;
+    background: rgba(255, 255, 255, 0.8);
+    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 3px
+}
+
+.person .details-container > div {
+    margin-top: 8px
+}
+
+.person .details-container > div:first-child {
+    margin-top: 0
+}
+
+.person dl:not(.dl-horizontal) {
+    margin-bottom: 0;
+    font-size: 14px
+}
+
+.person dl:not(.dl-horizontal) dt {
+    margin-top: 8px
+}
+
+.person dl:not(.dl-horizontal) dt:first-child {
+    margin-top: 0
+}
+
+.person .person-name {
+    font-weight: 600;
+    display: inline-block;
+    padding: 6px 8px
+}
+
+.person .btn {
+    height: 100%;
+    padding: 5px 8px;
+    color: #d8d8d8;
+    background: transparent
+}
+
+.person .btn:hover,
+.person .btn:focus,
+.person .btn:active:focus {
+    color: #767676;
+    outline: none
+}
+
+.person .dropdown-menu {
+    font-size: 14px
+}
+
+.person.gu-mirror {
+    cursor: -moz-grabbing !important;
+    cursor: -webkit-grabbing !important;
+    cursor: grabbing !important;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 5px 20px 0 rgba(21, 27, 38, 0.08);
+    opacity: 1
+}
+
+.placement-group .panel-drawer > span {
+    display: block;
+    padding: 16px;
+    font-size: 14px;
+    background: #fff;
+    border-bottom: 1px solid #eee
+}
+
+.placement-group .panel-drawer > span dl {
+    margin-bottom: 0
+}
+
+.placement-group .panel-drawer > span dl:empty {
+    display: none
+}
+
+.placement-group .panel-drawer > span dl dt {
+    margin-top: 8px
+}
+
+.placement-group .panel-drawer > span dl dt:first-child {
+    margin-top: 0
+}
+
+.person-id-anchor {
+    position: relative;
+    top: -250px;
+    display: block;
+    visibility: hidden
+}
+
+.panel-inline {
+    margin-bottom: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    -webkit-bot-shadow: none !important
+}
+
+.panel-inline .panel-heading {
+    padding: 8px 16px;
+    background-color: rgba(245, 245, 245, 0.8);
+    border-top: 1px solid #eee
+}
+
+.panel-inline .panel-title {
+    font-size: 14px;
+    font-weight: 600
+}
+
+.panel-drawer + .group-role-members .panel-heading,
+.group-role-members:first-child .panel-heading {
+    border-top: 0
+}
+
+.btn-overflow {
+    color: #737475
+}
+
+.panel-heading .btn-overflow {
+    width: 20px !important;
+    text-align: right
+} */
+
+/* end */
 </style>
 
 <script setup lang="ts">
@@ -173,7 +565,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import PersonCard from "./GroupPlacement/personCard.partial.obs";
-
+    import PlacementConfigurationModal from "./GroupPlacement/placementConfigurationModal.partial.obs";
 
     // #region Values
     const config = useConfigurationValues<GroupPlacementInitializationBox>();
@@ -184,6 +576,7 @@
     const areAllPeopleSelected = ref(false);
     const selectedPeopleCount = ref(0);
     const selectionInfoElement = ref<HTMLElement | undefined>();
+    const isPlacementConfigModalVisible = ref(false);
 
     console.log("GroupPlacementInitializationBox", config);
 
@@ -219,6 +612,7 @@
 
     function openPlacementConfigSettings(): void {
         console.log("Open placement config settings");
+        isPlacementConfigModalVisible.value = true;
     }
 
     function searchPeople(): void {
