@@ -42,7 +42,7 @@
         </template>
 
         <template #default>
-            <template v-if="false">
+            <template v-if="componentMigrationHelper?.isMigrationRequired(props.componentElement)">
                 <NotificationBox alertType="warning">
                     This component uses an old structure and may not display correctly.
                     <RockButton btnType="primary" @click="onMigrateComponentClicked">Migrate Component</RockButton>

@@ -127,6 +127,7 @@
     <Compile Include="Communication\CommunicationEntry\ValidationContextExtensions.cs" />
     <Compile Include="Cms\LogSettings.cs" />
     <Compile Include="Communication\SmsConversations.cs" />
+    <Compile Include="Communication\CommunicationTemplateDetail.cs" />
     <Compile Include="Core\PersonSuggestionList.cs" />
     <Compile Include="Cms\PageSearch.cs" />
     <Compile Include="Core\DocumentTypeList.cs" />

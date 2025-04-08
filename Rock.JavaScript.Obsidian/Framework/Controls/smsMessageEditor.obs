@@ -106,6 +106,7 @@
 
 .note-editor .note-toolbar {
     padding: 0;
+    display: block;
 }
 
 :deep([data-css-class="float-right"]) {
