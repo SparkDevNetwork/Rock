@@ -240,6 +240,8 @@ namespace Rock.CheckIn.v2
                             .ToList()
                     };
                 } )
+                .OrderBy( f => f.Name )
+                .ThenBy( f => f.Id )
                 .ToList();
 
             return families;
