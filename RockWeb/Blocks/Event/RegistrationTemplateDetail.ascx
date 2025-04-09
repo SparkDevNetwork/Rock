@@ -405,7 +405,7 @@
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <Rock:RockLiteral ID="lGroupType" runat="server" Label="Group Type" />
                             <Rock:RockLiteral ID="lWorkflowType" runat="server" Label="Registration Workflow" />
                             <Rock:RockLiteral ID="lRequiredSignedDocument" runat="server" Label="Required Signature Document" />
@@ -420,7 +420,7 @@
                                 </div>
                             </Rock:RockControlWrapper>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <Rock:RockLiteral ID="lCost" runat="server" Label="Cost" />
                             <Rock:RockLiteral ID="lMinimumInitialPayment" runat="server" Label="Minimum Initial Payment" />
                             <Rock:RockLiteral ID="lDefaultPaymentAmount" runat="server" Label="Default Payment Amount" />
@@ -434,6 +434,18 @@
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </Rock:RockControlWrapper>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group static-control">
+                                <label class="control-label">Group Placements</label>
+                                <asp:Repeater ID="rptGroupPlacements" runat="server">
+                                    <ItemTemplate>
+                                        <li>
+                                            <asp:HyperLink ID="hlPlacement" runat="server" NavigateUrl='<%# Eval("Url") %>' Text='<%# Eval("Name") %>' />
+                                        </li>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </div>
                         </div>
                     </div>
                     <div class="row">

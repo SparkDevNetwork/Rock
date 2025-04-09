@@ -44,9 +44,10 @@ namespace RockWeb.Blocks.Event
     [Description( "Displays the details of the given registration template." )]
 
     [LinkedPage(
-        "Registration Template Placement Page",
+        "Group Placement Page",
         Key = AttributeKey.RegistrationTemplatePlacementPage,
         DefaultValue = Rock.SystemGuid.Page.REGISTRATION_TEMPLATE_PLACEMENT + "," + Rock.SystemGuid.PageRoute.REGISTRATION_TEMPLATE_PLACEMENT,
+        Description = "The page used for performing group placements.",
         Order = 0
         )]
 
@@ -895,6 +896,8 @@ The logged-in person's information will be used to complete the registrar inform
             {
                 queryParams.Add( PageParameterKey.RegistrationTemplateId, hfRegistrationTemplateId.Value );
             }
+
+            //TODO -- remove the button
 
             NavigateToLinkedPage( AttributeKey.RegistrationTemplatePlacementPage, queryParams );
         }
@@ -3016,6 +3019,30 @@ The logged-in person's information will be used to complete the registrar inform
                     : string.Empty;
             }
 
+            using ( var rockContext = new RockContext() )
+            {
+                var placementService = new RegistrationTemplatePlacementService( rockContext );
+
+                var rawPlacements = placementService
+                    .Queryable()
+                    .Where( p => p.RegistrationTemplateId == registrationTemplate.Id )
+                    .Select( p => new { p.Id, p.Name } )
+                    .ToList();
+
+                var templatePlacements = rawPlacements
+                .Select( p => new
+                {
+                    Name = p.Name,
+                    Url = LinkedPageUrl( AttributeKey.RegistrationTemplatePlacementPage, new Dictionary<string, string>
+                    {
+                        { PageParameterKey.RegistrationTemplateId, registrationTemplate.Id.ToString() },
+                        { "RegistrationTemplatePlacementId", p.Id.ToString() }
+                    } )
+                } ).ToList();
+
+                rptGroupPlacements.DataSource = templatePlacements;
+                rptGroupPlacements.DataBind();
+            }
             rFees.DataSource = registrationTemplate.Fees.OrderBy( f => f.Order ).ToList();
             rFees.DataBind();
         }

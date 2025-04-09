@@ -30,12 +30,8 @@ export const enum PreferenceKey {
     GroupMemberAttributeFilterGroupTypeId = "GroupMemberAttributeFilter_GroupTypeId_{0}"
 }
 
-export type PlacementConfigurationSettings = {
-    campusFilter?: ListItemBag | null;
-    areFeesDisplayed?: boolean;
-    sourceAttributesToDisplay?: string[];
-    areSourceAttributesDisplayedOnDestinationGroupMember?: boolean;
-    groupAttributesToDisplay?: string[];
-    areFullGroupsHidden?: boolean;
-    groupMemberAttributesToDisplay?: string[];
+export type AvailablePlacementAttributes = {
+    registrantAttributes: ListItemBag[];
+    groupAttributes: ListItemBag[];
+    groupMemberAttributes: ListItemBag[];
 };

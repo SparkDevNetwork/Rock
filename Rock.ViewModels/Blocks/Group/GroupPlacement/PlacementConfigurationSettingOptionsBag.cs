@@ -17,37 +17,21 @@
 
 using System.Collections.Generic;
 
-using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
-    public class PersonBag
+    /// <summary>
+    /// 
+    /// </summary>
+    public class PlacementConfigurationSettingOptionsBag
     {
-        public int PersonId { get; set; }
+        public List<ListItemBag> RegistrantAttributes { get; set; }
 
-        public string FirstName { get; set; }
+        public List<ListItemBag> GroupAttributes { get; set; }
 
-        public string Nickname { get; set; }
+        public List<ListItemBag> GroupMemberAttributes { get; set; }
 
-        public string LastName { get; set; }
-
-        public Gender Gender { get; set; }
-
-        public int RegistrantId { get; set; }
-
-        public string RegistrationInstanceName { get; set; }
-
-        public int RegistrationInstanceId { get; set; }
-
-        public bool AlreadyPlacedInGroup { get; set; }
-
-        public string PhotoUrl { get; set; }
-
-        public Dictionary<string, string> Fees { get; set; }
-
-        public Dictionary<string, PublicAttributeBag> Attributes {  get; set; }
-
-        public Dictionary<string, string> AttributeValues { get; set; }
+        public List<ListItemBag> RegistrationInstances { get; set; }
     }
 }

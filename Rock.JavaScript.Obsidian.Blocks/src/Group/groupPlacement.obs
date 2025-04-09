@@ -8,7 +8,7 @@
                     <i class="fa fa-chevron-left d-block"></i>
                 </span>
                 <h1 class="panel-title">
-                    {{ groupPlacementTitle }}
+                    {{ box.title }}
                 </h1>
             </div>
         </template>
@@ -76,6 +76,7 @@
                             </RockButton>
                         </div>
                     </template>
+
                     <div class="card-container">
                         <div class="d-flex justify-content-between align-items-center" style="width: 300px;">
                             <CheckBox v-model="areAllPeopleSelected"
@@ -89,7 +90,7 @@
                                 </i>
                             </span>
                         </div>
-                        <PersonCard v-for="(person, index) in config.placementPeople"
+                        <PersonCard v-for="(person, index) in placementGroups.unplaced"
                                     :key="index"
                                     :isCardExpanded="areCardsExpanded"
                                     :person="person"
@@ -146,13 +147,22 @@
                         </RockButton>
                     </template>
 
+                    <DestinationGroup v-for="(group, index) in box.placementGroups"
+                                      :key="index"
+                                      :destinationGroup="group"
+                                      :placedPeople="placementGroups.placed" />
+
                 </Panel>
             </div>
         </div>
 
     </Panel>
 
-    <PlacementConfigurationModal v-model="isPlacementConfigModalVisible" :visible="isPlacementConfigModalVisible" :registrantAttributes="config.registrantAttributes ?? []" :groupAttributes="config.groupAttributes ?? []" :groupMemberAttributes="config.groupMemberAttributes ?? []" />
+    <PlacementConfigurationModal v-model="isPlacementConfigModalVisible"
+                                 :placementConfigurationSettings="placementConfigurationSettings"
+                                 :placementConfigurationSettingOptions="box.placementConfigurationSettingOptions ?? {}"
+                                 :inTemplateMode="box.inTemplateMode"
+                                 @save="savePlacementCofigSettings" />
 
 </template>
 
@@ -556,19 +566,22 @@
 <script setup lang="ts">
     import { useConfigurationValues, usePersonPreferences } from "@Obsidian/Utility/block";
     import { GroupPlacementInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementInitializationBox";
+    import { PlacementConfigurationSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingsBag";
     import { onMounted, ref, nextTick, computed, watch } from "vue";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { PreferenceKey } from "./GroupPlacement/types.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import PersonCard from "./GroupPlacement/personCard.partial.obs";
+    import DestinationGroup from "./GroupPlacement/destinationGroup.partial.obs";
     import PlacementConfigurationModal from "./GroupPlacement/placementConfigurationModal.partial.obs";
 
     // #region Values
-    const config = useConfigurationValues<GroupPlacementInitializationBox>();
+    const box = useConfigurationValues<GroupPlacementInitializationBox>();
     const preferences = usePersonPreferences().blockPreferences;
     const exampleBox = ref<string>("");
 
@@ -578,14 +591,31 @@
     const selectionInfoElement = ref<HTMLElement | undefined>();
     const isPlacementConfigModalVisible = ref(false);
 
-    console.log("GroupPlacementInitializationBox", config);
+    const placementConfigurationSettings = ref<PlacementConfigurationSettingsBag>(preferences.getValue(getPlacementConfigurationSettingsKey()) ? JSON.parse(preferences.getValue(getPlacementConfigurationSettingsKey())) : {} as PlacementConfigurationSettingsBag);
+
+    console.log("GroupPlacementInitializationBox", box);
 
     // #endregion
 
     // #region Computed Values
 
-    const groupPlacementTitle = computed(() => {
-        return "Group Placement";
+    const placementGroups = computed(() => {
+        const placed: typeof box.placementPeople = [];
+        const unplaced: typeof box.placementPeople = [];
+
+        for (const person of box.placementPeople ?? []) {
+            if (person.alreadyPlacedInGroup) {
+                placed.push(person);
+            }
+            else {
+                unplaced.push(person);
+            }
+        }
+
+        return {
+            placed,
+            unplaced
+        };
     });
 
     // #endregion
@@ -636,6 +666,27 @@
     function applyGroupFilter(): void {
         console.log("Apply group filter with value:", exampleBox.value);
         // Implement filter logic here
+    }
+
+    function getPlacementConfigurationSettingsKey(): string {
+        if (box.registrationInstanceId) {
+            return PreferenceKey.PlacementConfigurationJSONRegistrationInstanceId.replace("{0}", box.registrationInstanceId.toString());
+        }
+        else if (box.registrationTemplateId) {
+            return PreferenceKey.PlacementConfigurationJSONRegistrationTemplateId.replace("{0}", box.registrationTemplateId.toString());
+        }
+        return "";
+    }
+
+    async function savePlacementCofigSettings(bag: PlacementConfigurationSettingsBag): Promise<void> {
+        console.log("Here is my saved bag: ", bag);
+        preferences.setValue(getPlacementConfigurationSettingsKey(), JSON.stringify(bag));
+
+        console.log("Saving preferences: ", preferences);
+
+        await preferences.save();
+        // placementConfigurationSettings.value = bag;
+        isPlacementConfigModalVisible.value = false;
     }
 
     // #endregion

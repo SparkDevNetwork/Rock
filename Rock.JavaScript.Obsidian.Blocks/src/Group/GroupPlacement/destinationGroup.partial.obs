@@ -1,0 +1,40 @@
+<template>
+    <Panel type="block">
+        <template #title>
+            <div class="d-flex align-items-center">
+                <h1 class="panel-title">
+                    {{ destinationGroup.name }}
+                </h1>
+            </div>
+        </template>
+    </Panel>
+</template>
+
+<style scoped>
+:deep(.panel.panel-block) {
+    height: 100%;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref, computed } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
+    import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
+
+    const props = defineProps({
+        destinationGroup: {
+            type: Object as PropType<PlacementGroupBag>,
+            required: true
+        },
+        placedPeople: {
+            type: Array as PropType<PersonBag[]>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        // (e: "toggleCardExpansion"): void;
+    }>();
+
+</script>

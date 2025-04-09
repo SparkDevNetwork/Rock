@@ -44,11 +44,9 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 
         public string Title { get; set; }
 
-        public List<ListItemBag> RegistrantAttributes { get; set; }
+        public PlacementConfigurationSettingOptionsBag PlacementConfigurationSettingOptions { get; set; }
 
-        public List<ListItemBag> GroupAttributes { get; set; }
-
-        public List<ListItemBag> GroupMemberAttributes { get; set; }
+        public bool InTemplateMode { get; set; }
 
         /// <summary>
         /// Gets or sets the error message, if any.
