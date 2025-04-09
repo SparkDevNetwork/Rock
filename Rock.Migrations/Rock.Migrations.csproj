@@ -72,6 +72,10 @@
     <Compile Include="Migrations\202504091439306_DeprecateCsvToTableFunction.Designer.cs">
       <DependentUpon>202504091439306_DeprecateCsvToTableFunction.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202504091716317_AddPersonalDeviceLocationPermissionStatus.cs" />
+    <Compile Include="Migrations\202504091716317_AddPersonalDeviceLocationPermissionStatus.Designer.cs">
+      <DependentUpon>202504091716317_AddPersonalDeviceLocationPermissionStatus.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.Designer.cs">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>
@@ -2579,6 +2583,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202504091439306_DeprecateCsvToTableFunction.resx">
       <DependentUpon>202504091439306_DeprecateCsvToTableFunction.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202504091716317_AddPersonalDeviceLocationPermissionStatus.resx">
+      <DependentUpon>202504091716317_AddPersonalDeviceLocationPermissionStatus.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.resx">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>
