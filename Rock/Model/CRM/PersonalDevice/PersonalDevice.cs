@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Mobile;
 
 namespace Rock.Model
 {
@@ -197,6 +198,18 @@ namespace Rock.Model
         /// for contact.
         /// </value>
         public DateTime? LastVerifiedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location permission status.
+        /// </summary>
+        [DataMember]
+        public LocationPermissionStatus LocationPermissionStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether precise location is enabled.
+        /// </summary>
+        [DataMember]
+        public bool IsPreciseLocationEnabled { get; set; }
 
         #endregion
 

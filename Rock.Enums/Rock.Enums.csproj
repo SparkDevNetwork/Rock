@@ -225,6 +225,7 @@
     <Compile Include="Lms\LearningCompletionStatus.cs" />
     <Compile Include="Lms\PresentedFor.cs" />
     <Compile Include="Lms\RequirementType.cs" />
+    <Compile Include="Mobile\LocationPermissionStatus.cs" />
     <Compile Include="Mobile\MobileNavigationActionType.cs" />
     <Compile Include="Net\CookieSameSiteMode.cs" />
     <Compile Include="Net\ResponseElementLocation.cs" />
