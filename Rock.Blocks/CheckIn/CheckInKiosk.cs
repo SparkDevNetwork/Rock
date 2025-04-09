@@ -1139,11 +1139,6 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 ? DeviceCache.Get( kiosk.PrinterDeviceId.Value, RockContext )
                 : null;
 
-            if ( printer == null )
-            {
-                return ActionBadRequest( "This kiosk does not have a printer defined." );
-            }
-
             var attendanceIdNumber = IdHasher.Instance.GetId( attendanceId );
 
             if ( !attendanceIdNumber.HasValue )
