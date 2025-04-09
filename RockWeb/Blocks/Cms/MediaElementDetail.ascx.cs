@@ -1442,6 +1442,53 @@ namespace RockWeb.Blocks.Cms
             } );
         }
 
+        /// <summary>
+        /// Gets the media file data for the specified media element.
+        /// </summary>
+        /// <param name="mediaElementGuid">The media element unique identifier.</param>
+        /// <returns>The media file data.</returns>
+        [BlockAction]
+        public BlockActionResult GetMediaFileData( Guid mediaElementGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var mediaElement = new MediaElementService( rockContext ).Get( mediaElementGuid );
+
+                if ( mediaElement == null )
+                {
+                    return new BlockActionResult( System.Net.HttpStatusCode.NotFound );
+                }
+
+                var fileData = mediaElement.FileDataJson.FromJsonOrNull<List<MediaElementFileDataStateful>>() ?? new List<MediaElementFileDataStateful>();
+                var thumbnailData = mediaElement.ThumbnailDataJson.FromJsonOrNull<List<MediaElementThumbnailDataStateful>>() ?? new List<MediaElementThumbnailDataStateful>();
+
+                return new BlockActionResult( System.Net.HttpStatusCode.OK, new
+                {
+                    MediaFiles = fileData.Select( f => new
+                    {
+                        f.Guid,
+                        f.PublicName,
+                        f.AllowDownload,
+                        f.Link,
+                        f.Quality,
+                        f.Format,
+                        f.Width,
+                        f.Height,
+                        f.FPS,
+                        f.Size
+                    } ),
+                    ThumbnailFiles = thumbnailData.Select( t => new
+                    {
+                        t.Guid,
+                        t.Link,
+                        t.Width,
+                        t.Height,
+                        t.Size
+                    } )
+                } );
+            }
+        }
+
         #endregion Action Methods
 
         #region Support Classes

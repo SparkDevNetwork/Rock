@@ -1,0 +1,107 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <ValueDetailList :modelValue="topValues" />
+
+        <h5>Media Files</h5>
+        <Grid :definition="props.modelValue?.mediaFileGridDefinition ?? undefined"
+              :data="mediaFileGridDataSource" light>
+            <TextColumn name="quality"
+                        title="Quality"
+                        field="quality"
+                        visiblePriority="xs" />
+            <TextColumn name="format"
+                        title="Format"
+                        field="format"
+                        visiblePriority="xs" />
+            <TextColumn name="dimensions"
+                        title="Dimensions"
+                        field="dimensions"
+                        visiblePriority="xs" />
+            <TextColumn name="size"
+                        title="Size"
+                        field="size"
+                        visiblePriority="xs" />
+            <BooleanColumn name="allowDownload"
+                           title="Allow Download"
+                           field="allowDownload"
+                           visiblePriority="xs" />
+            <TextColumn name="link"
+                        title="Link"
+                        field="link"
+                        visiblePriority="xs" />
+        </Grid>
+
+        <h5>Thumbnail Files</h5>
+        <Grid :definition="props.modelValue?.thumbnailGridDefinition ?? undefined"
+              :data="thumbnailGridDataSource" light>
+            <TextColumn name="dimensios"
+                        title="Dimension"
+                        field="dimensions"
+                        visiblePriority="xs" />
+            <TextColumn name="size"
+                        title="Size"
+                        field="size"
+                        visiblePriority="xs" />
+            <TextColumn name="link"
+                        title="Link"
+                        field="link"
+                        visiblePriority="xs" />
+        </Grid>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, reactive } from "vue";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import Grid, { TextColumn, BooleanColumn } from "@Obsidian/Controls/grid";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { MediaElementBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementBag";
+    import { MediaElementDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<MediaElementBag | null>,
+            required: false
+        },
+        options: {
+            type: Object as PropType<MediaElementDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const fileData = reactive(props.modelValue?.mediaFileGridData ?? {});
+    const mediaFileGridDataSource = ref<GridDataBag>(fileData);
+
+    console.log(props.modelValue?.thumbnailGridData);
+    const thumbnailData = reactive(props.modelValue?.thumbnailGridData ?? {});
+    const thumbnailGridDataSource = ref<GridDataBag>(thumbnailData);
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.mediaFolder) {
+            valueBuilder.addTextValue("Folder", props.modelValue.mediaFolder.text ?? "");
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
+        if (props.modelValue.durationSeconds) {
+            const minutes = Math.floor(props.modelValue.durationSeconds / 60);
+            const seconds = props.modelValue.durationSeconds % 60;
+            const durationText = `${minutes}m ${seconds}s`;
+            valueBuilder.addTextValue("Duration", durationText);
+        }
+
+        return valueBuilder.build();
+    });
+</script>

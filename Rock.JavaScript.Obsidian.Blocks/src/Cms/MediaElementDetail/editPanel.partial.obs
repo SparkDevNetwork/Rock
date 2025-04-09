@@ -1,0 +1,180 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <NumberBox v-model="durationSeconds"
+                   label="Duration"
+                   inputGroupAppend="seconds" />
+
+        <h5>Media Files</h5>
+        <Grid :data="mediaFileGridDataSource" light @addItem="onAddMediaFileItem">
+            <TextColumn name="quality"
+                        title="Quality"
+                        field="quality"
+                        visiblePriority="xs" />
+            <TextColumn name="format"
+                        title="Format"
+                        field="format"
+                        visiblePriority="xs" />
+            <TextColumn name="dimensions"
+                        title="Dimensions"
+                        field="dimensions"
+                        visiblePriority="xs" />
+            <TextColumn name="size"
+                        title="Size"
+                        field="size"
+                        visiblePriority="xs" />
+            <BooleanColumn name="allowDownload"
+                           title="Allow Download"
+                           field="allowDownload"
+                           visiblePriority="xs" />
+            <TextColumn name="link"
+                        title="Link"
+                        field="link"
+                        visiblePriority="xs" />
+            <EditColumn :onClick="onEditMediaFileItem" />
+            <DeleteColumn :onClick="onDeleteMediaFileItem" />
+        </Grid>
+        <h5>Thumbnail Files</h5>
+        <Grid :data="thumbnailFileGridDataSource" light @addItem="onAddThumbnailFileItem">
+            <TextColumn name="dimensions"
+                        title="Dimensions"
+                        field="dimensions"
+                        visiblePriority="xs" />
+            <TextColumn name="size"
+                        title="Size"
+                        field="size"
+                        visiblePriority="xs" />
+            <TextColumn name="link"
+                        title="Link"
+                        field="link"
+                        visiblePriority="xs" />
+            <EditColumn :onClick="onEditThumbnailFileItem" />
+            <DeleteColumn :onClick="onDeleteThumbnailFileItem" />
+        </Grid>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { MediaElementBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementBag";
+    import { MediaElementDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import Grid, { TextColumn, BooleanColumn, EditColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<MediaElementBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<MediaElementDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const mediaFileGridDataSource = ref<GridDataBag>(props.modelValue.bag?.mediaFileGridData ?? { rows: [] });
+    const thumbnailFileGridDataSource = ref<GridDataBag>(props.modelValue.bag?.thumbnailGridData ?? { rows: [] });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<MediaElementBag>): void
+    }>();
+
+    // #region Values
+
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const durationSeconds = propertyRef(props.modelValue.bag?.durationSeconds ?? null, "DurationSeconds");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, name, durationSeconds];
+
+    // #endregion
+
+    // #region Functions
+
+    function setPropertiesBoxValue<T>(box: ValidPropertiesBox<T>, key: keyof T, value: any): void {
+        if (!box.bag) {
+            box.bag = {} as T;
+        }
+        box.bag[key] = value;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onAddMediaFileItem(): void {
+        // TODO: Implement add item functionality
+        console.log("Add item clicked");
+    }
+
+    function onAddThumbnailFileItem(): void {
+        // TODO: Implement add item functionality
+        console.log("Add item clicked");
+    }
+
+    function onEditMediaFileItem(): void {
+        // TODO: Implement edit item functionality
+        console.log("Edit item clicked");
+    }
+
+    function onDeleteMediaFileItem(): void {
+        // TODO: Implement delete item functionality
+        console.log("Delete item clicked");
+    }
+
+    function onEditThumbnailFileItem(): void {
+        // TODO: Implement edit item functionality
+        console.log("Edit item clicked");
+    }
+
+    function onDeleteThumbnailFileItem(): void {
+        // TODO: Implement delete item functionality
+        console.log("Delete item clicked");
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(durationSeconds, props.modelValue.bag?.durationSeconds ?? null);
+
+        // Update grid data sources
+        mediaFileGridDataSource.value = props.modelValue.bag?.mediaFileGridData ?? { rows: [] };
+        thumbnailFileGridDataSource.value = props.modelValue.bag?.thumbnailGridData ?? { rows: [] };
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: ValidPropertiesBox<MediaElementBag> = {
+            bag: { ...props.modelValue.bag } as MediaElementBag
+        };
+
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "durationSeconds", durationSeconds.value);
+
+        emit("update:modelValue", newValue);
+    });
+</script>

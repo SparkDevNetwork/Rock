@@ -1,0 +1,257 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+        <Panel type="block" :title="panelName" :headerSecondaryActions="blockLabels">
+            <template #headerActions>
+                <template v-if="mediaElementViewBag?.closeCaption">
+                    <a target="_blank"><span class="label label-info"><i class="fa fa-cc fa-lg"></i></span></a>
+                </template>
+                <template v-if="mediaElementViewBag?.durationSeconds">
+                    <span class="label label-default ml-1">{{ formatDuration(mediaElementViewBag.durationSeconds) }}</span>
+                </template>
+            </template>
+            <template #default>
+                <TabbedContent :tabs="tabs" v-model:selectedTab="selectedTab" selectedTabQueryParameterKey="tab">
+                    <template #tabpane="{ item }">
+                        <div v-if="item === 'Overview'">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <MediaPlayer
+                                                 mediaUrl="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                                                 thumbnailUrl="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg" />
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Rock Media Analytics</strong>
+                                    <h1>{{ mediaElementEditBag.bag?.metricData }}</h1>
+                                    <Kpi value="3" label="Engagement" tooltip="The fictional number of members of this church that attend regularly." iconCssClass="fa fa-broadcast-tower" color="blue" isCard />
+                                    <Kpi value="1" label="Plays" tooltip="The fictional number of members of this church that attend regularly." iconCssClass="fa fa-play-circle" color="green" isCard />
+                                    <Kpi value="1" label="Minutes Watched" tooltip="The fictional number of members of this church that attend regularly." iconCssClass="fa fa-clock" color="orange" isCard />
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else-if="item === 'Media Assets'">
+                            <ViewPanel v-if="panelMode === DetailPanelMode.View"
+                                       :modelValue="mediaElementViewBag ?? undefined"
+                                       :options="options" />
+                            <EditPanel v-else
+                                       v-model="mediaElementEditBag"
+                                       :options="options" />
+                        </div>
+                        <div v-else-if="item === 'Transcription'">
+                            <TextBox v-model="text" label="Transcription Text" textMode="multiline" size="large" rows="25" />
+                        </div>
+                    </template>
+                </TabbedContent>
+
+                <Modal v-model="showAuditDetailsModal" title="Audit Details">
+                    <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
+                </Modal>
+            </template>
+            <template #footerActions>
+                <div v-if="panelMode === DetailPanelMode.Edit && selectedTab === 'Media Assets'">
+                    <RockButton v-if="isEditable"
+                                :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onStartSubmitForm">
+                        Save
+                    </RockButton>
+                    <RockButton v-if="isEditable"
+                                :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Link"
+                                @click="onCancelEdit">
+                        Cancel
+                    </RockButton>
+                </div>
+
+                <div v-if="panelMode === DetailPanelMode.View && isEditable && selectedTab === 'Media Assets'">
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onEdit">
+                        Edit
+                    </RockButton>
+                </div>
+
+                <div v-if="selectedTab === 'Transcription'">
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onSaveTranscription">
+                        Save Transcription
+                    </RockButton>
+                </div>
+            </template>
+        </Panel>
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./MediaElementDetail/editPanel.partial.obs";
+    import ViewPanel from "./MediaElementDetail/viewPanel.partial.obs";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { MediaElementBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementBag";
+    import { MediaElementDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import MediaPlayer from "@Obsidian/Controls/mediaPlayer.obs";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    // #region Values
+
+    const config = useConfigurationValues<DetailBlockBox<MediaElementBag, MediaElementDetailOptionsBag>>();
+    const submitForm = ref(false);
+    const resetKey = ref("");
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+    const mediaElementViewBag = ref<MediaElementBag | undefined>(config.entity ?? undefined);
+    const mediaElementEditBag = ref<ValidPropertiesBox<MediaElementBag>>({
+        bag: mediaElementViewBag.value ? { ...mediaElementViewBag.value } : {} as MediaElementBag,
+        validProperties: config.validProperties ?? []
+    });
+    const entityTypeGuid = EntityType.Site;
+    const showAuditDetailsModal = ref(false);
+    const isActionButtonsVisible = ref(true);
+
+    const tabs = ref(["Overview", "Media Assets", "Transcription"]);
+    const selectedTab = ref(new URLSearchParams(window.location.search).get("tab") ?? "Overview");
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Resets the panel back to view mode and clears any edits
+     */
+    function resetToViewMode(): void {
+        panelMode.value = DetailPanelMode.View;
+        mediaElementEditBag.value = {
+            bag: {} as MediaElementBag,
+            validProperties: []
+        };
+    }
+
+    /**
+     * Formats a duration in seconds to a minutes and seconds string.
+     * @param seconds The duration in seconds
+     * @returns A formatted string in the format "Xm Ys" or "Ys" if less than a minute
+     */
+    function formatDuration(seconds: number | null | undefined): string {
+        if (!seconds) {
+            return "";
+        }
+
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+
+        if (minutes > 0) {
+            return `${minutes}m ${remainingSeconds}s`;
+        }
+        else {
+            return `${remainingSeconds}s`;
+        }
+    }
+
+    /**
+     * Handles the edit button click event
+     */
+    function onEdit(): void {
+        panelMode.value = DetailPanelMode.Edit;
+        mediaElementEditBag.value = {
+            bag: mediaElementViewBag.value ? { ...mediaElementViewBag.value } : {} as MediaElementBag,
+            validProperties: config.validProperties ?? []
+        };
+    }
+
+    /**
+     * Handles the cancel edit button click event
+     */
+    function onCancelEdit(): void {
+        panelMode.value = DetailPanelMode.View;
+        mediaElementEditBag.value = {
+            bag: {} as MediaElementBag,
+            validProperties: []
+        };
+    }
+
+    const onStartSubmitForm = (): void => {
+        submitForm.value = true;
+    };
+
+    function onSaveTranscription(): void {
+        // Add your transcription saving logic here
+    }
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return mediaElementViewBag.value?.name ?? "";
+    });
+
+    const options = computed((): MediaElementDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    /**
+    * The identifier key value for this entity.
+    */
+    const entityKey = computed((): string => {
+        return mediaElementViewBag.value?.idKey ?? "";
+    });
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const actions: PanelAction[] = [];
+
+        if (mediaElementViewBag?.value?.idKey) {
+            actions.push({
+                type: "default",
+                title: "Audit Details",
+                handler: onAuditClick
+            });
+        }
+
+        return actions;
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true && isActionButtonsVisible.value;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // Watch for tab changes and reset to view mode if leaving Media Assets
+    watch(selectedTab, (newTab) => {
+        if (newTab !== "Media Assets" && panelMode.value === DetailPanelMode.Edit) {
+            resetToViewMode();
+        }
+    });
+
+    const onAuditClick = (): void => {
+        showAuditDetailsModal.value = true;
+    };
+
+    async function onSave(): Promise<void> {
+        if (panelMode.value === DetailPanelMode.Edit) {
+            // Update the view bag with the edited values
+            mediaElementViewBag.value = { ...mediaElementEditBag.value.bag };
+            panelMode.value = DetailPanelMode.View;
+        }
+        // Additional save implementation will go here
+    }
+</script>
