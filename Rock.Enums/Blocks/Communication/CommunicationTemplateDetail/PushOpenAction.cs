@@ -15,10 +15,10 @@
 // </copyright>
 //
 
-namespace Rock.Enums.Blocks.Communication.CommunicationEntryWizard
+namespace Rock.Enums.Blocks.Communication.CommunicationTemplateDetail
 {
     /// <summary>
-    /// The Push Open Action used by the Communication Entry Wizard block.
+    /// The Push Open Action used by the Template Detail block.
     /// </summary>
     public enum PushOpenAction
     {

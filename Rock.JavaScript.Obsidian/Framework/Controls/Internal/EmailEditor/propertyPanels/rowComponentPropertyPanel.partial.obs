@@ -4,7 +4,8 @@
                                 title="Row"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
-                                @delete="$emit('delete')">
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)">
         <template v-if="componentHelper">
             <AccordionGroup>
                 <Accordion title="General Settings">
@@ -64,6 +65,7 @@
         (e: "clone"): void;
         (e: "complete"): void;
         (e: "delete"): void;
+        (e: "migrate", value: Element): void;
     }>();
 
     // #region Computed Props

@@ -164,6 +164,7 @@
     import MetaTagsPlugin from "./NoteEditor/metaTagsPlugin.partial.obs";
     import ParagraphPlugin from "./NoteEditor/paragraphPlugin.partial.obs";
     import PasteAsPlainTextPlugin from "./NoteEditor/pasteAsPlainTextPlugin.partial.obs";
+
     import ShortLinkPlugin from "./NoteEditor/shortLinkPlugin.partial.obs";
     import StylesheetsPlugin from "./NoteEditor/stylesheetsPlugin.partial.obs";
     import { providePluginsFeature } from "./NoteEditor/utils.partial";

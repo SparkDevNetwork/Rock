@@ -147,6 +147,9 @@
     <Compile Include="Blocks\Communication\SmsConversations\SmsConversationsInitializationBox.cs" />
     <Compile Include="Blocks\Communication\SmsConversations\SmsConversationsSaveNoteBag.cs" />
     <Compile Include="Blocks\Communication\SmsConversations\SnippetBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationTemplateDetail\CommunicationTemplateDetailCommunicationTemplateBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationTemplateDetail\CommunicationTemplateDetailGetPreviewMessageRequestBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationTemplateDetail\CommunicationTemplateDetailInitializationBox.cs" />
     <Compile Include="Blocks\Core\PersonSuggestionList\PersonSuggestionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchPageBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchBag.cs" />

@@ -21,31 +21,11 @@
 // </copyright>
 //
 
-/** The Push Open Action used by the Communication Entry Wizard block. */
-export const PushOpenAction = {
-    /** No action */
-    NoAction: 0,
+/** Represents the request bag for getting the preview message in the Communication Template Detail block. */
+export type CommunicationTemplateDetailGetPreviewMessageRequestBag = {
+    /** Gets or sets a value indicating whether CSS inlining is enabled. */
+    isCssInlined: boolean;
 
-    /** Show details */
-    ShowDetails: 1,
-
-    /** Link to mobile page */
-    LinkToMobilePage: 2,
-
-    /** Link to URL */
-    LinkToUrl: 3
-} as const;
-
-/** The Push Open Action used by the Communication Entry Wizard block. */
-export const PushOpenActionDescription: Record<number, string> = {
-    0: "No Action",
-
-    1: "Show Details",
-
-    2: "Link To Mobile Page",
-
-    3: "Link To Url"
+    /** Gets or sets the message content. */
+    message?: string | null;
 };
-
-/** The Push Open Action used by the Communication Entry Wizard block. */
-export type PushOpenAction = typeof PushOpenAction[keyof typeof PushOpenAction];

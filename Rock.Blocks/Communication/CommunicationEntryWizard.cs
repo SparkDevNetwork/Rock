@@ -173,7 +173,7 @@ namespace Rock.Blocks.Communication
 
     [Rock.SystemGuid.EntityTypeGuid( "26917C58-C8A2-4BF5-98CB-378A02761CD7" )]
     [Rock.SystemGuid.BlockTypeGuid( "9FFC7A4F-2061-4F30-AF79-D68C85EE9F27" )]
-    public partial class CommunicationEntryWizard : RockBlockType
+    public class CommunicationEntryWizard : RockBlockType
     {
         #region Attribute Keys
 
