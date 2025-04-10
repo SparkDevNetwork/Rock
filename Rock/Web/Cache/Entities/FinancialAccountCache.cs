@@ -73,6 +73,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool IsActive { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.FinancialAccount.UsesCampusChildAccounts" />
+        [DataMember]
+        public bool UsesCampusChildAccounts { get; private set; }
+
         /// <inheritdoc cref="Rock.Model.FinancialAccount.Campus" />
         public CampusCache Campus
         {
@@ -265,6 +269,37 @@ namespace Rock.Web.Cache
             return results.ToArray();
         }
 
+        /// <summary>
+        /// <para>
+        /// Determines the actual account to use for the given campus. This uses
+        /// campus matching logic to try and find a child account that matches the
+        /// specified campus.
+        /// </para>
+        /// <para>
+        /// <list type="bullet">
+        ///   <item>If <see cref="UsesCampusChildAccounts"/> is <c>false</c>, then this (the parent) account will be returned.</item>
+        ///   <item>If no campus is specified or available, then this (the parent) account will be returned.</item>
+        ///   <item>If an active direct child account has a campus that matches the specified campus, then the first matching child account will be returned.</item>
+        ///   <item>If no active direct child account matches the specified campus, then this (the parent) account will be returned.</item>
+        /// </list>
+        /// </para>
+        /// </summary>
+        /// <param name="campus">The campus to use when searching for a child account.</param>
+        /// <returns>The <see cref="FinancialAccountCache"/> object that should be used for a transaction.</returns>
+        public FinancialAccountCache GetActualAccountForCampus( CampusCache campus )
+        {
+            if ( !UsesCampusChildAccounts || campus == null )
+            {
+                return this;
+            }
+
+            var childAccount = ChildAccounts
+                .Where( a => a.IsActive && a.CampusId == campus.Id )
+                .FirstOrDefault();
+
+            return childAccount ?? this;
+        }
+
         #endregion Methods
 
         /// <summary>
@@ -291,6 +326,7 @@ namespace Rock.Web.Cache
             this.CampusId = financialAccount.CampusId;
             this.IsActive = financialAccount.IsActive;
             this.Order = financialAccount.Order;
+            this.UsesCampusChildAccounts = financialAccount.UsesCampusChildAccounts;
         }
 
         /// <summary>
