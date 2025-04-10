@@ -1,19 +1,110 @@
 <template>
-    <Panel type="block">
+    <Panel type="block" :modelValue="true" :hasCollapse="true" :headerSecondaryActions="secondaryActions">
         <template #title>
-            <div class="d-flex align-items-center">
-                <h1 class="panel-title">
-                    {{ destinationGroup.name }}
-                </h1>
+            <div class="d-flex align-items-center gap-2">
+                {{ destinationGroup.name }}
+                <Badge :class="[capacityStatusClass]">{{ capacityText }}</Badge>
+                <span v-for="role in groupTypeRoles" :key="role.id" :class="['role-count', roleCountOverUnderCapacityClass(role.id)]">{{ role.name }}: {{ roleCount(role.id) }}</span>
             </div>
         </template>
+        <Panel v-for="role in groupTypeRoles" :key=role.id class="panel-inline" :title="role.name ?? ''">
+            <div class="group-wrapper">
+                <PersonCard v-for="(person, index) in placedPeople"
+                            :key="index"
+                            :isCardExpanded="areCardsExpanded"
+                            :person="person"
+                            :index="index" />
+            </div>
+        </Panel>
     </Panel>
 </template>
 
 <style scoped>
 :deep(.panel.panel-block) {
     height: 100%;
+    margin-bottom: 24px;
 }
+
+.panel-inline {
+    margin-bottom: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    -webkit-bot-shadow: none !important
+}
+
+.panel-inline :deep(.panel-heading) {
+    padding: 8px 16px;
+    background-color: rgba(245, 245, 245, 0.8);
+    border-top: 1px solid #eee
+}
+
+.panel-inline :deep(.panel-title) {
+    font-size: 14px;
+    font-weight: 600
+}
+
+.placement-capacity-label {
+    border-radius: 100px;
+}
+
+.role-count {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-regular);
+    color: var(--color-interface-medium);
+}
+
+.role-count.over-under-role-capacity {
+    color: var(--color-danger);
+}
+
+.status-over {
+    background-color: #d4442e !important;
+}
+
+.status-at {
+    background-color: #ee7624 !important;
+}
+
+.status-near {
+    background-color: #ffc870 !important;
+    color: black;
+}
+
+.status-under {
+    background-color: #16c98d !important;
+}
+
+.group-wrapper {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, 300px);
+    padding: 16px;
+}
+
+/* @media (min-width: 1024px) {
+    .group-wrapper {
+        grid-template-columns: repeat(2, 300px);
+    }
+}
+
+@media (min-width: 1440px) {
+    .group-wrapper {
+        grid-template-columns: repeat(3, 300px);
+    }
+}
+
+@media (min-width: 1800px) {
+    .group-wrapper {
+        grid-template-columns: repeat(4, 300px);
+    }
+}
+
+@media (min-width: 2000px) {
+    .group-wrapper {
+        grid-template-columns: repeat(5, 300px);
+    }
+} */
 </style>
 
 <script setup lang="ts">
@@ -21,6 +112,10 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
     import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
+    import { PlacementGroupTypeRoleBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupTypeRoleBag";
+    import PersonCard from "./personCard.partial.obs";
+    import Badge from "@Obsidian/Controls/badge.obs";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 
     const props = defineProps({
         destinationGroup: {
@@ -31,10 +126,95 @@
             type: Array as PropType<PersonBag[]>,
             required: true
         },
+        groupTypeRoles: {
+            type: Array as PropType<PlacementGroupTypeRoleBag[]>,
+        },
+        areCardsExpanded: {
+            type: Boolean,
+            default: false
+        }
     });
 
     const emit = defineEmits<{
         // (e: "toggleCardExpansion"): void;
     }>();
 
+    const destinationGroup = ref<PlacementGroupBag>(props.destinationGroup);
+    const placedPeople = ref<PersonBag[]>(props.placedPeople);
+    const groupTypeRoles = ref<PlacementGroupTypeRoleBag[]>(props.groupTypeRoles ?? []);
+
+    const capacityStatusClass = computed(() => {
+        if (!destinationGroup.value.groupCapacity) {
+            return "status-under";
+        }
+
+        const groupMemberCount = placedPeople.value.length;
+        const groupCapacityPercent = (groupMemberCount / destinationGroup.value.groupCapacity) * 100;
+
+        if (groupCapacityPercent > 100) {
+            return "status-over";
+        }
+        else if (groupCapacityPercent === 100) {
+            return "status-at";
+        }
+        else if (groupCapacityPercent > 80) {
+            return "status-near";
+        }
+        else {
+            return "status-under";
+        }
+    });
+
+    const capacityText = computed(() => {
+        const groupMemberCount = placedPeople.value.length;
+
+        if (!destinationGroup.value.groupCapacity) {
+            return `${groupMemberCount}`;
+        }
+
+        return `${groupMemberCount} / ${destinationGroup.value.groupCapacity}`;
+    });
+
+    const roleCount = computed(() => {
+        return (roleId: number) => {
+            return placedPeople.value.filter(p =>
+                p.groupPlacementMapping?.some(g => g.groupRoleId === roleId)
+            ).length;
+        };
+        //TODO - tooltip here.
+    });
+
+    const roleCountOverUnderCapacityClass = computed(() => {
+        return (roleId: number) => {
+            const role = groupTypeRoles.value.find(r => r.id === roleId);
+            const roleMax = role?.maxCount;
+            const roleMin = role?.minCount;
+            const count = roleCount.value(roleId);
+
+            if (count == null) {
+                return "";
+            }
+
+            const isOver = roleMax != null && count > roleMax;
+            const isUnder = roleMin != null && count < roleMin;
+
+            return (isOver || isUnder) ? "over-under-role-capacity" : "";
+        };
+    });
+
+    const secondaryActions = computed((): PanelAction[] | undefined => {
+        const actions: PanelAction[] = [];
+
+        actions.push({
+            type: "default",
+            title: "Edit",
+            handler: actionGoesHere
+        });
+
+        return actions;
+    });
+
+    function actionGoesHere() {
+        // Logic to handle the action goes here
+    }
 </script>

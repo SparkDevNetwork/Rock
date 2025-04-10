@@ -46,8 +46,8 @@
             </div>
         </template>
 
-        <div class="w-100 h-100">
-            <div class="col-md-3 p-0">
+        <div class="d-flex w-100 h-100">
+            <div style="width: 350px;">
                 <Panel type="block" title="People To Place">
                     <template #headerActions>
                         <RockButton :btnType="BtnType.Default"
@@ -95,13 +95,14 @@
                                     :isCardExpanded="areCardsExpanded"
                                     :person="person"
                                     :index="index"
-                                    @toggleCardExpansion="toggleCardExpansion" />
+                                    @toggleCardExpansion="toggleCardExpansion"
+                                    class="my-2" />
                     </div>
 
                 </Panel>
 
             </div>
-            <div class="col-md-9 p-0">
+            <div class="flex-fill">
                 <Panel type="block" title="Destination Groups">
                     <template #headerActions>
                         <div class="d-flex gap-1 mr-3">
@@ -146,11 +147,14 @@
                             Apply Filter
                         </RockButton>
                     </template>
-
-                    <DestinationGroup v-for="(group, index) in box.placementGroups"
-                                      :key="index"
-                                      :destinationGroup="group"
-                                      :placedPeople="placementGroups.placed" />
+                    <div class="p-3">
+                        <DestinationGroup v-for="(group, index) in box.placementGroups"
+                                          :key="index"
+                                          :destinationGroup="group"
+                                          :placedPeople="placementGroups.placed.filter(p => p.groupPlacementMapping?.some(m => m.groupId === group.id))"
+                                          :areCardsExpanded="areCardsExpanded"
+                                          :groupTypeRoles="box.placementGroupTypeRoles ?? []" />
+                    </div>
 
                 </Panel>
             </div>

@@ -162,10 +162,12 @@
     <Compile Include="Blocks\Example\ControlGallery\ControlGalleryInitializationBox.cs" />
     <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PersonBag.cs" />
+    <Compile Include="Blocks\Group\GroupPlacement\GroupPlacementMappingBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PlacementConfigurationSettingOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PlacementConfigurationSettingsBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PlacementBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PlacementGroupBag.cs" />
+    <Compile Include="Blocks\Group\GroupPlacement\PlacementGroupTypeRoleBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PlacementGroupTypeBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\GroupPlacementInitializationBox.cs" />
     <Compile Include="Blocks\Lms\LearningClassActivityCompletionDetail\LearningClassActivityCompletionBag.cs" />

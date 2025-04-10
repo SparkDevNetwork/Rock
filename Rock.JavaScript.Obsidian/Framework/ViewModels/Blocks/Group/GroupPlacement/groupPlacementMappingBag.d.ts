@@ -21,36 +21,9 @@
 // </copyright>
 //
 
-import { Gender } from "@Obsidian/Enums/Crm/gender";
-import { GroupPlacementMappingBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementMappingBag";
-import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+/** The SMS Conversations Initialization Box */
+export type GroupPlacementMappingBag = {
+    groupId: number;
 
-export type PersonBag = {
-    alreadyPlacedInGroup: boolean;
-
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    attributeValues?: Record<string, string> | null;
-
-    fees?: Record<string, string> | null;
-
-    firstName?: string | null;
-
-    gender: Gender;
-
-    groupPlacementMapping?: GroupPlacementMappingBag[] | null;
-
-    lastName?: string | null;
-
-    nickname?: string | null;
-
-    personId: number;
-
-    photoUrl?: string | null;
-
-    registrantId: number;
-
-    registrationInstanceId: number;
-
-    registrationInstanceName?: string | null;
+    groupRoleId: number;
 };

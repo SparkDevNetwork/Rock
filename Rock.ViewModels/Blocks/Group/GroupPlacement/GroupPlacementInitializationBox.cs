@@ -48,6 +48,10 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 
         public bool InTemplateMode { get; set; }
 
+        public bool IsPlacementAllowingMultiple { get; set; }
+
+        public List<PlacementGroupTypeRoleBag> PlacementGroupTypeRoles { get; set; }
+
         /// <summary>
         /// Gets or sets the error message, if any.
         /// </summary>

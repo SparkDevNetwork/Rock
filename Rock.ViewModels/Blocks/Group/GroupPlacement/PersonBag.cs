@@ -42,6 +42,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 
         public bool AlreadyPlacedInGroup { get; set; }
 
+        public List<GroupPlacementMappingBag> GroupPlacementMapping { get; set; }
+
         public string PhotoUrl { get; set; }
 
         public Dictionary<string, string> Fees { get; set; }
