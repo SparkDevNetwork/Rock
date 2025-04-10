@@ -1489,6 +1489,7 @@ namespace RockWeb.Blocks.Groups
                 BindInheritedAttributes( CurrentGroupTypeId, new AttributeService( new RockContext() ) );
                 BindGroupRequirementsGrid();
                 BindAdministratorPerson( group, groupType );
+                SetChatControls( groupType, group );
             }
         }
 
@@ -1914,44 +1915,6 @@ namespace RockWeb.Blocks.Groups
             wpGroupRequirements.Visible = canAdministrate;
             wpGroupMemberAttributes.Visible = canAdministrate;
 
-            if ( ChatHelper.IsChatEnabled && group.GroupType?.IsChatAllowed == true )
-            {
-                var isChatEnabled = group.IsChatEnabledOverride.HasValue
-                    ? group.IsChatEnabledOverride.Value ? "y" : "n"
-                    : string.Empty;
-
-                var isLeavingChatChannelAllowed = group.IsLeavingChatChannelAllowedOverride.HasValue
-                    ? group.IsLeavingChatChannelAllowedOverride.Value ? "y" : "n"
-                    : string.Empty;
-
-                var isChatChannelPublic = group.IsChatChannelPublicOverride.HasValue
-                    ? group.IsChatChannelPublicOverride.Value ? "y" : "n"
-                    : string.Empty;
-
-                var isChatChannelAlwaysShown = group.IsChatChannelAlwaysShownOverride.HasValue
-                    ? group.IsChatChannelAlwaysShownOverride.Value ? "y" : "n"
-                    : string.Empty;
-
-                ddlIsChatEnabled.SetValue( isChatEnabled );
-                ddlIsLeavingChatChannelAllowed.SetValue( isLeavingChatChannelAllowed );
-                ddlIsChatChannelPublic.SetValue( isChatChannelPublic );
-                ddlIsChatChannelAlwaysShown.SetValue( isChatChannelAlwaysShown );
-
-                if ( group.IsSystem )
-                {
-                    ddlIsChatEnabled.Enabled = false;
-                    ddlIsLeavingChatChannelAllowed.Enabled = false;
-                    ddlIsChatChannelPublic.Enabled = false;
-                    ddlIsChatChannelAlwaysShown.Enabled = false;
-                }
-
-                wpChat.Visible = true;
-            }
-            else
-            {
-                wpChat.Visible = false;
-            }
-
             GroupSyncState = new List<GroupSyncViewModel>();
             foreach ( var sync in group.GroupSyncs )
             {
@@ -2023,6 +1986,7 @@ namespace RockWeb.Blocks.Groups
             SetRsvpControls( groupTypeCache, group );
             SetScheduleControls( groupTypeCache, group );
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
+            SetChatControls( groupTypeCache, group );
 
             cbSchedulingMustMeetRequirements.Checked = group.SchedulingMustMeetRequirements;
             cbDisableScheduleToolboxAccess.Checked = group.DisableScheduleToolboxAccess;
@@ -2429,6 +2393,52 @@ namespace RockWeb.Blocks.Groups
             wpRsvp.Visible = showRsvp;
             rsRsvpReminderOffsetDays.SelectedValue = offsetDays.GetValueOrDefault( 0 );
             ddlRsvpReminderSystemCommunication.SetValue( reminderSystemCommunicationId );
+        }
+
+        /// <summary>
+        /// Sets the chat controls.
+        /// </summary>
+        /// <param name="groupType">The group type cache.</param>
+        /// <param name="group">The group.</param>
+        private void SetChatControls( GroupTypeCache groupType, Group group )
+        {
+            if ( ChatHelper.IsChatEnabled && groupType?.IsChatAllowed == true )
+            {
+                var isChatEnabled = group.IsChatEnabledOverride.HasValue
+                    ? group.IsChatEnabledOverride.Value ? "y" : "n"
+                    : string.Empty;
+
+                var isLeavingChatChannelAllowed = group.IsLeavingChatChannelAllowedOverride.HasValue
+                    ? group.IsLeavingChatChannelAllowedOverride.Value ? "y" : "n"
+                    : string.Empty;
+
+                var isChatChannelPublic = group.IsChatChannelPublicOverride.HasValue
+                    ? group.IsChatChannelPublicOverride.Value ? "y" : "n"
+                    : string.Empty;
+
+                var isChatChannelAlwaysShown = group.IsChatChannelAlwaysShownOverride.HasValue
+                    ? group.IsChatChannelAlwaysShownOverride.Value ? "y" : "n"
+                    : string.Empty;
+
+                ddlIsChatEnabled.SetValue( isChatEnabled );
+                ddlIsLeavingChatChannelAllowed.SetValue( isLeavingChatChannelAllowed );
+                ddlIsChatChannelPublic.SetValue( isChatChannelPublic );
+                ddlIsChatChannelAlwaysShown.SetValue( isChatChannelAlwaysShown );
+
+                if ( group.IsSystem )
+                {
+                    ddlIsChatEnabled.Enabled = false;
+                    ddlIsLeavingChatChannelAllowed.Enabled = false;
+                    ddlIsChatChannelPublic.Enabled = false;
+                    ddlIsChatChannelAlwaysShown.Enabled = false;
+                }
+
+                wpChat.Visible = true;
+            }
+            else
+            {
+                wpChat.Visible = false;
+            }
         }
 
         /// <summary>
