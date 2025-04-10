@@ -38,7 +38,7 @@
     import { Guid } from "@Obsidian/Types";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { useVModelPassthrough, standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { useSuspense } from "@Obsidian/Utility/suspense";
     import { containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
@@ -80,20 +80,6 @@
         accountAmountEntryMode: {
             type: String as PropType<"singleAccount" | "multipleAccounts">,
             default: "singleAccount"
-        },
-
-        /**
-         * By default, the *actual* selected account will be determined as follows:
-         *
-         * 1. If the selected account is associated with the selected campus, that account will be used
-         * 2. If the selected account is not associated with a campus, use the first matching active child account that is associated with the selected campus.
-         * 3. If the selected account is not associated with a campus, and there are no active child accounts for the selected campus, use the parent account (the one the user sees).
-         *
-         * If this props is set to true, the parent account that appears in the picker will always be used.
-         */
-        disableAccountCampusMappingLogic: {
-            type: Boolean,
-            default: false
         },
 
         /** The Lava Template to use as the amount input label for each account. Default is "Account.PublicName". */
@@ -202,15 +188,6 @@
         }
     });
 
-    const properSelectedAccount = computed(() => {
-        // No selected account, so we can't map it to the correct one
-        if (!selectedAccount.value || props.accountAmountEntryMode == "multipleAccounts") {
-            return null;
-        }
-
-        return getMappedAccountForCampus(selectedAccount.value, internalCampusGuid.value);
-    });
-
     const mutatedRules = computed(() => {
         if (containsRequiredRule(props.rules)) {
             const rules = normalizeRules(props.rules);
@@ -256,7 +233,7 @@
     watchEffect(() => {
         if (props.accountAmountEntryMode == "singleAccount") {
             internalValue.value = [{
-                account: properSelectedAccount.value,
+                account: selectedAccount.value,
                 amount: amount.value || null,
                 readOnly: false
             }];
@@ -265,7 +242,7 @@
             internalValue.value = amounts.value.map(aa => {
                 return {
                     amount: aa.amount,
-                    account: getMappedAccountForCampus(aa.account ?? {}, internalCampusGuid.value),
+                    account: aa.account,
                     readOnly: aa.readOnly
                 };
             });
@@ -302,21 +279,6 @@
             isLoading.value = false;
             return [];
         }
-    }
-
-    /** Take an account ListItemBag and a campusID and get the correct account for that campus */
-    function getMappedAccountForCampus(account: ListItemBag, campus: Guid | null): ListItemBag {
-        // If we're not using campus mapping logic or if we don't have a campus selected, just use the selected account
-        if (props.disableAccountCampusMappingLogic || !campus) {
-            return account;
-        }
-
-        // Otherwise get the account specifically for the selected campus
-        return loadedAccounts.value
-            ?.find(acct => areEqual(account.value, acct?.value)) // find selected
-            ?.campusAccounts // campus-mapped accounts
-            ?.[campus] // GUID for account for the selected campus
-            || account; // Backup in case we can't find a campus-specific account
     }
 
     // #endregion

@@ -234,7 +234,7 @@ namespace Rock.Model
         /// to automatically determine the child account to use based on the campus.
         /// </para>
         /// <para>
-        /// When possible, use the TODO: <see cref="FinancialAccountCache.GetActualAccountForCampus(CampusCache)"/>
+        /// When possible, use the TODO: <see cref="FinancialAccountCache.GetMappedAccountForCampus(CampusCache)"/>
         /// method to perform the matching logic.
         /// </para>
         /// <para>

@@ -176,9 +176,9 @@ namespace RockWeb.Blocks.Finance
         "Use Account Campus Mapping Logic",
         Description = @"If enabled, the accounts will be determined as follows:
         <ul>
-          <li>If the selected account is not associated with a campus, the Selected Account will be the first matching active child account that is associated with the selected campus.</li>
-          <li>If the selected account is not associated with a campus, but there are no active child accounts for the selected campus, the parent account (the one the user sees) will be returned.</li>
-          <li>If the selected account is associated with a campus, that account will be returned regardless of campus selection (and it won't use the child account logic)</li>
+          <li>If no campus is selected, then the selected account will be used.</li>
+          <li>If an active direct child account has a campus that matches the selected campus, then the first matching child account will be used.</li>
+          <li>If no active direct child account matches the selected campus, then the selected account will be used.</li>
         <ul>",
         Key = AttributeKey.UseAccountCampusMappingLogic,
         DefaultBooleanValue = false,
