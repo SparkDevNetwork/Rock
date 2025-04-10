@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <Target Name="CopyArtifactsToRockWebBin" AfterTargets="AfterBuild" Condition="'$(CopyToRockWeb)' == 'True' and '$(RockWebPath)' != '' and '$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <!-- Need a way to ignore specific files, such as libgrpc* and SqlServerTypes/* -->
     <FindUnderPath Path="$(OutDir)" Files="@(FileWrites)"
         UpdateToAbsolutePaths="True">
       <Output TaskParameter="InPath" ItemName="_SourceFilesToCopyToRockWeb"/>
