@@ -61,7 +61,7 @@ namespace Rock.Reporting.DataFilter.Person
         {
             var config = SelectionConfig.Parse( selection );
 
-            var learningProgramOptions = new LearningProgramService( new RockContext() )
+            var learningProgramOptions = new LearningProgramService( rockContext )
                 .Queryable()
                 .Where( lp => lp.IsActive && lp.IsCompletionStatusTracked )
                 .OrderBy( lp => lp.Name )
