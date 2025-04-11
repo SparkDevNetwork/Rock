@@ -11,12 +11,12 @@
 <script setup lang="ts">
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
     import { ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
-    const props = defineProps(dataViewSelectProps);
+    const props = defineProps(dataViewFilterProps);
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void

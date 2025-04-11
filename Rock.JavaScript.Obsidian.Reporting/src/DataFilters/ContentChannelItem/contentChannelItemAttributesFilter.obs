@@ -1,0 +1,67 @@
+<template>
+    <DropDownList v-if="filterMode == FilterMode.AdvancedFilter"
+                  v-model="contentChannelType"
+                  :items="contentChannelTypeOptions"
+                  label="Content Channel Type"
+                  :showBlankItem="false" />
+
+    <div style="margin-right:-10px">
+        <FieldFilterRuleRow v-if="sourcesForChannelType"
+                            v-model="filterRule"
+                            :sources="sourcesForChannelType"
+                            :filterMode="filterMode"
+                            disableRemoval
+                            allowBlankFieldSelection />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import FieldFilterRuleRow from "@Obsidian/Controls/fieldFilterRuleRow.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { computed, ref, watch } from "vue";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
+    import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
+    import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { FieldFilterSourceType } from "@Obsidian/Enums/Reporting/fieldFilterSourceType";
+    import { FilterMode } from "@Obsidian/Enums/Reporting/filterMode";
+
+    const props = defineProps(dataViewFilterProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const contentChannelTypeOptions = safeParseJson<ListItemBag[]>(props.modelValue.contentChannelTypeOptions);
+    const contentChannelType = ref<Guid>(props.modelValue.contentChannelType ?? "");
+    const fieldFilterSources = safeParseJson<Record<Guid, FieldFilterSourceBag[]>>(props.modelValue.fieldFilterSources) ?? {};
+
+    const sourcesForChannelType = computed(() => {
+        return fieldFilterSources[contentChannelType.value];
+    });
+
+    const filterRule = ref<FieldFilterRuleBag>(safeParseJson(props.modelValue.filterRule) ?? createNewFieldRule());
+
+    watch(contentChannelType, () => {
+        filterRule.value = createNewFieldRule();
+    });
+
+    function createNewFieldRule(): FieldFilterRuleBag {
+        return {
+            guid: newGuid(),
+            comparisonType: 0,
+            sourceType: FieldFilterSourceType.Attribute,
+        };
+    }
+
+    watch([contentChannelType, filterRule], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            contentChannelType: contentChannelType.value,
+            filterRule: JSON.stringify(filterRule.value),
+        });
+    });
+</script>

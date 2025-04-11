@@ -7,11 +7,11 @@
 <script setup lang="ts">
     import { ref, watch } from "vue";
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
-    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
     import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    const props = defineProps(dataViewSelectProps);
+    const props = defineProps(dataViewFilterProps);
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void

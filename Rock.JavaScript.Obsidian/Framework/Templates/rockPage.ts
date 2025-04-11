@@ -380,7 +380,7 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
             try {
                 const componentDataElement = document.getElementById(componentDataId) as HTMLInputElement;
 
-                componentData = JSON.parse(componentDataElement.value) ?? {};
+                componentData = JSON.parse(decodeURIComponent(componentDataElement.value)) ?? {};
             }
             catch (e) {
                 if (!errorMessage) {
@@ -392,7 +392,7 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
                 try {
                     const componentPropertiesElement = document.getElementById(componentPropertiesId) as HTMLInputElement;
 
-                    componentProperties = JSON.parse(componentPropertiesElement.value) ?? {};
+                    componentProperties = JSON.parse(decodeURIComponent(componentPropertiesElement.value)) ?? {};
                 }
                 catch (e) {
                     if (!errorMessage) {
@@ -405,7 +405,7 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
                 const componentDataElement = document.getElementById(componentDataId) as HTMLInputElement;
 
                 if (componentDataElement) {
-                    componentDataElement.value = JSON.stringify(data);
+                    componentDataElement.value = encodeURIComponent(JSON.stringify(data));
                 }
             }
 

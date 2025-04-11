@@ -9,12 +9,12 @@
 <script setup lang="ts">
     import { ref, watch } from "vue";
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
-    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    const props = defineProps(dataViewSelectProps);
+    const props = defineProps(dataViewFilterProps);
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void

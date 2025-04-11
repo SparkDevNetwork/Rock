@@ -50,7 +50,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
-                return ( ( HiddenField ) Controls[0] ).Value.FromJsonOrNull<Dictionary<string, string>>()
+                return ( ( HiddenField ) Controls[0] ).Value.UnescapeDataString().FromJsonOrNull<Dictionary<string, string>>()
                     ?? new Dictionary<string, string>();
             }
             set
@@ -59,11 +59,11 @@ namespace Rock.Web.UI.Controls
 
                 if ( value != null )
                 {
-                    ( ( HiddenField ) Controls[0] ).Value = value.ToJson();
+                    ( ( HiddenField ) Controls[0] ).Value = value.ToJson().EscapeDataString();
                 }
                 else
                 {
-                    ( ( HiddenField ) Controls[0] ).Value = "{}";
+                    ( ( HiddenField ) Controls[0] ).Value = "{}".EscapeDataString();
                 }
             }
         }
@@ -83,7 +83,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
-                return ( ( HiddenField ) Controls[1] ).Value.FromJsonOrNull<Dictionary<string, object>>()
+                return ( ( HiddenField ) Controls[1] ).Value.UnescapeDataString().FromJsonOrNull<Dictionary<string, object>>()
                     ?? new Dictionary<string, object>();
             }
             set
@@ -92,11 +92,11 @@ namespace Rock.Web.UI.Controls
 
                 if ( value != null )
                 {
-                    ( ( HiddenField ) Controls[1] ).Value = value.ToJson();
+                    ( ( HiddenField ) Controls[1] ).Value = value.ToJson().EscapeDataString();
                 }
                 else
                 {
-                    ( ( HiddenField ) Controls[1] ).Value = "{}";
+                    ( ( HiddenField ) Controls[1] ).Value = "{}".EscapeDataString();
                 }
             }
         }
@@ -138,7 +138,8 @@ namespace Rock.Web.UI.Controls
             Controls.Add( new HiddenField
             {
                 ID = "hfData",
-                Value = "{}"
+                Value = "{}",
+                ValidateRequestMode = ValidateRequestMode.Disabled
             } );
 
             Controls.Add( new HiddenField

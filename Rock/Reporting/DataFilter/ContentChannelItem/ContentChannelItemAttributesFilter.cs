@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,10 +23,12 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Newtonsoft.Json;
-
 using Rock.Data;
+using Rock.Enums.Reporting;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -38,7 +40,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
     [Description( "Filter Content Channel Items based on any of its attribute values" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Content Channel Item Attributes Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "DE53F3DE-B1D7-45D3-89C5-C9D3513DDEEE")]
+    [Rock.SystemGuid.EntityTypeGuid( "DE53F3DE-B1D7-45D3-89C5-C9D3513DDEEE" )]
     public class ContentChannelItemAttributesFilter : EntityFieldFilter
     {
         #region Properties
@@ -63,6 +65,141 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/ContentChannelItem/contentChannelItemAttributesFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+
+            var channelService = new ContentChannelService( rockContext );
+            var channelTypeService = new ContentChannelTypeService( rockContext );
+
+            var contentChannelTypes = channelTypeService.Queryable().OrderBy( a => a.Name ).ToList();
+            data.AddOrReplace( "contentChannelTypeOptions", contentChannelTypes.Select( a => a.ToListItemBag() ).ToList().ToCamelCaseJson( false, true ) );
+
+            var fieldFilterSourcesByContentChannelType = new Dictionary<Guid, List<FieldFilterSourceBag>>();
+
+            // Prime the dictionary with empty lists to make it easier to add the entity fields
+            foreach ( var contentChannelType in contentChannelTypes )
+            {
+                fieldFilterSourcesByContentChannelType.AddOrReplace( contentChannelType.Guid, new List<FieldFilterSourceBag>() );
+            }
+
+            List<EntityField> entityAttributeFields = new List<EntityField>();
+            var allEntityFields = EntityHelper.GetEntityFields( typeof( Rock.Model.ContentChannelItem ) )
+                .Where( a => a.FieldKind == FieldKind.Attribute );
+            // Go through all the entity fields and add them to the dictionary based on content channel type indicated by their entity type qualifier
+            foreach ( var entityField in allEntityFields )
+            {
+                var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
+                Guid channelTypeGuid = Guid.Empty;
+
+                if ( attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
+                {
+                    channelTypeGuid = channelTypeService.Get( attribute.EntityTypeQualifierValue.AsInteger() )?.Guid ?? Guid.Empty;
+                }
+                else if ( attribute.EntityTypeQualifierColumn == "ContentChannelId" )
+                {
+                    int contentChannelId = attribute.EntityTypeQualifierValue.AsInteger();
+                    var contentChannel = channelService.Get( contentChannelId );
+                    channelTypeGuid = contentChannel?.ContentChannelType.Guid ?? Guid.Empty;
+                }
+
+                var fieldType = attribute.FieldType;
+
+                var source = new FieldFilterSourceBag
+                {
+                    Guid = attribute.Guid,
+                    Type = FieldFilterSourceType.Attribute,
+                    Attribute = new PublicAttributeBag
+                    {
+                        AttributeGuid = attribute.Guid,
+                        ConfigurationValues = fieldType.Field.GetPublicConfigurationValues( attribute.ConfigurationValues, Field.ConfigurationValueUsage.Edit, null ),
+                        Description = attribute.Description,
+                        FieldTypeGuid = fieldType.Guid,
+                        Name = attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" ? entityField.TitleWithoutQualifier : entityField.Title
+                    }
+                };
+
+                fieldFilterSourcesByContentChannelType.GetValueOrNull( channelTypeGuid )?.Add( source );
+            }
+
+            data.AddOrReplace( "fieldFilterSources", fieldFilterSourcesByContentChannelType.ToCamelCaseJson( false, true ) );
+
+            if ( !string.IsNullOrWhiteSpace( selection ) || selection.IsNotNullOrWhiteSpace() )
+            {
+                var values = selection.FromJsonOrNull<List<string>>();
+                if ( values == null || values.Count == 0 )
+                {
+                    return data;
+                }
+
+                var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( values[0].AsGuid() );
+                data.AddOrReplace( "contentChannelType", contentChannelType == null ? "" : values[0] );
+
+                if ( values.Count > 1 )
+                {
+                    var entityField = allEntityFields.ToList().FindFromFilterSelection( values[1] );
+
+                    if ( entityField == null )
+                    {
+                        return data;
+                    }
+
+                    var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
+
+                    var filterRule = new FieldFilterRuleBag
+                    {
+                        AttributeGuid = entityField.AttributeGuid,
+                        ComparisonType = ( ComparisonType ) ( values[2].AsInteger() ),
+                        SourceType = FieldFilterSourceType.Attribute,
+                        Value = values[3]
+                    };
+
+                    data.AddOrReplace( "filterRule", filterRule.ToCamelCaseJson( false, true ) );
+                }
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = new List<string>();
+
+            if ( !data.ContainsKey( "contentChannelType" ) )
+            {
+                return selectionValues.ToJson();
+            }
+
+            selectionValues.Add( data.GetValueOrNull( "contentChannelType" ) );
+
+            if ( data.ContainsKey( "filterRule" ) )
+            {
+                var filterRule = data.GetValueOrNull( "filterRule" ).FromJsonOrNull<FieldFilterRuleBag>();
+
+                if ( filterRule != null && filterRule.AttributeGuid != null )
+                {
+                    var entityField = EntityHelper.GetEntityFields( typeof( Rock.Model.ContentChannelItem ) )
+                        .Where( ef => ef.FieldKind == FieldKind.Attribute && ef.AttributeGuid == filterRule.AttributeGuid )
+                        .FirstOrDefault();
+
+                    selectionValues.Add( entityField.UniqueName );
+                    selectionValues.Add( filterRule.ComparisonType.ConvertToInt().ToString() );
+                    selectionValues.Add( filterRule.Value );
+                }
+            }
+
+            return selectionValues.ToJson();
         }
 
         #endregion
@@ -104,7 +241,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
             string result = "Content Channel Item Property";
 
             // First value is content channel type, second value is attribute, remaining values are the field type's filter values
-            var values = JsonConvert.DeserializeObject<List<string>>( selection );
+            var values = selection.FromJsonOrNull<List<string>>();
             if ( values.Count >= 2 )
             {
                 var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( values[0].AsGuid() );
@@ -121,6 +258,8 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
 
             return result;
         }
+
+#if WEBFORMS
 
         /// <summary>
         /// Creates the child controls.
@@ -230,7 +369,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
             var containerControl = ddlEntityField.FirstParentControlOfType<DynamicControlsPanel>();
             FilterField filterControl = ddlEntityField.FirstParentControlOfType<FilterField>();
 
-            RockDropDownList contentChannelTypePicker = filterControl.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.HasCssClass( "js-content-channel-picker") ).FirstOrDefault();
+            RockDropDownList contentChannelTypePicker = filterControl.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.HasCssClass( "js-content-channel-picker" ) ).FirstOrDefault();
 
             var entityFields = GetContentChannelItemAttributes( contentChannelTypePicker.SelectedValue.AsIntegerOrNull() );
             var entityField = entityFields.FirstOrDefault( a => a.UniqueName == ddlEntityField.SelectedValue );
@@ -342,7 +481,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
-                var values = JsonConvert.DeserializeObject<List<string>>( selection );
+                var values = selection.FromJsonOrNull<List<string>>();
                 if ( controls.Length > 0 && values.Count > 0 )
                 {
                     var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( values[0].AsGuid() );
@@ -370,6 +509,8 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
             }
         }
 
+#endif
+
         /// <summary>
         /// Gets the expression.
         /// </summary>
@@ -382,7 +523,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
-                var values = JsonConvert.DeserializeObject<List<string>>( selection );
+                var values = selection.FromJsonOrNull<List<string>>();
 
                 if ( values.Count >= 3 )
                 {
