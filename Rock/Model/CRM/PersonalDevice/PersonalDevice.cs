@@ -211,6 +211,12 @@ namespace Rock.Model
         [DataMember]
         public bool IsPreciseLocationEnabled { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value of when the location permission was last disabled.
+        /// </summary>
+        [DataMember]
+        public DateTime? LocationPermissionDisabledDateTime { get; set; }
+
         #endregion
 
         #region Navigation Properties
