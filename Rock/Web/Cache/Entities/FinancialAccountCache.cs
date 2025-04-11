@@ -271,7 +271,7 @@ namespace Rock.Web.Cache
 
         /// <summary>
         /// <para>
-        /// Determines the actual account to use for the given campus. This uses
+        /// Determines the mapped account to use for the given campus. This uses
         /// campus matching logic to try and find a child account that matches the
         /// specified campus.
         /// </para>
@@ -285,8 +285,8 @@ namespace Rock.Web.Cache
         /// </para>
         /// </summary>
         /// <param name="campus">The campus to use when searching for a child account.</param>
-        /// <returns>The <see cref="FinancialAccountCache"/> object that should be used for a transaction.</returns>
-        public FinancialAccountCache GetActualAccountForCampus( CampusCache campus )
+        /// <returns>The <see cref="FinancialAccountCache"/> object that should be used for a transaction, this will never be <c>null</c>.</returns>
+        public FinancialAccountCache GetMappedAccountForCampus( CampusCache campus )
         {
             if ( !UsesCampusChildAccounts || campus == null )
             {

@@ -2633,58 +2633,12 @@ namespace Rock.Rest.v2
                     items.Add( new CampusAccountAmountPickerGetAccountsResultItemBag
                     {
                         Name = accountAmountLabel,
-                        Value = account.Guid,
-                        CampusAccounts = GetCampusAccounts( account, campuses )
+                        Value = account.Guid
                     } );
                 }
 
                 return Ok( items );
             }
-        }
-
-        private Dictionary<Guid, ListItemBag> GetCampusAccounts( FinancialAccount baseAccount, List<CampusCache> campuses )
-        {
-            var results = new Dictionary<Guid, ListItemBag>();
-
-            foreach ( var campus in campuses )
-            {
-                results.Add( campus.Guid, GetBestMatchingAccountForCampusFromDisplayedAccount( campus.Id, baseAccount ) );
-            }
-
-            return results;
-        }
-
-        private ListItemBag GetBestMatchingAccountForCampusFromDisplayedAccount( int campusId, FinancialAccount baseAccount )
-        {
-            if ( baseAccount.CampusId.HasValue && baseAccount.CampusId == campusId )
-            {
-                // displayed account is directly associated with selected campusId, so return it
-                return GetAccountListItemBag( baseAccount );
-            }
-            else
-            {
-                // displayed account doesn't have a campus (or belongs to another campus). Find first active matching child account
-                var firstMatchingChildAccount = baseAccount.ChildAccounts.Where( a => a.IsActive ).FirstOrDefault( a => a.CampusId.HasValue && a.CampusId == campusId );
-                if ( firstMatchingChildAccount != null )
-                {
-                    // one of the child accounts is associated with the campus so, return the child account
-                    return GetAccountListItemBag( firstMatchingChildAccount );
-                }
-                else
-                {
-                    // none of the child accounts is associated with the campus so, return the displayed account
-                    return GetAccountListItemBag( baseAccount );
-                }
-            }
-        }
-
-        private ListItemBag GetAccountListItemBag( FinancialAccount account )
-        {
-            return new ListItemBag
-            {
-                Text = account.Name,
-                Value = account.Guid.ToString()
-            };
         }
 
         #endregion

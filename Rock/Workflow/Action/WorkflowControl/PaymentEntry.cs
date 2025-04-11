@@ -113,7 +113,7 @@ namespace Rock.Workflow.Action
     #region Campus
 
     [BooleanField( "Show Campus Picker",
-        Description = "This is only used if the Campus Mapping Logic is enabled.",
+        Description = "This is only used if the Campus Mapping Logic is enabled for the selected account.",
         DefaultBooleanValue = false,
         IsRequired = false,
         Key = AttributeKey.ShowCampusPicker,
@@ -615,7 +615,7 @@ namespace Rock.Workflow.Action
                 ? CampusCache.Get( campusGuid.Value, rockContext )
                 : null;
 
-            return configuration.Account.GetActualAccountForCampus( campus );
+            return configuration.Account.GetMappedAccountForCampus( campus );
         }
 
         /// <summary>
