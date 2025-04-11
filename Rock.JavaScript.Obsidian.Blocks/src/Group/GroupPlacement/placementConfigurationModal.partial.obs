@@ -23,7 +23,7 @@
                title="People To Place Configuration"
                :hasCollapse="true">
             <CheckBox v-model="areFeesDisplayed" label="Show Fees" />
-            <DropdownList v-model="sourceAttributesToDisplay"
+            <DropDownList v-model="sourceAttributesToDisplay"
                           label="Displayed Source Attributes"
                           :items="placementConfigurationSettingOptions.registrantAttributes ?? []"
                           :enhanceForLongLists="true"
@@ -35,7 +35,7 @@
                :hasCollapse="true">
             <div class="row">
                 <div class="col-md-6">
-                    <DropdownList v-model="groupAttributesToDisplay"
+                    <DropDownList v-model="groupAttributesToDisplay"
                                   label="Displayed Group Attributes"
                                   :items="placementConfigurationSettingOptions.groupAttributes ?? []"
                                   :enhanceForLongLists="true"
@@ -45,7 +45,7 @@
                     <CheckBox v-model="areFullGroupsHidden" label="Hide Full Groups" />
                 </div>
             </div>
-            <DropdownList v-model="groupMemberAttributesToDisplay"
+            <DropDownList v-model="groupMemberAttributesToDisplay"
                           label="Displayed Group Member Attributes"
                           :items="placementConfigurationSettingOptions.groupMemberAttributes ?? []"
                           :enhanceForLongLists="true"
@@ -64,7 +64,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     // import ListBox from "@Obsidian/Controls/listBox.obs"; - Does not work for enhanced functionality on modal.
-    import DropdownList from "@Obsidian/Controls/dropdownList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { PlacementConfigurationSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingsBag";
     import { PlacementConfigurationSettingOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingOptionsBag";
 

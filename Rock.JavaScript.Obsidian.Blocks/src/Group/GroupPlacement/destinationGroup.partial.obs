@@ -1,21 +1,44 @@
 <template>
-    <Panel type="block" :modelValue="true" :hasCollapse="true" :headerSecondaryActions="secondaryActions">
+    <Panel type="block" v-model="isGroupExpanded" :hasCollapse="true" :headerSecondaryActions="secondaryActions">
         <template #title>
             <div class="d-flex align-items-center gap-2">
                 {{ destinationGroup.name }}
                 <Badge :class="[capacityStatusClass]">{{ capacityText }}</Badge>
-                <span v-for="role in groupTypeRoles" :key="role.id" :class="['role-count', roleCountOverUnderCapacityClass(role.id)]">{{ role.name }}: {{ roleCount(role.id) }}</span>
+                <span v-for="role in groupTypeRoles"
+                      :key="role.id"
+                      :class="['role-count', getRoleCountOverUnderCapacityClass(role.id)]">
+                    {{ pluralize(role.name ?? "") }}: {{ getRoleCount(role.id) }}
+                </span>
             </div>
         </template>
-        <Panel v-for="role in groupTypeRoles" :key=role.id class="panel-inline" :title="role.name ?? ''">
+        <template #headerActions v-if="!isGroupExpanded">
+            <div class="d-flex gap-1 mr-3">
+                <Badge class="unknown-badge">{{ genderCounts.unknown }}</Badge>
+                <Badge class="male-badge">{{ genderCounts.males }}</Badge>
+                <Badge class="female-badge">{{ genderCounts.females }}</Badge>
+            </div>
+        </template>
+        <div v-for="role in groupTypeRoles" :key=role.id class="panel-inline">
+            <div class="panel-heading">
+                <h1 class="panel-title d-inline-block mr-2">
+                    {{ pluralize(role.name ?? "") }}
+                </h1>
+                <span :class="['role-count', getRoleCountOverUnderCapacityClass(role.id)]"
+                      :ref="(el) => addTooltip(el as Element)"
+                      data-toggle="tooltip"
+                      :data-html="true"
+                      :data-original-title="getRoleCountTooltipText(role.id)">
+                    {{ getRoleSubHeaderText(role.id) }}
+                </span>
+            </div>
             <div class="group-wrapper">
-                <PersonCard v-for="(person, index) in placedPeople"
+                <PersonCard v-for="(person, index) in getPlacedPeopleFilteredByRole(role.id)"
                             :key="index"
                             :isCardExpanded="areCardsExpanded"
                             :person="person"
                             :index="index" />
             </div>
-        </Panel>
+        </div>
     </Panel>
 </template>
 
@@ -33,15 +56,20 @@
     -webkit-bot-shadow: none !important
 }
 
-.panel-inline :deep(.panel-heading) {
+.panel-inline .panel-heading {
     padding: 8px 16px;
     background-color: rgba(245, 245, 245, 0.8);
     border-top: 1px solid #eee
 }
 
-.panel-inline :deep(.panel-title) {
+.panel-inline .panel-title {
     font-size: 14px;
     font-weight: 600
+}
+
+.panel-drawer + .group-role-members .panel-heading,
+.group-role-members:first-child .panel-heading {
+    border-top: 0
 }
 
 .placement-capacity-label {
@@ -56,6 +84,19 @@
 
 .role-count.over-under-role-capacity {
     color: var(--color-danger);
+}
+
+.male-badge {
+    background-color: #1A8AE5 !important;
+}
+
+.female-badge {
+    background-color: #DE69CE !important;
+}
+
+.unknown-badge {
+    background-color: var(--color-interface-soft) !important;
+    color: var(--color-interface-stronger) !important;
 }
 
 .status-over {
@@ -116,6 +157,9 @@
     import PersonCard from "./personCard.partial.obs";
     import Badge from "@Obsidian/Controls/badge.obs";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
 
     const props = defineProps({
         destinationGroup: {
@@ -142,6 +186,7 @@
     const destinationGroup = ref<PlacementGroupBag>(props.destinationGroup);
     const placedPeople = ref<PersonBag[]>(props.placedPeople);
     const groupTypeRoles = ref<PlacementGroupTypeRoleBag[]>(props.groupTypeRoles ?? []);
+    const isGroupExpanded = ref<boolean>(true);
 
     const capacityStatusClass = computed(() => {
         if (!destinationGroup.value.groupCapacity) {
@@ -165,6 +210,30 @@
         }
     });
 
+    const genderCounts = computed(() => {
+        const counts = {
+            males: 0,
+            females: 0,
+            unknown: 0
+        };
+
+        for (const person of placedPeople.value) {
+            switch (person.gender) {
+                case Gender.Male:
+                    counts.males++;
+                    break;
+                case Gender.Female:
+                    counts.females++;
+                    break;
+                default:
+                    counts.unknown++;
+                    break;
+            }
+        }
+
+        return counts;
+    });
+
     const capacityText = computed(() => {
         const groupMemberCount = placedPeople.value.length;
 
@@ -175,32 +244,6 @@
         return `${groupMemberCount} / ${destinationGroup.value.groupCapacity}`;
     });
 
-    const roleCount = computed(() => {
-        return (roleId: number) => {
-            return placedPeople.value.filter(p =>
-                p.groupPlacementMapping?.some(g => g.groupRoleId === roleId)
-            ).length;
-        };
-        //TODO - tooltip here.
-    });
-
-    const roleCountOverUnderCapacityClass = computed(() => {
-        return (roleId: number) => {
-            const role = groupTypeRoles.value.find(r => r.id === roleId);
-            const roleMax = role?.maxCount;
-            const roleMin = role?.minCount;
-            const count = roleCount.value(roleId);
-
-            if (count == null) {
-                return "";
-            }
-
-            const isOver = roleMax != null && count > roleMax;
-            const isUnder = roleMin != null && count < roleMin;
-
-            return (isOver || isUnder) ? "over-under-role-capacity" : "";
-        };
-    });
 
     const secondaryActions = computed((): PanelAction[] | undefined => {
         const actions: PanelAction[] = [];
@@ -214,7 +257,64 @@
         return actions;
     });
 
+    function getRoleCount(roleId: number): number {
+        return placedPeople.value.filter(p =>
+            p.groupPlacementMapping?.some(g => g.groupRoleId === roleId)
+        ).length;
+    }
+
+    // Low Priority TODO - there is a ux/ui issue when a panel is collapsed and the secondary actions dropdown is opened
+    function getRoleCountOverUnderCapacityClass(roleId: number): string {
+        const role = groupTypeRoles.value.find(r => r.id === roleId);
+        const roleMax = role?.maxCount;
+        const roleMin = role?.minCount;
+        const count = getRoleCount(roleId);
+
+        if (count == null) {
+            return "";
+        }
+
+        const isOver = roleMax != null && count > roleMax;
+        const isUnder = roleMin != null && count < roleMin;
+
+        return (isOver || isUnder) ? "over-under-role-capacity" : "";
+    }
+
+    function getRoleSubHeaderText(roleId: number): string {
+        const role = groupTypeRoles.value.find(r => r.id === roleId);
+        return role?.maxCount ? `${getRoleCount(roleId)}/${role.maxCount}` : `${getRoleCount(roleId)}`;
+    }
+
+    function getPlacedPeopleFilteredByRole(roleId: number): PersonBag[] {
+        return placedPeople.value.filter(p => p.groupPlacementMapping?.some(g => g.groupRoleId === roleId));
+    }
+
+    function getRoleCountTooltipText(roleId: number): string {
+        const role = groupTypeRoles.value.find(r => r.id === roleId);
+        if (!role) {
+            return "";
+        }
+
+        const parts: string[] = [];
+
+        if (role.maxCount != null) {
+            parts.push(`Maximum Total: ${role.maxCount}`);
+        }
+
+        if (role.minCount != null) {
+            parts.push(`Minimum Total: ${role.minCount}`);
+        }
+
+        return parts.join("<br>");
+    }
+
     function actionGoesHere() {
         // Logic to handle the action goes here
+    }
+
+    function addTooltip(element: Element | null): void {
+        if (element) {
+            tooltip(element);
+        }
     }
 </script>
