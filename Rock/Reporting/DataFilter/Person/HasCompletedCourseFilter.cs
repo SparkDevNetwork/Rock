@@ -28,6 +28,8 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -48,6 +50,85 @@ namespace Rock.Reporting.DataFilter.Person
         public override string AppliesToEntityType
         {
             get { return typeof( Rock.Model.Person ).FullName; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/hasCompletedCourseFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
+            var learningProgramOptions = new LearningProgramService( rockContext )
+                .Queryable()
+                .Where( lp => lp.IsActive && lp.IsCompletionStatusTracked )
+                .OrderBy( lp => lp.Name )
+                .ToList()
+                .Select( lp => lp.ToListItemBag() )
+                .ToList();
+
+            var learningProgramGuid = new LearningCourseService( rockContext )
+                .Get( config?.LearningCourseGuid ?? Guid.Empty )
+                ?.LearningProgram.Guid;
+
+            var learningCourseOptions = new LearningCourseService( rockContext )
+                .Queryable()
+                .Where( lc => lc.IsActive )
+                .OrderBy( lc => lc.Order )
+                .ThenBy( lc => lc.Name )
+                .ToList();
+
+            var learningCourseOptionsByProgram = new Dictionary<Guid, List<ListItemBag>>();
+            // Pre-make the lists for each program, then we'll load them after
+            foreach ( var learningProgram in learningProgramOptions )
+            {
+                learningCourseOptionsByProgram.Add( learningProgram.Value.AsGuid(), new List<ListItemBag>() );
+            }
+
+            foreach ( var learningCourse in learningCourseOptions )
+            {
+                var courseProgramGuid = learningCourse.LearningProgram.Guid;
+                if ( learningCourseOptionsByProgram.ContainsKey( courseProgramGuid ) )
+                {
+                    var list = learningCourseOptionsByProgram[courseProgramGuid];
+                    var listItemBag = learningCourse.ToListItemBag();
+                    list.Add( listItemBag );
+                }
+            }
+
+            var data = new Dictionary<string, string>
+            {
+                { "learningProgramOptions", learningProgramOptions.ToCamelCaseJson( false, true ) },
+                { "learningProgram", learningProgramGuid?.ToString() },
+                { "learningCourseOptions", learningCourseOptionsByProgram.ToCamelCaseJson( false, true ) },
+                { "learningCourse", config?.LearningCourseGuid?.ToString() },
+                { "courseStatus", config?.LearningCompletionStatuses.ToCamelCaseJson( false, true ) },
+                { "dateRange", config?.SlidingDateRangeDelimitedValues },
+                { "selection", selection },
+            };
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = new SelectionConfig
+            {
+                LearningCourseGuid = data.GetValueOrNull( "learningCourse" )?.AsGuidOrNull(),
+                SlidingDateRangeDelimitedValues = data.GetValueOrNull( "dateRange" ),
+                LearningCompletionStatuses = data.GetValueOrNull( "courseStatus" )?.FromJsonOrNull<List<LearningCompletionStatus>>()
+            };
+
+            //var json = selectionConfig.ToJson();
+
+            //return data.GetValueOrDefault( "selection", "" );
+            return selectionConfig.ToJson();
         }
 
         #endregion
