@@ -22,22 +22,18 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
-    public class PersonBag
+    public class RegistrantBag
     {
-        public int PersonId { get; set; }
+        public int RegistrantId { get; set; }
 
-        public string FirstName { get; set; }
+        public string RegistrationInstanceName { get; set; }
 
-        public string Nickname { get; set; }
+        public int RegistrationInstanceId { get; set; }
 
-        public string LastName { get; set; }
+        public Dictionary<string, string> Fees { get; set; }
 
-        public Gender Gender { get; set; }
+        public Dictionary<string, PublicAttributeBag> Attributes {  get; set; }
 
-        public string PhotoUrl { get; set; }
-
-        public List<RegistrantBag> Registrants { get; set; }
-
-        public int? GroupRoleId { get; set; } // TODO - quick fix storing role here need to come back later
+        public Dictionary<string, string> AttributeValues { get; set; }
     }
 }

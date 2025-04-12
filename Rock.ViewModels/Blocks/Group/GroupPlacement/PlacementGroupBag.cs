@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
     /// <summary>
@@ -22,16 +24,16 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
     /// </summary>
     public class PlacementGroupBag
     {
-        public int Id { get; set; }
+        public int GroupId { get; set; }
 
-        public string Name { get; set; }
+        public string GroupName { get; set; }
 
-        public int? CampusId { get; set; }
+        public int GroupOrder { get; set; }
+
+        public int GroupTypeId { get; set; }
 
         public int? GroupCapacity { get; set; }
 
-        public int? GroupTypeId { get; set; }
-
-        public int Order { get; set; }
+        public List<PersonBag> GroupMembers { get; set; }
     }
 }

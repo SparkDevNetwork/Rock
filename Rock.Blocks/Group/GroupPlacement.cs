@@ -18,7 +18,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -134,6 +136,17 @@ namespace Rock.Blocks.Group
             public int PersonId { get; set; }
 
             public int GroupId { get; set; }
+        }
+
+        private class GroupPlacementResult
+        {
+            public int GroupId { get; set; }
+            public string GroupName { get; set; }
+            public int? GroupCapacity { get; set; }
+            public int GroupTypeId { get; set; }
+            public int GroupOrder { get; set; }
+            public int PersonId { get; set; }
+            public int GroupRoleId { get; set; }
         }
 
         #endregion
@@ -317,14 +330,220 @@ namespace Rock.Blocks.Group
 
             if ( box.PlacementGroupType.Id.HasValue && registrationTemplatePlacementId.HasValue )
             {
-                box.PlacementGroups = GetPlacementGroups( registrationTemplatePlacementId.Value, registrationInstanceId, registrationTemplateId, box.PlacementGroupType.Id.Value );
-                if ( registrationTemplateId.HasValue )
+                //box.PlacementGroups = GetPlacementGroups( registrationTemplatePlacementId.Value, registrationInstanceId, registrationTemplateId, box.PlacementGroupType.Id.Value );
+                // TODO - add logic for cases where we just get a single registrant
+                // TODO - add logic for Included Registration Instances
+                var placementGroupDetails = GetPlacementGroupDetails( registrationTemplatePlacementId.Value, registrationInstanceId, registrationTemplateId.Value );
+                var placementPeople = GetPlacementPeople( registrationTemplateId.Value, registrationInstanceId, registrantId );
+
+
+                var personLookup = placementPeople.ToDictionary( p => p.PersonId );
+
+                // Populate the placement groups with members
+                var placementGroups = placementGroupDetails.Select( group => new PlacementGroupBag
                 {
-                    box.PlacementPeople = GetPlacementPeople( registrationTemplateId.Value, registrationInstanceId, registrantId, registrationTemplatePlacementId.Value );
-                }
+                    GroupId = group.GroupId,
+                    GroupName = group.GroupName,
+                    GroupOrder = group.GroupOrder,
+                    GroupTypeId = group.GroupTypeId,
+                    GroupCapacity = group.GroupCapacity,
+                    GroupMembers = group.GroupMembers
+                        .Where( gm => personLookup.ContainsKey( gm.PersonId ) )
+                        .Select( gm =>
+                        {
+                            var person = personLookup[gm.PersonId];
+
+                            return new PersonBag
+                            {
+                                PersonId = person.PersonId,
+                                FirstName = person.FirstName,
+                                Nickname = person.Nickname,
+                                LastName = person.LastName,
+                                Gender = person.Gender,
+                                PhotoUrl = person.PhotoUrl,
+                                Registrants = person.Registrants,
+                                GroupRoleId = gm.GroupRoleId
+                            };
+                        } )
+                        .ToList()
+                } ).ToList();
+
+                // Populate the people that need to be placed.
+                var placedPersonIds = placementGroups
+                    .SelectMany( g => g.GroupMembers )
+                    .Select( p => p.PersonId )
+                    .ToHashSet();
+
+                var peopleToPlace = placementPeople
+                    .Where( p => !placedPersonIds.Contains( p.PersonId ) )
+                    .ToList();
+
+                box.PlacementGroups = placementGroups;
+                box.PeopleToPlace = peopleToPlace;
             }
 
             return box;
+        }
+
+        private List<PersonBag> GetPlacementPeople( int registrationTemplateId, int? registrationInstanceId, int? registrantId )
+        {
+            var registrationRegistrantService = new RegistrationRegistrantService( RockContext );
+            var registrationRegistrantQuery = registrationRegistrantService.Queryable();
+            var placementConfiguration = GetPlacementConfiguration( registrationInstanceId, registrationTemplateId );
+
+            HashSet<int> includedRegistrationInstanceIds = null;
+            if ( placementConfiguration.IncludedRegistrationInstanceIds?.Any() == true )
+            {
+                includedRegistrationInstanceIds = placementConfiguration.IncludedRegistrationInstanceIds?.Select( id => id.AsIntegerOrNull() )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToHashSet();
+            }
+
+            if ( registrationInstanceId.HasValue )
+            {
+                registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Registration.RegistrationInstanceId == registrationInstanceId.Value );
+            }
+            else if ( includedRegistrationInstanceIds != null )
+            {
+                registrationRegistrantQuery = registrationRegistrantQuery.Where( a => includedRegistrationInstanceIds.Contains( a.Registration.RegistrationInstanceId ) );
+            }
+            else
+            {
+                var instanceIds = new RegistrationInstanceService( RockContext )
+                    .Queryable()
+                    .Where( i => i.RegistrationTemplateId == registrationTemplateId )
+                    .Select( i => i.Id );
+
+                registrationRegistrantQuery = registrationRegistrantQuery.Where( rr => instanceIds.Contains( rr.Registration.RegistrationInstanceId ) );
+            }
+
+            if ( registrantId.HasValue )
+            {
+                registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Id == registrantId.Value );
+            }
+
+            HashSet<int> displayedAttributeIds = null;
+
+            if ( placementConfiguration.SourceAttributesToDisplay?.Any() == true )
+            {
+                displayedAttributeIds = placementConfiguration.SourceAttributesToDisplay
+                    .Select( id => id.AsIntegerOrNull() )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToHashSet();
+            }
+
+            var registrants = registrationRegistrantQuery
+                .Where( r => r.PersonAlias != null && r.PersonAlias.Person != null )
+                .Select( r => new
+                {
+                    Registrant = r,
+                    r.PersonAlias.Person,
+                    RegistrantId = r.Id,
+                    RegistrationInstanceId = r.Registration.RegistrationInstance.Id,
+                    RegistrationInstanceName = r.Registration.RegistrationInstance.Name,
+                } )
+                .ToList();
+
+            // TODO - Consider Grouping in SQL
+            // TODO - Handle Fees
+
+            var people = registrants
+                .GroupBy( r => r.Person.Id )
+                .Select( g => new PersonBag
+                {
+                    PersonId = g.Key,
+                    FirstName = g.First().Person.FirstName,
+                    Nickname = g.First().Person.NickName,
+                    LastName = g.First().Person.LastName,
+                    Gender = g.First().Person.Gender,
+                    PhotoUrl = g.First().Person.PhotoUrl,
+                    Registrants = g.Select( r => new RegistrantBag
+                    {
+                        RegistrantId = r.RegistrantId,
+                        RegistrationInstanceId = r.RegistrationInstanceId,
+                        RegistrationInstanceName = r.RegistrationInstanceName,
+                        Attributes = GetRegistrantAttributes( r.Registrant, displayedAttributeIds ),
+                        AttributeValues = GetRegistrantAttributeValues( r.Registrant, displayedAttributeIds )
+                    } ).ToList()
+                } )
+                .ToList();
+
+            return people;
+        }
+
+        private List<PlacementGroupDetailsBag> GetPlacementGroupDetails( int registrationTemplatePlacementId, int? registrationInstanceId, int registrationTemplateId )
+        {
+            int registrationTemplatePlacementEntityTypeId = EntityTypeCache.Get<Rock.Model.RegistrationTemplatePlacement>().Id;
+            int registrationInstanceEntityTypeId = EntityTypeCache.Get<Rock.Model.RegistrationInstance>().Id;
+            int groupEntityTypeId = EntityTypeCache.Get<Rock.Model.Group>().Id;
+            string placementMode;
+            List<GroupPlacementResult> groupPlacementResults;
+
+            // If registration instance id has a value than we are in instance mode
+            if ( registrationInstanceId.HasValue )
+            {
+                placementMode = "InstanceMode";
+
+                groupPlacementResults = RockContext.Database.SqlQuery<GroupPlacementResult>(
+                    $@"EXEC [dbo].[spGetGroupPlacementDetails] 
+                        @{nameof( registrationTemplatePlacementEntityTypeId )}, 
+                        @{nameof( registrationInstanceEntityTypeId )}, 
+                        @{nameof( groupEntityTypeId )}, 
+                        @{nameof( registrationTemplateId )}, 
+                        @{nameof( registrationInstanceId )}, 
+                        @{nameof( registrationTemplatePlacementId )}, 
+                        @{nameof( placementMode )}",
+                    new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
+                    new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
+                    new SqlParameter( nameof( groupEntityTypeId ), groupEntityTypeId ),
+                    new SqlParameter( nameof( registrationTemplateId ), registrationTemplateId ),
+                    new SqlParameter( nameof( registrationInstanceId ), registrationInstanceId.Value ),
+                    new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
+                    new SqlParameter( nameof( placementMode ), placementMode )
+                ).ToList();
+            }
+            else
+            {
+                placementMode = "TemplateMode";
+
+                groupPlacementResults = RockContext.Database.SqlQuery<GroupPlacementResult>(
+                    $@"EXEC [dbo].[spGetGroupPlacementDetails] 
+                        @{nameof( registrationTemplatePlacementEntityTypeId )}, 
+                        @{nameof( registrationInstanceEntityTypeId )}, 
+                        @{nameof( groupEntityTypeId )}, 
+                        @{nameof( registrationTemplateId )},
+                        @{nameof( registrationInstanceId )}, 
+                        @{nameof( registrationTemplatePlacementId )}, 
+                        @{nameof( placementMode )}",
+                    new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
+                    new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
+                    new SqlParameter( nameof( groupEntityTypeId ), groupEntityTypeId ),
+                    new SqlParameter( nameof( registrationTemplateId ), registrationTemplateId ),
+                    new SqlParameter( nameof( registrationInstanceId ), DBNull.Value ),
+                    new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
+                    new SqlParameter( nameof( placementMode ), placementMode )
+                ).ToList();
+            }
+
+            var placementGroupDetails = groupPlacementResults
+                .GroupBy( r => new { r.GroupId, r.GroupName, r.GroupCapacity, r.GroupTypeId, r.GroupOrder } )
+                .Select( g => new PlacementGroupDetailsBag
+                {
+                    GroupId = g.Key.GroupId,
+                    GroupName = g.Key.GroupName,
+                    GroupCapacity = g.Key.GroupCapacity,
+                    GroupTypeId = g.Key.GroupTypeId,
+                    GroupOrder = g.Key.GroupOrder,
+                    GroupMembers = g.Select( x => new GroupMemberBag
+                    {
+                        PersonId = x.PersonId,
+                        GroupRoleId = x.GroupRoleId
+                    } ).ToList()
+                } ).ToList();
+
+            return placementGroupDetails;
         }
 
         private List<ListItemBag> GetRegistrantAttributesAsListItems( int? registrationTemplateId )
@@ -434,213 +653,213 @@ namespace Rock.Blocks.Group
 
 
 
-        public List<PersonBag> GetPlacementPeople( int registrationTemplateId, int? registrationInstanceId, int? registrantId, int registrationTemplatePlacementId )
-        {
-            /*
-             * 1. Get the Registration Template Placements using the registrationTemplateId.
-             * 2. Get the Registration Instances
-             *    - First check for a registrationInstanceId
-             *    - Else we get all registration instances underneath the registrationTemplate.
-             *    - If includedRegistrationIds has a value than we filter our registration instances to be whatever is included in that hash set.
-             * 3. Use GetRegistrationTemplatePlacementPlacementGroups to select Groups from our Registration Template Placements.
-             *    - We can get our Group Members from this.
-             * 4. Use GetRegistrationInstancePlacementGroupsByPlacement to select Groups from our Registration Instance Placements.
-             *    - We can get our Group Members from this.
-             * 
-             */
+        //public List<PersonBag> LegacyGetPlacementPeople( int registrationTemplateId, int? registrationInstanceId, int? registrantId, int registrationTemplatePlacementId )
+        //{
+        //    /*
+        //     * 1. Get the Registration Template Placements using the registrationTemplateId.
+        //     * 2. Get the Registration Instances
+        //     *    - First check for a registrationInstanceId
+        //     *    - Else we get all registration instances underneath the registrationTemplate.
+        //     *    - If includedRegistrationIds has a value than we filter our registration instances to be whatever is included in that hash set.
+        //     * 3. Use GetRegistrationTemplatePlacementPlacementGroups to select Groups from our Registration Template Placements.
+        //     *    - We can get our Group Members from this.
+        //     * 4. Use GetRegistrationInstancePlacementGroupsByPlacement to select Groups from our Registration Instance Placements.
+        //     *    - We can get our Group Members from this.
+        //     * 
+        //     */
 
 
-            var registrationRegistrantService = new RegistrationRegistrantService( RockContext );
-            var registrationRegistrantQuery = registrationRegistrantService.Queryable();
-            var placementConfiguration = GetPlacementConfiguration( registrationInstanceId, registrationTemplateId );
+        //    var registrationRegistrantService = new RegistrationRegistrantService( RockContext );
+        //    var registrationRegistrantQuery = registrationRegistrantService.Queryable();
+        //    var placementConfiguration = GetPlacementConfiguration( registrationInstanceId, registrationTemplateId );
 
-            HashSet<int> includedRegistrationInstanceIds = null;
-            if (placementConfiguration.IncludedRegistrationInstanceIds?.Any() == true)
-            {
-                includedRegistrationInstanceIds = placementConfiguration.IncludedRegistrationInstanceIds
-                    ?.Select( id => id.AsIntegerOrNull() )
-                    .Where( id => id.HasValue )
-                    .Select( id => id.Value )
-                    .ToHashSet();
-            }
+        //    HashSet<int> includedRegistrationInstanceIds = null;
+        //    if (placementConfiguration.IncludedRegistrationInstanceIds?.Any() == true)
+        //    {
+        //        includedRegistrationInstanceIds = placementConfiguration.IncludedRegistrationInstanceIds
+        //            ?.Select( id => id.AsIntegerOrNull() )
+        //            .Where( id => id.HasValue )
+        //            .Select( id => id.Value )
+        //            .ToHashSet();
+        //    }
 
-            registrationRegistrantQuery = registrationRegistrantQuery
-                .Where( a => a.Registration.RegistrationInstance.RegistrationTemplateId == registrationTemplateId );
+        //    registrationRegistrantQuery = registrationRegistrantQuery
+        //        .Where( a => a.Registration.RegistrationInstance.RegistrationTemplateId == registrationTemplateId );
 
-            if ( registrationInstanceId.HasValue )
-            {
-                registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Registration.RegistrationInstanceId == registrationInstanceId.Value );
-            }
-            else if ( includedRegistrationInstanceIds != null )
-            {
-                registrationRegistrantQuery = registrationRegistrantQuery.Where( a => includedRegistrationInstanceIds.Contains( a.Registration.RegistrationInstanceId ) );
-            }
+        //    if ( registrationInstanceId.HasValue )
+        //    {
+        //        registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Registration.RegistrationInstanceId == registrationInstanceId.Value );
+        //    }
+        //    else if ( includedRegistrationInstanceIds != null )
+        //    {
+        //        registrationRegistrantQuery = registrationRegistrantQuery.Where( a => includedRegistrationInstanceIds.Contains( a.Registration.RegistrationInstanceId ) );
+        //    }
 
-            if ( registrantId.HasValue )
-            {
-                registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Id == registrantId.Value );
-            }
+        //    if ( registrantId.HasValue )
+        //    {
+        //        registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Id == registrantId.Value );
+        //    }
 
-            var registrationTemplatePlacement = new RegistrationTemplatePlacementService( RockContext ).Get( registrationTemplatePlacementId );
+        //    var registrationTemplatePlacement = new RegistrationTemplatePlacementService( RockContext ).Get( registrationTemplatePlacementId );
 
-            registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.OnWaitList == false );
+        //    registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.OnWaitList == false );
 
-            registrationRegistrantQuery = registrationRegistrantQuery.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.NickName );
+        //    registrationRegistrantQuery = registrationRegistrantQuery.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.NickName );
 
-            var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( RockContext );
-            var registrationInstanceService = new RegistrationInstanceService( RockContext );
+        //    var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( RockContext );
+        //    var registrationInstanceService = new RegistrationInstanceService( RockContext );
 
-            var templatePlacementsByPerson = registrationTemplatePlacementService
-                .GetRegistrationTemplatePlacementPlacementGroups( registrationTemplatePlacement )
-                .SelectMany( g => g.Members )
-                .GroupBy( m => m.PersonId )
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select( m => (m.GroupId, m.GroupRoleId) ).ToList()
-                );
+        //    var templatePlacementsByPerson = registrationTemplatePlacementService
+        //        .GetRegistrationTemplatePlacementPlacementGroups( registrationTemplatePlacement )
+        //        .SelectMany( g => g.Members )
+        //        .GroupBy( m => m.PersonId )
+        //        .ToDictionary(
+        //            g => g.Key,
+        //            g => g.Select( m => (m.GroupId, m.GroupRoleId) ).ToList()
+        //        );
 
-            //IQueryable<InstancePlacementGroupPerson> allInstancesPlacementGroupInfoQuery = null;
+        //    //IQueryable<InstancePlacementGroupPerson> allInstancesPlacementGroupInfoQuery = null;
 
-            if ( !registrationInstanceId.HasValue && ( placementConfiguration.IncludedRegistrationInstanceIds == null || !placementConfiguration.IncludedRegistrationInstanceIds.Any() ) )
-            {
-                includedRegistrationInstanceIds = new RegistrationTemplateService( RockContext ).GetSelect( registrationTemplateId, s => s.Instances.Select( i => i.Id ) ).ToHashSet();
-            }
+        //    if ( !registrationInstanceId.HasValue && ( placementConfiguration.IncludedRegistrationInstanceIds == null || !placementConfiguration.IncludedRegistrationInstanceIds.Any() ) )
+        //    {
+        //        includedRegistrationInstanceIds = new RegistrationTemplateService( RockContext ).GetSelect( registrationTemplateId, s => s.Instances.Select( i => i.Id ) ).ToHashSet();
+        //    }
 
-            var instancePlacementsByPersonAndInstance = new Dictionary<(int PersonId, int RegistrationInstanceId), List<(int GroupId, int GroupRoleId)>>();
+        //    var instancePlacementsByPersonAndInstance = new Dictionary<(int PersonId, int RegistrationInstanceId), List<(int GroupId, int GroupRoleId)>>();
 
-            if ( registrationInstanceId.HasValue )
-            {
-                var instance = registrationInstanceService.Get( registrationInstanceId.Value );
+        //    if ( registrationInstanceId.HasValue )
+        //    {
+        //        var instance = registrationInstanceService.Get( registrationInstanceId.Value );
 
-                var groupMembers = registrationInstanceService
-                    .GetRegistrationInstancePlacementGroupsByPlacement( instance, registrationTemplatePlacementId )
-                    .Where( g => g.GroupTypeId == registrationTemplatePlacement.GroupTypeId )
-                    .SelectMany( g => g.Members )
-                    .Select( m => new
-                    {
-                        m.PersonId,
-                        m.GroupId,
-                        m.GroupRoleId,
-                        RegistrationInstanceId = registrationInstanceId.Value
-                    } )
-                    .ToList();
+        //        var groupMembers = registrationInstanceService
+        //            .GetRegistrationInstancePlacementGroupsByPlacement( instance, registrationTemplatePlacementId )
+        //            .Where( g => g.GroupTypeId == registrationTemplatePlacement.GroupTypeId )
+        //            .SelectMany( g => g.Members )
+        //            .Select( m => new
+        //            {
+        //                m.PersonId,
+        //                m.GroupId,
+        //                m.GroupRoleId,
+        //                RegistrationInstanceId = registrationInstanceId.Value
+        //            } )
+        //            .ToList();
 
-                instancePlacementsByPersonAndInstance = groupMembers
-                    .GroupBy( x => (x.PersonId, x.RegistrationInstanceId) )
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select( x => (x.GroupId, x.GroupRoleId) ).ToList()
-                    );
-            }
-            else if ( includedRegistrationInstanceIds != null )
-            {
-                var combinedGroupMembers = new List<(int PersonId, int RegistrationInstanceId, int GroupId, int GroupRoleId)>();
+        //        instancePlacementsByPersonAndInstance = groupMembers
+        //            .GroupBy( x => (x.PersonId, x.RegistrationInstanceId) )
+        //            .ToDictionary(
+        //                g => g.Key,
+        //                g => g.Select( x => (x.GroupId, x.GroupRoleId) ).ToList()
+        //            );
+        //    }
+        //    else if ( includedRegistrationInstanceIds != null )
+        //    {
+        //        var combinedGroupMembers = new List<(int PersonId, int RegistrationInstanceId, int GroupId, int GroupRoleId)>();
 
-                foreach ( var instanceId in includedRegistrationInstanceIds )
-                {
-                    var instance = registrationInstanceService.Get( instanceId );
+        //        foreach ( var instanceId in includedRegistrationInstanceIds )
+        //        {
+        //            var instance = registrationInstanceService.Get( instanceId );
 
-                    var groupMembers = registrationInstanceService
-                        .GetRegistrationInstancePlacementGroupsByPlacement( instance, registrationTemplatePlacementId )
-                        .Where( g => g.GroupTypeId == registrationTemplatePlacement.GroupTypeId )
-                        .SelectMany( g => g.Members )
-                        .Select( m => new
-                        {
-                            m.PersonId,
-                            m.GroupId,
-                            m.GroupRoleId,
-                            RegistrationInstanceId = instanceId
-                        } )
-                        .ToList()
-                        .Select( x => (x.PersonId, x.RegistrationInstanceId, x.GroupId, x.GroupRoleId) );
+        //            var groupMembers = registrationInstanceService
+        //                .GetRegistrationInstancePlacementGroupsByPlacement( instance, registrationTemplatePlacementId )
+        //                .Where( g => g.GroupTypeId == registrationTemplatePlacement.GroupTypeId )
+        //                .SelectMany( g => g.Members )
+        //                .Select( m => new
+        //                {
+        //                    m.PersonId,
+        //                    m.GroupId,
+        //                    m.GroupRoleId,
+        //                    RegistrationInstanceId = instanceId
+        //                } )
+        //                .ToList()
+        //                .Select( x => (x.PersonId, x.RegistrationInstanceId, x.GroupId, x.GroupRoleId) );
 
-                    combinedGroupMembers.AddRange( groupMembers );
-                }
+        //            combinedGroupMembers.AddRange( groupMembers );
+        //        }
 
-                instancePlacementsByPersonAndInstance = combinedGroupMembers
-                    .GroupBy( x => (x.PersonId, x.RegistrationInstanceId) )
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select( x => (x.GroupId, x.GroupRoleId) ).ToList()
-                    );
-            }
+        //        instancePlacementsByPersonAndInstance = combinedGroupMembers
+        //            .GroupBy( x => (x.PersonId, x.RegistrationInstanceId) )
+        //            .ToDictionary(
+        //                g => g.Key,
+        //                g => g.Select( x => (x.GroupId, x.GroupRoleId) ).ToList()
+        //            );
+        //    }
 
-            //if ( allInstancesPlacementGroupInfoQuery == null )
-            //{
-            //    throw new ArgumentNullException( "Registration Instance(s) must be specified" );
-            //}
+        //    //if ( allInstancesPlacementGroupInfoQuery == null )
+        //    //{
+        //    //    throw new ArgumentNullException( "Registration Instance(s) must be specified" );
+        //    //}
 
-            // TODO - handle null instances ^^
+        //    // TODO - handle null instances ^^
 
-            var registrationRegistrantPlacementList = registrationRegistrantQuery
-                .ToList()
-                .Select( r =>
-                {
-                    var templateGroupTuples = templatePlacementsByPerson.TryGetValue( r.PersonAlias.PersonId, out var tGroupTuples )
-                        ? tGroupTuples
-                        : new List<(int GroupId, int GroupRoleId)>();
+        //    var registrationRegistrantPlacementList = registrationRegistrantQuery
+        //        .ToList()
+        //        .Select( r =>
+        //        {
+        //            var templateGroupTuples = templatePlacementsByPerson.TryGetValue( r.PersonAlias.PersonId, out var tGroupTuples )
+        //                ? tGroupTuples
+        //                : new List<(int GroupId, int GroupRoleId)>();
 
-                    var instanceKey = (r.PersonAlias.PersonId, r.Registration.RegistrationInstanceId);
-                    var instanceGroupTuples = instancePlacementsByPersonAndInstance.TryGetValue( instanceKey, out var iGroupTuples )
-                        ? iGroupTuples
-                        : new List<(int GroupId, int GroupRoleId)>();
+        //            var instanceKey = (r.PersonAlias.PersonId, r.Registration.RegistrationInstanceId);
+        //            var instanceGroupTuples = instancePlacementsByPersonAndInstance.TryGetValue( instanceKey, out var iGroupTuples )
+        //                ? iGroupTuples
+        //                : new List<(int GroupId, int GroupRoleId)>();
 
-                    var placedGroups = templateGroupTuples
-                        .Concat( instanceGroupTuples )
-                        .GroupBy( p => p.GroupId )
-                        .Select( g => new GroupPlacementMappingBag
-                        {
-                            GroupId = g.Key,
-                            GroupRoleId = g.First().GroupRoleId
-                        } )
-                        .ToList();
+        //            var placedGroups = templateGroupTuples
+        //                .Concat( instanceGroupTuples )
+        //                .GroupBy( p => p.GroupId )
+        //                .Select( g => new GroupPlacementMappingBag
+        //                {
+        //                    GroupId = g.Key,
+        //                    GroupRoleId = g.First().GroupRoleId
+        //                } )
+        //                .ToList();
 
-                    return new
-                    {
-                        Registrant = r,
-                        Person = r.PersonAlias.Person,
-                        RegistrationInstance = r.Registration.RegistrationInstance,
-                        GroupPlacementMapping = placedGroups,
-                        AlreadyPlacedInGroup = placedGroups.Any()
-                    };
-                } )
-                .ToList();
+        //            return new
+        //            {
+        //                Registrant = r,
+        //                Person = r.PersonAlias.Person,
+        //                RegistrationInstance = r.Registration.RegistrationInstance,
+        //                GroupPlacementMapping = placedGroups,
+        //                AlreadyPlacedInGroup = placedGroups.Any()
+        //            };
+        //        } )
+        //        .ToList();
 
-            HashSet<int> displayedAttributeIds = null;
+        //    HashSet<int> displayedAttributeIds = null;
 
-            if ( placementConfiguration.SourceAttributesToDisplay?.Any() == true )
-            {
-                displayedAttributeIds = placementConfiguration.SourceAttributesToDisplay
-                    .Select( id => id.AsIntegerOrNull() )
-                    .Where( id => id.HasValue )
-                    .Select( id => id.Value )
-                    .ToHashSet();
-            }
+        //    if ( placementConfiguration.SourceAttributesToDisplay?.Any() == true )
+        //    {
+        //        displayedAttributeIds = placementConfiguration.SourceAttributesToDisplay
+        //            .Select( id => id.AsIntegerOrNull() )
+        //            .Where( id => id.HasValue )
+        //            .Select( id => id.Value )
+        //            .ToHashSet();
+        //    }
 
-            var personBagList = registrationRegistrantPlacementList
-                .Select( x => new PersonBag
-                {
-                    PersonId = x.Person.Id,
-                    RegistrationInstanceId = x.RegistrationInstance.Id,
-                    AlreadyPlacedInGroup = x.AlreadyPlacedInGroup,
-                    GroupPlacementMapping = x.GroupPlacementMapping,
-                    FirstName = x.Person.FirstName,
-                    Nickname = x.Person.NickName,
-                    LastName = x.Person.LastName,
-                    PhotoUrl = x.Person.PhotoUrl,
-                    Gender = x.Person.Gender,
-                    RegistrantId = x.Registrant.Id,
-                    RegistrationInstanceName = x.RegistrationInstance.Name,
-                    Attributes = GetPersonAttributes( x.Registrant, displayedAttributeIds ),
-                    AttributeValues = GetPersonAttributeValues( x.Registrant, displayedAttributeIds ),
-                    //Fees = new Dictionary<string, string>(),
-                } )
-                .ToList();
+        //    var personBagList = registrationRegistrantPlacementList
+        //        .Select( x => new PersonBag
+        //        {
+        //            PersonId = x.Person.Id,
+        //            RegistrationInstanceId = x.RegistrationInstance.Id,
+        //            AlreadyPlacedInGroup = x.AlreadyPlacedInGroup,
+        //            GroupPlacementMapping = x.GroupPlacementMapping,
+        //            FirstName = x.Person.FirstName,
+        //            Nickname = x.Person.NickName,
+        //            LastName = x.Person.LastName,
+        //            PhotoUrl = x.Person.PhotoUrl,
+        //            Gender = x.Person.Gender,
+        //            RegistrantId = x.Registrant.Id,
+        //            RegistrationInstanceName = x.RegistrationInstance.Name,
+        //            Attributes = GetRegistrantAttributes( x.Registrant, displayedAttributeIds ),
+        //            AttributeValues = GetRegistrantAttributeValues( x.Registrant, displayedAttributeIds ),
+        //            //Fees = new Dictionary<string, string>(),
+        //        } )
+        //        .ToList();
 
-            return personBagList;
-        }
+        //    return personBagList;
+        //}
 
-        private Dictionary<string, PublicAttributeBag> GetPersonAttributes( RegistrationRegistrant registrant, HashSet<int> displayedAttributeIds )
+        private Dictionary<string, PublicAttributeBag> GetRegistrantAttributes( RegistrationRegistrant registrant, HashSet<int> displayedAttributeIds )
         {
             if ( displayedAttributeIds == null )
             {
@@ -648,13 +867,17 @@ namespace Rock.Blocks.Group
                 return null;
             }
 
-            registrant.LoadAttributes();
+            if ( registrant.AttributeValues == null )
+            {
+                registrant.LoadAttributes();
+            }
+
             var attributes = registrant.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) );
 
             return attributes;
         }
 
-        private Dictionary<string, string> GetPersonAttributeValues( RegistrationRegistrant registrant, HashSet<int> displayedAttributeIds )
+        private Dictionary<string, string> GetRegistrantAttributeValues( RegistrationRegistrant registrant, HashSet<int> displayedAttributeIds )
         {
             if ( displayedAttributeIds == null )
             {
@@ -662,285 +885,119 @@ namespace Rock.Blocks.Group
                 return null;
             }
 
-            registrant.LoadAttributes();
+            if ( registrant.AttributeValues == null )
+            {
+                registrant.LoadAttributes();
+            }
+
             var attributeValues = registrant.GetPublicAttributeValuesForEdit( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) );
 
             return attributeValues;
         }
 
-        private List<PlacementGroupBag> GetPlacementGroups( int registrationTemplatePlacementId, int? registrationInstanceId, int? registrationTemplateId, int placementGroupTypeId )
-        {
-            var groupType = GroupTypeCache.Get( placementGroupTypeId );
+        //private List<PlacementGroupBag> GetPlacementGroups( int registrationTemplatePlacementId, int? registrationInstanceId, int? registrationTemplateId, int placementGroupTypeId )
+        //{
+        //    var groupType = GroupTypeCache.Get( placementGroupTypeId );
 
-            //_groupTypeRoles = groupType.Roles.ToList();
-            var registrationInstanceService = new RegistrationInstanceService( RockContext );
-            var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( RockContext );
-            var groupService = new GroupService( RockContext );
-            RegistrationTemplatePlacement registrationTemplatePlacement = registrationTemplatePlacementService.Get( registrationTemplatePlacementId );
+        //    //_groupTypeRoles = groupType.Roles.ToList();
+        //    var registrationInstanceService = new RegistrationInstanceService( RockContext );
+        //    var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( RockContext );
+        //    var groupService = new GroupService( RockContext );
+        //    RegistrationTemplatePlacement registrationTemplatePlacement = registrationTemplatePlacementService.Get( registrationTemplatePlacementId );
 
-            List<RegistrationInstance> registrationInstanceList = null;
+        //    List<RegistrationInstance> registrationInstanceList = null;
 
-            if ( registrationInstanceId.HasValue )
-            {
-                var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
-                registrationTemplateId = registrationInstance.RegistrationTemplateId;
+        //    if ( registrationInstanceId.HasValue )
+        //    {
+        //        var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
+        //        registrationTemplateId = registrationInstance.RegistrationTemplateId;
 
-                registrationInstanceList = new List<Rock.Model.RegistrationInstance>();
-                registrationInstanceList.Add( registrationInstance );
-            }
-            else if ( registrationTemplateId.HasValue )
-            {
-                registrationInstanceList = registrationInstanceService
-                    .Queryable()
-                    .Where( a => a.RegistrationTemplateId == registrationTemplateId.Value )
-                    .Select( a => new { Id = a.Id, Name = a.Name } )
-                    .AsEnumerable()
-                    .Select( a => new RegistrationInstance { Id = a.Id, Name = a.Name } )
-                    .OrderBy( a => a.Name )
-                    .ToList();
-            }
+        //        registrationInstanceList = new List<Rock.Model.RegistrationInstance>();
+        //        registrationInstanceList.Add( registrationInstance );
+        //    }
+        //    else if ( registrationTemplateId.HasValue )
+        //    {
+        //        registrationInstanceList = registrationInstanceService
+        //            .Queryable()
+        //            .Where( a => a.RegistrationTemplateId == registrationTemplateId.Value )
+        //            .Select( a => new { Id = a.Id, Name = a.Name } )
+        //            .AsEnumerable()
+        //            .Select( a => new RegistrationInstance { Id = a.Id, Name = a.Name } )
+        //            .OrderBy( a => a.Name )
+        //            .ToList();
+        //    }
 
-            //var displayedCampusId = GetPlacementConfiguration( registrationInstanceId, registrationTemplateId )?.DisplayedCampusId;
+        //    //var displayedCampusId = GetPlacementConfiguration( registrationInstanceId, registrationTemplateId )?.DisplayedCampusId;
 
-            var registrationInstancePlacementGroupList = new List<PlacementGroupBag>();
-            Dictionary<int, List<int>> placementGroupIdRegistrationInstanceIds = new Dictionary<int, List<int>>();
-            if ( registrationInstanceList != null && registrationTemplatePlacement != null )
-            {
-                foreach ( var registrationInstance in registrationInstanceList )
-                {
-                    var placementGroupsQry = registrationInstanceService
-                        .GetRegistrationInstancePlacementGroupsByPlacement( registrationInstance.Id, registrationTemplatePlacementId )
-                        .Where( a => a.GroupTypeId == groupType.Id );
+        //    var registrationInstancePlacementGroupList = new List<PlacementGroupBag>();
+        //    Dictionary<int, List<int>> placementGroupIdRegistrationInstanceIds = new Dictionary<int, List<int>>();
+        //    if ( registrationInstanceList != null && registrationTemplatePlacement != null )
+        //    {
+        //        foreach ( var registrationInstance in registrationInstanceList )
+        //        {
+        //            var placementGroupsQry = registrationInstanceService
+        //                .GetRegistrationInstancePlacementGroupsByPlacement( registrationInstance.Id, registrationTemplatePlacementId )
+        //                .Where( a => a.GroupTypeId == groupType.Id );
 
-                    //if ( displayedCampusId.HasValue )
-                    //{
-                    //    placementGroupsQry = placementGroupsQry.Where( a => !a.CampusId.HasValue || a.CampusId == displayedCampusId.Value );
-                    //}
+        //            //if ( displayedCampusId.HasValue )
+        //            //{
+        //            //    placementGroupsQry = placementGroupsQry.Where( a => !a.CampusId.HasValue || a.CampusId == displayedCampusId.Value );
+        //            //}
 
-                    //placementGroupsQry = ApplyGroupFilter( groupType, groupService, placementGroupsQry );
+        //            //placementGroupsQry = ApplyGroupFilter( groupType, groupService, placementGroupsQry );
 
-                    // Only fetch what we actually need for each registration *instance* placement group.
-                    var placementGroups = placementGroupsQry
-                        .Select( g => new { g.Id, g.Name, g.CampusId, g.GroupCapacity, g.GroupTypeId } )
-                        .ToList()
-                        .Select( g => new PlacementGroupBag { Id = g.Id, Name = g.Name, CampusId = g.CampusId, GroupCapacity = g.GroupCapacity, GroupTypeId = g.GroupTypeId } );
+        //            // Only fetch what we actually need for each registration *instance* placement group.
+        //            var placementGroups = placementGroupsQry
+        //                .Select( g => new { g.Id, g.Name, g.CampusId, g.GroupCapacity, g.GroupTypeId } )
+        //                .ToList()
+        //                .Select( g => new PlacementGroupBag { Id = g.Id, Name = g.Name, CampusId = g.CampusId, GroupCapacity = g.GroupCapacity, GroupTypeId = g.GroupTypeId } );
 
-                    foreach ( var placementGroup in placementGroups )
-                    {
-                        registrationInstancePlacementGroupList.Add( placementGroup, true );
+        //            foreach ( var placementGroup in placementGroups )
+        //            {
+        //                registrationInstancePlacementGroupList.Add( placementGroup, true );
 
-                        var instanceIds = placementGroupIdRegistrationInstanceIds.GetValueOrDefault( placementGroup.Id, new List<int>() );
-                        instanceIds.Add( registrationInstance.Id );
-                        placementGroupIdRegistrationInstanceIds[placementGroup.Id] = instanceIds;
-                    }
-                }
-            }
+        //                var instanceIds = placementGroupIdRegistrationInstanceIds.GetValueOrDefault( placementGroup.Id, new List<int>() );
+        //                instanceIds.Add( registrationInstance.Id );
+        //                placementGroupIdRegistrationInstanceIds[placementGroup.Id] = instanceIds;
+        //            }
+        //        }
+        //    }
 
-            var registrationTemplatePlacementGroupQuery = registrationTemplatePlacementService.GetRegistrationTemplatePlacementPlacementGroups( registrationTemplatePlacement );
+        //    var registrationTemplatePlacementGroupQuery = registrationTemplatePlacementService.GetRegistrationTemplatePlacementPlacementGroups( registrationTemplatePlacement );
 
-            //if ( displayedCampusId.HasValue )
-            //{
-            //    registrationTemplatePlacementGroupQuery = registrationTemplatePlacementGroupQuery.Where( a => !a.CampusId.HasValue || a.CampusId == displayedCampusId );
-            //}
+        //    //if ( displayedCampusId.HasValue )
+        //    //{
+        //    //    registrationTemplatePlacementGroupQuery = registrationTemplatePlacementGroupQuery.Where( a => !a.CampusId.HasValue || a.CampusId == displayedCampusId );
+        //    //}
 
-            //registrationTemplatePlacementGroupQuery = ApplyGroupFilter( groupType, groupService, registrationTemplatePlacementGroupQuery );
+        //    //registrationTemplatePlacementGroupQuery = ApplyGroupFilter( groupType, groupService, registrationTemplatePlacementGroupQuery );
 
-            // Only fetch what we actually need for each registration *template* placement group.
-            var registrationTemplatePlacementGroupList = registrationTemplatePlacementGroupQuery
-                .Select( g => new { g.Id, g.Name, g.CampusId, g.GroupCapacity, g.GroupTypeId } )
-                .ToList()
-                .Select( g => new PlacementGroupBag { Id = g.Id, Name = g.Name, CampusId = g.CampusId, GroupCapacity = g.GroupCapacity, GroupTypeId = g.GroupTypeId } );
+        //    // Only fetch what we actually need for each registration *template* placement group.
+        //    var registrationTemplatePlacementGroupList = registrationTemplatePlacementGroupQuery
+        //        .Select( g => new { g.Id, g.Name, g.CampusId, g.GroupCapacity, g.GroupTypeId } )
+        //        .ToList()
+        //        .Select( g => new PlacementGroupBag { Id = g.Id, Name = g.Name, CampusId = g.CampusId, GroupCapacity = g.GroupCapacity, GroupTypeId = g.GroupTypeId } );
 
-            var registrationTemplatePlacementGroupIds = registrationTemplatePlacementGroupList.Select( a => a.Id ).ToList();
-            var placementGroupList = new List<PlacementGroupBag>();
-            placementGroupList.AddRange( registrationTemplatePlacementGroupList );
-            placementGroupList.AddRange( registrationInstancePlacementGroupList );
+        //    var registrationTemplatePlacementGroupIds = registrationTemplatePlacementGroupList.Select( a => a.Id ).ToList();
+        //    var placementGroupList = new List<PlacementGroupBag>();
+        //    placementGroupList.AddRange( registrationTemplatePlacementGroupList );
+        //    placementGroupList.AddRange( registrationInstancePlacementGroupList );
 
-            // A placement group could be associated with both the instance and the template. So, we'll make sure the same group isn't listed more than once
-            placementGroupList = placementGroupList.DistinctBy( a => a.Id ).ToList();
-            placementGroupList = placementGroupList.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-            //var groupIds = placementGroupList.Select( a => a.Id ).ToList();
-            //var groupMemberService = new GroupMemberService( RockContext );
-            //var placementGroupIdGroupRoleIdCount = groupMemberService
-            //   .Queryable()
-            //   .Where( a => a.GroupMemberStatus != GroupMemberStatus.Inactive && groupIds.Contains( a.GroupId ) )
-            //   .Select( gm => new { GroupId = gm.GroupId, GroupRoleId = gm.GroupRoleId } )
-            //   .ToList()
-            //   .GroupBy( gm => gm.GroupId )
-            //   .ToDictionary( a => a.Key, b => b.GroupBy( a => a.GroupRoleId ).ToDictionary( a => a.Key, a => a.Count() ) );
+        //    // A placement group could be associated with both the instance and the template. So, we'll make sure the same group isn't listed more than once
+        //    placementGroupList = placementGroupList.DistinctBy( a => a.Id ).ToList();
+        //    placementGroupList = placementGroupList.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+        //    //var groupIds = placementGroupList.Select( a => a.Id ).ToList();
+        //    //var groupMemberService = new GroupMemberService( RockContext );
+        //    //var placementGroupIdGroupRoleIdCount = groupMemberService
+        //    //   .Queryable()
+        //    //   .Where( a => a.GroupMemberStatus != GroupMemberStatus.Inactive && groupIds.Contains( a.GroupId ) )
+        //    //   .Select( gm => new { GroupId = gm.GroupId, GroupRoleId = gm.GroupRoleId } )
+        //    //   .ToList()
+        //    //   .GroupBy( gm => gm.GroupId )
+        //    //   .ToDictionary( a => a.Key, b => b.GroupBy( a => a.GroupRoleId ).ToDictionary( a => a.Key, a => a.Count() ) );
 
-            return placementGroupList;
-        }
-
-        /// <summary>
-        /// Shows the details.
-        /// </summary>
-        protected void ShowDetails()
-        {
-            var registrationTemplatePlacementId = GetIdFromPageParameter( PageParameterKey.RegistrationTemplatePlacementId );
-            var registrationInstanceId = GetIdFromPageParameter( PageParameterKey.RegistrationInstanceId );
-
-            var registrationTemplateService = new RegistrationTemplateService( RockContext );
-            var registrationInstanceService = new RegistrationInstanceService( RockContext );
-
-            int? registrationTemplateId;
-            Guid? registrationTemplateGuid = GetAttributeValue( AttributeKey.RegistrationTemplate ).AsGuidOrNull();
-            if ( registrationTemplateGuid.HasValue )
-            {
-                registrationTemplateId = registrationTemplateService.GetId( registrationTemplateGuid.Value );
-            }
-            else
-            {
-                registrationTemplateId = GetIdFromPageParameter( PageParameterKey.RegistrationTemplateId );
-            }
-
-            // in case a specific registrant is specified
-            int? registrantId = GetIdFromPageParameter( PageParameterKey.RegistrantId );
-
-            if ( registrantId.HasValue )
-            {
-                //hfRegistrantId.Value = registrantId.ToString(); TODO - come back to hidden field functionality
-                registrationInstanceId = new RegistrationRegistrantService( RockContext ).GetSelect( registrantId.Value, s => s.Registration.RegistrationInstanceId );
-            }
-
-            if ( registrationInstanceId.HasValue )
-            {
-                //hfRegistrationInstanceId.Value = registrationInstanceId.ToString(); TODO - come back to hidden field functionality
-                var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
-                if ( registrationInstance != null )
-                {
-                    registrationTemplateId = registrationInstance.RegistrationTemplateId;
-                }
-            }
-
-            // make sure a valid RegistrationTemplate specified (or determined from RegistrationInstanceId )
-            RegistrationTemplate registrationTemplate;
-
-            if ( registrationTemplateId.HasValue )
-            {
-                registrationTemplate = registrationTemplateService.Get( registrationTemplateId.Value );
-            }
-            else
-            {
-                registrationTemplate = null;
-            }
-
-            if ( registrationTemplate == null )
-            {
-                var errorMessage = "Invalid Registration Template";
-                //nbConfigurationError.Text = "Invalid Registration Template";
-                //nbConfigurationError.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
-                //nbConfigurationError.Visible = true;
-                //pnlView.Visible = false;
-                return;
-            }
-
-            //hfRegistrationTemplateId.Value = registrationTemplateId.ToString(); TODO - come back to hidden field functionality
-            //hfBlockId.Value = this.BlockId.ToString(); TODO - come back to hidden field functionality
-
-            //var placementConfiguration = GetPlacementConfiguration(); TODO - seems like this is handled in person preferences.
-
-            //hfOptionsRegistrantPersonDataViewFilterId.Value = placementConfiguration.RegistrantPersonDataViewFilterId.ToString();
-
-            //hfOptionsDisplayedRegistrantAttributeIds.Value = placementConfiguration.DisplayedRegistrantAttributeIds.ToJson();
-            //hfOptionsDisplayedGroupMemberAttributeIds.Value = placementConfiguration.DisplayedGroupMemberAttributeIds.ToJson();
-            //hfOptionsIncludeFees.Value = placementConfiguration.ShowFees.ToJavaScriptValue();
-            //hfOptionsHighlightGenders.Value = placementConfiguration.HighlightGenders.ToJavaScriptValue();
-            //hfOptionsDisplayRegistrantAttributes.Value = placementConfiguration.DisplayRegistrantAttributes.ToJavaScriptValue();
-            //hfOptionsApplyRegistrantFilters.Value = placementConfiguration.ApplyRegistrantFilters.ToJavaScriptValue();
-            //hfOptionsHideFullGroups.Value = placementConfiguration.HideFullGroups.ToJavaScriptValue();
-            //hfRegistrationTemplateInstanceIds.Value = placementConfiguration.IncludedRegistrationInstanceIds.ToJson();
-            //hfRegistrationTemplateShowInstanceName.Value = placementConfiguration.ShowRegistrationInstanceName.ToJavaScriptValue();
-
-            //hfOptionsFilterFeeId.Value = placementConfiguration.FilterFeeId.ToString();
-            //hfOptionsFilterFeeItemIds.Value = placementConfiguration.FilterFeeOptionIds.ToJson();
-
-            //hfRegistrationTemplatePlacementId.Value = registrationTemplatePlacementId.ToString(); TODO - come back to hidden field functionality 
-
-            RegistrationTemplatePlacement registrationTemplatePlacement = null;
-            int? registrationTemplatePlacementGroupTypeId = null;
-            if ( registrationTemplatePlacementId.HasValue )
-            {
-                registrationTemplatePlacement = new RegistrationTemplatePlacementService( RockContext ).Get( registrationTemplatePlacementId.Value );
-
-                if ( registrationTemplatePlacement == null || registrationTemplatePlacement.RegistrationTemplateId != registrationTemplateId )
-                {
-                    // if the registration template placement is for a different registration template, don't use it
-                    registrationTemplatePlacement = null;
-                    registrationTemplatePlacementId = null;
-                }
-                else
-                {
-                    registrationTemplatePlacementGroupTypeId = registrationTemplatePlacement.GroupTypeId;
-                    //PlacementGroupTypeId = registrationTemplatePlacement.GroupTypeId;
-                    //hfRegistrationTemplatePlacementGroupTypeId.Value = registrationTemplatePlacementGroupTypeId.ToString(); TODO - come back to hidden field functionality
-                    //hfRegistrationTemplatePlacementAllowMultiplePlacements.Value = registrationTemplatePlacement.AllowMultiplePlacements.ToJavaScriptValue(); TODO - come back to hidden field functionality
-                }
-            }
-
-            //BindDropDowns();
-
-            // Binds the selectable placements ( Buses, Cabins, etc. )
-            var registrationTemplatePlacements = registrationTemplateService.GetSelect( registrationTemplateId.Value, s => s.Placements ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-            // BindRegistrationTemplatePlacementPrompt( registrationTemplatePlacements );
-
-            // The "prompt" is the nav options for different selectable placements ( Buses, Cabins, etc. )
-            // if a registrationTemplatePlacement wasn't specified (or wasn't specified initially), show the prompt
-            //rcwSelectRegistrationTemplatePlacement.Visible = ( registrationTemplatePlacement == null ) || this.PageParameter( PageParameterKey.PromptForTemplatePlacement ).AsBoolean();
-
-            if ( registrationTemplatePlacement == null )
-            {
-                if ( !registrationTemplatePlacements.Any() )
-                {
-                    var errorMessage = "No Placement Types available for this registration template.";
-                    //rptSelectRegistrationTemplatePlacement.Visible = false;
-                    //nbConfigurationError.Text = "No Placement Types available for this registration template.";
-                    //nbConfigurationError.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
-                    //nbConfigurationError.Visible = true;
-                    //pnlView.Visible = false;
-                    return;
-                }
-
-                var defaultRegistrationTemplatePlacementId = registrationTemplatePlacements.First().Id;
-
-                //ReloadPageWithRegistrationTemplatePlacementId( defaultRegistrationTemplatePlacementId );
-                return;
-            }
-
-            if ( registrationTemplatePlacement == null )
-            {
-                if ( registrationInstanceId.HasValue )
-                {
-                    var errorMessage = "Invalid Registration Template Placement specified.";
-                    //nbConfigurationError.Text = "Invalid Registration Template Placement Specified";
-                    //nbConfigurationError.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
-                    //nbConfigurationError.Visible = true;
-                    //pnlView.Visible = false;
-                }
-                else
-                {
-                    // Prompt for registrationTemplatePlacement
-                    //rcwSelectRegistrationTemplatePlacement.Visible = true;
-                }
-
-                return;
-            }
-
-            var groupType = GroupTypeCache.Get( registrationTemplatePlacementGroupTypeId.Value );
-
-            //_placementIconCssClass = registrationTemplatePlacement.GetIconCssClass();
-
-            //lGroupPlacementGroupTypeIconHtml.Text = string.Format( "<i class='{0}'></i>", _placementIconCssClass );
-            //lAddPlacementGroupButtonIconHtml.Text = string.Format( "<i class='{0}'></i>", _placementIconCssClass );
-
-            //lGroupPlacementGroupTypeName.Text = groupType.GroupTerm.Pluralize();
-            //lAddPlacementGroupButtonText.Text = string.Format( " Add {0}", groupType.GroupTerm );
-
-            //BindPlacementGroupsRepeater();
-
-            //hfGroupDetailUrl.Value = this.LinkedPageUrl( AttributeKey.GroupDetailPage );
-            //hfGroupMemberDetailUrl.Value = this.LinkedPageUrl( AttributeKey.GroupMemberDetailPage );
-        }
+        //    return placementGroupList;
+        //}
 
         /// <summary>
         /// Gets the placement configuration.

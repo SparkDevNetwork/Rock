@@ -40,7 +40,9 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 
         public List<PlacementGroupBag> PlacementGroups { get; set; }
 
-        public List<PersonBag> PlacementPeople { get; set; }
+        public List<PersonBag> PeopleToPlace { get; set; }
+
+        //public List<PersonBag> PlacementPeople { get; set; }
 
         public string Title { get; set; }
 
@@ -51,6 +53,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         public bool IsPlacementAllowingMultiple { get; set; }
 
         public List<PlacementGroupTypeRoleBag> PlacementGroupTypeRoles { get; set; }
+
+        //public List<PlacementGroupDetailsBag> PlacementGroupDetails { get; set; }
 
         /// <summary>
         /// Gets or sets the error message, if any.

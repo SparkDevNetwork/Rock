@@ -22,23 +22,14 @@
 //
 
 import { Gender } from "@Obsidian/Enums/Crm/gender";
-import { GroupPlacementMappingBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementMappingBag";
-import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
 
 export type PersonBag = {
-    alreadyPlacedInGroup: boolean;
-
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    attributeValues?: Record<string, string> | null;
-
-    fees?: Record<string, string> | null;
-
     firstName?: string | null;
 
     gender: Gender;
 
-    groupPlacementMapping?: GroupPlacementMappingBag[] | null;
+    groupRoleId?: number | null;
 
     lastName?: string | null;
 
@@ -48,9 +39,5 @@ export type PersonBag = {
 
     photoUrl?: string | null;
 
-    registrantId: number;
-
-    registrationInstanceId: number;
-
-    registrationInstanceName?: string | null;
+    registrants?: RegistrantBag[] | null;
 };

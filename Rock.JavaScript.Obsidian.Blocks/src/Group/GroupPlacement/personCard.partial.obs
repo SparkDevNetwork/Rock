@@ -1,5 +1,7 @@
 <template>
-    <div class="person-card" :style="{ borderLeftColor: getPersonBorderColor(person.gender) }">
+    <div :class="['person-card', { 'selected': isSelected }]"
+         :style="{ borderLeftColor: getPersonBorderColor(person.gender) }"
+         @click="emit('toggleSelection')">
         <div class="d-flex align-items-center flex-grow-1">
             <div class="mr-3 flex-shrink-0"
                  :style="{ 'width': '36px', 'height': '36px', 'border-radius': '18px', 'background-image': `url('${person.photoUrl}')`, 'background-size': 'cover' }">
@@ -56,6 +58,12 @@
     background-color: #fff;
     box-shadow: 0 1px 0 #d1d2d7
 }
+
+.person-card.selected {
+    border-color: var(--color-primary) !important;
+    background-color: var(--color-interface-softest) !important;
+    color: var(--color-interface-stronger) !important;
+}
 </style>
 
 <script setup lang="ts">
@@ -76,10 +84,15 @@
             type: Number as PropType<number>,
             required: true
         },
+        isSelected: {
+            type: Boolean as PropType<boolean>,
+            required: false
+        }
     });
 
     const emit = defineEmits<{
         (e: "toggleCardExpansion"): void;
+        (e: "toggleSelection"): void;
     }>();
 
     const openDropdownIndex = ref<number | null>(null);

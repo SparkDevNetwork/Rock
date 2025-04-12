@@ -161,11 +161,14 @@
     <Compile Include="Blocks\Core\ScheduledJobHistoryList\ScheduledJobHistoryListOptionsBag.cs" />
     <Compile Include="Blocks\Example\ControlGallery\ControlGalleryInitializationBox.cs" />
     <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Group\GroupPlacement\GroupMemberBag.cs" />
+    <Compile Include="Blocks\Group\GroupPlacement\RegistrantBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PersonBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\GroupPlacementMappingBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PlacementConfigurationSettingOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PlacementConfigurationSettingsBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PlacementBag.cs" />
+    <Compile Include="Blocks\Group\GroupPlacement\PlacementGroupDetailsBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PlacementGroupBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PlacementGroupTypeRoleBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PlacementGroupTypeBag.cs" />

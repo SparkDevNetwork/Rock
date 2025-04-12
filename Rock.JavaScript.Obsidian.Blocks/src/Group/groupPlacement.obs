@@ -81,7 +81,8 @@
                         <div class="d-flex justify-content-between align-items-center" style="width: 300px;">
                             <CheckBox v-model="areAllPeopleSelected"
                                       label=""
-                                      text="Select All" />
+                                      text="Select All"
+                                      @click="toggleSelectAllCheckbox()" />
                             <span class="text-muted">{{ selectedPeopleCount }} Selected
                                 <i ref="selectionInfoElement"
                                    class="fa fa-info-circle cursor-pointer"
@@ -90,12 +91,14 @@
                                 </i>
                             </span>
                         </div>
-                        <PersonCard v-for="(person, index) in placementGroups.unplaced"
+                        <PersonCard v-for="(person, index) in peopleToPlace"
                                     :key="index"
                                     :isCardExpanded="areCardsExpanded"
                                     :person="person"
                                     :index="index"
+                                    :isSelected="isSelected(person.personId)"
                                     @toggleCardExpansion="toggleCardExpansion"
+                                    @toggleSelection="toggleSelection(person.personId)"
                                     class="my-2" />
                     </div>
 
@@ -148,10 +151,9 @@
                         </RockButton>
                     </template>
                     <div class="p-3">
-                        <DestinationGroup v-for="(group, index) in box.placementGroups"
+                        <DestinationGroup v-for="(group, index) in placementGroups"
                                           :key="index"
                                           :destinationGroup="group"
-                                          :placedPeople="placementGroups.placed.filter(p => p.groupPlacementMapping?.some(m => m.groupId === group.id))"
                                           :areCardsExpanded="areCardsExpanded"
                                           :groupTypeRoles="box.placementGroupTypeRoles ?? []" />
                     </div>
@@ -571,6 +573,8 @@
     import { useConfigurationValues, usePersonPreferences } from "@Obsidian/Utility/block";
     import { GroupPlacementInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementInitializationBox";
     import { PlacementConfigurationSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingsBag";
+    import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
+    import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
     import { onMounted, ref, nextTick, computed, watch } from "vue";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
@@ -590,10 +594,13 @@
     const exampleBox = ref<string>("");
 
     const areCardsExpanded = ref(false);
-    const areAllPeopleSelected = ref(false);
-    const selectedPeopleCount = ref(0);
+    // const areAllPeopleSelected = ref(false);
     const selectionInfoElement = ref<HTMLElement | undefined>();
     const isPlacementConfigModalVisible = ref(false);
+    const placementGroups = ref<PlacementGroupBag[]>(box.placementGroups ?? []);
+    const peopleToPlace = ref<PersonBag[]>(box.peopleToPlace ?? []);
+    const selectedPersonIds = ref<Set<number>>(new Set());
+
 
     const placementConfigurationSettings = ref<PlacementConfigurationSettingsBag>(preferences.getValue(getPlacementConfigurationSettingsKey()) ? JSON.parse(preferences.getValue(getPlacementConfigurationSettingsKey())) : {} as PlacementConfigurationSettingsBag);
 
@@ -603,28 +610,46 @@
 
     // #region Computed Values
 
-    const placementGroups = computed(() => {
-        const placed: typeof box.placementPeople = [];
-        const unplaced: typeof box.placementPeople = [];
+    const selectedPeopleCount = computed(() => selectedPersonIds.value.size);
 
-        for (const person of box.placementPeople ?? []) {
-            if (person.alreadyPlacedInGroup) {
-                placed.push(person);
-            }
-            else {
-                unplaced.push(person);
+    const areAllPeopleSelected = computed({
+        get() {
+            return peopleToPlace.value.every(person =>
+                selectedPersonIds.value.has(person.personId)
+            );
+        },
+        set(value: boolean) {
+            if (value) {
+                // Select all
+                for (const person of peopleToPlace.value) {
+                    selectedPersonIds.value.add(person.personId);
+                }
             }
         }
-
-        return {
-            placed,
-            unplaced
-        };
     });
 
     // #endregion
 
     // #region Functions
+
+    function toggleSelection(personId: number) {
+        if (selectedPersonIds.value.has(personId)) {
+            selectedPersonIds.value.delete(personId);
+        }
+        else {
+            selectedPersonIds.value.add(personId);
+        }
+    }
+
+    function isSelected(personId: number): boolean {
+        return selectedPersonIds.value.has(personId);
+    }
+
+    function toggleSelectAllCheckbox() {
+        if (areAllPeopleSelected.value) {
+            selectedPersonIds.value.clear();
+        }
+    }
 
     function onBack(): void {
         console.log("Back button clicked");

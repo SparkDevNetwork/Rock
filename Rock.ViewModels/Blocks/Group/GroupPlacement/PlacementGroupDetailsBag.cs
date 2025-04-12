@@ -17,27 +17,21 @@
 
 using System.Collections.Generic;
 
-using Rock.Model;
-using Rock.ViewModels.Utility;
-
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
-    public class PersonBag
+
+    public class PlacementGroupDetailsBag
     {
-        public int PersonId { get; set; }
+        public int GroupId { get; set; }
 
-        public string FirstName { get; set; }
+        public string GroupName { get; set; }
 
-        public string Nickname { get; set; }
+        public int GroupOrder { get; set; }
 
-        public string LastName { get; set; }
+        public int GroupTypeId { get; set; }
 
-        public Gender Gender { get; set; }
+        public int? GroupCapacity { get; set; }
 
-        public string PhotoUrl { get; set; }
-
-        public List<RegistrantBag> Registrants { get; set; }
-
-        public int? GroupRoleId { get; set; } // TODO - quick fix storing role here need to come back later
+        public List<GroupMemberBag> GroupMembers { get; set; }
     }
 }

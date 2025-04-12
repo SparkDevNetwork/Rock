@@ -2,7 +2,7 @@
     <Panel type="block" v-model="isGroupExpanded" :hasCollapse="true" :headerSecondaryActions="secondaryActions">
         <template #title>
             <div class="d-flex align-items-center gap-2">
-                {{ destinationGroup.name }}
+                {{ destinationGroup.groupName }}
                 <Badge :class="[capacityStatusClass]">{{ capacityText }}</Badge>
                 <span v-for="role in groupTypeRoles"
                       :key="role.id"
@@ -166,10 +166,6 @@
             type: Object as PropType<PlacementGroupBag>,
             required: true
         },
-        placedPeople: {
-            type: Array as PropType<PersonBag[]>,
-            required: true
-        },
         groupTypeRoles: {
             type: Array as PropType<PlacementGroupTypeRoleBag[]>,
         },
@@ -184,7 +180,6 @@
     }>();
 
     const destinationGroup = ref<PlacementGroupBag>(props.destinationGroup);
-    const placedPeople = ref<PersonBag[]>(props.placedPeople);
     const groupTypeRoles = ref<PlacementGroupTypeRoleBag[]>(props.groupTypeRoles ?? []);
     const isGroupExpanded = ref<boolean>(true);
 
@@ -193,7 +188,7 @@
             return "status-under";
         }
 
-        const groupMemberCount = placedPeople.value.length;
+        const groupMemberCount = destinationGroup.value.groupMembers?.length ?? 0;
         const groupCapacityPercent = (groupMemberCount / destinationGroup.value.groupCapacity) * 100;
 
         if (groupCapacityPercent > 100) {
@@ -217,7 +212,11 @@
             unknown: 0
         };
 
-        for (const person of placedPeople.value) {
+        if (!destinationGroup.value.groupMembers) {
+            return counts;
+        }
+
+        for (const person of destinationGroup.value.groupMembers) {
             switch (person.gender) {
                 case Gender.Male:
                     counts.males++;
@@ -235,7 +234,7 @@
     });
 
     const capacityText = computed(() => {
-        const groupMemberCount = placedPeople.value.length;
+        const groupMemberCount = destinationGroup.value.groupMembers?.length ?? 0;
 
         if (!destinationGroup.value.groupCapacity) {
             return `${groupMemberCount}`;
@@ -258,9 +257,7 @@
     });
 
     function getRoleCount(roleId: number): number {
-        return placedPeople.value.filter(p =>
-            p.groupPlacementMapping?.some(g => g.groupRoleId === roleId)
-        ).length;
+        return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleId === roleId).length ?? 0;
     }
 
     // Low Priority TODO - there is a ux/ui issue when a panel is collapsed and the secondary actions dropdown is opened
@@ -286,7 +283,7 @@
     }
 
     function getPlacedPeopleFilteredByRole(roleId: number): PersonBag[] {
-        return placedPeople.value.filter(p => p.groupPlacementMapping?.some(g => g.groupRoleId === roleId));
+        return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleId === roleId) ?? [];
     }
 
     function getRoleCountTooltipText(roleId: number): string {

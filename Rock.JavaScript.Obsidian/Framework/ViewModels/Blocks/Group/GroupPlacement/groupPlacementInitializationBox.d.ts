@@ -37,6 +37,8 @@ export type GroupPlacementInitializationBox = {
 
     isPlacementAllowingMultiple: boolean;
 
+    peopleToPlace?: PersonBag[] | null;
+
     placementConfigurationSettingOptions?: PlacementConfigurationSettingOptionsBag | null;
 
     placementGroups?: PlacementGroupBag[] | null;
@@ -44,8 +46,6 @@ export type GroupPlacementInitializationBox = {
     placementGroupType?: PlacementGroupTypeBag | null;
 
     placementGroupTypeRoles?: PlacementGroupTypeRoleBag[] | null;
-
-    placementPeople?: PersonBag[] | null;
 
     registrantId?: number | null;
 

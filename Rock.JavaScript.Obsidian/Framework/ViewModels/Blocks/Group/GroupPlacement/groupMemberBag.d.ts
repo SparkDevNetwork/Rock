@@ -21,19 +21,8 @@
 // </copyright>
 //
 
-import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
+export type GroupMemberBag = {
+    groupRoleId: number;
 
-/** The SMS Conversations Initialization Box */
-export type PlacementGroupBag = {
-    groupCapacity?: number | null;
-
-    groupId: number;
-
-    groupMembers?: PersonBag[] | null;
-
-    groupName?: string | null;
-
-    groupOrder: number;
-
-    groupTypeId: number;
+    personId: number;
 };
