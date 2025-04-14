@@ -538,7 +538,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Updates the location permission disabled date time.
+        /// Updates the location permission status.
         /// </summary>
         /// <param name="locationPermissionOptions"></param>
         /// <returns></returns>
@@ -547,6 +547,11 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "DF6065C9-A5F8-4549-AD00-F2C0823C9E0D" )]
         public IHttpActionResult UpdateLocationPermission( LocationPermissionOptions locationPermissionOptions )
         {
+            if ( locationPermissionOptions == null )
+            {
+                return BadRequest( "LocationPermissionOptions is null." );
+            }
+
             using ( var rockContext = new Rock.Data.RockContext() )
             {
                 if ( locationPermissionOptions.PersonalDeviceGuid == null )
@@ -569,15 +574,15 @@ namespace Rock.Rest.Controllers
 
                 var locationPermissionInfo = locationPermissionOptions.LocationPermissionInfo;
 
-                var locationCurrentlyGranted = personalDevice.LocationPermissionStatus == LocationPermissionStatus.Always && personalDevice.IsPreciseLocationEnabled == true;
-                var locationSwitchedToDisabled = locationPermissionInfo.LocationPermission.ToNative() != LocationPermissionStatus.Always || locationPermissionInfo.IsPrecise != true;
+                var locationPreviouslyGranted = personalDevice.LocationPermissionStatus == LocationPermissionStatus.Always && personalDevice.IsPreciseLocationEnabled == true;
+                var isLocationPermissionDisabled = locationPermissionInfo.LocationPermission.ToNative() != LocationPermissionStatus.Always || locationPermissionInfo.IsPrecise != true;
 
                 // Update the date time only when the person is switching to/from "Always" Permission and "Precise" On.
-                if ( locationCurrentlyGranted && locationSwitchedToDisabled )
+                if ( locationPreviouslyGranted && isLocationPermissionDisabled )
                 {
                     personalDevice.LocationPermissionDisabledDateTime = RockDateTime.Now;
                 }
-                else if ( !locationSwitchedToDisabled )
+                else if ( !isLocationPermissionDisabled )
                 {
                     personalDevice.LocationPermissionDisabledDateTime = null;
                 }
