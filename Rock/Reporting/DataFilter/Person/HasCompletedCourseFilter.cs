@@ -109,7 +109,6 @@ namespace Rock.Reporting.DataFilter.Person
                 { "learningCourse", config?.LearningCourseGuid?.ToString() },
                 { "courseStatus", config?.LearningCompletionStatuses.ToCamelCaseJson( false, true ) },
                 { "dateRange", config?.SlidingDateRangeDelimitedValues },
-                { "selection", selection },
             };
 
             return data;
@@ -125,9 +124,6 @@ namespace Rock.Reporting.DataFilter.Person
                 LearningCompletionStatuses = data.GetValueOrNull( "courseStatus" )?.FromJsonOrNull<List<LearningCompletionStatus>>()
             };
 
-            //var json = selectionConfig.ToJson();
-
-            //return data.GetValueOrDefault( "selection", "" );
             return selectionConfig.ToJson();
         }
 
