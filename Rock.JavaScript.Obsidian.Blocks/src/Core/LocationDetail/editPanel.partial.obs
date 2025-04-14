@@ -40,7 +40,7 @@
 
                 <ImageEditor v-model="image" label="Image" noPictureUrl="/Assets/Images/no-picture.svg" :binaryFileTypeGuid="BinaryFiletype.LocationImage" />
 
-                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode />
             </div>
 
             <div class="col-md-6">
