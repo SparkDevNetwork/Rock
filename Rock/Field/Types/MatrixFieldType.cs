@@ -165,6 +165,7 @@ namespace Rock.Field.Types
 
                     var tempAttributeMatrixItem = new AttributeMatrixItem();
                     tempAttributeMatrixItem.AttributeMatrix = new AttributeMatrix { AttributeMatrixTemplateId = templateData.Id };
+                    tempAttributeMatrixItem.AttributeMatrixTemplateId = templateData.Id;
                     tempAttributeMatrixItem.LoadAttributes();
 
                     attributes = tempAttributeMatrixItem.Attributes.ToDictionary(
