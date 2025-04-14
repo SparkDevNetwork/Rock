@@ -572,7 +572,7 @@ namespace Rock.Rest.Controllers
                 var locationCurrentlyGranted = personalDevice.LocationPermissionStatus == LocationPermissionStatus.Always && personalDevice.IsPreciseLocationEnabled == true;
                 var locationSwitchedToDisabled = locationPermissionInfo.LocationPermission.ToNative() != LocationPermissionStatus.Always || locationPermissionInfo.IsPrecise != true;
 
-                // Update the date time only when the person is switching to and from "Always" Permission and "Precise" On.
+                // Update the date time only when the person is switching to/from "Always" Permission and "Precise" On.
                 if ( locationCurrentlyGranted && locationSwitchedToDisabled )
                 {
                     personalDevice.LocationPermissionDisabledDateTime = RockDateTime.Now;
