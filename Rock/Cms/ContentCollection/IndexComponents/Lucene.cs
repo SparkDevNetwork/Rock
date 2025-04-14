@@ -76,6 +76,11 @@ namespace Rock.Cms.ContentCollection.IndexComponents
         private static readonly string _path = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/LuceneContentCollectionIndex" );
         private static readonly object _lockWriter = new object();
 
+        /// <summary>
+        /// <c>true</c> if debugging and what an Explain field are included in the search results.
+        /// </summary>
+        private bool _includeExplain;
+
         #endregion
 
         #region Properties
@@ -115,6 +120,14 @@ namespace Rock.Cms.ContentCollection.IndexComponents
         #region Constructors
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="Lucene" /> class.
+        /// </summary>
+        public Lucene()
+        {
+            SettingsUpdated();
+        }
+
+        /// <summary>
         /// Dispose of the index from memory and close all files.
         /// </summary>
         public static void Dispose()
@@ -150,6 +163,30 @@ namespace Rock.Cms.ContentCollection.IndexComponents
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Called when the attribute value settings have been updated on the
+        /// primary Elasticsearch component in Universal Search. Since we get
+        /// our settings from there, we need to know when they change.
+        /// </summary>
+        internal void SettingsUpdated()
+        {
+            var component = UniversalSearch.IndexContainer
+                .Instance
+                .Components
+                .Values
+                .Select( c => c.Value )
+                .Where( c => c.GetType() == typeof( UniversalSearch.IndexComponents.Elasticsearch ) )
+                .Cast<UniversalSearch.IndexComponents.Elasticsearch>()
+                .FirstOrDefault();
+
+            if ( component == null )
+            {
+                return;
+            }
+
+            _includeExplain = component.GetAttributeValue( UniversalSearch.IndexComponents.Lucene.AttributeKey.IncludeExplain ).AsBoolean();
+        }
 
         /// <summary>
         /// Id used by Lucene.
@@ -302,8 +339,9 @@ namespace Rock.Cms.ContentCollection.IndexComponents
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="hit">The scoredoc.</param>
+        /// <param name="explain">If <c>true</c> then the explain information will be included in the document.</param>
         /// <returns>Index model</returns>
-        private static IndexDocumentBase LuceneDocToIndexModel( Query query, ScoreDoc hit )
+        private static IndexDocumentBase LuceneDocToIndexModel( Query query, ScoreDoc hit, bool explain )
         {
             var doc = _indexSearcher.Doc( hit.Doc );
 
@@ -330,8 +368,12 @@ namespace Rock.Cms.ContentCollection.IndexComponents
                     }
                 }
 
-                Explanation explanation = _indexSearcher.Explain( query, hit.Doc );
-                document["Explain"] = explanation.ToString();
+                if ( explain )
+                {
+                    Explanation explanation = _indexSearcher.Explain( query, hit.Doc );
+                    document["Explain"] = explanation.ToString();
+                }
+
                 document.Score = hit.Score;
 
                 return document;
@@ -720,7 +762,7 @@ namespace Rock.Cms.ContentCollection.IndexComponents
             var docs = topDocs.ScoreDocs
                 .Skip( options.Offset ?? 0 )
                 .Take( returnSize )
-                .Select( d => LuceneDocToIndexModel( queryContainer, d ) )
+                .Select( d => LuceneDocToIndexModel( queryContainer, d, _includeExplain ) )
                 .Where( d => d != null )
                 .ToList();
 
