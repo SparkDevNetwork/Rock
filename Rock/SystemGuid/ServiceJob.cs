@@ -488,5 +488,10 @@ namespace Rock.SystemGuid
         /// table with RootGroupTypeId values for existing data.
         /// </summary>
         public const string DATA_MIGRATIONS_171_POPULATE_ATTENDANCE_ROOT_GROUP_TYPE = "e6755275-02ca-4159-af16-1e4cdcfa22d0";
+
+        /// <summary>
+        /// The Job to run Post v17.1 Data Migrations to chop Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_171_CHOP_OBSIDIAN_BLOCKS = "C5AE8BF4-C83C-4695-9233-1B1D5D2801D7";
     }
 }

@@ -26,6 +26,7 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Defines a single field to display on a workflow entry form. */
 export type EntryFormFieldBag = {
+    /** Gets or sets the attribute associated with this field. */
     attribute?: PublicAttributeBag | null;
 
     /** The size of the column (1-12) to use when displaying this field. */
