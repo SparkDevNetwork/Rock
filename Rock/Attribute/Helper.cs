@@ -2876,6 +2876,48 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         /// <summary>
         /// Adds the edit controls.
         /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
+        /// <param name="validationGroup">The validation group.</param>
+        /// <param name="exclude">List of attributes not to render. Attributes with a Key or Name in the exclude list will not be shown.</param>
+        /// <param name="supressOrdering">if set to <c>true</c> suppresses reordering of the attributes within each Category. (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
+        /// <param name="numberOfColumns">The number of columns.</param>
+        /// <param name="showNamedCategoryPanels">If set to <c>true</c> then category panels will be shown for named categories.</param>
+        internal static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering, int? numberOfColumns, bool showNamedCategoryPanels )
+        {
+            if ( item != null && item.Attributes != null )
+            {
+                exclude = exclude ?? new List<string>();
+                foreach ( var attributeCategory in GetAttributeCategories( item, false, false, supressOrdering ) )
+                {
+                    if ( attributeCategory.Attributes.Where( a => a.IsActive ).Where( a => !exclude.Contains( a.Name ) && !exclude.Contains( a.Key ) ).Select( a => a.Key ).Count() > 0 )
+                    {
+                        var category = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
+                        var attributeKeys = attributeCategory.Attributes.Where( a => a.IsActive ).Select( a => a.Key ).ToList();
+
+                        AttributeAddEditControlsOptions attributeAddEditControlsOptions = new AttributeAddEditControlsOptions
+                        {
+                            NumberOfColumns = numberOfColumns,
+                            ShowCategoryPanels = showNamedCategoryPanels && category.IsNotNullOrWhiteSpace()
+                        };
+
+                        attributeAddEditControlsOptions.IncludedAttributes = attributeKeys != null
+                            ? item?.Attributes.Select( a => a.Value ).Where( a => attributeKeys.Contains( a.Key ) ).ToList()
+                            : null;
+                        attributeAddEditControlsOptions.ExcludedAttributes = exclude != null
+                            ? item?.Attributes.Select( a => a.Value ).Where( a => exclude.Contains( a.Key ) || exclude.Contains( a.Name ) ).ToList()
+                            : null;
+
+                        AddEditControlsForCategory( category, item, parentControl, validationGroup, setValue, attributeAddEditControlsOptions );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the edit controls.
+        /// </summary>
         /// <param name="category">The category.</param>
         /// <param name="attributeKeys">The attribute keys.</param>
         /// <param name="item">The item.</param>

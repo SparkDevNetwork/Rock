@@ -472,7 +472,8 @@
     async function processClonedSchedule(): Promise<void> {
         const data: CloneScheduleBag = {
             sourceSchedule: sourceSchedule.value,
-            destinationSchedule: destinationSchedule.value
+            destinationSchedule: destinationSchedule.value,
+            currentScheduleConfiguration: groupLocations.value
         };
 
         const response = await invokeBlockAction<GroupLocationsBag[]>("ProcessClonedSchedule", {

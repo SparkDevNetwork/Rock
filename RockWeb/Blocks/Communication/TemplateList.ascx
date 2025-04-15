@@ -34,6 +34,7 @@
                             <Rock:RockBoundField DataField="Category" HeaderText="Category" SortExpression="Category.Name" />
                             <Rock:RockLiteralField ID="lSupports" HeaderText="Supports" />
                             <Rock:RockBoundField DataField="CreatedByPersonAlias.Person.FullName" SortExpression="CreatedByPersonAlias.Person.NickName, CreatedByPersonAlias.Person.LastName" HeaderText="Created By" />
+                            <Rock:RockBoundField DataField="Version" SortExpression="Version" HeaderText="Version" />
                             <Rock:BoolField DataField="IsActive" SortExpression="IsActive" HeaderText="Active" />
                             <Rock:SecurityField TitleField="Name" />
                             <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="gCommunicationTemplates_Copy" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />

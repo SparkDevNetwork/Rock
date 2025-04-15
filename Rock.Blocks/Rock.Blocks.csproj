@@ -50,6 +50,10 @@
     <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
     </Reference>
+    <Reference Include="Rock.Common.Mobile">
+      <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -123,6 +127,7 @@
     <Compile Include="Communication\CommunicationEntry\ValidationContextExtensions.cs" />
     <Compile Include="Cms\LogSettings.cs" />
     <Compile Include="Communication\SmsConversations.cs" />
+    <Compile Include="Communication\CommunicationTemplateDetail.cs" />
     <Compile Include="Core\PersonSuggestionList.cs" />
     <Compile Include="Cms\PageSearch.cs" />
     <Compile Include="Core\DocumentTypeList.cs" />
@@ -395,6 +400,7 @@
     <Compile Include="WorkFlow\FormBuilder\FormBuilderDetail.cs" />
     <Compile Include="WorkFlow\FormBuilder\FormTemplateDetail.cs" />
     <Compile Include="WorkFlow\FormBuilder\Utility.cs" />
+    <Compile Include="WorkFlow\WorkflowEntry.cs" />
     <Compile Include="WorkFlow\WorkflowTriggerDetail.cs" />
     <Compile Include="WorkFlow\WorkflowList.cs" />
   </ItemGroup>

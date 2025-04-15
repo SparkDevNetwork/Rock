@@ -2,9 +2,9 @@
 <template>
     <teleport :to="container" v-if="modelValue">
         <div :class="modalWrapperClasses">
-            <div class="modal-backdrop" style="z-index: 1050;"></div>
+            <div class="modal-backdrop" :style="`z-index: ${zIndex};`"></div>
 
-            <div @click.stop="onScrollableClick" class="modal-scrollable" style="z-index: 1050;">
+            <div @click.stop="onScrollableClick" class="modal-scrollable" :style="`z-index: ${zIndex};`">
                 <div @click.stop
                      class="modal container modal-content rock-modal rock-modal-frame modal-overflow"
                      :class="{ 'animated shake': isShaking }"
@@ -140,7 +140,8 @@
     // #region Values
 
     const internalModalVisible = ref(props.modelValue);
-    const container = ref(document.fullscreenElement ?? document.body);
+    const zIndex = ref<number>(1050);
+    const container = ref(getHostContainer());
     const validationErrors = ref<FormError[]>([]);
     const internalSubmit = useVModelPassthrough(props, "submit", emit);
 
@@ -183,6 +184,25 @@
             }
             else if (modalBodyPaddingElement.value.style.paddingBottom !== "") {
                 modalBodyPaddingElement.value.style.paddingBottom = "";
+            }
+        }
+    }
+
+    function getHostContainer(): Element {
+        if (document.fullscreenElement) {
+            zIndex.value = 1050;
+            return document.fullscreenElement;
+        }
+        else {
+            const panelFullscreen = document.querySelector(".panel-fullscreen");
+
+            if (panelFullscreen) {
+                zIndex.value = 1060; // Make sure our modal is at the same zindex as panel-fullscreen.
+                return panelFullscreen;
+            }
+            else {
+                zIndex.value = 1050;
+                return document.body;
             }
         }
     }
@@ -294,7 +314,7 @@
     // Watch for changes in our visiblity.
     watch(() => props.modelValue, () => {
         if (props.modelValue) {
-            container.value = document.fullscreenElement || document.body;
+            container.value = getHostContainer();
 
             // Clear any old validation errors. They will be updated when
             // the submit button is next clicked.

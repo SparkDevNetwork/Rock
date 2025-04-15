@@ -6,25 +6,25 @@
                 <DropDownList v-model="selectedFieldKey"
                               :items="fieldList"
                               :grouped="groupSources"
-                              :showBlankItem="false"
+                              :showBlankItem="allowBlankFieldSelection"
                               :enhanceForLongLists="enhanceForLongSourceLists" />
             </div>
             <div class="filter-rule-fieldfilter col-xs-12 col-md-8">
                 <RockAttributeFilter v-if="currentAttribute"
                                      v-model="comparisonValue"
                                      :attribute="currentAttribute"
-                                     :filterMode="FilterMode.Advanced"
+                                     :filterMode="filterMode"
                                      required />
 
                 <component v-if="currentProperty"
                            :is="fieldComponent"
                            v-model="comparisonValue"
                            :configurationValues="currentProperty.configurationValues ?? {}"
-                           :filterMode="FilterMode.Advanced"
+                           :filterMode="filterMode"
                            required />
             </div>
         </div>
-        <div class="filter-rule-remove">
+        <div class="filter-rule-remove" v-if="!disableRemoval">
             <button class="btn btn-danger btn-square" @click.prevent="onRemoveRuleClick">
                 <i class="fa fa-times"></i>
             </button>
@@ -45,8 +45,9 @@
     import RockAttributeFilter from "./rockAttributeFilter.obs";
     import { FieldFilterSourceType } from "@Obsidian/Enums/Reporting/fieldFilterSourceType";
     import { FieldFilterPublicPropertyBag } from "@Obsidian/ViewModels/Reporting/fieldFilterPublicPropertyBag";
-    import { FilterMode } from "@Obsidian/Core/Reporting/filterMode";
+    import { FilterMode } from "@Obsidian/Enums/Reporting/filterMode";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 
     const props = defineProps({
         modelValue: {
@@ -69,6 +70,31 @@
             type: Boolean as PropType<boolean>,
             default: false
         },
+
+        /** The filter mode to use for the field filter. */
+        filterMode: {
+            type: Number as PropType<FilterMode>,
+            default: FilterMode.AdvancedFilter
+        },
+
+        /**
+         * If this row is being used by itself, rather than in a list, it probably doesn't make sense to remove it,
+         * so we can disable the removal button.
+         */
+        disableRemoval: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * In some cases, we don't want to automatically select the first field in the list when we don't have a
+         * current selection. This is useful when we want to allow the rule to be empty and prevents Obsidian from
+         * changing a filter rule inadvertently when it wasn't set in the Webforms version of the filter.
+         */
+        allowBlankFieldSelection: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
     });
 
     const emit = defineEmits<{
@@ -86,7 +112,7 @@
 
     /** The currently selected source property or undefined. */
     const currentPropertySource = computed((): FieldFilterSourceBag | undefined => {
-        if (!selectedFieldKey.value.includes("::")) {
+        if (!selectedFieldKey.value || !selectedFieldKey.value.includes("::")) {
             return undefined;
         }
 
@@ -107,7 +133,7 @@
 
     /** The currently selected source attribute or undefined. */
     const currentAttributeSource = computed((): FieldFilterSourceBag | undefined => {
-        if (!selectedFieldKey.value.includes("::")) {
+        if (!selectedFieldKey.value || !selectedFieldKey.value.includes("::")) {
             return undefined;
         }
 
@@ -201,7 +227,7 @@
         let key: string;
         let path: string;
 
-        if (!selectedFieldKey.value.includes("::")) {
+        if (!selectedFieldKey.value || !selectedFieldKey.value.includes("::")) {
             path = "";
             key = "";
         }
@@ -210,14 +236,16 @@
             key = selectedFieldKey.value.split("::")[1];
         }
 
+        const compareType = comparisonValue.value?.comparisonType ?? 0;
+
         const newValue: FieldFilterRuleBag = {
             ...props.modelValue,
             attributeGuid: isAttribute ? toGuidOrNull(key) : null,
             propertyName: !isAttribute ? key : null,
             sourceType: isAttribute ? FieldFilterSourceType.Attribute : FieldFilterSourceType.Property,
             path: path,
-            comparisonType: comparisonValue.value.comparisonType ?? 0,
-            value: comparisonValue.value.value
+            comparisonType: compareType,
+            value: compareType == 0 || compareType == ComparisonType.IsBlank || compareType == ComparisonType.IsNotBlank ? "" : comparisonValue.value.value
         };
 
         emit("update:modelValue", newValue);

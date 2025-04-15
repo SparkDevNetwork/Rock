@@ -353,6 +353,24 @@ namespace Rock.Web.Cache
             return _checkInData;
         }
 
+        /// <summary>
+        /// Finds all root group types of this group. This uses the group
+        /// type association tree which allows multiple parents.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>An enumeration of the root group types found for this group.</returns>
+        internal IEnumerable<GroupTypeCache> GetRootGroupTypes( RockContext rockContext )
+        {
+            var groupType = GroupTypeCache.Get( GroupTypeId, rockContext );
+
+            if ( groupType == null )
+            {
+                return Array.Empty<GroupTypeCache>();
+            }
+
+            return groupType.GetRootGroupTypes( rockContext );
+        }
+
         /// <inheritdoc/>
         public override void SetFromEntity( IEntity entity )
         {

@@ -91,4 +91,10 @@ export type FinancialAccountBag = {
 
     /** Gets or sets the URL which could be used to generate a link to a 'More Info' page */
     url?: string | null;
+
+    /**
+     * Determines if the account uses child accounts and a campus identifier from
+     * the block to pick a matching child account for the transaction.
+     */
+    usesCampusChildAccounts: boolean;
 };

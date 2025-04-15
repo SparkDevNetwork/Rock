@@ -79,7 +79,7 @@
                                                               @update:modelValue="onListGroupGuidUpdated" />
                                             </div>
                                             <div class="form-group">
-                                                <RockLabel v-if="breakpointHelper.isSmOrLarger">&nbsp;</RockLabel>
+                                                <RockLabel>&nbsp;</RockLabel>
                                                 <div class="control-wrapper">
                                                     <RockButton btnSize="sm"
                                                                 :disabled="isFetchingRecipients"
@@ -348,7 +348,7 @@
 <script setup lang="ts">
     import { computed, nextTick, PropType, Ref, ref, watch } from "vue";
     import RecipientModal from "./recipientModal.partial.obs";
-    import { get, useBreakpointHelper } from "./utils.partial";
+    import { get } from "./utils.partial";
     import { SendTimePreference } from "./types.partial";
     import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
@@ -569,7 +569,6 @@
         }
     ];
 
-    const breakpointHelper = useBreakpointHelper();
     const manualRecipientList = "manual" as const;
 
     // #region Values
@@ -782,6 +781,12 @@
 
         if (isNullish(internalIndividualRecipientPersonAliasGuids.value) && selectedCommunicationListGuidOrManualOrEmptyString.value !== value) {
             selectedCommunicationListGuidOrManualOrEmptyString.value = value;
+        }
+    });
+
+    watch(() => props.recipientCount, value => {
+        if (value > 0) {
+            isNoRecipientsNotificationShown.value = false;
         }
     });
 

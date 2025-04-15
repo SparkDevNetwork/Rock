@@ -479,14 +479,28 @@ namespace Rock.Model
                 }
             }
 
+            /*
+                 4/1/2025 - NA
+
+                 This update adjusts the logic to use the full DtStart value —including its time component— when setting the effectiveEndDateTime. 
+                 For example, if a schedule starts on Jan 1 at 11:00 PM and lasts 4 hours, the effectiveEndDateTime becomes Jan 2 at 3:00 AM, while 
+                 the EffectiveEndDate is Jan 2. This behavior aligns with the iCal DTEND value.
+
+                 The EffectiveEndDate is still OK to use to determine when a schedule is no longer to be considered active.
+
+                 Reason: To resolve issue https://github.com/SparkDevNetwork/Rock/issues/6227
+            */
+
             // At this point, if no EffectiveEndDate is set then assume this is a one-time event and set the EffectiveEndDate to the EffectiveStartDate.
             if ( effectiveEndDateTime == DateTime.MaxValue && !adjustEffectiveDateForLastOccurrence )
             {
-                effectiveEndDateTime = effectiveStartDateTime;
+                effectiveEndDateTime = calEvent.DtStart?.Value;
             }
 
             // Add the Duration of the event to ensure that the effective end date corresponds to the day on which the event concludes.
-            if ( effectiveEndDateTime != null && effectiveEndDateTime != DateTime.MaxValue )
+            // (We're only doing this when the adjustEffectiveDateForLastOccurrence is not true, because otherwise the effectiveEndDateTime
+            // already includes the duration of the event.)
+            if ( !adjustEffectiveDateForLastOccurrence && effectiveEndDateTime != null && effectiveEndDateTime != DateTime.MaxValue )
             {
                 effectiveEndDateTime = effectiveEndDateTime.Value.AddMinutes( DurationInMinutes );
             }

@@ -83,17 +83,19 @@ namespace Rock.Utility.Performance
             Run( operationCount, benchmarkAction, GetWarmupRunCount() );
 
             Logger?.LogDebug( "Beginning real test run." );
-            var statistics = Run( operationCount, benchmarkAction, GetRealRunCount() );
+            var realRunCount = GetRealRunCount();
+            var statistics = Run( operationCount, benchmarkAction, realRunCount );
             Logger?.LogDebug( $"Raw test results are {statistics.ToString( false )}." );
 
-            statistics = new BenchmarkStatistics(
-                statistics.Duration - overhead.Duration,
-                statistics.Allocations - overhead.Allocations,
-                statistics.Operations );
+            var normalizedStatistics = statistics / realRunCount;
+            normalizedStatistics = new BenchmarkStatistics(
+                normalizedStatistics.Duration - overhead.Duration,
+                normalizedStatistics.Allocations - overhead.Allocations,
+                normalizedStatistics.Operations );
 
-            Logger?.LogDebug( $"Normalized results are {statistics.ToString( false )}." );
+            Logger?.LogDebug( $"Normalized results are {normalizedStatistics.ToString( false )}." );
 
-            return new BenchmarkResult( statistics );
+            return new BenchmarkResult( normalizedStatistics, statistics, overhead );
         }
 
         /// <summary>
@@ -142,7 +144,7 @@ namespace Rock.Utility.Performance
                 statistics += stat;
             }
 
-            return statistics / runCount;
+            return statistics;
         }
 
         /// <summary>

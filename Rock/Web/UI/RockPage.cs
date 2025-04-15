@@ -845,6 +845,7 @@ namespace Rock.Web.UI
                 Activity.Current.AddTag( "rock.site.id", this.Site.Id );
                 Activity.Current.AddTag( "rock.page.id", this.PageId );
                 Activity.Current.AddTag( "rock.page.ispostback", this.IsPostBack );
+                Activity.Current.AddTag( "rock.page.issystem", _pageCache?.IsSystem ?? false );
             }
 
             var stopwatchInitEvents = Stopwatch.StartNew();

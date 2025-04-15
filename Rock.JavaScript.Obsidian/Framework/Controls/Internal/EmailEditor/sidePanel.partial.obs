@@ -5,9 +5,9 @@
             <div v-for="sidePanelMenuItem in sidePanelMenuItems"
                  :key="sidePanelMenuItem.type"
                  :class="[
-                     'side-panel-menu-item',
-                     selectedSidePanelMenuItem === sidePanelMenuItem.type ? 'selected' : ''
-                 ]"
+                    'side-panel-menu-item',
+                    selectedSidePanelMenuItem === sidePanelMenuItem.type ? 'selected' : ''
+                ]"
                  @click="onSidePanelButtonClicked(sidePanelMenuItem.type)">
                 <i :class="sidePanelMenuItem.iconCssClass"></i>
                 <span class="side-panel-menu-item-text">{{ sidePanelMenuItem.title }}</span>
@@ -22,6 +22,7 @@
                                         :mergeFields="mergeFields"
                                         :recipientPersonIds="recipientPersonIds"
                                         :shortLinkCheckToken="shortLinkCheckToken"
+                                        :shortLinkGetPageId="shortLinkGetPageId"
                                         :shortLinkSites="shortLinkSites"
                                         :shortLinkTokenMinLength="shortLinkTokenMinLength"
                                         :videoProviderNames="videoProviderNames"
@@ -106,7 +107,8 @@
                                     {{ emailSection.name }}
                                 </h5>
 
-                                <DropDownMenu anchorButtonCssClass="btn-xs email-section-menu-button"
+                                <DropDownMenu align="right"
+                                              anchorButtonCssClass="btn-xs email-section-menu-button"
                                               :items="getEmailSectionMenuItems(emailSection)"
                                               @mousedown.stop />
                             </header>
@@ -385,6 +387,10 @@
 
         shortLinkCheckToken: {
             type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>
+        },
+
+        shortLinkGetPageId: {
+            type: Object as PropType<((pageGuid: Guid) => Promise<number | null | undefined>) | null | undefined>
         },
 
         shortLinkSites: {
@@ -812,7 +818,8 @@
             dragCopy.style.boxShadow = `${keyLightShadow}, ${ambientLightShadow}`;
 
             // Ensure the dragging element is above elements added to body like drop downs, etc.
-            dragCopy.style.zIndex = "1000";
+            // Use default for dropdowns, modals, and full-screen panels (1060).
+            dragCopy.style.zIndex = "1060";
 
             document.body.appendChild(dragCopy);
 

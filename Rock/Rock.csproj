@@ -712,11 +712,15 @@
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ColorSelectorFieldAttribute.cs" />
     <Compile Include="Attribute\CustomSettingsBlockTypeAttribute.cs" />
+    <Compile Include="Attribute\AIProviderFieldAttribute.cs" />
     <Compile Include="Attribute\ImageFieldAttribute.cs" />
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
     <Compile Include="ClientService\Core\Note\NoteClientService.cs" />
     <Compile Include="Cms\RestActionMetadata.cs" />
     <Compile Include="Cms\RestControllerMetadata.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\AlertData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\AlertRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\IStructuredContentBlockLavaRenderer.cs" />
     <Compile Include="Communication\Chat\DTO\ChatUserAuthentication.cs" />
     <Compile Include="Communication\Chat\DTO\RockChatGroup.cs" />
     <Compile Include="Communication\Chat\Exceptions\ChatAccountInvalidException.cs" />
@@ -775,6 +779,9 @@
     <Compile Include="Core\EntitySearch\EntitySearchSystemQuery.cs" />
     <Compile Include="Core\EntitySearch\IdKeyExpressionVisitor.cs" />
     <Compile Include="Communication\Chat\ChatConfiguration.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV171PopulateAttendanceRootGroupType.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV171UpdateCommunicationRecipientIndex.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV171AddCommunicationRecipientIndex.cs" />
     <Compile Include="Model\CRM\UserLogin\UpdateLastLoginArgs.cs" />
     <Compile Include="Data\AttributeValueExpressionVisitor.cs" />
     <Compile Include="Data\EnableAttributeQualificationAttribute.cs" />
@@ -1319,6 +1326,7 @@
     <Compile Include="Field\Types\AdaptiveMessageFieldType.cs" />
     <Compile Include="Field\Types\AIProviderFieldType.cs" />
     <Compile Include="Field\Types\ColorSelectorFieldType.cs" />
+    <Compile Include="Field\Types\FinancialTransactionFieldType.cs" />
     <Compile Include="Field\Types\GroupMemberRequirementFieldType.cs" />
     <Compile Include="Field\Types\MediaSelectorFieldType.cs" />
     <Compile Include="Field\Types\PrayerRequestFieldType.cs" />
@@ -1788,6 +1796,7 @@
     <Compile Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks.cs" />
     <Compile Include="Plugin\HotFixes\225_ImprovePeerNetworkCalculations.cs" />
     <Compile Include="Plugin\HotFixes\229_PeerNetworkFitNFinish.cs" />
+    <Compile Include="Plugin\HotFixes\240_FixBlankPreviewCommunicationTemplateVersion.cs" />
     <Compile Include="Plugin\HotFixes\234_MigrationRollupsForV16_10_1.cs" />
     <Compile Include="Plugin\HotFixes\233_UpdateAppleDeviceList.cs" />
     <Compile Include="Plugin\HotFixes\232_UpdateContentFileTypeBlacklist.cs" />
@@ -2476,6 +2485,7 @@
     <Compile Include="Utility\ContentLibraryApi\ContentLibraryApiMetadataBox.cs" />
     <Compile Include="Utility\ContentLibraryApi\ContentLibraryApiResult.cs" />
     <Compile Include="Utility\ContentLibraryApi\IContentLibraryApi.cs" />
+    <Compile Include="Utility\EntityReferenceEqualityComparer.cs" />
     <Compile Include="Utility\Enums\PrayerRequestOrder.cs" />
     <Compile Include="Utility\Enums\RockPlatform.cs" />
     <Compile Include="Utility\Enums\TimePeriodOfDay.cs" />
@@ -2967,7 +2977,6 @@
     <Compile Include="Blocks\Types\Mobile\Cms\Login.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\ProfileDetails.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\Register.cs" />
-    <Compile Include="Blocks\Types\Mobile\Cms\WorkflowEntry.cs" />
     <Compile Include="Communication\RockSMSMessageRecipient.cs" />
     <Compile Include="Communication\RockPushMessageRecipient.cs" />
     <Compile Include="Communication\RockEmailMessageRecipient.cs" />
@@ -4789,6 +4798,7 @@
     <Compile Include="Workflow\ActionCategoryAttribute.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />
     <Compile Include="Workflow\ActionContainer.cs" />
+    <Compile Include="Workflow\Action\AI\AICompletion.cs" />
     <Compile Include="Workflow\Action\Assessments\CreateAssessmentRequest.cs" />
     <Compile Include="Workflow\Action\BackgroundCheck\BackgroundCheckRequest.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
@@ -4893,6 +4903,7 @@
     <Compile Include="Workflow\Action\Entity\SetEntityProperty.cs" />
     <Compile Include="Workflow\Action\Utility\UpdatePersistedDataset.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetFileAttributeFromLava.cs" />
+    <Compile Include="Workflow\Action\WorkflowControl\PaymentEntry.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />
     <Compile Include="Workflow\Action\Utility\RunSQL.cs" />
@@ -4941,6 +4952,9 @@
     <Compile Include="Workflow\FormBuilder\FormPersonEntrySettings.cs" />
     <Compile Include="Workflow\FormBuilder\FormSettings.cs" />
     <Compile Include="Workflow\FormBuilder\PersonEntryAdditionalSettings.cs" />
+    <Compile Include="Workflow\IInteractiveAction.cs" />
+    <Compile Include="Workflow\InteractiveActionResult.cs" />
+    <Compile Include="Workflow\WorkflowPersonEntryProcessor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\msvcr100.dll">

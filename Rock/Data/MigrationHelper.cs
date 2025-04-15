@@ -8750,7 +8750,7 @@ END
         /// </summary>
         /// <param name="name">The Name of the Job as it should be shown on the job list block in the front end</param>
         /// <param name="description">The brief description of what the job does</param>
-        /// <param name="jobType"></param>
+        /// <param name="jobType">The C# namespace and class of the job to be executed.</param>
         /// <param name="cronExpression">The cron expression the job scheduler may use to run the job. For instance: <b>0 15 2 1/1 * ? *</b></param>
         /// <param name="guid">The Job Guid</param>
         public void AddPostUpdateServiceJob( string name, string description, string jobType, string cronExpression, string guid )

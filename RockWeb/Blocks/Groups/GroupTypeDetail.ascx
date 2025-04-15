@@ -606,6 +606,7 @@
                         <Rock:RockCheckBox ID="cbCanManageMembers" runat="server" Label="Can Manage Members" Help="Should individuals with this role be able to manage the members of this group regardless of the security settings on the group?" />
                         <Rock:RockCheckBox ID="cbIsCheckInAllowed" runat="server" Label="Can Check In to Group" Help="Should individuals with this role be allowed to check in to this group? Note that this only applies if the 'Check-in Rule' is set to &quot;Already Enrolled In Group&quot; in your check-in configuration." />
                         <Rock:RockCheckBox ID="cbIsExcludedFromPeerNetwork" runat="server" Label="Exclude from Peer Network" Help="Should individuals with this role be excluded from the group's peer network?" />
+                        <Rock:RockCheckBox ID="cbCanTakeAttendance" runat="server" Label="Can Take Attendance" Help="Should individuals with this role be allowed to take attendance for this group regardless of the group's security settings?" />
                     </div>
                     <div class="col-md-6">
                         <Rock:NumberBox ID="nbMinimumRequired" runat="server" NumberType="Integer" Label="Minimum Required" Help="The minimum number of people with this role that group should allow." />

@@ -262,7 +262,8 @@ namespace Rock.CheckIn.v2
                 }
 
                 // Get all the group locations for active locations. This also
-                // filters down to only groups in an active area.
+                // filters down to only groups in an active area. This also
+                // filters down to only active groups.
                 var activeGroupLocations = locations
                     .Where( l => l.IsActive )
                     .SelectMany( l => GroupLocationCache.AllForLocationId( l.Id ).Select( gl => new
@@ -271,7 +272,17 @@ namespace Rock.CheckIn.v2
                         Location = l
                     } ) )
                     .DistinctBy( glc => glc.GroupLocation.Id )
-                    .Where( glc => activeAreaIds.Contains( GroupCache.Get( glc.GroupLocation.GroupId, RockContext )?.GroupTypeId ?? 0 ) )
+                    .Where( glc =>
+                    {
+                        var groupCache = GroupCache.Get( glc.GroupLocation.GroupId, RockContext );
+
+                        if ( groupCache == null || !groupCache.IsActive )
+                        {
+                            return false;
+                        }
+
+                        return activeAreaIds.Contains( groupCache.GroupTypeId );
+                    } )
                     .ToList();
 
                 // Get all the schedules that are associated with these locations.

@@ -19,6 +19,8 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Workflow;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -294,6 +296,64 @@ namespace Rock.Model
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Gets the next action with a UI component attached that should
+        /// be presented to <paramref name="person"/>.
+        /// </summary>
+        /// <param name="person">The person that is viewing the workflow.</param>
+        /// <param name="actionId">If not <c>null</c> then this will be used to ensure that it is the only action that can be returned.</param>
+        /// <param name="skipAuthorization">If <c>true</c> then <paramref name="person"/> is assumed to be authorized for any activity and action.</param>
+        /// <returns>The <see cref="WorkflowAction"/> that is next up to be processed in the UI or <c>null</c> if there is not one available.</returns>
+        internal WorkflowAction GetNextInteractiveAction( Person person, int? actionId, bool skipAuthorization )
+        {
+            int personId = person?.Id ?? 0;
+
+            if ( !skipAuthorization )
+            {
+                // If they are allowed to edit the workflow then they have
+                // access to all interactive actions.
+                skipAuthorization = IsAuthorized( Authorization.EDIT, person );
+            }
+
+            // Find all the activities that this person can see.
+            var activities = Activities
+                .Where( a => a.IsActive
+                    &&
+                    (
+                        skipAuthorization
+                        || ( !a.AssignedGroupId.HasValue && !a.AssignedPersonAliasId.HasValue )
+                        || ( a.AssignedPersonAlias != null && a.AssignedPersonAlias.PersonId == personId )
+                        || ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == personId ) )
+                    )
+                )
+                .OrderBy( a => a.ActivityTypeCache.Order )
+                .ToList();
+
+            // Find the first action that the user is authorized to work with,
+            // is not filtered out by criteria and is an interactive action.
+            foreach ( var activity in activities )
+            {
+                if ( !skipAuthorization && !activity.ActivityTypeCache.IsAuthorized( Authorization.VIEW, person ) )
+                {
+                    continue;
+                }
+
+                var actions = activity.ActiveActions
+                    .Where( a => a.IsCriteriaValid
+                        && ( !actionId.HasValue || a.Id == actionId.Value ) );
+
+                foreach ( var action in actions )
+                {
+                    if ( action.ActionTypeCache.WorkflowAction is IInteractiveAction )
+                    {
+                        return action;
+                    }
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

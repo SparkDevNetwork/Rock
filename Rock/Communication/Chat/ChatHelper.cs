@@ -601,7 +601,7 @@ namespace Rock.Communication.Chat
 
         #endregion Caching
 
-        #region Authentication
+        #region Chat User Helpers
 
         /// <summary>
         /// Gets a <see cref="ChatUserAuthentication"/> for the <see cref="Person"/> to use when authenticating with the
@@ -688,7 +688,21 @@ namespace Rock.Communication.Chat
             return new PersonService( RockContext ).GetByChatUserKey( chatUserKey );
         }
 
-        #endregion Authentication
+        /// <summary>
+        /// Determines whether the specified person is part of the chat ban list group.
+        /// </summary>
+        /// <param name="personId">The ID of the person to check.</param>
+        /// <returns><c>true</c> if the person is banned from chat; otherwise, <c>false</c>.</returns>
+        internal bool IsPersonBanned( int personId )
+        {
+            // For performance, we avoid loading the entire group. Instead,
+            // we check if any group member exists with the banned group ID and person ID.
+            return new GroupMemberService( RockContext )
+                .Queryable()
+                .Any( gm => gm.GroupId == ChatBanListGroupId && gm.PersonId == personId );
+        }
+
+        #endregion Chat User Helpers
 
         #region Synchronization: From Rock To Chat Provider
 

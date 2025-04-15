@@ -62,8 +62,9 @@
                              :isIconHidden="true"
                              label="Create Shortlink"
                              :checkToken="shortLinkCheckToken"
-                             :tokenMinLength="shortLinkTokenMinLength"
-                             :sites="shortLinkSites" />
+                             :getPageId="shortLinkGetPageId"
+                             :sites="shortLinkSites"
+                             :tokenMinLength="shortLinkTokenMinLength" />
         </template>
     </RockFormField>
 </template>
@@ -105,6 +106,7 @@
 
 .note-editor .note-toolbar {
     padding: 0;
+    display: block;
 }
 
 :deep([data-css-class="float-right"]) {
@@ -131,6 +133,7 @@
     import { tinymce, Editor, EditorEvent, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
 
     type ToolbarConfig = "light" | "full";
 
@@ -167,6 +170,10 @@
 
         shortLinkCheckToken: {
             type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>
+        },
+
+        shortLinkGetPageId: {
+            type: Object as PropType<((pageGuid: Guid) => Promise<number | null | undefined>) | null | undefined>
         },
 
         shortLinkSites: {

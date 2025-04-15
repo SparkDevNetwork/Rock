@@ -138,6 +138,12 @@ namespace Rock.Model
         [DataMember]
         public bool IsStarter { get; set; }
 
+        /// <summary>
+        /// Gets or sets the communication template version.
+        /// </summary>
+        [DataMember]
+        public CommunicationTemplateVersion Version { get; set; }
+
         #region Email Fields
 
         /// <summary>

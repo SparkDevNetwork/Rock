@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,9 +22,11 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
-using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -36,7 +38,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
     [Description( "Filtering on the type of group that the selected placement group is." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Placement Group Type Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "86E66450-2873-4BB4-A42D-D340837F5911")]
+    [Rock.SystemGuid.EntityTypeGuid( "86E66450-2873-4BB4-A42D-D340837F5911" )]
     public class PlacementGroupTypeFilter : DataFilterComponent
     {
         #region Properties
@@ -61,6 +63,48 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/ConnectionRequest/placementGroupTypeFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+
+            if ( string.IsNullOrWhiteSpace( selection ) )
+            {
+                return data;
+            }
+
+            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
+
+            if ( !selectionConfig.PlacementGroupTypeGuid.HasValue )
+            {
+                return data;
+            }
+
+            var groupType = new GroupTypeService( new RockContext() ).Get( selectionConfig.PlacementGroupTypeGuid.Value );
+
+            data.AddOrReplace( "groupType", groupType?.ToListItemBag().ToCamelCaseJson( false, true ) );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = new SelectionConfig();
+            var groupType = data.GetValueOrDefault( "groupType", "{}" ).FromJsonOrNull<ListItemBag>();
+
+            selectionConfig.PlacementGroupTypeGuid = groupType?.Value.AsGuid();
+
+            return selectionConfig.ToJson();
         }
 
         #endregion
@@ -123,6 +167,8 @@ function() {
 
             return result;
         }
+
+#if WEBFORMS
 
         /// <summary>
         /// Creates the child controls.
@@ -191,6 +237,8 @@ function() {
                 }
             }
         }
+
+#endif
 
         /// <summary>
         /// Gets the expression.

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -24,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.ContentChannelItem
@@ -34,7 +36,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
     [Description( "Filter Content Channel Items by Content Channel" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Content Channel Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "E469CB19-C22E-4811-9779-49C797A0E528")]
+    [Rock.SystemGuid.EntityTypeGuid( "E469CB19-C22E-4811-9779-49C797A0E528" )]
     public class ContentChannel : DataFilterComponent
     {
         #region Properties
@@ -59,6 +61,36 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/ContentChannelItem/contentChannelFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var contentChannelOptions = new ContentChannelService( new RockContext() ).Queryable()
+               .Where( a => a.ContentChannelType.ShowInChannelList == true )
+               .OrderBy( d => d.Name )
+               .ToList()
+               .Select( a => a.ToListItemBag() )
+               .ToList();
+
+            return new Dictionary<string, string>
+            {
+                ["contentChannel"] = selection,
+                ["contentChannelOptions"] = contentChannelOptions.ToCamelCaseJson( false, true )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return data.GetValueOrDefault( "contentChannel", "" );
         }
 
         #endregion

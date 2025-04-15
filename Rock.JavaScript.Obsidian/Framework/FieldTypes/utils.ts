@@ -20,7 +20,7 @@ import { binaryComparisonTypes, containsComparisonTypes, isCompareVisibleForComp
 import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
-import { FilterMode } from "@Obsidian/Core/Reporting/filterMode";
+import { FilterMode } from "@Obsidian/Enums/Reporting/filterMode";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import FieldFilterContainer from "@Obsidian/Controls/fieldFilterContainer.obs";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
@@ -249,7 +249,7 @@ export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonTyp
             /** True if the compare component should be visible. */
             const hasCompareComponent = computed(() => {
                 return comparisonTypes !== null
-                    && props.filterMode !== FilterMode.Simple
+                    && props.filterMode !== FilterMode.SimpleFilter
                     && !isSingleComparisonType(comparisonTypes)
                     && isCompareVisibleForComparisonFilter(comparisonTypes, props.filterMode);
             });
@@ -282,7 +282,7 @@ export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonTyp
                 else {
                     // If the filter mode is simple, then the comparison type is
                     // not shown so we come up with a sane default.
-                    if (props.filterMode === FilterMode.Simple) {
+                    if (props.filterMode === FilterMode.SimpleFilter) {
                         if (comparisonTypes === binaryComparisonTypes) {
                             type = ComparisonType.EqualTo;
                         }

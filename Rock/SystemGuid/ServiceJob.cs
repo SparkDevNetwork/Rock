@@ -472,5 +472,26 @@ namespace Rock.SystemGuid
         /// The job to run Post v17.1 Data Migrations to migrate login history from the History table to the HistoryLogin table.
         /// </summary>
         public const string DATA_MIGRATIONS_171_MIGRATE_LOGIN_HISTORY = "D5E7B461-748F-4A01-BA3F-FA7BEF6AC0F0";
+
+        /// <summary>
+        /// The job to run Post v17.1 Data Migrations to update an existing index on the CommunicationRecipient table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_171_UPDATE_COMMUNICATIONRECIPIENT_INDEX = "EB00BD84-D89C-44B4-8C0C-56322074C9C4";
+
+        /// <summary>
+        /// The job to run Post v17.1 Data Migrations to add an index on the CommunicationRecipient table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_171_ADD_COMMUNICATIONRECIPIENT_INDEX = "9C04D469-FB52-438E-B725-D4211139A933";
+
+        /// <summary>
+        /// The job to run Post v17.1 Data Migration to upset the Attendance Occurrence
+        /// table with RootGroupTypeId values for existing data.
+        /// </summary>
+        public const string DATA_MIGRATIONS_171_POPULATE_ATTENDANCE_ROOT_GROUP_TYPE = "e6755275-02ca-4159-af16-1e4cdcfa22d0";
+
+        /// <summary>
+        /// The Job to run Post v17.1 Data Migrations to chop Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_171_CHOP_OBSIDIAN_BLOCKS = "C5AE8BF4-C83C-4695-9233-1B1D5D2801D7";
     }
 }

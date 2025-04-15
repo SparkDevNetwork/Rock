@@ -33,6 +33,7 @@ import { EmailEditorGetFutureAttendanceOccurrencesOptionsBag } from "@Obsidian/V
 import { EmailEditorCreateAttendanceOccurrenceOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorCreateAttendanceOccurrenceOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { Guid } from "@Obsidian/Types";
+import { findComponentInnerWrappers, getImageComponentHelper, getSectionComponentHelper, getTextComponentHelper, getTitleComponentHelper } from "./utils.partial";
 
 type ElementBinaryFileInfo = {
     binaryFile: ListItemBag | null | undefined;
@@ -214,48 +215,260 @@ export async function createStarterSections(document: Document): Promise<HttpRes
         text: "Starter Sections"
     } as const;
 
+    const sectionComponentHelper = getSectionComponentHelper();
+    const imageComponentHelper = getImageComponentHelper();
+    const titleComponentHelper = getTitleComponentHelper();
+    const textComponentHelper = getTextComponentHelper();
+
+    const starterHeroSectionComponent = sectionComponentHelper.createComponentElement("section");
+    const elements = sectionComponentHelper.getElements(starterHeroSectionComponent);
+    if (elements) {
+        elements.marginWrapper.table.setAttribute("data-email-section-guid", "acae542b-51e3-4bb2-99b3-ff420a85d019");
+        const column = elements.rowWrapper?.querySelector(".columns") as HTMLTableCellElement;
+        if (column) {
+            const wrappers = findComponentInnerWrappers(column);
+            if (wrappers) {
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.textAlign = "center";
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.setAttribute("align", "center");
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.padding = "8px";
+
+                const dropzone = wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(".dropzone") as HTMLElement;
+
+                if (dropzone) {
+                    const imageComponent = imageComponentHelper.createComponentElement();
+                    dropzone.appendChild(imageComponent);
+
+                    const titleComponent = titleComponentHelper.createComponentElement();
+                    const titleElements = titleComponentHelper.getElements(titleComponent);
+                    if (titleElements) {
+                        titleElements.marginWrapper.td.style.padding = "12px 0px 0px";
+                        if (titleElements.headingEl) {
+                            titleElements.headingEl.innerText = "Item Title 1";
+                        }
+                    }
+                    dropzone.appendChild(titleComponent);
+
+                    const textComponent = textComponentHelper.createComponentElement();
+                    const textElements = textComponentHelper.getElements(textComponent);
+                    if (textElements?.contentWrapper) {
+                        textElements.contentWrapper.innerHTML = `<p style="margin: 0;">Join us in a welcoming community.</p>`;
+                    }
+                    dropzone.appendChild(textComponent);
+                }
+            }
+        }
+    }
+
     const result1 = await createEmailSectionAndThumbnail(document, {
         guid: EmailSection.StarterHero,
         category: starterSectionsCategory,
         isSystem: true,
         name: "Starter Hero",
-        sourceMarkup: `<div class="component component-section selected" data-state="component" style="" data-email-section-guid="acae542b-51e3-4bb2-99b3-ff420a85d019"><table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0;" width="100%">
-    <tbody>
-        <tr>
-            <td class="dropzone columns small-12 start last large-12" valign="top" width="100%" style="text-align: center; padding: 8px;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 1</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td>
-        </tr>
-    </tbody>
-</table></div>`,
+        sourceMarkup: starterHeroSectionComponent.outerHTML,
         usageSummary: "Single-column layout with an image, title, and summary. Ideal for a bold, welcoming introduction."
     });
+
+    const starterStandardPromoSectionComponent = sectionComponentHelper.createComponentElement("two-column-section");
+    const elements2 = sectionComponentHelper.getElements(starterStandardPromoSectionComponent);
+    if (elements2) {
+        elements2.marginWrapper.table.setAttribute("data-email-section-guid", "6cbe0906-9a9a-4b67-91af-fabd4936dec9");
+        const columns = elements2.rowWrapper?.querySelectorAll(".columns");
+
+        const column1 = columns?.item(0) as HTMLTableCellElement;
+        const column2 = columns?.item(1) as HTMLTableCellElement;
+
+        if (column1) {
+            const wrappers = findComponentInnerWrappers(column1);
+            if (wrappers) {
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.textAlign = "center";
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.setAttribute("align", "center");
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.padding = "8px";
+
+                const dropzone = wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(".dropzone") as HTMLElement;
+
+                if (dropzone) {
+                    const imageComponent = imageComponentHelper.createComponentElement();
+                    dropzone.appendChild(imageComponent);
+
+                    const titleComponent = titleComponentHelper.createComponentElement();
+                    const titleElements = titleComponentHelper.getElements(titleComponent);
+                    if (titleElements) {
+                        titleElements.marginWrapper.td.style.padding = "12px 0px 0px";
+                        if (titleElements.headingEl) {
+                            titleElements.headingEl.innerText = "Item Title 1";
+                        }
+                    }
+                    dropzone.appendChild(titleComponent);
+
+                    const textComponent = textComponentHelper.createComponentElement();
+                    const textElements = textComponentHelper.getElements(textComponent);
+                    if (textElements?.contentWrapper) {
+                        textElements.contentWrapper.innerHTML = `<p style="margin: 0;">Join us in a welcoming community.</p>`;
+                    }
+                    dropzone.appendChild(textComponent);
+                }
+            }
+        }
+
+        if (column2) {
+            const wrappers = findComponentInnerWrappers(column2);
+            if (wrappers) {
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.textAlign = "center";
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.setAttribute("align", "center");
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.padding = "8px";
+
+                const dropzone = wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(".dropzone") as HTMLElement;
+
+                if (dropzone) {
+                    const imageComponent = imageComponentHelper.createComponentElement();
+                    dropzone.appendChild(imageComponent);
+
+                    const titleComponent = titleComponentHelper.createComponentElement();
+                    const titleElements = titleComponentHelper.getElements(titleComponent);
+                    if (titleElements) {
+                        titleElements.marginWrapper.td.style.padding = "12px 0px 0px";
+                        if (titleElements.headingEl) {
+                            titleElements.headingEl.innerText = "Item Title 2";
+                        }
+                    }
+                    dropzone.appendChild(titleComponent);
+
+                    const textComponent = textComponentHelper.createComponentElement();
+                    const textElements = textComponentHelper.getElements(textComponent);
+                    if (textElements?.contentWrapper) {
+                        textElements.contentWrapper.innerHTML = `<p style="margin: 0;">Join us in a welcoming community.</p>`;
+                    }
+                    dropzone.appendChild(textComponent);
+                }
+            }
+        }
+    }
 
     const result2 = await createEmailSectionAndThumbnail(document, {
         guid: EmailSection.StarterStandardPromo,
         category: starterSectionsCategory,
         isSystem: true,
         name: "Starter Standard Promo",
-        sourceMarkup: `<div class="component component-section selected" data-state="component" style="" data-email-section-guid="6cbe0906-9a9a-4b67-91af-fabd4936dec9"><table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0;" width="100%">
-    <tbody>
-        <tr>
-            <td class="dropzone columns small-12 start large-6" valign="top" width="50%" style="text-align: center; padding: 8px; width: 50%;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 1</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td><td class="dropzone columns small-12 last large-6" valign="top" width="50%" style="padding: 8px; width: 50%; text-align: center;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 2</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td>
-        </tr>
-    </tbody>
-</table></div>`,
+        sourceMarkup: starterStandardPromoSectionComponent.outerHTML,
         usageSummary: "Two-column layout with an image, title, and summary. Perfect for promoting multiple offerings side-by-side."
     });
+
+    const starter3ColumnPromoSectionComponent = sectionComponentHelper.createComponentElement("three-column-section");
+    const elements3 = sectionComponentHelper.getElements(starter3ColumnPromoSectionComponent);
+    if (elements3) {
+        elements3.marginWrapper.table.setAttribute("data-email-section-guid", "63c1ebf8-0398-4039-9fba-a99886ed7106");
+        const columns = elements3.rowWrapper?.querySelectorAll(".columns");
+
+        const column1 = columns?.item(0) as HTMLTableCellElement;
+        const column2 = columns?.item(1) as HTMLTableCellElement;
+        const column3 = columns?.item(2) as HTMLTableCellElement;
+
+        if (column1) {
+            const wrappers = findComponentInnerWrappers(column1);
+            if (wrappers) {
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.textAlign = "center";
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.setAttribute("align", "center");
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.padding = "8px";
+
+                const dropzone = wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(".dropzone") as HTMLElement;
+
+                if (dropzone) {
+                    const imageComponent = imageComponentHelper.createComponentElement();
+                    dropzone.appendChild(imageComponent);
+
+                    const titleComponent = titleComponentHelper.createComponentElement();
+                    const titleElements = titleComponentHelper.getElements(titleComponent);
+                    if (titleElements) {
+                        titleElements.marginWrapper.td.style.padding = "12px 0px 0px";
+                        if (titleElements.headingEl) {
+                            titleElements.headingEl.innerText = "Item Title 1";
+                        }
+                    }
+                    dropzone.appendChild(titleComponent);
+
+                    const textComponent = textComponentHelper.createComponentElement();
+                    const textElements = textComponentHelper.getElements(textComponent);
+                    if (textElements?.contentWrapper) {
+                        textElements.contentWrapper.innerHTML = `<p style="margin: 0;">Join us in a welcoming community.</p>`;
+                    }
+                    dropzone.appendChild(textComponent);
+                }
+            }
+        }
+
+        if (column2) {
+            const wrappers = findComponentInnerWrappers(column2);
+            if (wrappers) {
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.textAlign = "center";
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.setAttribute("align", "center");
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.padding = "8px";
+
+                const dropzone = wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(".dropzone") as HTMLElement;
+
+                if (dropzone) {
+                    const imageComponent = imageComponentHelper.createComponentElement();
+                    dropzone.appendChild(imageComponent);
+
+                    const titleComponent = titleComponentHelper.createComponentElement();
+                    const titleElements = titleComponentHelper.getElements(titleComponent);
+                    if (titleElements) {
+                        titleElements.marginWrapper.td.style.padding = "12px 0px 0px";
+                        if (titleElements.headingEl) {
+                            titleElements.headingEl.innerText = "Item Title 2";
+                        }
+                    }
+                    dropzone.appendChild(titleComponent);
+
+                    const textComponent = textComponentHelper.createComponentElement();
+                    const textElements = textComponentHelper.getElements(textComponent);
+                    if (textElements?.contentWrapper) {
+                        textElements.contentWrapper.innerHTML = `<p style="margin: 0;">Join us in a welcoming community.</p>`;
+                    }
+                    dropzone.appendChild(textComponent);
+                }
+            }
+        }
+
+        if (column3) {
+            const wrappers = findComponentInnerWrappers(column3);
+            if (wrappers) {
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.textAlign = "center";
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.setAttribute("align", "center");
+                wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.padding = "8px";
+
+                const dropzone = wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(".dropzone") as HTMLElement;
+
+                if (dropzone) {
+                    const imageComponent = imageComponentHelper.createComponentElement();
+                    dropzone.appendChild(imageComponent);
+
+                    const titleComponent = titleComponentHelper.createComponentElement();
+                    const titleElements = titleComponentHelper.getElements(titleComponent);
+                    if (titleElements) {
+                        titleElements.marginWrapper.td.style.padding = "12px 0px 0px";
+                        if (titleElements.headingEl) {
+                            titleElements.headingEl.innerText = "Item Title 3";
+                        }
+                    }
+                    dropzone.appendChild(titleComponent);
+
+                    const textComponent = textComponentHelper.createComponentElement();
+                    const textElements = textComponentHelper.getElements(textComponent);
+                    if (textElements?.contentWrapper) {
+                        textElements.contentWrapper.innerHTML = `<p style="margin: 0;">Join us in a welcoming community.</p>`;
+                    }
+                    dropzone.appendChild(textComponent);
+                }
+            }
+        }
+    }
 
     const result3 = await createEmailSectionAndThumbnail(document, {
         guid: EmailSection.Starter3ColumnPromo,
         category: starterSectionsCategory,
         isSystem: true,
         name: "Starter 3-Column Promo",
-        sourceMarkup: `<div><div class="component component-section selected" data-state="component" style="" data-email-section-guid="63c1ebf8-0398-4039-9fba-a99886ed7106"><table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0;" width="100%">
-    <tbody>
-        <tr>
-            <td class="dropzone columns small-12 start large-4" valign="top" width="33.33333333333333%" style="text-align: center; padding: 8px; width: 33.3333%;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 1</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td><td class="dropzone columns small-12 large-4" valign="top" width="33.33333333333333%" style="padding: 8px; width: 33.3333%; text-align: center;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 2</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td><td class="dropzone columns small-12 last large-4" valign="top" width="33.33333333333333%" style="width: 33.3333%; text-align: center; padding: 8px;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 3</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td>
-        </tr>
-    </tbody>
-</table></div></div>`,
+        sourceMarkup: starter3ColumnPromoSectionComponent.outerHTML,
         usageSummary: "3-column layout with an image, title, and summary. Perfect for promoting multiple offerings side-by-side."
     });
 

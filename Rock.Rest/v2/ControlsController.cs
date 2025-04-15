@@ -2633,58 +2633,12 @@ namespace Rock.Rest.v2
                     items.Add( new CampusAccountAmountPickerGetAccountsResultItemBag
                     {
                         Name = accountAmountLabel,
-                        Value = account.Guid,
-                        CampusAccounts = GetCampusAccounts( account, campuses )
+                        Value = account.Guid
                     } );
                 }
 
                 return Ok( items );
             }
-        }
-
-        private Dictionary<Guid, ListItemBag> GetCampusAccounts( FinancialAccount baseAccount, List<CampusCache> campuses )
-        {
-            var results = new Dictionary<Guid, ListItemBag>();
-
-            foreach ( var campus in campuses )
-            {
-                results.Add( campus.Guid, GetBestMatchingAccountForCampusFromDisplayedAccount( campus.Id, baseAccount ) );
-            }
-
-            return results;
-        }
-
-        private ListItemBag GetBestMatchingAccountForCampusFromDisplayedAccount( int campusId, FinancialAccount baseAccount )
-        {
-            if ( baseAccount.CampusId.HasValue && baseAccount.CampusId == campusId )
-            {
-                // displayed account is directly associated with selected campusId, so return it
-                return GetAccountListItemBag( baseAccount );
-            }
-            else
-            {
-                // displayed account doesn't have a campus (or belongs to another campus). Find first active matching child account
-                var firstMatchingChildAccount = baseAccount.ChildAccounts.Where( a => a.IsActive ).FirstOrDefault( a => a.CampusId.HasValue && a.CampusId == campusId );
-                if ( firstMatchingChildAccount != null )
-                {
-                    // one of the child accounts is associated with the campus so, return the child account
-                    return GetAccountListItemBag( firstMatchingChildAccount );
-                }
-                else
-                {
-                    // none of the child accounts is associated with the campus so, return the displayed account
-                    return GetAccountListItemBag( baseAccount );
-                }
-            }
-        }
-
-        private ListItemBag GetAccountListItemBag( FinancialAccount account )
-        {
-            return new ListItemBag
-            {
-                Text = account.Name,
-                Value = account.Guid.ToString()
-            };
         }
 
         #endregion
@@ -7975,9 +7929,7 @@ namespace Rock.Rest.v2
                 .Where( p => p.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( p, Security.Authorization.VIEW ) == true )
                 .ToList();
             List<TreeItemBag> pageItemList = new List<TreeItemBag>();
-            Func<Page, string> getTreeItemValue = options.UseIntegerIds
-                ? new Func<Page, string>( p => p.Id.ToString() )
-                : new Func<Page, string>( p => p.Guid.ToString() );
+            Func<Page, string> getTreeItemValue = new Func<Page, string>( p => p.Guid.ToString() );
             foreach ( var page in pageList )
             {
                 var pageItem = new TreeItemBag();
@@ -7995,9 +7947,7 @@ namespace Rock.Rest.v2
                     p.ParentPageId.HasValue &&
                     resultIds.Contains( p.ParentPageId.Value ) );
 
-            var pageIdentifiersWithChildren = options.UseIntegerIds
-                ? qryHasChildren.Select( p => p.ParentPage.Id.ToString() ).Distinct().ToList()
-                : qryHasChildren.Select( p => p.ParentPage.Guid.ToString() ).Distinct().ToList();
+            var pageIdentifiersWithChildren = qryHasChildren.Select( p => p.ParentPage.Guid.ToString() ).Distinct().ToList();
 
             foreach ( var g in pageItemList )
             {

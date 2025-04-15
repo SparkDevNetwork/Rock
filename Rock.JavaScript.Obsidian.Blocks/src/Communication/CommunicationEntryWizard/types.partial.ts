@@ -74,6 +74,7 @@ export type PersonPreferencesHelper = {
 export type InvokeBlockActionHelper = {
     cancelMetricsReminder(communicationGuid: Guid): Promise<HttpResult<void>>;
     checkShortLinkToken(bag: CommunicationEntryWizardCheckShortLinkTokenBag): Promise<HttpResult<string>>;
+    getShortLinkPageId(pageGuid: Guid): Promise<HttpResult<number | null | undefined>>;
     getCommunicationTemplate(communicationTemplateGuid: Guid): Promise<HttpResult<CommunicationEntryWizardCommunicationTemplateDetailBag>>;
     getEmailPreviewHtml(bag: CommunicationEntryWizardCommunicationBag): Promise<HttpResult<CommunicationEntryWizardGetEmailPreviewHtmlBag | null | undefined>>;
     getRecipient(personAliasGuid: Guid): Promise<HttpResult<CommunicationEntryWizardRecipientBag>>;
@@ -89,4 +90,16 @@ export type InvokeBlockActionHelper = {
     }): Promise<HttpResult<void>>;
     saveAsCommunicationTemplate(bag: CommunicationEntryWizardCommunicationTemplateDetailBag): Promise<HttpResult<CommunicationEntryWizardSaveCommunicationTemplateResponseBag>>;
     saveCommunicationTemplate(bag: CommunicationEntryWizardCommunicationTemplateDetailBag): Promise<HttpResult<CommunicationEntryWizardSaveCommunicationTemplateResponseBag>>;
+};
+
+export type Cache<T> = {
+    has(key: string): boolean;
+    get(key: string): T | undefined;
+    set(key: string, value: T): void;
+    remove(key: string): void;
+    clear(): void;
+};
+
+export type CacheOptions = {
+    maxSize: number;
 };
