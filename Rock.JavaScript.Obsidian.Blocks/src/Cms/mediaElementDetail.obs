@@ -1,0 +1,561 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+
+    <RockForm @submit="onSave" :formResetKey="resetKey">
+        <Panel type="block" :title="panelName" :headerSecondaryActions="blockLabels">
+            <template #headerActions>
+                <template v-if="mediaElementViewBag?.closeCaption">
+                    <a target="_blank"><span class="label label-info"><i class="fa fa-cc fa-lg"></i></span></a>
+                </template>
+                <template v-if="mediaElementViewBag?.durationSeconds">
+                    <span class="label label-default ml-1">{{ formatDuration(mediaElementViewBag.durationSeconds) }}</span>
+                </template>
+            </template>
+            <template #default>
+                <TabbedContent :tabs="tabs" v-model:selectedTab="selectedTab" selectedTabQueryParameterKey="tab">
+                    <template #tabpane="{ item }">
+                        <div v-if="item === 'Overview'">
+                            <div class="row">
+                                <div v-if="mediaUrl" class="col-md-6">
+                                    <MediaPlayer
+                                                 :mediaUrl="mediaUrl"
+                                                 :thumbnailUrl="thumbnailUrl" />
+                                </div>
+                                <div :class="{ 'col-md-6': mediaUrl, 'col-md-12': !mediaUrl }">
+                                    <div v-if="!showNoStatsMessage">
+                                        <h5 class="mb-2">Rock Media Analytics</h5>
+                                        <Kpi :value="engagementValue" label="Engagement" tooltip="Engagement statistics for this media." iconCssClass="fa fa-broadcast-tower" color="blue" isCard />
+                                        <Kpi :value="playCount" label="Plays" tooltip="Number of times this media has been played." iconCssClass="fa fa-play-circle" color="green" isCard />
+                                        <Kpi :value="minutesWatched" label="Minutes Watched" tooltip="Total minutes watched based on duration data." iconCssClass="fa fa-clock" color="orange" isCard />
+                                    </div>
+                                    <div v-else class="alert alert-info mt-2">
+                                        No statistical data is available yet.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr v-if="!showNoStatsMessage" class="my-3">
+
+                            <div v-if="!showNoStatsMessage" class="row">
+                                <div class="col-md-12">
+                                    <h5>Plays Per Day</h5>
+
+                                    <TrendChart :data="playCount" :labels="Date" />
+                                </div>
+                            </div>
+
+                            <hr v-if="!showNoStatsMessage" class="my-3">
+
+                            <div v-if="!showNoStatsMessage" class="row">
+                                <div class="col-md-12">
+                                    <h5>Individual Plays</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else-if="item === 'Media Assets'">
+                            <ViewPanel v-if="panelMode === DetailPanelMode.View"
+                                       :modelValue="mediaElementViewBag ?? undefined"
+                                       :options="options" />
+                            <EditPanel v-else
+                                       v-model="mediaElementEditBag"
+                                       :options="options" />
+                        </div>
+                        <div v-else-if="item === 'Transcription'">
+                            <TextBox v-model="text" label="Transcription Text" textMode="multiline" size="large" :rows="25" />
+                        </div>
+                    </template>
+                </TabbedContent>
+
+                <Modal v-model="showAuditDetailsModal" title="Audit Details">
+                    <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
+                </Modal>
+            </template>
+            <template #footerActions>
+                <div v-if="panelMode === DetailPanelMode.Edit && selectedTab === 'Media Assets'">
+                    <RockButton v-if="isEditable"
+                                :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onStartSubmitForm">
+                        Save
+                    </RockButton>
+                    <RockButton v-if="isEditable"
+                                :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Link"
+                                @click="onCancelEdit">
+                        Cancel
+                    </RockButton>
+                </div>
+
+                <div v-else-if="panelMode === DetailPanelMode.View && isEditable && selectedTab === 'Media Assets'">
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onEdit">
+                        Edit
+                    </RockButton>
+                </div>
+
+                <div v-else-if="selectedTab === 'Transcription'">
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                :isLoading="isSavingTranscription"
+                                @click="onSaveTranscription">
+                        Save Transcription
+                    </RockButton>
+                </div>
+            </template>
+        </Panel>
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./MediaElementDetail/editPanel.partial.obs";
+    import ViewPanel from "./MediaElementDetail/viewPanel.partial.obs";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { MediaElementBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementBag";
+    import { MediaElementDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import { NavigationUrlKey } from "./MediaElementDetail/types.partial";
+    import MediaPlayer from "@Obsidian/Controls/mediaPlayer.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const config = useConfigurationValues<DetailBlockBox<MediaElementBag, MediaElementDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+    const tabs = ref(["Overview", "Media Assets", "Transcription"]);
+    const selectedTab = ref(new URLSearchParams(window.location.search).get("tab") ?? "Overview");
+    const showAuditDetailsModal = ref(false);
+    const entityTypeGuid = EntityType.MediaElement;
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const mediaElementViewBag = ref(config.entity);
+
+    const mediaElementEditBag = ref<ValidPropertiesBox<MediaElementBag>>({
+        bag: {} as MediaElementBag
+    });
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const text = ref(mediaElementViewBag.value?.transcriptionText ?? "");
+    const isSavingTranscription = ref(false);
+
+    const resetKey = ref("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return mediaElementViewBag.value?.name ?? "";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return mediaElementViewBag.value?.idKey ?? "";
+    });
+
+    /**
+     * The media URL from the first item in fileDataJson
+     */
+    const mediaUrl = computed((): string => {
+        try {
+            if (mediaElementViewBag.value?.fileDataJson) {
+                const fileData = JSON.parse(mediaElementViewBag.value.fileDataJson);
+                if (Array.isArray(fileData) && fileData.length > 0 && fileData[0].url) {
+                    return fileData[0].url;
+                }
+            }
+
+            if (mediaElementViewBag.value?.defaultFileUrl) {
+                return mediaElementViewBag.value.defaultFileUrl;
+            }
+            return "";
+        }
+        catch (error) {
+            return "";
+        }
+    });
+
+    /**
+     * The thumbnail URL from the first item in thumbnailDataJson
+     */
+    const thumbnailUrl = computed((): string => {
+        try {
+            if (mediaElementViewBag.value?.thumbnailDataJson) {
+                const thumbnailData = JSON.parse(mediaElementViewBag.value.thumbnailDataJson);
+                if (Array.isArray(thumbnailData) && thumbnailData.length > 0 && thumbnailData[0].url) {
+                    return thumbnailData[0].url;
+                }
+            }
+
+            if (mediaElementViewBag.value?.defaultThumbnailUrl) {
+                return mediaElementViewBag.value.defaultThumbnailUrl;
+            }
+
+            return "";
+        }
+        catch (error) {
+            return "";
+        }
+    });
+
+    /**
+     * Get the engagement value from the bag
+     */
+    const engagementValue = computed((): string => {
+        const viewBag = mediaElementViewBag.value as Record<string, unknown>;
+
+        let rawValue = 0;
+        if (viewBag && "engagementStat" in viewBag) {
+            rawValue = viewBag.engagementStat as number;
+        }
+
+        const value = parseFloat(String(rawValue));
+        return isNaN(value) ? "0.0%" : `${value.toFixed(1)}%`;
+    });
+
+    /**
+     * Calculate the minutes watched based on durationSeconds from the bag
+     */
+    const minutesWatched = computed((): string => {
+        try {
+            const viewBag = mediaElementViewBag.value as Record<string, unknown>;
+            if (viewBag && "minutesWatchedText" in viewBag) {
+                return String(viewBag.minutesWatchedText);
+            }
+
+            const durationSeconds = mediaElementViewBag.value?.durationSeconds;
+
+            if (!durationSeconds) {
+                return "0";
+            }
+
+            const minutes = Math.round(durationSeconds / 60);
+            return minutes.toString();
+        }
+        catch (error) {
+            return "0";
+        }
+    });
+
+    /**
+     * Get the play count from the bag
+     */
+    const playCount = computed((): string => {
+        try {
+            const viewBag = mediaElementViewBag.value as Record<string, unknown>;
+            if (viewBag && "playCountText" in viewBag) {
+                return String(viewBag.playCountText);
+            }
+
+            if (mediaElementViewBag.value?.metricData) {
+                return mediaElementViewBag.value.metricData.toString() || "0";
+            }
+
+            return "0";
+        }
+        catch (error) {
+            return "0";
+        }
+    });
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const actions: PanelAction[] = [];
+
+        if (mediaElementViewBag?.value?.idKey) {
+            actions.push({
+                type: "default",
+                title: "Audit Details",
+                handler: onAuditClick
+            });
+        }
+
+        return actions;
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): MediaElementDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    /**
+     * Determines whether to show the "No statistical data" message
+     */
+    const showNoStatsMessage = computed((): boolean => {
+        try {
+            // Check engagement value
+            const viewBag = mediaElementViewBag.value as Record<string, unknown>;
+            const hasEngagementStat = viewBag && "engagementStat" in viewBag && viewBag.engagementStat !== null && viewBag.engagementStat !== undefined;
+            if (hasEngagementStat) {
+                const engagementValue = parseFloat(String(viewBag.engagementStat));
+                if (!isNaN(engagementValue) && engagementValue > 0) {
+                    return false;
+                }
+            }
+
+            // Check play count
+            const hasPlayCount = viewBag && "playCountText" in viewBag && viewBag.playCountText !== null && viewBag.playCountText !== undefined;
+            if (hasPlayCount) {
+                const playCount = String(viewBag.playCountText).trim();
+                if (playCount !== "" && playCount !== "0") {
+                    return false;
+                }
+            }
+
+            // Check minutes watched
+            const hasMinutesWatched = viewBag && "minutesWatchedText" in viewBag && viewBag.minutesWatchedText !== null && viewBag.minutesWatchedText !== undefined;
+            if (hasMinutesWatched) {
+                const minutesWatched = String(viewBag.minutesWatchedText).trim();
+                if (minutesWatched !== "" && minutesWatched !== "0") {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        catch (error) {
+            return true;
+        }
+    });
+
+    const onAuditClick = (): void => {
+        showAuditDetailsModal.value = true;
+    };
+
+    function resetForm(): void {
+        resetKey.value = newGuid();
+    }
+
+    /**
+     * Resets the panel back to view mode and clears any edits
+     */
+    function resetToViewMode(): void {
+        resetForm();
+        panelMode.value = DetailPanelMode.View;
+        mediaElementEditBag.value = {
+            bag: {} as MediaElementBag,
+            validProperties: []
+        };
+    }
+
+    /**
+     * Formats a duration in seconds to a minutes and seconds string.
+     * @param seconds The duration in seconds
+     * @returns A formatted string in the format "Xm Ys" or "Ys" if less than a minute
+     */
+    function formatDuration(seconds: number | null | undefined): string {
+        if (!seconds) {
+            return "";
+        }
+
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+
+        if (minutes > 0) {
+            return `${minutes}m ${remainingSeconds}s`;
+        }
+        else {
+            return `${remainingSeconds}s`;
+        }
+    }
+
+    /**
+     * Event handler for the Save button being clicked. Triggers the form submission.
+     */
+    function onStartSubmitForm(): void {
+        onSave();
+    }
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Event handler for saving the transcription text.
+     */
+    async function onSaveTranscription(): Promise<void> {
+        errorMessage.value = "";
+        isSavingTranscription.value = true;
+
+        try {
+            const updatedBag: MediaElementBag = {
+                idKey: mediaElementViewBag.value?.idKey,
+                name: mediaElementViewBag.value?.name,
+                description: mediaElementViewBag.value?.description,
+                closeCaption: mediaElementViewBag.value?.closeCaption,
+                defaultFileUrl: mediaElementViewBag.value?.defaultFileUrl,
+                defaultThumbnailUrl: mediaElementViewBag.value?.defaultThumbnailUrl,
+                durationSeconds: mediaElementViewBag.value?.durationSeconds,
+                fileDataJson: mediaElementViewBag.value?.fileDataJson,
+                mediaFolder: mediaElementViewBag.value?.mediaFolder,
+                mediaFolderId: mediaElementViewBag.value?.mediaFolderId ?? 0,
+                metricData: mediaElementViewBag.value?.metricData,
+                sourceCreatedDateTime: mediaElementViewBag.value?.sourceCreatedDateTime,
+                sourceData: mediaElementViewBag.value?.sourceData,
+                sourceKey: mediaElementViewBag.value?.sourceKey,
+                sourceModifiedDateTime: mediaElementViewBag.value?.sourceModifiedDateTime,
+                thumbnailDataJson: mediaElementViewBag.value?.thumbnailDataJson,
+                transcriptionText: text.value,
+                attributes: mediaElementViewBag.value?.attributes,
+                attributeValues: mediaElementViewBag.value?.attributeValues
+            };
+
+            const result = await invokeBlockAction<ValidPropertiesBox<MediaElementBag>>("Save", {
+                box: {
+                    bag: updatedBag,
+                    validProperties: ["TranscriptionText"]
+                }
+            });
+
+            if (result.isSuccess && result.data && typeof result.data === "object") {
+                mediaElementViewBag.value = result.data.bag;
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "Unknown error while trying to save transcription.";
+            }
+        }
+        finally {
+            isSavingTranscription.value = false;
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<void> {
+
+        if (!mediaElementEditBag.value.bag?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.ParentPage]);
+            }
+
+            return;
+        }
+
+        resetToViewMode();
+        return;
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<void> {
+        const result = await invokeBlockAction<ValidPropertiesBox<MediaElementBag>>("Edit", {
+            key: mediaElementViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            mediaElementEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+            panelMode.value = DetailPanelMode.Edit;
+            return;
+        }
+        else {
+            return;
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<void> {
+        errorMessage.value = "";
+
+        try {
+            if (!mediaElementEditBag.value?.validProperties?.length) {
+                errorMessage.value = "No changes detected to save.";
+                return;
+            }
+
+            const result = await invokeBlockAction<ValidPropertiesBox<MediaElementBag> | string>("Save", {
+                box: mediaElementEditBag.value
+            });
+
+            if (result.isSuccess && result.data && result.statusCode === 200 && typeof result.data === "object") {
+                mediaElementViewBag.value = result.data.bag;
+                resetToViewMode();
+                return;
+            }
+
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save media element.";
+        }
+        catch (error) {
+            errorMessage.value = "An unexpected error occurred while saving.";
+        }
+    }
+
+    // Add a watcher to update the text when the view bag changes
+    watch(() => mediaElementViewBag.value?.transcriptionText, (newValue) => {
+        text.value = newValue ?? "";
+    });
+
+    // Watch for tab changes and reset edit mode when leaving Media Assets tab
+    watch(() => selectedTab.value, (newTab, oldTab) => {
+        if (oldTab === "Media Assets" && panelMode.value === DetailPanelMode.Edit) {
+            resetToViewMode();
+        }
+    });
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified media element could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        mediaElementEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>
+
+<style></style>

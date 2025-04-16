@@ -59,6 +59,7 @@
     <Compile Include="CheckIn\AgeRestrictionMode.cs" />
     <Compile Include="CheckIn\GradeAndAgeMatchingMode.cs" />
     <Compile Include="CheckIn\LocationSelectionStrategy.cs" />
+    <Compile Include="Cms\MediaElementQuality.cs" />
     <Compile Include="Cms\ThemeFieldType.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\CommunicationPreference.cs" />
     <Compile Include="Blocks\Group\Scheduling\ToolboxActionType.cs" />

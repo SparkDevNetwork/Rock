@@ -1,0 +1,222 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <ValueDetailList :modelValue="topValues" />
+
+        <h6>Media Files</h6>
+        <Grid :data="mediaFileGridData" light emptyDataText="No Media Files">
+            <TextColumn name="quality"
+                        title="Quality"
+                        field="quality"
+                        visiblePriority="xs" />
+            <TextColumn name="format"
+                        title="Format"
+                        field="format"
+                        visiblePriority="xs" />
+            <TextColumn name="dimensions"
+                        title="Dimensions"
+                        field="dimensions"
+                        visiblePriority="xs" />
+            <TextColumn name="size"
+                        title="Size"
+                        field="size"
+                        visiblePriority="xs" />
+            <BooleanColumn name="allowDownload"
+                           title="Allow Download"
+                           field="allowDownload"
+                           visiblePriority="xs" />
+            <TextColumn name="link"
+                        title="Link"
+                        field="link"
+                        visiblePriority="xs" />
+        </Grid>
+
+        <h6>Thumbnail Files</h6>
+        <Grid :data="thumbnailGridData" light emptyDataText="No Thumbnail Files">
+            <TextColumn name="dimensios"
+                        title="Dimension"
+                        field="dimensions"
+                        visiblePriority="xs" />
+            <TextColumn name="size"
+                        title="Size"
+                        field="size"
+                        visiblePriority="xs" />
+            <TextColumn name="link"
+                        title="Link"
+                        field="link"
+                        visiblePriority="xs" />
+        </Grid>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import Grid, { TextColumn, BooleanColumn } from "@Obsidian/Controls/grid";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { MediaElementBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementBag";
+    import { MediaElementDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementDetailOptionsBag";
+    import { MediaElementQualityDescription } from "@Obsidian/Enums/Cms/mediaElementQuality";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<MediaElementBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<MediaElementDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.mediaFolder) {
+            valueBuilder.addTextValue("Folder", props.modelValue.mediaFolder.text ?? "");
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
+        if (props.modelValue.durationSeconds) {
+            const minutes = Math.floor(props.modelValue.durationSeconds / 60);
+            const seconds = props.modelValue.durationSeconds % 60;
+            const durationText = `${minutes}m ${seconds}s`;
+            valueBuilder.addTextValue("Duration", durationText);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The data source for the media files grid */
+    const mediaFileGridData = computed(() => {
+
+        const fileDataJson = props.modelValue?.fileDataJson;
+        if (!fileDataJson) {
+            return { rows: [] };
+        }
+
+        try {
+            const rawData = JSON.parse(fileDataJson);
+
+            if (!Array.isArray(rawData)) {
+                return { rows: [] };
+            }
+
+            const result = rawData.map((item: Record<string, unknown>) => {
+                const qualityNumber = Number(item.Quality);
+                const qualityText = MediaElementQualityDescription[qualityNumber] || "Unknown";
+
+                let displaySize = "";
+                if (item.Size && Number(item.Size) !== 0) {
+                    const sizeNum = Number(item.Size);
+                    displaySize = formatAsMemorySize(sizeNum);
+                }
+
+                return {
+                    quality: qualityText,
+                    format: item.Format,
+                    dimensions: item.Width && item.Height ? `${item.Width}x${item.Height}` : "",
+                    size: displaySize,
+                    allowDownload: item.AllowDownload,
+                    link: item.Link
+                };
+            });
+
+            const gridData = { rows: result };
+
+            return gridData;
+        }
+        catch (error) {
+
+            return { rows: [] };
+        }
+    });
+
+    /** The data source for the thumbnail files grid */
+    const thumbnailGridData = computed(() => {
+
+        const thumbnailDataJson = props.modelValue?.thumbnailDataJson;
+        if (!thumbnailDataJson) {
+
+            return { rows: [] };
+        }
+
+        try {
+            const thumbnailData = JSON.parse(thumbnailDataJson);
+
+            if (!Array.isArray(thumbnailData)) {
+                return { rows: [] };
+            }
+
+            const result = thumbnailData.map((item: Record<string, unknown>) => {
+                const sizeNum = Number(item.Size);
+                let displaySize = "";
+                if (sizeNum && sizeNum !== 0) {
+                    displaySize = formatAsMemorySize(sizeNum);
+                }
+
+                const width = Number(item.Width);
+                const height = Number(item.Height);
+                const dimensions = (width && height) ? `${width}x${height}` : "";
+
+                return {
+                    dimensions,
+                    size: displaySize,
+                    link: item.Link
+                };
+            });
+
+            const gridData = { rows: result };
+            return gridData;
+        }
+        catch (error) {
+            return { rows: [] };
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Formats a number of bytes into a human-readable string
+     * @param bytes The size in bytes
+     * @returns A formatted string like "1234 bytes" or "1234.5 bytes"
+     */
+    function formatAsMemorySize(bytes: number): string {
+        if (bytes < 0) {
+            return "-" + formatAsMemorySize(-bytes);
+        }
+
+        if (bytes === 0) {
+            return "0 bytes";
+        }
+
+        if (bytes % 1 === 0) {
+            return `${bytes} bytes`;
+        }
+
+        return `${bytes.toFixed(1)} bytes`;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

@@ -17,7 +17,7 @@
 
 using System.ComponentModel;
 
-namespace Rock.Media
+namespace Rock.Enums.Cms
 {
     /// <summary>
     /// The quality of the media file.
@@ -28,7 +28,7 @@ namespace Rock.Media
     /// <para>In each quality, the results will be further sorted by <see cref="MediaElementFileData.Width" />
     /// in descending order.</para>
     /// </remarks>
-    /// This is the original MediaElementQuality Enum. If changes are made, make the same changes here and on the copy here: <see cref="Rock.Enums.Cms.MediaElementQuality"/>.
+    /// This is a copy of the original <see cref="Rock.Media.MediaElementQuality"/>. If changes are made, make the same changes here and on the original.
     public enum MediaElementQuality
     {
         /// <summary>
@@ -50,19 +50,19 @@ namespace Rock.Media
         /// <summary>
         /// Standard Definition video is defined as below 720p.
         /// </summary>
-        [Description( "Standard Definition" )]
+        [Description("Standard Definition")]
         SD,
 
         /// <summary>
         /// High Definition video is defined as 720p or higher.
         /// </summary>
-        [Description( "High Definition" )]
+        [Description("High Definition")]
         HD,
 
         /// <summary>
         /// Ultra High Definition video is defined as 4K or higher.
         /// </summary>
-        [Description( "Ultra High Definition" )]
+        [Description("Ultra High Definition")]
         UltraHD,
 
         /// <summary>
