@@ -199,8 +199,16 @@ namespace Rock.CheckIn.v2
             // Apply any age restriction filtering.
             if ( TemplateConfiguration.AgeRestriction == AgeRestrictionMode.HideAdults )
             {
+                var thisYear = RockDateTime.Now.Year;
+
+                // If we are hiding adults then we want to hide anyone that has
+                // been classified as an adult. Except if they have a future
+                // graduation date since that probably means they are a
+                // high-schooler that is 18+. While technically an adult, we
+                // would want to include them when allowing check-in of kids.
                 groupMemberQry = groupMemberQry
-                    .Where( gm => gm.Person.AgeClassification != AgeClassification.Adult );
+                    .Where( gm => gm.Person.AgeClassification != AgeClassification.Adult
+                        || ( gm.Person.GraduationYear.HasValue && gm.Person.GraduationYear >= thisYear ) );
             }
             else if ( TemplateConfiguration.AgeRestriction == AgeRestrictionMode.HideChildren )
             {
