@@ -22,7 +22,6 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Mobile;
 using Rock.Model;
 using Rock.ViewModels.Core.Grid;
 using Rock.Web.Cache;
@@ -120,7 +119,12 @@ namespace Rock.Blocks
         }
 
 
-        protected AttributeCache AddGridDataAttribute( string key )
+        /// <summary>
+        /// Builds a grid attribute that should be included on the Grid.
+        /// </summary>
+        /// <param name="key">They Key or GUID of the desired Attribute.</param>
+        /// <returns>An <see cref="AttributeCache"/> object.</returns>
+        protected AttributeCache AddCustomGridAttribute( string key )
         {
             if ( _cachedGridDataAttributes == null )
             {

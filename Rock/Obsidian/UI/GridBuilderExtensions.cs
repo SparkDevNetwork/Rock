@@ -183,9 +183,10 @@ namespace Rock.Obsidian.UI
         /// </summary>
         /// <typeparam name="T">The type of the source collection that will be used to populate the grid.</typeparam>
         /// <param name="builder">The <see cref="GridBuilder{T}"/> to add the field to.</param>
+        /// <param name="key">The key that will be used to access the field in the row.</param>
         /// <param name="attribute">The attribute that should be added to the grid definition.</param>
         /// <returns>A reference to the original <see cref="GridBuilder{T}"/> object that can be used to chain calls.</returns>
-        public static GridBuilder<T> AddAttributeData<T>( this GridBuilder<T> builder, AttributeCache attribute )
+        public static GridBuilder<T> AddCustomAttributeField<T>( this GridBuilder<T> builder, string key, AttributeCache attribute )
             where T : IHasAttributes
         {
             if ( !typeof( IHasAttributes ).IsAssignableFrom( typeof( T ) ) )
@@ -193,7 +194,7 @@ namespace Rock.Obsidian.UI
                 throw new Exception( $"The type '{typeof( T ).FullName}' does not support attributes." );
             }
 
-            return builder.AddAttributeDataFrom( item => ( IHasAttributes ) item, attribute );
+            return builder.AddCustomAttributeFieldFrom( item => ( IHasAttributes ) item, key, attribute );
         }
 
         /// <summary>
@@ -202,15 +203,15 @@ namespace Rock.Obsidian.UI
         /// <typeparam name="T">The type of the source collection that will be used to populate the grid.</typeparam>
         /// <param name="builder">The <see cref="GridBuilder{T}"/> to add the field to.</param>
         /// <param name="selector">The expression to call to get the <see cref="IHasAttributes"/> object from the item.</param>
+        /// <param name="fieldKey">The key that will be used to access the field in the row.</param>
         /// <param name="attribute">The attribute that should be added to the grid definition.</param>
         /// <returns>A reference to the original <see cref="GridBuilder{T}"/> object that can be used to chain calls.</returns>
-        public static GridBuilder<T> AddAttributeDataFrom<T>( this GridBuilder<T> builder, Func<T, IHasAttributes> selector, AttributeCache attribute )
+        public static GridBuilder<T> AddCustomAttributeFieldFrom<T>( this GridBuilder<T> builder, Func<T, IHasAttributes> selector, string fieldKey, AttributeCache attribute )
             where T : IHasAttributes
         {
             var key = attribute.Key;
-            var fieldKey = $"{key}";
 
-            builder.AddData( fieldKey, item =>
+            builder.AddField( fieldKey, item =>
             {
                 var attributesItem = selector( item );
 
@@ -225,11 +226,9 @@ namespace Rock.Obsidian.UI
             {
                 var textFieldTypeGuid = SystemGuid.FieldType.TEXT.AsGuid();
 
-                definition.AttributeData.Add( new AttributeFieldDefinitionBag
+                definition.Fields.Add( new FieldDefinitionBag
                 {
-                    Name = fieldKey,
-                    Title = attribute.Name,
-                    FieldTypeGuid = attribute.FieldType?.Guid ?? textFieldTypeGuid
+                    Name = fieldKey
                 } );
             } );
 
