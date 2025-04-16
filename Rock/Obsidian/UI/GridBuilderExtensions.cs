@@ -60,8 +60,8 @@ namespace Rock.Obsidian.UI
                 string connectionStatus = null;
                 if ( person.ConnectionStatusValueId.HasValue )
                 {
-                    var connectionStatusValue = DefinedValueCache.Get(person.ConnectionStatusValueId.Value );
-                    if (connectionStatusValue != null )
+                    var connectionStatusValue = DefinedValueCache.Get( person.ConnectionStatusValueId.Value );
+                    if ( connectionStatusValue != null )
                     {
                         connectionStatus = connectionStatusValue.Value;
                     }
@@ -174,6 +174,64 @@ namespace Rock.Obsidian.UI
                     } );
                 } );
             }
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds an attribute data field to the grid definition.
+        /// </summary>
+        /// <typeparam name="T">The type of the source collection that will be used to populate the grid.</typeparam>
+        /// <param name="builder">The <see cref="GridBuilder{T}"/> to add the field to.</param>
+        /// <param name="attribute">The attribute that should be added to the grid definition.</param>
+        /// <returns>A reference to the original <see cref="GridBuilder{T}"/> object that can be used to chain calls.</returns>
+        public static GridBuilder<T> AddAttributeData<T>( this GridBuilder<T> builder, AttributeCache attribute )
+            where T : IHasAttributes
+        {
+            if ( !typeof( IHasAttributes ).IsAssignableFrom( typeof( T ) ) )
+            {
+                throw new Exception( $"The type '{typeof( T ).FullName}' does not support attributes." );
+            }
+
+            return builder.AddAttributeDataFrom( item => ( IHasAttributes ) item, attribute );
+        }
+
+        /// <summary>
+        /// Adds an attribute data field to the grid definition.
+        /// </summary>
+        /// <typeparam name="T">The type of the source collection that will be used to populate the grid.</typeparam>
+        /// <param name="builder">The <see cref="GridBuilder{T}"/> to add the field to.</param>
+        /// <param name="selector">The expression to call to get the <see cref="IHasAttributes"/> object from the item.</param>
+        /// <param name="attribute">The attribute that should be added to the grid definition.</param>
+        /// <returns>A reference to the original <see cref="GridBuilder{T}"/> object that can be used to chain calls.</returns>
+        public static GridBuilder<T> AddAttributeDataFrom<T>( this GridBuilder<T> builder, Func<T, IHasAttributes> selector, AttributeCache attribute )
+            where T : IHasAttributes
+        {
+            var key = attribute.Key;
+            var fieldKey = $"{key}";
+
+            builder.AddData( fieldKey, item =>
+            {
+                var attributesItem = selector( item );
+
+                return new
+                {
+                    Value = attributesItem.GetAttributeValue( key ),
+                    Text = attributesItem.GetAttributeTextValue( key )
+                };
+            } );
+
+            builder.AddDefinitionAction( definition =>
+            {
+                var textFieldTypeGuid = SystemGuid.FieldType.TEXT.AsGuid();
+
+                definition.AttributeData.Add( new AttributeFieldDefinitionBag
+                {
+                    Name = fieldKey,
+                    Title = attribute.Name,
+                    FieldTypeGuid = attribute.FieldType?.Guid ?? textFieldTypeGuid
+                } );
+            } );
 
             return builder;
         }

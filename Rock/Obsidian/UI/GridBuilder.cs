@@ -47,6 +47,12 @@ namespace Rock.Obsidian.UI
         private readonly Dictionary<string, Func<T, object>> _fieldActions = new Dictionary<string, Func<T, object>>();
 
         /// <summary>
+        /// The data actions that will be called to generate the additional data
+        /// for each row in the grid.
+        /// </summary>
+        private readonly Dictionary<string, Func<T, object>> _dataActions = new Dictionary<string, Func<T, object>>();
+
+        /// <summary>
         /// The definition actions that will provide additional field definition
         /// information dynamically. These are primarily used to populate the
         /// attribute data.
@@ -89,6 +95,27 @@ namespace Rock.Obsidian.UI
         }
 
         /// <summary>
+        /// Adds a generic data field to the grid definition.
+        /// </summary>
+        /// <param name="name">The unique name of the data field, which will also be used as the row object key.</param>
+        /// <param name="valueExpression">The expression used to generate the cell data from the source object.</param>
+        /// <returns>A reference to the original <see cref="GridBuilder{T}"/> object that can be used to chain calls.</returns>
+        public GridBuilder<T> AddData( string name, Func<T, object> valueExpression )
+        {
+            if ( name.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentException( "Data name must not be null, empty or whitespace.", name );
+            }
+
+            if ( !_dataActions.ContainsKey( name ) )
+            {
+                _dataActions.Add( name, valueExpression );
+            }
+
+            return this;
+        }
+
+        /// <summary>
         /// Adds a custom definition action. This will be called when building
         /// the grid definition to allow additional modifications to the
         /// definitions before it is returned.
@@ -110,6 +137,7 @@ namespace Rock.Obsidian.UI
         public GridDataBag Build( IEnumerable<T> items )
         {
             var fieldKeys = _fieldActions.Keys.ToArray();
+            var dataKeys = _dataActions.Keys.ToArray();
 
             var rows = items
                 .Select( item =>
@@ -127,6 +155,16 @@ namespace Rock.Obsidian.UI
 
                         row[key] = value;
                     }
+
+                    var attr_data = new Dictionary<string, object>( dataKeys.Length );
+
+                    foreach ( var key in dataKeys )
+                    {
+                        var value = _dataActions[key]( item );
+                        attr_data[key] = value;
+                    }
+
+                    row["data_attrs"] = attr_data;
 
                     return row;
                 } )
@@ -150,6 +188,7 @@ namespace Rock.Obsidian.UI
                 Fields = new List<FieldDefinitionBag>(),
                 DynamicFields = new List<DynamicFieldDefinitionBag>(),
                 AttributeFields = new List<AttributeFieldDefinitionBag>(),
+                AttributeData = new List<AttributeFieldDefinitionBag>(),
                 ActionUrls = new Dictionary<string, string>()
             };
 

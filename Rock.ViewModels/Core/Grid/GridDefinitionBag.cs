@@ -48,6 +48,14 @@ namespace Rock.ViewModels.Core.Grid
         public List<AttributeFieldDefinitionBag> AttributeFields { get; set; }
 
         /// <summary>
+        /// Gets or sets the attribute data fields that have been defined on
+        /// the grid. Each attribute data field has a corresponding entry in
+        /// the row's data_attrs object.
+        /// </summary>
+        /// <value>The attribute fields.</value>
+        public List<AttributeFieldDefinitionBag> AttributeData { get; set; }
+
+        /// <summary>
         /// Gets or sets the action urls. These are used as a lookup table for
         /// when a standard action is executed on a set of items. The key is
         /// something known by the Grid internally.

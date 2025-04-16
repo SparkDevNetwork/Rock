@@ -15,12 +15,14 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.ViewModels.Core.Grid;
 using Rock.Web.Cache;
@@ -41,6 +43,8 @@ namespace Rock.Blocks
         /// Contains the cached attributes to be included on the grid.
         /// </summary>
         private List<AttributeCache> _cachedGridAttributes;
+
+        private List<AttributeCache> _cachedGridDataAttributes;
 
         #endregion
 
@@ -115,6 +119,38 @@ namespace Rock.Blocks
             return new List<AttributeCache>();
         }
 
+
+        protected AttributeCache AddGridDataAttribute( string key )
+        {
+            if ( _cachedGridDataAttributes == null )
+            {
+                _cachedGridDataAttributes = new List<AttributeCache>();
+            }
+
+            if ( typeof( IHasAttributes ).IsAssignableFrom( typeof( T ) ) )
+            {
+                var entityTypeId = EntityTypeCache.Get<T>( false )?.Id;
+
+                if ( entityTypeId.HasValue )
+                {
+                    var attributes = AttributeCache.GetByEntityType( entityTypeId.Value );
+                    var attribute = attributes.FirstOrDefault( ac => ac.Key == key );
+
+                    if ( attribute != null )
+                    {
+                        if ( !_cachedGridDataAttributes.Contains( attribute ) )
+                        {
+                            _cachedGridDataAttributes.Add( attribute );
+                        }
+                    }
+
+                    return attribute;
+                }
+            }
+
+            return null;
+        }
+
         /// <inheritdoc/>
         protected override GridDataBag GetGridDataBag( RockContext rockContext )
         {
@@ -125,15 +161,23 @@ namespace Rock.Blocks
             // Get the entities from the database.
             var items = GetListItems( qry, rockContext );
 
+            var builder = GetGridBuilder();
+
             if ( !DisableAttributes && typeof( IHasAttributes ).IsAssignableFrom( typeof( T ) ) )
             {
                 var gridAttributes = GetGridAttributes();
                 var gridAttributeIds = gridAttributes.Select( a => a.Id ).ToList();
 
-                Helper.LoadFilteredAttributes( items.Cast<IHasAttributes>(), rockContext, a => gridAttributeIds.Contains( a.Id ) );
+                var gridAttributeDataIds = new List<int>();
+                if ( _cachedGridDataAttributes != null )
+                {
+                    gridAttributeDataIds = _cachedGridDataAttributes.Select( a => a.Id ).ToList();
+                }
+
+                Helper.LoadFilteredAttributes( items.Cast<IHasAttributes>(), rockContext, a => ( gridAttributeIds.Contains( a.Id ) || gridAttributeDataIds.Contains( a.Id ) ) );
             }
 
-            return GetGridBuilder().Build( items );
+            return builder.Build( items );
         }
 
         #endregion
