@@ -562,7 +562,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                     // a dot width in multiples of 8 to match the GRF format.
                     writer.Write( $"^GFA,{grf.Length},{grf.Length},{( size + 7 ) / 8}," );
 
-                    writer.Write( ZplImageHelper.ByteArrayToHexViaLookup32( grf ) );
+                    writer.Write( Zebra64.Compress( grf ) );
                 }
 
                 writer.WriteLine( "^FS" );
