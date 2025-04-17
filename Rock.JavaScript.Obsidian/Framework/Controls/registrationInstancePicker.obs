@@ -1,8 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField :modelValue="internalValue" name="step-program-step-type-picker">
-        <RegistrationTemplatePicker
-                                    v-if="!registrationTemplateGuid"
+        <RegistrationTemplatePicker v-if="!registrationTemplateGuid"
                                     v-model="internalTemplateValue"
                                     label="Registration Template"
                                     :multiple="false"
@@ -10,8 +9,7 @@
                                     showBlankItem
                                     autoExpand
                                     formGroupClasses="mt-0" />
-        <RegistrationInstanceBasePicker
-                                        v-if="internalTemplateGuid"
+        <RegistrationInstanceBasePicker v-if="internalTemplateGuid"
                                         v-model="internalValue"
                                         label="Registration Instance"
                                         :registrationTemplateGuid="internalTemplateGuid"

@@ -1,0 +1,66 @@
+<template>
+    <RegistrationTemplatePicker v-model="template"
+                                label="Registration Template"
+                                enhanceForLongLists />
+
+    <RegistrationInstanceBasePicker v-model="instance"
+                                    :registrationTemplateGuid="template?.value"
+                                    label="Registration Instance"
+                                    blankLabel="- Any -"
+                                    hideWhenEmpty
+                                    enhanceForLongLists />
+
+    <RadioButtonList v-model="person"
+                     :items="personOptions"
+                     horizontal
+                     label="Person"
+                     help="Choose whether to filter by the person who did the registering (registrar) or the person who was registered (registrant)." />
+
+    <DropDownList v-model="onWaitList"
+                  :items="onWaitListOptions"
+                  label="On Wait List"
+                  help="Select 'Yes' to only show people on the wait list. Select 'No' to only show people who are not on the wait list, or leave blank to ignore wait list status."
+                  showBlankItem
+                  enhanceForLongLists />
+</template>
+
+<script setup lang="ts">
+    import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplatePicker.obs";
+    import RegistrationInstanceBasePicker from "@Obsidian/Controls/registrationInstanceBasePicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const template = ref<ListItemBag | null>(safeParseJson(props.modelValue.template) ?? null);
+    const instance = ref<ListItemBag | null>(safeParseJson(props.modelValue.instance) ?? null);
+    const person = ref<string>(props.modelValue.person ?? "1");
+    const onWaitList = ref<string>(props.modelValue.onWaitList ?? "");
+
+    const personOptions = [
+        { value: "1", text: "Registrar" },
+        { value: "2", text: "Registrant" },
+    ];
+
+    const onWaitListOptions = [
+        { value: "True", text: "Yes" },
+        { value: "False", text: "No" },
+    ];
+
+    watch([template, instance, person, onWaitList], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            template: JSON.stringify(template.value),
+            instance: JSON.stringify(instance.value),
+            person: person.value,
+            onWaitList: onWaitList.value,
+        });
+    });
+</script>

@@ -1,0 +1,55 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <NotificationBox v-if="showNotification" dismissible @dismiss="showNotification = false" alertType="warning">This control is meant for internal use only.</NotificationBox>
+
+        <RegistrationInstanceBasePicker v-model="value"
+                                        label="Registration Instance"
+                                        :registrationTemplateGuid="registrationTemplateGuid?.value"
+                                        :hideWhenEmpty="hideWhenEmpty"
+                                        :lazyMode="ControlLazyMode.Eager"
+                                        :disabled="disabled"
+                                        :rules="required ? 'required' : ''" />
+
+        <template #settings>
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <RegistrationTemplatePicker label="Default Registration Template" v-model="registrationTemplateGuid" showBlankItem />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Required" v-model="required" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Disabled" v-model="disabled" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Hide When Empty" v-model="hideWhenEmpty" />
+                </div>
+            </div>
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import RegistrationInstanceBasePicker from "@Obsidian/Controls/registrationInstanceBasePicker.obs";
+    import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplatePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
+
+    const registrationTemplateGuid = ref<ListItemBag>();
+    const value = ref(null);
+    const required = ref(false);
+    const disabled = ref(false);
+    const hideWhenEmpty = ref(false);
+    const showNotification = ref(true);
+    const importCode = getSfcControlImportPath("registrationInstanceBasePicker");
+    const exampleCode = `<RegistrationInstanceBasePicker label="Registration Instance" v-model="value" />`;
+</script>

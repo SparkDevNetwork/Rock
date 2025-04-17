@@ -242,6 +242,7 @@ import AccountPickerGallery from "./ControlGallery/accountPickerGallery.partial.
 import NoteTextEditorGallery from "./ControlGallery/noteTextEditorGallery.partial.obs";
 import StructuredContentEditorGallery from "./ControlGallery/structuredContentEditorGallery.partial.obs";
 import RegistrationInstancePickerGallery from "./ControlGallery/registrationInstancePickerGallery.partial.obs";
+import RegistrationInstanceBasePickerGallery from "./ControlGallery/registrationInstanceBasePickerGallery.partial.obs";
 import InteractionChannelInteractionComponentPickerGallery from "./ControlGallery/interactionChannelInteractionComponentPickerGallery.partial.obs";
 import WorkflowPickerGallery from "./ControlGallery/workflowPickerGallery.partial.obs";
 import ValueListGallery from "./ControlGallery/valueListGallery.partial.obs";
@@ -438,6 +439,7 @@ const controlGalleryComponents: Record<string, Component> = [
     AdaptiveMessagePickerGallery,
     EmailEditorGallery,
     KpiGallery,
+    RegistrationInstanceBasePickerGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
