@@ -715,6 +715,7 @@
     <Compile Include="Attribute\AIProviderFieldAttribute.cs" />
     <Compile Include="Attribute\ImageFieldAttribute.cs" />
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
+    <Compile Include="CheckIn\v2\Labels\Renderers\Zebra64.cs" />
     <Compile Include="ClientService\Core\Note\NoteClientService.cs" />
     <Compile Include="Cms\RestActionMetadata.cs" />
     <Compile Include="Cms\RestControllerMetadata.cs" />
