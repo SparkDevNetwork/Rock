@@ -294,7 +294,14 @@ namespace Rock.CheckIn.v2
             {
                 activity?.AddTag( "rock.checkin.conversion_provider", Director.ConversionProvider.GetType().FullName );
 
-                return Director.ConversionProvider.GetFamilyMemberBags( familyId, groupMembers );
+                return Director.ConversionProvider.GetFamilyMemberBags( familyId, groupMembers )
+                    .OrderBy( member => member.RoleOrder )
+                    .ThenBy( member => member.Person.BirthYear )
+                    .ThenBy( member => member.Person.BirthMonth )
+                    .ThenBy( member => member.Person.BirthDay )
+                    .ThenBy( member => member.Person.Gender )
+                    .ThenBy( member => member.Person.NickName )
+                    .ToList();
             }
         }
 
