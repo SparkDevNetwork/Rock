@@ -1,0 +1,213 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="showModal" title="File Info">
+        <RockForm v-model:submit="submitForm" @submit="onFormSubmit">
+            <NotificationBox v-if="showError" alertType="danger" dismissable @dismiss="showError = false">
+                Please fill in all required fields.
+            </NotificationBox>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <TextBox v-model="publicName" help="Description of the media file to be used when allowing someon to select a format. (e.g. 1080p, 720p)"
+                             label="Public Name"
+                             rules="required" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <TextBox v-model="link"
+                             label="Link"
+                             rules="required">
+                        <template #inputGroupPrepend>
+                            <span class="input-group-addon">
+                                <i class="fa fa-link"></i>
+                            </span>
+                        </template>
+                    </TextBox>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <CheckBox v-model="allowDownload"
+                              label="Allow Download" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <DropDownList v-model="quality" help="This is typically used to filter media files when several qualities exist."
+                                  label="Quality"
+                                  :items="qualityOptions"
+                                  rules="required" />
+                </div>
+                <div class="col-sm-6">
+                    <TextBox v-model="format" help="The MIME type of the media format."
+                             label="Format" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <NumberBox v-model="width" help="The width in pixels of the media element."
+                               label="Width">
+                    </NumberBox>
+                </div>
+                <div class="col-sm-6">
+                    <NumberBox v-model="height"
+                               label="Height" help="The height in pixels of the media element.">
+                    </NumberBox>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <NumberBox v-model="fps" help="The Frames Per Second if the media is a video."
+                               label="FPS">
+                    </NumberBox>
+                </div>
+                <div class="col-sm-6">
+                    <NumberBox v-model="fileSize" help="The size of the media file in bytes."
+                               label="Filesize">
+                    </NumberBox>
+                </div>
+            </div>
+        </RockForm>
+
+        <template #customButtons>
+            <RockButton @click="triggerSave" btnType="primary">Save</RockButton>
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch, computed } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { MediaElementQualityDescription } from "@Obsidian/Enums/Cms/mediaElementQuality";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        initialData: {
+            type: Object as PropType<{
+                publicName?: string;
+                link?: string;
+                allowDownload?: boolean;
+                quality?: number;
+                format?: string;
+                width?: number;
+                height?: number;
+                fps?: number;
+                fileSize?: number;
+            }>,
+            default: () => ({})
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "save", value: {
+            publicName: string;
+            link: string;
+            allowDownload: boolean;
+            quality: number;
+            format: string;
+            width: number | null;
+            height: number | null;
+            fps: number | null;
+            fileSize: number | null;
+        }): void;
+    }>();
+
+    // #region Values
+    const showModal = ref(props.modelValue);
+    const publicName = ref(props.initialData.publicName || "");
+    const link = ref(props.initialData.link || "");
+    const allowDownload = ref(props.initialData.allowDownload !== undefined ? props.initialData.allowDownload : true);
+    const quality = ref(props.initialData.quality !== undefined ? String(props.initialData.quality) : "");
+    const format = ref(props.initialData.format || "");
+    const width = ref(props.initialData.width || null);
+    const height = ref(props.initialData.height || null);
+    const fps = ref(props.initialData.fps || null);
+    const fileSize = ref(props.initialData.fileSize || null);
+    const submitForm = ref(false);
+    const showError = ref(false);
+    // #endregion
+
+    // #region Computed
+    const qualityOptions = computed(() => {
+        return Object.entries(MediaElementQualityDescription)
+            .filter(([key]) => !isNaN(Number(key)))
+            .map(([key, value]) => ({
+                value: String(key),
+                text: value as string
+            })) as ListItemBag[];
+    });
+    // #endregion
+
+    // #region Watch
+    watch(() => props.modelValue, () => {
+        showModal.value = props.modelValue;
+    });
+
+    watch(() => showModal.value, () => {
+        emit("update:modelValue", showModal.value);
+
+        if (!showModal.value) {
+            showError.value = false;
+        }
+    });
+
+    watch(() => props.initialData, () => {
+        publicName.value = props.initialData.publicName || "";
+        link.value = props.initialData.link || "";
+        allowDownload.value = props.initialData.allowDownload !== undefined ? props.initialData.allowDownload : true;
+        quality.value = props.initialData.quality !== undefined ? String(props.initialData.quality) : "";
+        format.value = props.initialData.format || "";
+        width.value = props.initialData.width || null;
+        height.value = props.initialData.height || null;
+        fps.value = props.initialData.fps || null;
+        fileSize.value = props.initialData.fileSize || null;
+    });
+    // #endregion
+
+    // #region Event Handlers
+    function triggerSave(): void {
+        submitForm.value = true;
+    }
+
+    function onFormSubmit(): void {
+        if (!publicName.value.trim() || !link.value.trim() || !quality.value) {
+            showError.value = true;
+            return;
+        }
+
+        emit("save", {
+            publicName: publicName.value,
+            link: link.value,
+            allowDownload: allowDownload.value,
+            quality: Number(quality.value),
+            format: format.value,
+            width: width.value,
+            height: height.value,
+            fps: fps.value,
+            fileSize: fileSize.value
+        });
+
+        showModal.value = false;
+
+        submitForm.value = false;
+    }
+    // #endregion
+</script>
