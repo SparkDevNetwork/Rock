@@ -29,8 +29,6 @@ export type PersonBag = {
 
     gender: Gender;
 
-    groupRoleId?: number | null;
-
     lastName?: string | null;
 
     nickname?: string | null;

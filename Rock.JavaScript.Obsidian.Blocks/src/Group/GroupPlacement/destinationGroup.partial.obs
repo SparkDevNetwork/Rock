@@ -31,12 +31,15 @@
                     {{ getRoleSubHeaderText(role.id) }}
                 </span>
             </div>
-            <div class="group-wrapper">
-                <PersonCard v-for="(person, index) in getPlacedPeopleFilteredByRole(role.id)"
-                            :key="index"
-                            :isCardExpanded="areCardsExpanded"
-                            :person="person"
-                            :index="index" />
+            <div class="group-wrapper" v-drag-target="dragTargetId" :data-group-section-id="`${destinationGroup.groupId}:${role.id}`">
+                <template v-for="(groupMember, index) in getGroupMembersFilteredByRole(role.id)">
+                    <PersonCard v-if="groupMember.person"
+                                :key="index"
+                                :isCardExpanded="arePersonCardsExpanded"
+                                :person="groupMember.person"
+                                :index="index"
+                                :isDetailHoverDisabled="true" />
+                </template>
             </div>
         </div>
     </Panel>
@@ -160,6 +163,10 @@
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
+    import { Guid } from "@Obsidian/Types";
+    import { DragTarget as vDragTarget } from "@Obsidian/Directives/dragDrop";
 
     const props = defineProps({
         destinationGroup: {
@@ -169,19 +176,29 @@
         groupTypeRoles: {
             type: Array as PropType<PlacementGroupTypeRoleBag[]>,
         },
-        areCardsExpanded: {
-            type: Boolean,
+        arePersonCardsExpanded: {
+            type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+        isGroupExpanded: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+        dragTargetId: {
+            type: String as PropType<Guid>,
+            required: true
+        },
     });
 
     const emit = defineEmits<{
-        // (e: "toggleCardExpansion"): void;
+        (e: "update:isGroupExpanded", value: boolean): void;
     }>();
 
     const destinationGroup = ref<PlacementGroupBag>(props.destinationGroup);
     const groupTypeRoles = ref<PlacementGroupTypeRoleBag[]>(props.groupTypeRoles ?? []);
-    const isGroupExpanded = ref<boolean>(true);
+    // TODO - handle parent edge cases.
+    const isGroupExpanded = useVModelPassthrough(props, "isGroupExpanded", emit);
+
 
     const capacityStatusClass = computed(() => {
         if (!destinationGroup.value.groupCapacity) {
@@ -216,8 +233,8 @@
             return counts;
         }
 
-        for (const person of destinationGroup.value.groupMembers) {
-            switch (person.gender) {
+        for (const groupMember of destinationGroup.value.groupMembers) {
+            switch (groupMember.person?.gender) {
                 case Gender.Male:
                     counts.males++;
                     break;
@@ -282,7 +299,7 @@
         return role?.maxCount ? `${getRoleCount(roleId)}/${role.maxCount}` : `${getRoleCount(roleId)}`;
     }
 
-    function getPlacedPeopleFilteredByRole(roleId: number): PersonBag[] {
+    function getGroupMembersFilteredByRole(roleId: number): GroupMemberBag[] {
         return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleId === roleId) ?? [];
     }
 

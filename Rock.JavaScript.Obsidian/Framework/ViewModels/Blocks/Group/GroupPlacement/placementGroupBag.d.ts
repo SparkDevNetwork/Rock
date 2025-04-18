@@ -21,15 +21,20 @@
 // </copyright>
 //
 
-import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
+import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** The SMS Conversations Initialization Box */
 export type PlacementGroupBag = {
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    attributeValues?: Record<string, string> | null;
+
     groupCapacity?: number | null;
 
     groupId: number;
 
-    groupMembers?: PersonBag[] | null;
+    groupMembers?: GroupMemberBag[] | null;
 
     groupName?: string | null;
 

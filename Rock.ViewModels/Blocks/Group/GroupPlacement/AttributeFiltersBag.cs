@@ -17,29 +17,23 @@
 
 using System.Collections.Generic;
 
+using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
-    /// <summary>
-    /// The SMS Conversations Initialization Box
-    /// </summary>
-    public class PlacementGroupBag
+    public class AttributeFiltersBag
     {
-        public int GroupId { get; set; }
+        public Dictionary<string, PublicAttributeBag> RegistrantAttributesForFilters { get; set; }
 
-        public string GroupName { get; set; }
+        public Dictionary<string, string> RegistrantAttributeValuesForFilters { get; set; }
 
-        public int GroupOrder { get; set; }
+        public Dictionary<string, PublicAttributeBag> GroupAttributesForFilters { get; set; }
 
-        public int GroupTypeId { get; set; }
+        public Dictionary<string, string> GroupAttributeValuesForFilters { get; set; }
 
-        public int? GroupCapacity { get; set; }
+        public Dictionary<string, PublicAttributeBag> GroupMemberAttributesForFilters { get; set; }
 
-        public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
-
-        public Dictionary<string, string> AttributeValues { get; set; }
-
-        public List<GroupMemberBag> GroupMembers { get; set; }
+        public Dictionary<string, string> GroupMemberAttributeValuesForFilters { get; set; }
     }
 }

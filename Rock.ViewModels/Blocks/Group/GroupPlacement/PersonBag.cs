@@ -37,7 +37,5 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         public string PhotoUrl { get; set; }
 
         public List<RegistrantBag> Registrants { get; set; }
-
-        public int? GroupRoleId { get; set; } // TODO - quick fix storing role here need to come back later
     }
 }

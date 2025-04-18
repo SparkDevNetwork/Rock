@@ -54,6 +54,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 
         public List<PlacementGroupTypeRoleBag> PlacementGroupTypeRoles { get; set; }
 
+        public AttributeFiltersBag AttributeFilters { get; set; }
+
         //public List<PlacementGroupDetailsBag> PlacementGroupDetails { get; set; }
 
         /// <summary>

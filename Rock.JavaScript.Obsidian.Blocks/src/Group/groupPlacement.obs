@@ -33,7 +33,7 @@
                             :btnSize="BtnSize.Small"
                             :isSquare="true"
                             title="Toggle Details"
-                            @click="toggleDetails">
+                            @click="toggleCardExpansion">
                     <i class="fa fa-info-circle"></i>
                 </RockButton>
                 <RockButton :btnType="BtnType.Default"
@@ -62,27 +62,22 @@
 
                     <!-- TODO: See about adding "Filter" to drawer. -->
                     <template #drawer>
-                        <div class="px-3">
-                            <div class="d-flex flex-column align-items-center">
-                                <TextBox v-model="exampleBox" label="Example" formGroupClasses="w-100" />
-                                <TextBox v-model="exampleBox" label="Example 2" formGroupClasses="w-100" />
-                                <TextBox v-model="exampleBox" label="Example 3" formGroupClasses="w-100" />
-                                <!-- Attributes go here -->
-                            </div>
-                            <RockButton :btnType="BtnType.Action"
-                                        :btnSize="BtnSize.ExtraSmall"
-                                        @click="applyPeopleFilter">
-                                Apply Filter
-                            </RockButton>
-                        </div>
+                        <AttributeValuesContainer v-model="personAttributeValuesForFilter" :attributes="personAttributesForFilter" isEditMode :numberOfColumns="1" />
+                        <RockButton :btnType="BtnType.Action"
+                                    :btnSize="BtnSize.ExtraSmall"
+                                    @click="applyPeopleFilter">
+                            Apply Filter
+                        </RockButton>
                     </template>
 
                     <div class="card-container">
                         <div class="d-flex justify-content-between align-items-center" style="width: 300px;">
-                            <CheckBox v-model="areAllPeopleSelected"
-                                      label=""
-                                      text="Select All"
-                                      @click="toggleSelectAllCheckbox()" />
+                            <div class="prevent-clear">
+                                <CheckBox v-model="areAllPeopleSelected"
+                                          label=""
+                                          text="Select All"
+                                          @click="toggleSelectAllCheckbox()" />
+                            </div>
                             <span class="text-muted">{{ selectedPeopleCount }} Selected
                                 <i ref="selectionInfoElement"
                                    class="fa fa-info-circle cursor-pointer"
@@ -91,20 +86,24 @@
                                 </i>
                             </span>
                         </div>
-                        <PersonCard v-for="(person, index) in peopleToPlace"
-                                    :key="index"
-                                    :isCardExpanded="areCardsExpanded"
-                                    :person="person"
-                                    :index="index"
-                                    :isSelected="isSelected(person.personId)"
-                                    @toggleCardExpansion="toggleCardExpansion"
-                                    @toggleSelection="toggleSelection(person.personId)"
-                                    class="my-2" />
+                        <div v-drag-source="personDragSourceOptions" class="d-flex flex-column gap-2 mt-2">
+                            <PersonCard v-for="(person, index) in peopleToPlace"
+                                        :key="index"
+                                        :data-person-id="person.personId"
+                                        :isCardExpanded="arePersonCardsExpanded"
+                                        :person="person"
+                                        :index="index"
+                                        :isSelected="isSelected(person.personId)"
+                                        :isInstanceDisplayed="placementConfigurationSettings.showRegistrationInstanceName"
+                                        @toggleCardExpansion="toggleCardExpansion"
+                                        @toggleSelection="toggleSelection(person.personId)" />
+                        </div>
                     </div>
 
                 </Panel>
 
             </div>
+
             <div class="flex-fill">
                 <Panel type="block" title="Destination Groups">
                     <template #headerActions>
@@ -120,30 +119,18 @@
                             <RockButton :btnType="BtnType.Default"
                                         :btnSize="BtnSize.Small"
                                         :isSquare="true"
-                                        @click="toggleCardExpansion">
-                                <i :class="areCardsExpanded ? 'fa fa-angle-double-down' : 'fa fa-angle-double-up'"></i>
+                                        @click="toggleGroupExpansion">
+                                <i :class="areGroupsExpanded ? 'fa fa-angle-double-down' : 'fa fa-angle-double-up'"></i>
                             </RockButton>
                         </div>
                     </template>
 
                     <!-- TODO: See about adding "Filter" to drawer. -->
                     <template #drawer>
-                        <div class="row">
-                            <div class="col-xs-12 col-md-6 col-lg-4">
-                                <TextBox v-model="exampleBox" label="Example" />
-                            </div>
-                            <div class="col-xs-12 col-md-6 col-lg-4">
-                                <TextBox v-model="exampleBox" label="Example 2" />
-                            </div>
-                            <div class="col-xs-12 col-md-6 col-lg-4">
-                                <TextBox v-model="exampleBox" label="Example 3" />
-                            </div>
-                            <div class="col-xs-12 col-md-6 col-lg-4">
-                                <TextBox v-model="exampleBox" label="Example 4" />
-                            </div>
-                            <!-- Attributes go here -->
-
-                        </div>
+                        <RockLabel>Group Filters</RockLabel>
+                        <AttributeValuesContainer v-model="groupAttributeValuesForFilter" :attributes="groupAttributesForFilter" isEditMode :numberOfColumns="3" columnBreakpoint="lg" />
+                        <RockLabel>Group Member Filters</RockLabel>
+                        <AttributeValuesContainer v-model="groupMemberAttributeValuesForFilter" :attributes="groupMemberAttributesForFilter" isEditMode :numberOfColumns="3" columnBreakpoint="lg" />
                         <RockButton :btnType="BtnType.Action"
                                     :btnSize="BtnSize.ExtraSmall"
                                     @click="applyGroupFilter">
@@ -154,8 +141,10 @@
                         <DestinationGroup v-for="(group, index) in placementGroups"
                                           :key="index"
                                           :destinationGroup="group"
-                                          :areCardsExpanded="areCardsExpanded"
-                                          :groupTypeRoles="box.placementGroupTypeRoles ?? []" />
+                                          :arePersonCardsExpanded="arePersonCardsExpanded"
+                                          :isGroupExpanded="areGroupsExpanded"
+                                          :groupTypeRoles="box.placementGroupTypeRoles ?? []"
+                                          :dragTargetId="personDragSourceOptions.id" />
                     </div>
 
                 </Panel>
@@ -173,6 +162,55 @@
 </template>
 
 <style scoped>
+.gu-mirror.multi-drag-preview {
+    border: 1px solid var(--color-primary) !important;
+    background-color: var(--interface-softest);
+    color: var(--color-primary) !important;
+    border-radius: 4px;
+    opacity: 0.7;
+    transform: rotate(-15deg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); */
+    pointer-events: none;
+    z-index: 2;
+}
+
+.gu-transit.multi-hover-preview {
+    border: 1px solid var(--color-primary) !important;
+    background-color: var(--interface-softest);
+    /* padding: 10px; */
+    color: var(--color-primary) !important;
+    border-radius: 4px;
+    opacity: 0.7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* .multi-card-preview i {
+    opacity: 1;
+    color: var(--color-primary);
+    font-size: 1.4rem;
+    z-index: 3;
+} */
+
+.multi-card-preview i {
+    font-size: 1.2rem;
+}
+
+.preview-stack-clone {
+    border: 1px solid var(--color-primary) !important;
+    position: absolute !important;
+    top: -15px !important;
+    left: -8px !important;
+    z-index: 0 !important;
+    opacity: 0.6 !important;
+}
+
 :deep(.panel-body) {
     padding: 0;
 }
@@ -575,25 +613,31 @@
     import { PlacementConfigurationSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingsBag";
     import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
     import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
-    import { onMounted, ref, nextTick, computed, watch } from "vue";
+    import { onMounted, ref, nextTick, computed, watch, onBeforeUnmount } from "vue";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import { PreferenceKey } from "./GroupPlacement/types.partial";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import PersonCard from "./GroupPlacement/personCard.partial.obs";
     import DestinationGroup from "./GroupPlacement/destinationGroup.partial.obs";
     import PlacementConfigurationModal from "./GroupPlacement/placementConfigurationModal.partial.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
     // #region Values
     const box = useConfigurationValues<GroupPlacementInitializationBox>();
     const preferences = usePersonPreferences().blockPreferences;
     const exampleBox = ref<string>("");
 
-    const areCardsExpanded = ref(false);
+    const arePersonCardsExpanded = ref(false);
+    const areGroupsExpanded = ref(true);
     // const areAllPeopleSelected = ref(false);
     const selectionInfoElement = ref<HTMLElement | undefined>();
     const isPlacementConfigModalVisible = ref(false);
@@ -601,6 +645,16 @@
     const peopleToPlace = ref<PersonBag[]>(box.peopleToPlace ?? []);
     const selectedPersonIds = ref<Set<number>>(new Set());
 
+    const personAttributesForFilter = ref(box.attributeFilters?.registrantAttributesForFilters ?? {});
+    const personAttributeValuesForFilter = ref(box.attributeFilters?.registrantAttributeValuesForFilters ?? {});
+    const groupAttributesForFilter = ref(box.attributeFilters?.groupAttributesForFilters ?? {});
+    const groupAttributeValuesForFilter = ref(box.attributeFilters?.groupAttributeValuesForFilters ?? {});
+    const groupMemberAttributesForFilter = ref(box.attributeFilters?.groupMemberAttributesForFilters ?? {});
+    const groupMemberAttributeValuesForFilter = ref(box.attributeFilters?.groupMemberAttributeValuesForFilters ?? {});
+
+
+
+    const personDragSourceOptions = getPersonDragSourceOptions();
 
     const placementConfigurationSettings = ref<PlacementConfigurationSettingsBag>(preferences.getValue(getPlacementConfigurationSettingsKey()) ? JSON.parse(preferences.getValue(getPlacementConfigurationSettingsKey())) : {} as PlacementConfigurationSettingsBag);
 
@@ -631,6 +685,126 @@
     // #endregion
 
     // #region Functions
+
+    function getPersonDragSourceOptions(): IDragSourceOptions {
+        return {
+            id: newGuid(),
+            copyElement: true,
+            dragBegin(operation) {
+                if (selectedPersonIds.value.size > 1) {
+                    nextTick(() => {
+                        const mirror = document.querySelector(".gu-mirror") as HTMLElement;
+                        if (!mirror) return;
+
+                        mirror.innerHTML = "";
+                        // Clone the current content before we touch it
+                        const clone = mirror.cloneNode(true) as HTMLElement;
+
+                        // Clean the original mirror and restyle it
+                        mirror.classList.add("multi-drag-preview");
+                        mirror.style.position = "relative";
+
+                        mirror.innerHTML = `
+                            <div class="multi-card-preview">
+                            <i class="fa fa-user-friends"></i>
+                            </div>
+                        `;
+
+                        clone.classList.add("preview-stack-clone");
+
+                        const inner = document.createElement("div");
+                        inner.style.position = "relative";
+                        inner.style.zIndex = "1";
+
+                        while (mirror.firstChild) {
+                            inner.appendChild(mirror.firstChild);
+                        }
+
+                        mirror.appendChild(clone);
+                        mirror.appendChild(inner);
+                    });
+                }
+            },
+            dragOver(operation) {
+                if (selectedPersonIds.value.size > 1) {
+                    nextTick(() => {
+                        const mirror = document.querySelector(".gu-transit") as HTMLElement;
+                        if (!mirror) return;
+
+                        mirror.innerHTML = "";
+
+                        // Clean the original mirror and restyle it
+                        mirror.classList.add("multi-hover-preview");
+
+                        mirror.innerHTML = `
+                            <div class="multi-card-preview">
+                            <i class="fa fa-user-friends"></i>
+                            </div>
+                        `;
+                    });
+                }
+            },
+            dragDrop(operation) {
+                operation.element.remove();
+
+                var rawGroupSectionId = (operation.targetContainer as HTMLElement)?.dataset.groupSectionId;
+                const [groupId, groupRoleId] = (rawGroupSectionId ?? "").split(":").map(toNumberOrNull);
+                const placementGroup = placementGroups.value.find(g => g.groupId === groupId);
+
+                if (selectedPersonIds.value.size > 1) {
+                    const selectedPeopleToPlace = peopleToPlace.value.filter(p => selectedPersonIds.value.has(p.personId));
+
+                    if (placementGroup && selectedPeopleToPlace && groupRoleId && operation.targetIndex !== undefined) {
+                        if (!placementGroup.groupMembers) {
+                            placementGroup.groupMembers = [];
+                        }
+
+                        selectedPeopleToPlace.forEach((person, i) => {
+                            placementGroup.groupMembers!.splice(operation.targetIndex! + i, 0, {
+                                groupRoleId: groupRoleId,
+                                person: person,
+                                groupMemberId: null
+                            });
+                        });
+
+                        peopleToPlace.value = peopleToPlace.value.filter(
+                            p => !selectedPersonIds.value.has(p.personId)
+                        );
+
+                        selectedPersonIds.value.clear();
+                    }
+                }
+                else {
+                    const personId = toNumberOrNull((operation.element as HTMLElement).dataset.personId);
+                    const person = peopleToPlace.value.find(p => p.personId === personId);
+
+                    if (placementGroup && person && groupRoleId && operation.targetIndex !== undefined) {
+                        if (!placementGroup.groupMembers) {
+                            placementGroup.groupMembers = [];
+                        }
+
+                        //TODO - the current display of group members results in incosistency with there array index
+
+                        placementGroup.groupMembers.splice(operation.targetIndex, 0, {
+                            groupRoleId: groupRoleId,
+                            person: person,
+                            groupMemberId: null
+                        });
+                        peopleToPlace.value = peopleToPlace.value.filter(p => p.personId !== personId);
+                    }
+                }
+            }
+        };
+    }
+
+    function handleOutsideClick(event: MouseEvent) {
+        const clickedEl = event.target as HTMLElement;
+
+        // Only clear if clicked outside a .person-card
+        if (!clickedEl.closest(".person-card") && !clickedEl.closest(".prevent-clear")) {
+            selectedPersonIds.value.clear();
+        }
+    }
 
     function toggleSelection(personId: number) {
         if (selectedPersonIds.value.has(personId)) {
@@ -683,8 +857,12 @@
     }
 
     function toggleCardExpansion(): void {
-        areCardsExpanded.value = !areCardsExpanded.value;
+        arePersonCardsExpanded.value = !arePersonCardsExpanded.value;
         console.log("Card expansion toggled");
+    }
+
+    function toggleGroupExpansion(): void {
+        areGroupsExpanded.value = !areGroupsExpanded.value;
     }
 
     function applyPeopleFilter(): void {
@@ -729,5 +907,13 @@
     });
 
     // #endregion
+
+    onMounted(() => {
+        document.addEventListener("click", handleOutsideClick);
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("click", handleOutsideClick);
+    });
 
 </script>

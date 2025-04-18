@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { AttributeFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/attributeFiltersBag";
 import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
 import { PlacementBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementBag";
 import { PlacementConfigurationSettingOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingOptionsBag";
@@ -30,6 +31,8 @@ import { PlacementGroupTypeRoleBag } from "@Obsidian/ViewModels/Blocks/Group/Gro
 
 /** The SMS Conversations Initialization Box */
 export type GroupPlacementInitializationBox = {
+    attributeFilters?: AttributeFiltersBag | null;
+
     /** Gets or sets the error message, if any. */
     errorMessage?: string | null;
 

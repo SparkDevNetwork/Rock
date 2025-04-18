@@ -24,8 +24,15 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
     public class GroupMemberBag
     {
-        public int PersonId { get; set; }
+        // TODO - verfiy that this can be nullable.
+        public int? GroupMemberId { get; set; }
 
         public int GroupRoleId { get; set; }
+
+        public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
+
+        public Dictionary<string, string> AttributeValues { get; set; }
+
+        public PersonBag Person { get; set; }
     }
 }

@@ -21,17 +21,18 @@
 // </copyright>
 //
 
-import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-export type GroupMemberBag = {
-    attributes?: Record<string, PublicAttributeBag> | null;
+export type AttributeFiltersBag = {
+    groupAttributesForFilters?: Record<string, PublicAttributeBag> | null;
 
-    attributeValues?: Record<string, string> | null;
+    groupAttributeValuesForFilters?: Record<string, string> | null;
 
-    groupMemberId: number | null;
+    groupMemberAttributesForFilters?: Record<string, PublicAttributeBag> | null;
 
-    groupRoleId: number;
+    groupMemberAttributeValuesForFilters?: Record<string, string> | null;
 
-    person?: PersonBag | null;
+    registrantAttributesForFilters?: Record<string, PublicAttributeBag> | null;
+
+    registrantAttributeValuesForFilters?: Record<string, string> | null;
 };
