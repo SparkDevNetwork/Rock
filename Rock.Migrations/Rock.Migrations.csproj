@@ -88,6 +88,10 @@
     <Compile Include="Migrations\202504111835181_AddPersonalDeviceLocationDisabledDateTime.Designer.cs">
       <DependentUpon>202504111835181_AddPersonalDeviceLocationDisabledDateTime.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.cs" />
+    <Compile Include="Migrations\202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.Designer.cs">
+      <DependentUpon>202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\202504151646241_Rollup_20250415.cs" />
     <Compile Include="Migrations\202504151646241_Rollup_20250415.Designer.cs">
       <DependentUpon>202504151646241_Rollup_20250415.cs</DependentUpon>
@@ -2615,6 +2619,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202504111835181_AddPersonalDeviceLocationDisabledDateTime.resx">
       <DependentUpon>202504111835181_AddPersonalDeviceLocationDisabledDateTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.resx">
+      <DependentUpon>202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202504151646241_Rollup_20250415.resx">
       <DependentUpon>202504151646241_Rollup_20250415.cs</DependentUpon>
