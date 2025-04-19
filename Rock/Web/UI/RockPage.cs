@@ -5090,6 +5090,15 @@ Sys.Application.add_load(function () {
                 internalAccessor.RockRequestContext = RequestContext;
             }
 
+            if ( RequestContext.IsClientForbidden( _pageCache ) )
+            {
+                context.Response.StatusCode = ( int ) System.Net.HttpStatusCode.Forbidden;
+                context.Response.SuppressContent = true;
+                context.ApplicationInstance.CompleteRequest();
+
+                return null;
+            }
+
             return AsyncPageBeginProcessRequest( context, cb, extraData );
         }
 

@@ -716,7 +716,10 @@
     <Compile Include="Attribute\ImageFieldAttribute.cs" />
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
     <Compile Include="CheckIn\v2\Labels\Renderers\Zebra64.cs" />
+    <Compile Include="Bus\Message\RestrictedCountriesWereUpdatedMessage.cs" />
+    <Compile Include="Bus\Queue\IpGeolocationEventQueue.cs" />
     <Compile Include="ClientService\Core\Note\NoteClientService.cs" />
+    <Compile Include="Cms\PageAdditionalSettings.cs" />
     <Compile Include="Cms\RestActionMetadata.cs" />
     <Compile Include="Cms\RestControllerMetadata.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\AlertData.cs" />
@@ -1672,6 +1675,7 @@
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
     <Compile Include="Model\Validation\EmailAddressValidationAttribute.cs" />
     <Compile Include="Net\BrowserCookie.cs" />
+    <Compile Include="Net\Geolocation\RestrictedCountriesWereUpdatedConsumer.cs" />
     <Compile Include="Net\IRockRequestContextAccessor.cs" />
     <Compile Include="Net\IRockResponseContext.cs" />
     <Compile Include="Net\NullRockResponseContext.cs" />
@@ -2508,6 +2512,7 @@
     <Compile Include="Utility\Enums\AccountProtectionProfile.cs" />
     <Compile Include="Utility\Enums\ElevatedSecurityLevel.cs" />
     <Compile Include="Utility\ExtensionMethods\RockBlockTypeExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\RockRequestContextExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\RockResponseContextExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\SecurityGrantExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Image.cs" />

@@ -56,6 +56,9 @@ export type PagePropertiesBag = {
     /** Gets or sets the cache control header settings. */
     cacheControlHeaderSettings?: RockCacheabilityBag | null;
 
+    /** Gets or sets the defined value GUIDs for countries from which access will be restricted to this page. */
+    countriesRestrictedFromAccessing?: string[] | null;
+
     /** Gets or sets a user defined description of the page.  This will be added as a meta tag for the page  */
     description?: string | null;
 
