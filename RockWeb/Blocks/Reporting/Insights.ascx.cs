@@ -20,6 +20,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Crm;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using System;
 using System.Collections.Generic;
@@ -96,6 +97,9 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private int skipCount = 0;
 
+        private int _personRecordDefinedValueId;
+        private int _activeStatusDefinedValueId;
+
         #endregion
 
         #region Base Control Methods
@@ -107,6 +111,8 @@ namespace RockWeb.Blocks.Reporting
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            _personRecordDefinedValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            _activeStatusDefinedValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
@@ -133,14 +139,15 @@ namespace RockWeb.Blocks.Reporting
         {
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
-            rockContext.Database.Log = sql => System.Diagnostics.Debug.WriteLine( sql );
+            //rockContext.Database.Log = sql => System.Diagnostics.Debug.WriteLine( sql );
 
             var personRecordDefinedValueGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid();
             var activeStatusDefinedValueGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid();
+
             IQueryable<PersonViewModel> alivePersonsQry;
             IQueryable<PersonViewModel> activeAlivePersonsQry;
 
-            alivePersonsQry = personService.Queryable().Where( p => p.RecordTypeValue.Guid == personRecordDefinedValueGuid && !p.IsDeceased ).Select( p => new PersonViewModel()
+            alivePersonsQry = personService.Queryable().Where( p => p.RecordTypeValueId == _personRecordDefinedValueId && !p.IsDeceased ).Select( p => new PersonViewModel()
             {
                 Id = p.Id,
                 AgeBracket = p.AgeBracket,
@@ -153,12 +160,13 @@ namespace RockWeb.Blocks.Reporting
                 ConnectionStatusValue = new DefinedValueViewModel() { Guid = p.ConnectionStatusValue.Guid, Value = p.ConnectionStatusValue.Value },
                 RecordTypeValue = new DefinedValueViewModel() { Guid = p.RecordTypeValue.Guid, Value = p.RecordTypeValue.Value },
                 RecordStatusValue = new DefinedValueViewModel() { Guid = p.RecordStatusValue.Guid, Value = p.RecordStatusValue.Value },
+                RecordStatusValueId = p.RecordStatusValueId,
                 MaritalStatusValue = new DefinedValueViewModel() { Guid = p.MaritalStatusValue.Guid, Value = p.MaritalStatusValue.Value },
                 RaceValue = new DefinedValueViewModel() { Guid = p.RaceValue.Guid, Value = p.RaceValue.Value },
                 EthnicityValue = new DefinedValueViewModel() { Guid = p.EthnicityValue.Guid, Value = p.EthnicityValue.Value },
             } );
 
-            activeAlivePersonsQry = alivePersonsQry.Where( p => p.RecordStatusValue.Guid == activeStatusDefinedValueGuid );
+            activeAlivePersonsQry = alivePersonsQry.Where( p => p.RecordStatusValueId == _activeStatusDefinedValueId );
             var total = activeAlivePersonsQry.Count();
 
             GetDemographics( activeAlivePersonsQry );
@@ -336,14 +344,14 @@ namespace RockWeb.Blocks.Reporting
             var hasBirthDateCount = qry.Count( p => p.BirthDate.HasValue );
             dataItems.Add( new DataItem( "Date of Birth", DataItem.GetPercentage( hasBirthDateCount, total ) ) );
 
-            var homeLocationTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
-            var grpLocationQry = new GroupLocationService( rockContext ).Queryable();
+            var homeLocationTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;
+
+            var grpLocationQry = new GroupLocationService( rockContext ).Queryable();//.Where( gl=> gl.GroupLocationTypeValueId == homeLocationTypeValueId );
             var hasHomeAddressCount = qry.Join( grpLocationQry, person => person.PrimaryFamilyId,
                 groupLocation => groupLocation.GroupId,
                 ( person, groupLocation ) => new { Person = person, GroupLocation = groupLocation } )
-                .Where( personGroupLocation => personGroupLocation.GroupLocation.GroupLocationTypeValue.Guid == homeLocationTypeGuid );
+                .Where( personGroupLocation => personGroupLocation.GroupLocation.GroupLocationTypeValueId == homeLocationTypeValueId );
             dataItems.Add( new DataItem( "Home Address", DataItem.GetPercentage( hasHomeAddressCount.Count(), total ) ) );
-
             rlInformationCompleteness.Text = PopulateShortcodeDataItems( chartConfig, dataItems );
         }
 
@@ -352,32 +360,45 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void GetPercentOfActiveIndividualsWithAssessments( RockContext rockContext, int total )
         {
-            var personRecordDefinedValueGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid();
-            var activePersonDefinedValueGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid();
-            var assessmentQry = new AssessmentService( rockContext ).Queryable()
-                .Where( a => a.PersonAlias.Person.RecordTypeValue.Guid == personRecordDefinedValueGuid
-                    && a.PersonAlias.Person.RecordStatusValue.Guid == activePersonDefinedValueGuid
-                    && !a.PersonAlias.Person.IsDeceased );
-            var assessmentTypeQry = new AssessmentTypeService( rockContext ).Queryable();
+            // Valid Person IDs
+            var validPersonIds = new PersonService( rockContext ).Queryable()
+                .Where( p => p.RecordTypeValueId == _personRecordDefinedValueId
+                    && p.RecordStatusValueId == _activeStatusDefinedValueId
+                    && !p.IsDeceased )
+                .Select( p => p.Id );
 
-            // Perform an outer join so we get records for every assessmentType even those with no assessments.
-            var groupedQuery = assessmentTypeQry.GroupJoin( assessmentQry, assessmentType => assessmentType.Id,
-                assessment => assessment.AssessmentTypeId,
-                ( assessmentType, assessments ) => new { AssessmentType = assessmentType, Assessments = assessments } )
-                .SelectMany( assessmentTypeAssessments => assessmentTypeAssessments.Assessments.DefaultIfEmpty(),
-                ( assessmentTypeAssessments, assessment ) => new { AssessmentType = assessmentTypeAssessments.AssessmentType, Assessment = assessment } )
-                .GroupBy( assessmentTypePerson => assessmentTypePerson.AssessmentType.Title )
+            // Get one completed assessment per person per assessment type
+            var distinctCompletedAssessments = new AssessmentService( rockContext ).Queryable()
+                .Where( a => a.Status == AssessmentRequestStatus.Complete
+                    && validPersonIds.Contains( a.PersonAlias.PersonId ) )
+                .GroupBy( a => new { a.AssessmentTypeId, PersonId = a.PersonAlias.PersonId } )
+                .Select( g => g.Key ); // distinct (AssessmentTypeId, PersonId)
+
+            // Join with assessment types
+            var assessmentTypeCounts = new AssessmentTypeService( rockContext ).Queryable()
+                .GroupJoin(
+                    distinctCompletedAssessments,
+                    at => at.Id,
+                    a => a.AssessmentTypeId,
+                    ( at, assessments ) => new
+                    {
+                        Title = at.Title,
+                        Count = assessments.Count()
+                    } )
                 .ToList();
 
-            var dataItems = groupedQuery.Select( a => new DataItem( a.Key, DataItem.GetPercentage( a.Count( m => m.Assessment != null ), total ) ) ).ToList();
+            // Final projection
+            var dataItems = assessmentTypeCounts
+                .OrderBy( a => a.Title )
+                .Select( a => new DataItem( a.Title, DataItem.GetPercentage( a.Count, total ) ) )
+                .ToList();
 
             const string chartConfig = "{[ chart type:'bar' yaxismin:'0' yaxismax:'100' yaxisstepsize:'20' valueformat:'percentage' ]}";
             const string noItemsNotification = @"
 <div class=""alert alert-info"">
     <span class=""js-notification-text"">There is no data on active individuals with assessments.</span>
 </div>";
-
-            rlActiveIndividualsWithAssessments.Text = dataItems.Count == 0 ? noItemsNotification : PopulateShortcodeDataItems( chartConfig, dataItems );
+            rlActiveIndividualsWithAssessments.Text = PopulateShortcodeDataItems( chartConfig, dataItems );
         }
 
         /// <summary>
@@ -560,6 +581,7 @@ namespace RockWeb.Blocks.Reporting
         private sealed class PersonViewModel
         {
             public int Id { get; set; }
+            public int? RecordStatusValueId { get; set; }
             public DefinedValueViewModel RecordTypeValue { get; set; }
             public DefinedValueViewModel RecordStatusValue { get; set; }
             public DefinedValueViewModel ConnectionStatusValue { get; set; }
