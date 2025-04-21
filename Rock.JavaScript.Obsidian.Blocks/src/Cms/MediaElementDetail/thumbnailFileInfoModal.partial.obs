@@ -2,10 +2,6 @@
 <template>
     <Modal v-model="showModal" title="Thumbnail File Info">
         <RockForm v-model:submit="submitForm" @submit="onFormSubmit">
-            <NotificationBox v-if="showError" alertType="danger" dismissable @dismiss="showError = false">
-                Please fill in all required fields.
-            </NotificationBox>
-
             <div class="row">
                 <div class="col-sm-12">
                     <TextBox v-model="link"
@@ -51,7 +47,6 @@
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 
     const props = defineProps({
         modelValue: {
@@ -81,7 +76,6 @@
     const height = ref(props.initialData.height || null);
     const fileSize = ref(props.initialData.fileSize || null);
     const submitForm = ref(false);
-    const showError = ref(false);
     // #endregion
 
     // #region Watch
@@ -91,10 +85,6 @@
 
     watch(() => showModal.value, () => {
         emit("update:modelValue", showModal.value);
-
-        if (!showModal.value) {
-            showError.value = false;
-        }
     });
 
     watch(() => props.initialData, () => {
@@ -111,11 +101,6 @@
     }
 
     function onFormSubmit(): void {
-        if (!link.value.trim()) {
-            showError.value = true;
-            return;
-        }
-
         emit("save", {
             link: link.value,
             width: width.value,
@@ -124,7 +109,6 @@
         });
 
         showModal.value = false;
-
         submitForm.value = false;
     }
     // #endregion

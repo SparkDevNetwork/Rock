@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Common;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure.Interception;
 using System.Data.SqlClient;
 using System.Data;
@@ -33,6 +34,8 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.MediaElementDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Utility.ExtensionMethods;
+using Rock.Web.UI;
 
 namespace Rock.Blocks.Cms
 {
@@ -59,6 +62,7 @@ namespace Rock.Blocks.Cms
         private static class PageParameterKey
         {
             public const string MediaElementId = "MediaElementId";
+            public const string MediaFolderId = "MediaFolderId";
         }
 
         private static class NavigationUrlKey
@@ -77,7 +81,7 @@ namespace Rock.Blocks.Cms
 
             SetBoxInitialEntityState( box );
 
-            box.NavigationUrls = GetBoxNavigationUrls();
+            RequestContext.Response.AddCssLink( "~/Styles/Blocks/Cms/MediaElementDetail.css", true);
             box.Options = GetBoxOptions( box.IsEditable );
 
             return box;
@@ -154,6 +158,8 @@ namespace Rock.Blocks.Cms
             }
 
             PrepareDetailBox( box, entity );
+
+            box.NavigationUrls = GetBoxNavigationUrls( entity );
         }
 
         /// <summary>
@@ -172,26 +178,18 @@ namespace Rock.Blocks.Cms
             {
                 IdKey = entity.IdKey,
                 CloseCaption = entity.CloseCaption,
-                DefaultFileUrl = entity.DefaultFileUrl,
-                DefaultThumbnailUrl = entity.DefaultThumbnailUrl,
                 Description = entity.Description,
                 DurationSeconds = entity.DurationSeconds,
                 FileDataJson = entity.FileDataJson,
-                MediaFolder = entity.MediaFolder.ToListItemBag(),
-                MediaFolderId = entity.MediaFolderId,
                 MetricData = entity.MetricData,
                 Name = entity.Name,
-                SourceCreatedDateTime = entity.SourceCreatedDateTime,
-                SourceData = entity.SourceData,
-                SourceKey = entity.SourceKey,
-                SourceModifiedDateTime = entity.SourceModifiedDateTime,
                 ThumbnailDataJson = entity.ThumbnailDataJson,
                 TranscriptionText = entity.TranscriptionText,
             };
 
             var rockContext = new RockContext();
-            var mediaElementInteractions = GetInteractions(entity, null, rockContext);
-            GetStandardKpiMetrics(entity, mediaElementInteractions, bag);
+            var mediaElementInteractions = GetInteractions( entity, null, rockContext );
+            GetStandardKpiMetrics( entity, mediaElementInteractions, bag );
 
             return bag;
         }
@@ -247,12 +245,6 @@ namespace Rock.Blocks.Cms
             box.IfValidProperty( nameof( box.Bag.CloseCaption ),
                 () => entity.CloseCaption = box.Bag.CloseCaption );
 
-            //box.IfValidProperty( nameof( box.Bag.DefaultFileUrl ),
-            //    () => entity.DefaultFileUrl = box.Bag.DefaultFileUrl );
-
-            //box.IfValidProperty( nameof( box.Bag.DefaultThumbnailUrl ),
-            //    () => entity.DefaultThumbnailUrl = box.Bag.DefaultThumbnailUrl );
-
             box.IfValidProperty( nameof( box.Bag.Description ),
                 () => entity.Description = box.Bag.Description );
 
@@ -262,29 +254,11 @@ namespace Rock.Blocks.Cms
             box.IfValidProperty( nameof( box.Bag.FileDataJson ),
                 () => entity.FileDataJson = box.Bag.FileDataJson );
 
-            box.IfValidProperty( nameof( box.Bag.MediaFolder ),
-                () => entity.MediaFolderId = box.Bag.MediaFolder.GetEntityId<MediaFolder>( RockContext ).Value );
-
-            box.IfValidProperty( nameof( box.Bag.MediaFolderId ),
-                () => entity.MediaFolderId = box.Bag.MediaFolderId );
-
             box.IfValidProperty( nameof( box.Bag.MetricData ),
                 () => entity.MetricData = box.Bag.MetricData );
 
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
-
-            box.IfValidProperty( nameof( box.Bag.SourceCreatedDateTime ),
-                () => entity.SourceCreatedDateTime = box.Bag.SourceCreatedDateTime );
-
-            box.IfValidProperty( nameof( box.Bag.SourceData ),
-                () => entity.SourceData = box.Bag.SourceData );
-
-            box.IfValidProperty( nameof( box.Bag.SourceKey ),
-                () => entity.SourceKey = box.Bag.SourceKey );
-
-            box.IfValidProperty( nameof( box.Bag.SourceModifiedDateTime ),
-                () => entity.SourceModifiedDateTime = box.Bag.SourceModifiedDateTime );
 
             box.IfValidProperty( nameof( box.Bag.ThumbnailDataJson ),
                 () => entity.ThumbnailDataJson = box.Bag.ThumbnailDataJson );
@@ -298,7 +272,7 @@ namespace Rock.Blocks.Cms
                     entity.LoadAttributes( RockContext );
 
                     entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
-                } );
+                });
 
             return true;
         }
@@ -310,51 +284,51 @@ namespace Rock.Blocks.Cms
         /// <param name="newerThanDate">The optional date that interactions must be newer than.</param>
         /// <param name="rockContext">The rock context to load from.</param>
         /// <returns>A list of interaction data.</returns>
-        private static List<InteractionData> GetInteractions(MediaElement mediaElement, DateTime? newerThanDate, RockContext rockContext)
+        private static List<InteractionData> GetInteractions( MediaElement mediaElement, DateTime? newerThanDate, RockContext rockContext )
         {
-            var interactionChannelId = InteractionChannelCache.Get(Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS).Id;
+            var interactionChannelId = InteractionChannelCache.Get( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS ).Id;
 
             // Get all the interactions for this media element and then pull
             // in just the columns we need for performance.
-            var interactionData = new InteractionService(rockContext).Queryable()
-                .Where(i => i.InteractionComponent.InteractionChannelId == interactionChannelId
-                    && (!newerThanDate.HasValue || i.InteractionDateTime > newerThanDate.Value)
+            var interactionData = new InteractionService( rockContext ).Queryable()
+                .Where( i => i.InteractionComponent.InteractionChannelId == interactionChannelId
+                    && ( !newerThanDate.HasValue || i.InteractionDateTime > newerThanDate.Value )
                     && i.InteractionComponent.EntityId == mediaElement.Id
-                    && i.Operation == "WATCH")
-                .Select(i => new
+                    && i.Operation == "WATCH" )
+                .Select( i => new
                 {
                     i.Id,
                     i.InteractionDateTime,
                     i.InteractionData
-                })
+                } )
                 .ToList();
 
             // Do some post-processing on the data to parse the watch map and
             // filter out any that had invalid watch maps.
             return interactionData
-                .Select(i => new InteractionData
+                .Select( i => new InteractionData
                 {
                     InteractionDateTime = i.InteractionDateTime,
                     WatchMap = i.InteractionData.FromJsonOrNull<WatchMapData>()
                 })
-                .Where(i => i.WatchMap != null && i.WatchMap.WatchedPercentage > 0)
+                .Where( i => i.WatchMap != null && i.WatchMap.WatchedPercentage > 0 )
                 .ToList();
         }
 
-        private static List<string> GetStandardKpiMetrics(MediaElement mediaElement, List<InteractionData> interactions, MediaElementBag mediaElementBag)
+        private static List<string> GetStandardKpiMetrics( MediaElement mediaElement, List<InteractionData> interactions, MediaElementBag mediaElementBag )
         {
             var kpiMetrics = new List<string>();
 
-            var engagement = interactions.Sum(a => a.WatchMap.WatchedPercentage) / interactions.Count();
+            var engagement = interactions.Sum( a => a.WatchMap.WatchedPercentage ) / interactions.Count();
             mediaElementBag.EngagementStat = engagement;
 
             var playCount = interactions.Count();
-            var playCountText = GetFormattedNumber(playCount);
+            var playCountText = GetFormattedNumber( playCount );
             mediaElementBag.PlayCountText = playCountText;
     
 
-            var minutesWatched = (int)(interactions.Sum(a => a.WatchMap.WatchedPercentage) * (mediaElement.DurationSeconds ?? 0) / 100 / 60);
-            var minutesWatchedText = GetFormattedNumber(minutesWatched);
+            var minutesWatched = ( int )( interactions.Sum( a => a.WatchMap.WatchedPercentage ) * ( mediaElement.DurationSeconds ?? 0 ) / 100 / 60 );
+            var minutesWatchedText = GetFormattedNumber( minutesWatched );
             mediaElementBag.MinutesWatchedText = minutesWatchedText;
 
             return kpiMetrics;
@@ -370,11 +344,23 @@ namespace Rock.Blocks.Cms
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
         /// <returns>A dictionary of key names and URL values.</returns>
-        private Dictionary<string, string> GetBoxNavigationUrls()
+        private Dictionary<string, string> GetBoxNavigationUrls( MediaElement entity )
         {
+            var folderId = entity.MediaFolderId;
+
+            if ( folderId == 0 )
+            {
+                folderId = PageParameter( PageParameterKey.MediaFolderId ).AsIntegerOrNull() ?? 0;
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
+                {
+                    // if media element is being edit, use it's folder id
+                    // new media element use page parameter
+                    [PageParameterKey.MediaFolderId] = folderId.ToString()
+                } )
             };
         }
 
@@ -393,8 +379,8 @@ namespace Rock.Blocks.Cms
             }
             else
             {
-                // Create a new entity.
                 entity = new MediaElement();
+                entity.MediaFolderId = PageParameter( PageParameterKey.MediaFolderId ).AsIntegerOrNull() ?? 0;
                 entityService.Add( entity );
             }
 
@@ -419,13 +405,13 @@ namespace Rock.Blocks.Cms
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>The string that represents the formatted number.</returns>
-        private static string GetFormattedNumber(long value)
+        private static string GetFormattedNumber( long value )
         {
-            if (value >= 1000000)
+            if ( value >= 1000000 )
             {
                 return $"{value / 1000000f:n2}M";
             }
-            else if (value >= 1000)
+            else if ( value >= 1000 )
             {
                 return $"{value / 1000f:n2}K";
             }
@@ -546,6 +532,233 @@ namespace Rock.Blocks.Cms
             return ActionOk( this.GetParentPageUrl() );
         }
 
+        /// <summary>
+        /// Gets play count data based on the specified duration.
+        /// </summary>
+        /// <param name="duration">The duration in days (90 or 365).</param>
+        /// <returns>An array of data points with play counts and dates.</returns>
+        [BlockAction]
+        public BlockActionResult GetPlayCount( int duration )
+        {
+            var rockContext = new RockContext();
+            var mediaElementId = PageParameter( PageParameterKey.MediaElementId ).AsInteger();
+            var mediaElement = new MediaElementService( rockContext ).Get( mediaElementId );
+
+            if ( mediaElement == null )
+            {
+                return ActionBadRequest( "Media element not found." );
+            }
+
+            var dataPoints = new List<object>();
+            var today = RockDateTime.Now.Date;
+
+            // Get all interactions for the media element
+            DateTime startDate;
+            List<InteractionDataForDate> resultData;
+
+            if ( duration == 365 )
+            {
+                startDate = today.AddDays( -365 );
+
+                var currentDay = today;
+                while ( currentDay.DayOfWeek != DayOfWeek.Monday )
+                {
+                    currentDay = currentDay.AddDays( -1 );
+                }
+
+                var interactions = GetInteractions( mediaElement, startDate, rockContext );
+                    
+                var interactionsByWeek = new Dictionary<DateTime, List<InteractionData>>();
+                    
+                for ( int i = 0; i < 52; i++ )
+                {
+                    var weekStart = currentDay.AddDays( -7 * i );
+                    interactionsByWeek[weekStart] = new List<InteractionData>();
+                }
+                    
+                foreach ( var interaction in interactions )
+                {
+                    var interactionDate = interaction.InteractionDateTime.Date;
+                        
+                    var dayOfWeek = interactionDate.DayOfWeek;
+                    var daysToMonday = dayOfWeek == DayOfWeek.Sunday ? 6 : dayOfWeek - DayOfWeek.Monday;
+                    var weekStart = interactionDate.AddDays( -daysToMonday );
+                        
+                    if (interactionsByWeek.ContainsKey( weekStart ) )
+                    {
+                        interactionsByWeek[weekStart].Add( interaction );
+                    }
+                }
+                    
+                resultData = interactionsByWeek.Select( week => new InteractionDataForDate
+                {
+                    Date = week.Key,
+                    Count = week.Value.Count,
+                    Engagement = week.Value.Any() ? week.Value.Sum( i => i.WatchMap.WatchedPercentage ) / week.Value.Count : 0,
+                    MinutesWatched = ( int )(( mediaElement.DurationSeconds ?? 0 ) * week.Value.Sum( i => i.WatchMap.WatchedPercentage ) / 100 / 60 )
+                })
+                .OrderBy( d => d.Date )
+                .ToList();
+            }
+            else
+            {
+                startDate = today.AddDays( -duration );
+                    
+                var interactions = GetInteractions( mediaElement, startDate, rockContext );
+                    
+                var interactionsByDay = interactions
+                    .GroupBy( i => i.InteractionDateTime.Date )
+                    .ToDictionary(
+                        g => g.Key,
+                        g => new InteractionDataForDate
+                        {
+                            Date = g.Key,
+                            Count = g.Count(),
+                            Engagement = g.Sum( i => i.WatchMap.WatchedPercentage ) / g.Count(),
+                            MinutesWatched = ( int )(( mediaElement.DurationSeconds ?? 0 ) * g.Sum( i => i.WatchMap.WatchedPercentage ) / 100 / 60 )
+                        }
+                    );
+                    
+                resultData = new List<InteractionDataForDate>();
+                for ( var date = startDate; date <= today; date = date.AddDays( 1 ) )
+                {
+                    if ( interactionsByDay.TryGetValue( date, out var data ) )
+                    {
+                        resultData.Add(data);
+                    }
+                    else
+                    {
+                        resultData.Add(new InteractionDataForDate
+                        {
+                            Date = date,
+                            Count = 0,
+                            Engagement = 0,
+                            MinutesWatched = 0
+                        });
+                    }
+                }
+            }
+                
+            foreach ( var item in resultData )
+            {
+                dataPoints.Add( new object[]
+                {
+                    item.Count,
+                    item.Date.ToString( "MM/dd/yyyy" )
+                } );
+            }
+
+            // Return the array in chronological order (oldest to newest)
+            return ActionOk( dataPoints.OrderBy( d => DateTime.Parse( ( ( object[]) d )[1].ToString())).ToArray());
+        }
+
+        /// <summary>
+        /// Loads individual play data for a media element with pagination support
+        /// </summary>
+        /// <param name="mediaElementId">The ID of the media element</param>
+        /// <param name="pageContext">Optional page context for pagination</param>
+        /// <returns>A collection of interaction data</returns>
+        [BlockAction]
+        public BlockActionResult LoadIndividualPlays( string mediaElementId, string pageContext )
+        {
+            var interactionChannelId = InteractionChannelCache.Get( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS ).Id;
+            var rockContext = new RockContext();
+            PageContext context = null;
+
+            if ( pageContext.IsNotNullOrWhiteSpace() )
+            {
+                var jsonContext = System.Text.Encoding.UTF8.GetString( Convert.FromBase64String(pageContext) );
+                context = jsonContext.FromJsonOrNull<PageContext>();
+            }
+
+            // Try to get the media element ID from the provided string ID
+            int mediaElementIdValue;
+            if ( !int.TryParse( mediaElementId, out mediaElementIdValue ) )
+            {
+                var guidValue = mediaElementId.AsGuidOrNull();
+                if ( guidValue.HasValue )
+                {
+                    mediaElementIdValue = new MediaElementService( rockContext ).Get( guidValue.Value )?.Id ?? 0;
+                }
+                else
+                {
+                    mediaElementIdValue = new MediaElementService( rockContext ).Get( mediaElementId, !PageCache.Layout.Site.DisablePredictableIds )?.Id ?? 0;
+                }
+            }
+
+            // Get all the interactions for this media element and then pull
+            // in just the columns we need for performance.
+            var interactionQuery = new InteractionService( rockContext ).Queryable()
+                .Include( i => i.PersonAlias.Person )
+                .Include( i => i.InteractionSession )
+                .Include( i => i.InteractionSession.InteractionSessionLocation )
+                .Include( i => i.InteractionSession.DeviceType )
+                .Where( i => i.InteractionComponent.InteractionChannelId == interactionChannelId
+                    && i.Operation == "WATCH"
+                    && i.InteractionComponent.EntityId == mediaElementIdValue );
+
+            var filteredQuery = interactionQuery;
+
+            if  (context != null )
+            {
+                // Query for the next page of results.
+                // If the dates are the same, then take only older Ids.
+                // If dates are not the same, then only take older dates.
+                filteredQuery = filteredQuery
+                    .Where( i => ( i.InteractionDateTime == context.LastDate && i.Id < context.LastId) || i.InteractionDateTime < context.LastDate );
+            }
+
+            List<Interaction> interactions = null;
+
+            // Load the next 25 results.
+            DateTimeParameterInterceptor.UseWith( rockContext, () =>
+            {
+                interactions = filteredQuery
+                    .OrderByDescending( i => i.InteractionDateTime )
+                    .ThenByDescending( i => i.Id )
+                    .Take( 25 )
+                    .ToList();
+            });
+
+            // If we got any results then figure out the next page context.
+            if ( interactions.Count > 0 )
+            {
+                context = new PageContext
+                {
+                    LastDate = interactions.Last().InteractionDateTime,
+                    LastId = interactions.Last().Id
+                };
+
+                pageContext = Convert.ToBase64String( System.Text.Encoding.UTF8.GetBytes( context.ToJson() ) );
+            }
+            else
+            {
+                pageContext = null;
+            }
+
+            // Get the actual data to provide to the client.
+            var data = interactions
+                .Select( i => new
+                {
+                    DateTime = new DateTimeOffset( i.InteractionDateTime, RockDateTime.OrgTimeZoneInfo.GetUtcOffset( i.InteractionDateTime ) ),
+                    FullName = i.PersonAlias?.Person?.FullName ?? "Unknown",
+                    PhotoUrl = i.PersonAlias?.Person?.PhotoUrl ?? "/Assets/Images/person-no-photo-unknown.svg",
+                    Platform = "Unknown",
+                    Data = i.InteractionData.FromJsonOrNull<WatchMapData>(),
+                    Location = i.InteractionSession?.InteractionSessionLocation?.Location,
+                    ClientType = i.InteractionSession?.DeviceType.ClientType,
+                    Isp = i.InteractionSession?.InteractionSessionLocation?.ISP,
+                    OperatingSystem = i.InteractionSession?.DeviceType?.OperatingSystem,
+                    Application = i.InteractionSession?.DeviceType?.Application,
+                    InteractionsCount = interactionQuery.Where( m => m.PersonAliasId != null && m.PersonAliasId == i.PersonAliasId ).Count()
+                });
+
+            return ActionOk(new {
+                Items = data,
+                NextPage = pageContext
+            });
+        }
+
         #endregion
 
         #region Analytics View Support Classes
@@ -635,15 +848,15 @@ namespace Rock.Blocks.Cms
                     var segments = new List<WatchSegment>();
                     var segs = _watchMap.Split(',');
 
-                    foreach (var seg in segs)
+                    foreach ( var seg in segs )
                     {
-                        if (seg.Length < 2)
+                        if ( seg.Length < 2 )
                         {
                             continue;
                         }
 
-                        var duration = seg.Substring(0, seg.Length - 1).AsInteger();
-                        var count = seg.Substring(seg.Length - 1).AsInteger();
+                        var duration = seg.Substring( 0, seg.Length - 1 ).AsInteger();
+                        var count = seg.Substring( seg.Length - 1 ).AsInteger();
 
                         segments.Add(new WatchSegment { Duration = duration, Count = count });
                     }
@@ -681,10 +894,10 @@ namespace Rock.Blocks.Cms
                 // "owns" the position we are interested in. Generally
                 // speaking, there should probably always be less than 4 or 5
                 // segments so this should be pretty fast.
-                foreach (var segment in Segments)
+                foreach ( var segment in Segments )
                 {
                     // This segment owns the position we care about.
-                    if (position < segment.Duration)
+                    if ( position < segment.Duration )
                     {
                         return segment.Count;
                     }
@@ -692,7 +905,7 @@ namespace Rock.Blocks.Cms
                     // Decrement the position before moving to the next segment.
                     position -= segment.Duration;
 
-                    if (position < 0)
+                    if ( position < 0 )
                     {
                         break;
                     }
@@ -720,10 +933,19 @@ namespace Rock.Blocks.Cms
             public int Count;
         }
 
+        /// <summary>
+        /// Used for pagination when loading individual play data
+        /// </summary>
         private class PageContext
         {
+            /// <summary>
+            /// Gets or sets the last date in the current page of results
+            /// </summary>
             public DateTime LastDate { get; set; }
 
+            /// <summary>
+            /// Gets or sets the last ID in the current page of results
+            /// </summary>
             public int LastId { get; set; }
         }
 
@@ -749,16 +971,16 @@ namespace Rock.Blocks.Cms
 
             public override void ReaderExecuting(DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext)
             {
-                if (interceptionContext.DbContexts.Any(db => db == _context))
+                if ( interceptionContext.DbContexts.Any( db => db == _context ) )
                 {
-                    ChangeDateTime2ToDateTime(command);
+                    ChangeDateTime2ToDateTime( command );
                 }
             }
 
-            public static void UseWith(RockContext rockContext, Action action)
+            public static void UseWith( RockContext rockContext, Action action )
             {
-                var interceptor = new DateTimeParameterInterceptor(rockContext);
-                DbInterception.Add(interceptor);
+                var interceptor = new DateTimeParameterInterceptor( rockContext );
+                DbInterception.Add( interceptor );
 
                 try
                 {
@@ -766,20 +988,20 @@ namespace Rock.Blocks.Cms
                 }
                 finally
                 {
-                    DbInterception.Remove(interceptor);
+                    DbInterception.Remove( interceptor );
                 }
             }
 
-            private static void ChangeDateTime2ToDateTime(DbCommand command)
+            private static void ChangeDateTime2ToDateTime( DbCommand command )
             {
                 command.Parameters
                     .OfType<SqlParameter>()
-                    .Where(p => p.SqlDbType == SqlDbType.DateTime2)
-                    .Where(p => p.Value != DBNull.Value)
-                    .Where(p => p.Value is DateTime)
-                    .Where(p => p.Value as DateTime? != DateTime.MinValue)
+                    .Where (p => p.SqlDbType == SqlDbType.DateTime2 )
+                    .Where( p => p.Value != DBNull.Value )
+                    .Where( p => p.Value is DateTime )
+                    .Where( p => p.Value as DateTime? != DateTime.MinValue )
                     .ToList()
-                    .ForEach(p => p.SqlDbType = SqlDbType.DateTime);
+                    .ForEach( p => p.SqlDbType = SqlDbType.DateTime );
             }
         }
         #endregion

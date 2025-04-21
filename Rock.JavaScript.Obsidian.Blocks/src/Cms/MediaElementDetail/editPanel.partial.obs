@@ -127,10 +127,9 @@
     const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
     const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
-    const durationSeconds = propertyRef(props.modelValue.bag?.durationSeconds ?? 0, "DurationSeconds");
+    const durationSeconds = propertyRef(props.modelValue.bag?.durationSeconds ?? null, "DurationSeconds");
     const thumbnailDataRef = propertyRef(props.modelValue.bag?.thumbnailDataJson ?? "", "ThumbnailDataJson");
     const fileDataRef = propertyRef(props.modelValue.bag?.fileDataJson ?? "", "FileDataJson");
-    const validProperties = ref<string[]>(props.modelValue.validProperties || []);
 
     // Thumbnail Modal State
     const showThumbnailModal = ref(false);
@@ -362,17 +361,13 @@
 
             thumbnailDataRef.value = JSON.stringify(newThumbnailData);
 
-            if (!validProperties.value.includes("thumbnailDataJson")) {
-                validProperties.value = [...validProperties.value, "thumbnailDataJson"];
-            }
-
             const newValue: ValidPropertiesBox<MediaElementBag> = {
                 bag: {
-                    ...props.modelValue.bag,
-                    thumbnailDataJson: thumbnailDataRef.value
-                } as MediaElementBag,
-                validProperties: validProperties.value
+                    ...props.modelValue.bag
+                } as MediaElementBag
             };
+
+            setPropertiesBoxValue(newValue, "thumbnailDataJson", thumbnailDataRef.value);
 
             emit("update:modelValue", newValue);
             emit("propertyChanged", "thumbnailDataJson");
@@ -399,17 +394,13 @@
 
             fileDataRef.value = JSON.stringify(newFileData);
 
-            if (!validProperties.value.includes("fileDataJson")) {
-                validProperties.value = [...validProperties.value, "fileDataJson"];
-            }
-
             const newValue: ValidPropertiesBox<MediaElementBag> = {
                 bag: {
-                    ...props.modelValue.bag,
-                    fileDataJson: fileDataRef.value
-                } as MediaElementBag,
-                validProperties: validProperties.value
+                    ...props.modelValue.bag
+                } as MediaElementBag
             };
+
+            setPropertiesBoxValue(newValue, "fileDataJson", fileDataRef.value);
 
             emit("update:modelValue", newValue);
             emit("propertyChanged", "fileDataJson");
@@ -453,17 +444,13 @@
 
             thumbnailDataRef.value = JSON.stringify(newThumbnailData);
 
-            if (!validProperties.value.includes("thumbnailDataJson")) {
-                validProperties.value = [...validProperties.value, "thumbnailDataJson"];
-            }
-
             const newValue: ValidPropertiesBox<MediaElementBag> = {
                 bag: {
-                    ...props.modelValue.bag,
-                    thumbnailDataJson: thumbnailDataRef.value
-                } as MediaElementBag,
-                validProperties: validProperties.value
+                    ...props.modelValue.bag
+                } as MediaElementBag
             };
+
+            setPropertiesBoxValue(newValue, "thumbnailDataJson", thumbnailDataRef.value);
 
             emit("update:modelValue", newValue);
             emit("propertyChanged", "thumbnailDataJson");
@@ -524,20 +511,16 @@
 
             fileDataRef.value = JSON.stringify(newFileData);
 
-            if (!validProperties.value.includes("fileDataJson")) {
-                validProperties.value = [...validProperties.value, "fileDataJson"];
-            }
-
             const newValue: ValidPropertiesBox<MediaElementBag> = {
                 bag: {
-                    ...props.modelValue.bag,
-                    fileDataJson: fileDataRef.value
-                } as MediaElementBag,
-                validProperties: validProperties.value
+                    ...props.modelValue.bag
+                } as MediaElementBag
             };
 
             emit("update:modelValue", newValue);
             emit("propertyChanged", "fileDataJson");
+
+            setPropertiesBoxValue(newValue, "fileDataJson", fileDataRef.value);
 
             currentMediaFile.value = {};
             showMediaFileModal.value = false;
@@ -555,18 +538,16 @@
         updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
         updateRefValue(description, props.modelValue.bag?.description ?? "");
         updateRefValue(name, props.modelValue.bag?.name ?? "");
-        updateRefValue(durationSeconds, props.modelValue.bag?.durationSeconds ?? 0);
+        updateRefValue(durationSeconds, props.modelValue.bag?.durationSeconds ?? null);
         updateRefValue(thumbnailDataRef, props.modelValue.bag?.thumbnailDataJson ?? "");
         updateRefValue(fileDataRef, props.modelValue.bag?.fileDataJson ?? "");
-        validProperties.value = props.modelValue.validProperties || [];
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
         const newValue: ValidPropertiesBox<MediaElementBag> = {
-            bag: { ...props.modelValue.bag } as MediaElementBag,
-            validProperties: validProperties.value
+            bag: { ...props.modelValue.bag } as MediaElementBag
         };
 
         setPropertiesBoxValue(newValue, "description", description.value);
@@ -576,10 +557,8 @@
         setPropertiesBoxValue(newValue, "fileDataJson", fileDataRef.value);
         setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
 
-        // Only emit if we have changes
-        if (newValue.validProperties && newValue.validProperties.length > 0) {
-            emit("update:modelValue", newValue);
-        }
+        emit("update:modelValue", newValue);
+
     });
 
     // Watch for any changes to props that represent properties and then
