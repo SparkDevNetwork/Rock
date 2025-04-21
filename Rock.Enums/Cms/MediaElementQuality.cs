@@ -17,7 +17,7 @@
 
 using System.ComponentModel;
 
-namespace Rock.Enums.Cms
+namespace Rock.Media
 {
     /// <summary>
     /// The quality of the media file.
@@ -25,10 +25,10 @@ namespace Rock.Enums.Cms
     /// <remarks>
     /// <para>When deciding on which file to play by default the order is as follows:</para>
     /// <para>HLS, UltraHD, HD, SD, Embed, Other.</para>
-    /// <para>In each quality, the results will be further sorted by <see cref="MediaElementFileData.Width" />
+    /// <para>In each quality, the results will be further sorted by see MediaElementFileData.Width
     /// in descending order.</para>
     /// </remarks>
-    /// This is a copy of the original <see cref="Rock.Media.MediaElementQuality"/>. If changes are made, make the same changes here and on the original.
+     [Enums.EnumDomain( "Cms" )]
     public enum MediaElementQuality
     {
         /// <summary>

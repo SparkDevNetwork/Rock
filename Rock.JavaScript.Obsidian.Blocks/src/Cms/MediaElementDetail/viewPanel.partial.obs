@@ -142,7 +142,6 @@
             return gridData;
         }
         catch (error) {
-
             return { rows: [] };
         }
     });
@@ -152,7 +151,6 @@
 
         const thumbnailDataJson = props.modelValue?.thumbnailDataJson;
         if (!thumbnailDataJson) {
-
             return { rows: [] };
         }
 

@@ -32,20 +32,6 @@ namespace Rock.ViewModels.Blocks.Cms.MediaElementDetail
         public string CloseCaption { get; set; }
 
         /// <summary>
-        /// Gets the default file URL to use for media playback. This value is
-        /// calculated at run time but also stored on the database so it is
-        /// available in SQL and LINQ queries as well.
-        /// </summary>
-        public string DefaultFileUrl { get; set; }
-
-        /// <summary>
-        /// Gets the default thumbnail URL. This value is calculated at run
-        /// time but also stored on the database so it is available in SQL
-        /// and LINQ queries as well.
-        /// </summary>
-        public string DefaultThumbnailUrl { get; set; }
-
-        /// <summary>
         /// Gets or sets a description of the Element.
         /// </summary>
         public string Description { get; set; }
@@ -62,16 +48,6 @@ namespace Rock.ViewModels.Blocks.Cms.MediaElementDetail
         public string FileDataJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the Media Folder that this Element belongs to.
-        /// </summary>
-        public ListItemBag MediaFolder { get; set; }
-
-        /// <summary>
-        /// Gets or sets the MediaFolderId of the Rock.Model.MediaFolder that this MediaElement belongs to. This property is required.
-        /// </summary>
-        public int MediaFolderId { get; set; }
-
-        /// <summary>
         /// Gets or sets the custom provider metric data for this instance.
         /// </summary>
         public string MetricData { get; set; }
@@ -80,26 +56,6 @@ namespace Rock.ViewModels.Blocks.Cms.MediaElementDetail
         /// Gets or sets the Name of the Element. This property is required.
         /// </summary>
         public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the System.DateTime this instance was created on the provider.
-        /// </summary>
-        public DateTime? SourceCreatedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the custom provider data for this instance.
-        /// </summary>
-        public string SourceData { get; set; }
-
-        /// <summary>
-        /// Gets or sets the provider's unique identifier for this instance.
-        /// </summary>
-        public string SourceKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets the System.DateTime this instance was modified on the provider.
-        /// </summary>
-        public DateTime? SourceModifiedDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the thumbnail data JSON content that will stored
@@ -125,6 +81,6 @@ namespace Rock.ViewModels.Blocks.Cms.MediaElementDetail
         /// <summary>
         /// MinutesWatchedText
         /// </summary>
-        public string MinutesWatchedText { get; set; }  
+        public string MinutesWatchedText { get; set; }
     }
 }

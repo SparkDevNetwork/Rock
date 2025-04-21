@@ -2,10 +2,6 @@
 <template>
     <Modal v-model="showModal" title="File Info">
         <RockForm v-model:submit="submitForm" @submit="onFormSubmit">
-            <NotificationBox v-if="showError" alertType="danger" dismissable @dismiss="showError = false">
-                Please fill in all required fields.
-            </NotificationBox>
-
             <div class="row">
                 <div class="col-sm-12">
                     <TextBox v-model="publicName" help="Description of the media file to be used when allowing someon to select a format. (e.g. 1080p, 720p)"
@@ -90,9 +86,9 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { MediaElementQualityDescription } from "@Obsidian/Enums/Cms/mediaElementQuality";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
 
     const props = defineProps({
         modelValue: {
@@ -142,18 +138,10 @@
     const fps = ref(props.initialData.fps || null);
     const fileSize = ref(props.initialData.fileSize || null);
     const submitForm = ref(false);
-    const showError = ref(false);
+    const qualityOptions = enumToListItemBag(MediaElementQualityDescription);
     // #endregion
 
     // #region Computed
-    const qualityOptions = computed(() => {
-        return Object.entries(MediaElementQualityDescription)
-            .filter(([key]) => !isNaN(Number(key)))
-            .map(([key, value]) => ({
-                value: String(key),
-                text: value as string
-            })) as ListItemBag[];
-    });
     // #endregion
 
     // #region Watch
@@ -163,10 +151,6 @@
 
     watch(() => showModal.value, () => {
         emit("update:modelValue", showModal.value);
-
-        if (!showModal.value) {
-            showError.value = false;
-        }
     });
 
     watch(() => props.initialData, () => {
@@ -188,11 +172,6 @@
     }
 
     function onFormSubmit(): void {
-        if (!publicName.value.trim() || !link.value.trim() || !quality.value) {
-            showError.value = true;
-            return;
-        }
-
         emit("save", {
             publicName: publicName.value,
             link: link.value,
@@ -206,7 +185,6 @@
         });
 
         showModal.value = false;
-
         submitForm.value = false;
     }
     // #endregion

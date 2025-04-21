@@ -162,3 +162,6 @@ using System.Runtime.InteropServices;
 
 // The following type forwardings were setup in Rock 17.0
 [assembly: TypeForwardedTo( typeof( Rock.Reporting.FilterMode ) )]
+
+// The following type forwardings were setup in Rock 17.1
+[assembly: TypeForwardedTo( typeof(Rock.Media.MediaElementQuality ) )]

@@ -35,30 +35,16 @@ export type MediaElementBag = {
     /** The close captioning data for the media element. This should be in the format of WebVTT for use by Rock. */
     closeCaption?: string | null;
 
-    /**
-     * Gets the default file URL to use for media playback. This value is
-     * calculated at run time but also stored on the database so it is
-     * available in SQL and LINQ queries as well.
-     */
-    defaultFileUrl?: string | null;
-
-    /**
-     * Gets the default thumbnail URL. This value is calculated at run
-     * time but also stored on the database so it is available in SQL
-     * and LINQ queries as well.
-     */
-    defaultThumbnailUrl?: string | null;
-
     /** Gets or sets a description of the Element. */
     description?: string | null;
 
     /** Gets or set the duration in seconds of media element. */
     durationSeconds?: number | null;
 
-    /**
-     * Gets or sets the file data JSON content that will be stored in
-     * the database.
-     */
+    /** EngagementStat */
+    engagementStat: number;
+
+    /** Gets or sets the file data JSON content that will be stored in the database. */
     fileDataJson?: string | null;
 
     /** Gets or sets the identifier key of this entity. */
@@ -73,25 +59,16 @@ export type MediaElementBag = {
     /** Gets or sets the custom provider metric data for this instance. */
     metricData?: string | null;
 
+    /** MinutesWatchedText */
+    minutesWatchedText?: string | null;
+
     /** Gets or sets the Name of the Element. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the System.DateTime this instance was created on the provider. */
-    sourceCreatedDateTime?: string | null;
+    /** PlayCountText */
+    playCountText?: string | null;
 
-    /** Gets or sets the custom provider data for this instance. */
-    sourceData?: string | null;
-
-    /** Gets or sets the provider's unique identifier for this instance. */
-    sourceKey?: string | null;
-
-    /** Gets or sets the System.DateTime this instance was modified on the provider. */
-    sourceModifiedDateTime?: string | null;
-
-    /**
-     * Gets or sets the thumbnail data JSON content that will stored
-     * in the database.
-     */
+    /** Gets or sets the thumbnail data JSON content that will stored in the database. */
     thumbnailDataJson?: string | null;
 
     /** Transcripts Text */
