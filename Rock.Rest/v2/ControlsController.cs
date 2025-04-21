@@ -34,7 +34,6 @@ using Rock.Attribute;
 using Rock.Badge;
 using Rock.ClientService.Core.Category;
 using Rock.ClientService.Core.Category.Options;
-using Rock.Cms.StructuredContent;
 using Rock.Communication;
 using Rock.Configuration;
 using Rock.Data;
@@ -3737,13 +3736,13 @@ namespace Rock.Rest.v2
 
                     emailSectionService.Add( emailSection );
                 }
-                
+
                 var categoryGuid = options.Category?.Value.AsGuidOrNull();
                 var category = categoryGuid.HasValue ? new CategoryService( rockContext ).Get( categoryGuid.Value ) : null;
 
                 var thumbnailBinaryFileGuid = options.ThumbnailBinaryFile?.Value.AsGuidOrNull();
                 var thumbnailBinaryFile = thumbnailBinaryFileGuid.HasValue ? new BinaryFileService( rockContext ).Get( thumbnailBinaryFileGuid.Value ) : null;
-                
+
                 emailSection.Category = category;
                 emailSection.Guid = options.Guid;
                 emailSection.Name = options.Name;
@@ -3916,7 +3915,7 @@ namespace Rock.Rest.v2
                 UsageSummary = emailSection.UsageSummary
             };
         }
-        
+
         private static ListItemBag OccurrenceAsListItemBag( AttendanceOccurrence attendanceOccurrence )
         {
             return attendanceOccurrence == null ? null : new ListItemBag
@@ -3925,8 +3924,8 @@ namespace Rock.Rest.v2
                 Value = $"{attendanceOccurrence.Id}|{attendanceOccurrence.GroupId}|{attendanceOccurrence.LocationId}|{attendanceOccurrence.ScheduleId}|{attendanceOccurrence.OccurrenceDate:s}",
                 Text = attendanceOccurrence.OccurrenceDate.ToString( "dddd, MMMM d, yyyy" )
             };
-        } 
-        
+        }
+
         private static EmailEditorAttendanceOccurrenceBag OccurrenceAsBag( AttendanceOccurrence attendanceOccurrence )
         {
             return attendanceOccurrence == null ? null : new EmailEditorAttendanceOccurrenceBag
@@ -3938,7 +3937,7 @@ namespace Rock.Rest.v2
                 ScheduleId = attendanceOccurrence.ScheduleId,
                 OccurrenceDate = $"{attendanceOccurrence.OccurrenceDate:s}"
             };
-        } 
+        }
 
         #endregion
 
@@ -6288,6 +6287,92 @@ namespace Rock.Rest.v2
             foreach ( var command in Rock.Lava.LavaHelper.GetLavaCommands() )
             {
                 items.Add( new ListItemBag { Text = command.SplitCase(), Value = command } );
+            }
+
+            return Ok( items );
+        }
+
+        #endregion
+
+        #region Learning Class Activity Picker
+
+        /// <summary>
+        /// Gets the lava commands that can be displayed in the lava command picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the lava commands.</returns>
+        [HttpPost]
+        [Route( "LearningClassActivityPickerGetLearningClassActivities" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [Rock.SystemGuid.RestActionGuid( "C5739387-B814-4ED5-9182-CD204529E8BB" )]
+        public IActionResult LearningClassActivityPickerGetLearningClassActivities( [FromBody] LearningClassActivityPickerGetLearningClassActivitiesOptionsBag options )
+        {
+            if ( !options.LearningClassGuid.HasValue )
+            {
+                return NotFound();
+            }
+
+            var selectedClassGuid = options.LearningClassGuid.Value;
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            var items = new List<ListItemBag>();
+
+            var learningClasses = new LearningClassActivityService( new RockContext() )
+                .Queryable()
+                .Where( lca => lca.LearningClass.Guid == selectedClassGuid )
+                .OrderBy( lca => lca.Order )
+                .ToList();
+
+            foreach ( var lca in learningClasses )
+            {
+                if ( lca.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || ( grant?.IsAccessGranted( lca, Security.Authorization.VIEW ) == true ) )
+                {
+                    items.Add( new ListItemBag { Text = lca.Name, Value = lca.Guid.ToString() } );
+                }
+            }
+
+            return Ok( items );
+        }
+
+        #endregion
+
+        #region Learning Class Picker
+
+        /// <summary>
+        /// Gets the lava commands that can be displayed in the lava command picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the lava commands.</returns>
+        [HttpPost]
+        [Route( "LearningClassPickerGetLearningClasses" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [Rock.SystemGuid.RestActionGuid( "C5739387-B814-4ED5-9182-CD204529E8BB" )]
+        public IActionResult LearningClassPickerGetLearningClasses( [FromBody] LearningClassPickerGetLearningClassesOptionsBag options )
+        {
+            if ( !options.LearningCourseGuid.HasValue )
+            {
+                return NotFound();
+            }
+
+            var selectedCourseGuid = options.LearningCourseGuid.Value;
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            var items = new List<ListItemBag>();
+
+            var learningClasses = new LearningClassService( new RockContext() )
+                .Queryable()
+                .Where( lc => lc.LearningCourse.Guid == selectedCourseGuid )
+                .OrderBy( lc => lc.Order )
+                .ToList();
+
+            foreach ( var lc in learningClasses )
+            {
+                if ( lc.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || ( grant?.IsAccessGranted( lc, Security.Authorization.VIEW ) == true ) )
+                {
+                    items.Add( new ListItemBag { Text = lc.Name, Value = lc.Guid.ToString() } );
+                }
             }
 
             return Ok( items );
