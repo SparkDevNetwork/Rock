@@ -77,5 +77,10 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakDetail
         /// Gets or sets the Rock.Model.StreakType.
         /// </summary>
         public ListItemBag StreakType { get; set; }
+
+        /// <summary>
+        /// Is Add Mode
+        /// </summary>
+        public bool IsAddMode { get; set; }
     }
 }

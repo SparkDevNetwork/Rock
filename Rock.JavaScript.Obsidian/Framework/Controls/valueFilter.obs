@@ -1,0 +1,104 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="x-field">
+        <div class="text-right" v-show="!hideFilterMode">
+            <div class="btn-group mb-1" role="group" v-if="!hideFilterMode">
+                <button type="button"
+                        class="btn btn-xs"
+                        :class="internalValue.expressionType == FilterExpressionType.GroupAny ? 'btn-info' : 'btn-default'"
+                        @click="setExpressionType(FilterExpressionType.GroupAny)">Any</button>
+                <button type="button"
+                        class="btn btn-xs"
+                        :class="internalValue.expressionType == FilterExpressionType.GroupAll ? 'btn-info' : 'btn-default'"
+                        @click="setExpressionType(FilterExpressionType.GroupAll)">All</button>
+            </div>
+        </div>
+        <div>
+            <ValueFilterItem v-for="(filterItem, i) of internalValue.filters" :key="i" v-model="internalValue.filters[i]" :comparisonTypes="comparisonTypes" @delete="deleteFilterItem(i)" />
+        </div>
+        <div class="text-right">
+            <button class="btn btn-default btn-square btn-sm" @click.prevent="addFilterItem"><i class="fa fa-plus"></i></button>
+        </div>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import ValueFilterItem from "./Internal/valueFilterItem.obs";
+    import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ComparisonItem, CompoundFilterExpression } from "@Obsidian/ViewModels/Controls/valueFilter.d";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<Partial<CompoundFilterExpression>>,
+            default: () => ({ expressionType: FilterExpressionType.GroupAny, filters: [] })
+        },
+
+        hideFilterMode: {
+            type: Boolean
+        },
+
+        /** The items that will be listed in the dropdown menu for comparison types that can be chosen. */
+        comparisonTypes: {
+            type: Array as PropType<ComparisonItem[]>,
+            default: () => [
+                { value: 1, text: "Equal To" },
+                { value: 2, text: "Not Equal To" },
+                { value: 4, text: "Starts With" },
+                { value: 8, text: "Contains" },
+                { value: 16, text: "Does Not Contain" },
+                { value: 32, text: "Is Blank" },
+                { value: 64, text: "Is Not Blank" },
+                { value: 2048, text: "Ends With" }
+            ]
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: CompoundFilterExpression): void
+    }>();
+
+    const internalValue = ref(JSON.parse(JSON.stringify(props.modelValue)) as CompoundFilterExpression);
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+
+    watch(internalValue, () => {
+        emit("update:modelValue", JSON.parse(JSON.stringify(internalValue.value)) as CompoundFilterExpression);
+    }, { deep: true });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(internalValue, JSON.parse(JSON.stringify(props.modelValue)) as CompoundFilterExpression);
+    });
+
+    function setExpressionType(type: FilterExpressionType): void {
+        internalValue.value.expressionType = type;
+    }
+
+    function deleteFilterItem(index: number): void {
+        internalValue.value.filters.splice(index, 1);
+    }
+
+    function addFilterItem(): void {
+        internalValue.value.filters.push({
+            value: "",
+            comparison: 0
+        });
+    }
+
+    if (internalValue.value.expressionType == null) {
+        internalValue.value.expressionType = FilterExpressionType.GroupAny;
+    }
+
+    if (internalValue.value.filters == null) {
+        internalValue.value.filters = [];
+    }
+
+    if (internalValue.value.filters?.length == 0) {
+        addFilterItem();
+    }
+
+</script>

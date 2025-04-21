@@ -4,7 +4,8 @@
                     formGroupClasses="location-item-picker"
                     iconCssClass="fa fa-bar-chart-o"
                     :provider="itemProvider"
-                    :multiple="multiple" />
+                    :multiple="multiple"
+                    disableFolderSelection />
 </template>
 
 <script setup lang="ts">

@@ -1,0 +1,48 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <MergeFieldPicker label="Merge Field" v-model="value" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" :additionalFields="additionalFields" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+                </div>
+                <div class="col-md-4">
+                    <TextBox label="Root Merge Fields" v-model="additionalFields" />
+                </div>
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import MergeFieldPicker from "@Obsidian/Controls/mergeFieldPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref([
+        {
+            "value": "Rock.Model.Group|ArchivedByPersonAlias|Person|Aliases|AliasedDateTime",
+            "text": "Aliased Date Time"
+        },
+        {
+            "value": "Rock.Model.Person|ConnectionStatusValue|Category|CreatedByPersonAliasId",
+            "text": "Created By Person Alias Id"
+        }
+    ]);
+
+    const multiple = ref(true);
+    const enhanceForLongLists = ref(false);
+    const additionalFields = ref("GlobalAttribute,Rock.Model.Person,Rock.Model.Group");
+    const importCode = getSfcControlImportPath("mergeFieldPicker");
+    const exampleCode = `<MergeFieldPicker label="Merge Field" v-model="value" :multiple="false" additionalFields="GlobalAttribute,Rock.Model.Person,Rock.Model.Group" />`;
+</script>

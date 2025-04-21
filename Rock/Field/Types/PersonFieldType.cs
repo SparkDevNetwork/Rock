@@ -37,6 +37,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a person. Stored as PersonAlias.Guid
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.PERSON )]
     public class PersonFieldType : FieldType, IEntityFieldType, ILinkableFieldType, IEntityReferenceFieldType
@@ -313,7 +314,6 @@ namespace Rock.Field.Types
             cbEnableSelfSelection.AutoPostBack = true;
             cbEnableSelfSelection.CheckedChanged += OnQualifierUpdated;
             cbEnableSelfSelection.Label = "Enable Self Selection";
-            cbEnableSelfSelection.Text = "Yes";
             cbEnableSelfSelection.Help = "When using Person Picker, show the self selection option";
 
             var cbIncludeBusinesses = new RockCheckBox();
@@ -321,7 +321,6 @@ namespace Rock.Field.Types
             cbIncludeBusinesses.AutoPostBack = true;
             cbIncludeBusinesses.CheckedChanged += OnQualifierUpdated;
             cbIncludeBusinesses.Label = "Include Businesses";
-            cbIncludeBusinesses.Text = "Yes";
             cbIncludeBusinesses.Help = "When using Person Picker, include businesses in the search results";
 
             return controls;

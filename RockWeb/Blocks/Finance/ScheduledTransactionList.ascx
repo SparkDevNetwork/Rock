@@ -19,7 +19,7 @@
                             <Rock:DefinedValuePicker ID="dvpFrequency" runat="server" Label="Frequency" />
                             <Rock:DateRangePicker ID="drpDates" runat="server" Label="Created" />
                             <Rock:RockDropDownList ID="ddlAccount" runat="server" Label="Account" EnhanceForLongLists="true" />
-                            <Rock:RockCheckBox ID="cbIncludeInactive" runat="server" Label="Include Inactive Schedules" Text="Yes" />
+                            <Rock:RockCheckBox ID="cbIncludeInactive" runat="server" Label="Include Inactive Schedules" />
                         </Rock:GridFilter>
                         <Rock:Grid ID="gList" AllowSorting="true" runat="server" EmptyDataText="No Scheduled Transactions Found"
                             ShowConfirmDeleteDialog="true" RowItemText="Scheduled Transaction" ExportSource="ColumnOutput">
@@ -38,6 +38,7 @@
                                 <Rock:DateField DataField="EndDate" HeaderText="Ending" SortExpression="EndDate" />
                                 <Rock:DateField DataField="NextPaymentDate" HeaderText="Next Payment" SortExpression="NextPaymentDate" />
                                 <Rock:DefinedValueField DataField="FinancialPaymentDetail.CurrencyTypeValueId" HeaderText="Currency Type" SortExpression="FinancialPaymentDetail.CurrencyTypeValue.Value" />
+                                <Rock:DefinedValueField DataField="TransactionTypeValueId" HeaderText="Transaction Type" SortExpression="TransactionTypeValue.Value" Visible="false" />
                                 <Rock:RockBoundField DataField="GatewayScheduleId" HeaderText="Schedule ID" SortExpression="GatewayScheduleId" />
                                 <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
                             </Columns>

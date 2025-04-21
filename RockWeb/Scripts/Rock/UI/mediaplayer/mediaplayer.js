@@ -20,6 +20,15 @@ var Rock;
             debug: false
         };
         class MediaPlayer {
+            get map() {
+                return MediaPlayer.toRle(this.watchBits);
+            }
+            get percentWatched() {
+                return this.percentWatchedInternal;
+            }
+            get duration() {
+                return this.player.duration;
+            }
             constructor(elementSelector, options = {}) {
                 this.timerId = null;
                 this.watchBits = Array();
@@ -48,15 +57,6 @@ var Rock;
                     this.element.removeChild(this.element.firstChild);
                 }
                 this.setupPlayer();
-            }
-            get map() {
-                return MediaPlayer.toRle(this.watchBits);
-            }
-            get percentWatched() {
-                return this.percentWatchedInternal;
-            }
-            get duration() {
-                return this.player.duration;
             }
             seek(positionInSeconds) {
                 this.player.currentTime = positionInSeconds;
@@ -125,6 +125,14 @@ var Rock;
                 hls.attachMedia(mediaElement);
             }
             initializePlayer(mediaElement, plyrOptions) {
+                if (this.isYouTubeEmbed(this.options.mediaUrl) || this.isVimeoEmbed(this.options.mediaUrl) || this.isHls(this.options.mediaUrl)) {
+                    var control = plyrOptions.controls;
+                    let index = control.findIndex(d => d === "download");
+                    if (index !== -1) {
+                        control.splice(index, 1);
+                    }
+                    plyrOptions.controls = control;
+                }
                 this.player = new Plyr(mediaElement, plyrOptions);
                 if (this.isYouTubeEmbed(this.options.mediaUrl)) {
                     let listenrsready = false;
@@ -191,11 +199,16 @@ var Rock;
             translateWellKnownUrls(url) {
                 const youTubePattern = /https?:\/\/(?:www\.)youtube\.com\/watch(?:[?&]v=([^&]+))/i;
                 const vimeoPattern = /https?:\/\/vimeo\.com\/([0-9]+)/i;
+                const vimeoHLSPattern = /https?:\/\/player\.vimeo\.com\/external\/([0-9]+)\.m3u8(\?.*)?/i;
                 let match = youTubePattern.exec(url);
                 if (match !== null) {
                     return `https://www.youtube.com/embed/${match[1]}`;
                 }
                 match = vimeoPattern.exec(url);
+                if (match !== null) {
+                    return `https://player.vimeo.com/video/${match[1]}`;
+                }
+                match = vimeoHLSPattern.exec(url);
                 if (match !== null) {
                     return `https://player.vimeo.com/video/${match[1]}`;
                 }
@@ -239,9 +252,13 @@ var Rock;
                     }
                 }
                 if (startPosition < this.watchBits.length) {
-                    this.player.currentTime = startPosition;
+                    // Setting the currentTime sometimes results on the audio of a video not playing (issue with plyr library(https://github.com/sampotts/plyr/issues/1527))
+                    // only set the value when absolutely necessary.
+                    if (this.player.currentTime !== startPosition) {
+                        this.player.currentTime = startPosition;
+                    }
                 }
-                else {
+                else if (this.player.currentTime != 0) {
                     this.player.currentTime = 0;
                 }
                 this.writeDebugMessage(`Set starting position at: ${startPosition}`);

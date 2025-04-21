@@ -299,16 +299,18 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             nbMessage.Visible = false;
 
             if ( !_blockContextIsValid )
             {
+                base.OnLoad( e );
                 return;
             }
 
             // Perform operations that are specific to this block implementation.
             OnLoadBlock( this.IsPostBack );
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -1156,10 +1158,7 @@ namespace RockWeb.Blocks.Administration
         {
             var settings = new Dictionary<string, string>();
 
-            if ( ddlSite.SelectedValue != All.IdValue )
-            {
-                settings[FilterSettingName.Site] = ddlSite.SelectedValue;
-            }
+            settings[FilterSettingName.Site] = ddlSite.SelectedValue;
 
             settings[FilterSettingName.User] = ppUser.PersonId.ToStringSafe();
             settings[FilterSettingName.Page] = ppPage.SelectedValueAsInt( true ).ToStringSafe();
@@ -1178,6 +1177,11 @@ namespace RockWeb.Blocks.Administration
         {
             if ( filterName == FilterSettingName.Site )
             {
+                if ( value == All.IdValue )
+                {
+                    return All.Text;
+                }
+
                 int siteId;
                 if ( int.TryParse( value, out siteId ) )
                 {
@@ -1251,8 +1255,8 @@ namespace RockWeb.Blocks.Administration
 
             filterQuery = exceptionService.FilterByOutermost( filterQuery );
 
-            // Filter by: SiteId
-            if ( args.SiteId.GetValueOrDefault(0) != 0 )
+            // Filter by: SiteId - Only apply if not "All"
+            if ( args.SiteId.GetValueOrDefault(0) != 0 && args.SiteId.Value.ToString() != All.IdValue )
             {
                 filterQuery = filterQuery.Where( e => e.SiteId == args.SiteId.Value );
             }
@@ -1514,11 +1518,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void ClearExceptionLog()
         {
-            var dataContext = GetDataContext();
-
-            var exceptionService = new ExceptionLogService( dataContext );
-
-            exceptionService.TruncateLog();
+            ExceptionLogService.TruncateLog();
         }
 
         #region Control Events

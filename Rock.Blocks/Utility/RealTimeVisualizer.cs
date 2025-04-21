@@ -226,7 +226,7 @@ namespace Rock.Blocks.Utility
 
             foreach ( var kvp in theme.Settings )
             {
-                settings.AddOrIgnore( kvp.Key, kvp.Value );
+                settings.TryAdd( kvp.Key, kvp.Value );
             }
 
             return settings;

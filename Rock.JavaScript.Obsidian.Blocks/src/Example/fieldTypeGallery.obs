@@ -208,6 +208,11 @@ const galleries: FieldComponent[] = [
     getFieldTypeGalleryComponent("PhoneNumber", "(321) 456-7890", FieldTypeGuids.PhoneNumber, {
     }),
 
+    getFieldTypeGalleryComponent("RangeSlider", '{"value":25}', FieldTypeGuids.RangeSlider, {
+        min: "0",
+        max: "100"
+    }),
+
     getFieldTypeGalleryComponent("Rating", '{"value":3,"maxValue":5}', FieldTypeGuids.Rating, {
         max: "5"
     }),

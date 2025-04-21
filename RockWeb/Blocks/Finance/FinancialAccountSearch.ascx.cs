@@ -70,12 +70,12 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         protected void Block_BlockUpdated( object sender, EventArgs e )
@@ -172,16 +172,19 @@ namespace RockWeb.Blocks.Finance
             var accountService = new FinancialAccountService( new RockContext() );
             var accounts = new List<FinancialAccount>();
 
-            var glCodeStart = searchTerm.LastIndexOf( '(' );
-
-            if ( glCodeStart > -1 )
+            if ( !searchTerm.IsSingleSpecialCharacter() )
             {
-                searchTerm = searchTerm.Substring( glCodeStart ).Replace( "(", "" ).Replace( ")", "" );
+                var glCodeStart = searchTerm.LastIndexOf( '(' );
+
+                if ( glCodeStart > -1 )
+                {
+                    searchTerm = searchTerm.Substring( glCodeStart ).Replace( "(", "" ).Replace( ")", "" );
+                }
+
+                searchTerm = searchTerm.Trim();
+
+                accounts = accountService.GetAccountsBySearchTerm( searchTerm )?.ToList();
             }
-
-            searchTerm = searchTerm.Trim();
-
-            accounts = accountService.GetAccountsBySearchTerm( searchTerm )?.ToList();
 
             if ( accounts?.Count == 1 )
             {

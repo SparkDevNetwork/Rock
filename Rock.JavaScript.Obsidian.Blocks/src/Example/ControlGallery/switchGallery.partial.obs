@@ -1,0 +1,24 @@
+<template>
+    <GalleryAndResult :value="isChecked"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <Switch text="Switch" v-model="isChecked" />
+
+        <template #settings>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const isChecked = ref(false);
+    const importCode = getSfcControlImportPath("switch");
+    const exampleCode = `<Switch text="Switch" v-model="value" />`;
+</script>

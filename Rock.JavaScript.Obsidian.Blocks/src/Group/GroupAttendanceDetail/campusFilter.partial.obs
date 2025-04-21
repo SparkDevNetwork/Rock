@@ -3,9 +3,12 @@
     <CampusPicker
         v-model="campusPickerValue"
         blankValue="All Campuses"
+        :forceVisible="true"
         :includeInactive="true"
         :multiple="false"
-        :showBlankItem="true" />
+        :showBlankItem="true"
+        :campusStatusFilter="campusStatusFilter ?? []"
+        :campusTypeFilter="campusTypeFilter ?? []" />
 </template>
 
 <script setup lang="ts">
@@ -26,6 +29,16 @@
         campusGuid: {
             type: String as PropType<Guid | null | undefined>,
             required: true
+        },
+
+        campusTypeFilter: {
+            type: Array as PropType<Guid[] | null>,
+            required: false
+        },
+
+        campusStatusFilter: {
+            type: Array as PropType<Guid[] | null>,
+            required: false
         }
     });
 

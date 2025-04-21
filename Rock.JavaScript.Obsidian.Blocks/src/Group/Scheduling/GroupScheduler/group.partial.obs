@@ -24,7 +24,7 @@
                     </div>
                 </NotificationBox>
 
-                <Occurrence v-for="occurrence in occurrences" :key="occurrence.locationId"
+                <Occurrence v-for="occurrence in occurrences" :key="occurrence.guid!"
                             :occurrence="occurrence"
                             :disabled="disabled"
                             @resourceListUpdated="$emit('resourceListUpdated', $event)"

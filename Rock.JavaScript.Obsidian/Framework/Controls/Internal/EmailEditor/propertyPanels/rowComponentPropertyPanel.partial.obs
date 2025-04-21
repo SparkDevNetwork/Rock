@@ -1,0 +1,180 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ComponentPropertyPanelBase :componentElement="componentElement"
+                                title="Row"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')">
+        <template v-if="componentHelper">
+            <AccordionGroup>
+                <Accordion title="General Settings">
+                    <RangeSliderProperty label="Body Width"
+                                         :min="480"
+                                         :max="900"
+                                         :showValueBar="true"
+                                         :valueProvider="bodyWidthProvider"
+                                         valueSuffix="px" />
+
+                    <ColorPickerProperty label="Body Color"
+                                         :valueProvider="backgroundColorProvider" />
+
+                    <ColorPickerProperty label="Background Color"
+                                         :valueProvider="outerBackgroundColorProvider" />
+
+                    <PaddingProperty :element="componentHelper.marginWrapper.borderWrapper.paddingWrapper.td" />
+                </Accordion>
+            </AccordionGroup>
+        </template>
+    </ComponentPropertyPanelBase>
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import Accordion from "../accordion.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
+    import ColorPickerProperty from "../properties/colorPickerProperty.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import RangeSliderProperty from "../properties/rangeSliderProperty.partial.obs";
+    import {
+        attributeProvider,
+        createComponentBackgroundColorProvider,
+        createComponentOuterBackgroundColorProvider,
+        createDomWatcherProvider,
+        inlineStyleProvider
+    } from "../providers.partial";
+    import { ValueProvider } from "../types.partial";
+    import {
+        getBorderWrapperTableSelector,
+        getRowComponentHelper,
+        numberToStringConverter,
+        pixelConverter
+    } from "../utils.partial";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { isHTMLElement } from "@Obsidian/Utility/dom";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+
+    // #region Computed Props
+
+    // #endregion Computed Props
+
+    // #region Values
+
+    const rowComponentHelper = getRowComponentHelper();
+    const componentHelper = ref(rowComponentHelper.getElements(props.componentElement));
+    const backgroundColorProvider = ref<ValueProvider<string | null | undefined>>(createComponentBackgroundColorProvider(props.componentElement));
+    const outerBackgroundColorProvider = ref<ValueProvider<string | null | undefined>>(createComponentOuterBackgroundColorProvider(props.componentElement));
+    const bodyWidthProvider = ref<ValueProvider<number | null | undefined>>(getBodyWidthProvider());
+
+    // #endregion Values
+
+    // #region Computed Props
+
+    // #endregion Computed Props
+
+    // #region Functions
+
+    function getBodyWidthProvider(): ValueProvider<number | null | undefined> {
+        const maxWidthInlineStyleProvider = createDomWatcherProvider(
+            props.componentElement,
+            getBorderWrapperTableSelector("row"),
+            (el) => inlineStyleProvider(el as HTMLElement, "max-width", pixelConverter, undefined, {
+                onStyleUpdated(style, value) {
+                    if (!isNullish(value)) {
+                        // Ensure the inline width of the .email-row-content table is 100% when a max-width is defined.
+                        style.width = "100%";
+                    }
+
+                    if (isHTMLElement(el)) {
+                        if (value) {
+                            el.setAttribute("data-component-body-width", "true");
+                        }
+                        else {
+                            el.removeAttribute("data-component-body-width");
+                        }
+                    }
+                }
+            }),
+            undefined,
+            {
+                additionalFilter: (el) => {
+                    return el.closest(".component-row") === props.componentElement;
+                }
+            }
+        );
+
+        const widthAttributeProvider = createDomWatcherProvider(
+            props.componentElement,
+            getBorderWrapperTableSelector("row"),
+            (el) => attributeProvider(el, "width", numberToStringConverter),
+            maxWidthInlineStyleProvider.value,
+            {
+                additionalFilter: (el) => {
+                    return el.closest(".component-row") === props.componentElement;
+                }
+            }
+        );
+
+        const value = ref<number | null | undefined>(maxWidthInlineStyleProvider.value);
+
+        const watcher = watch(value, (newValue) => {
+            maxWidthInlineStyleProvider.value = newValue;
+            widthAttributeProvider.value = newValue;
+        });
+
+        return {
+            get value() {
+                return value.value;
+            },
+            set value(newValue) {
+                value.value = newValue;
+            },
+            dispose() {
+                watcher();
+                widthAttributeProvider.dispose();
+                maxWidthInlineStyleProvider.dispose();
+            }
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.componentElement, () => {
+        outerBackgroundColorProvider.value.dispose();
+        outerBackgroundColorProvider.value = createComponentOuterBackgroundColorProvider(props.componentElement);
+
+        backgroundColorProvider.value.dispose();
+        backgroundColorProvider.value = createComponentBackgroundColorProvider(props.componentElement);
+
+        bodyWidthProvider.value.dispose();
+        bodyWidthProvider.value = getBodyWidthProvider();
+
+        componentHelper.value = rowComponentHelper.getElements(props.componentElement);
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        outerBackgroundColorProvider.value.dispose();
+        backgroundColorProvider.value.dispose();
+        bodyWidthProvider.value.dispose();
+    });
+
+    // #endregion Hooks
+</script>

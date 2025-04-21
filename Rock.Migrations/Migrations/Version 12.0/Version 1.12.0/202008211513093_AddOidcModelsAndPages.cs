@@ -201,11 +201,13 @@ namespace Rock.Migrations
             // Add Page OpenID Connect Client Detail to Site:Rock RMS
             RockMigrationHelper.AddPage( true, Rock.SystemGuid.Page.OIDC_CLIENT_LIST, Rock.SystemGuid.Layout.FULL_WIDTH_INTERNAL_SITE, "OpenID Connect Client Detail", "", Rock.SystemGuid.Page.OIDC_CLIENT_DETAIL, "" );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route for Give Permission
             RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.OIDC_GIVE_PERMISSION, "Auth/Authorize", Rock.SystemGuid.PageRoute.OIDC_AUTHORIZE );
 
             // Add Page Route for Logout
             RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.OIDC_LOGOUT, "Auth/Logout", Rock.SystemGuid.PageRoute.OIDC_LOGOUT );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Add/Update BlockType Authorize
             RockMigrationHelper.UpdateBlockType( "Authorize", "Choose to authorize the auth client to access the user's data.", "~/Blocks/Security/Oidc/Authorize.ascx", "Oidc", Rock.SystemGuid.BlockType.OIDC_AUTHORIZE );

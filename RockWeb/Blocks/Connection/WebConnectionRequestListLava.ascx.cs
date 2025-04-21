@@ -213,8 +213,6 @@ namespace RockWeb.Blocks.Connection
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             _connectionOpportunityGuid = PageParameter( PageParameterKey.ConnectionOpportunityGuid ).AsGuid();
 
             if ( !Page.IsPostBack )
@@ -226,6 +224,8 @@ namespace RockWeb.Blocks.Connection
                 // Get the GetConnectionRequests and use the set options
                 GetConnectionRequests();
             }
+
+            base.OnLoad( e );
         }
         #endregion Base Control Events
 

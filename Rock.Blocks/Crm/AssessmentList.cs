@@ -38,7 +38,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Displays the details of a particular assessment." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -106,36 +106,37 @@ namespace Rock.Blocks.Crm
 
         #region Constants
 
-        protected const string lavaTemplateDefaultValue = @"<div class='panel panel-default'>
-    <div class='panel-heading'>Assessments</div>
-    <div class='panel-body'>
-            {% for assessmenttype in AssessmentTypes %}
-                {% if assessmenttype.LastRequestObject %}
-                    {% if assessmenttype.LastRequestObject.Status == 'Complete' %}
-                        <div class='panel panel-success'>
-                            <div class='panel-heading'>{{ assessmenttype.Title }}<br />
-                                Completed: {{ assessmenttype.LastRequestObject.CompletedDate | Date:'M/d/yyyy'}} <br />
-                                <a href='{{ assessmenttype.AssessmentResultsPath}}'>View Results</a>
-                                &nbsp;&nbsp;{{ assessmenttype.AssessmentRetakeLinkButton }}
-                            </div>
+        protected const string lavaTemplateDefaultValue = @"<div class=""panel panel-default"">
+    <div class=""panel-heading"">Assessments</div>
+    <div class=""panel-body"">
+        {% for assessmenttype in AssessmentTypes %}
+            {% if assessmenttype.LastRequestObject %}
+                {% if assessmenttype.LastRequestObject.Status == 'Complete' %}
+                    <div class='panel panel-success'>
+                        <div class=""panel-heading"">{{ assessmenttype.Title }}<br />
+                            Completed: {{ assessmenttype.LastRequestObject.CompletedDate | Date:'sd' }} <br />
+                            <div>
+                            <a href=""{{ assessmenttype.AssessmentResultsPath}}"" class=""d-inline-block"">View Results</a> {% if assessmenttype.AssessmentRetakePath != '' %}<br/><a href=""{{ assessmenttype.AssessmentRetakePath }}"" class=""d-inline-block mt-2"">Retake Assessment</a>{% endif %}</div>
                         </div>
-                    {% elseif assessmenttype.LastRequestObject.Status == 'Pending' %}
-                        <div class='panel panel-warning'>
-                            <div class='panel-heading'> {{ assessmenttype.Title }}<br />
-                                Requested: {{assessmenttype.LastRequestObject.Requester}} ({{ assessmenttype.LastRequestObject.RequestedDate | Date:'M/d/yyyy'}})<br />
-                                <a href='{{ assessmenttype.AssessmentPath}}'>Start Assessment</a>
-                            </div>
+                    </div>
+                {% elseif assessmenttype.LastRequestObject.Status == 'Pending' %}
+                    <div class=""panel panel-warning"">
+                        <div class=""panel-heading"">
+                            {{ assessmenttype.Title }}<br />
+                            Requested: {{assessmenttype.LastRequestObject.Requester}} ({{ assessmenttype.LastRequestObject.RequestedDate | Date:'sd'}})<br />
+                            <a href=""{{ assessmenttype.AssessmentPath}}"">Start Assessment</a>
                         </div>
-                    {% endif %}
-                    {% else %}
-                        <div class='panel panel-default'>
-                            <div class='panel-heading'> {{ assessmenttype.Title }}<br />
-                                Available<br />
-                                <a href='{{ assessmenttype.AssessmentPath}}'>Start Assessment</a>
-                            </div>
-                        </div>
+                    </div>
                 {% endif %}
-            {% endfor %}
+                {% else %}
+                    <div class=""panel panel-default"">
+                        <div class=""panel-heading"">{{ assessmenttype.Title }}<br/>
+                            Available<br />
+                            <a href=""{{ assessmenttype.AssessmentPath}}"">Start Assessment</a>
+                        </div>
+                    </div>
+            {% endif %}
+        {% endfor %}
     </div>
 </div>";
 
@@ -146,19 +147,31 @@ namespace Rock.Blocks.Crm
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            var bag = new AssessmentListBag
             {
-                return GetAssessmentListBag( rockContext );
-            }
+                AssessmentListContent = GetAssessmentListContent()
+            };
+
+            return bag;
         }
 
-        private AssessmentListBag GetAssessmentListBag( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override string GetInitialHtmlContent()
         {
-            var assessmentListBag = new AssessmentListBag();
+            return GetAssessmentListContent();
+        }
+
+        /// <summary>
+        /// Gets the HTML Content for the AssessmentList
+        /// </summary>
+        /// <returns>A string of the Assessment List HTML Content</returns>
+        private string GetAssessmentListContent()
+        {
+            var assessmentListContent = string.Empty;
             var currentPersonId = RequestContext?.CurrentPerson?.Id;
 
             // Gets Assessment types and assessments for each
-            AssessmentTypeService assessmentTypeService = new AssessmentTypeService( rockContext );
+            AssessmentTypeService assessmentTypeService = new AssessmentTypeService( RockContext );
             var allAssessmentsOfEachType = assessmentTypeService.Queryable().AsNoTracking()
                 .Where( x => x.IsActive )
                 .Select( t => new AssessmentTypeListItem
@@ -171,6 +184,7 @@ namespace Rock.Blocks.Crm
                     AssessmentRetakeLinkButton = "",
                     RequiresRequest = t.RequiresRequest,
                     MinDaysToRetake = t.MinimumDaysToRetake,
+                    ValidDuration = t.ValidDuration,
                     LastRequestObject = t.Assessments
                             .Where( a => a.PersonAlias.Person.Id == currentPersonId )
                             .OrderBy( a => a.Status ) // pending first
@@ -184,7 +198,7 @@ namespace Rock.Blocks.Crm
                             .OrderByDescending( x => x.RequestedDate )
                             .ThenByDescending( x => x.CompletedDate )
                             .FirstOrDefault(),
-                })
+                } )
                 // order by requested then by pending, completed, then by available to take
                 .OrderByDescending( x => x.LastRequestObject.Status )
                 .ThenBy( x => x.LastRequestObject )
@@ -208,6 +222,7 @@ namespace Rock.Blocks.Crm
                         item.LastRequestObject.CompletedDate.Value.AddDays( item.MinDaysToRetake ) <= RockDateTime.Now &&
                         !item.RequiresRequest )
                     {
+                        item.AssessmentRetakePath = item.AssessmentPath + "?AssessmentId=0";
                         item.AssessmentRetakeLinkButton = string.Format( "<a href='{0}?AssessmentId=0'>Retake Assessment</a>", item.AssessmentPath );
                     }
                 }
@@ -218,41 +233,37 @@ namespace Rock.Blocks.Crm
             bool hidIfNoRequests = GetAttributeValue( AttributeKey.HideIfNoRequests ).AsBoolean();
             if ( ( hideIfNoActiveRequests && !areThereAnyPendingRequests ) || ( hidIfNoRequests && !areThereAnyRequests ) )
             {
-                assessmentListBag.HasContent = false;
+                return assessmentListContent;
+            }
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, RequestContext.CurrentPerson );
+
+            // Show only the tests requested or completed?...
+            if ( GetAttributeValue( AttributeKey.OnlyShowRequested ).AsBoolean() )
+            {
+                // the completed data is only populated if the assessment was actually completed, where as a complete status can be assinged if it was not taken. So use date instead of status for completed.
+                var onlyRequestedOrCompleted = allAssessmentsOfEachType
+                    .Where( x => x.LastRequestObject != null )
+                    .Where( x => x.LastRequestObject.Requester != null )
+                    .Where( x => x.LastRequestObject.Status == AssessmentRequestStatus.Pending || x.LastRequestObject.CompletedDate != null );
+
+                mergeFields.Add( "AssessmentTypes", onlyRequestedOrCompleted );
             }
             else
             {
-                assessmentListBag.HasContent = true;
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, RequestContext.CurrentPerson );
+                // ...Otherwise show any allowed, requested or completed requests.
+                // the completed data is only populated if the assessment was actually completed, where as a complete status can be assigned if it was not taken. So use date instead of status for completed.
+                var onlyAllowedRequestedOrCompleted = allAssessmentsOfEachType
+                    .Where( x => !x.RequiresRequest
+                        || ( x.LastRequestObject != null && x.LastRequestObject.Status == AssessmentRequestStatus.Pending )
+                        || ( x.LastRequestObject != null && x.LastRequestObject.CompletedDate != null )
+                    );
 
-                // Show only the tests requested or completed?...
-                if ( GetAttributeValue( AttributeKey.OnlyShowRequested ).AsBoolean() )
-                {
-                    // the completed data is only populated if the assessment was actually completed, where as a complete status can be assinged if it was not taken. So use date instead of status for completed.
-                    var onlyRequestedOrCompleted = allAssessmentsOfEachType
-                        .Where( x => x.LastRequestObject != null )
-                        .Where( x => x.LastRequestObject.Requester != null )
-                        .Where( x => x.LastRequestObject.Status == AssessmentRequestStatus.Pending || x.LastRequestObject.CompletedDate != null );
-
-                    mergeFields.Add( "AssessmentTypes", onlyRequestedOrCompleted );
-                }
-                else
-                {
-                    // ...Otherwise show any allowed, requested or completed requests.
-                    // the completed data is only populated if the assessment was actually completed, where as a complete status can be assigned if it was not taken. So use date instead of status for completed.
-                    var onlyAllowedRequestedOrCompleted = allAssessmentsOfEachType
-                        .Where( x => !x.RequiresRequest
-                            || ( x.LastRequestObject != null && x.LastRequestObject.Status == AssessmentRequestStatus.Pending )
-                            || ( x.LastRequestObject != null && x.LastRequestObject.CompletedDate != null )
-                        );
-
-                    mergeFields.Add( "AssessmentTypes", onlyAllowedRequestedOrCompleted );
-                }
-
-                assessmentListBag.AssessmentList = GetAttributeValue( AttributeKey.LavaTemplate ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
+                mergeFields.Add( "AssessmentTypes", onlyAllowedRequestedOrCompleted );
             }
 
-            return assessmentListBag;
+            assessmentListContent = GetAttributeValue( AttributeKey.LavaTemplate ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
+
+            return assessmentListContent;
         }
 
         #endregion Methods
@@ -274,9 +285,11 @@ namespace Rock.Blocks.Crm
             public string Description { get; set; }
             public string AssessmentPath { get; set; }
             public string AssessmentResultsPath { get; set; }
+            public string AssessmentRetakePath { get; set; } = string.Empty;
             public string AssessmentRetakeLinkButton { get; set; }
             public bool RequiresRequest { get; set; }
             public int MinDaysToRetake { get; set; }
+            public int ValidDuration { get; set; }
             public LastAssessmentTaken LastRequestObject { get; set; }
         }
 

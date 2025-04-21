@@ -24,7 +24,9 @@
         <Column v-if="isPersonAndGlobalOwnership"
                 name="owner"
                 title="Owner"
-                :filter="textValueFilter"
+                field="owner"
+                :filter="pickExistingValueFilter"
+                :filterValue="getOwnerFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <span v-if="row.ownerIdKey"><a :href="`/person/${row.ownerIdKey}`">{{ row.ownerName }}</a></span>
@@ -42,7 +44,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, DeleteColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, pickExistingValueFilter, DeleteColumn, Column } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { MergeTemplateListOptionsBag } from "@Obsidian/ViewModels/Blocks/Reporting/MergeTemplateList/mergeTemplateListOptionsBag";
@@ -100,6 +102,16 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+    }
+
+
+    /**
+     * Gets the filter value text to use for the owner column.
+     *
+     * @param row The row to be filtered.
+     */
+     function getOwnerFilterValue(row: Record<string, unknown>): string {
+        return row.ownerName as string ?? "";
     }
 
     // #endregion

@@ -23,9 +23,13 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Text;
+
+using Rock.Attribute;
+using Rock.Communication.Chat;
 using Rock.Data;
 using Rock.Enums.Group;
 using Rock.Security;
+using Rock.SystemGuid;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
@@ -92,6 +96,106 @@ namespace Rock.Model
         [RockObsolete( "1.14" )]
         [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
         public virtual History.HistoryChangeList HistoryChangeList { get; set; }
+
+        /// <summary>
+        /// Gets whether this group is overriding its parent group type's peer network configuration in any way.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "17.0" )]
+        public bool IsOverridingGroupTypePeerNetworkConfiguration
+        {
+            get
+            {
+                if ( this.GroupType?.IsPeerNetworkEnabled != true )
+                {
+                    return false;
+                }
+
+                if ( this.RelationshipGrowthEnabledOverride.HasValue
+                    && this.RelationshipGrowthEnabledOverride.Value != this.GroupType.RelationshipGrowthEnabled )
+                {
+                    return true;
+                }
+
+                if ( this.RelationshipStrengthOverride.HasValue
+                    && this.RelationshipStrengthOverride.Value != this.GroupType.RelationshipStrength )
+                {
+                    return true;
+                }
+
+                if ( this.LeaderToLeaderRelationshipMultiplierOverride.HasValue
+                    && this.LeaderToLeaderRelationshipMultiplierOverride.Value != this.GroupType.LeaderToLeaderRelationshipMultiplier )
+                {
+                    return true;
+                }
+
+                if ( this.LeaderToNonLeaderRelationshipMultiplierOverride.HasValue
+                    && this.LeaderToNonLeaderRelationshipMultiplierOverride.Value != this.GroupType.LeaderToNonLeaderRelationshipMultiplier )
+                {
+                    return true;
+                }
+
+                if ( this.NonLeaderToLeaderRelationshipMultiplierOverride.HasValue
+                    && this.NonLeaderToLeaderRelationshipMultiplierOverride.Value != this.GroupType.NonLeaderToLeaderRelationshipMultiplier )
+                {
+                    return true;
+                }
+
+                if ( this.NonLeaderToNonLeaderRelationshipMultiplierOverride.HasValue
+                    && this.NonLeaderToNonLeaderRelationshipMultiplierOverride.Value != this.GroupType.NonLeaderToNonLeaderRelationshipMultiplier )
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether any relationship multipliers have been customized for this group or its parent group type.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "17.0" )]
+        public bool AreAnyRelationshipMultipliersCustomized
+        {
+            get
+            {
+                // First, if all of this group's direct values are 100%, treat this as not customized.
+                if ( LeaderToLeaderRelationshipMultiplierOverride.GetValueOrDefault() == 1m
+                    && LeaderToNonLeaderRelationshipMultiplierOverride.GetValueOrDefault() == 1m
+                    && NonLeaderToLeaderRelationshipMultiplierOverride.GetValueOrDefault() == 1m
+                    && NonLeaderToNonLeaderRelationshipMultiplierOverride.GetValueOrDefault() == 1m )
+                {
+                    return false;
+                }
+
+                // Next, check if any of the parent group type's values are customized (not 100%).
+                if ( GroupType?.AreAnyRelationshipMultipliersCustomized == true )
+                {
+                    return true;
+                }
+
+                // Last, check if any of this group's direct values are defined.
+                return LeaderToLeaderRelationshipMultiplierOverride != null
+                    || LeaderToNonLeaderRelationshipMultiplierOverride != null
+                    || NonLeaderToLeaderRelationshipMultiplierOverride != null
+                    || NonLeaderToNonLeaderRelationshipMultiplierOverride != null;
+            }
+        }
 
         #endregion Properties
 
@@ -243,6 +347,13 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
+            if ( ChatHelper.IsChatEnabled && entityState == EntityState.Deleted )
+            {
+                ChatHelper.TryRemoveCachedChatChannel( this.Id );
+            }
+
+            GroupCache.UpdateCachedEntity( Id, entityState );
+
             // If the group changed, and it was a security group, flush the security for the group
             Guid? originalGroupTypeGuid = null;
             Guid groupTypeSecurityRole = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
@@ -502,6 +613,152 @@ namespace Rock.Model
             }
 
             return scheduleConfirmationLogic;
+        }
+
+        /// <summary>
+        /// Gets whether a notification of the provided type should be sent to a group schedule coordinator.
+        /// If any notification types are defined at the group level, they will take precedence over any that are
+        /// defined at the group type level.
+        /// </summary>
+        /// <param name="notificationType">The notification type in question.</param>
+        /// <returns>Whether a notification of the provided type should be sent to a group schedule coordinator.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.7" )]
+        public bool ShouldSendScheduleCoordinatorNotificationType( ScheduleCoordinatorNotificationType notificationType )
+        {
+            // Just in case the caller of this method passed in "None".
+            if ( notificationType == ScheduleCoordinatorNotificationType.None )
+            {
+                return false;
+            }
+
+            // Prefer notification types defined on the group.
+            if ( this.ScheduleCoordinatorNotificationTypes.HasValue )
+            {
+                return this.ScheduleCoordinatorNotificationTypes.Value.HasFlag( notificationType );
+            }
+
+            // Fall back to notification types defined on the group type.
+            return this.GroupType?.ScheduleCoordinatorNotificationTypes?.HasFlag( notificationType ) == true;
+        }
+
+        /// <summary>
+        /// Gets whether chat is enabled for this group. <see cref="GroupType.IsChatAllowed"/> will be checked first; if
+        /// <see langword="false"/>, chat cannot be enabled for this group. <see cref="IsChatEnabledOverride"/> will be
+        /// checked next; if <see langword="null"/>, then the value from <see cref="GroupType.IsChatEnabledForAllGroups"/>
+        /// will be used.
+        /// </summary>
+        /// <returns>Whether chat is enabled for this group.</returns>
+        internal bool GetIsChatEnabled()
+        {
+            var groupTypeIsChatAllowed = false;
+            var groupTypeIsChatEnabledForAllGroups = false;
+
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+            if ( groupTypeCache != null )
+            {
+                groupTypeIsChatAllowed = groupTypeCache.IsChatAllowed;
+                groupTypeIsChatEnabledForAllGroups = groupTypeCache.IsChatEnabledForAllGroups;
+            }
+
+            if ( !groupTypeIsChatAllowed )
+            {
+                return false;
+            }
+
+            if ( this.IsChatEnabledOverride.HasValue )
+            {
+                return this.IsChatEnabledOverride.Value;
+            }
+
+            return groupTypeIsChatEnabledForAllGroups;
+        }
+
+        /// <summary>
+        /// Gets whether individuals are allowed to leave this chat channel. Otherwise, they will only be allowed to
+        /// mute the channel. If <see cref="IsLeavingChatChannelAllowedOverride"/> is set to <see langword="null"/>,
+        /// then the value of <see cref="GroupType.IsLeavingChatChannelAllowed"/> will be used.
+        /// </summary>
+        /// <returns>Whether individuals are allowed to leave this chat channel.</returns>
+        internal bool GetIsLeavingChatChannelAllowed()
+        {
+            if ( this.IsLeavingChatChannelAllowedOverride.HasValue )
+            {
+                return this.IsLeavingChatChannelAllowedOverride.Value;
+            }
+
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+            if ( groupTypeCache != null )
+            {
+                return groupTypeCache.IsLeavingChatChannelAllowed;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets whether this chat channel is public and visible to everyone when performing a search. This also implies
+        /// that the channel may be joined by any person via the chat application. If
+        /// <see cref="IsChatChannelPublicOverride"/> is set to <see langword="null"/>, then the value of
+        /// <see cref="GroupType.IsChatChannelPublic"/> will be used.
+        /// </summary>
+        /// <returns>Whether this chat channel is public, and may be joined by any person.</returns>
+        internal bool GetIsChatChannelPublic()
+        {
+            if ( this.IsChatChannelPublicOverride.HasValue )
+            {
+                return this.IsChatChannelPublicOverride.Value;
+            }
+
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+            if ( groupTypeCache != null )
+            {
+                return groupTypeCache.IsChatChannelPublic;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets whether this chat channel is always shown in the channel list even if the person has not joined
+        /// the channel. This also implies that the channel may be joined by any person via the chat application. If
+        /// <see cref="IsChatChannelAlwaysShownOverride"/> is set to <see langword="null"/>, then the value of
+        /// <see cref="GroupType.IsChatChannelAlwaysShown"/> will be used.
+        /// </summary>
+        /// <returns>Whether this chat channel is always shown in the channel list, and may be joined by any person.</returns>
+        internal bool GetIsChatChannelAlwaysShown()
+        {
+            if ( this.IsChatChannelAlwaysShownOverride.HasValue )
+            {
+                return this.IsChatChannelAlwaysShownOverride.Value;
+            }
+
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+            if ( groupTypeCache != null )
+            {
+                return groupTypeCache.IsChatChannelAlwaysShown;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets whether this chat channel is active.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if <see cref="GetIsChatEnabled"/>, <see cref="IsActive"/> and NOT <see cref="IsArchived"/>;
+        /// otherwise, <see langword="false"/>.
+        /// </returns>
+        internal bool GetIsChatChannelActive()
+        {
+            return this.GetIsChatEnabled() && this.IsActive && !this.IsArchived;
         }
 
         #endregion

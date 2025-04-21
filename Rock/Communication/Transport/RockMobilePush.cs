@@ -86,7 +86,7 @@ namespace Rock.Communication.Transport
         /// <summary>
         /// The current application lock.
         /// </summary>
-        private static object _currentAppLock = new object();
+        private static readonly object _currentAppLock = new object();
 
         #endregion
 
@@ -210,7 +210,7 @@ namespace Rock.Communication.Transport
                         {
                             foreach ( var mergeField in mergeFields )
                             {
-                                recipient.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
+                                recipient.MergeFields.TryAdd( mergeField.Key, mergeField.Value );
                             }
 
                             var to = recipient.To.SplitDelimitedValues( "," ).Where( s => s.IsNotNullOrWhiteSpace() ).ToList();
@@ -587,7 +587,7 @@ namespace Rock.Communication.Transport
             {
                 foreach ( var kvp in pushData.CustomData )
                 {
-                    notificationData.AddOrIgnore( kvp.Key, kvp.Value );
+                    notificationData.TryAdd( kvp.Key, kvp.Value );
                 }
             }
 
@@ -816,7 +816,7 @@ namespace Rock.Communication.Transport
                         {
                             foreach ( var mergeField in mergeFields )
                             {
-                                recipient.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
+                                recipient.MergeFields.TryAdd( mergeField.Key, mergeField.Value );
                             }
 
                             PushMessageLegacy( sender, recipient.To.SplitDelimitedValues( "," ).ToList(), pushMessage, recipient.MergeFields );

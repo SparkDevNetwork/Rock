@@ -160,6 +160,8 @@
             </Content>
         </Rock:ModalDialog>
 
+        <Rock:ModalAlert ID="maRecipientsAlert" runat="server" />
+
         <script>
             Sys.Application.add_load(function () {
                 function setIsActiveControls(activeCheckbox) {

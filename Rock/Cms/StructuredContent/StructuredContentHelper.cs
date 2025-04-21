@@ -58,6 +58,11 @@ namespace Rock.Cms.StructuredContent
         /// </value>
         public string Content { get; }
 
+        /// <summary>
+        /// Gets the user values JSON string.
+        /// </summary>
+        public Dictionary<string, string> UserValues { get; }
+
         #endregion
 
         #region Constructors
@@ -69,6 +74,17 @@ namespace Rock.Cms.StructuredContent
         public StructuredContentHelper( string content )
         {
             Content = content;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StructuredContentHelper"/> class.
+        /// </summary>
+        /// <param name="content">The structured content JSON string.</param>
+        /// <param name="userValues">The user values associated with this structured content.</param>
+        public StructuredContentHelper( string content, Dictionary<string, string> userValues )
+            : this( content )
+        {
+            UserValues = userValues;
         }
 
         #endregion
@@ -96,7 +112,7 @@ namespace Rock.Cms.StructuredContent
                     {
                         var renderer = ( IStructuredContentBlockRenderer ) Activator.CreateInstance( type );
 
-                        blockRenderers.AddOrIgnore( type.GetCustomAttribute<StructuredContentBlockAttribute>().BlockType, renderer );
+                        blockRenderers.TryAdd( type.GetCustomAttribute<StructuredContentBlockAttribute>().BlockType, renderer );
                     }
                     catch
                     {
@@ -131,7 +147,7 @@ namespace Rock.Cms.StructuredContent
                     {
                         var renderer = ( IStructuredContentBlockRenderer ) Activator.CreateInstance( type );
 
-                        blockRenderers.AddOrIgnore( type.GetCustomAttribute<StructuredContentBlockAttribute>().BlockType, renderer );
+                        blockRenderers.TryAdd( type.GetCustomAttribute<StructuredContentBlockAttribute>().BlockType, renderer );
                     }
                     catch
                     {
@@ -157,7 +173,7 @@ namespace Rock.Cms.StructuredContent
 
                 foreach ( var renderer in GetCustomRenderers() )
                 {
-                    blockTypes.AddOrIgnore( renderer.Key, renderer.Value );
+                    blockTypes.TryAdd( renderer.Key, renderer.Value );
                 }
 
                 _blockRenderers = blockTypes;
@@ -199,11 +215,33 @@ namespace Rock.Cms.StructuredContent
         public void Render( TextWriter writer, IReadOnlyDictionary<string, IStructuredContentBlockRenderer> blockRenderers )
         {
             var contentData = Content?.FromJsonOrNull<StructuredContentData>() ?? new StructuredContentData();
+            var hasUserValues = UserValues != null && UserValues.Any();
 
             foreach ( var block in contentData.Blocks )
             {
                 if ( blockRenderers.TryGetValue( block.Type, out var blockType ) )
                 {
+                    // Special handling for NoteRenderer with dynamic block data
+                    if ( blockType is Rock.Cms.StructuredContent.BlockTypes.NoteRenderer noteRenderer && hasUserValues )
+                    {
+                        try
+                        {
+                            var id = ( string ) block.Data.id;
+
+                            // If we have a user value for this block, use it
+                            // and render the note in a special way.
+                            if ( UserValues.TryGetValue( id, out var realNoteValue ) )
+                            {
+                                writer.WriteLine( $"<textarea>{realNoteValue.EncodeXml( true )}</textarea>" );
+                                continue;
+                            }
+                        }
+                        catch
+                        {
+                            // Ignore exceptions
+                        }
+                    }
+
                     blockType.Render( writer, block.Data );
                 }
             }

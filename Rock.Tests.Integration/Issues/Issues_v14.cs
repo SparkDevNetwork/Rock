@@ -18,20 +18,15 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
-using Rock.Lava;
-using Rock.Lava.RockLiquid;
 using Rock.Model;
-using Rock.Tests.Integration.Modules.Core.Lava;
+using Rock.Tests.Integration.Core.Lava;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.BugFixes
+namespace Rock.Tests.Integration.Issues
 {
     /// <summary>
     /// Tests that verify specific bug fixes for a Rock version.
@@ -96,59 +91,6 @@ namespace Rock.Tests.Integration.BugFixes
             var addCount = TestDataHelper.Communications.AddPeopleToCommunicationList( addPeopleArgs );
 
             System.Diagnostics.Debug.WriteLine( $"Added {addCount} people to communication list \"{listGroup.Name}\"." );
-        }
-
-        [TestMethod]
-        public void Issue5173_LavaMergeFieldsConcurrencyBug()
-        {
-            /* The RockLiquid Lava Engine may throw a System.ArgumentException when rendering templates under high load.
-             * For details, see https://github.com/SparkDevNetwork/Rock/issues/5173.
-             * 
-             * The conditions under which this issue occurs are:
-             * The active Lava engine is DotLiquid.
-             * Multiple requests to render an identical Lava template are processed simultaneously.
-             * The template does not exist in the lava template cache.
-             * Multiple threads attempt to add the "CurrentUser" key to the Lava dictionary.
-             */
-
-            const int templateTotal = 100;
-            const int iterationTotal = 10;
-            const int parallelProcessTotal = 10;
-
-            var engineOptions = new LavaEngineConfigurationOptions
-            {
-                InitializeDynamicShortcodes = false
-            };
-            var engine = global::Rock.Lava.LavaService.NewEngineInstance( typeof( RockLiquidEngine ), engineOptions );
-
-            LavaIntegrationTestHelper.SetEngineInstance( engine );
-
-            var mergeFields = new LavaDataDictionary();
-            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = parallelProcessTotal };
-            int passCount = 0;
-            int templateCount = 0;
-            try
-            {
-                for ( int i0 = 0; i0 < templateTotal; i0++ )
-                {
-                    templateCount = i0;
-                    var template = "Template #<i>{% assign temp = '1' %}"
-                        .Replace( "<i>", i0.ToString() );
-
-                    Parallel.For( 0, iterationTotal, parallelOptions, ( i1 ) =>
-                    {
-                        passCount = i1;
-                        var output = template.ResolveMergeFields( mergeFields, throwExceptionOnErrors: true );
-                    } );
-                }
-            }
-            catch ( Exception ex )
-            {
-                // Prior to applying the bugfix, this test will fail with the following error:
-                // System.ArgumentException: An item with the same key has already been added.
-                LogHelper.LogError( ex, $"[Template#={templateCount:00000},Iteration={passCount:00000}]" );
-                Assert.Fail( "Issue #5173: error encountered." );
-            }
         }
     }
 }

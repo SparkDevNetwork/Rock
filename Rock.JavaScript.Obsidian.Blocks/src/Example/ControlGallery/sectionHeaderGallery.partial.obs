@@ -1,0 +1,47 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode">
+
+        <SectionHeader title="This is a SectionHeader"
+                       :description="description"
+                       :isSeparatorHidden="!showSeparator">
+            <template v-if="showActionBar" #actions>
+                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
+                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
+                <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
+            </template>
+        </SectionHeader>
+
+        <template #settings>
+            <div class="row">
+                <CheckBox formGroupClasses="col-xs-4" v-model="showSeparator" label="Show Separator" />
+                <CheckBox formGroupClasses="col-xs-4" v-model="showDescription" label="Show Description" />
+                <CheckBox formGroupClasses="col-xs-4" v-model="showActionBar" label="Show Action Bar" />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+
+    const showSeparator = ref(true);
+    const showDescription = ref(true);
+    const showActionBar = ref(true);
+
+    const description = computed(() => {
+        return showDescription.value
+            ? "You can use a Section Header to put a title and description above some content."
+            : "";
+    });
+
+    const importCode = getSfcControlImportPath("sectionHeader");
+    const exampleCode = `<SectionHeader title="This is a SectionHeader" description="A Description" :isSeparatorHidden="false">
+    <template #actions>Action Buttons</template>
+</SectionHeader>`;
+</script>

@@ -10,7 +10,7 @@
                 </SectionHeader>
             </div>
 
-            <div v-if="toggleText" class="section-header-toggle align-self-end">
+            <div v-if="toggleText" class="section-header-toggle align-self-end ml-3">
                 <InlineSwitch v-model="enabled" :label="toggleText" />
             </div>
         </div>
@@ -23,6 +23,16 @@
         </TransitionVerticalCollapse>
     </div>
 </template>
+
+<style scoped>
+.section-header {
+    display: flex;
+}
+
+.section-header-content {
+    flex-grow: 1;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";

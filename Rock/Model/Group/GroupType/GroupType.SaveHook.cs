@@ -15,8 +15,12 @@
 // </copyright>
 //
 
-using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+
+using Rock.CheckIn.v2;
+using Rock.Communication.Chat;
 using Rock.Data;
 
 namespace Rock.Model
@@ -76,6 +80,34 @@ namespace Rock.Model
                 }
 
                 base.PreSave();
+            }
+
+            /// <inheritdoc/>
+            protected override void PostSave()
+            {
+                if ( PreSaveState == EntityContextState.Modified )
+                {
+                    CheckInDirector.SendRefreshKioskConfiguration();
+                }
+
+                if ( RockContext.IsRockToChatSyncEnabled && ChatHelper.IsChatEnabled )
+                {
+                    Task.Run( async () =>
+                    {
+                        if ( PreSaveState == EntityContextState.Deleted )
+                        {
+                            // Ensure the chat helper deletes the channel type within the external chat system.
+                            Entity.IsChatAllowed = false;
+                        }
+
+                        using ( var chatHelper = new ChatHelper() )
+                        {
+                            await chatHelper.SyncGroupTypesToChatProviderAsync( new List<GroupType> { Entity } );
+                        }
+                    } );
+                }
+
+                base.PostSave();
             }
         }
     }

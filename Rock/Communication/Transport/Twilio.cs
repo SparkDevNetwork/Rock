@@ -393,7 +393,7 @@ namespace Rock.Communication.Transport
             {
                 foreach ( var mergeField in mergeFields )
                 {
-                    recipient.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
+                    recipient.MergeFields.TryAdd( mergeField.Key, mergeField.Value );
                 }
 
                 CommunicationRecipient communicationRecipient = null;
@@ -539,7 +539,11 @@ namespace Rock.Communication.Transport
                     {
                         // Disable SMS for this number because the response indicates that Rock should not send messages to that number anymore.
                         var phoneNumber = recipient.PersonAlias.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
-                        phoneNumber.IsMessagingEnabled = false;
+                        if ( phoneNumber != null )
+                        {
+                            phoneNumber.IsMessagingEnabled = false;
+                            phoneNumber.IsMessagingOptedOut = true;                            
+                        }
 
                         // Add this to the Person Activity history
                         var historyChanges = new History.HistoryChangeList();
@@ -611,11 +615,11 @@ namespace Rock.Communication.Transport
                 {
                     if ( b.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        return new Uri( $"{publicAppRoot}GetImage.ashx?id={b.Id}" );
+                        return new Uri( FileUrlHelper.GetImageUrl( b.Id, new GetImageUrlOptions { PublicAppRoot = publicAppRoot } ) );
                     }
                     else
                     {
-                        return new Uri( $"{publicAppRoot}GetFile.ashx?id={b.Id}" );
+                        return new Uri( FileUrlHelper.GetFileUrl( b.Id, new GetFileUrlOptions { PublicAppRoot = publicAppRoot } ) );
                     }
                 } ).ToList();
             }

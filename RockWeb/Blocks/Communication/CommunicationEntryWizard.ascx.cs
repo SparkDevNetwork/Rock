@@ -286,7 +286,7 @@ namespace RockWeb.Blocks.Communication
         {
             get
             {
-                return (ViewState[nameof(RecipientCount)] as int?) ?? 0;
+                return ( ViewState[nameof( RecipientCount )] as int? ) ?? 0;
             }
             set
             {
@@ -320,7 +320,7 @@ namespace RockWeb.Blocks.Communication
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            
+
             this.OnPropertyChanged -= CommunicationEntryWizard_OnPropertyChanged;
             this.OnPropertyChanged += CommunicationEntryWizard_OnPropertyChanged;
 
@@ -367,10 +367,13 @@ namespace RockWeb.Blocks.Communication
 </div>";
 
             componentAssetManager.JsScriptToRegister = @"
-    Sys.Application.add_load(function (e) {
-        var data = '{{ SelectedValue }}';
-        handleAssetUpdate(e, data);
-    });";
+function communicationEntryWizardHandleAssetUpdateOnLoad(e) {
+    Sys.Application.remove_load(communicationEntryWizardHandleAssetUpdateOnLoad);
+
+    var data = '{{ SelectedValue }}';
+    handleAssetUpdate(e, data);
+}
+Sys.Application.add_load(communicationEntryWizardHandleAssetUpdateOnLoad);";
 
             var videoProviders = Rock.Communication.VideoEmbed.VideoEmbedContainer.Instance.Dictionary.Select( c => c.Value.Key );
             lbVideoUrlHelpText.Attributes["data-original-title"] += ( videoProviders.Count() > 1 ? string.Join( ", ", videoProviders.Take( videoProviders.Count() - 1 ) ) + " and " + videoProviders.Last() : videoProviders.FirstOrDefault() ) + ".";
@@ -445,8 +448,6 @@ function onTaskCompleted( resultData )
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-            
             this.OnPropertyChanged -= CommunicationEntryWizard_OnPropertyChanged;
             this.OnPropertyChanged += CommunicationEntryWizard_OnPropertyChanged;
 
@@ -469,6 +470,8 @@ function onTaskCompleted( resultData )
 
             // Reset the Task Activity controls on the page.
             SignalRTaskActivityUiHelper.SetTaskActivityControlMode( this.RockPage, SignalRTaskActivityUiHelper.ControlModeSpecifier.Hidden );
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -586,6 +589,7 @@ function onTaskCompleted( resultData )
                     PushMessage = communication.PushMessage,
                     PushTitle = communication.PushTitle,
                     PushOpenMessage = communication.PushOpenMessage,
+                    PushOpenMessageJson = communication.PushOpenMessageJson,
                     PushOpenAction = communication.PushOpenAction
                 };
             }
@@ -637,6 +641,8 @@ function onTaskCompleted( resultData )
             lTitle.Text = ( communication.Name ?? communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
             cbDuplicatePreventionOption.Visible = this.GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
             cbDuplicatePreventionOption.Checked = communication.ExcludeDuplicateRecipientAddress;
+            cbRecipientListDuplicatePreventionOption.Visible = this.GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
+            cbRecipientListDuplicatePreventionOption.Checked = communication.ExcludeDuplicateRecipientAddress;
             tbCommunicationName.Text = communication.Name;
             swBulkCommunication.Checked = _isBulkCommunicationForced || communication.IsBulkCommunication;
 
@@ -1315,6 +1321,8 @@ function onTaskCompleted( resultData )
 
             pnlIndividualRecipientSummary.Visible = showIndividualRecipientsSummary;
             pnlIndividualRecipientList.Visible = !showIndividualRecipientsSummary;
+
+            cbRecipientListDuplicatePreventionOption.Visible = GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
         }
 
         /// <summary>
@@ -1439,7 +1447,7 @@ function onTaskCompleted( resultData )
             lIndividualRecipientListCount.Text = string.Format( "Recipients: {0}", listCount );
 
             pnlIndividualRecipientListCount.Visible = listCount > 0;
-            
+
             // Keep track of the recipient count.
             this.RecipientCount = listCount;
         }
@@ -1505,6 +1513,7 @@ function onTaskCompleted( resultData )
             {
                 pnlHeadingLabels.Visible = false;
                 pnlListSelection.Visible = false;
+                cbRecipientListDuplicatePreventionOption.Checked = cbDuplicatePreventionOption.Checked;
                 ShowManualList();
             }
             else
@@ -1523,6 +1532,7 @@ function onTaskCompleted( resultData )
         {
             pnlHeadingLabels.Visible = false;
             nbRecipientsAlert.Visible = false;
+            cbDuplicatePreventionOption.Checked = cbRecipientListDuplicatePreventionOption.Checked;
 
             if ( !this.IndividualRecipientPersonIds.Any() )
             {
@@ -1573,7 +1583,7 @@ function onTaskCompleted( resultData )
             var emailTransportEnabled = _emailTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.Email );
             var smsTransportEnabled = _smsTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.SMS );
             var pushTransportEnabled = _pushTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.PushNotification );
-            var recipientPreferenceEnabled = allowedCommunicationTypes.Contains( CommunicationType.RecipientPreference );
+            var recipientPreferenceEnabled = ( emailTransportEnabled || smsTransportEnabled || pushTransportEnabled ) && allowedCommunicationTypes.Contains( CommunicationType.RecipientPreference );
 
             // only prompt for Medium Type if more than one will be visible
             if ( emailTransportEnabled )
@@ -1821,8 +1831,8 @@ function onTaskCompleted( resultData )
 
                 if ( communicationTemplate.ImageFileId.HasValue )
                 {
-                    var imageUrl = string.Format( "~/GetImage.ashx?id={0}", communicationTemplate.ImageFileId );
-                    lTemplateImagePreview.Text = string.Format( "<img src='{0}' width='100%'/>", this.ResolveRockUrl( imageUrl ) );
+                    var imageUrl = FileUrlHelper.GetImageUrl( communicationTemplate.ImageFileId );
+                    lTemplateImagePreview.Text = string.Format( "<img src='{0}' width='100%'/>", imageUrl );
                 }
                 else
                 {
@@ -1926,6 +1936,7 @@ function onTaskCompleted( resultData )
                 PushMessage = communicationTemplate.PushMessage,
                 PushTitle = communicationTemplate.PushTitle,
                 PushOpenMessage = communicationTemplate.PushOpenMessage,
+                PushOpenMessageJson = communicationTemplate.PushOpenMessageJson,
                 PushOpenAction = communicationTemplate.PushOpenAction
             };
 
@@ -2571,7 +2582,7 @@ function onTaskCompleted( resultData )
 
             foreach ( var binaryFileAttachment in binaryFileAttachments )
             {
-                var attachmentUrl = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFileAttachment.Key );
+                var attachmentUrl = FileUrlHelper.GetFileUrl( binaryFileAttachment.Key );
                 var removeAttachmentJS = string.Format( "removeAttachment( this, '{0}', '{1}' );", hfEmailAttachedBinaryFileIds.ClientID, binaryFileAttachment.Key );
                 sbAttachmentsHtml.AppendLine( string.Format( "    <li><a href='{0}' target='_blank' rel='noopener noreferrer'>{1}</a> <a><i class='fa fa-times' onclick=\"{2}\"></i></a></li>", attachmentUrl, binaryFileAttachment.Value, removeAttachmentJS ) );
             }
@@ -2735,15 +2746,20 @@ function onTaskCompleted( resultData )
                     }
 
                     string publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
-                    imgSMSImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
+                    var options = new GetImageUrlOptions
+                    {
+                        PublicAppRoot = publicAppRoot
+                    };
+                    imgSMSImageAttachment.ImageUrl = FileUrlHelper.GetImageUrl( binaryFile.Guid, options );
                     divAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
                     imgSMSImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
 
-                    imgConfirmationSmsImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
+                    imgConfirmationSmsImageAttachment.ImageUrl = FileUrlHelper.GetImageUrl( binaryFile.Guid, options );
                     divConfirmationSmsImageAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgConfirmationSmsImageAttachment.Visible = true;
                     imgConfirmationSmsImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
+
                 }
                 else
                 {
@@ -2761,12 +2777,16 @@ function onTaskCompleted( resultData )
                     }
 
                     string publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
+                    var options = new GetImageUrlOptions
+                    {
+                        PublicAppRoot = publicAppRoot
+                    };
                     imgSMSImageAttachment.ImageUrl = virtualThumbnailFilePath.Replace( "~/", publicAppRoot );
                     divAttachmentLoadError.InnerText = "Unable to load preview icon from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
                     imgSMSImageAttachment.Width = new Unit( 10, System.Web.UI.WebControls.UnitType.Percentage );
 
-                    imgConfirmationSmsImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
+                    imgConfirmationSmsImageAttachment.ImageUrl = FileUrlHelper.GetImageUrl( binaryFile.Guid, options );
                     divConfirmationSmsImageAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgConfirmationSmsImageAttachment.Visible = true;
                     imgConfirmationSmsImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
@@ -3419,6 +3439,10 @@ function onTaskCompleted( resultData )
             {
                 communication = UpdateCommunication( rockContext );
                 var sampleCommunicationRecipient = GetSampleCommunicationRecipient( communication, rockContext );
+                if ( communication.Id != default( int ) )
+                {
+                    hfCommunicationId.Value = communication.Id.ToString();
+                }
 
                 Person currentPerson;
                 if ( communication.CreatedByPersonAlias != null && communication.CreatedByPersonAlias.Person != null )
@@ -3680,19 +3704,20 @@ function onTaskCompleted( resultData )
                 settings.FutureSendDateTime = dtpSendCommunicationDateTime.SelectedDateTime;
             }
 
-            var details = new CommunicationDetails();
+            var details = new CommunicationDetails
+            {
+                Subject = tbEmailSubject.Text,
+                Message = hfEmailEditorHtml.Value,
 
-            details.Subject = tbEmailSubject.Text;
-            details.Message = hfEmailEditorHtml.Value;
+                FromName = tbFromName.Text,
+                FromEmail = ebFromAddress.Text,
+                ReplyToEmail = ebReplyToAddress.Text,
+                CCEmails = ebCCList.Text,
+                BCCEmails = ebBCCList.Text,
 
-            details.FromName = tbFromName.Text;
-            details.FromEmail = ebFromAddress.Text;
-            details.ReplyToEmail = ebReplyToAddress.Text;
-            details.CCEmails = ebCCList.Text;
-            details.BCCEmails = ebBCCList.Text;
-
-            details.SmsFromSystemPhoneNumberId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();
-            details.SMSMessage = tbSMSTextMessage.Text;
+                SmsFromSystemPhoneNumberId = ddlSMSFrom.SelectedValue.AsIntegerOrNull(),
+                SMSMessage = tbSMSTextMessage.Text
+            };
 
             // Get Push notification settings.
             var pushNotificationControl = phPushControl.Controls[0] as PushNotification;
@@ -4088,6 +4113,7 @@ function onTaskCompleted( resultData )
                 communication.PushMessage = settings.Details.PushMessage;
                 communication.PushOpenAction = settings.Details.PushOpenAction;
                 communication.PushOpenMessage = settings.Details.PushOpenMessage;
+                communication.PushOpenMessageJson = settings.Details.PushOpenMessageJson;
                 communication.PushTitle = settings.Details.PushTitle;
 
                 return communication;
@@ -4174,7 +4200,13 @@ function onTaskCompleted( resultData )
                 // Add new recipients
                 ReportProgress( progressReporter, 5, activityMessage: "Creating Recipients List..." );
 
-                var recipientPersonIdQuery = GetRecipientPersonIdPersistedList( recipientPersonIdList, rockContext );
+                /*
+                 SK - 12/6/2024
+                 A new RockContext is created in the lines below because GetRecipientPersonIdPersistedList internally calls RockContext.SaveChanges.
+                 However, the goal is to prevent the Communication entity, created through the original RockContext, from being saved.
+                */
+                var newRockContext = new RockContext();
+                var recipientPersonIdQuery = GetRecipientPersonIdPersistedList( recipientPersonIdList, newRockContext );
 
                 if ( recipientPersonIdQuery == null )
                 {
@@ -4183,7 +4215,7 @@ function onTaskCompleted( resultData )
 
                 using ( var recipientPersonLookupActivity = ObservabilityHelper.StartActivity( "COMMUNICATION: Entry Wizard > Update Communication Recipients > Create Recipient Person Lookup Dictionary" ) )
                 {
-                    var recipientPersonsLookup = new PersonService( rockContext ).Queryable().Where( a => recipientPersonIdQuery.Contains( a.Id ) )
+                    var recipientPersonsLookup = new PersonService( newRockContext ).Queryable().Where( a => recipientPersonIdQuery.Contains( a.Id ) )
                         .Select( a => new
                         {
                             PersonId = a.Id,
@@ -4224,7 +4256,7 @@ function onTaskCompleted( resultData )
                             foreach ( var communicationListGroupMemberCommunicationType in communicationListGroupMemberCommunicationTypeList )
                             {
                                 var recipientPreference = communicationListGroupMemberCommunicationType.CommunicationPreference;
-                                communicationListGroupMemberCommunicationTypeLookup.AddOrIgnore( communicationListGroupMemberCommunicationType.PersonId, recipientPreference );
+                                communicationListGroupMemberCommunicationTypeLookup.TryAdd( communicationListGroupMemberCommunicationType.PersonId, recipientPreference );
                             }
                         }
                     }

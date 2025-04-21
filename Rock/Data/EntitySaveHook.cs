@@ -16,6 +16,10 @@
 //
 using System.Collections.Generic;
 
+using Microsoft.Extensions.Logging;
+
+using Rock.Logging;
+
 namespace Rock.Data
 {
     /// <summary>
@@ -31,6 +35,11 @@ namespace Rock.Data
     public abstract class EntitySaveHook<TEntity> : IEntitySaveHook
         where TEntity : IEntity
     {
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private ILogger _logger;
+
         /// <summary>
         /// Gets the low level entry that identifies this save operation.
         /// </summary>
@@ -94,6 +103,23 @@ namespace Rock.Data
         /// The state of the entity just before the save operation started.
         /// </value>
         protected EntityContextState PreSaveState => Entry.PreSaveState;
+
+        /// <summary>
+        /// Gets the logger for this instance.
+        /// </summary>
+        /// <value>The logger for this instance.</value>
+        protected ILogger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                }
+
+                return _logger;
+            }
+        }
 
         /// <summary>
         /// Called before the save operation is executed.

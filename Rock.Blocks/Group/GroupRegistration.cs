@@ -546,13 +546,14 @@ namespace Rock.Blocks.Group
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="person">The person.</param>
-        /// <param name="workflowType">Type of the workflow.</param>
         /// <param name="groupMembers">The group members.</param>
-        private bool AddPersonToGroup( RockContext rockContext, Person person, WorkflowTypeCache workflowType, List<GroupMember> groupMembers, out string errorMessage )
+        /// <param name="groupMember">The new or existing group member being registered.</param>
+        private bool AddPersonToGroup( RockContext rockContext, Person person, List<GroupMember> groupMembers, out string errorMessage, out GroupMember groupMember )
         {
             var group = GetGroup( rockContext );
             var defaultGroupRole = group.GroupType.DefaultGroupRole;
             errorMessage = string.Empty;
+            groupMember = null;
 
             if ( person == null )
             {
@@ -560,7 +561,6 @@ namespace Rock.Blocks.Group
                 return false;
             }
 
-            GroupMember groupMember = null;
             if ( !group.Members
                 .Any( m =>
                     m.PersonId == person.Id &&
@@ -606,19 +606,6 @@ namespace Rock.Blocks.Group
                         errorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                         return false;
                     }
-                }
-            }
-
-            if ( groupMember != null && workflowType != null && ( workflowType.IsActive ?? true ) )
-            {
-                try
-                {
-                    var workflow = Rock.Model.Workflow.Activate( workflowType, person.FullName );
-                    new WorkflowService( rockContext ).Process( workflow, groupMember, out List<string> workflowErrors );
-                }
-                catch ( Exception ex )
-                {
-                    ExceptionLogService.LogException( ex );
                 }
             }
 
@@ -668,7 +655,10 @@ namespace Rock.Blocks.Group
                 var isCurrentPerson = RequestContext.CurrentPerson != null
                     && RequestContext.CurrentPerson.NickName.IsNotNullOrWhiteSpace()
                     && RequestContext.CurrentPerson.LastName.IsNotNullOrWhiteSpace()
-                    && groupRegistrationBag.FirstName.Trim().Equals( RequestContext.CurrentPerson.NickName.Trim(), StringComparison.OrdinalIgnoreCase )
+                    && (
+                        groupRegistrationBag.FirstName.Trim().Equals( RequestContext.CurrentPerson.NickName.Trim(),StringComparison.OrdinalIgnoreCase )
+                        || groupRegistrationBag.FirstName.Trim().Equals( RequestContext.CurrentPerson.FirstName.Trim(), StringComparison.OrdinalIgnoreCase )
+                    )
                     && groupRegistrationBag.LastName.Trim().Equals( RequestContext.CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase );
 
                 // Only use current person if the name entered matches the current person's name and autofill mode is true
@@ -789,8 +779,12 @@ namespace Rock.Blocks.Group
                         var married = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
                         var adultRole = familyType?.Roles?.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
 
+                        // Check if there is no spouse or if the spouse's first name (or nickname) and last name do not match the provided values.
                         if ( spouse == null ||
-                            !groupRegistrationBag.SpouseFirstName.Trim().Equals( spouse.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ||
+                            (
+                              !groupRegistrationBag.SpouseFirstName.Trim().Equals( spouse.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) &&
+                              !groupRegistrationBag.SpouseFirstName.Trim().Equals( spouse.NickName.Trim(), StringComparison.OrdinalIgnoreCase )
+                            ) ||
                             !groupRegistrationBag.SpouseLastName.Trim().Equals( spouse.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
                         {
                             spouse = new Person();
@@ -816,7 +810,7 @@ namespace Rock.Blocks.Group
                             person.MaritalStatusValueId = married.Id;
                         }
 
-                        spouse.Email = groupRegistrationBag.Email;
+                        spouse.Email = groupRegistrationBag.SpouseEmail;
 
                         if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( groupRegistrationBag.HomePhone ) )
                         {
@@ -832,6 +826,20 @@ namespace Rock.Blocks.Group
                 }
 
                 string errorMessage = string.Empty;
+                GroupMember newOrExistingGroupMember = null;
+                GroupMember newOrExistingSpouseGroupMember = null;
+
+                // A list containing any new or exisitng Group Members that are currently being registered.
+                List<GroupMember> newOrExistingGroupMembers = new List<GroupMember>();
+
+                // Check to see if a workflow should be launched for each person
+                WorkflowTypeCache workflowType = null;
+                Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+                if ( workflowTypeGuid.HasValue )
+                {
+                    workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
+                }
+
                 // Save the registrations ( and launch workflows )
                 var newGroupMembers = new List<GroupMember>();
                 // Save the person/spouse and change history 
@@ -839,27 +847,21 @@ namespace Rock.Blocks.Group
                 {
                     rockContext.SaveChanges();
 
-                    // Check to see if a workflow should be launched for each person
-                    WorkflowTypeCache workflowType = null;
-                    Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
-                    if ( workflowTypeGuid.HasValue )
-                    {
-                        workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
-                    }
-
-                    bool isAddPersonValid = AddPersonToGroup( rockContext, person, workflowType, newGroupMembers, out errorMessage );
+                    bool isAddPersonValid = AddPersonToGroup( rockContext, person, newGroupMembers, out errorMessage, out newOrExistingGroupMember );
                     if ( !isAddPersonValid )
                     {
                         return false;
                     }
+                    newOrExistingGroupMembers.Add( newOrExistingGroupMember );
 
                     if ( spouse != null )
                     {
-                        isAddPersonValid = AddPersonToGroup( rockContext, spouse, workflowType, newGroupMembers, out errorMessage );
+                        isAddPersonValid = AddPersonToGroup( rockContext, spouse, newGroupMembers, out errorMessage, out newOrExistingSpouseGroupMember );
                         if ( !isAddPersonValid )
                         {
                             return false;
                         }
+                        newOrExistingGroupMembers.Add( newOrExistingSpouseGroupMember );
                     }
 
                     return true;
@@ -868,6 +870,22 @@ namespace Rock.Blocks.Group
                 if ( isAddingPeopleToGroupSuccessful )
                 {
                     var group = GetGroup( rockContext );
+
+                    foreach ( GroupMember gm in newOrExistingGroupMembers )
+                    {
+                        if ( gm != null && workflowType != null && ( workflowType.IsActive ?? true ) )
+                        {
+                            try
+                            {
+                                var workflow = Rock.Model.Workflow.Activate( workflowType, person.FullName );
+                                new WorkflowService( rockContext ).Process( workflow, gm, out List<string> workflowErrors );
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( ex );
+                            }
+                        }
+                    }
 
                     // Show lava content
                     var mergeFields = new Dictionary<string, object>();

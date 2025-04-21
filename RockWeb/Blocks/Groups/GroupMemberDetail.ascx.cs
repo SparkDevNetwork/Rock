@@ -285,7 +285,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             ClearErrorMessage();
 
             bool areRequirementsPubliclyHidden = this.GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBooleanOrNull() ?? false;
@@ -319,6 +318,8 @@ namespace RockWeb.Blocks.Groups
                  */
                 SetRequirementStatuses( new RockContext() );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -356,9 +357,12 @@ namespace RockWeb.Blocks.Groups
                     // This should be replaced with a block setting when converted to Obsidian. -dsh
                     var pageReferenceHistory = ( Dictionary<int, (BreadCrumb pageBreadCrumb, List<BreadCrumb> blockBreadCrumbs)> ) System.Web.HttpContext.Current.Session["RockPageReferenceHistory"];
 
-                    var queryString = pageReferenceHistory.Values
+                    var currentBreadCrumbs = pageReferenceHistory.Values
                         .SelectMany( h => new List<BreadCrumb> { h.pageBreadCrumb }.Union( h.blockBreadCrumbs ) )
                         .Where( bc => bc != null && bc.Url.IsNotNullOrWhiteSpace() && bc.Url.StartsWith( "/" ) )
+                        .ToList();
+
+                    var queryString = currentBreadCrumbs
                         .Select( bc => Uri.TryCreate( "http://ignored" + bc.Url, UriKind.Absolute, out var uri ) ? uri : null )
                         .Where( u => u != null && u.Query.IsNotNullOrWhiteSpace() && u.Query != "?" )
                         .Select( u => u.ParseQueryString() )
@@ -368,7 +372,10 @@ namespace RockWeb.Blocks.Groups
                     if ( !this.IsSignUpMode && !groupIdParam.HasValue || groupIdParam.Value != groupMember.GroupId )
                     {
                         // if the GroupMember's Group isn't included in the breadcrumbs, make sure to add the Group to the breadcrumbs so we know which group the group member is in
-                        breadCrumbs.Add( new BreadCrumb( groupMember.Group.Name, true ) );
+                        if ( !currentBreadCrumbs.Exists( bc => bc.Name == groupMember.Group.Name ) )
+                        {
+                            breadCrumbs.Add( new BreadCrumb( groupMember.Group.Name, true ) );
+                        }
                     }
 
                     breadCrumbs.Add( new BreadCrumb( groupMember.Person.FullName, pageReference ) );
@@ -1090,8 +1097,8 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            // If this person's statuses are already in view state, remove them so a
-            // refreshed collection will be added within the SetRequirementStatuses()
+            // If this person's group requirement statuses are already in view state, remove
+            // them so a refreshed collection will be added within the SetRequirementStatuses()
             // method below, for future postbacks.
             var personId = ppGroupMemberPerson.PersonId.GetValueOrDefault();
             if ( this.GroupRequirementStatusesByPersonState.ContainsKey( personId ) )
@@ -1117,7 +1124,7 @@ namespace RockWeb.Blocks.Groups
 
             var personId = ppGroupMemberPerson.PersonId.GetValueOrDefault();
 
-            // Try to pull this person's requirement statuses out of view state.
+            // Try to pull this person's group requirement statuses out of view state.
             this.GroupRequirementStatusesByPersonState.TryGetValue( personId, out var requirementStatuses );
 
             if ( requirementStatuses == null )
@@ -1134,16 +1141,17 @@ namespace RockWeb.Blocks.Groups
                         .Include( gm => gm.Person )
                         .FirstOrDefault( gm => gm.Id == groupMemberId );
 
-                    // If the member's persisted role matches the currently-selected role, get
-                    // their persisted statuses rather than recalculating them every time.
+                    // If the member's existing role matches the currently-selected role, try to get their
+                    // group requirement statuses from their existing group member requirements rather than
+                    // recalculating them every time.
                     if ( groupMember.GroupRoleId == selectedGroupRoleId.Value )
                     {
                         requirementStatuses = groupMember.GetGroupRequirementsStatuses( rockContext );
                     }
                 }
 
-                // If the person doesn't yet have any persisted statuses or their persisted group role
-                // doesn't match the currently-selected role, calculate the requirements on demand.
+                // If the person doesn't yet have any existing group member requirements or their existing
+                // role doesn't match the currently-selected role, calculate the requirements on demand.
                 if ( requirementStatuses?.Any() != true && personId > 0 )
                 {
                     requirementStatuses = group.PersonMeetsGroupRequirements( rockContext, personId, selectedGroupRoleId );

@@ -232,7 +232,7 @@ namespace Rock.Blocks.Cms
 
             if ( loadAttributes )
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
             }
 
             return bag;
@@ -261,7 +261,7 @@ namespace Rock.Blocks.Cms
 
             if ( loadAttributes )
             {
-                bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+                bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
             }
 
             return bag;
@@ -310,7 +310,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -333,9 +333,13 @@ namespace Rock.Blocks.Cms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var mediaAccountId = RequestContext.GetPageParameter( PageParameterKey.MediaAccountId );
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.MediaAccountId] = mediaAccountId
+                } )
             };
         }
 
@@ -451,9 +455,10 @@ namespace Rock.Blocks.Cms
                 var mediaFolderKey = pageReference.GetPageParameter( PageParameterKey.MediaFolderId );
                 var pageParameters = new Dictionary<string, string>();
                 var additionalParameters = new Dictionary<string, string>();
+                var mediaFolderId = Rock.Utility.IdHasher.Instance.GetId( mediaFolderKey ) ?? mediaFolderKey.AsInteger();
 
                 var data = new MediaFolderService( rockContext )
-                    .GetSelect( mediaFolderKey, mf => new
+                    .GetSelect( mediaFolderId, mf => new
                     {
                         mf.Name,
                         mf.MediaAccountId
@@ -527,7 +532,8 @@ namespace Rock.Blocks.Cms
 
                 if ( entity.MediaAccountId == 0 )
                 {
-                    entity.MediaAccountId = RequestContext.GetPageParameter( PageParameterKey.MediaAccountId ).AsInteger();
+                    var mediaAccountKey = RequestContext.GetPageParameter( PageParameterKey.MediaAccountId );
+                    entity.MediaAccountId = Rock.Utility.IdHasher.Instance.GetId( mediaAccountKey ) ?? mediaAccountKey.AsInteger();
                 }
 
                 // Update the entity instance from the information in the bag.

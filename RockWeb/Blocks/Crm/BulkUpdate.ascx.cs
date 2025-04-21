@@ -43,6 +43,7 @@ using Rock.Utility;
 using Rock.RealTime.Topics;
 using Rock.RealTime;
 using Rock.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -386,8 +387,6 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             var rockContext = new RockContext();
 
             if ( !Page.IsPostBack )
@@ -431,6 +430,7 @@ namespace RockWeb.Blocks.Crm
                 BuildGroupAttributes( rockContext );
             }
 
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -727,7 +727,7 @@ namespace RockWeb.Blocks.Crm
                 clientId = request.ServerVariables["REMOTE_ADDR"];
             }
 
-            var processor = new PersonBulkUpdateProcessor();
+            var processor = new PersonBulkUpdateProcessor( Logger );
 
             processor.InstanceId = clientId;
 
@@ -1257,7 +1257,7 @@ namespace RockWeb.Blocks.Crm
                     Control control = attributeCache.AddControl( phAttributes.Controls, attributeCache.DefaultValue, string.Empty, setValues, true, attributeCache.IsRequired, labelText );
 
                     // Q: Why don't we enable if the control is a RockCheckBox?
-                    if ( action == "Update" && !( control is RockCheckBox ) )
+                    if ( action == "Update" && !( control is RockCheckBox ) && !( control is PersonPicker ) && !( control is ItemPicker ) )
                     {
                         var webControl = control as WebControl;
                         if ( webControl != null )
@@ -1420,8 +1420,10 @@ namespace RockWeb.Blocks.Crm
 
             #region Constructors
 
-            public PersonBulkUpdateProcessor()
+            public PersonBulkUpdateProcessor( ILogger logger )
             {
+                _logger = logger;
+
                 this.SelectedFields = new List<string>();
                 this.PersonIdList = new List<int>();
                 this.PersonAttributeCategories = new List<Guid>();
@@ -1440,6 +1442,8 @@ namespace RockWeb.Blocks.Crm
             #region Fields and Properties
 
             private readonly static TraceSource _tracer = new TraceSource( "Rock.Crm.BulkUpdate" );
+
+            private readonly ILogger _logger;
 
             private int _currentPersonAliasId;
             private Person _currentPerson = null;
@@ -2393,7 +2397,7 @@ namespace RockWeb.Blocks.Crm
                                                 // Add those results to the log and then move on to the next person.
                                                 var validationMessage = string.Join( ",", groupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() );
                                                 Interlocked.Increment( ref _errorCount );
-                                                RockLogger.Log.Information( RockLogDomains.Group, validationMessage );
+                                                _logger.LogInformation( validationMessage );
                                             }
                                         }
 

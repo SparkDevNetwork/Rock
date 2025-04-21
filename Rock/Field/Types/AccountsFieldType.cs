@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as a delimited list of FinancialAccount Guids
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.FINANCIAL_ACCOUNTS )]
     public class AccountsFieldType : FieldType, IEntityReferenceFieldType
@@ -246,7 +247,6 @@ namespace Rock.Field.Types
             cbPublicName.CheckedChanged += OnQualifierUpdated;
             cbPublicName.Checked = true;
             cbPublicName.Label = "Display Public Name";
-            cbPublicName.Text = "Yes";
             cbPublicName.Help = "When set, public name will be displayed.";
 
             // Add a check box for deciding to display the child items count on a parent node
@@ -256,7 +256,6 @@ namespace Rock.Field.Types
             cbDisplayChildItemCounts.CheckedChanged += OnQualifierUpdated;
             cbDisplayChildItemCounts.Checked = false;
             cbDisplayChildItemCounts.Label = "Display Child Item Counts";
-            cbDisplayChildItemCounts.Text = "Yes";
             cbDisplayChildItemCounts.Help = "When set, child item counts will be displayed.";
 
             // Add a check box for deciding if only active items are displayed
@@ -266,7 +265,6 @@ namespace Rock.Field.Types
             cbActiveOnly.CheckedChanged += OnQualifierUpdated;
             cbActiveOnly.Checked = false;
             cbActiveOnly.Label = "Display Active Items Only";
-            cbActiveOnly.Text = "Yes";
             cbActiveOnly.Help = "When set, only active item will be displayed.";
 
             // Add a check box for deciding to allow searching long lists via a REST call
@@ -276,7 +274,6 @@ namespace Rock.Field.Types
             cbEnhancedForLongLists.CheckedChanged += OnQualifierUpdated;
             cbEnhancedForLongLists.Checked = true;
             cbEnhancedForLongLists.Label = "Enhanced For Long Lists";
-            cbEnhancedForLongLists.Text = "Yes";
             cbEnhancedForLongLists.Help = "When set, allows a searching for items.";
 
             return controls;

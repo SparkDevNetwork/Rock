@@ -155,6 +155,14 @@ namespace Rock.Mobile
         public int? ProfilePageId { get; set; }
 
         /// <summary>
+        /// Gets or sets the chat page identifier.
+        /// </summary>
+        /// <value>
+        /// The chat page identifier.
+        /// </value>
+        public int? ChatPageId { get; set; }
+
+        /// <summary>
         /// Gets or sets the person attribute categories.
         /// </summary>
         /// <value>
@@ -375,6 +383,16 @@ namespace Rock.Mobile
         /// </summary>
         /// <value>The auth0 client identifier.</value>
         public string Auth0ClientId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection status to use for new Auth0 logins.
+        /// </summary>
+        public int? Auth0ConnectionStatusValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the record status to use for new Auth0 logins.
+        /// </summary>
+        public int? Auth0RecordStatusValueId { get; set; }
 
         /// <summary>
         /// The Entra client identifier.

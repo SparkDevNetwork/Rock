@@ -17,8 +17,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
+using Rock.Observability;
 using Rock.SystemKey;
 
 namespace Rock.Web.Cache.NonEntities
@@ -261,11 +265,11 @@ namespace Rock.Web.Cache.NonEntities
         /// <returns></returns>
         private static string ParseSelectForTable( string commandText, int iterationCount = 0 )
         {
-            var tableName = string.Empty;
+            var tableName = "undefined";
 
             if ( iterationCount > 4 )
             {
-                return "undefined";
+                return tableName;
             }
 
             var indexOfFrom = commandText.IndexOfNth( "from ", iterationCount, StringComparison.OrdinalIgnoreCase );
@@ -282,12 +286,84 @@ namespace Rock.Web.Cache.NonEntities
                     tableName = ParseSelectForTable( commandText, ( iterationCount + 1 ) );
                 }
             }
-            else
-            {
-                return "undefined";
-            }
 
             return tableName;
+        }
+
+        /// <summary>
+        /// Updates the activity with custom tags for the database query. If
+        /// the query is targetted for additional information then the factory
+        /// method will be called to retrieve the query parameters.
+        /// </summary>
+        /// <typeparam name="T">The type of the context data to pass to the factory method.</typeparam>
+        /// <param name="activity">The activity to update.</param>
+        /// <param name="commandText">The SQL command text for updating the activity.</param>
+        /// <param name="factoryContext">The factory context used for generating command parameters.</param>
+        /// <param name="commandParametersFactory">The function that generates the command parameters based on the factory context.</param>
+        internal static void UpdateActivity<T>( Activity activity, string commandText, T factoryContext, Func<T, IEnumerable<KeyValuePair<string, string>>> commandParametersFactory )
+        {
+            if ( activity == null )
+            {
+                return;
+            }
+
+            var observabilityInfo = Get( commandText );
+            var isTargeted = TargetedQueryHashes.Contains( observabilityInfo.CommandHash );
+
+            activity.DisplayName = $"DB: {observabilityInfo.Prefix} ({observabilityInfo.CommandHash})";
+            activity.AddTag( "db.system", "mssql" );
+            activity.AddTag( "rock.otel_type", "rock-db" );
+            activity.AddTag( "rock.db.hash", observabilityInfo.CommandHash );
+
+            ObservabilityHelper.IncrementDbQueryCount( activity );
+
+            if ( isTargeted || IsQueryIncluded )
+            {
+                activity.AddTag( "db.query", commandText.Truncate( ObservabilityHelper.MaximumAttributeLength, false ) );
+            }
+
+            // Check if this query should get additional observability telemetry
+            if ( isTargeted )
+            {
+                // Append stack trace
+                var stackTrace = TrimInfrastructureFromStackTrace( new StackTrace( true ).ToString() );
+
+                activity.AddTag( "rock.db.stacktrace", stackTrace.Truncate( ObservabilityHelper.MaximumAttributeLength ) );
+
+                // Append parameters
+                var parameters = new StringBuilder();
+                foreach ( var keyValue in commandParametersFactory( factoryContext ) )
+                {
+                    parameters.Append( $"{keyValue.Key}: {keyValue.Value}{Environment.NewLine}" );
+                }
+
+                activity.AddTag( "rock.db.parameters", parameters.ToString().Truncate( ObservabilityHelper.MaximumAttributeLength ) );
+            }
+
+            // Add observability metric
+            var tags = RockMetricSource.CommonTags;
+            tags.Add( "operation", observabilityInfo.CommandType );
+            RockMetricSource.DatabaseQueriesCounter?.Add( 1, tags );
+        }
+
+        /// <summary>
+        /// Since we are limited on space in the tag values this trims off any
+        /// stack frames that would be considered inconsequential from the
+        /// start of the trace. Such as EF and our own internal code related
+        /// to recording the activity information.
+        /// </summary>
+        /// <param name="stackTrace">The stack trace to be trimmed.</param>
+        /// <returns>A string that contains the trimmed stack trace information.</returns>
+        private static string TrimInfrastructureFromStackTrace( string stackTrace )
+        {
+            var stackTraceLines = stackTrace.Split( new string[] { Environment.NewLine }, StringSplitOptions.None );
+
+            var includedLines = stackTraceLines.SkipWhile( line =>
+                line.StartsWith( "   at Rock.Data.Interception." )
+                || line.StartsWith( "   at Rock.Web.Cache.NonEntities.DbCommandObservabilityCache." )
+                || line.StartsWith( "   at System.Data.Entity." ) );
+
+            return string.Join( Environment.NewLine, includedLines );
         }
 
         #endregion

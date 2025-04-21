@@ -23,6 +23,7 @@ using System.Linq;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -41,12 +42,14 @@ namespace Rock.Net
         #region Fields
 
         /// <summary>
-        /// The cache object for the site this request is related to.
+        /// The cache object for the site this request is related to. This
+        /// may be <c>null</c> if no page is associated with this request.
         /// </summary>
         private SiteCache _siteCache;
 
         /// <summary>
-        /// The cache object for the page this request is related to.
+        /// The cache object for the page this request is related to. This
+        /// may be <c>null</c> if no page is associated with this request.
         /// </summary>
         private PageCache _pageCache;
 
@@ -54,12 +57,12 @@ namespace Rock.Net
         /// The person preference collections. This is used as a cache so that
         /// we return the same instance for the entire request.
         /// </summary>
-        private ConcurrentDictionary<string, PersonPreferenceCollection> _personPreferenceCollections = new ConcurrentDictionary<string, PersonPreferenceCollection>();
+        private readonly ConcurrentDictionary<string, PersonPreferenceCollection> _personPreferenceCollections = new ConcurrentDictionary<string, PersonPreferenceCollection>();
 
         /// <summary>
-        /// Whether this object represents a legacy, `System.Web` request.
+        /// Whether the cookie values for this request have already been URL decoded.
         /// </summary>
-        private bool _isLegacyRequest;
+        private readonly bool _cookieValuesAreUrlDecoded;
 
         #endregion
 
@@ -138,7 +141,7 @@ namespace Rock.Net
         /// <value>
         /// The context entities.
         /// </value>
-        internal protected IDictionary<Type, Lazy<IEntity>> ContextEntities { get; set; }
+        private protected IDictionary<Type, Lazy<IEntity>> ContextEntities { get; set; }
 
         /// <summary>
         /// Gets the personalization segment identifiers. Will be empty if this
@@ -146,7 +149,7 @@ namespace Rock.Net
         /// personalization enabled.
         /// </summary>
         /// <value>The personalization segment identifiers.</value>
-        internal IEnumerable<int> PersonalizationSegmentIds { get; private set; }
+        internal IEnumerable<int> PersonalizationSegmentIds { get; private set; } = Array.Empty<int>();
 
         /// <summary>
         /// Gets the personalization request filter identifiers. Will be empty if this
@@ -154,13 +157,33 @@ namespace Rock.Net
         /// personalization enabled.
         /// </summary>
         /// <value>The personalization request filter identifiers.</value>
-        internal IEnumerable<int> PersonalizationRequestFilterIds { get; private set; }
+        internal IEnumerable<int> PersonalizationRequestFilterIds { get; private set; } = Array.Empty<int>();
 
         /// <summary>
         /// Gets the query string from the request.
         /// </summary>
         /// <value>The query string from the request.</value>
         internal NameValueCollection QueryString { get; private set; }
+
+        /// <summary>
+        /// Gets the HTTP method from the request.
+        /// </summary>
+        /// <value>
+        /// This will always be uppercase, such as <c>"GET"</c>. The value can also be <see langword="null"/>, so perform checks accordingly.
+        /// </value>
+        internal string HttpMethod { get; private set; }
+
+        /// <summary>
+        /// Gets the form from the request.
+        /// </summary>
+        /// <remarks>
+        ///     Please do not make this <see langword="public"/> without discussion.
+        ///     <para>
+        ///         There are lots of loose ends to figure out before we do, such as,
+        ///         contexts where form data in contexts where it can only be retrieved asynchronously.
+        ///     </para>
+        /// </remarks>
+        internal NameValueCollection Form { get; private set; }
 
         /// <summary>
         /// Gets or sets the headers.
@@ -195,9 +218,23 @@ namespace Rock.Net
         public bool IsCaptchaValid { get; internal set; }
 
         /// <summary>
-        /// Gets the cache object for the page this request is related to.
+        /// Gets the cache object for the page this request is related to. This
+        /// may be <c>null</c> if no page is associated with this request.
         /// </summary>
         internal PageCache Page => _pageCache;
+
+        /// <summary>
+        /// <para>
+        /// The unique identifier of the interaction related to the original
+        /// page request. For block actions, this will be the interaction of
+        /// the initial page load.
+        /// </para>
+        /// <para>
+        /// This is a best effort value and may not match the actual value in
+        /// all edge cases.
+        /// </para>
+        /// </summary>
+        internal Guid RelatedInteractionGuid { get; set; } = Guid.NewGuid();
 
         #endregion
 
@@ -214,6 +251,8 @@ namespace Rock.Net
             Cookies = new Dictionary<string, string>();
             QueryString = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
             RootUrlPath = string.Empty;
+            HttpMethod = null;
+            Form = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
         }
 
         /// <summary>
@@ -224,14 +263,15 @@ namespace Rock.Net
         /// <param name="currentUser">The currently logged in user.</param>
         internal RockRequestContext( HttpRequest request, IRockResponseContext response, UserLogin currentUser )
         {
-            _isLegacyRequest = true;
-
             Response = response;
 
             CurrentUser = currentUser;
 
             RequestUri = request.UrlProxySafe();
             RootUrlPath = GetRootUrlPath( RequestUri );
+
+            HttpMethod = request.HttpMethod;
+            Form = new NameValueCollection( request.Form );
 
             ClientInformation = new ClientInformation( request );
 
@@ -284,6 +324,22 @@ namespace Rock.Net
             RequestUri = request.RequestUri != null ? request.UrlProxySafe() : null;
             RootUrlPath = GetRootUrlPath( RequestUri );
 
+            HttpMethod = request.Method?.ToUpper();
+
+            /*
+                6/7/2024 - JMH
+
+                Do not set the Form data for Rock real-time and Rest API requests.
+
+                These types of requests either do not use form content
+                (application/x-www-form-urlencoded or multipart/form-data)
+                or we have not had to pass form data along in the RockRequestContext.
+                Setting it at this point would require asynchronous reads of the request content.
+                Since further architectural discussions are required around this,
+                we have opted to set Form data to an empty collection for now.
+              */
+            Form = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
+
             ClientInformation = new ClientInformation( request );
 
             // Setup the page parameters.
@@ -305,6 +361,8 @@ namespace Rock.Net
             {
                 Cookies.AddOrReplace( cookieName, request.Cookies[cookieName] );
             }
+
+            _cookieValuesAreUrlDecoded = request.CookiesValuesAreUrlDecoded;
 
             // Initialize any context entities found.
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
@@ -400,7 +458,26 @@ namespace Rock.Net
                     continue;
                 }
 
-                AddOrReplaceEncryptedContextEntity( encryptedItem );
+                /*
+                    12/1/2023 - JPH
+
+                    This `RockRequestContext` class has multiple constructors, which can lead to different ways of retrieving
+                    cookie values (https://stackoverflow.com/a/55077150).
+
+                        1. If cookies were retrieved using the `System.Web` lib, we need to manually URL decode context entity cookie values.
+                        2. If cookies were retrieved using the `System.Net` lib, the values will have already been decoded for us.
+
+                    Reason: Context cookie compatibility between Web Forms and Obsidian.
+                    https://github.com/SparkDevNetwork/Rock/issues/5634
+                */
+
+                var decodedItem = encryptedItem;
+                if ( !_cookieValuesAreUrlDecoded )
+                {
+                    decodedItem = HttpUtility.UrlDecode( encryptedItem );
+                }
+
+                AddOrReplaceEncryptedContextEntity( decodedItem );
             }
         }
 
@@ -426,35 +503,16 @@ namespace Rock.Net
         /// Decrypts the value and adds or replaces the specified context entity.
         /// </summary>
         /// <param name="encryptedItem">The encrypted item containing the context entity to add or replace.</param>
-        /// <param name="bypassDecoding">Whether to explicitly bypass decoding (if the caller knows the item
-        /// has already been decoded).</param>
-        private void AddOrReplaceEncryptedContextEntity( string encryptedItem, bool bypassDecoding = false )
+        private void AddOrReplaceEncryptedContextEntity( string encryptedItem )
         {
             try
             {
-                /*
-                    12/1/2023 - JPH
-
-                    This `RockRequestContext` class has multiple constructors, which leads to multiple
-                    ways of retrieving this context cookie (https://stackoverflow.com/a/55077150).
-
-                        1. If this cookie was retrieved using the `System.Web` lib (by way of the
-                           constructor that takes an `HttpRequest` object, we need to manually URL
-                           decode this value before attempting to decrypt it.
-                        2. If this cookie was retrieved using the `System.Net` lib (by way of the
-                           constructor that take an `IRequest` object, the value will have already
-                           been decoded for us.
-
-                    Reason: Context cookie compatibility between Web Forms and Obsidian.
-                    https://github.com/SparkDevNetwork/Rock/issues/5634
-                 */
-                var decodedItem = encryptedItem;
-                if ( _isLegacyRequest && !bypassDecoding )
+                var contextItem = Rock.Security.Encryption.DecryptString( encryptedItem );
+                if ( contextItem.IsNullOrWhiteSpace() )
                 {
-                    decodedItem = HttpUtility.UrlDecode( encryptedItem );
+                    return;
                 }
 
-                var contextItem = Rock.Security.Encryption.DecryptString( decodedItem );
                 var parts = contextItem.Split( '|' );
                 if ( parts.Length != 2 )
                 {
@@ -473,7 +531,7 @@ namespace Rock.Net
         /// Adds or replaces a context entity for the specified entity type name and key.
         /// </summary>
         /// <param name="entityTypeName">The entity type name.</param>
-        /// <param name="entityKey">The entity key.</param>
+        /// <param name="entityKey">The entity key. This may either be a Guid, integer Id or IdKey value.</param>
         private void AddOrReplaceContextEntity( string entityTypeName, string entityKey )
         {
             // If entity type name or entity key are not defined then skip.
@@ -493,6 +551,22 @@ namespace Rock.Net
 
             // If we got an unknown type then skip.
             if ( type == null )
+            {
+                return;
+            }
+
+            AddOrReplaceContextEntity( type, entityKey );
+        }
+
+        /// <summary>
+        /// Adds or replaces a context entity for the specified entity type and key.
+        /// </summary>
+        /// <param name="type">The entity type.</param>
+        /// <param name="entityKey">The entity key. This may either be a Guid, integer Id or IdKey value.</param>
+        private void AddOrReplaceContextEntity( Type type, string entityKey )
+        {
+            // If entity type or entity key are not defined then skip.
+            if ( type == null || entityKey.IsNullOrWhiteSpace() )
             {
                 return;
             }
@@ -627,9 +701,7 @@ namespace Rock.Net
             var separator = new char[1] { ',' };
             foreach ( var param in GetPageParameter( "context" ).Split( separator, StringSplitOptions.RemoveEmptyEntries ) )
             {
-                // Query string parameters will have already been decoded, so instruct
-                // the decryption method to always bypass this part of the process.
-                AddOrReplaceEncryptedContextEntity( param, true );
+                AddOrReplaceEncryptedContextEntity( param );
             }
         }
 
@@ -657,6 +729,25 @@ namespace Rock.Net
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Returns a page parameter's value as an integer if possible; zero if not possible or not allowed.
+        /// </summary>
+        /// <param name="name">The name of the parameter.</param>
+        /// <returns>0 if unable to parse a valid value; otherwise the parsed value as an integer</returns>
+        public int PageParameterAsId( string name )
+        {
+            var allowIdParameters = !_pageCache?.Layout?.Site?.DisablePredictableIds ?? false;
+
+            var entityParameterValue = GetPageParameter( name );
+
+            // Parse out the Id if the parameter is an IdKey or take the Id
+            // if the site allows predictable Ids.
+            return
+                entityParameterValue.IsDigitsOnly() && allowIdParameters ?
+                entityParameterValue.ToIntSafe() :
+                IdHasher.Instance.GetId( entityParameterValue ).ToIntSafe();
         }
 
         /// <summary>
@@ -713,7 +804,9 @@ namespace Rock.Net
                     contextObjects.Add( ctx.Key.Name, () => ctx.Value.Value );
                 }
 
-                if ( contextObjects.Any() )
+                // Use Count instead of Any() so we don't materialize the lazy
+                // values in the dictionary.
+                if ( contextObjects.Count > 0 )
                 {
                     mergeFields.Add( "Context", contextObjects );
                 }
@@ -750,6 +843,7 @@ namespace Rock.Net
                 mergeFields.Add( "Device", Headers["X-Rock-DeviceData"].FirstOrDefault().FromJsonOrNull<Common.Mobile.DeviceData>() );
             }
 
+            mergeFields.Add( "Geolocation", ClientInformation?.Geolocation );
             mergeFields.Add( $"{LavaHelper.InternalMergeFieldPrefix}RockRequestContext", this );
 
             return mergeFields;
@@ -886,42 +980,20 @@ namespace Rock.Net
         }
 
         /// <summary>
-        /// Resolves the rock URL.
+        /// Resolves the rock URL to the absolute path it refers to on this site.
         /// </summary>
         /// <remarks>
-        ///     <para>An input starting with "~~/" will return a theme URL like, "/Themes/{CurrentSiteTheme}/{input}".</para>
-        ///     <para>An input starting with "~/" will return the input without the leading "~".</para>
+        ///     <para>An input starting with "~~/" will return a theme URL like, "{SiteRoot}/Themes/{CurrentSiteTheme}/{input}" without the leading "~~".</para>
+        ///     <para>An input starting with "~/" will return the site root like, {SiteRoot}/{input}" without the leading "~".</para>
+        ///     <para>An input of "~~" will return a theme URL like "{SiteRoot}/Themes/{CurrentSiteTheme}" without a trailing slash.</para>
+        ///     <para>An input of "~" will return the site root "{SiteRoot}/" with a trailing slash. </para>
         ///     <para>The input will be returned as supplied for all other cases.</para>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
         /// </remarks>
-        /// <param name="input">The input with prefix <c>"~~/"</c> or <c>"~/"</c>.</param>
+        /// <param name="input">The input with prefix <c>"~~"</c> or <c>"~"</c>.</param>
         /// <returns>The resolved URL.</returns>
-        [RockInternal( "1.15" )]
         public string ResolveRockUrl( string input )
         {
-            if ( input.IsNullOrWhiteSpace() )
-            {
-                return input;
-            }
-
-            if ( input.StartsWith( "~~/" ) )
-            {
-                var themeRoot = $"/Themes/{_pageCache.SiteTheme}/";
-                return themeRoot + ( input.Length > 3 ? input.Substring( 3 ) : string.Empty );
-            }
-
-            if ( input.StartsWith( "~" ) && input.Length > 1 )
-            {
-                return input.Substring( 1 );
-            }
-
-            // The input format is unrecognized so return it.
-            return input;
+            return RockApp.Current.ResolveRockUrl( input, _pageCache?.Layout?.Site?.Theme ?? "Rock" );
         }
 
         #endregion

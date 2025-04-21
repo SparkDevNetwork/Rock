@@ -60,6 +60,9 @@ export type FamilyPreRegistrationInitializationBox = {
     /** Gets or sets the adult gender field. */
     adultGenderField?: FamilyPreRegistrationFieldBag | null;
 
+    /** The label that should be used when referring to adults on the form. */
+    adultLabel?: string | null;
+
     /** Gets or sets the adult marital status field. */
     adultMaritalStatusField?: FamilyPreRegistrationFieldBag | null;
 
@@ -111,6 +114,9 @@ export type FamilyPreRegistrationInitializationBox = {
     /** Gets or sets the child grade field. */
     childGradeField?: FamilyPreRegistrationFieldBag | null;
 
+    /** The label that should be used when referring to children on the form. */
+    childLabel?: string | null;
+
     /** Gets or sets the child mobile phone field. */
     childMobilePhoneField?: FamilyPreRegistrationFieldBag | null;
 
@@ -138,6 +144,9 @@ export type FamilyPreRegistrationInitializationBox = {
     /** Gets or sets the create account title. */
     createAccountTitle?: string | null;
 
+    /** Gets or sets a value indicating whether captcha support should be disabled for this block. */
+    disableCaptchaSupport: boolean;
+
     /** Gets or sets the display SMS opt in. */
     displaySmsOptIn?: FamilyPreRegistrationSmsOptInFieldBag | null;
 
@@ -158,6 +167,12 @@ export type FamilyPreRegistrationInitializationBox = {
 
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
+
+    /**
+     * Moves the Child panel above the Adult Information panel and starts
+     * with one child to be filled in.
+     */
+    prioritizeChildEntry: boolean;
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;

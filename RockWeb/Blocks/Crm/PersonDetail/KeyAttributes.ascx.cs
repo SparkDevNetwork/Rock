@@ -164,8 +164,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( Person != null && Person.Id != 0 )
             {
                 upKeyAttributes.Visible = true;
@@ -209,6 +207,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 upKeyAttributes.Visible = false;
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

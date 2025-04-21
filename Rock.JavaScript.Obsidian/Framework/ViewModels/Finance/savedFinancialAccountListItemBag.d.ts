@@ -21,13 +21,21 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /**
  * A list item that describes an payment account the individual has
  * previously setup that can be used again.
  */
 export type SavedFinancialAccountListItemBag = {
+    /** Gets or sets the masked account number. */
+    accountNumberMasked?: string | null;
+
     /** Gets or sets the category for this item. */
     category?: string | null;
+
+    /** The Guid for the currency type of this account. */
+    currencyTypeGuid?: Guid | null;
 
     /**
      * Gets or sets the description of the card to help identify it to the

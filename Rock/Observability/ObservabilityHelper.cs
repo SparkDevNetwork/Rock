@@ -15,16 +15,20 @@
 // </copyright>
 //
 using System;
-using System.Configuration;
+using System.Collections.Generic;
 using System.Diagnostics;
 
+using Microsoft.Extensions.Logging;
+
 using OpenTelemetry;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-using Rock.Bus;
+using Rock.Configuration;
 using Rock.SystemKey;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Observability
 {
@@ -33,12 +37,13 @@ namespace Rock.Observability
     /// </summary>
     public static class ObservabilityHelper
     {
-        private static string DefaultTracesPath = "v1/traces";
-        private static string DefaultMetricsPath = "v1/metrics";
-        private static string DefaultLogsPath = "v1/logs";
+        private static readonly string DefaultTracesPath = "v1/traces";
+        private static readonly string DefaultMetricsPath = "v1/metrics";
+        private static readonly string DefaultLogsPath = "v1/logs";
 
         private static TracerProvider _currentTracerProvider;
         private static MeterProvider _currentMeterProvider;
+        private static LogExporterWrapper _exporterWrapper = new LogExporterWrapper();
 
 
         /// <summary>
@@ -109,7 +114,7 @@ namespace Rock.Observability
         /// </summary>
         public static string ServiceName
         {
-            get => ConfigurationManager.AppSettings["ObservabilityServiceName"]?.Trim() ?? string.Empty;
+            get => System.Configuration.ConfigurationManager.AppSettings["ObservabilityServiceName"]?.Trim() ?? string.Empty;
         }
         #endregion
 
@@ -130,8 +135,18 @@ namespace Rock.Observability
             {
                 RockMetricSource.StartCoreMetrics();
             }
-            
+
+            ConfigureLogExporter();
+
             return _currentTracerProvider;
+        }
+
+        /// <summary>
+        /// Configures the observability TraceProvider.
+        /// </summary>
+        internal static void ReconfigureObservability()
+        {
+            ConfigureObservability();
         }
 
         /// <summary>
@@ -181,7 +196,6 @@ namespace Rock.Observability
                     RockActivitySource.RefreshActivitySource();
                 }
             }
-
             return _currentTracerProvider;
         }
 
@@ -219,10 +233,73 @@ namespace Rock.Observability
                     )
                     .Build();
             }
-
             return _currentMeterProvider;
         }
 
+        /// <summary>
+        /// Configures and returns a new logger factory.
+        /// </summary>
+        /// <returns></returns>
+        public static void ConfigureLogExporter()
+        {
+            Uri.TryCreate( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT ), UriKind.Absolute, out var endpointUri );
+            var observabilityEnabled = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENABLED ).AsBoolean();
+            var endpointHeaders = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS )?.Replace( "^", "=" ).Replace( "|", "," );
+            var endpointProtocol = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL ).ToString().ConvertToEnumOrNull<OpenTelemetry.Exporter.OtlpExportProtocol>() ?? OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+
+            if ( endpointUri != null && endpointProtocol == OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf )
+            {
+                endpointUri = AppendPathIfNotEndsWith( endpointUri, DefaultLogsPath );
+            }
+
+            if ( !observabilityEnabled || endpointUri == null )
+            {
+                _exporterWrapper.Exporter = null;
+                return;
+            }
+
+            var exporter = new OpenTelemetry.Exporter.OtlpLogExporter( new OpenTelemetry.Exporter.OtlpExporterOptions
+            {
+                Endpoint = endpointUri,
+                Protocol = endpointProtocol,
+                Headers = endpointHeaders
+            } );
+
+            _exporterWrapper.Exporter = exporter;
+        }
+
+        /// <summary>
+        /// Configures and returns a new logger factory.
+        /// </summary>
+        /// <returns></returns>
+        public static void ConfigureLoggingBuilder( ILoggingBuilder builder )
+        {
+            builder.AddOpenTelemetry( cfg =>
+            {
+                var nodeName = RockApp.Current.HostingSettings.NodeName.ToLower();
+                var machineName = _machineName.Value;
+                var instanceId = nodeName != machineName ? $"{machineName} ({nodeName})" : machineName;
+
+                if ( string.IsNullOrWhiteSpace( ServiceName ) )
+                {
+                    // The Observability service is not configured, so exit.
+                    return;
+                }
+
+                var resourceBuilder = ResourceBuilder.CreateDefault()
+                    .AddService( serviceName: ServiceName, serviceVersion: "1.0.0", serviceInstanceId: instanceId );
+
+                cfg.IncludeFormattedMessage = true;
+                cfg.SetResourceBuilder( resourceBuilder );
+
+                // This processor is temporary until OpenTelemetry decides what
+                // to do with the category name. It is currently excluded in
+                // from the exporter.
+                cfg.AddProcessor( new CategoryLogProcessor() );
+
+                cfg.AddProcessor( new BatchLogRecordExportProcessor( _exporterWrapper ) );
+            } );
+        }
         /// <summary>
         /// Helper method to create a new observability activity that has a common set of attributes applied to it.
         /// </summary>
@@ -254,7 +331,7 @@ namespace Rock.Observability
                 return null;
             }
 
-            var nodeName = RockMessageBus.NodeName.ToLower();
+            var nodeName = RockApp.Current.HostingSettings.NodeName.ToLower();
             var machineName = _machineName.Value;
 
             // Add on default attributes
@@ -272,6 +349,15 @@ namespace Rock.Observability
             activity.AddTag( "service.version", _rockVersion.Value );
 
             return activity;
+        }
+
+        /// <summary>
+        /// Converts the open telemetry exporter protocols to a <see cref="ListItemBag"/> list.
+        /// </summary>
+        /// <returns></returns>
+        public static List<ListItemBag> GetOpenTelemetryExporterProtocolsAsListItemBag()
+        {
+            return typeof( OpenTelemetry.Exporter.OtlpExportProtocol ).ToEnumListItemBag();
         }
 
         /// <summary>
@@ -293,6 +379,43 @@ namespace Rock.Observability
             }
 
             return activity;
+        }
+
+        /// <summary>
+        /// Increments the database query count tag on the root activity and any
+        /// intermediate activities with an existing "rock.db.query_count" tag.
+        /// </summary>
+        /// <param name="activity">The activity to start with when walking up the ancestor tree.</param>
+        internal static void IncrementDbQueryCount( Activity activity )
+        {
+            while ( activity != null )
+            {
+                var queryCount = activity.GetTagItem( "rock.db.query_count" ) as int?;
+
+                // If the activity already has a query count or its the root
+                // activity then increment the value. This allows activities
+                // to request that they also get the query count recorded
+                // on them by setting the initial value to zero.
+                if ( queryCount.HasValue || activity.Parent == null )
+                {
+                    activity.SetTag( "rock.db.query_count", ( queryCount ?? 0 ) + 1 );
+                }
+
+                activity = activity.Parent;
+            }
+        }
+
+        /// <summary>
+        /// Enables tracking of database query counts for the specified activity.
+        /// The root activity will always track query counts.
+        /// </summary>
+        /// <param name="activity">The activity for which to enable database query count tracking.</param>
+        internal static void EnableDbQueryCountTracking( Activity activity )
+        {
+            if ( activity != null && activity.GetTagItem( "rock.db.query_count" ) == null )
+            {
+                activity.SetTag( "rock.db.query_count", 0 );
+            }
         }
 
         /// <summary>
@@ -334,7 +457,7 @@ namespace Rock.Observability
         /// <returns>A string containing the instance identifier.</returns>
         private static string GetServiceInstanceId()
         {
-            var nodeName = RockMessageBus.NodeName.ToLower();
+            var nodeName = RockApp.Current.HostingSettings.NodeName.ToLower();
             var machineName = _machineName.Value;
 
             if ( nodeName != machineName )

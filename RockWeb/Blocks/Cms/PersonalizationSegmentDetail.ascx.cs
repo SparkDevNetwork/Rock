@@ -117,6 +117,8 @@ namespace RockWeb.Blocks.Cms
                 sm.AsyncPostBackTimeout = databaseTimeout + 5;
                 Server.ScriptTimeout = databaseTimeout + 5;
             }
+
+            cpCategories.EntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSONALIZATION_SEGMENT.AsGuid() ).Value;
         }
 
         /// <summary>
@@ -125,12 +127,12 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( PageParameterKey.PersonalizationSegmentId ).AsInteger() );
+                ShowDetail( PageParameter( PageParameterKey.PersonalizationSegmentId ) );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -163,22 +165,34 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="personalizationSegmentId">The segment identifier.</param>
-        public void ShowDetail( int personalizationSegmentId )
+        /// <param name="personalizationSegmentKey">The segment identifier key.</param>
+        public void ShowDetail( string personalizationSegmentKey )
         {
             var rockContext = new RockContext();
 
             var personalizationSegmentService = new PersonalizationSegmentService( rockContext );
             PersonalizationSegment personalizationSegment = null;
 
-            if ( personalizationSegmentId > 0 )
+            var personalizationSegmentId = personalizationSegmentKey.AsInteger();
+
+            if ( !PageCache.Layout.Site.DisablePredictableIds && personalizationSegmentId > 0 )
             {
                 personalizationSegment = personalizationSegmentService.Get( personalizationSegmentId );
+            }
+            else
+            {
+                personalizationSegment = personalizationSegmentService.Get( personalizationSegmentKey, !PageCache.Layout.Site.DisablePredictableIds );
             }
 
             if ( personalizationSegment == null )
             {
                 personalizationSegment = new PersonalizationSegment();
+                pdAuditDetails.Visible = false;
+            }
+            else
+            {
+                pdAuditDetails.SetEntity( personalizationSegment, ResolveRockUrl( "~" ) );
+                pdAuditDetails.Visible = true;
             }
 
             if ( personalizationSegment.Id == 0 )
@@ -194,15 +208,19 @@ namespace RockWeb.Blocks.Cms
             hfPersonalizationSegmentId.Value = personalizationSegment.Id.ToString();
             tbName.Text = personalizationSegment.Name;
             tbSegmentKey.Text = personalizationSegment.SegmentKey;
+            tbDescription.Text = personalizationSegment.Description;
             hlInactive.Visible = !personalizationSegment.IsActive;
             cbIsActive.Checked = personalizationSegment.IsActive;
             hfExistingSegmentKeyNames.Value = personalizationSegmentService.Queryable().Where( a => a.Id != personalizationSegment.Id ).Select( a => a.SegmentKey ).ToList().ToJson();
+
+            var categoryIds = personalizationSegment.Categories.Select( c => c.Id ).ToList();
+            cpCategories.SetValues( categoryIds );
 
             this.AdditionalFilterConfiguration = personalizationSegment.AdditionalFilterConfiguration ?? new Rock.Personalization.PersonalizationSegmentAdditionalFilterConfiguration();
 
             // Person Filters
             dvpFilterDataView.SetValue( personalizationSegment.FilterDataViewId );
-            
+
             // Session Filters
             tglSessionCountFiltersAllAny.Checked = AdditionalFilterConfiguration.SessionFilterExpressionType == FilterExpressionType.GroupAll;
             BindSessionCountFiltersGrid();
@@ -271,10 +289,20 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
+            bool isSegmentDefinitionChanged = (
+               personalizationSegment.Name != tbName.Text ||
+               personalizationSegment.IsActive != cbIsActive.Checked ||
+               personalizationSegment.SegmentKey != tbSegmentKey.Text ||
+               personalizationSegment.FilterDataViewId != dvpFilterDataView.SelectedValueAsId() ||
+               personalizationSegment.AdditionalFilterConfiguration != this.AdditionalFilterConfiguration
+            );
+
             personalizationSegment.Name = tbName.Text;
             personalizationSegment.IsActive = cbIsActive.Checked;
             personalizationSegment.SegmentKey = tbSegmentKey.Text;
+            personalizationSegment.Description = tbDescription.Text;
             personalizationSegment.FilterDataViewId = dvpFilterDataView.SelectedValueAsId();
+            personalizationSegment.AdditionalFilterConfiguration = this.AdditionalFilterConfiguration;
 
             if ( tglSessionCountFiltersAllAny.Checked )
             {
@@ -303,33 +331,17 @@ namespace RockWeb.Blocks.Cms
                 AdditionalFilterConfiguration.InteractionFilterExpressionType = FilterExpressionType.GroupAny;
             }
 
-            personalizationSegment.AdditionalFilterConfiguration = this.AdditionalFilterConfiguration;
+            // Mark segment as dirty to signal the PostSave hook to update the sometimes long running Personalization data on a background task.
+            personalizationSegment.IsDirty = isSegmentDefinitionChanged;
+
+            CategoryService categoryService = new CategoryService( rockContext );
+            personalizationSegment.Categories.Clear();
+            foreach ( var categoryId in cpCategories.SelectedValuesAsInt() )
+            {
+                personalizationSegment.Categories.Add( categoryService.Get( categoryId ) );
+            }
 
             rockContext.SaveChanges();
-
-            try
-            {
-                var updatePersonalizationRockContext = new RockContext();
-                updatePersonalizationRockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
-                new PersonalizationSegmentService( updatePersonalizationRockContext ).UpdatePersonAliasPersonalizationData( PersonalizationSegmentCache.Get( personalizationSegment.Id ) );
-            }
-            catch ( Exception ex )
-            {
-                this.LogException( ex );
-                var sqlTimeoutException = ReportingHelper.FindSqlTimeoutException( ex );
-                if ( sqlTimeoutException != null )
-                {
-                    nbSegmentDataUpdateError.NotificationBoxType = NotificationBoxType.Warning;
-                    nbSegmentDataUpdateError.Text = "This segment filter personalization data could not be calculated in a timely manner. You can try again or adjust the timeout setting of this block.";
-                    return;
-                }
-
-                nbSegmentDataUpdateError.NotificationBoxType = NotificationBoxType.Danger;
-                nbSegmentDataUpdateError.Text = "An error occurred when updating personalization data";
-                nbSegmentDataUpdateError.Details = ex.Message;
-                return;
-            }
-
 
             NavigateToParentPage();
         }
@@ -533,6 +545,7 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 mdPageViewFilterConfiguration.Title = "Edit Page View Filter";
+                cbIncludeChildPages.Checked = pageViewFilterSegmentFilter.IncludeChildPages;
             }
 
             hfPageViewFilterGuid.Value = pageViewFilterSegmentFilter.Guid.ToString();
@@ -618,6 +631,7 @@ namespace RockWeb.Blocks.Cms
 
             pageViewFilter.PageUrlComparisonType = ddlPageUrlFilterComparisonType.SelectedValueAsEnumOrNull<ComparisonType>() ?? ComparisonType.StartsWith;
             pageViewFilter.PageUrlComparisonValue = rtbPageUrlCompareValue.Text;
+
             pageViewFilter.PageReferrerComparisonType = ddlPageReferrerFilterComparisonType.SelectedValueAsEnumOrNull<ComparisonType>() ?? ComparisonType.StartsWith;
             pageViewFilter.PageReferrerComparisonValue = rtbPageReferrerCompareValue.Text;
 
@@ -638,10 +652,11 @@ namespace RockWeb.Blocks.Cms
             pageViewFilter.TermComparisonType = ddlTermComparisonType.SelectedValueAsEnumOrNull<ComparisonType>() ?? ComparisonType.StartsWith;
             pageViewFilter.TermComparisonValue = rtbTermCompareValue.Text;
 
+            pageViewFilter.IncludeChildPages = cbIncludeChildPages.Checked;
+
             mdPageViewFilterConfiguration.Hide();
             BindPageViewFiltersGrid();
         }
-
         /// <summary>
         /// Handles the DeleteClick event of the gPageViewFilters control.
         /// </summary>

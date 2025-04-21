@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Group
     /// Stored as Group.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP )]
     public class GroupFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

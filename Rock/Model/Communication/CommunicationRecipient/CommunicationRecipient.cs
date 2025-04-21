@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "CommunicationRecipient" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "3EC89B90-6692-451E-A48F-0D2ADEBA05BC")]
     public partial class CommunicationRecipient : Model<CommunicationRecipient>
     {
@@ -99,6 +100,15 @@ namespace Rock.Model
         public DateTime? SendDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the datetime that communication was first attempted.
+        /// </summary>
+        /// <value>
+        /// The date time that communication was first attempted.
+        /// </value>
+        [DataMember]
+        public DateTime? FirstSendAttemptDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the datetime that communication was opened by recipient.
         /// </summary>
         /// <value>
@@ -158,6 +168,33 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string SentMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this communication caused the recipient to unsubscribe.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this communication caused the recipient to unsubscribe; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool CausedUnsubscribe { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the datetime when the recipient unsubscribed.
+        /// </summary>
+        /// <value>
+        /// The unsubscribe date time.
+        /// </value>
+        [DataMember]
+        public DateTime? UnsubscribeDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unsubscribe level.
+        /// </summary>
+        /// <value>
+        /// The unsubscribe level.
+        /// </value>
+        [DataMember]
+        public UnsubscribeLevel? UnsubscribeLevel { get; set; }
 
         /// <summary>
         /// Gets or sets the personal device identifier.

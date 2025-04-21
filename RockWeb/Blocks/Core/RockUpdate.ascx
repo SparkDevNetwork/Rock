@@ -32,13 +32,6 @@
                         You will need to upgrade your database in order to proceed with additional updates.
                     </p>
                 </Rock:NotificationBox>
-                <Rock:NotificationBox ID="nbLegacyLavaIssue" runat="server" NotificationBoxType="Warning" Visible="false">
-                    <strong><i class="fa fa-exclamation-triangle"></i> 'Lava Support Level' Change is Needed</strong>
-                    <p>
-                        Rock v16 no longer supports "Legacy" Lava.
-                        In order to upgrade Rock to v16, your <strong> Lava Support Level </strong> Global Attribute must be set to "No Legacy".
-                    </p>
-                </Rock:NotificationBox>
                 <Rock:NotificationBox ID="nbLavaEngineIssue" runat="server" NotificationBoxType="Warning" Visible="false">
                     <strong><i class="fa fa-exclamation-triangle"></i> 'Lava Engine Liquid Framework' Change is Needed</strong>
                     <p>
@@ -52,7 +45,7 @@
                     </p>
                 </Rock:NotificationBox>
 
-                <Rock:NotificationBox ID="nbPendingMigrationJobs" runat="server" NotificationBoxType="Warning" Visible="false"></Rock:NotificationBox>
+                <Rock:NotificationBox ID="nbPendingMigrationJobs" runat="server" NotificationBoxType="Info" Visible="false"></Rock:NotificationBox>
 
                 <asp:Panel ID="pnlNoUpdates" runat="server">
                     <div class="well well-message">
@@ -126,7 +119,7 @@
                             <div id="divPanel" runat="server" class="panel">
                                 <div class="panel-heading">
                                     <h3 class="panel-title">
-                                        <asp:Literal runat="server" Text='<%# GetRockVersion( Eval( "SemanticVersion" ) )%>' /></h3>
+                                        <asp:Literal ID="litPackageDescription" runat="server" Text='<%#Eval( "Description" )%>' /></h3>
                                 </div>
                                 <div class="panel-body">
                                     <div class="row">
@@ -134,7 +127,7 @@
                                             <asp:LinkButton ID="lbInstall" runat="server" CssClass="btn" CommandName="Install" CommandArgument='<%# Eval( "SemanticVersion" ) %>'><i class="fa fa-download"></i> Install</asp:LinkButton>
                                         </div>
                                         <div class="col-md-10">
-                                            <asp:Literal ID="litPackageDescription" runat="server" Text='<%# Eval( "Summary" ) %>'></asp:Literal>
+                                            <asp:Literal ID="litPackageSummary" runat="server" Text='<%# Eval( "Summary" ) %>'></asp:Literal>
 
                                             <div class="releasenotes">
                                                 <div class="btn btn-sm btn-default margin-v-sm js-releasenote">Release Notes <i class="fa fa-caret-down"></i></div>
@@ -160,8 +153,7 @@
                         <i class="fa fa-exclamation-triangle"></i>
                         <p>
                             Update completed successfully... You're now running
-                            <asp:Literal ID="lSuccessVersion" runat="server" />
-                            .
+                            <asp:Literal ID="lSuccessVersion" runat="server" />.
                         </p>
 
                         <div class="text-center margin-t-md">

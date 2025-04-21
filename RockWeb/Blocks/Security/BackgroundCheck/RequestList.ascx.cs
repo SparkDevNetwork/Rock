@@ -342,6 +342,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                             string.Empty,
                         HasResponseData = !string.IsNullOrWhiteSpace( b.ResponseData ),
                         ResponseDocumentText = b.ResponseDocumentId.HasValue ? "<i class='fa fa-file-pdf-o fa-lg'></i>" : "",
+                        ResponseDocumentUrl = b.ResponseDocumentId.HasValue ? FileUrlHelper.GetFileUrl( b.ResponseDocumentId.Value ) : string.Empty,
                         ResponseDocumentId = b.ResponseDocumentId ?? 0
                     } ).ToList();
 
@@ -386,6 +387,8 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             public string ResponseDocumentText { get; set; }
 
             public int ResponseDocumentId { get; set; }
+
+            public string ResponseDocumentUrl { get; set; }
         }
     }
 }

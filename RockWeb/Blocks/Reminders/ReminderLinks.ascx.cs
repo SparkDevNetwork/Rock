@@ -144,13 +144,12 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 if ( !CurrentPersonAliasId.HasValue )
                 {
                     // If user is not logged in, do nothing.
+                    base.OnLoad( e );
                     return;
                 }
 
@@ -165,6 +164,8 @@ namespace RockWeb.Blocks.Reminders
             {
                 ShowDialog();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods
@@ -268,7 +269,7 @@ namespace RockWeb.Blocks.Reminders
 
             pnlExistingReminders.Visible = true;
 
-            rptReminders.DataSource = reminders;
+            rptReminders.DataSource = reminders.Take( 2 );
             rptReminders.DataBind();
 
             var entityTypeName = EntityTypeCache.Get( contextEntity.TypeId ).FriendlyName;
@@ -322,7 +323,7 @@ namespace RockWeb.Blocks.Reminders
                         .GetReminders( CurrentPersonId.Value, contextEntity.TypeId, null, null )
                         .Where( r => personAliasIds.Contains( r.EntityId ) && !r.IsComplete && r.ReminderDate < RockDateTime.Now ) // only get active reminders for this person.
                         .OrderByDescending( r => r.ReminderDate )
-                        .Take( 2 ); // We're only interested in two reminders for this block.
+                        .Take( 3 ); // We're only interested in two reminders for this block.
 
                     foreach ( var reminder in reminders.ToList() )
                     {
@@ -337,7 +338,7 @@ namespace RockWeb.Blocks.Reminders
                         .GetReminders( CurrentPersonId.Value, contextEntity.TypeId, contextEntity.Id, null )
                         .Where( r => !r.IsComplete && r.ReminderDate < RockDateTime.Now ) // only get active reminders.
                         .OrderByDescending( r => r.ReminderDate )
-                        .Take( 2 ); // We're only interested in two reminders for this block.
+                        .Take( 3 ); // We're only interested in two reminders for this block.
 
                     foreach ( var reminder in reminders.ToList() )
                     {

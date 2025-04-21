@@ -115,7 +115,7 @@ namespace Rock.Web.HttpModules
 
             if ( dynamicParams.Count() > 0 )
             {
-                dynamicParams.ToList().ForEach( q => parameters.AddOrIgnore( q.Key, q.Value ) );
+                dynamicParams.ToList().ForEach( q => parameters.TryAdd( q.Key, q.Value ) );
             }
 
             // If the route uses a Url as a fallback, we will redirect them as such.

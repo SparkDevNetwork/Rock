@@ -1,0 +1,26 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <li>
+        {{ props.achievement.name }}
+
+        <ul>
+            <li>Progress: {{ achievement.progress * 100 }}%</li>
+            <li>{{ achievement.isClosed ? "Closed" : "Open" }}</li>
+            <li>{{ achievement.isSuccess ? "Successful" : "Not Successful" }}</li>
+            <li>Start: {{ achievement.startDateTime }}</li>
+            <li>End: {{ achievement.endDateTime }}</li>
+        </ul>
+    </li>
+</template>
+
+<script setup lang="ts">
+    import { AchievementBag } from "@Obsidian/ViewModels/CheckIn/achievementBag";
+    import { PropType } from "vue";
+
+    const props = defineProps({
+        achievement: {
+            type: Object as PropType<AchievementBag>,
+            required: true
+        }
+    });
+</script>

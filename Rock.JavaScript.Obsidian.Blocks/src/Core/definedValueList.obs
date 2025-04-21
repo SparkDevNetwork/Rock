@@ -4,7 +4,8 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          :itemTerm="itemTerm"
+          :title="itemTerm"
+          itemTerm="Defined Value"
           :entityTypeGuid="EntityType.DefinedValue"
           stickyHeader
           liveUpdates
@@ -18,6 +19,7 @@
                     title="Value"
                     field="value"
                     :filter="textValueFilter"
+                    width="5%"
                     visiblePriority="xs" />
 
         <TextColumn v-if="config.options?.isCategorizedValuesEnabled"
@@ -31,13 +33,16 @@
                     title="Description"
                     field="description"
                     :filter="textValueFilter"
-                    visiblePriority="xs"
-                    width="45%"/>
+                    visiblePriority="md"
+                    width="45%" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
-                       visiblePriority="xs" />
+                       width="120"
+                       visiblePriority="xs"
+                       :filter="booleanValueFilter"
+                       itemClass="justify-content-center text-center" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
@@ -46,7 +51,7 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 
-    <Modal v-model="isModalOpen" title="Defined Value" saveText="Save" @save="onSaveDefinedValue">
+    <Modal v-model="isModalOpen" title="Defined Value" :subtitle="`Id: ${id}`" saveText="Save" @save="onSaveDefinedValue">
         <legend>
             {{ modalTitle }}
         </legend>
@@ -83,7 +88,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, booleanValueFilter, DeleteColumn, ReorderColumn, SecurityColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import Modal from "@Obsidian/Controls/modal.obs";
@@ -107,6 +112,7 @@
     let gridData: GridDataBag | undefined;
     const isModalOpen = ref(false);
     const idKey = ref("");
+    const id = ref(0);
     const value = ref("");
     const category = ref<ListItemBag | undefined>();
     const description = ref("");
@@ -119,7 +125,7 @@
     //# region Computed Values
 
     const itemTerm = computed((): string => {
-        return config.options?.definedTypeName ? `${config.options?.definedTypeName} Defined Value` : "Defined Value";
+        return config.options?.definedTypeName ? config.options?.definedTypeName : "Defined Value";
     });
 
     const modalTitle = computed((): string => {
@@ -169,6 +175,7 @@
             isActive.value = result.data.isActive;
             attributes.value = result.data.attributes ?? {};
             attributeValues.value = result.data.attributeValues ?? {};
+            id.value = result.data.id;
 
             isModalOpen.value = true;
         }
@@ -229,6 +236,7 @@
     */
     async function onSaveDefinedValue(): Promise<void> {
         const bag: DefinedValueBag = {
+            id: id.value,
             idKey: idKey.value,
             value: value.value,
             category: category.value,

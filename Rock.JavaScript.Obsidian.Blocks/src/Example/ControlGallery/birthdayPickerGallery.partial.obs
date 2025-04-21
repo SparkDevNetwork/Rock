@@ -1,0 +1,34 @@
+<template>
+    <GalleryAndResult :value="datePartsModel"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <BirthdayPicker label="Birthday" v-model="datePartsModel" :showYear="showYear" />
+
+        <template #settings>
+            <Toggle label="Show Year" v-model="showYear" />
+            <p class="mt-4 mb-4">This simply wraps the <a href="#DatePartsPickerGallery">Date Parts Picker</a> and sets <code>allowFutureDates</code> and <code>requireYear</code> to <code>false</code>.</p>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { DatePartsPickerValue } from "@Obsidian/Types/Controls/datePartsPicker";
+
+    const showYear = ref(true);
+    const datePartsModel = ref<Partial<DatePartsPickerValue>>({
+        month: 1,
+        day: 1,
+        year: 1970
+    });
+    const importCode = getSfcControlImportPath("birthdayPicker");
+    const exampleCode = `<BirthdayPicker label="Birthday" v-model="date" />`;
+</script>

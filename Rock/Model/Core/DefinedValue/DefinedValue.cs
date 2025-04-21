@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,13 +16,12 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -33,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "DefinedValue" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.DEFINED_VALUE )]
     public partial class DefinedValue : Model<DefinedValue>, IOrdered, ICacheable
     {
@@ -57,6 +57,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int DefinedTypeId { get; set; }
 
         /// <summary>
@@ -107,6 +108,22 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? CategoryId { get; set; }
+
+        /// <summary>
+        /// Gets the Category Name if a Category is associated with the Defined Type. Otherwise returns an empty string.
+        /// </summary>
+        [DataMember]
+        public string CategoryName
+        {
+            get
+            {
+                if ( !CategoryId.HasValue )
+                {
+                    return string.Empty;
+                }
+                return CategoryCache.Get( CategoryId.Value )?.Name ?? string.Empty;
+            }
+        }
 
         #endregion
 

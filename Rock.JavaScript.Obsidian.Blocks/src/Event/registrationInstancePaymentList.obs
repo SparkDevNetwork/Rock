@@ -1,0 +1,209 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          title="Payments"
+          itemTerm="Payment"
+          :exportTitle="config.options?.exportFileName ?? 'Payments'"
+          :entityTypeGuid="EntityType.FinancialTransaction"
+          stickyHeader
+          liveUpdates
+          :showLaunchWorkflow="false"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="person"
+                    title="Person"
+                    field="person"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="xs" />
+
+        <DateTimeColumn name="transactionDateTime"
+                        title="Date / Time"
+                        field="transactionDateTime"
+                        :filter="dateValueFilter"
+                        headerClass="text-left"
+                        itemClass="justify-content-start text-left"
+                        visiblePriority="md" />
+
+        <CurrencyColumn name="totalAmount"
+                        title="Amount"
+                        field="totalAmount"
+                        headerClass="title-right"
+                        itemClass="justify-content-end text-right"
+                        :quickFilterValue="getTotalAmountQuickFilterValue"
+                        :filter="numberValueFilter"
+                        visiblePriority="xs" />
+
+        <TextColumn name="paymentMethod"
+                    title="Payment Method"
+                    field="paymentMethod"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn name="account"
+                    title="Account"
+                    field="account"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn name="transactionCode"
+                    title="Transaction Code"
+                    field="transactionCode"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <Column name="registrars"
+                title="Registrar"
+                field="registrars"
+                :filter="pickExistingValueFilter"
+                :quickFilterValue="getRegistrantsFilterValue"
+                :filterValue="getRegistrarsFilterValue"
+                visiblePriority="md">
+
+            <template #format="{ row }">
+                <div class="text-lg">
+                    <div v-for="registrar in row.registrarsHtml">
+                        <span v-html="registrar"></span><br />
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column name="registrants"
+                title="Registrant(s)"
+                field="registrants"
+                :filter="pickExistingValueFilter"
+                :quickFilterValue="getRegistrantsFilterValue"
+                :filterValue="getRegistrantsFilterValue"
+                visiblePriority="xs">
+
+            <template #format="{ row }">
+                <div class="text-lg">
+                    <div v-for="registrant in row.registrants">
+                        <span>{{ registrant }}</span><br />
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+    </Grid>
+</template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { TextColumn, textValueFilter, dateValueFilter, pickExistingValueFilter, numberValueFilter, Column, DateTimeColumn, CurrencyColumn } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { RegistrationInstancePaymentListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstancePaymentList/registrationInstancePaymentListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./RegistrationInstancePaymentList/types.partial";
+    import { reactive, ref } from "vue";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+
+    const config = useConfigurationValues<ListBlockBox<RegistrationInstancePaymentListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+    * Gets the filter value text to use for the registrants column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getRegistrantsFilterValue(row: Record<string, unknown>): string {
+        const registrants = row["registrants"] as string[];
+        let filterValue = "";
+
+        if (registrants && registrants.length > 0) {
+            for (const registrant of registrants) {
+                filterValue += registrant;
+            }
+        }
+
+        return filterValue;
+    }
+
+    /**
+    * Gets the filter value text to use for the registrars column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getRegistrarsFilterValue(row: Record<string, unknown>): string {
+        const registrants = row["registrars"] as string[];
+        let filterValue = "";
+
+        if (registrants && registrants.length > 0) {
+            for (const registrant of registrants) {
+                filterValue += registrant;
+            }
+        }
+
+        return filterValue;
+    }
+
+    /**
+     * Formats the amount as a decimal value for the grid's quick search
+     * @param row the targeted row.
+     */
+    function getTotalAmountQuickFilterValue(row: Record<string, unknown>): string {
+        const value = row.totalAmount as number;
+        const currencyDecimalPlaces = config.options?.currencyInfo?.decimalPlaces ?? 2;
+        return value ? asFormattedString(value, currencyDecimalPlaces) : "";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

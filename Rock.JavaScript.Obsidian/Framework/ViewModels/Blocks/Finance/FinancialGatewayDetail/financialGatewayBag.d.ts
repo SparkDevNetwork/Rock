@@ -55,6 +55,9 @@ export type FinancialGatewayBag = {
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
+    /** Gets or sets the inactive gateway notification message. */
+    inactiveGatewayNotificationMessage?: string | null;
+
     /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 

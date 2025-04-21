@@ -43,6 +43,11 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialBatchList
         public bool ShowAccountingSystemCodeColumn { get; set; }
 
         /// <summary>
+        /// Determines if the transaction count column should be displayed.
+        /// </summary>
+        public bool ShowTransactionCountColumn { get; set; }
+
+        /// <summary>
         /// The transaction types that can be used to filter the results.
         /// </summary>
         public List<ListItemBag> TransactionTypes { get; set; }

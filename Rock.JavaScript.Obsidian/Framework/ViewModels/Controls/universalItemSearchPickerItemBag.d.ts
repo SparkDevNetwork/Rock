@@ -39,7 +39,6 @@ export type UniversalItemSearchPickerItemBag = {
      * with the Value displayed as the "key" and the Text as the displayed
      * value.
      * 
-     * 
      * For example, if your detail item was Value="Campus" and
      * Text="North Ridge" then it might display something like
      * "Campus: North Ridge".

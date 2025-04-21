@@ -3,33 +3,21 @@
     <transition
                 enter-active-class="vertical-collapse-enter-active"
                 leave-active-class="vertical-collapse-leave-active"
-                @before-enter="beforeEnter"
                 @enter="enter"
                 @after-enter="afterEnter"
-                @before-leave="beforeLeave"
                 @leave="leave"
                 @after-leave="afterLeave">
         <slot />
     </transition>
 </template>
 
-<style scoped>
-.vertical-collapse-enter-active,
-.vertical-collapse-leave-active {
-    overflow: hidden;
-    transition-property: height, padding-top, padding-bottom;
-    transition-duration: var(--transition-speed);
-    transition-timing-function: ease-in-out;
-}
-</style>
-
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import { computed, PropType, ref } from "vue";
 
-    type CollapseState = {
-        display: string;
-        computedPaddingTop: string;
-        computedPaddingBottom: string;
+    type CachedStyles = {
+        height: string;
+        paddingTop: string;
+        paddingBottom: string;
     };
 
     const props = defineProps({
@@ -39,42 +27,18 @@
         }
     });
 
-    /**
-     * Called before the element begins to enter the DOM.
-     *
-     * @param element The element that will be entering the DOM.
-     */
-    function beforeEnter(element: Element): void {
-        if (!(element instanceof HTMLElement)) {
-            return;
+    // These transition speeds come from jQuery's hide/show "fast" and "slow" options.
+    const speed = computed<string>(() => {
+        switch (props.speed) {
+            case "fast":
+                return "0.2s";
+            case "slow":
+                return "0.6s";
+            default:
+                return "0.35s";
         }
-
-        // Save any values that will be used during the animation.
-        const state: CollapseState = {
-            display: element.style.display,
-            computedPaddingTop: getComputedStyle(element).paddingTop,
-            computedPaddingBottom: getComputedStyle(element).paddingBottom
-        };
-
-        element.dataset.transitionCollapseState = JSON.stringify(state);
-
-        // Reset all the styles we will be transitioning unless they already
-        // have values (which probably means we are aborting an expand).
-        if (!element.style.height) {
-            element.style.height = "0px";
-        }
-
-        if (!element.style.paddingTop) {
-            element.style.paddingTop = "0px";
-        }
-
-        if (!element.style.paddingBottom) {
-            element.style.paddingBottom = "0px";
-        }
-
-        element.style.display = "";
-        element.style.setProperty("--transition-speed", speed.value);
-    }
+    });
+    const cachedStyles = ref<CachedStyles>();
 
     /**
      * Called when the element has entered the DOM.
@@ -85,16 +49,22 @@
         if (!(element instanceof HTMLElement)) {
             return;
         }
+        // Because width and height may be 'auto',
+        // first detect and cache the dimensions
+        detectAndCacheDimensions(element);
 
-        // Set values that will cause the vertical space to expand.
-        requestAnimationFrame(() => {
-            const state = JSON.parse(element.dataset.transitionCollapseState ?? "") as CollapseState;
-            const verticalPadding = (parseInt(state.computedPaddingTop) || 0) + (parseInt(state.computedPaddingBottom) || 0);
-
-            element.style.height = `${element.scrollHeight + verticalPadding}px`;
-            element.style.paddingTop = state.computedPaddingTop;
-            element.style.paddingBottom = state.computedPaddingBottom;
-        });
+        // The order of applying styles is important:
+        // - 1. Set styles for state before transition
+        // - 2. Force repaint
+        // - 3. Add transition style
+        // - 4. Set styles for state after transition
+        // If the order is not right and you open any 2nd level submenu
+        // for the first time, the transition will not work.
+        setClosedDimensions(element);
+        hideOverflow(element);
+        forceRepaint(element);
+        setTransitionStyles(element);
+        setOpenedDimensions(element);
     }
 
     /**
@@ -107,31 +77,11 @@
             return;
         }
 
-        const state = JSON.parse(element.dataset.transitionCollapseState ?? "") as CollapseState;
-
-        // Reset all the explicit styles so they go back to implicit values.
-        element.style.height = "";
-        element.style.paddingTop = "";
-        element.style.paddingBottom = "";
-        element.style.display = state.display !== "none" ? state.display : "";
-        element.style.removeProperty("--transition-speed");
-
-        delete element.dataset.transitionCollapseState;
-    }
-
-    /**
-     * Called before the element begins to leave the DOM.
-     *
-     * @param element The element that will be leaving the DOM.
-     */
-    function beforeLeave(element: Element): void {
-        if (!(element instanceof HTMLElement)) {
-            return;
-        }
-
-        // Set the height explicitely so the CSS animation will trigger.
-        element.style.height = `${element.offsetHeight}px`;
-        element.style.setProperty("--transition-speed", speed.value);
+        // Clean up inline styles
+        unsetOverflow(element);
+        unsetTransitionStyles(element);
+        unsetDimensions(element);
+        cachedStyles.value = undefined;
     }
 
     /**
@@ -144,12 +94,21 @@
             return;
         }
 
-        // Set values that will cause the vertical space to collapse.
-        requestAnimationFrame(() => {
-            element.style.height = "0px";
-            element.style.paddingTop = "0px";
-            element.style.paddingBottom = "0px";
-        });
+        // For some reason, @leave triggered when starting
+        // from open state on page load. So for safety,
+        // check if the dimensions have been cached.
+        detectAndCacheDimensions(element);
+
+        // The order of applying styles is less important
+        // than in the enter phase, as long as we repaint
+        // before setting the closed dimensions.
+        // But it is probably best to use the same
+        // order as the enter phase.
+        setOpenedDimensions(element);
+        hideOverflow(element);
+        forceRepaint(element);
+        setTransitionStyles(element);
+        setClosedDimensions(element);
     }
 
     /**
@@ -162,13 +121,84 @@
             return;
         }
 
-        // Reset all the explicit styles so they go back to implicit values.
-        element.style.height = "";
-        element.style.paddingTop = "";
-        element.style.paddingBottom = "";
-        element.style.removeProperty("--transition-speed");
+        // Clean up inline styles
+        unsetOverflow(element);
+        unsetTransitionStyles(element);
+        unsetDimensions(element);
+        cachedStyles.value = undefined;
     }
 
-    // These transition speeds come from jQuery's hide/show "fast" and "slow" options.
-    const speed = computed<string>(() => props.speed == "fast" ? "0.2s" : props.speed == "slow" ? "0.6s" : "0.35s");
+    function detectAndCacheDimensions(el): void {
+        // Cache actual dimensions
+        // only once to void invalid values when
+        // triggering during a transition
+        if (cachedStyles.value) return;
+
+        const visibility = el.style.visibility;
+        const display = el.style.display;
+
+        // Trick to get the width and
+        // height of a hidden element
+        el.style.visibility = "hidden";
+        el.style.display = "";
+
+        cachedStyles.value = detectRelevantDimensions(el);
+
+        // Restore any original styling
+        el.style.visibility = visibility;
+        el.style.display = display;
+    }
+
+    function detectRelevantDimensions(el): CachedStyles {
+        // These properties will be transitioned
+        return {
+            height: el.offsetHeight + "px",
+            paddingTop: el.style.paddingTop || getComputedStyle(el, null).getPropertyValue("padding-top"),
+            paddingBottom: el.style.paddingBottom || getComputedStyle(el, null).getPropertyValue("padding-bottom"),
+        };
+    }
+
+    function setClosedDimensions(el): void {
+        if (!cachedStyles.value) return;
+        Object.keys(cachedStyles.value).forEach(key => {
+            el.style[key] = "0";
+        });
+    }
+
+    function setOpenedDimensions(el): void {
+        if (!cachedStyles.value) return;
+        Object.keys(cachedStyles.value).forEach((key) => {
+            el.style[key] = cachedStyles.value![key];
+        });
+    }
+
+    function unsetDimensions(el): void {
+        if (!cachedStyles.value) return;
+        Object.keys(cachedStyles.value).forEach((key) => {
+            el.style[key] = "";
+        });
+    }
+
+    function forceRepaint(el): void {
+        // Force repaint to make sure the animation is triggered correctly.
+        // Thanks: https://markus.oberlehner.net/blog/transition-to-height-auto-with-vue/
+        getComputedStyle(el).height;
+    }
+
+    function setTransitionStyles(el): void {
+        el.style.transition = `height ${speed.value} ease-in-out, padding-top ${speed.value} ease-in-out, padding-bottom ${speed.value} ease-in-out`;
+    }
+
+    function unsetTransitionStyles(el): void {
+        el.style.transition = "";
+    }
+
+    function hideOverflow(el): void {
+        el.style.overflow = "hidden";
+    }
+
+    function unsetOverflow(el): void {
+        el.style.overflow = "";
+    }
+
 </script>

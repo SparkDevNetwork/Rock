@@ -2,6 +2,7 @@
 <template>
     <BaseAsyncPicker v-model="internalValue"
                      v-bind="standardProps"
+                     :displayStyle="displayStyle"
                      grouped
                      :items="actualItems" />
 </template>
@@ -13,6 +14,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, PropType, ref, watch } from "vue";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
+import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 
     const props = defineProps({
         modelValue: {
@@ -50,6 +52,14 @@
      */
     const actualItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
         return loadedItems.value || loadOptions;
+    });
+
+    const displayStyle = computed((): PickerDisplayStyle => {
+        if (standardProps.displayStyle !== PickerDisplayStyle.Auto) {
+            return standardProps.displayStyle;
+        }
+
+        return standardProps.multiple && !standardProps.enhanceForLongLists ? PickerDisplayStyle.List : PickerDisplayStyle.Auto;
     });
 
     // #endregion

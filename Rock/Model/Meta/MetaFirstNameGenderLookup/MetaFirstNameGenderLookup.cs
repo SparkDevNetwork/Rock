@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Meta" )]
     [Table( "MetaFirstNameGenderLookup" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "FA96E086-811E-4FE0-BECA-F7A593F9FB05")]
     public class MetaFirstNameGenderLookup : Entity<MetaFirstNameGenderLookup>
     {

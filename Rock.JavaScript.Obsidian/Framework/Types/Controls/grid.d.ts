@@ -253,6 +253,20 @@ export type SortValueFunction = (row: Record<string, unknown>, column: ColumnDef
 export type FilterValueFunction = (row: Record<string, unknown>, column: ColumnDefinition, grid: IGridState) => string | number | boolean | undefined;
 
 /**
+ * A function that will be called to determine the values to use when
+ * performing a column filter operation. This value will be cached by the
+ * grid until the row is modified. This is used by components that handle
+ * multiple values in a single cell.
+ *
+ * @param row The data object that represents the row.
+ * @param column The column definition for this operation.
+ * @param grid The grid that owns this operation.
+ *
+ * @returns The individual values that can be filtered.
+ */
+export type FilterValuesFunction = (row: Record<string, unknown>, column: ColumnDefinition, grid: IGridState) => MultiValueFilterItem[];
+
+/**
  * A function that will be called to get the value to use when exporting the
  * cell to an external document.
  */
@@ -364,12 +378,36 @@ type StandardColumnProps = {
     },
 
     /**
+     * Specifies how to get the values to use when filtering by this column if
+     * it supports multiple values. Each value of the multi-value set will be
+     * treated as a distinct value for filtering. Only one of the values needs
+     * to match. If the column does not support multiple values then this should
+     * be left undefined. The function will be called with the row and column
+     * definition.
+     *
+     * This will only be used by filters that support multiple values.
+     */
+    filterValues: {
+        type: PropType<FilterValuesFunction>,
+        required: false
+    },
+
+    /**
      * The function that will be called when exporting cells in this column.
      * If not provided then the text value from the column format template
      * will be used instead.
      */
     exportValue: {
         type: PropType<ExportValueFunction>,
+        required: false
+    },
+
+    /**
+     * The type of the column which will be used to apply specific CSS classes
+     * dynamically and help in identifying the column type throughout the system.
+     */
+    columnType: {
+        type: PropType<string>,
         required: false
     },
 
@@ -411,7 +449,7 @@ type StandardColumnProps = {
 
     /**
      * Provides a custom component that will be used to render a skeleton of
-     * the cell during data loading operations. This is rearely needed as you
+     * the cell during data loading operations. This is rarely needed as you
      * can usually accomplish the same with a template.
      */
     skeletonComponent: {
@@ -458,7 +496,24 @@ type StandardColumnProps = {
     width: {
         type: PropType<string>,
         required: false
-    }
+    },
+
+    /**
+     * If `true` then the cell will wrap content by way of adding the class
+     * `grid-wrapcell` to the data cells.
+     */
+    wrapped: {
+        type: PropType<boolean>,
+        default: false
+    },
+
+    /**
+     * If 'true', disables sorting for this column.
+     */
+    disableSort: {
+        type: PropType<boolean>,
+        default: false
+    },
 };
 
 /** The standard properties available on header cells. */
@@ -610,6 +665,22 @@ type TextSearchBag = {
 
 // #endregion
 
+/**
+ * Defines a single filter value returned by columns that support multi-value
+ * cells. An example of this is the label column.
+ */
+export type MultiValueFilterItem = {
+    /** The value that will be passed to {@link ColumnFilterMatchesFunction}. */
+    value: string | number | boolean;
+
+    /**
+     * The row data that represents this single value. This would normally be
+     * a copy of the original row with the field value replaced with the single
+     * value instead of an array value.
+     */
+    rowData: Record<string, unknown>;
+};
+
 /** Defines a single action related to a Grid control. */
 export type GridAction = {
     /**
@@ -645,6 +716,9 @@ export type GridAction = {
 
     /** If true then the action will be disabled and not respond to clicks. */
     disabled?: boolean;
+
+    /** The shortcut key prop to pass to the button. */
+    shortcutKey?: string;
 };
 
 /** The type of unit the length value represents. */
@@ -713,6 +787,9 @@ export type ColumnDefinition = {
     /** Gets the value to use when performing column filtering. */
     filterValue: FilterValueFunction;
 
+    /** Gets the values to use when performing multi-value column filtering. */
+    filterValues?: FilterValuesFunction;
+
     /**
      * Gets the function to call that will provide the value to use when
      * exporting the column values to a document.
@@ -727,6 +804,12 @@ export type ColumnDefinition = {
 
     /** The additional CSS class to apply to the data item cell. */
     itemClass?: string;
+
+    /**
+     * The type of the column which will be used to apply specific CSS classes
+     * dynamically and help in identifying the column type throughout the system.
+     */
+    columnType?: string;
 
     /**
      * If `true` then the column will not ever be rendered on screen. It may
@@ -748,8 +831,22 @@ export type ColumnDefinition = {
     /** All properties and attributes that were defined on the column. */
     props: Record<string, unknown>;
 
+    /** All slots that were defined on the column. */
+    slots: Record<string, Component>;
+
     /** Custom data that the column and cells can use any way they desire. */
     data: Record<string, unknown>;
+
+    /**
+     * If `true`, the CSS class `grid-wrapcell` will be added to cause the
+     * content to wrap.
+     */
+    wrapped: boolean;
+
+    /**
+     * If 'true', disables sorting for this column.
+     */
+    disableSort: boolean;
 };
 
 /**

@@ -23,6 +23,25 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
+        #region Attendance
+
+        /// <summary>
+        /// The attendance record came from a legacy kiosk.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE_LEGACY_KIOSK = "0B25A627-679B-4B73-AA84-305DEF24815A";
+
+        /// <summary>
+        /// The attendance record came from a kiosk.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE_KIOSK = "9A21D7EB-BCB5-4466-B62F-70EC5008B6B9";
+
+        /// <summary>
+        /// The attendance record came from a mobile check-in.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE_MOBILE = "972E8841-A3C9-4DDD-BD24-A414C0290331";
+
+        #endregion
+
         #region Block Template
 
         /// <summary>
@@ -34,6 +53,11 @@ namespace Rock.SystemGuid
         /// The block template for the mobile notes block.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_NOTES = "37F44005-C4D8-4527-BA86-B6F8B72BF243";
+
+        /// <summary>
+        /// The block template for the mobile my notes block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_MY_NOTES = "652A4E12-6C15-407D-9620-ED39190899A5";
 
         /// <summary>
         /// The block template for the mobile group schedule preference landing page.
@@ -104,6 +128,11 @@ namespace Rock.SystemGuid
         /// The block template for <see cref="Rock.Blocks.Types.Mobile.Core.Search"/> block.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_CORE_SEARCH = "CFEB7FA6-0F19-496B-8DCC-4D200AEEE866";
+
+        /// <summary>
+        /// The block template for ScheduledTransactionList block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_FINANCE_SCHEDULED_TRANSACTION_LIST = "4FB77C19-3D70-4051-9FED-DF254B3FB310";
 
         /// <summary>
         /// The block template mobile daily challenge entry
@@ -294,6 +323,18 @@ namespace Rock.SystemGuid
         /// Printer device type
         /// </summary>
         public const string DEVICE_TYPE_PRINTER = "8284B128-E73B-4863-9FC2-43E6827B65E6";
+
+        /// <summary>
+        /// Proxy device type
+        /// </summary>
+        [RockObsolete( "1.16.7" )]
+        [Obsolete( "Use DEVICE_TYPE_CLOUD_PRINT_PROXY instead." )]
+        public const string DEVICE_TYPE_PROXY = "EF5BF148-C9E0-4F96-8152-BB23CD85D845";
+
+        /// <summary>
+        /// Cloud Print Proxy device type
+        /// </summary>
+        public const string DEVICE_TYPE_CLOUD_PRINT_PROXY = "EF5BF148-C9E0-4F96-8152-BB23CD85D845";
 
         #endregion
 
@@ -990,6 +1031,11 @@ namespace Rock.SystemGuid
         /// The PBX CDR medium value
         /// </summary>
         public const string PBX_CDR_MEDIUM_VALUE = "B3904B57-62A2-57AC-43EA-94D4DEBA3D51";
+
+        /// <summary>
+        /// Interaction Channel Type: Chat
+        /// </summary>
+        public const string INTERACTIONCHANNELTYPE_CHAT = "0E2EAE2C-957B-4CCB-8826-AA5627C27BBD";
 
         #endregion
 

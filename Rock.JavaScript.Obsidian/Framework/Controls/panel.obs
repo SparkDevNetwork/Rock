@@ -9,14 +9,13 @@
 
             <div v-if="hasTitle" :class="panelHeadingClass" @click="onPanelHeadingClick">
                 <h1 class="panel-title">
-                    <slot v-if="$slots.title" name="title" />
-                    <template v-else>
+                    <slot name="title" v-bind="{ title: title, titleIconCssClass: titleIconCssClass }">
                         <i v-if="titleIconCssClass" :class="titleIconCssClass"></i>
                         {{ title }}
-                    </template>
+                    </slot>
                 </h1>
 
-                <div class="panel-header-actions" @click.prevent.stop="onIgnoreClick">
+                <div class="panel-header-actions">
                     <slot name="headerActions" />
 
                     <span v-if="isZoomActive && hasZoom" class="mr-1 ml-1 panel-action-zoom-control">
@@ -99,10 +98,10 @@
             </template>
 
             <TransitionVerticalCollapse>
-                <div v-show="isPanelOpen" class="panel-body" :style="panelBodyStyle">
+                <div v-show="isPanelOpen" :class="panelBodyClass" :style="panelBodyStyle">
                     <slot />
 
-                    <div v-if="$slots.footerActions || $slots.footerSecondaryActions" class="actions">
+                    <div v-if="!slots.sidebar && ($slots.footerActions || $slots.footerSecondaryActions)" class="actions">
                         <div class="footer-actions">
                             <slot name="footerActions" />
                         </div>
@@ -113,6 +112,18 @@
                     </div>
                 </div>
             </TransitionVerticalCollapse>
+        </div>
+
+        <div v-if="slots.sidebar && ($slots.footerActions || $slots.footerSecondaryActions)" class="sidebar-footer">
+            <div class="actions">
+                <div class="footer-actions">
+                    <slot name="footerActions" />
+                </div>
+
+                <div class="footer-secondary-actions">
+                    <slot name="footerSecondaryActions" />
+                </div>
+            </div>
         </div>
     </Fullscreen>
 </template>
@@ -190,7 +201,7 @@
 
         /** The type of panel to render. */
         type: {
-            type: String as PropType<"default" | "block" | "default" | "primary" | "success" | "info" | "warning" | "danger">,
+            type: String as PropType<"default" | "block" | "primary" | "success" | "info" | "warning" | "danger">,
             default: "default"
         },
 
@@ -210,6 +221,18 @@
         headerSecondaryActions: {
             type: Array as PropType<PanelAction[]>,
             required: false
+        },
+
+        /** The CSS class to add to the panel-body element. */
+        panelBodyCssClass: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The CSS class to add to the panel-heading element. */
+        panelHeadingCssClass: {
+            type: String as PropType<string>,
+            default: ""
         }
     });
 
@@ -278,6 +301,10 @@
             classes.push("cursor-pointer");
         }
 
+        if (props.panelHeadingCssClass) {
+            classes.push(props.panelHeadingCssClass);
+        }
+
         return classes;
     });
 
@@ -290,6 +317,16 @@
         }
 
         return styles;
+    });
+
+    const panelBodyClass = computed<string[]>(() => {
+        const classes = ["panel-body"];
+
+        if (props.panelBodyCssClass) {
+            classes.push(props.panelBodyCssClass);
+        }
+
+        return classes;
     });
 
     /** The tab index for the panel, this allows us to catch the escape key. */
@@ -317,8 +354,6 @@
         return action.disabled ? "disabled" : "";
     };
 
-    const onIgnoreClick = (): void => { /* Intentionally blank to ignore click. */ };
-
     /** Event handler when the drawer expander is clicked. */
     const onDrawerPullClick = (): void => {
         isDrawerOpen.value = !isDrawerOpen.value;
@@ -329,7 +364,12 @@
     };
 
     /** Event handler when the panel heading is clicked. */
-    const onPanelHeadingClick = (): void => {
+    const onPanelHeadingClick = (event: Event): void => {
+        // Ignore the click if it happened inside the panel actions or by the "expand" button being clicked.
+        if (event.target && event.target instanceof HTMLElement && (event.target.closest(".panel-header-actions") || !event.target.parentElement)) {
+            return;
+        }
+
         if (props.hasCollapse) {
             internalValue.value = !isPanelOpen.value;
         }

@@ -28,6 +28,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Communication
@@ -108,6 +109,12 @@ namespace Rock.Blocks.Types.Mobile.Communication
         Key = AttributeKey.PersonProfilePage,
         Order = 10 )]
 
+    [BooleanField( "Show Additional Email Recipients",
+        Key = AttributeKey.ShowAdditionalEmailRecipients,
+        Description = "Allow additional email recipients to be entered for email communications?",
+        DefaultBooleanValue = false,
+        Order = 11 )]
+
     #endregion
 
     [DisplayName( "Communication Entry" )]
@@ -124,7 +131,6 @@ namespace Rock.Blocks.Types.Mobile.Communication
     [Rock.SystemGuid.BlockTypeGuid( "B0182DA2-82F7-4798-A48E-88EBE61F2109" )]
     public class CommunicationEntry : RockBlockType
     {
-
         #region Attribute Keys
 
         /// <summary>
@@ -186,6 +192,11 @@ namespace Rock.Blocks.Types.Mobile.Communication
             /// The person profile page attribute key.
             /// </summary>
             public const string PersonProfilePage = "PersonProfilePage";
+
+            /// <summary>
+            /// Whether to show additional email recipients.
+            /// </summary>
+            public const string ShowAdditionalEmailRecipients = "ShowAdditionalEmailRecipients";
         }
 
         #endregion
@@ -241,6 +252,11 @@ namespace Rock.Blocks.Types.Mobile.Communication
         /// </value>
         protected Guid? PersonProfilePageGuid => GetAttributeValue( AttributeKey.PersonProfilePage ).AsGuidOrNull();
 
+        /// <summary>
+        /// Whether or not to allow additional email recipients to be entered for email communications.
+        /// </summary>
+        protected bool ShowAdditionalEmailRecipients => GetAttributeValue( AttributeKey.ShowAdditionalEmailRecipients ).AsBoolean();
+
         #endregion
 
         #region IRockMobileBlockType Implementation
@@ -264,6 +280,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                 ShowReplyTo = ShowReplyTo,
                 SmsCharacterLimit = SmsCharacterLimit,
                 PersonProfilePageGuid = PersonProfilePageGuid,
+                AreAdditionalEmailRecipientsAllowed = ShowAdditionalEmailRecipients
             };
         }
 
@@ -340,7 +357,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     Email = a.Email,
                     PersonGuid = a.PersonGuid,
                     EntitySetItemGuid = a.EntitySetItemGuid,
-                    PhotoUrl = a.PhotoId != null ? MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?Id={a.PhotoId}&maxwidth=256&maxheight=256" ) : string.Empty,
+                    PhotoUrl = a.PhotoId != null ? MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( a.PhotoId.Value, new GetImageUrlOptions { Width = 256, Height = 256 } ) ) : string.Empty,
                     SmsNumber = a.PhoneNumbers.GetFirstSmsNumber(),
                 } ).ToList();
 
@@ -392,7 +409,20 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     return ActionForbidden();
                 }
 
-                return ActionOk( SendCommunicationInternal( sendCommunicationBag ) );
+                var entitySetService = new EntitySetService( RockContext );
+                var entitySet = entitySetService.Get( sendCommunicationBag.EntitySetGuid );
+
+                if ( entitySet == null )
+                {
+                    return ActionNotFound( "Could not load the recipients for this communication." );
+                }
+
+                if ( entitySet.IsExpired )
+                {
+                    return ActionBadRequest( "The message session has expired. Please try again." );
+                }
+
+                return ActionOk( SendCommunicationInternal( sendCommunicationBag, entitySet ) );
             }
         }
 
@@ -446,67 +476,64 @@ namespace Rock.Blocks.Types.Mobile.Communication
         /// Creates a new communication and sends it based off the information in the <see cref="SendCommunication(SendCommunicationRequestBag)" />.
         /// </summary>
         /// <param name="bag">The bag containing the communication information.</param>
+        /// <param name="entityset">The EntitySet of the recipients.</param>
         /// <returns></returns>
-        private string SendCommunicationInternal( SendCommunicationRequestBag bag )
+        private string SendCommunicationInternal( SendCommunicationRequestBag bag, EntitySet entityset )
         {
-            using ( var rockContext = new RockContext() )
+            var communicationService = new CommunicationService( RockContext );
+            var entitySetItemService = new EntitySetItemService( RockContext );
+            var personService = new PersonService( RockContext );
+            var personAliasService = new PersonAliasService( RockContext );
+            var binaryFileService = new BinaryFileService( RockContext );
+            var groupMemberService = new GroupMemberService( RockContext );
+            var communicationType = bag.CommunicationType.ToNative();
+
+            // Create the initial communication.
+            var communication = CreateNewCommunication( communicationType, bag.IsBulk );
+            communicationService.Add( communication );
+
+            // Load the recipients from the entity set.
+            var recipientPeopleAliasIds = GetPeopleFromEntitySet( entityset, entitySetItemService, personService );
+            AddRecipientsToCommunication( communication, recipientPeopleAliasIds );
+
+            if ( bag.SendToParents )
             {
-                var communicationService = new CommunicationService( rockContext );
-                var entitySetService = new EntitySetService( rockContext );
-                var entitySetItemService = new EntitySetItemService( rockContext );
-                var personService = new PersonService( rockContext );
-                var personAliasService = new PersonAliasService( rockContext );
-                var binaryFileService = new BinaryFileService( rockContext );
-                var groupMemberService = new GroupMemberService( rockContext );
-                var communicationType = bag.CommunicationType.ToNative();
-
-                // Create the initial communication.
-                var communication = CreateNewCommunication( communicationType, bag.IsBulk );
-                communicationService.Add( communication );
-
-                // Load the recipients from the entity set.
-                var recipientPeopleAliasIds = GetPeopleFromEntitySet( bag.EntitySetGuid, entitySetService, entitySetItemService, personService, personAliasService );
-                AddRecipientsToCommunication( communication, recipientPeopleAliasIds );
-
-                if ( bag.SendToParents )
-                {
-                    AddParentsToCommunication( communication, recipientPeopleAliasIds.Where( id => id.HasValue ).Select( id => id.Value ), personAliasService, groupMemberService );
-                }
-
-                // Structure the communication based on the communication type.
-                if ( communicationType == CommunicationType.Email )
-                {
-                    StructureEmailCommunication( communication, bag.Subject, bag.Message, bag.FromEmail, bag.FromName, bag.ReplyTo, true, bag.FileAttachmentGuid, binaryFileService );
-                }
-                else if ( communicationType == CommunicationType.SMS )
-                {
-                    StructureSmsCommunication( communication, bag.FromNumberGuid, bag.Message, bag.ImageAttachmentGuid, binaryFileService );
-                }
-
-                // Save the communication prior to checking recipients.
-                communication.Status = CommunicationStatus.Draft;
-                rockContext.SaveChanges();
-
-                var successMessage = DetermineCommunicationStatus( communication, bag.MaxRecipients );
-                rockContext.SaveChanges();
-
-                // Send the approval email (if needed), now that we have a communication id.
-                if ( communication.Status == CommunicationStatus.PendingApproval )
-                {
-                    SendApprovalEmail( communication.Id );
-                }
-
-                // If the communication is already approved, queue it up to send.
-                if ( communication.Status == CommunicationStatus.Approved &&
-                           ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value <= RockDateTime.Now ) )
-                {
-                    SendCommunication( communication.Id );
-                }
-
-                rockContext.SaveChanges();
-
-                return successMessage;
+                AddParentsToCommunication( communication, recipientPeopleAliasIds.Where( id => id.HasValue ).Select( id => id.Value ), personAliasService, groupMemberService );
             }
+
+            // Structure the communication based on the communication type.
+            if ( communicationType == CommunicationType.Email )
+            {
+                StructureEmailCommunication( communication, bag.Subject, bag.Message, bag.FromEmail, bag.FromName, bag.ReplyTo, true, bag.FileAttachmentGuid, bag.AdditionalEmailRecipients, personService, binaryFileService );
+            }
+            else if ( communicationType == CommunicationType.SMS )
+            {
+                StructureSmsCommunication( communication, bag.FromNumberGuid, bag.Message, bag.ImageAttachmentGuid, binaryFileService );
+            }
+
+            // Save the communication prior to checking recipients.
+            communication.Status = CommunicationStatus.Draft;
+            RockContext.SaveChanges();
+
+            var successMessage = DetermineCommunicationStatus( communication, bag.MaxRecipients );
+            RockContext.SaveChanges();
+
+            // Send the approval email (if needed), now that we have a communication id.
+            if ( communication.Status == CommunicationStatus.PendingApproval )
+            {
+                SendApprovalEmail( communication.Id );
+            }
+
+            // If the communication is already approved, queue it up to send.
+            if ( communication.Status == CommunicationStatus.Approved &&
+                        ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value <= RockDateTime.Now ) )
+            {
+                SendCommunication( communication.Id );
+            }
+
+            RockContext.SaveChanges();
+
+            return successMessage;
         }
 
         /// <summary>
@@ -691,14 +718,38 @@ namespace Rock.Blocks.Types.Mobile.Communication
         /// <param name="fromName"></param>
         /// <param name="replyTo"></param>
         /// <param name="sanitize"></param>
+        /// <param name="additionalRecipients"></param>
         /// <param name="fileAttachmentGuid"></param>
+        /// <param name="personService"></param>
         /// <param name="binaryFileService"></param>
-        private void StructureEmailCommunication( Rock.Model.Communication communication, string subject, string body, string fromEmail, string fromName, string replyTo, bool sanitize, Guid? fileAttachmentGuid, BinaryFileService binaryFileService )
+        private void StructureEmailCommunication( Rock.Model.Communication communication, string subject, string body, string fromEmail, string fromName, string replyTo, bool sanitize, Guid? fileAttachmentGuid, List<string> additionalRecipients, PersonService personService, BinaryFileService binaryFileService )
         {
             var emailMediumEntityTypeId = EntityTypeCache.Get<Rock.Communication.Medium.Email>().Id;
             foreach ( var recipient in communication.Recipients )
             {
                 recipient.MediumEntityTypeId = emailMediumEntityTypeId;
+            }
+
+            // Add the additional email recipients as "nameless" recipients.
+            foreach( var emailRecipient in additionalRecipients )
+            {
+                var emailPerson = personService.GetPersonFromEmailAddress( emailRecipient, true );
+                if ( emailPerson != null )
+                {
+                    var newRecipient = new CommunicationRecipient
+                    {
+                        PersonAliasId = emailPerson.PrimaryAliasId,
+                        MediumEntityTypeId = emailMediumEntityTypeId
+                    };
+
+                    // Checking for duplicates.
+                    if ( communication.Recipients.Any( cr => cr.PersonAliasId == newRecipient.PersonAliasId ) )
+                    {
+                        continue;
+                    };
+
+                    communication.Recipients.Add( newRecipient );
+                }
             }
 
             // Structuring the communication.
@@ -707,7 +758,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
             // Sanitize the message by encoding HTML &
             // converting newlines properly.
             var message = body;
-            if( sanitize )
+            if ( sanitize )
             {
                 message = message.EncodeHtml().ConvertCrLfToHtmlBr();
             }
@@ -771,24 +822,15 @@ namespace Rock.Blocks.Types.Mobile.Communication
         /// <summary>
         /// Gets the people from the entity set.
         /// </summary>
-        /// <param name="entitySetGuid"></param>
-        /// <param name="entitySetService"></param>
+        /// <param name="entitySet"></param>
         /// <param name="entitySetItemService"></param>
         /// <param name="personService"></param>
-        /// <param name="personAliasService"></param>
         /// <returns></returns>
-        private IEnumerable<int?> GetPeopleFromEntitySet( Guid entitySetGuid, EntitySetService entitySetService, EntitySetItemService entitySetItemService, PersonService personService, PersonAliasService personAliasService )
+        private IEnumerable<int?> GetPeopleFromEntitySet( EntitySet entitySet, EntitySetItemService entitySetItemService, PersonService personService )
         {
-            var entitySetId = entitySetService.GetId( entitySetGuid );
-
-            if ( !entitySetId.HasValue )
-            {
-                return null;
-            }
-
             // Convert our recipients to CommunicationRecipients.
             var recipientPeople = entitySetItemService
-                .GetByEntitySetId( entitySetId.Value )
+                .GetByEntitySetId( entitySet.Id )
                 .Select( esi => new
                 {
                     esi.EntityId

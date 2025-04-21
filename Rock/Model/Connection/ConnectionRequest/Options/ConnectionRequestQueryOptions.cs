@@ -49,5 +49,20 @@ namespace Rock.Model.Connection.ConnectionRequest.Options
         /// The states that results will be limited to.
         /// </value>
         public List<ConnectionState> ConnectionStates { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus that results will be limited to.
+        /// </summary>
+        public Guid? CampusGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether or not to only include requests that are past due.
+        /// </summary>
+        public bool IsFutureFollowUpPastDueOnly { get; set; }
+
+        /// <summary>
+        /// The sort option to use when getting requests.
+        /// </summary>
+        public ConnectionRequestViewModelSortProperty? SortProperty { get; set; }
     }
 }

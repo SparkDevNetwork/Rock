@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -70,12 +71,36 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<Device>( Context ).Queryable().Any( a => a.ProxyDeviceId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Device.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Location>( Context ).Queryable().Any( a => a.PrinterDeviceId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Location.FriendlyTypeName );
                 return false;
             }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( Device.DeviceQueryableAttributeValue ), nameof( DeviceAttributeValues ) )]
+    public partial class Device
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<DeviceQueryableAttributeValue> DeviceAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class DeviceQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -149,6 +174,7 @@ namespace Rock.Model
             target.PrinterDeviceId = source.PrinterDeviceId;
             target.PrintFrom = source.PrintFrom;
             target.PrintToOverride = source.PrintToOverride;
+            target.ProxyDeviceId = source.ProxyDeviceId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

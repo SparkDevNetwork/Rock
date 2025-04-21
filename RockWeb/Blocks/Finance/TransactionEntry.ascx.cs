@@ -750,8 +750,6 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // Hide the messages on every postback
             nbMessage.Visible = false;
             nbSelectionMessage.Visible = false;
@@ -847,6 +845,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     SetPage( 0 );
                     ShowMessage( NotificationBoxType.Danger, "Invalid Account Provided", GetAttributeValue( AttributeKey.InvalidAccountMessage ) );
+                    base.OnLoad( e );
                     return;
                 }
             }
@@ -855,6 +854,7 @@ namespace RockWeb.Blocks.Finance
             {
                 SetPage( 0 );
                 ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Please check the configuration of this block and make sure a valid Credit Card and/or ACH Financial Gateway has been selected." );
+                base.OnLoad( e );
                 return;
             }
 
@@ -862,6 +862,7 @@ namespace RockWeb.Blocks.Finance
             {
                 SetPage( 0 );
                 ShowMessage( NotificationBoxType.Danger, "Configuration Error", "The Credit Card and ACH Gateways are incompatible. If using a three-step gateway, both the Credit Card and ACH Gateways need to be the same." );
+                base.OnLoad( e );
                 return;
             }
 
@@ -883,6 +884,7 @@ namespace RockWeb.Blocks.Finance
             {
                 SetPage( 0 );
                 ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Unsupported Gateway. This block only supports Gateways that have a un-hosted payment interface." );
+                base.OnLoad( e );
                 return;
             }
 
@@ -990,6 +992,8 @@ namespace RockWeb.Blocks.Finance
             divSaveAccount.Style[HtmlTextWriterStyle.Display] = cbSaveAccount.Checked ? "block" : "none";
 
             ResolveHeaderFooterTemplates();
+
+            base.OnLoad( e );
         }
 
         #endregion

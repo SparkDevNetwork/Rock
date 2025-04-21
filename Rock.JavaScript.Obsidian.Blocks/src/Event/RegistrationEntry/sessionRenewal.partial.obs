@@ -2,35 +2,35 @@
 <template>
     <Dialog :modelValue="isModalVisible" :dismissible="false">
         <template #header>
-            <h4 v-if="isLoading || spotsSecured === null">Registration Timed Out</h4>
+            <h4 v-if="isLoading || spotsSecured === null">{{ registrationEntryTerms.registrationSingularTitleCase }} Timed Out</h4>
             <h4 v-else>Request Extension</h4>
         </template>
         <template #default>
             <LoadingIndicator v-if="isLoading" />
             <template v-else-if="hasWaitlist && spotsSecured === 0">
                 Due to high demand there is no longer space available.
-                You can continue, but your registrants will be placed on the waitlist.
-                Do you wish to continue with the registration?
+                You can continue, but your {{ registrationEntryTerms.registrantPluralLowerCase }} will be placed on the waitlist.
+                Do you wish to continue with the {{ registrationEntryTerms.registrationSingularLowerCase }}?
             </template>
             <template v-else-if="spotsSecured === 0">
-                Due to high demand there is no longer space available for this registration.
+                Due to high demand there is no longer space available for this {{ registrationEntryTerms.registrantSingularLowerCase }}.
             </template>
             <template v-else-if="hasWaitlist && spotsSecured !== null">
-                Due to high demand there is no longer space available for all your registrants.
+                Due to high demand there is no longer space available for all your {{ registrationEntryTerms.registrantPluralLowerCase }}.
                 Your last {{ waitlistRegistrantCountWord }}
-                {{ pluralConditional(waitlistRegistrantCount, 'registrant', ' registrants') }}
+                {{ pluralConditional(waitlistRegistrantCount, registrationEntryTerms.registrantSingularLowerCase, ` ${registrationEntryTerms.registrantPluralLowerCase}`) }}
                 will be placed on the waitlist.
-                Do you wish to continue with the registration?
+                Do you wish to continue with the {{ registrationEntryTerms.registrationSingularLowerCase }}?
             </template>
             <template v-else-if="spotsSecured !== null">
-                Due to high demand there is no longer space available for all your registrants.
+                Due to high demand there is no longer space available for all your {{ registrationEntryTerms.registrantPluralLowerCase }}.
                 Only {{ nonWaitlistRegistrantCountWord }} {{ pluralConditional(nonWaitlistRegistrantCount, 'spot is', 'spots are') }} available.
-                Your registration has been updated to only allow
-                {{ nonWaitlistRegistrantCountWord }} {{ pluralConditional(nonWaitlistRegistrantCount, 'registrant', 'registrants') }}.
-                Do you wish to continue with the registration?
+                Your {{ registrationEntryTerms.registrationSingularLowerCase }} has been updated to only allow
+                {{ nonWaitlistRegistrantCountWord }} {{ pluralConditional(nonWaitlistRegistrantCount, registrationEntryTerms.registrantSingularLowerCase, ` ${registrationEntryTerms.registrantPluralLowerCase}`) }}.
+                Do you wish to continue with the {{ registrationEntryTerms.registrationSingularLowerCase }}?
             </template>
             <template v-else>
-                Your registration has timed out. Do you wish to request an extension in time?
+                Your {{ registrationEntryTerms.registrationSingularLowerCase }} has timed out. Do you wish to request an extension in time?
             </template>
         </template>
         <template v-if="!isLoading" #footer>
@@ -39,18 +39,18 @@
             </template>
             <template v-else-if="spotsSecured !== null">
                 <RockButton btnType="primary" @click="close">Yes</RockButton>
-                <RockButton btnType="link" @click="restart">No, cancel registration</RockButton>
+                <RockButton btnType="link" @click="restart">No, cancel {{ registrationEntryTerms.registrationSingularLowerCase }}</RockButton>
             </template>
             <template v-else>
                 <RockButton btnType="primary" @click="requestRenewal">Yes</RockButton>
-                <RockButton btnType="link" @click="restart">No, cancel registration</RockButton>
+                <RockButton btnType="link" @click="restart">No, cancel {{ registrationEntryTerms.registrationSingularLowerCase }}</RockButton>
             </template>
         </template>
     </Dialog>
 </template>
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
-    import { CurrentRegistrationEntryState, use } from "./utils.partial";
+    import { CurrentRegistrationEntryState, RegistrationEntryTerms, use } from "./utils.partial";
     import Dialog from "@Obsidian/Controls/dialog.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -75,6 +75,7 @@
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const invokeBlockAction = useInvokeBlockAction();
+    const registrationEntryTerms = use(RegistrationEntryTerms);
 
     // #region Values
 

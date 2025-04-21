@@ -4,12 +4,12 @@
 <div class="row">
     {% if Opportunity.PhotoId %}
         <div class="col-md-4">
-            <img alt="Image for {{ opportunity.PublicName }}" src="/GetImage.ashx?id={{ Opportunity.PhotoId }}" style="width: 100%;" />
+            <img alt="Image for {{ opportunity.PublicName }}" src="{{ Opportunity.PhotoId | ImageUrl }}" style="width: 100%;" />
         </div>
     {% endif %}
     <div class="col-md-8">
         <h2 class="margin-t-none"><i class='{{ Opportunity.IconCssClass }}'></i> {{ Opportunity.Name }}</h2>
-        {{ Opportunity.Description }}
+        {{ Opportunity.Description }} 
 
         <h4>Opportunity Details:</h4>
 

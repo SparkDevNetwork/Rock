@@ -190,7 +190,7 @@ namespace Rock.Blocks.Core
                 }
                 else
                 {
-                    _definedType = definedTypeService.GetInclude( PageParameter( PageParameterKey.DefinedTypeId ).AsInteger(), dt => dt.Category );
+                    _definedType = definedTypeService.GetInclude( PageParameter( PageParameterKey.DefinedTypeId ), dt => dt.Category );
                 }
             }
 
@@ -215,10 +215,11 @@ namespace Rock.Blocks.Core
                 Description = entity.Description,
                 IdKey = entity.IdKey,
                 IsActive = entity.IsActive,
-                Value = entity.Value
+                Value = entity.Value,
+                Id = entity.Id,
             };
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -271,7 +272,7 @@ namespace Rock.Blocks.Core
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${DefinedValue.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {DefinedValue.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -369,7 +370,7 @@ namespace Rock.Blocks.Core
 
             if ( bag.AttributeValues != null )
             {
-                entity.SetPublicAttributeValues( bag.AttributeValues, RequestContext.CurrentPerson );
+                entity.SetPublicAttributeValues( bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
             }
 
             if ( !entity.IsValid )

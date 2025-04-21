@@ -21,6 +21,8 @@ import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { ConfigurationValueKey } from "./groupLocationTypeField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
+import { updateRefValue } from "@Obsidian/Utility/component";
 
 export const EditComponent = defineComponent({
     name: "GroupLocationTypeField.Edit",
@@ -80,10 +82,11 @@ export const ConfigurationComponent = defineComponent({
 
     props: getFieldConfigurationProps(),
 
-    emits: [
-        "update:modelValue",
-        "updateConfigurationValue"
-    ],
+    emits: {
+        "update:modelValue": (_v: Record<string, string>) => true,
+        "updateConfigurationValue": (_k: string, _v: string) => true,
+        "updateConfiguration": () => true
+    },
 
     setup(props, { emit }) {
         const groupType = ref({} as ListItemBag);
@@ -132,20 +135,26 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            groupType.value = JSON.parse(props.modelValue[ConfigurationValueKey.GroupType] || "{}");
-
+            updateRefValue(groupType, JSON.parse(props.modelValue[ConfigurationValueKey.GroupType] || "{}"));
         }, {
             immediate: true
+        });
+
+        watch(groupType, () => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfiguration");
+            }
         });
 
         watch(groupType, val => maybeUpdateConfiguration(ConfigurationValueKey.GroupType, JSON.stringify(val ?? "")));
 
         return {
             groupType,
+            ControlLazyMode
         };
     },
 
     template: `
-    <GroupTypePicker label="Group Type" v-model="groupType" />
+    <GroupTypePicker label="Group Type" v-model="groupType" help="The Group Type to select location types from." :showBlankItem="false" :lazyMode="ControlLazyMode.Eager" />
     `
 });

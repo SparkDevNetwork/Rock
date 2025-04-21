@@ -652,12 +652,29 @@ namespace RockWeb.Blocks.Connection
 
         private void LbUpdateConnections_Click( object sender, EventArgs e )
         {
-            var selectedItems = new List<int>();
-            gRequests.SelectedKeys.ToList().ForEach( k => selectedItems.Add( k.ToString().AsInteger() ) );
+            var selectedItems = new List<int>();          
+
+            if ( gRequests.SelectedKeys.Count == 0 )
+            {
+                foreach ( var dataKeyObject in gRequests.DataKeys )
+                {
+                    var dataKey = dataKeyObject as DataKey;
+                    var selectedItem = dataKey?.Value?.ToString()?.AsIntegerOrNull();
+
+                    if ( selectedItem.HasValue )
+                    {
+                        selectedItems.Add( selectedItem.Value );
+                    }
+                }
+            }
+            else
+            {
+                gRequests.SelectedKeys.ToList().ForEach( k => selectedItems.Add( k.ToString().AsInteger() ) );
+            }
 
             if ( selectedItems.Count == 0 )
             {
-                gRequests.ShowModalAlertMessage( "No requests selected", ModalAlertType.Information );
+                gRequests.ShowModalAlertMessage( "Grid has no Connection Requests", ModalAlertType.Warning );
             }
             else
             {
@@ -707,8 +724,6 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 LoadSettings();
@@ -732,6 +747,8 @@ namespace RockWeb.Blocks.Connection
                     divFilterDrawer.Style.Clear();
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -874,70 +891,92 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
-            // Update the dragged request to the new status
+            var oldStatusId = request.ConnectionStatusId;
+            var oldIndex = request.Order;
+
+            // Update the dragged request to the new status.
             request.ConnectionStatusId = newStatusId;
-            rockContext.SaveChanges();
 
             // Reordering is only allowed when the cards are sorted by order
             if ( CurrentSortProperty == ConnectionRequestViewModelSortProperty.Order )
             {
-                if ( request.ConnectionStatusId == newStatusId )
-                {
-                    var requestsOfStatus = service.Queryable()
+                request.Order = newIndex;
+
+                var requestsOfStatus = service.Queryable()
                     .Where( r =>
                         r.ConnectionStatusId == newStatusId &&
-                        r.ConnectionOpportunityId == request.ConnectionOpportunityId )
-                    .ToList()
-                    .OrderBy( r => r.Order )
-                    .ThenBy( r => r.Id )
-                    .ToList();
+                        r.ConnectionOpportunityId == request.ConnectionOpportunityId &&
+                        r.Id != ConnectionRequestId.Value );
 
-                    // There may be filters applied so we do not want to change what might have
-                    // been 4, 9, 12 to 1, 2, 3.  Instead we want to keep 4, 9, 12, and reapply
-                    // those order values to the requests in their new order. There could be a problem
-                    // if some of the orders match (like initially they are all 0). So, we do a
-                    // slight adjustment top ensure uniqueness in this set.
-                    var orderValues = requestsOfStatus.Select( r => r.Order ).ToList();
-                    var previousValue = -1;
+                // A Connection Request is moved to a new status.
+                if ( oldStatusId != newStatusId)
+                {
+                    var requestsOfOldStatus = service.Queryable()
+                        .Where( r =>
+                            r.ConnectionStatusId == oldStatusId &&
+                            r.ConnectionOpportunityId == request.ConnectionOpportunityId &&
+                            r.Order > oldIndex );
 
-                    for ( var i = 0; i < orderValues.Count; i++ )
-                    {
-                        if ( orderValues[i] <= previousValue )
-                        {
-                            orderValues[i] = previousValue + 1;
-                        }
-
-                        previousValue = orderValues[i];
-                    }
-
-                    requestsOfStatus.Remove( request );
-                    requestsOfStatus.Insert( newIndex, request );
-
-                    for ( var i = 0; i < orderValues.Count; i++ )
-                    {
-                        requestsOfStatus[i].Order = orderValues[i];
-                    }
-
-                    if ( orderValues.Count < requestsOfStatus.Count )
-                    {
-                        // This happens if the card came from another column. The remove did nothing, but
-                        // we added the new request. Therefore we need to set the last request to the
-                        // last order value + 1.
-                        requestsOfStatus.Last().Order = previousValue + 1;
-                    }
-
-                    /*
-                     SK - 03/29/2023
-                     Presave Changes is disabled in case of reordering as it updates Modified DateTime of many other connection requests
-                     where slight adjustment is done.
-                     */
-                    rockContext.SaveChanges( true );
+                    rockContext.BulkUpdate( requestsOfOldStatus, r => new ConnectionRequest { Order = r.Order - 1, ModifiedDateTime = r.ModifiedDateTime } );
+                    IncrementRequestOrder( requestsOfStatus, newIndex, rockContext );
                 }
+                // A Connection Request remained in its original status and was moved up in order.
+                else if ( newIndex < oldIndex ) 
+                {
+                    IncrementRequestOrder( requestsOfStatus, newIndex, rockContext );
+                }
+                // A Connection Request remained in its original status and was moved down in order.
                 else
                 {
-                    RefreshRequestCard();
+                    requestsOfStatus = requestsOfStatus.Where( r => r.Order > oldIndex && r.Order <= newIndex );
+                    rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order - 1, ModifiedDateTime = r.ModifiedDateTime } );
                 }
             }
+            else if ( oldStatusId != newStatusId )
+            {
+                MaintainRequestOrder( request, service, oldIndex, oldStatusId, newStatusId, rockContext );
+            }
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Increments the order of selected connection requests from a status.
+        /// </summary>
+        /// <param name="requestsOfStatus">The selected connection requests from a status.</param>
+        /// <param name="newIndex">The new index of the dropped connection request.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void IncrementRequestOrder( IQueryable<ConnectionRequest> requestsOfStatus, int newIndex, RockContext rockContext )
+        {
+            requestsOfStatus = requestsOfStatus.Where( r => r.Order >= newIndex );
+            rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order + 1, ModifiedDateTime = r.ModifiedDateTime } );
+        }
+
+        /// <summary>
+        /// Maintains the order of connection requests when they are moved to a new status and are not sorted by order.
+        /// </summary>
+        /// <param name="request">The moved connection request.</param>
+        /// <param name="service">The connection request service.</param>
+        /// <param name="oldIndex">The old order index of the moved connection request.</param>
+        /// <param name="oldStatusId">The old connection status id that the connection request was moved from.</param>
+        /// <param name="newStatusId">The new connection status id that the connection request was moved to.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void MaintainRequestOrder( ConnectionRequest request, ConnectionRequestService service, int oldIndex, int oldStatusId, int newStatusId, RockContext rockContext )
+        {
+            request.Order = 0;
+            var requestsOfOldStatus = service.Queryable()
+                .Where( r =>
+                    r.ConnectionStatusId == oldStatusId &&
+                    r.ConnectionOpportunityId == request.ConnectionOpportunityId &&
+                    r.Order > oldIndex );
+            var requestsOfStatus = service.Queryable()
+                .Where( r =>
+                    r.ConnectionStatusId == newStatusId &&
+                    r.ConnectionOpportunityId == request.ConnectionOpportunityId &&
+                    r.Id != ConnectionRequestId.Value );
+
+            rockContext.BulkUpdate( requestsOfOldStatus, r => new ConnectionRequest { Order = r.Order - 1, ModifiedDateTime = r.ModifiedDateTime } );
+            IncrementRequestOrder( requestsOfStatus, 0, rockContext );
         }
 
         /// <summary>
@@ -1459,6 +1498,11 @@ namespace RockWeb.Blocks.Connection
             else
             {
                 connectionRequest.ConnectionState = ConnectionState.Active;
+            }
+
+            if ( connectionRequest.ConnectionStatusId != rblRequestModalAddEditModeStatus.SelectedValueAsInt().Value )
+            {
+                MaintainRequestOrder( connectionRequest, connectionRequestService, connectionRequest.Order, connectionRequest.ConnectionStatusId, rblRequestModalAddEditModeStatus.SelectedValueAsInt().Value, rockContext );
             }
 
             connectionRequest.ConnectionStatusId = rblRequestModalAddEditModeStatus.SelectedValueAsInt().Value;
@@ -2132,7 +2176,8 @@ namespace RockWeb.Blocks.Connection
             // Request attributes
             var request = GetConnectionRequest() ?? new ConnectionRequest
             {
-                ConnectionOpportunityId = ConnectionOpportunityId.Value
+                ConnectionOpportunityId = ConnectionOpportunityId.Value,
+                ConnectionTypeId = new ConnectionOpportunityService( new RockContext() ).Get( ConnectionOpportunityId.Value ).ConnectionTypeId
             };
 
             request.LoadAttributes();
@@ -2479,7 +2524,19 @@ namespace RockWeb.Blocks.Connection
             var lGroupName = e.Row.FindControl( "lGroupName" ) as Literal;
             if ( lGroupName != null )
             {
-                lGroupName.Text = connectionRequestViewModel.GroupNameWithRoleAndStatus;
+                if ( connectionRequestViewModel.PlacementGroupRoleId.HasValue )
+                {
+                    var role = GroupTypeRoleCache.Get( connectionRequestViewModel.PlacementGroupRoleId.Value )?.Name;
+                    var statusName = connectionRequestViewModel.PlacementGroupMemberStatus.ConvertToStringSafe();
+                    if ( !string.IsNullOrWhiteSpace( role ) || !string.IsNullOrWhiteSpace( statusName ) )
+                    {
+                        lGroupName.Text = string.Format( "{0} ({1} {2})", connectionRequestViewModel.GroupName, statusName, role );
+                    }
+                }
+                else
+                {
+                    lGroupName.Text = connectionRequestViewModel.GroupNameWithRoleAndStatus;
+                }
             }
 
             var lConnectorPersonFullname = e.Row.FindControl( "lConnectorPersonFullname" ) as Literal;
@@ -2878,7 +2935,7 @@ namespace RockWeb.Blocks.Connection
             }
 
             activity.ConnectionRequestId = ConnectionRequestId.Value;
-            activity.ConnectorPersonAliasId = ddlRequestModalViewModeAddActivityModeConnector.SelectedValue.AsIntegerOrNull();
+            activity.ConnectorPersonAliasId = ddlRequestModalViewModeAddActivityModeConnector.SelectedValueAsId();
             activity.Note = tbRequestModalViewModeAddActivityModeNote.Text;
             activity.ConnectionActivityTypeId = ddlRequestModalViewModeAddActivityModeType.SelectedValue.AsInteger();
             activity.ConnectionOpportunityId = ConnectionOpportunityId;
@@ -3099,6 +3156,7 @@ namespace RockWeb.Blocks.Connection
                         var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( newOpportunityId.Value );
 
                         connectionRequest.ConnectionOpportunityId = newOpportunityId.Value;
+                        connectionRequest.ConnectionTypeId = newOpportunity.ConnectionTypeId;
                         if ( newOpportunity.ShowStatusOnTransfer && ddlRequestModalViewModeTransferModeStatus.Visible )
                         {
                             var newStatusId = ddlRequestModalViewModeTransferModeStatus.SelectedValueAsId();
@@ -4069,7 +4127,7 @@ namespace RockWeb.Blocks.Connection
             foreach ( var campaignConnectionItem in campaignConnectionItems )
             {
                 int pendingCount = CampaignConnectionHelper.GetPendingConnectionCount( campaignConnectionItem, CurrentPerson );
-                campaignConnectionItemsPendingCount.AddOrIgnore( campaignConnectionItem, pendingCount );
+                campaignConnectionItemsPendingCount.TryAdd( campaignConnectionItem, pendingCount );
                 var listItem = new ListItem();
                 listItem.Text = string.Format( "{0} ({1} pending connections)", campaignConnectionItem.Name, pendingCount );
                 listItem.Value = campaignConnectionItem.Guid.ToString();
@@ -4394,13 +4452,13 @@ namespace RockWeb.Blocks.Connection
                         .AsNoTracking()
                         .ToList();
 
-                    connectionOpportunityConnectorPersonList.ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
+                    connectionOpportunityConnectorPersonList.ForEach( p => connectors.TryAdd( p.Id, p ) );
                 }
 
                 // Add the current person as possible connector
                 if ( CurrentPerson != null )
                 {
-                    connectors.AddOrIgnore( CurrentPerson.Id, CurrentPerson );
+                    connectors.TryAdd( CurrentPerson.Id, CurrentPerson );
                 }
 
                 // Add connectors to dropdown list
@@ -6222,8 +6280,9 @@ namespace RockWeb.Blocks.Connection
             {
                 var rockContext = new RockContext();
                 int entityTypeId = new ConnectionRequest().TypeId;
-                string groupQualifier = _connectionOpportunity.Id.ToString();
-                foreach ( var attribute in new AttributeService( rockContext ).GetByEntityTypeQualifier( entityTypeId, "ConnectionOpportunityId", groupQualifier, true )
+                string opportunityIdQualifier = _connectionOpportunity.Id.ToString();
+                var typeIdQualifier = _connectionOpportunity.ConnectionTypeId.ToString();
+                foreach ( var attribute in new AttributeService( rockContext ).GetByEntityTypeQualifier( entityTypeId, "ConnectionOpportunityId", opportunityIdQualifier, true )
                     .Where( a => a.IsGridColumn )
                     .OrderByDescending( a => a.EntityTypeQualifierColumn )
                     .ThenBy( a => a.Order )
@@ -6235,11 +6294,15 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
-                foreach ( var inheritedGridColumnAttribute in ( new ConnectionRequest() { ConnectionOpportunityId = _connectionOpportunity.Id } ).GetInheritedAttributes( rockContext ).Where( a => a.IsGridColumn == true && a.IsActive == true ).ToList() )
+                foreach ( var attribute in new AttributeService( rockContext ).GetByEntityTypeQualifier( entityTypeId, "ConnectionTypeId", typeIdQualifier, false )
+                    .Where( a => a.IsGridColumn )
+                    .OrderByDescending( a => a.EntityTypeQualifierColumn )
+                    .ThenBy( a => a.Order )
+                    .ThenBy( a => a.Name ).ToAttributeCacheList() )
                 {
-                    if ( inheritedGridColumnAttribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
-                        AvailableAttributes.Add( inheritedGridColumnAttribute );
+                        AvailableAttributes.Add( attribute );
                     }
                 }
             }

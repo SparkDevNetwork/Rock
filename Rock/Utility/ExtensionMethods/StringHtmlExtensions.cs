@@ -205,6 +205,8 @@ namespace Rock
         /// </summary>
         /// <param name="email">The string to validate</param>
         /// <returns>true if valid email, false otherwise</returns>
+        [Obsolete( "Use EmailAddressFieldValidator.IsValid() instead." )]
+        [RockObsolete( "1.16" )]
         public static bool IsValidEmail( this string email )
         {
             Match match = Regex.Match( email, @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+" );
@@ -270,6 +272,26 @@ namespace Rock
             {
                 var rockHtmlMarkupFormatter = new Rock.Utility.RockHtmlMarkupFormatter();
                 var result = PreMailer.Net.PreMailer.MoveCssInline( html, false, ".ignore", null, false, false, rockHtmlMarkupFormatter );
+                return result.Html;
+            }
+            catch
+            {
+                return html;
+            }
+        }
+
+        /// <summary>
+        /// Moves the CSS inline using PreMailer.Net, which moves any stylesheets to inline style attributes, for maximum compatibility with email clients
+        /// </summary>
+        /// <param name="html">The HTML.</param>
+        /// <param name="removeStyleElements">If <see langword="true"/>, then style elements will be removed.</param>
+        /// <returns></returns>
+        internal static string ConvertHtmlStylesToInlineAttributes( this string html, bool removeStyleElements )
+        {
+            try
+            {
+                var rockHtmlMarkupFormatter = new Rock.Utility.RockHtmlMarkupFormatter();
+                var result = PreMailer.Net.PreMailer.MoveCssInline( html, removeStyleElements, ".ignore", null, false, false, rockHtmlMarkupFormatter );
                 return result.Html;
             }
             catch

@@ -14,12 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Reflection;
 #if WEBFORMS
 using System.Web.UI;
 #endif
 using Rock.Attribute;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -27,15 +31,88 @@ namespace Rock.Field.Types
     /// <summary>
     ///
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CODE_EDITOR )]
     public class CodeEditorFieldType : FieldType
     {
         #region Configuration
 
         private const string EDITOR_MODE = "editorMode";
+        private const string EDITOR_MODE_OPTIONS = "editorModeOptions";
         private const string EDITOR_THEME = "editorTheme";
+        private const string EDITOR_THEME_OPTIONS = "editorThemeOptions";
         private const string EDITOR_HEIGHT = "editorHeight";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            var configurationProperties = base.GetPublicEditConfigurationProperties( privateConfigurationValues );
+
+            // Get the Code editor options that are available
+            var codeEditorModeOptions = ToListItemBagList<CodeEditorMode>();
+            var codeEditorThemeOptions = ToListItemBagList<CodeEditorTheme>();
+
+            configurationProperties[EDITOR_MODE_OPTIONS] = codeEditorModeOptions.ToCamelCaseJson( false, true );
+            configurationProperties[EDITOR_THEME_OPTIONS] = codeEditorThemeOptions.ToCamelCaseJson( false, true );
+
+            return configurationProperties;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string internalValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, internalValue );
+
+            ConvertEnumToPublicValue<CodeEditorMode>( privateConfigurationValues, publicConfigurationValues, EDITOR_MODE );
+            ConvertEnumToPublicValue<CodeEditorTheme>( privateConfigurationValues, publicConfigurationValues, EDITOR_THEME );
+
+            return publicConfigurationValues;
+        }
+
+        /// <summary>
+        /// Converts the specified enum value from the private configuration to a public configuration value.
+        /// </summary>
+        /// <typeparam name="TEnum">The type of the enum.</typeparam>
+        /// <param name="privateConfig">The private configuration values.</param>
+        /// <param name="publicConfig">The public configuration values.</param>
+        /// <param name="key">The key of the configuration value to convert.</param>
+        private static void ConvertEnumToPublicValue<TEnum>( Dictionary<string, string> privateConfig, Dictionary<string, string> publicConfig, string key ) where TEnum : struct, Enum
+        {
+            if ( privateConfig.TryGetValue( key, out var value ) && Enum.TryParse( value, out TEnum enumValue ) )
+            {
+                publicConfig[key] = Convert.ToInt32( enumValue ).ToString();
+            }
+        }
+
+        /// <summary>
+        /// Converts the passed enum into a Listitembaglist.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        private List<ListItemBag> ToListItemBagList<T>()
+            where T : Enum
+        {
+            var enumType = typeof( T );
+            var listItems = new List<ListItemBag>();
+            var names = Enum.GetNames( enumType );
+            foreach ( var name in names )
+            {
+                // ignore Obsolete Enum values
+                object value = Enum.Parse( typeof( T ), name );
+                var fieldInfo = value.GetType().GetField( name );
+                if ( fieldInfo?.GetCustomAttribute<ObsoleteAttribute>() != null )
+                {
+                    continue;
+                }
+
+                // if the Enum has a [Description] attribute, use the description text
+                var description = fieldInfo.GetCustomAttribute<DescriptionAttribute>()?.Description ?? name.SplitCase();
+                listItems.Add( new ListItemBag() { Text = description, Value = Convert.ToInt32( value ).ToString() } );
+            }
+
+            return listItems;
+        }
 
         #endregion
 
@@ -119,7 +196,7 @@ namespace Rock.Field.Types
             ddlTheme.AutoPostBack = true;
             ddlTheme.SelectedIndexChanged += OnQualifierUpdated;
             ddlTheme.Label = "Editor Theme";
-            ddlTheme.Help = "The styling them to use for the code editor.";
+            ddlTheme.Help = "The styling theme to use for the code editor.";
 
             var nbHeight = new NumberBox();
             controls.Add( nbHeight );

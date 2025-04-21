@@ -15,33 +15,22 @@
 // </copyright>
 //
 using System;
-using System.Linq;
-using Rock.Data;
-using Rock.Model;
-using Rock.Tests.Integration.TestData;
-using Rock.Web.Cache;
-
 using System.Collections.Generic;
+using System.Linq;
 
 using Ical.Net;
+using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
-using Ical.Net.CalendarComponents;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Data;
+using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration
-{
-    public static partial class TestDataHelper
-    {
-        public static class Events
-        {
-
-        }
-    }
-}
-
-namespace Rock.Tests.Integration.Events
+namespace Rock.Tests.Integration.TestData
 {
     /// <summary>
     /// Provides actions to manage Event data.
@@ -628,7 +617,7 @@ namespace Rock.Tests.Integration.Events
             var rockContext = new RockContext();
 
             // Create Campus "Stepping Stone".
-            var campusNew = TestDataHelper.GetOrAddCampusSteppingStone( rockContext );
+            TestDataHelper.GetOrAddCampusSteppingStone( rockContext );
             rockContext.SaveChanges();
 
             // Add an occurrence of this event for each Campus.
@@ -646,7 +635,7 @@ namespace Rock.Tests.Integration.Events
                 ExistingItemStrategy = CreateExistingItemStrategySpecifier.Update
             };
 
-            var financeEvent1 = AddEventItemOccurrence( event1Args );
+            AddEventItemOccurrence( event1Args );
 
             var event2Args = new CreateEventItemOccurrenceActionArgs()
             {
@@ -662,7 +651,99 @@ namespace Rock.Tests.Integration.Events
                 ExistingItemStrategy = CreateExistingItemStrategySpecifier.Update
             };
 
-            var financeEvent2 = AddEventItemOccurrence( event2Args );
+            AddEventItemOccurrence( event2Args );
+
+        }
+
+        /// <summary>
+        /// Modify the standard sample data to scheduled events around the current date.
+        /// This ensures some events will appear in the default calendar feed, which only includes upcoming events.
+        /// </summary>
+        public void UpdateSampleDataEventDates()
+        {
+            var rockContext = new RockContext();
+
+            var effectiveDate = GetDefaultEffectiveDate();
+
+            // Staff Meeting: Every other Wednesday @ 10:30am, starting on the first Wednesday after the effective date.
+            var firstWednesdayOfEffectiveDate = RockDateTime.New( effectiveDate.Year, effectiveDate.Month, effectiveDate.Day ).Value.GetNextWeekday( DayOfWeek.Wednesday );
+            SetStartDateForEvent( "Staff Meeting",
+                firstWednesdayOfEffectiveDate.AddHours( 10 ).AddMinutes( 30 ),
+                new TimeSpan( 1, 30, 0 ),
+                rockContext );
+
+            // Warrior Youth Event: 20th of next month @ 7:00pm.
+            SetStartDateForEvent( "Warrior Youth Event",
+                effectiveDate.AddDays( 19 ).AddHours( 19 ),
+                null,
+                rockContext );
+
+            // Rock Solid Finances Class: 25th of next month @ 1:00pm.
+            SetStartDateForEvent( "Rock Solid Finances Class",
+                effectiveDate.AddDays( 24 ).AddHours( 13 ),
+                new TimeSpan( 4, 0, 0 ),
+                rockContext );
+
+            // Customs & Classics Car Show: 10th of previous month @ 10:00am.
+            SetStartDateForEvent( "Customs & Classics Car Show",
+                effectiveDate.AddMonths( -2 ).AddDays( 9 ).AddHours( 10 ),
+                null,
+                rockContext );
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Gets the effective date for which Event test data is created.
+        /// This date is the start of next month.
+        /// </summary>
+        /// <returns></returns>
+        public DateTime GetDefaultEffectiveDate()
+        {
+            var nowDate = RockDateTime.Now.Date;
+            var nextMonthStartDate = RockDateTime.New( nowDate.Year, nowDate.Month, 1 ).Value.AddMonths( 1 );
+
+            return nextMonthStartDate;
+        }
+
+        private void SetStartDateForEvent( string eventName, DateTime startDate, TimeSpan? duration, RockContext rockContext )
+        {
+            var eventOccurrenceService = new EventItemOccurrenceService( rockContext );
+
+            // Set the start date for the first occurrence only.
+            var occurrence = eventOccurrenceService.Queryable()
+                .FirstOrDefault( i => i.EventItem.Name == eventName );
+
+            Assert.That.IsNotNull( occurrence, $"Event not found. [Name=\"{eventName}\"]" );
+
+            SetStartDateForSchedule( occurrence?.ScheduleId ?? 0,
+                startDate,
+                duration,
+                rockContext );
+        }
+
+        private void SetStartDateForSchedule( int scheduleId, DateTime startDate, TimeSpan? duration, RockContext rockContext )
+        {
+            var scheduleService = new ScheduleService( rockContext );
+            var schedule = scheduleService.Get( scheduleId );
+
+            var endDate = startDate;
+
+            if ( duration != null )
+            {
+                endDate = endDate.Add( duration.Value );
+            }
+
+            Assert.IsNotNull( schedule, $"Schedule not found. [ScheduleId={scheduleId}]" );
+
+            var iCalEvent = InetCalendarHelper.CreateCalendarEvent( schedule.iCalendarContent );
+
+            iCalEvent.DtStart = new CalDateTime( startDate );
+            iCalEvent.DtEnd = new CalDateTime( endDate );
+
+            schedule.EffectiveStartDate = startDate;
+
+            schedule.iCalendarContent = InetCalendarHelper.SerializeToCalendarString( iCalEvent );
         }
 
         /// <summary>

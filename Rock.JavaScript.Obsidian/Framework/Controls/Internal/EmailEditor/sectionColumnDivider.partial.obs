@@ -1,0 +1,65 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="section-column-divider" @mousedown="onStartDrag">
+        <i class="fa fa-grip-vertical" aria-hidden="true"></i>
+    </div>
+</template>
+
+<style scoped>
+.section-column-divider {
+    color: var(--color-interface-soft);
+    cursor: ew-resize;
+    width: var(--spacing-large);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    const props = defineProps({
+        index: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "dragged", index: number, delta: number): void;
+    }>();
+
+    let startX = 0;
+    const pixelsUntilChange = 26;
+
+    // #region Event Handlers
+
+    function onStartDrag(event: MouseEvent): void {
+        // Prevent unwanted text selection.
+        event.preventDefault();
+        startX = event.clientX;
+
+        window.addEventListener("mousemove", onDrag);
+        window.addEventListener("mouseup", onStopDrag);
+    }
+
+    function onDrag(event: MouseEvent): void {
+        // Normalize the delta.
+        const delta = event.clientX - startX;
+
+        if (Math.abs(delta) > pixelsUntilChange) {
+            emit("dragged", props.index, Math.round(delta / pixelsUntilChange));
+
+            // Reset startX for continuous drag.
+            startX = event.clientX;
+        }
+    }
+
+    function onStopDrag(): void {
+        window.removeEventListener("mousemove", onDrag);
+        window.removeEventListener("mouseup", onStopDrag);
+    }
+
+    // #endregion Event Handlers
+</script>

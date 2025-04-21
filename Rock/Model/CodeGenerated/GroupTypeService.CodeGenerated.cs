@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -105,6 +106,24 @@ namespace Rock.Model
         }
     }
 
+    [HasQueryableAttributes( typeof( GroupType.GroupTypeQueryableAttributeValue ), nameof( GroupTypeAttributeValues ) )]
+    public partial class GroupType
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<GroupTypeQueryableAttributeValue> GroupTypeAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class GroupTypeQueryableAttributeValue : QueryableAttributeValue
+        {
+        }
+    }
+
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
@@ -168,6 +187,7 @@ namespace Rock.Model
             target.AllowMultipleLocations = source.AllowMultipleLocations;
             target.AllowSpecificGroupMemberAttributes = source.AllowSpecificGroupMemberAttributes;
             target.AllowSpecificGroupMemberWorkflows = source.AllowSpecificGroupMemberWorkflows;
+            target.AlreadyEnrolledMatchingLogic = source.AlreadyEnrolledMatchingLogic;
             target.AttendanceCountsAsWeekendService = source.AttendanceCountsAsWeekendService;
             target.AttendancePrintTo = source.AttendancePrintTo;
             target.AttendanceReminderFollowupDays = source.AttendanceReminderFollowupDays;
@@ -199,12 +219,25 @@ namespace Rock.Model
             target.IgnorePersonInactivated = source.IgnorePersonInactivated;
             target.InheritedGroupTypeId = source.InheritedGroupTypeId;
             target.IsCapacityRequired = source.IsCapacityRequired;
+            target.IsChatAllowed = source.IsChatAllowed;
+            target.IsChatChannelAlwaysShown = source.IsChatChannelAlwaysShown;
+            target.IsChatChannelPublic = source.IsChatChannelPublic;
+            target.IsChatEnabledForAllGroups = source.IsChatEnabledForAllGroups;
+            target.IsConcurrentCheckInPrevented = source.IsConcurrentCheckInPrevented;
             target.IsIndexEnabled = source.IsIndexEnabled;
+            target.IsLeavingChatChannelAllowed = source.IsLeavingChatChannelAllowed;
+            target.IsPeerNetworkEnabled = source.IsPeerNetworkEnabled;
             target.IsSchedulingEnabled = source.IsSchedulingEnabled;
             target.IsSystem = source.IsSystem;
+            target.LeaderToLeaderRelationshipMultiplier = source.LeaderToLeaderRelationshipMultiplier;
+            target.LeaderToNonLeaderRelationshipMultiplier = source.LeaderToNonLeaderRelationshipMultiplier;
             target.LocationSelectionMode = source.LocationSelectionMode;
             target.Name = source.Name;
+            target.NonLeaderToLeaderRelationshipMultiplier = source.NonLeaderToLeaderRelationshipMultiplier;
+            target.NonLeaderToNonLeaderRelationshipMultiplier = source.NonLeaderToNonLeaderRelationshipMultiplier;
             target.Order = source.Order;
+            target.RelationshipGrowthEnabled = source.RelationshipGrowthEnabled;
+            target.RelationshipStrength = source.RelationshipStrength;
             target.RequiresInactiveReason = source.RequiresInactiveReason;
             target.RequiresReasonIfDeclineSchedule = source.RequiresReasonIfDeclineSchedule;
             target.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
@@ -213,6 +246,7 @@ namespace Rock.Model
             target.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;
             target.ScheduleConfirmationLogic = source.ScheduleConfirmationLogic;
             target.ScheduleConfirmationSystemCommunicationId = source.ScheduleConfirmationSystemCommunicationId;
+            target.ScheduleCoordinatorNotificationTypes = source.ScheduleCoordinatorNotificationTypes;
             target.ScheduleReminderEmailOffsetDays = source.ScheduleReminderEmailOffsetDays;
             target.ScheduleReminderSystemCommunicationId = source.ScheduleReminderSystemCommunicationId;
             target.SendAttendanceReminder = source.SendAttendanceReminder;

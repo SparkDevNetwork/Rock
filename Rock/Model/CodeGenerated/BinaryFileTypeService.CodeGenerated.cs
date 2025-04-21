@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -76,6 +77,24 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( BinaryFileType.BinaryFileTypeQueryableAttributeValue ), nameof( BinaryFileTypeAttributeValues ) )]
+    public partial class BinaryFileType
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<BinaryFileTypeQueryableAttributeValue> BinaryFileTypeAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class BinaryFileTypeQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -135,9 +154,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this BinaryFileType target, BinaryFileType source )
         {
             target.Id = source.Id;
-            #pragma warning disable 612, 618
-            target.AllowCaching = source.AllowCaching;
-            #pragma warning restore 612, 618
+            target.AllowAnonymous = source.AllowAnonymous;
             target.CacheControlHeaderSettings = source.CacheControlHeaderSettings;
             target.CacheToServerFileSystem = source.CacheToServerFileSystem;
             target.Description = source.Description;

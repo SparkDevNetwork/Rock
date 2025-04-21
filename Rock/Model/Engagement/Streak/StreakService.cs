@@ -50,17 +50,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Start an async task to do things that should run after a streak has been updated
-        /// </summary>
-        /// <param name="streakId"></param>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "Use the HandlePostSaveChanges method instead.", true )]
-        public static void HandlePostSaveChangesAsync( int streakId )
-        {
-            Task.Run( () => HandlePostSaveChanges( streakId ) );
-        }
-
-        /// <summary>
         /// Complete tasks that should be done after a streak or related data has been changed
         /// </summary>
         /// <param name="streakId"></param>

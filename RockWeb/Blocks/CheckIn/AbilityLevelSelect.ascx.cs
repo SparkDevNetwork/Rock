@@ -154,8 +154,6 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
@@ -169,6 +167,8 @@ namespace RockWeb.Blocks.CheckIn
                     ProcessPerson();
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

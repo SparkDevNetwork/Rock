@@ -60,6 +60,7 @@ namespace Rock.Jobs
                 .Queryable()
                 .AsNoTracking()
                 .Select( i => i.Id )
+                .DefaultIfEmpty(0)
                 .Max();
 
             string sqlFormat = @"UPDATE [IS]

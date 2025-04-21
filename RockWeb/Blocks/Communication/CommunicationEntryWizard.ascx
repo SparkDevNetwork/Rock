@@ -7,6 +7,7 @@
         <asp:HiddenField ID="hfSelectedCommunicationTemplateId" runat="server" />
         <asp:HiddenField ID="hfEmailEditorHtml" runat="server" />
         <asp:HiddenField ID="hfEmailEditorHtml_dvrm" runat="server" Value="True" />
+        <asp:HiddenField ID="hfDisablePredictableIds" runat="server" Value="" />
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
@@ -111,7 +112,6 @@
                                             ID="cbDuplicatePreventionOption"
                                             runat="server"
                                             Label="Prevent Duplicate Email/SMS Addresses"
-                                            Text="Yes"
                                             Help="Check this option to prevent communications from being sent to people with the same email/SMS addresses.
                                             This will mean two people who share an address will not receive a personalized communication, only one of them will." />
                                     </div>
@@ -125,8 +125,9 @@
                         <asp:LinkButton
                             ID="btnRecipientSelectionNext"
                             runat="server"
-                            AccessKey="n"
+                            data-shortcut-key="arrowright"
                             Text="Next"
+                            ToolTip="Alt+🡆"
                             DataLoadingText="Next"
                             CssClass="btn btn-primary pull-right js-wizard-navigation"
                             ValidationGroup="vgRecipientSelection"
@@ -230,12 +231,22 @@
                         </div>
                     </asp:Panel>
 
+                    <div>
+                        <Rock:RockCheckBox
+                            ID="cbRecipientListDuplicatePreventionOption"
+                            runat="server"
+                            Label="Prevent Duplicate Email/SMS Addresses"
+                            Help="Check this option to prevent communications from being sent to people with the same email/SMS addresses.
+                            This will mean two people who share an address will not receive a personalized communication, only one of them will." />
+                    </div>
+
                     <%-- Panel Actions  --%>
                     <div class="actions panel-actions-bordered">
                         <asp:LinkButton ID="btnRecipientListNext"
                             runat="server"
-                            AccessKey="n"
+                            data-shortcut-key="arrowright"
                             Text="Next"
+                            ToolTip="Alt+🡆"
                             DataLoadingText="Next"
                             CssClass="btn btn-primary pull-right js-wizard-navigation"
                             ValidationGroup="vsIndividualRecipientList"
@@ -307,8 +318,8 @@
                     </div>
 
                     <div class="actions mt-3">
-                        <asp:LinkButton ID="btnCommunicationDeliveryPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnCommunicationDeliveryPrevious_Click" />
-                        <asp:LinkButton ID="btnCommunicationDeliveryNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgCommunicationDelivery" CausesValidation="true" OnClick="btnCommunicationDeliveryNext_Click" />
+                        <asp:LinkButton ID="btnCommunicationDeliveryPrevious" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnCommunicationDeliveryPrevious_Click" />
+                        <asp:LinkButton ID="btnCommunicationDeliveryNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgCommunicationDelivery" CausesValidation="true" OnClick="btnCommunicationDeliveryNext_Click" />
                     </div>
 
                 </asp:Panel>
@@ -362,8 +373,8 @@
                     </div>
 
                     <div class="actions mt-3">
-                        <asp:LinkButton ID="btnTemplateSelectionPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnTemplateSelectionPrevious_Click" />
-                        <asp:LinkButton ID="btnTemplateSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgTemplateSelection" CausesValidation="true" OnClick="btnTemplateSelectionNext_Click" />
+                        <asp:LinkButton ID="btnTemplateSelectionPrevious" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnTemplateSelectionPrevious_Click" />
+                        <asp:LinkButton ID="btnTemplateSelectionNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgTemplateSelection" CausesValidation="true" OnClick="btnTemplateSelectionNext_Click" />
                     </div>
                 </asp:Panel>
 
@@ -469,7 +480,7 @@
 
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <div class="btn-group toggle-container">
+                                                <div class="btn-group toggle-container js-btn-group-image-type">
                                                     <asp:HyperLink ID="aImagePickerTypeImage" runat="server" CssClass="js-image-picker-type-image btn btn-toggle btn-xs btn-primary">Image</asp:HyperLink>
                                                     <asp:HyperLink ID="aImagePickerTypeAsset" runat="server" CssClass="js-image-picker-type-asset btn btn-toggle btn-xs btn-default">Asset</asp:HyperLink>
                                                 </div>
@@ -481,15 +492,15 @@
                                                         ID="componentAssetManager"
                                                         runat="server"
                                                         BlockTypePath="~/Blocks/CMS/AssetManager.ascx"
-                                                        ShowInModal=true
+                                                        ShowInModal="true"
                                                         SelectControlCssClass="imageupload-group"
                                                         CssClass="js-component-asset-manager picker-asset"
                                                         ModalSaveButtonText="Select"
                                                         ModalSaveButtonCssClass="js-singleselect aspNetDisabled"
                                                         ModalCssClass="js-AssetManager-modal"
                                                         ButtonTextTemplate="Select Asset"
-                                                        ModalTitle="Asset Manager"
-                                                        ShowSelectNoneButton=false>
+                                                        ModalTitle="Asset Manager" 
+                                                        ShowSelectNoneButton="true">
                                                     </Rock:ItemFromBlockPicker>
                                                     </ContentTemplate>
                                                 </asp:UpdatePanel>
@@ -1042,7 +1053,7 @@
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <Rock:RockCheckBox ID="rcbIncludeDecline" runat="server" CssClass="js-rsvp-include-decline" Checked="true" Label="Show Decline" Text="Yes" />
+                                                    <Rock:RockCheckBox ID="rcbIncludeDecline" runat="server" CssClass="js-rsvp-include-decline" Checked="true" Label="Show Decline" />
                                                 </div>
                                             </div>
                                         </div>
@@ -1210,8 +1221,8 @@
                         </div>
 
                     <div class="actions clearfix mt-0">
-                        <asp:LinkButton ID="btnEmailEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-saveeditorhtml js-wizard-navigation" CausesValidation="false" OnClick="btnEmailEditorPrevious_Click" />
-                        <asp:LinkButton ID="btnEmailEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-saveeditorhtml js-wizard-navigation" ValidationGroup="vgEmailEditor" CausesValidation="true" OnClick="btnEmailEditorNext_Click" />
+                        <asp:LinkButton ID="btnEmailEditorPrevious" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default js-saveeditorhtml js-wizard-navigation" CausesValidation="false" OnClick="btnEmailEditorPrevious_Click" />
+                        <asp:LinkButton ID="btnEmailEditorNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-saveeditorhtml js-wizard-navigation" ValidationGroup="vgEmailEditor" CausesValidation="true" OnClick="btnEmailEditorNext_Click" />
                     </div>
 
                 </asp:Panel>
@@ -1255,7 +1266,7 @@
                                         <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Required="true" ValidationGroup="vgEmailSummary" MaxLength="100" Help="<span class='tip tip-lava'></span>" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:EmailBox ID="ebFromAddress" runat="server" Label="From Address" Required="true" AllowLava="true" ValidationGroup="vgEmailSummary" MaxLength="100" Help="<span class='tip tip-lava'>" />
+                                        <Rock:EmailBox ID="ebFromAddress" runat="server" Label="From Address" Required="true" AllowLava="true" ValidationGroup="vgEmailSummary" MaxLength="100" Help="<span class='tip tip-lava'></span>" />
                                         <asp:HiddenField ID="hfShowAdditionalFields" runat="server" />
                                         <div class="pull-right">
                                             <a href="#" class="btn btn-xs btn-link js-show-additional-fields">Show Additional Fields</a>
@@ -1304,8 +1315,8 @@
                     </div>
 
                     <div class="actions clearfix mt-3">
-                        <asp:LinkButton ID="btnEmailSummaryPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnEmailSummaryPrevious_Click" />
-                        <asp:LinkButton ID="btnEmailSummaryNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgEmailSummary" CausesValidation="true" OnClick="btnEmailSummaryNext_Click" />
+                        <asp:LinkButton ID="btnEmailSummaryPrevious" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnEmailSummaryPrevious_Click" />
+                        <asp:LinkButton ID="btnEmailSummaryNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgEmailSummary" CausesValidation="true" OnClick="btnEmailSummaryNext_Click" />
                     </div>
                 </asp:Panel>
 
@@ -1359,8 +1370,8 @@
                         </div>
                     </div>
                     <div class="actions clearfix mt-auto">
-                        <asp:LinkButton ID="btnMobileTextEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnMobileTextEditorPrevious_Click" />
-                        <asp:LinkButton ID="btnMobileTextEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgMobileTextEditor" CausesValidation="true" OnClick="btnMobileTextEditorNext_Click" />
+                        <asp:LinkButton ID="btnMobileTextEditorPrevious" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnMobileTextEditorPrevious_Click" />
+                        <asp:LinkButton ID="btnMobileTextEditorNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgMobileTextEditor" CausesValidation="true" OnClick="btnMobileTextEditorNext_Click" />
                     </div>
                 </asp:Panel>
 
@@ -1374,8 +1385,8 @@
                         </div>
                     </div>
                     <div class="actions clearfix mt-auto">
-                        <asp:LinkButton ID="btnPushEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPushEditorPrevious_Click" />
-                        <asp:LinkButton ID="btnPushEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgPushEditor" CausesValidation="true" OnClick="btnPushEditorNext_Click" />
+                        <asp:LinkButton ID="btnPushEditorPrevious" runat="server" data-shortcut-key="arrowleft" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPushEditorPrevious_Click" />
+                        <asp:LinkButton ID="btnPushEditorNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgPushEditor" CausesValidation="true" OnClick="btnPushEditorNext_Click" />
                     </div>
                 </asp:Panel>
 
@@ -1499,7 +1510,7 @@
                         </div>
                     </div>
                     <div class="actions clearfix mt-3">
-                            <asp:LinkButton ID="btnConfirmationPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default mb-2 mb-sm-0 " CausesValidation="false" OnClick="btnConfirmationPrevious_Click" />
+                            <asp:LinkButton ID="btnConfirmationPrevious" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default mb-2 mb-sm-0 " CausesValidation="false" OnClick="btnConfirmationPrevious_Click" />
                             <div class="pull-right">
                                 <asp:LinkButton ID="btnSaveAsDraft" runat="server" Text="Save as Draft" CssClass="btn btn-default mb-2 mb-sm-0" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSaveAsDraft_Click" />
                                 <asp:LinkButton ID="btnSend" runat="server" Text="Send" CssClass="btn btn-primary mb-2 mb-sm-0" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSend_Click" />
@@ -1555,36 +1566,8 @@
             Sys.Application.add_load(function () {
                 Rock.controls.fullScreen.initialize('body');
 
-                if ($('#<%=aImagePickerTypeAsset.ClientID%>').hasClass("btn-primary")) {
-                    $('.js-component-asset-manager').show();
-                    $('#componentImageUploader').hide();
-                } else {
-                    $('.js-component-asset-manager').hide();
-                    $('#componentImageUploader').show();
-                }
-
-                $('.js-image-picker-type-asset').off('click').on('click', function (e) {
-                    $('.js-image-picker-type-asset').removeClass("btn-default");
-                    $('.js-image-picker-type-asset').addClass("btn-primary");
-                    $('.js-image-picker-type-image').removeClass("btn-primary");
-                    $('.js-image-picker-type-image').addClass("btn-default");
-                    $('#componentImageUploader').hide();
-                    $('.js-component-asset-manager').show();
-                    return false;
-                });
-
-                $('.js-image-picker-type-image').off('click').on('click', function (e) {
-                    $('.js-image-picker-type-asset').removeClass("btn-primary");
-                    $('.js-image-picker-type-asset').addClass("btn-default");
-                    $('.js-image-picker-type-image').removeClass("btn-default");
-                    $('.js-image-picker-type-image').addClass("btn-primary");
-                    $('#componentImageUploader').show();
-                    $('.js-component-asset-manager').hide();
-                    return false;
-                });
-
                 if ($('#<%=pnlEmailEditor.ClientID%>').length) {
-                    loadEmailEditor()
+                    loadEmailEditor();
                 }
 
                 if ($('#<%=pnlEmailPreview.ClientID%>').length) {
@@ -1776,8 +1759,7 @@
                         $('#<%=pnlEmailPreviewContainer.ClientID%>').height(newHeight);
                     }
                 });
-            }
-            );
+            });
 
             function resizeIframe(el) {
                 el.style.height = el.contentWindow.document.documentElement.scrollHeight + 'px';
@@ -1955,8 +1937,7 @@
                 Rock.controls.emailEditor.imageComponentHelper.handleAssetUpdate(e, data);
             }
 
-            function handleVideoImageUpdate(e, data)
-			{
+            function handleVideoImageUpdate(e, data) {
 			    Rock.controls.emailEditor.videoComponentHelper.handleVideoImageUpdate(e, data);
             }
 

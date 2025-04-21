@@ -1,0 +1,452 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="registration-edit-individual-screen">
+        <MainPanel :title="title"
+                   :subtitle="subtitle"
+                   :configuration="configuration">
+            <RockForm v-model:submit="submitForm"
+                      @submit="onSaveClick">
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <RockFormField modelValue=""
+                                       name="toggle"
+                                       label="&nbsp;">
+                            <Toggle v-model="isAdult"
+                                    trueText="Adult"
+                                    falseText="Child" />
+                        </RockFormField>
+                    </div>
+
+                    <div class="col-md-6">
+                        <Toggle v-if="isAdult"
+                                v-model="isMarried"
+                                label="Marital Status"
+                                trueText="Married"
+                                falseText="Single" />
+
+                        <DropDownList v-else
+                                      label="Relationship to Adult"
+                                      v-model="relationshipToAdult"
+                                      :items="relationshipToAdultItems"
+                                      :showBlankItem="false"
+                                      rules="required" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox label="First Name"
+                                 v-model="nickName"
+                                 rules="required" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <TextBox label="Last Name"
+                                 v-model="lastName"
+                                 rules="required" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <DropDownList label="Suffix"
+                                      v-model="suffix"
+                                      :items="suffixItems" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <RequiredToggle v-model="isFemale"
+                                        label="Gender"
+                                        trueText="Female"
+                                        falseText="Male" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <DatePicker v-if="isBirthdateVisible"
+                                    label="Birthdate"
+                                    v-model="birthDate"
+                                    :rules="birthdateRules" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <GradePicker v-if="isGradeVisible"
+                                     label="Grade"
+                                     v-model="grade"
+                                     showBlankItem
+                                     :rules="gradeRules" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <PhoneNumberBox label="Mobile Phone"
+                                        v-model="phoneNumber"
+                                        v-model:countryCode="phoneCountryCode" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <div v-if="registrationData.isSmsButtonVisible"
+                             class="form-group">
+                            <label class="control-label"></label>
+                            <Toggle v-if="registrationData.isSmsButtonVisible"
+                                    v-model="isSmsDisabled"
+                                    trueText="No SMS"
+                                    falseText="SMS Enabled" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-if="isAlternateIdVisible"
+                                 label="Alternate ID"
+                                 v-model="alternateId" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <RacePicker v-if="isRaceVisible"
+                                    label="Race"
+                                    v-model="race"
+                                    showBlankItem
+                                    :rules="raceRules" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <EthnicityPicker v-if="isEthnicityVisible"
+                                         label="Ethnicity"
+                                         v-model="ethnicity"
+                                         showBlankItem
+                                         :rules="ethnicityRules" />
+                    </div>
+                </div>
+
+                <AttributeValuesContainer v-model="attributeValues"
+                                          :attributes="attributes"
+                                          isEditMode
+                                          :numberOfColumns="2" />
+            </RockForm>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
+    import GradePicker from "@Obsidian/Controls/gradePicker.obs";
+    import MainPanel from "./mainPanel.partial.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import RacePicker from "@Obsidian/Controls/racePicker.obs";
+    import RequiredToggle from "./requiredToggle.partial.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import { computed, PropType, ref } from "vue";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { RegistrationScreen, RegistrationScreenData, KioskButton } from "./types.partial";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { RequirementLevel } from "@Obsidian/Enums/Controls/requirementLevel";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        registrationData: {
+            type: Object as PropType<RegistrationScreenData>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "updateActions", actions: KioskButton[]): void;
+        (event: "registrationScreen", screen: RegistrationScreen): void;
+        (event: "closeRegistration"): void;
+    }>();
+
+    // #region Values
+
+    const submitForm = ref(false);
+    const isAdult = ref(false);
+    const relationshipToAdult = ref("");
+    const isMarried = ref(false);
+    const nickName = ref("");
+    const lastName = ref("");
+    const suffix = ref("");
+    const isFemale = ref<boolean>();
+    const birthDate = ref("");
+    const grade = ref<ListItemBag>();
+    const phoneNumber = ref("");
+    const phoneCountryCode = ref("");
+    const isSmsDisabled = ref(true);
+    const alternateId = ref("");
+    const race = ref<ListItemBag>();
+    const ethnicity = ref<ListItemBag>();
+    const attributeValues = ref<Record<string, string>>({});
+
+    const suffixItems: ListItemBag[] = props.registrationData.suffixes ?? [];
+    const relationshipToAdultItems: ListItemBag[] = props.registrationData.relationships ?? [];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        return props.registrationData.editPersonGuid
+            ? "Edit Individual"
+            : "Add Individual";
+    });
+
+    const subtitle = computed((): string => {
+        return props.registrationData.editPersonGuid
+            ? "Edit an existing person in the family"
+            : "Add a new person to the family";
+    });
+
+    const attributes = computed((): Record<string, PublicAttributeBag> => {
+        return isAdult.value
+            ? props.registrationData.adultAttributes ?? {}
+            : props.registrationData.childAttributes ?? {};
+    });
+
+    // #endregion
+
+    // #region Computed Visibility Values
+
+    const isAlternateIdVisible = computed((): boolean => {
+        return isAdult.value
+            ? props.registrationData.isAlternateIdFieldVisibleForAdults
+            : props.registrationData.isAlternateIdFieldVisibleForChildren;
+    });
+
+    const isBirthdateVisible = computed((): boolean => {
+        return isAdult.value
+            ? isRequirementVisible(props.registrationData.displayBirthdateForAdults)
+            : isRequirementVisible(props.registrationData.displayBirthdateForChildren);
+    });
+
+    const isEthnicityVisible = computed((): boolean => {
+        return isAdult.value
+            ? isRequirementVisible(props.registrationData.displayEthnicityForAdults)
+            : isRequirementVisible(props.registrationData.displayEthnicityForChildren);
+    });
+
+    const isGradeVisible = computed((): boolean => {
+        return isAdult.value
+            ? false
+            : isRequirementVisible(props.registrationData.displayGradeForChildren);
+    });
+
+    const isRaceVisible = computed((): boolean => {
+        return isAdult.value
+            ? isRequirementVisible(props.registrationData.displayRaceForAdults)
+            : isRequirementVisible(props.registrationData.displayRaceForChildren);
+    });
+
+    // #endregion
+
+    // #region Computed Rule Values
+
+    const birthdateRules = computed((): string => {
+        const requirement = isAdult.value
+            ? props.registrationData.displayBirthdateForAdults
+            : props.registrationData.displayBirthdateForChildren;
+
+        return requirement === RequirementLevel.Required
+            ? "required"
+            : "";
+    });
+
+    const ethnicityRules = computed((): string => {
+        const requirement = isAdult.value
+            ? props.registrationData.displayEthnicityForAdults
+            : props.registrationData.displayEthnicityForChildren;
+
+        return requirement === RequirementLevel.Required
+            ? "required"
+            : "";
+    });
+
+    const gradeRules = computed((): string => {
+        if (isAdult.value) {
+            return "";
+        }
+
+        return props.registrationData.displayGradeForChildren === RequirementLevel.Required
+            ? "required"
+            : "";
+    });
+
+    const raceRules = computed((): string => {
+        const requirement = isAdult.value
+            ? props.registrationData.displayRaceForAdults
+            : props.registrationData.displayRaceForChildren;
+
+        return requirement === RequirementLevel.Required
+            ? "required"
+            : "";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        actions.push({
+            key: "save",
+            title: "Done",
+            type: "primary",
+            class: "save-button",
+            disabled: false,
+            handler: () => {
+                submitForm.value = true;
+            }
+        });
+
+        actions.push({
+            key: "cancel",
+            title: "Cancel",
+            type: "default",
+            class: "cancel-button",
+            disabled: false,
+            handler: onCancelClick
+        });
+
+        emit("updateActions", actions);
+    }
+
+    function updateRegistrationData(): void {
+        let person = props.registrationData.people
+            .find(p => p.bag.guid === props.registrationData.editPersonGuid);
+
+        if (!person) {
+            person = {
+                bag: {
+                    guid: newGuid(),
+                    isAdult: false,
+                    isMarried: false,
+                    gender: Gender.Unknown
+                },
+                validProperties: []
+            };
+
+            setPropertiesBoxValue(person, "id", "");
+            props.registrationData.people.push(person);
+            props.registrationData.editPersonGuid = person.bag.guid;
+        }
+
+        const relationship: ListItemBag = {
+            value: relationshipToAdult.value,
+            text: relationshipToAdultItems.find(r => r.value === relationshipToAdult.value)?.text
+        };
+
+        setPropertiesBoxValue(person, "isAdult", isAdult.value);
+        setPropertiesBoxValue(person, "relationshipToAdult", relationship);
+        setPropertiesBoxValue(person, "isMarried", isMarried.value);
+        setPropertiesBoxValue(person, "gender", isFemale.value ? Gender.Female : Gender.Male);
+        setPropertiesBoxValue(person, "nickName", nickName.value);
+        setPropertiesBoxValue(person, "lastName", lastName.value);
+        setPropertiesBoxValue(person, "suffix", { value: suffix.value });
+        setPropertiesBoxValue(person, "birthDate", birthDate.value);
+        setPropertiesBoxValue(person, "grade", grade.value);
+        setPropertiesBoxValue(person, "phoneNumber", {
+            number: phoneNumber.value,
+            countryCode: phoneCountryCode.value,
+            isMessagingEnabled: !isSmsDisabled.value
+        });
+        setPropertiesBoxValue(person, "alternateId", alternateId.value);
+        setPropertiesBoxValue(person, "race", race.value);
+        setPropertiesBoxValue(person, "ethnicity", ethnicity.value);
+        setPropertiesBoxValue(person, "attributeValues", attributeValues.value);
+    }
+
+    function isRequirementVisible(requirementLevel: RequirementLevel): boolean {
+        return requirementLevel === RequirementLevel.Optional
+            || requirementLevel === RequirementLevel.Required;
+    }
+
+    function setInternalValues(): void {
+        const person = props.registrationData.people
+            ?.find(p => p.bag.guid === props.registrationData.editPersonGuid);
+        let defaultLastName = "";
+
+        if (props.registrationData.people.length > 0) {
+            defaultLastName = props.registrationData.people[0].bag.lastName ?? "";
+        }
+
+        isAdult.value = person?.bag.isAdult ?? false;
+        relationshipToAdult.value = person?.bag.relationshipToAdult?.value ?? getDefaultRelationship();
+        isMarried.value = person?.bag.isMarried ?? false;
+        nickName.value = person?.bag.nickName ?? "";
+        lastName.value = person?.bag.lastName ?? defaultLastName;
+        suffix.value = person?.bag.suffix?.value ?? "";
+        birthDate.value = person?.bag.birthDate ?? "";
+        grade.value = person?.bag.grade ?? undefined;
+        phoneNumber.value = person?.bag.phoneNumber?.number ?? "";
+        phoneCountryCode.value = person?.bag.phoneNumber?.countryCode ?? "";
+        isSmsDisabled.value = !props.registrationData.isSmsButtonCheckedByDefault;
+        alternateId.value = person?.bag.alternateId ?? "";
+        race.value = person?.bag.race ?? undefined;
+        ethnicity.value = person?.bag.ethnicity ?? undefined;
+        attributeValues.value = person?.bag.attributeValues ?? {};
+
+        if (person?.bag.gender === Gender.Male) {
+            isFemale.value = false;
+        }
+        else if (person?.bag.gender === Gender.Female) {
+            isFemale.value = true;
+        }
+
+        if (person?.bag.phoneNumber?.isMessagingEnabled === true) {
+            isSmsDisabled.value = false;
+        }
+        else if (person?.bag.phoneNumber?.isMessagingEnabled === false) {
+            isSmsDisabled.value = true;
+        }
+        else {
+            isSmsDisabled.value = !props.registrationData.isSmsButtonCheckedByDefault;
+        }
+    }
+
+    function getDefaultRelationship(): string {
+        if (props.registrationData.childRelationship?.value) {
+            return props.registrationData.childRelationship.value;
+        }
+
+        if (props.registrationData.relationships && props.registrationData.relationships.length > 0) {
+            return props.registrationData.relationships[0].value ?? "";
+        }
+
+        return "";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onCancelClick(): void {
+        emit("registrationScreen", RegistrationScreen.EditFamily);
+    }
+
+    function onSaveClick(): void {
+        updateRegistrationData();
+
+        emit("registrationScreen", RegistrationScreen.EditFamily);
+    }
+
+    // #endregion
+
+    setInternalValues();
+    updateActions();
+</script>

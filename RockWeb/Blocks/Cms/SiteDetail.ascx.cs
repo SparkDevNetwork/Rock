@@ -99,8 +99,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "SiteId" ).AsInteger() );
@@ -110,6 +108,8 @@ namespace RockWeb.Blocks.Cms
             {
                 HideSecondaryBlocks( true );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -462,7 +462,6 @@ namespace RockWeb.Blocks.Cms
                 site.IsIndexEnabled = cbEnableIndexing.Checked;
                 site.IndexStartingLocation = tbIndexStartingLocation.Text;
                 site.EnableExclusiveRoutes = cbEnableExclusiveRoutes.Checked;
-                site.EnablePageViewGeoTracking = cbEnablePageViewGeoTracking.Checked;
                 site.DisablePredictableIds = cbDisablePredictableIds.Checked;
 
                 site.PageHeaderContent = cePageHeaderContent.Text;
@@ -928,7 +927,6 @@ namespace RockWeb.Blocks.Cms
             cbEnableIndexing.Checked = site.IsIndexEnabled;
             tbIndexStartingLocation.Text = site.IndexStartingLocation;
             cbEnableExclusiveRoutes.Checked = site.EnableExclusiveRoutes;
-            cbEnablePageViewGeoTracking.Checked = site.EnablePageViewGeoTracking;
             cbDisablePredictableIds.Checked = site.DisablePredictableIds;
 
             // disable the indexing features if indexing on site is disabled

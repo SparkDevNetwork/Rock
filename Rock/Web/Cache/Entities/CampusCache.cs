@@ -195,7 +195,8 @@ namespace Rock.Web.Cache
             get
             {
                 var serviceTimes = new List<ServiceTime>();
-                if ( string.IsNullOrWhiteSpace( RawServiceTimes ) ) return serviceTimes;
+                if ( string.IsNullOrWhiteSpace( RawServiceTimes ) )
+                    return serviceTimes;
 
                 var keyValues = RawServiceTimes.Split( new[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
 
@@ -213,6 +214,24 @@ namespace Rock.Web.Cache
                 return serviceTimes;
             }
         }
+
+        /// <summary>
+        /// Gets a <see cref="Rock.Web.Cache.DefinedValueCache"/> of the campus's status.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Web.Cache.DefinedValueCache"/> of the campus's status.
+        /// </value>
+        [DataMember]
+        public DefinedValueCache CampusStatusValue => CampusStatusValueId.HasValue ? DefinedValueCache.Get( CampusStatusValueId.Value ) : null;
+
+        /// <summary>
+        /// Gets a <see cref="Rock.Web.Cache.DefinedValueCache"/> of the campus's type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Web.Cache.DefinedValueCache"/> of the campus's type.
+        /// </value>
+        [DataMember]
+        public DefinedValueCache CampusTypeValue => CampusTypeValueId.HasValue ? DefinedValueCache.Get( CampusTypeValueId.Value ) : null;
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.Schedule"/> ids that are associated with this Campus.
@@ -279,6 +298,33 @@ namespace Rock.Web.Cache
         /// </value>
         public static int? SingleCampusId => SingleCampus?.Id;
 
+        /// <summary>
+        /// Gets or sets the opened date.
+        /// </summary>
+        /// <value>
+        /// The opened date.
+        /// </value>
+        [DataMember]
+        public DateTime? OpenedDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the closed date.
+        /// </summary>
+        /// <value>
+        /// The closed date.
+        /// </value>
+        [DataMember]
+        public DateTime? ClosedDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tithe metric.
+        /// </summary>
+        /// <value>
+        /// The tithe metric.
+        /// </value>
+        [DataMember]
+        public decimal? TitheMetric { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -320,7 +366,8 @@ namespace Rock.Web.Cache
             base.SetFromEntity( entity );
 
             var campus = entity as Campus;
-            if ( campus == null ) return;
+            if ( campus == null )
+                return;
 
             IsSystem = campus.IsSystem;
             Name = campus.Name;
@@ -339,6 +386,9 @@ namespace Rock.Web.Cache
             RawServiceTimes = campus.ServiceTimes;
             CampusScheduleIds = campus.CampusSchedules.Select( s => s.ScheduleId ).ToList();
             Order = campus.Order;
+            OpenedDate = campus.OpenedDate;
+            ClosedDate = campus.ClosedDate;
+            TitheMetric = campus.TitheMetric;
 
             Location = new CampusLocation( campus.Location );
         }

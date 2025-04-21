@@ -1,0 +1,84 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Badge class="pull-right" :badgeType="badgeType">
+        {{ countDownCharsRemaining }}
+    </Badge>
+</template>
+
+<script setup lang="ts">
+    /**
+     * CountDownPlugin - Adds a count-down badge component wherever this plugin is placed.
+     * The badge displays the character count remaining that can be entered.
+     *
+     * Note: This plugin does NOT validate or limit the number of characters that can be entered.
+     * Note: This plugin can display negative values.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <CountDownPlugin :modelValue="internalValue"
+     *                    :countDownMaxChars="countDownMaxChars" />
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import CountDownPlugin from "./NoteEditor/countDownPlugin.partial.obs";
+     * (/script)
+     */
+    import { PropType, computed } from "vue";
+    import Badge from "@Obsidian/Controls/badge.obs";
+    import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        countDownMaxChars: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    //#region Values
+
+    //#endregion
+
+    //#region Computed Values
+
+    const countDownCharsRemaining = computed<number>(() => {
+        // The countdown characters remaining can become negative.
+        // If max length is required, then add a max length rule.
+        return props.countDownMaxChars - props.modelValue.length;
+    });
+
+    const badgeType = computed<BadgeType | undefined>(() => {
+        if (countDownCharsRemaining.value >= 10) {
+            return;
+        }
+
+        if (countDownCharsRemaining.value >= 0) {
+            return BadgeType.Warning;
+        }
+
+        return BadgeType.Danger;
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    //#endregion
+
+    //#region Event Handlers
+
+    //#endregion
+
+    //#region Watchers
+
+    //#endregion
+</script>

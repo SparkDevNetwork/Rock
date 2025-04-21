@@ -145,17 +145,6 @@ namespace Rock.Model
                     PersonAttendanceHistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Attendance" );
                 }
 
-                // If we need to send a real-time notification then do so after
-                // this change has been committed to the database.
-                if ( ShouldSendRealTimeMessage() )
-                {
-                    RockContext.ExecuteAfterCommit( () =>
-                    {
-                        // Use the fast queue for this because it is real-time.
-                        new SendAttendanceRealTimeNotificationsTransaction( Entity.Guid, State == EntityContextState.Deleted ).Enqueue( true );
-                    } );
-                }
-
                 base.PreSave();
             }
 
@@ -223,6 +212,24 @@ namespace Rock.Model
                     }
                 }
 
+                // If we need to send a real-time notification then do so after
+                // this change has been committed to the database.
+                if ( ShouldSendRealTimeMessage() )
+                {
+                    // EF will null out this field when deleting, so we need to
+                    // snag it from the original values in that case.
+                    var personAliasId = State == EntityContextState.Deleted
+                        ? preSavePersonAliasId
+                        : Entity.PersonAliasId;
+
+                    if ( personAliasId.HasValue )
+                    {
+                        var attendanceState = new AttendanceService.AttendanceUpdatedState( Entity, personAliasId.Value, State );
+
+                        new SendAttendanceRealTimeNotificationsTransaction( attendanceState ).Enqueue( true );
+                    }
+                }
+
                 base.PostSave();
             }
 
@@ -253,6 +260,14 @@ namespace Rock.Model
                         return true;
                     }
                     else if ( Entity.PresentDateTime != ( DateTime? ) OriginalValues[nameof( Entity.PresentDateTime )] )
+                    {
+                        return true;
+                    }
+                    else if ( Entity.EndDateTime != ( DateTime? ) OriginalValues[nameof( Entity.EndDateTime )] )
+                    {
+                        return true;
+                    }
+                    else if ( Entity.CheckInStatus != ( CheckInStatus ) OriginalValues[nameof( Entity.CheckInStatus )] )
                     {
                         return true;
                     }

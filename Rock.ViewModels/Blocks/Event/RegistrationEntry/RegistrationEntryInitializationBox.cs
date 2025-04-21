@@ -93,12 +93,36 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         public string PluralRegistrantTerm { get; set; }
 
         /// <summary>
+        /// Gets or sets the fee term.
+        /// </summary>
+        /// <value>
+        /// The fee term.
+        /// </value>
+        public string FeeTerm { get; set; }
+
+        /// <summary>
         /// Gets or sets the plural fee term.
         /// </summary>
         /// <value>
         /// The plural fee term.
         /// </value>
         public string PluralFeeTerm { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the discount code term.
+        /// </summary>
+        /// <value>
+        /// The discount code term.
+        /// </value>
+        public string DiscountCodeTerm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the plural discount code term.
+        /// </summary>
+        /// <value>
+        /// The plural discount code term.
+        /// </value>
+        public string PluralDiscountCodeTerm { get; set; }
 
         /// <summary>
         /// Gets or sets the registrant forms.
@@ -445,5 +469,60 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         ///   <c>true</c> if [show SMS opt in]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowSmsOptIn { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether captcha support should be disabled for this block.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [disable captcha support]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisableCaptchaSupport { get; set; }
+
+        /// <summary>
+        /// Gets value indicating whether registrants should be able to pay their registration costs in multiple, scheduled installments.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if registrants should be able to pay their registration costs in multiple, scheduled installments; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPaymentPlanAllowed { get; set; }
+        
+        /// <summary>
+        /// Gets the payment deadline date.
+        /// </summary>
+        /// <value>
+        /// The payment deadline date.
+        /// </value>
+        public DateTimeOffset? PaymentDeadlineDate { get; set; }
+
+        /// <summary>
+        /// Gets the collection of payment plan frequencies from which a registrant can select.
+        /// </summary>
+        /// <value>
+        /// The collection of payment plan frequencies from which a registrant can select.
+        /// </value>
+        public List<ListItemBag> PaymentPlanFrequencies { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the payment plan has been configured.
+        /// </summary>
+        public bool IsPaymentPlanConfigured { get; set; }
+
+        /// <summary>
+        /// Gets or sets the currency information.
+        /// </summary>
+        /// <value>
+        /// The currency information.
+        /// </value>
+        public CurrencyInfoBag CurrencyInfo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the term for specifying which household or family a person is a member of.
+        /// </summary>
+        public string FamilyTerm { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether current family members are shown.
+        /// </summary>
+        public bool AreCurrentFamilyMembersShown { get; set; }
     }
 }

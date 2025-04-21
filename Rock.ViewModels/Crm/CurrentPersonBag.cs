@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+
 namespace Rock.ViewModels.Crm
 {
     /// <summary>
@@ -26,6 +28,24 @@ namespace Rock.ViewModels.Crm
         /// </summary>
         /// <value>The identifier key of the person.</value>
         public string IdKey { get; set; }
+
+        /// <summary>
+        /// Gets or set the unique identifier of the person.
+        /// </summary>
+        /// <value>The unique identifier of the person</value>
+        public Guid Guid { get; set; }
+
+        /// <summary>
+        /// Gets or set the identifier key of the person's primary alias.
+        /// </summary>
+        /// <value>The identifier key of the person's primary alias</value>
+        public string PrimaryAliasIdKey { get; set; }
+
+        /// <summary>
+        /// Gets or set the unique identifier of the person's primary alias.
+        /// </summary>
+        /// <value>The unique identifier of the person's primary alias</value>
+        public Guid PrimaryAliasGuid { get; set; }
 
         /// <summary>
         /// Gets or sets the first name.

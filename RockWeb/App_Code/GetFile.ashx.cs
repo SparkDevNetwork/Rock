@@ -42,21 +42,45 @@ namespace RockWeb
         /// <returns>An IAsyncResult that contains information about the status of the process.</returns>
         public IAsyncResult BeginProcessRequest( HttpContext context, AsyncCallback cb, object extraData )
         {
-            int fileId = context.Request.QueryString["id"].AsInteger();
-            Guid fileGuid = context.Request.QueryString["guid"].AsGuid();
+            var securitySettings = new SecuritySettingsService().SecuritySettings;
+            var disablePredictableIds = securitySettings.DisablePredictableIds;
 
-            if ( fileGuid != Guid.Empty )
+            if ( disablePredictableIds )
             {
-                return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileGuid );
-            }
-            else if ( fileId != 0 )
-            {
-                return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileId );
+                var fileIdKey = context.Request.QueryString["fileIdKey"];
+                if ( !string.IsNullOrEmpty( fileIdKey ) )
+                {
+                    int? fileId = IdHasher.Instance.GetId( fileIdKey );
+                    if ( fileId.HasValue )
+                    {
+                        return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileId.Value );
+                    }
+                }
+
+                var fileGuidString = context.Request.QueryString["guid"];
+                if ( !string.IsNullOrEmpty( fileGuidString ) )
+                {
+                    Guid fileGuid = new Guid( fileGuidString );
+                    return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileGuid );
+                }
+
             }
             else
             {
-                return new SendErrorDelegate( SendError ).BeginInvoke( context, 400, "File id key must be a guid or an int.", cb, extraData );
+                int fileId = context.Request.QueryString["id"].AsInteger();
+                Guid fileGuid = context.Request.QueryString["guid"].AsGuid();
+
+                if ( fileGuid != Guid.Empty )
+                {
+                    return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileGuid );
+                }
+                else if ( fileId != 0 )
+                {
+                    return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileId );
+                }
             }
+
+            return new SendErrorDelegate( SendError ).BeginInvoke( context, 400, "File id key must be a guid or an int.", cb, extraData );
         }
 
         /// <summary>
@@ -88,7 +112,9 @@ namespace RockWeb
                     // Use BinaryFileType.RequiresViewSecurity because checking security for every file is slow (~40ms+ per request)
                     if ( parentEntityAllowsView == null && requiresViewSecurity )
                     {
-                        if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                        var securityGrant = SecurityGrant.FromToken( context.Request.QueryString["securityGrant"] );
+
+                        if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) && securityGrant?.IsAccessGranted( binaryFile, Authorization.VIEW ) != true )
                         {
                             SendError( context, 403, "Not authorized to view file." );
                             return;

@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "Metric" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "1C5489C6-82F9-4967-8425-52545CE8AF90")]
     public partial class Metric : Model<Metric>
     {
@@ -215,6 +216,15 @@ namespace Rock.Model
         [DataMember]
         public UnitType UnitType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the measurement classification value identifier.
+        /// </summary>
+        /// <value>
+        /// The measurement classification value identifier.
+        /// </value>
+        [DataMember]
+        public int? MeasurementClassificationValueId { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -302,6 +312,15 @@ namespace Rock.Model
         [LavaVisible]
         public MetricNumericDataType NumericDataType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the measurement classification value.
+        /// </summary>
+        /// <value>
+        /// The measurement classification value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue MeasurementClassificationValue { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -338,6 +357,7 @@ namespace Rock.Model
             this.HasOptional( p => p.MetricChampionPersonAlias ).WithMany().HasForeignKey( p => p.MetricChampionPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.AdminPersonAlias ).WithMany().HasForeignKey( p => p.AdminPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.MeasurementClassificationValue ).WithMany().HasForeignKey( p => p.MeasurementClassificationValueId ).WillCascadeOnDelete( false );
         }
     }
 

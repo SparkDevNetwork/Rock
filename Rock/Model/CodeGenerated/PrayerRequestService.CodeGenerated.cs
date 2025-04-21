@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,24 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( PrayerRequest.PrayerRequestQueryableAttributeValue ), nameof( PrayerRequestAttributeValues ) )]
+    public partial class PrayerRequest
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<PrayerRequestQueryableAttributeValue> PrayerRequestAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class PrayerRequestQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -131,8 +150,11 @@ namespace Rock.Model
             target.IsUrgent = source.IsUrgent;
             target.LanguageValueId = source.LanguageValueId;
             target.LastName = source.LastName;
+            target.ModerationFlags = source.ModerationFlags;
+            target.OriginalRequest = source.OriginalRequest;
             target.PrayerCount = source.PrayerCount;
             target.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
+            target.SentimentEmotionValueId = source.SentimentEmotionValueId;
             target.Text = source.Text;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

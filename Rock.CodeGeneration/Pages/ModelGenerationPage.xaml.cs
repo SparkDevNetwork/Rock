@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -22,6 +21,7 @@ using System.Windows.Input;
 using Rock;
 using Rock.CodeGeneration.Utility;
 using Rock.CodeGeneration.XmlDoc;
+using Rock.Enums;
 using Rock.Utility;
 
 namespace Rock.CodeGeneration.Pages
@@ -122,17 +122,6 @@ namespace Rock.CodeGeneration.Pages
         }
         private string _restFolder;
 
-        public string ClientFolder
-        {
-            get => _clientFolder;
-            set
-            {
-                _clientFolder = value;
-                OnPropertyChanged();
-            }
-        }
-        private string _clientFolder;
-
         public string DatabaseFolder
         {
             get => _databaseFolder;
@@ -165,17 +154,6 @@ namespace Rock.CodeGeneration.Pages
             }
         }
         private bool _isRestChecked = true;
-
-        public bool IsClientChecked
-        {
-            get => _isClientChecked;
-            set
-            {
-                _isClientChecked = value;
-                OnPropertyChanged();
-            }
-        }
-        private bool _isClientChecked = true;
 
         public bool IsDatabaseProcsChecked
         {
@@ -306,7 +284,6 @@ namespace Rock.CodeGeneration.Pages
 
             ServiceFolder = Path.Combine( RootFolder().FullName, projectName );
             RestFolder = Path.Combine( RootFolder().FullName, projectName + ".Rest" );
-            ClientFolder = Path.Combine( RootFolder().FullName, projectName + ".Client" );
             DatabaseFolder = Path.Combine( RootFolder().FullName, "Database" );
 
             if ( projectName != "Rock" )
@@ -364,17 +341,6 @@ namespace Rock.CodeGeneration.Pages
                     {
                         bool allModelsAreSelected = _modelItems.Count == _modelItems.Count( i => i.IsChecked );
 
-                        if ( IsClientChecked && allModelsAreSelected )
-                        {
-                            var codeGenFolder = Path.Combine( ClientFolder, "CodeGenerated" );
-                            if ( Directory.Exists( codeGenFolder ) )
-                            {
-                                Directory.Delete( codeGenFolder, true );
-                            }
-
-                            Directory.CreateDirectory( Path.Combine( ClientFolder, "CodeGenerated" ) );
-                        }
-
                         if ( IsServiceChecked && allModelsAreSelected )
                         {
                             var codeGenFolder = Path.Combine( NamespaceFolder( ServiceFolder, "Rock.Model" ).FullName, "CodeGenerated" );
@@ -416,24 +382,17 @@ namespace Rock.CodeGeneration.Pages
 
                                 if ( IsRestChecked )
                                 {
-                                    WriteRESTFile( RestFolder, type );
+                                    WriteRESTV1File( RestFolder, type );
                                 }
                             }
+                        }
 
-                            if ( IsClientChecked )
-                            {
-                                WriteRockClientFile( ClientFolder, type );
-                            }
+                        if ( IsRestChecked )
+                        {
+                            WriteRestV2Files( _modelItems.Where( i => i.IsChecked ).Select( i => i.Item ), RestFolder, allModelsAreSelected );
                         }
 
                         var projectName = Path.GetFileNameWithoutExtension( AssemblyPath );
-
-                        if ( IsClientChecked )
-                        {
-                            WriteRockClientIncludeClientFiles( ClientFolder, _modelItems.Where( i => i.IsChecked ).Select( i => i.Item ).ToList() );
-                            WriteRockClientSystemGuidFiles( ClientFolder );
-                            WriteRockClientEnumsFile( ClientFolder );
-                        }
 
                         if ( IsDatabaseProcsChecked )
                         {
@@ -497,6 +456,7 @@ namespace Rock.CodeGeneration.Pages
             bool hasWarnings = false;
             StringBuilder rockObsoleteWarnings = new StringBuilder();
             StringBuilder rockGuidWarnings = new StringBuilder();
+            StringBuilder codeGenerateRestWarnings = new StringBuilder();
             Dictionary<string, string> rockGuids = new Dictionary<string, string>(); // GUID, Class/Method
             List<string> singletonClassVariablesWarnings = new List<string>();
             List<string> obsoleteReportList = new List<string>();
@@ -563,6 +523,17 @@ namespace Rock.CodeGeneration.Pages
                         }
                     }
 
+                    // See if this is an Entity that doesn't have a defined.
+                    if ( typeof( Data.IEntity ).IsAssignableFrom( type ) && !type.IsAbstract )
+                    {
+                        var attr = type.GetCustomAttribute<CodeGenerateRestAttribute>();
+
+                        if ( attr == null )
+                        {
+                            codeGenerateRestWarnings.AppendLine( $" - {type.FullName}" );
+                        }
+                    }
+
                     // get all members so we can see if there are warnings that we want to show
                     var memberList = type
                         .GetMembers( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static )
@@ -619,22 +590,26 @@ namespace Rock.CodeGeneration.Pages
                             "Rock.Extension.Component._typeName",
                             "Rock.Web.HttpModules.ResponseHeaders.Headers",
                             "Rock.Field.FieldType.QualifierUpdated",
+                            "Rock.Communication.Transport.Firebase._currentApp",
+                            "Rock.Communication.Transport.RockMobilePush._currentApp",
+                            "Rock.Extension.Component._logger",
 
-                             // Fields that probably should be fixed, but would take some time to figure out how to fix them.
-                             "Rock.Field.Types.CurrencyFieldType.CurrencyCodeDefinedValueId",
-                             "Rock.Field.Types.EnumFieldType`1._EnumValues",
-                             "Rock.Financial.TestGateway.MostRecentException",
-                             "Rock.Financial.TestRedirectionGateway.MostRecentException",
-                             "Rock.Security.BackgroundCheck.ProtectMyMinistry._httpStatusCode",
-                             "Rock.Security.ExternalAuthentication.Twitter._oauthToken",
-                             "Rock.Security.ExternalAuthentication.Twitter._oauthTokenSecret",
-                             "Rock.Security.ExternalAuthentication.Twitter._returnUrl",
-                             "Rock.UniversalSearch.IndexComponents.Elasticsearch._client",
-                             "Rock.Workflow.Action.AddStep._mergeFields",
-                             "Rock.Workflow.Action.PrayerRequestAdd._action",
-                             "Rock.Workflow.Action.PrayerRequestAdd._mergeField",
-                             "Rock.Workflow.Action.PrayerRequestAdd._rockContext",
-                             "Rock.Workflow.Action.PrayerRequestAdd._mergeFields"
+                            // Fields that probably should be fixed, but would take some time to figure out how to fix them.
+                            "Rock.Field.Types.CurrencyFieldType.CurrencyCodeDefinedValueId",
+                            "Rock.Field.Types.EnumFieldType`1._EnumValues",
+                            "Rock.Financial.TestGateway.MostRecentException",
+                            "Rock.Financial.TestRedirectionGateway.MostRecentException",
+                            "Rock.Security.BackgroundCheck.ProtectMyMinistry._httpStatusCode",
+                            "Rock.Security.ExternalAuthentication.Twitter._oauthToken",
+                            "Rock.Security.ExternalAuthentication.Twitter._oauthTokenSecret",
+                            "Rock.Security.ExternalAuthentication.Twitter._returnUrl",
+                            "Rock.UniversalSearch.IndexComponents.Elasticsearch._client",
+                            "Rock.Workflow.Action.AddStep._mergeFields",
+                            "Rock.Workflow.Action.PrayerRequestAdd._action",
+                            "Rock.Workflow.Action.PrayerRequestAdd._mergeField",
+                            "Rock.Workflow.Action.PrayerRequestAdd._rockContext",
+                            "Rock.Workflow.Action.PrayerRequestAdd._mergeFields",
+                            "Rock.Field.Types.PhoneNumberFieldType._defaultCountryCode",
                         };
 
                         if ( typeof( Rock.Field.FieldType ).IsAssignableFrom( type )
@@ -730,6 +705,14 @@ namespace Rock.CodeGeneration.Pages
                 warnings.AppendLine();
                 warnings.AppendLine( "[RockGuid] issues found." );
                 warnings.Append( rockGuidWarnings );
+            }
+
+            if ( codeGenerateRestWarnings.Length > 0 )
+            {
+                hasWarnings = true;
+                warnings.AppendLine();
+                warnings.AppendLine( "The following types are missing [CodeGenerateRest] attributes:" );
+                warnings.Append( codeGenerateRestWarnings );
             }
 
             if ( IsReportObsoleteChecked )
@@ -855,6 +838,12 @@ GO
                 string viewName = readerViews["TABLE_NAME"] as string;
                 string script = readerViews["VIEW_DEFINITION"] as string;
 
+                // Skip the dynamically generated views for attribute values.
+                if ( viewName.StartsWith( "AttributeValue_" ) )
+                {
+                    continue;
+                }
+
                 string filePath = Path.Combine( databaseRootFolder, "Views", viewName + ".sql" );
                 Directory.CreateDirectory( Path.GetDirectoryName( filePath ) );
 
@@ -949,7 +938,11 @@ GO
                 dbContextFullName = dbContextFullName.Replace( "Rock.Data.", "" );
             }
 
-            var properties = GetEntityProperties( type, false, true, true );
+            var hasQueryableAttributes = typeof( Rock.Attribute.IHasAttributes ).IsAssignableFrom( type )
+                && type != typeof( Rock.Model.Attribute )
+                && type != typeof( Rock.Model.AttributeValue );
+
+            var properties = GetEntityProperties( type, true, true );
 
             var sb = new StringBuilder();
             sb.AppendLine( "//------------------------------------------------------------------------------" );
@@ -976,6 +969,12 @@ GO
             sb.AppendLine( "" );
 
             sb.AppendLine( "using System;" );
+
+            if ( hasQueryableAttributes )
+            {
+                sb.AppendLine( "using System.Collections.Generic;" );
+            }
+
             sb.AppendLine( "using System.Linq;" );
             sb.AppendLine( "" );
             sb.AppendLine( @"using Rock.Data;
@@ -1001,6 +1000,29 @@ GO
             sb.Append( GetCanDeleteCode( rootFolder, type ) );
 
             sb.AppendLine( "    }" );
+
+            if ( hasQueryableAttributes )
+            {
+                sb.AppendLine();
+                sb.AppendLine( $"    [HasQueryableAttributes( typeof( {type.Name}.{type.Name}QueryableAttributeValue ), nameof( {type.Name}AttributeValues ) )]" );
+                sb.AppendLine( $"    public partial class {type.Name}" );
+                sb.AppendLine( "    {" );
+
+                sb.AppendLine( "        /// <summary>" );
+                sb.AppendLine( "        /// Gets the entity attribute values. This should only be used inside" );
+                sb.AppendLine( "        /// LINQ statements when building a where clause for the query. This" );
+                sb.AppendLine( "        /// property should only be used inside LINQ statements for filtering" );
+                sb.AppendLine( "        /// or selecting values. Do <b>not</b> use it for accessing the" );
+                sb.AppendLine( "        /// attributes after the entity has been loaded." );
+                sb.AppendLine( "        /// </summary>" );
+                sb.AppendLine( $"        public virtual ICollection<{type.Name}QueryableAttributeValue> {type.Name}AttributeValues {{ get; set; }} " );
+                sb.AppendLine();
+                sb.AppendLine( "        /// <inheritdoc/>" );
+                sb.AppendLine( $"        public class {type.Name}QueryableAttributeValue : QueryableAttributeValue" );
+                sb.AppendLine( "        {" );
+                sb.AppendLine( "        }" );
+                sb.AppendLine( "    }" );
+            }
 
             sb.AppendFormat( @"
     /// <summary>
@@ -1414,11 +1436,11 @@ GO
         private Dictionary<string, Guid> _restControllerGuidLookupFromDatabase = null;
 
         /// <summary>
-        /// Writes the REST file for a given type
+        /// Writes the REST v1 file for a given type
         /// </summary>
         /// <param name="rootFolder"></param>
         /// <param name="type"></param>
-        private void WriteRESTFile( string rootFolder, Type type )
+        private void WriteRESTV1File( string rootFolder, Type type )
         {
             if ( _restControllerGuidLookupFromDatabase == null )
             {
@@ -1512,6 +1534,85 @@ GO
         }
 
         /// <summary>
+        /// Writes the rest v2 files for the specified set of models. If the
+        /// <paramref name="removeOldFiles"/> parameter is <c>true</c> then any
+        /// existing files that were not generated by this call will be removed
+        /// from the file system and from the project.
+        /// </summary>
+        /// <param name="modelTypes">The model types to be generated.</param>
+        /// <param name="rootFolder">The root Rock.Rest folder.</param>
+        /// <param name="removeOldFiles">if set to <c>true</c> then old files will be removed.</param>
+        private void WriteRestV2Files( IEnumerable<Type> modelTypes, string rootFolder, bool removeOldFiles )
+        {
+            var codeGeneratedDirectory = Path.Combine( rootFolder, "v2", "Models", "CodeGenerated" );
+            var filesAdded = new List<string>();
+            var filesWritten = new List<string>();
+            var filesRemoved = new List<string>();
+            var generator = new FileGenerators.RestV2ApiGenerator();
+            var solutionPath = SupportTools.GetSolutionPath();
+
+            foreach ( var modelType in modelTypes )
+            {
+                var codeGenerateRestAttribute = modelType.GetCustomAttribute<CodeGenerateRestAttribute>();
+
+                if ( codeGenerateRestAttribute == null || codeGenerateRestAttribute.Endpoints == CodeGenerateRestEndpoint.None )
+                {
+                    continue;
+                }
+
+                var filename = Path.Combine( codeGeneratedDirectory, $"{modelType.Name.Pluralize()}Controller.CodeGenerated.cs" );
+                var exists = File.Exists( filename );
+                var originalContent = exists ? File.ReadAllText( filename ) : null;
+
+                var content = generator.GenerateStandardFileContent( modelType.Name, modelType.FullName, codeGenerateRestAttribute.Endpoints, codeGenerateRestAttribute.DisableEntitySecurity );
+
+                WriteFile( new FileInfo( filename ), new StringBuilder( content ) );
+                filesWritten.Add( filename );
+
+                if ( !exists )
+                {
+                    filesAdded.Add( filename );
+                }
+            }
+
+            if ( removeOldFiles )
+            {
+                foreach ( var filename in Directory.EnumerateFiles( codeGeneratedDirectory, "*.cs" ) )
+                {
+                    if ( !filesWritten.Any( f => Path.GetFileName( f ) == Path.GetFileName( filename ) ) )
+                    {
+                        filesRemoved.Add( filename );
+                        File.Delete( filename );
+                    }
+                }
+            }
+
+            if ( solutionPath == null )
+            {
+                return;
+            }
+
+            using ( var solution = SolutionHelper.LoadSolution( Path.Combine( solutionPath, "Rock.sln" ) ) )
+            {
+                // For each file that was created, make sure it
+                // has been added to the project file automatically.
+                foreach ( var filename in filesAdded )
+                {
+                    solution.AddCompileFileToProject( "Rock.Rest", filename );
+                }
+
+                // For each file that was removed, make sure it
+                // has been removed from the project file.
+                foreach ( var filename in filesRemoved )
+                {
+                    solution.RemoveFileFromProject( "Rock.Rest", filename );
+                }
+
+                solution.Save();
+            }
+        }
+
+        /// <summary>
         /// Writes the Service file for a given type
         /// </summary>
         /// <param name="rootFolder"></param>
@@ -1554,41 +1655,6 @@ GO
             }
 
             return new DirectoryInfo( Path.Combine( rootFolder, objectNamespace.Replace( '.', '\\' ) ) );
-        }
-
-        /// <summary>
-        /// Get the property type name.  Will handle nullable and complex generic types.
-        /// </summary>
-        /// <param name="propertyType"></param>
-        /// <returns></returns>
-        private string PropertyTypeName( Type propertyType )
-        {
-            if ( propertyType.IsGenericType )
-            {
-                if ( propertyType.GetGenericTypeDefinition() == typeof( Nullable<> ) )
-                {
-                    return GetKeyName( propertyType.GetGenericArguments()[0] ) + "?";
-                }
-                else
-                {
-                    var sb = new StringBuilder();
-                    sb.AppendFormat( "{0}<", propertyType.Name.Split( ( char ) 96 )[0] );
-
-                    foreach ( var argType in propertyType.GetGenericArguments() )
-                    {
-                        sb.AppendFormat( "{0}, ", PropertyTypeName( argType ) );
-                    }
-
-                    sb.Remove( sb.Length - 2, 2 );
-                    sb.Append( ">" );
-
-                    return sb.ToString();
-                }
-            }
-            else
-            {
-                return GetKeyName( propertyType );
-            }
         }
 
         /// <summary>
@@ -1647,40 +1713,16 @@ GO
             return typeName;
         }
 
-        private string GetKeyName( Type type )
-        {
-            if ( type.IsEnum )
-            {
-                if ( type.Namespace == "Rock.Model" || type.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null )
-                {
-                    return "Rock.Client.Enums." + type.Name;
-                }
-                else if ( type.Namespace?.StartsWith( "Rock.Enums." ) == true )
-                {
-                    return $"Rock.Client.Enums.{type.Namespace.Substring( 11 )}.{type.Name}";
-                }
-                else
-                {
-                    return GetKeyName( "Int32" ) + " /* " + type.Name + "*/";
-                }
-            }
-            else
-            {
-                return GetKeyName( type.Name );
-            }
-        }
-
         private List<string> entityPropertyShouldBeVirtualWarnings = null;
 
         /// <summary>
         /// Gets the entity properties.
         /// </summary>
         /// <param name="type">The type.</param>
-        /// <param name="includeRockClientIncludes">if set to <c>true</c> [include rock client includes].</param>
         /// <param name="includeObsolete">if set to <c>true</c> [include obsolete].</param>
         /// <param name="reportVirtualPropertyWarnings">if set to <c>true</c> [report virtual property warnings].</param>
         /// <returns></returns>
-        private Dictionary<string, PropertyInfo> GetEntityProperties( Type type, bool includeRockClientIncludes, bool includeObsolete, bool reportVirtualPropertyWarnings )
+        private Dictionary<string, PropertyInfo> GetEntityProperties( Type type, bool includeObsolete, bool reportVirtualPropertyWarnings )
         {
             var properties = new Dictionary<string, PropertyInfo>();
 
@@ -1689,12 +1731,6 @@ GO
 
             foreach ( var property in typeProperties )
             {
-                bool include = false;
-                if ( includeRockClientIncludes && property.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null )
-                {
-                    include = true;
-                }
-
                 var getMethod = property.GetGetMethod();
                 if ( getMethod == null )
                 {
@@ -1703,7 +1739,7 @@ GO
 
                 if ( getMethod.IsVirtual )
                 {
-                    if ( !include && !getMethod.IsFinal )
+                    if ( !getMethod.IsFinal )
                     {
                         continue;
                     }
@@ -1717,7 +1753,7 @@ GO
                             break;
                         }
                     }
-                    if ( !include && !interfaceProperty )
+                    if ( !interfaceProperty )
                     {
                         continue;
                     }
@@ -1747,478 +1783,6 @@ GO
             return properties;
         }
 
-        /// <summary>
-        /// Writes the rock client model enums file.
-        /// </summary>
-        /// <param name="rootFolder">The root folder.</param>
-        private void WriteRockClientEnumsFile( string rootFolder )
-        {
-            var rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
-            var enumAssembly = typeof( Rock.Model.Gender ).Assembly;
-
-            var enumGroups = rockAssembly.GetTypes().Where( a => a.IsEnum )
-                .Union( enumAssembly.GetTypes().Where( a => a.IsEnum ) )
-                .Where( e => e.Namespace == "Rock.Model"
-                    || e.Namespace?.StartsWith( "Rock.Enums.") == true
-                    || e.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null )
-                .OrderBy( a => a.Name )
-                .ToList()
-                .GroupBy( e => e.Assembly == rockAssembly ? "Rock.Model" : e.Namespace );
-
-
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine( "//------------------------------------------------------------------------------" );
-            sb.AppendLine( "// <auto-generated>" );
-            sb.AppendLine( "//     This code was generated by the Rock.CodeGeneration project" );
-            sb.AppendLine( "//     Changes to this file will be lost when the code is regenerated." );
-            sb.AppendLine( "// </auto-generated>" );
-            sb.AppendLine( "//------------------------------------------------------------------------------" );
-            sb.AppendLine( "// <copyright>" );
-            sb.AppendLine( "// Copyright by the Spark Development Network" );
-            sb.AppendLine( "//" );
-            sb.AppendLine( "// Licensed under the Rock Community License (the \"License\");" );
-            sb.AppendLine( "// you may not use this file except in compliance with the License." );
-            sb.AppendLine( "// You may obtain a copy of the License at" );
-            sb.AppendLine( "//" );
-            sb.AppendLine( "// http://www.rockrms.com/license" );
-            sb.AppendLine( "//" );
-            sb.AppendLine( "// Unless required by applicable law or agreed to in writing, software" );
-            sb.AppendLine( "// distributed under the License is distributed on an \"AS IS\" BASIS," );
-            sb.AppendLine( "// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied." );
-            sb.AppendLine( "// See the License for the specific language governing permissions and" );
-            sb.AppendLine( "// limitations under the License." );
-            sb.AppendLine( "// </copyright>" );
-            sb.AppendLine( "//" );
-            sb.AppendLine( "using System;" );
-            sb.AppendLine( "using System.Collections.Generic;" );
-            sb.AppendLine( "" );
-            sb.AppendLine( "#pragma warning disable CS1591" );
-            sb.AppendLine( "" );
-
-            foreach ( var enums in enumGroups )
-            {
-                var namespaceSuffix = string.Empty;
-
-                if ( enums.Key?.StartsWith( "Rock.Enums." ) == true )
-                {
-                    namespaceSuffix = enums.Key.Substring( 10 );
-                }
-
-                sb.AppendLine( $"namespace Rock.Client.Enums{namespaceSuffix}" );
-                sb.AppendLine( "{" );
-
-                foreach ( var enumType in enums )
-                {
-                    sb.AppendLine( "    /// <summary>" );
-                    sb.AppendLine( "    /// </summary>" );
-                    if ( enumType.GetCustomAttribute<FlagsAttribute>() != null )
-                    {
-                        sb.AppendLine( "    [Flags]" );
-                    }
-                    sb.AppendFormat( "    public enum {0}" + Environment.NewLine, enumType.Name );
-                    sb.AppendLine( "    {" );
-                    var enumValues = Enum.GetValues( enumType );
-                    foreach ( var enumValueName in Enum.GetNames( enumType ) )
-                    {
-                        // mark Obsolete Enum values
-                        object value = Enum.Parse( enumType, enumValueName );
-                        var fieldInfo = value.GetType().GetField( enumValueName );
-                        var obsolete = fieldInfo?.GetCustomAttribute<ObsoleteAttribute>();
-
-                        if ( obsolete != null )
-                        {
-                            sb.AppendLine();
-                            sb.AppendLine( $"        [Obsolete( \"{obsolete.Message}\", {obsolete.IsError.ToTrueFalse().ToLower()} )]" );
-                        }
-
-                        int enumValue = ( int ) Convert.ChangeType( Enum.Parse( enumType, enumValueName ), typeof( int ) );
-                        string enumValueParam = enumValue >= 0 ? " = 0x" + enumValue.ToString( "x" ) : " = " + enumValue.ToString();
-                        sb.AppendFormat( "        {0}{1},", enumValueName, enumValueParam );
-                        sb.AppendLine( "" );
-                    }
-
-                    sb.AppendLine( "    }" );
-                    sb.AppendLine( "" );
-                }
-
-                sb.AppendLine( "}" );
-                sb.AppendLine( "" );
-            }
-
-            sb.AppendLine( "#pragma warning restore CS1591" );
-
-            var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated\\Enums", "RockEnums.cs" ) );
-            WriteFile( file, sb );
-        }
-
-        /// <summary>
-        /// Writes the rock client system unique identifier files.      /// </summary>
-        /// <param name="rootFolder">The root folder.</param>
-        private void WriteRockClientSystemGuidFiles( string rootFolder )
-        {
-            var rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine( "//------------------------------------------------------------------------------" );
-            sb.AppendLine( "// <auto-generated>" );
-            sb.AppendLine( "//     This code was generated by the Rock.CodeGeneration project" );
-            sb.AppendLine( "//     Changes to this file will be lost when the code is regenerated." );
-            sb.AppendLine( "// </auto-generated>" );
-            sb.AppendLine( "//------------------------------------------------------------------------------" );
-            sb.AppendLine( "// <copyright>" );
-            sb.AppendLine( "// Copyright by the Spark Development Network" );
-            sb.AppendLine( "//" );
-            sb.AppendLine( "// Licensed under the Rock Community License (the \"License\");" );
-            sb.AppendLine( "// you may not use this file except in compliance with the License." );
-            sb.AppendLine( "// You may obtain a copy of the License at" );
-            sb.AppendLine( "//" );
-            sb.AppendLine( "// http://www.rockrms.com/license" );
-            sb.AppendLine( "//" );
-            sb.AppendLine( "// Unless required by applicable law or agreed to in writing, software" );
-            sb.AppendLine( "// distributed under the License is distributed on an \"AS IS\" BASIS," );
-            sb.AppendLine( "// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied." );
-            sb.AppendLine( "// See the License for the specific language governing permissions and" );
-            sb.AppendLine( "// limitations under the License." );
-            sb.AppendLine( "// </copyright>" );
-            sb.AppendLine( "" );
-            sb.AppendLine( "using System;" );
-            sb.AppendLine( "using System.Collections.Generic;" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "namespace Rock.Client.SystemGuid" );
-            sb.AppendLine( "{" );
-            sb.AppendLine( "    #pragma warning disable CS1591" );
-
-            var systemGuidTypes = CodeGenHelpers.GetSystemGuidTypes( rockAssembly );
-
-            foreach ( var systemGuidType in systemGuidTypes )
-            {
-                sb.AppendLine( "    /// <summary>" );
-                sb.AppendLine( "    /// </summary>" );
-                sb.AppendFormat( "    public class {0}" + Environment.NewLine, systemGuidType.Name );
-                sb.AppendLine( "    {" );
-                foreach ( var field in systemGuidType.GetFields().OrderBy( a => a.Name ) )
-                {
-                    sb.AppendFormat( "        public const string {0} = \"{1}\";", field.Name, field.GetValue( systemGuidType ) );
-                    sb.AppendLine( "" );
-                }
-
-                sb.AppendLine( "    }" );
-                sb.AppendLine( "" );
-            }
-
-            sb.AppendLine( "    #pragma warning restore CS1591" );
-            sb.AppendLine( "}" );
-
-            var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated\\SystemGuid", "RockSystemGuids.cs" ) );
-            WriteFile( file, sb );
-        }
-
-        /// <summary>
-        /// Writes the rock client include client files.
-        /// </summary>
-        /// <param name="rootFolder">The root folder.</param>
-        /// <param name="alreadyIncludedTypes">The already included types.</param>
-        private void WriteRockClientIncludeClientFiles( string rootFolder, IEnumerable<Type> alreadyIncludedTypes )
-        {
-            var rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
-            var rockRestAssembly = typeof( Rock.Rest.ApiController<> ).Assembly;
-            var rockClientIncludeAttributeTypes = rockAssembly.GetTypes().Where( a => a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null )
-                    .Union( rockRestAssembly.GetTypes().Where( a => a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null ) ).OrderBy( a => a.Name ).ToList();
-
-            foreach ( var rockClientIncludeType in rockClientIncludeAttributeTypes )
-            {
-                if ( !alreadyIncludedTypes.Any( a => a == rockClientIncludeType ) )
-                {
-                    WriteRockClientFile( rootFolder, rockClientIncludeType );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Writes the DTO file for a given type
-        /// </summary>
-        /// <param name="rootFolder"></param>
-        /// <param name="type"></param>
-        private void WriteRockClientFile( string rootFolder, Type type )
-        {
-            // make a copy of the EntityProperties since we are deleting some for this method
-            var entityProperties = GetEntityProperties( type, true, true, false ).ToDictionary( k => k.Key, v => v.Value );
-
-            var dataMembers = type.GetProperties().SortByStandardOrder()
-                .Where( a => a.GetCustomAttribute<DataMemberAttribute>() != null )
-                .Where( a => a.GetCustomAttribute<ObsoleteAttribute>() == null )
-                .Where( a => ( a.GetCustomAttribute<NotMappedAttribute>() == null || a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null ) )
-                .Where( a => !entityProperties.Keys.Contains( a.Name ) );
-
-            var rockClientIncludeAttribute = type.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
-            string comments = null;
-
-            if ( rockClientIncludeAttribute != null )
-            {
-                comments = rockClientIncludeAttribute.DocumentationMessage;
-            }
-
-            if ( !entityProperties.Any() && !dataMembers.Any() )
-            {
-                return;
-            }
-
-            string lcName = type.Name.Substring( 0, 1 ).ToLower() + type.Name.Substring( 1 );
-
-            bool isSecured = typeof( Rock.Security.ISecured ).IsAssignableFrom( type );
-
-            var sb = new StringBuilder();
-
-            sb.AppendLine( "//------------------------------------------------------------------------------" );
-            sb.AppendLine( "// <auto-generated>" );
-            sb.AppendLine( "//     This code was generated by the Rock.CodeGeneration project" );
-            sb.AppendLine( "//     Changes to this file will be lost when the code is regenerated." );
-            sb.AppendLine( "// </auto-generated>" );
-            sb.AppendLine( "//------------------------------------------------------------------------------" );
-            sb.AppendLine( "// <copyright>" );
-            sb.AppendLine( "// Copyright by the Spark Development Network" );
-            sb.AppendLine( "//" );
-            sb.AppendLine( "// Licensed under the Rock Community License (the \"License\");" );
-            sb.AppendLine( "// you may not use this file except in compliance with the License." );
-            sb.AppendLine( "// You may obtain a copy of the License at" );
-            sb.AppendLine( "//" );
-            sb.AppendLine( "// http://www.rockrms.com/license" );
-            sb.AppendLine( "//" );
-            sb.AppendLine( "// Unless required by applicable law or agreed to in writing, software" );
-            sb.AppendLine( "// distributed under the License is distributed on an \"AS IS\" BASIS," );
-            sb.AppendLine( "// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied." );
-            sb.AppendLine( "// See the License for the specific language governing permissions and" );
-            sb.AppendLine( "// limitations under the License." );
-            sb.AppendLine( "// </copyright>" );
-            sb.AppendLine( "//" );
-            sb.AppendLine( "using System;" );
-            sb.AppendLine( "using System.Collections.Generic;" );
-            sb.AppendLine( "" );
-            sb.AppendLine( "" );
-
-            sb.AppendFormat( "namespace Rock.Client" + Environment.NewLine, type.Namespace );
-            sb.AppendLine( "{" );
-
-            sb.AppendLine( "    /// <summary>" );
-
-
-            if ( !string.IsNullOrWhiteSpace( comments ) )
-            {
-                sb.AppendFormat( "    /// {0}" + Environment.NewLine, comments );
-            }
-            else
-            {
-                sb.AppendFormat( "    /// Base client model for {0} that only includes the non-virtual fields. Use this for PUT/POSTs" + Environment.NewLine, type.Name );
-            }
-
-            sb.AppendLine( "    /// </summary>" );
-
-            sb.AppendFormat( "    public partial class {0}Entity" + Environment.NewLine, type.Name );
-            sb.AppendLine( "    {" );
-
-            foreach ( var keyVal in entityProperties )
-            {
-                var propertyName = keyVal.Key;
-                var propertyInfo = keyVal.Value;
-                ObsoleteAttribute obsolete = propertyInfo.GetCustomAttribute<ObsoleteAttribute>();
-                RockObsolete rockObsolete = propertyInfo.GetCustomAttribute<RockObsolete>();
-                var propertyRockClientIncludeAttribute = propertyInfo.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
-                string propertyComments = null;
-
-                if ( propertyRockClientIncludeAttribute != null )
-                {
-                    propertyComments = propertyRockClientIncludeAttribute.DocumentationMessage;
-                }
-
-                if ( !string.IsNullOrWhiteSpace( propertyComments ) )
-                {
-                    sb.AppendLine( "        /// <summary>" );
-                    sb.AppendFormat( "        /// {0}" + Environment.NewLine, propertyComments );
-                    sb.AppendLine( "        /// </summary>" );
-                }
-                else
-                {
-                    sb.AppendLine( "        /// <summary />" );
-                }
-
-                if ( obsolete != null )
-                {
-                    if ( rockObsolete != null )
-                    {
-                        // [RockObsolete( "1.9" )]
-                        sb.AppendLine( $"        // Made Obsolete in Rock \"{rockObsolete.Version}\"" );
-                    }
-
-                    //[Obsolete( "Use PreventInactivePeople instead.", true )]
-                    sb.AppendLine( $"        [Obsolete( \"{obsolete.Message}\", {obsolete.IsError.ToTrueFalse().ToLower()} )]" );
-                }
-
-                // if the property has auto-property ( ex: IsActive {get; set) = true;) lets put the same thing on the code generated rock.client class
-                Type[] autoPropertyTypesToCheck = new Type[] { typeof( string ), typeof( bool ), typeof( int ), typeof( bool? ), typeof( int? ) };
-                object autoPropertyValue = null;
-                if ( autoPropertyTypesToCheck.Contains( propertyInfo.PropertyType ) || propertyInfo.PropertyType.IsEnum )
-                {
-                    // create an instance of the type to detect any auto-properties that have a default value set
-                    object typeInstance = null;
-                    if ( type.GetConstructor( new Type[0] ) != null )
-                    {
-                        typeInstance = Activator.CreateInstance( type );
-                    }
-
-                    if ( typeInstance != null )
-                    {
-
-                        // we can rule out the existence of the autoProperty if the getter doesn't have CompilerGeneratedAttribute
-                        //if ( propertyInfo.GetGetMethod().GetCustomAttribute<CompilerGeneratedAttribute>() != null )
-                        {
-                            autoPropertyValue = propertyInfo.GetValue( typeInstance );
-                        }
-                    }
-                }
-
-                sb.Append( $"        public {this.PropertyTypeName( propertyInfo.PropertyType )} {propertyName} {{ get; set; }}" );
-
-                if ( autoPropertyValue != null )
-                {
-                    string defaultValueCode = null;
-                    if ( autoPropertyValue is string )
-                    {
-                        var escapedDefaultValue = ( autoPropertyValue as string ).Replace( "\"", "\"\"" );
-                        defaultValueCode = $"@\"{ escapedDefaultValue}\"";
-                    }
-                    else if ( autoPropertyValue is bool )
-                    {
-                        if ( ( bool ) autoPropertyValue != false )
-                        {
-                            defaultValueCode = ( bool ) autoPropertyValue ? "true" : "false";
-                        }
-                    }
-                    else if ( autoPropertyValue is int )
-                    {
-                        if ( ( int ) autoPropertyValue != 0 )
-                        {
-                            defaultValueCode = autoPropertyValue.ToString();
-                        }
-                    }
-                    else if ( autoPropertyValue.GetType().IsEnum )
-                    {
-                        if ( ( int ) autoPropertyValue != 0 )
-                        {
-                            defaultValueCode = $"Rock.Client.Enums.{autoPropertyValue.GetType().Name}.{autoPropertyValue}";
-                        }
-                    }
-
-                    if ( defaultValueCode != null )
-                    {
-                        sb.Append( $" = {defaultValueCode};" );
-                    }
-                }
-
-                sb.AppendLine( "" );
-
-                sb.AppendLine( "" );
-            }
-
-            sb.AppendFormat(
-        @"        /// <summary>
-        /// Copies the base properties from a source {0} object
-        /// </summary>
-        /// <param name=""source"">The source.</param>
-        public void CopyPropertiesFrom( {0} source )
-        {{
-", type.Name );
-
-            foreach ( var keyVal in entityProperties )
-            {
-
-                var obsolete = keyVal.Value.GetCustomAttribute<ObsoleteAttribute>();
-
-                // wrap with a pragma to disable the obsolete warning (since we do want to copy obsolete values when cloning, unless this is obsolete.IsError )
-                if ( obsolete != null )
-                {
-                    if ( obsolete.IsError == false )
-                    {
-                        sb.AppendLine( $"            #pragma warning disable 612, 618" );
-                        sb.AppendLine( $"            this.{keyVal.Key} = source.{keyVal.Key};" );
-                        sb.AppendLine( $"            #pragma warning restore 612, 618" );
-                    }
-                }
-                else
-                {
-                    sb.AppendLine( $"            this.{keyVal.Key} = source.{keyVal.Key};" );
-                }
-            }
-
-            sb.Append( @"
-        }
-" );
-
-            sb.AppendLine( "    }" );
-
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "    /// <summary>" );
-
-            if ( !string.IsNullOrWhiteSpace( comments ) )
-            {
-                sb.AppendFormat( "    /// {0}" + Environment.NewLine, comments );
-            }
-            else
-            {
-                sb.AppendFormat( "    /// Client model for {0} that includes all the fields that are available for GETs. Use this for GETs (use {0}Entity for POST/PUTs)" + Environment.NewLine, type.Name );
-            }
-
-            sb.AppendLine( "    /// </summary>" );
-
-            sb.AppendFormat( "    public partial class {0} : {0}Entity" + Environment.NewLine, type.Name );
-            sb.AppendLine( "    {" );
-
-            foreach ( var dataMember in dataMembers )
-            {
-                var dataMemberRockClientIncludeAttribute = dataMember.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
-                string dataMemberComments = null;
-
-                if ( dataMemberRockClientIncludeAttribute != null )
-                {
-                    dataMemberComments = dataMemberRockClientIncludeAttribute.DocumentationMessage;
-                }
-
-                if ( !string.IsNullOrWhiteSpace( dataMemberComments ) )
-                {
-                    sb.AppendLine( "        /// <summary>" );
-                    sb.AppendFormat( "        /// {0}" + Environment.NewLine, dataMemberComments );
-                    sb.AppendLine( "        /// </summary>" );
-                }
-                else
-                {
-                    sb.AppendLine( "        /// <summary />" );
-                }
-
-                sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, PropertyTypeName( dataMember.PropertyType ), dataMember.Name );
-                sb.AppendLine( "" );
-            }
-
-            // if this is a IHasAttributes type, generate Attribute/AttributeValues since they can be fetched thru REST when ?loadAttributes is specified
-            if ( typeof( Rock.Attribute.IHasAttributes ).IsAssignableFrom( type ) )
-            {
-                sb.AppendLine( "        /// <summary>" );
-                sb.AppendLine( "        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' " );
-                sb.AppendLine( "        /// </summary>" );
-                sb.AppendLine( "        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }" );
-                sb.AppendLine( "" );
-                sb.AppendLine( "        /// <summary>" );
-                sb.AppendLine( "        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' " );
-                sb.AppendLine( "        /// </summary>" );
-                sb.AppendLine( "        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }" );
-            }
-
-            sb.AppendLine( "    }" );
-            sb.AppendLine( "}" );
-
-            var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated", type.Name + ".cs" ) );
-            WriteFile( file, sb );
-        }
-
         private void ServiceFolderTextBox_MouseDoubleClick( object sender, MouseButtonEventArgs e )
         {
             _fbdOutput.SelectedPath = ServiceFolder;
@@ -2234,15 +1798,6 @@ GO
             if ( _fbdOutput.ShowDialog() == System.Windows.Forms.DialogResult.OK )
             {
                 RestFolder = _fbdOutput.SelectedPath;
-            }
-        }
-
-        private void ClientFolderTextBox_MouseDoubleClick( object sender, MouseButtonEventArgs e )
-        {
-            _fbdOutput.SelectedPath = ClientFolder;
-            if ( _fbdOutput.ShowDialog() == System.Windows.Forms.DialogResult.OK )
-            {
-                ClientFolder = _fbdOutput.SelectedPath;
             }
         }
 

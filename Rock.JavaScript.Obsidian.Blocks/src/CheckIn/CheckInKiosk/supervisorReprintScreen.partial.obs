@@ -1,0 +1,195 @@
+<template>
+    <div class="supervisor-reprint-screen">
+        <MainPanel title="Reprint Labels"
+                   subtitle="Select an individual below to reprint their labels."
+                   :configuration="configuration">
+            <!--
+                The form is here to prevent iOS from causing the Return key
+                to become a Go key and triggering a WebForms postback.
+            -->
+            <RockForm>
+                <TextBox v-model="searchTerm"
+                         class="search-term"
+                         placeholder="Search" />
+            </RockForm>
+
+            <div class="button-list">
+                <RockButton v-for="attendance in filteredAttendances"
+                            btnType="primary"
+                            class="attendance-button"
+                            autoDisable
+                            @click="onPrintClick(attendance.id)">
+                    <span class="title">
+                        <span class="name">{{ attendance.nickName }} {{ attendance.lastName }}</span>
+
+                        <span class="details">
+                            <span class="security-code label label-info">{{ attendance.securityCode }}</span>
+                            <span class="group label label-info">{{ attendance.group?.name }}</span>
+                            <span class="location label label-info">{{ attendance.location?.name }}</span>
+                            <span class="schedule label label-info">{{ attendance.schedule?.name }}</span>
+                        </span>
+                    </span>
+                </RockButton>
+            </div>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { computed, PropType, ref, shallowRef } from "vue";
+    import { SupervisorScreen, SupervisorScreenData, KioskButton } from "./types.partial";
+    import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
+    import { printLabels, printLegacyLabels } from "./utils.partial";
+    import { PrintResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/printResponseBag";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+
+    type ReprintAttendanceBag = {
+        id?: string | null;
+        startDateTime?: string | null;
+        nickName?: string | null;
+        lastName?: string | null;
+        securityCode?: string | null;
+        group?: CheckInItemBag | null;
+        location?: CheckInItemBag | null;
+        schedule?: CheckInItemBag | null;
+    };
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        supervisorData: {
+            type: Object as PropType<SupervisorScreenData>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "updateActions", actions: KioskButton[]): void;
+        (event: "supervisorScreen", screen: SupervisorScreen): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const attendances = shallowRef<ReprintAttendanceBag[]>([]);
+    const searchTerm = ref("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const filteredAttendances = computed((): ReprintAttendanceBag[] => {
+        var lowerTerm = searchTerm.value.toLowerCase();
+
+        return attendances.value.filter(a => a.nickName?.toLowerCase().includes(lowerTerm)
+            || a.lastName?.toLowerCase().includes(lowerTerm)
+            || a.location?.name?.toLowerCase().includes(lowerTerm)
+            || a.group?.name?.toLowerCase().includes(lowerTerm)
+            || a.schedule?.name?.toLowerCase().includes(lowerTerm));
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        actions.push({
+            title: "Done",
+            key: "Done",
+            type: "primary",
+            disabled: false,
+            handler: () => onDoneClick()
+        });
+
+        emit("updateActions", actions);
+    }
+
+    /**
+     * Load the attendance data from the server with any search data provided.
+     */
+    async function loadAttendance(): Promise<void> {
+        const data = {
+            pinCode: props.supervisorData.pinCode,
+            kioskId: props.configuration.kiosk?.id,
+            searchValue: searchTerm.value
+        };
+
+        const response = await invokeBlockAction<ReprintAttendanceBag[]>("GetReprintAttendanceList", data);
+
+        if (response.isSuccess && response.data) {
+            attendances.value = response.data;
+        }
+        else {
+            await alert(response.errorMessage || "Unable to retrieve current attendance.");
+        }
+    }
+
+    /**
+     * Send a request to the server to re-print the labels for the specified
+     * attendance record.
+     *
+     * @param id The identifier of the attendance record.
+     */
+    async function onPrintClick(id?: string | null): Promise<void> {
+        const data = {
+            pinCode: props.supervisorData.pinCode,
+            kioskId: props.configuration.kiosk?.id,
+            attendanceId: id
+        };
+
+        const response = await invokeBlockAction<PrintResponseBag>("PrintLabels", data);
+
+        if (response.isSuccess) {
+            const errors: string[] = [];
+
+            if (response.data?.legacyLabels) {
+                errors.push(...await printLegacyLabels(response.data.legacyLabels));
+            }
+
+            if (response.data?.labels) {
+                errors.push(...await printLabels(response.data.labels));
+            }
+
+            if (response.data?.errorMessages && response.data.errorMessages.length > 0) {
+                errors.push(...response.data.errorMessages);
+            }
+
+            if (errors.length > 0) {
+                await alert(errors.join("\n"));
+            }
+            else {
+                await alert("Labels printed.");
+            }
+        }
+        else {
+            await alert(response.errorMessage || "Unable to print labels.");
+        }
+    }
+
+    /**
+     * Done button handler, return to the supvisor action screen.
+     */
+    function onDoneClick(): void {
+        emit("supervisorScreen", SupervisorScreen.Actions);
+    }
+
+    // #endregion
+
+    updateActions();
+    loadAttendance();
+</script>

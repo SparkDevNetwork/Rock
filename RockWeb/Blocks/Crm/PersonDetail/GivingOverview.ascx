@@ -51,12 +51,12 @@
                                 <%-- Warning if Giving Characteristics are stale, probably because the person hasn't given for a while --%>
                                 <Rock:NotificationBox ID="nbGivingCharacteristicsStaleWarning" runat="server" NotificationBoxType="Warning" CssClass="my-3" Text="The giving characteristics below were generated 3 months ago at the time of the last gift. Information on bin, percentile and typical gift patterns represent values from that time period." />
                                 <div class="row d-flex flex-wrap align-items-lg-center">
-                                    <div class="col-xs-12 col-sm-8 col-md-9 giving-characteristics">
+                                    <div class="col-xs-12 col-sm-7 col-md-8 giving-characteristics">
                                         <%-- Lava Output for Giving Characteristics  --%>
                                         <asp:Literal ID="lGivingCharacteristicsHtml" runat="server" />
                                     </div>
                                     <%-- Community View --%>
-                                    <div class="col-xs-12 col-sm-4 col-md-3 percentile-giving mx-auto">
+                                    <div class="col-xs-12 col-sm-5 col-md-4 percentile-giving mx-auto">
                                         <hr class="my-3 d-sm-none">
                                         <span class="text-sm text-muted p-0 mb-1">Community View</span>
                                         <div class="d-flex flex-column rollover-container">

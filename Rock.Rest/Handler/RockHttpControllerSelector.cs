@@ -58,7 +58,7 @@ namespace Rock.Rest.Handler
                 }
             }
 
-            // Handle duplicate controller names.
+            // Handle duplicate controller names.http://localhost:6229/page/814?CommunicationId=101#
             var routeData = request.GetRouteData();
             if ( routeData.Values != null && routeData.Values.TryGetValue( ControllerKey, out var cn ) && _duplicateControllerTypes.Value.ContainsKey( cn.ToString() ) )
             {
@@ -74,7 +74,7 @@ namespace Rock.Rest.Handler
 
             foreach ( var item in _duplicateControllerTypes.Value )
             {
-                result.AddOrIgnore( item.Key, item.Value );
+                result.TryAdd( item.Key, item.Value );
             }
 
             return result;
@@ -90,7 +90,7 @@ namespace Rock.Rest.Handler
 
                 if ( parts.Length == 2 )
                 {
-                    prefixes.AddOrIgnore( parts[1], kvp.Value );
+                    prefixes.TryAdd( parts[1], kvp.Value );
                 }
             }
 
@@ -107,7 +107,7 @@ namespace Rock.Rest.Handler
                 .GroupBy( t => t.Name.Substring( 0, t.Name.Length - ControllerSuffix.Length ), StringComparer.OrdinalIgnoreCase )
                 .Where( x => x.Count() > 1 );
 
-            var result = new Dictionary<string, HttpControllerDescriptor>();
+            var result = new Dictionary<string, HttpControllerDescriptor>( StringComparer.OrdinalIgnoreCase );
 
             foreach ( var controllerTypeGroup in groupedByName )
             {
@@ -118,11 +118,11 @@ namespace Rock.Rest.Handler
 
                     if ( prefix.IsNotNullOrWhiteSpace() )
                     {
-                        result.AddOrIgnore( $"{controllerTypeGroup.Key}-{prefix}", controllerDescriptor );
+                        result.TryAdd( $"{controllerTypeGroup.Key}-{prefix}", controllerDescriptor );
                     }
                     else
                     {
-                        result.AddOrIgnore( controllerTypeGroup.Key, controllerDescriptor );
+                        result.TryAdd( controllerTypeGroup.Key, controllerDescriptor );
                     }
                 }
             }

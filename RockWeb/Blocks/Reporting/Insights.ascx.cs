@@ -117,9 +117,9 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             InitializeBlock();
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods
@@ -326,8 +326,8 @@ namespace RockWeb.Blocks.Reporting
                 ( person, phoneNumber ) => new { person, phoneNumber } )
                 .Count();
             dataItems.Add( new DataItem( "Mobile Phone", DataItem.GetPercentage( hasMobilePhoneCount, total ) ) );
-
-            var hasMaritalStatusCount = qry.Count( p => p.MaritalStatusValue != null && p.MaritalStatusValue.Value != "Unknown" );
+            
+            var hasMaritalStatusCount = qry.Count( p => p.MaritalStatusValue?.Value != null );
             dataItems.Add( new DataItem( "Marital Status", DataItem.GetPercentage( hasMaritalStatusCount, total ) ) );
 
             var hasPhotoCount = qry.Count( p => p.PhotoId.HasValue );

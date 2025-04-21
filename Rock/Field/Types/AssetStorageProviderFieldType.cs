@@ -27,6 +27,7 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Field.Types
 {
@@ -37,7 +38,8 @@ namespace Rock.Field.Types
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
     /// <seealso cref="Rock.Field.IEntityFieldType" />
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( "1596F562-E8D0-4C5F-9A00-23B5594F17E2" )]
     public class AssetStorageProviderFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
@@ -55,6 +57,12 @@ namespace Rock.Field.Types
             }
 
             return string.Empty;
+        }
+
+        /// <inheritdoc />
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
         }
 
         #region IEntityFieldType
@@ -87,6 +95,24 @@ namespace Rock.Field.Types
             return null;
         }
         #endregion
+
+        #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return AssetStorageProviderCache.Get( privateValue.AsGuid() )
+                .ToListItemBag()
+                .ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return publicValue.FromJsonOrNull<ListItemBag>()?.Value ?? "";
+        }
+
+        #endregion Edit Control
 
         #region IEntityReferenceFieldType
 

@@ -40,7 +40,7 @@ namespace Rock.Web.Cache
     [Serializable]
     [DataContract]
     [JsonConverter( typeof( Utility.AttributeCacheJsonConverter ) )]
-    public class AttributeCache : ModelCache<AttributeCache, Model.Attribute>
+    public class AttributeCache : ModelCache<AttributeCache, Model.Attribute>, IHasReadOnlyAdditionalSettings
     {
         #region Fields
 
@@ -325,6 +325,12 @@ namespace Rock.Web.Cache
         public bool IsPublic { get; private set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if changes to the attribute values should be recorded into the generic History log table.
+        /// </summary>
+        [DataMember]
+        public bool IsSuppressHistoryLogging { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical
         /// </summary>
         /// <value>
@@ -332,6 +338,11 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public bool IsActive { get; private set; }
+
+        /// <inheritdoc/>
+        [RockInternal( "1.16.4" )]
+        [DataMember]
+        public string AdditionalSettingsJson { get; private set; }
 
         /// <summary>
         /// Gets or sets the category ids.
@@ -565,6 +576,8 @@ namespace Rock.Web.Cache
             AbbreviatedName = attribute.AbbreviatedName;
             ShowOnBulk = attribute.ShowOnBulk;
             IsPublic = attribute.IsPublic;
+            IsSuppressHistoryLogging = attribute.IsSuppressHistoryLogging;
+            AdditionalSettingsJson = attribute.AdditionalSettingsJson;
 
             ConfigurationValues = new Dictionary<string, string>( qualifiers );
             QualifierValues = new Dictionary<string, ConfigurationValue>();
@@ -824,7 +837,6 @@ namespace Rock.Web.Cache
         /// and <paramref name="entityQualifierValue"/> values for the <paramref name="entityTypeId"/>.
         /// </summary>
         /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
-        [RockInternal( "1.16" )]
         internal static List<AttributeCache> GetOrderedGridAttributes( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue )
         {
             return GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, false )
@@ -1059,16 +1071,6 @@ namespace Rock.Web.Cache
         #endregion
 
         #region Entity Attributes Cache
-
-        /// <summary>
-        /// Flushes the entity attributes.
-        /// </summary>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use EntityTypeAttributesCache.Clear() instead." )]
-        public static void RemoveEntityAttributes()
-        {
-            EntityAttributesCache.Remove();
-        }
 
         /// <summary>
         /// Gets the person attributes of given list of field types class names. If no Field types are specified, all the person attributes are retrieved.

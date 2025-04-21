@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,9 +18,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Enums.Communication.Chat;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -32,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupTypeRole" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "D155C373-9E47-4C6A-BADD-792F31AF5FBA")]
     public partial class GroupTypeRole : Model<GroupTypeRole>, IOrdered, ICacheable
     {
@@ -54,6 +57,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/> that this GroupRole belongs to.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? GroupTypeId { get; set; }
 
         /// <summary>
@@ -150,6 +154,37 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool CanManageMembers { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can take attendance.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can take attendance; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool CanTakeAttendance { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is excluded from peer network.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is excluded from peer network; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsExcludedFromPeerNetwork { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating if this role can check into the group.
+        /// This only applies during the "already member" check during check-in.
+        /// </summary>
+        [DataMember]
+        public bool IsCheckInAllowed { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the role of the chat individual, to be synchronized with the external chat system.
+        /// </summary>
+        [DataMember]
+        public ChatRole ChatRole { get; set; }
 
         #endregion
 

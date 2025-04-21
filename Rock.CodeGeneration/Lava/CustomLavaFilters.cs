@@ -1,4 +1,6 @@
-﻿namespace Rock.CodeGeneration.Lava
+﻿using Rock;
+
+namespace Rock.CodeGeneration.Lava
 {
     /// <summary>
     /// Custom lava filters that are added to our Lava engine.
@@ -22,7 +24,7 @@
         /// <returns>A string that represents the input converted to camel case.</returns>
         public static string CamelCase( string input )
         {
-            return input.CamelCase();
+            return input.ToCamelCase();
         }
     }
 }

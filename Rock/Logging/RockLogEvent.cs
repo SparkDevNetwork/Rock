@@ -15,10 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
 
 namespace Rock.Logging
 {
@@ -33,7 +31,16 @@ namespace Rock.Logging
         /// <value>
         /// The domain.
         /// </value>
+        [Obsolete( "This is not used and will be removed in the future." )]
+        [RockObsolete( "1.17" )]
         public string Domain { get; set; }
+
+        /// <summary>
+        /// Gets or sets the logged category.
+        /// </summary>
+        /// <value>The logged category.</value>
+        public string Category { get; set; }
+
         /// <summary>
         /// Gets or sets the message.
         /// </summary>
@@ -41,6 +48,7 @@ namespace Rock.Logging
         /// The message.
         /// </value>
         public string Message { get; set; }
+
         /// <summary>
         /// Gets or sets the date time.
         /// </summary>
@@ -48,6 +56,7 @@ namespace Rock.Logging
         /// The date time.
         /// </value>
         public DateTime DateTime { get; set; }
+
         /// <summary>
         /// Gets or sets the exception.
         /// </summary>
@@ -55,12 +64,21 @@ namespace Rock.Logging
         /// The exception.
         /// </value>
         public Exception Exception { get; set; }
+
+        /// <summary>
+        /// Gets or sets the log level.
+        /// </summary>
+        /// <value>The log level.</value>
+        public LogLevel LogLevel { get; set; }
+
         /// <summary>
         /// Gets or sets the level.
         /// </summary>
         /// <value>
         /// The level.
         /// </value>
+        [Obsolete( "This is not used and will be removed in the future." )]
+        [RockObsolete( "1.17" )]
         public RockLogLevel Level { get; set; }
 
         /// <summary>

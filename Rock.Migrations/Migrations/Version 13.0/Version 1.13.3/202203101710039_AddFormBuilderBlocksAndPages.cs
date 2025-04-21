@@ -180,7 +180,7 @@ namespace Rock.Migrations
 
             // ADD ROUTES
             // -----------------------------------------------
-
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route              
             //   Page:Form Builder Templates              
             //   Route:admin/general/form-templates              
@@ -191,6 +191,7 @@ namespace Rock.Migrations
             //   Page:Form Template Details              
             //   Route:admin/general/form-template/{FormTemplateId}              
             RockMigrationHelper.AddPageRoute( "65DAD8F8-0A5A-4C97-B275-089CD7C35E9C", "admin/general/form-template/{FormTemplateId}", "06091772-CB8A-46E4-AF6B-BDB931DB62AC" );
+#pragma warning restore CS0618 // Type or member is obsolete
 
 
             // ADD BLOCKS

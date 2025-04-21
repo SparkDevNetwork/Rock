@@ -405,7 +405,6 @@ namespace Rock.Web.UI.Controls
             {
                 CreateSelectionControls( this.SelectedKey );
             }
-
         }
 
         /// <summary>

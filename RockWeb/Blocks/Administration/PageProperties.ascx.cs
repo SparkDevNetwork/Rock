@@ -20,14 +20,15 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Services.NuGet;
 using Rock.Tasks;
 using Rock.Utility;
 using Rock.Web;
@@ -125,6 +126,11 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        /// <summary>
+        /// Gets the interaction intent defined type cache.
+        /// </summary>
+        protected DefinedTypeCache InteractionIntentDefinedTypeCache => DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.INTERACTION_INTENT ) );
+
         #endregion
 
         #region Base Control Methods
@@ -204,10 +210,9 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
-                var interactionIntentDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.INTERACTION_INTENT ) );
-                if ( interactionIntentDefinedType != null )
+                if ( InteractionIntentDefinedTypeCache != null )
                 {
-                    dvpPageIntents.DefinedTypeId = interactionIntentDefinedType.Id;
+                    dvpPageIntents.DefinedTypeId = InteractionIntentDefinedTypeCache.Id;
                     dvpPageIntents.Visible = true;
                 }
                 else
@@ -572,7 +577,7 @@ namespace RockWeb.Blocks.Administration
             cbAllowIndexing.Checked = page.AllowIndexing;
 
             cbEnableRateLimiting.Checked = page.IsRateLimited;
-            nbRateLimitPeriod.IntegerValue = page.RateLimitPeriod;
+            nbRateLimitPeriodDurationSeconds.IntegerValue = page.RateLimitPeriodDurationSeconds;
             nbRequestPerPeriod.IntegerValue = page.RateLimitRequestPerPeriod;
 
             if ( page.CacheControlHeaderSettings != null )
@@ -591,12 +596,15 @@ namespace RockWeb.Blocks.Administration
             ceHeaderContent.Text = page.HeaderContent;
             tbPageRoute.Text = string.Join( ",", page.PageRoutes.Select( route => route.Route ).ToArray() );
 
-            if ( dvpPageIntents.Visible )
+            if ( InteractionIntentDefinedTypeCache != null )
             {
-                var intentSettings = page.GetAdditionalSettings<PageService.IntentSettings>();
-                if ( intentSettings.InteractionIntentValueIds?.Any() == true )
+                var intentValueIds = page.Id > 0
+                    ? new EntityIntentService( rockContext ).GetIntentValueIds<Rock.Model.Page>( page.Id )
+                    : null;
+
+                if ( intentValueIds?.Any() == true )
                 {
-                    dvpPageIntents.SetValues( intentSettings.InteractionIntentValueIds );
+                    dvpPageIntents.SetValues( intentValueIds );
                 }
                 else
                 {
@@ -798,12 +806,12 @@ namespace RockWeb.Blocks.Administration
 
             if ( cbEnableRateLimiting.Checked )
             {
-                page.RateLimitPeriod = nbRateLimitPeriod.IntegerValue;
+                page.RateLimitPeriodDurationSeconds = nbRateLimitPeriodDurationSeconds.IntegerValue;
                 page.RateLimitRequestPerPeriod = nbRequestPerPeriod.IntegerValue;
             }
             else
             {
-                page.RateLimitPeriod = null;
+                page.RateLimitPeriodDurationSeconds = null;
                 page.RateLimitRequestPerPeriod = null;
             }
 
@@ -832,17 +840,6 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            // Intent Settings
-            if ( dvpPageIntents.Visible )
-            {
-                var intentSettings = page.GetAdditionalSettings<PageService.IntentSettings>();
-
-                var selectedIntentValueIds = dvpPageIntents.SelectedValuesAsInt;
-                intentSettings.InteractionIntentValueIds = selectedIntentValueIds;
-
-                page.SetAdditionalSettings( intentSettings );
-            }
-
             // Page Attributes
             page.LoadAttributes();
 
@@ -857,6 +854,15 @@ namespace RockWeb.Blocks.Administration
                     rockContext.SaveChanges();
 
                     page.SaveAttributeValues( rockContext );
+
+                    // Interaction Intents
+                    if ( InteractionIntentDefinedTypeCache != null )
+                    {
+                        new EntityIntentService( rockContext )
+                            .SetIntents<Rock.Model.Page>( page.Id, dvpPageIntents.SelectedValuesAsInt );
+
+                        rockContext.SaveChanges();
+                    }
                 } );
 
                 Rock.Web.RockRouteHandler.ReregisterRoutes();

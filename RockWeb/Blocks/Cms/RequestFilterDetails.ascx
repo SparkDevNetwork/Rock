@@ -142,17 +142,37 @@
 
                 <span class="segment-and"><span class="text">And</span></span>
 
+                <%--Geo Locations--%>
+                <asp:Panel ID="pnlGeoLocation" runat="server" CssClass="panel panel-section">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Geolocation</h4>
+                    </div>
+                    <div class="panel-body">
+                        <Rock:Grid ID="gGeoLocations" runat="server" DisplayType="Light" RowItemText="Geolocations">
+                            <Columns>
+                                <Rock:EnumField DataField="LocationComponent" HeaderText="Location Component" />
+                                <Rock:EnumField DataField="ComparisonType" HeaderText="Match Type" />
+                                <Rock:RockBoundField DataField="Value" HeaderText="Value" />
+                                <Rock:EditField OnClick="gGeoLocations_EditClick" />
+                                <Rock:DeleteField OnClick="gGeoLocations_DeleteClick" />
+                            </Columns>
+                        </Rock:Grid>
+                    </div>
+                </asp:Panel>
+
+                <span class="segment-and"><span class="text">And</span></span>
+
                 <%-- Environment --%>
                 <asp:Panel ID="pnlEnvironment" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
                         <h4 class="panel-title">Environment</h4>
                     </div>
                     <div class="panel-body">
-                        <Rock:DaysOfWeekPicker ID="dowDaysOfWeek" runat="server" Label="Days of Week"  RepeatDirection="Horizontal" RepeatColumns="7" />
+                        <Rock:DaysOfWeekPicker ID="dowDaysOfWeek" runat="server" Label="Days of Week" RepeatDirection="Horizontal" RepeatColumns="7" />
                         <label class="control-label">Time of Day</label>
                         <div class="form-control-group">
                             <Rock:TimePicker ID="tpTimeOfDayFrom" runat="server" Label="" />
-                            <div class="input-group form-control-static"> to </div>
+                            <div class="input-group form-control-static">to </div>
                             <Rock:TimePicker ID="tpTimeOfDayTo" runat="server" Label="" />
                         </div>
                     </div>
@@ -273,6 +293,43 @@
                         <div class="col">
                             <div class="form-group">
                                 <Rock:NumberBox ID="nbBrowserVersionCompareValue" runat="server" CssClass="js-filter-control" ValidationGroup="vgBrowser" Required="true" NumberType="Integer" />
+                            </div>
+                        </div>
+                    </div>
+                </Content>
+            </Rock:ModalDialog>
+
+            <%-- Modal for Browser Filter --%>
+            <Rock:ModalDialog ID="mdGeolocation" runat="server" OnSaveClick="mdGeolocation_SaveClick" ValidationGroup="vgGeolocation">
+                <Content>
+                    <asp:HiddenField ID="hfGeolocationFilterGuid" runat="server" />
+
+                    <asp:ValidationSummary ID="vsGeolocation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgGeolocation" />
+
+                    <div class="row form-row d-flex flex-wrap align-items-center">
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <span class="text-nowrap">Where</span>
+                            </div>
+                        </div>
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <Rock:RockDropDownList ID="ddlGeolocationWhere" runat="server" CssClass="input-width-lg js-filter-compare" ValidationGroup="vgGeolocation" />
+                            </div>
+                        </div>
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <span class="text-nowrap">is</span>
+                            </div>
+                        </div>
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <Rock:RockDropDownList ID="ddlComparisionType" runat="server" CssClass="input-width-lg js-filter-compare" ValidationGroup="vgGeolocation" />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <Rock:RockTextBox ID="tbValue" runat="server" CssClass="js-filter-control" ValidationGroup="vgGeolocation" Required="true" />
                             </div>
                         </div>
                     </div>

@@ -1,0 +1,51 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist",
+    "rootDir": "../",
+    "incremental": true,
+    "composite": true,
+    "noImplicitAny": false,
+    "noImplicitOverride": true,
+    "noEmitOnError": false,
+    "removeComments": true,
+    "allowUnreachableCode": false,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "target": "ES2016",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "strict": true,
+    "importHelpers": true,
+    "jsx": "preserve",
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2016",
+      "ES2020.Symbol.WellKnown"
+    ],
+    "paths": {
+      "@Obsidian/Controls/*": [ "../Rock.JavaScript.Obsidian/dist/Framework/Controls/*" ],
+      "@Obsidian/Core/*": [ "../Rock.JavaScript.Obsidian/dist/Framework/Core/*" ],
+      "@Obsidian/Directives/*": [ "../Rock.JavaScript.Obsidian/dist/Framework/Directives/*" ],
+      "@Obsidian/Enums/*": [ "../Rock.JavaScript.Obsidian/dist/Framework/Enums/*" ],
+      "@Obsidian/FieldTypes/*": [ "../Rock.JavaScript.Obsidian/dist/Framework/FieldTypes/*" ],
+      "@Obsidian/Libs/*": [ "../Rock.JavaScript.Obsidian/dist/Framework/Libs/*" ],
+      "@Obsidian/PageState": [ "../Rock.JavaScript.Obsidian/dist/Framework/PageState" ],
+      "@Obsidian/SystemGuids/*": [ "../Rock.JavaScript.Obsidian/dist/Framework/SystemGuids/*" ],
+      "@Obsidian/Templates/*": [ "../Rock.JavaScript.Obsidian/dist/Framework/Templates/*" ],
+      "@Obsidian/Types": [ "../Rock.JavaScript.Obsidian/Framework/Types" ],
+      "@Obsidian/Types/*": [ "../Rock.JavaScript.Obsidian/Framework/Types/*" ],
+      "@Obsidian/Utility": [ "../Rock.JavaScript.Obsidian/dist/Framework/Utility" ],
+      "@Obsidian/Utility/*": [ "../Rock.JavaScript.Obsidian/dist/Framework/Utility/*" ],
+      "@Obsidian/ValidationRules": [ "../Rock.JavaScript.Obsidian/dist/Framework/ValidationRules" ],
+      "@Obsidian/ViewModels/*": [ "../Rock.JavaScript.Obsidian/Framework/ViewModels/*" ]
+    }
+  },
+  "vueCompilerOptions": {
+    "extensions": [
+      ".obs"
+    ]
+  }
+}

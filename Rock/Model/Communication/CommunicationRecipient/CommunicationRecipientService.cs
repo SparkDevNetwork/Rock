@@ -18,7 +18,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 
+using Rock.Utility;
 using Rock.ViewModels.Communication;
 using Rock.Web.Cache;
 
@@ -64,9 +66,7 @@ namespace Rock.Model
         internal ConversationMessageBag GetConversationMessageBag( int communicationRecipientId )
         {
             var recipient = Get( communicationRecipientId );
-
             var publicUrl = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
-
             var rockPhoneNumber = SystemPhoneNumberCache.Get( recipient.Communication.SmsFromSystemPhoneNumberId ?? 0 );
 
             if ( rockPhoneNumber == null )
@@ -91,10 +91,16 @@ namespace Rock.Model
                 Attachments = new List<ConversationAttachmentBag>()
             };
 
-            if ( recipient.PersonAlias.Person.PhotoId.HasValue )
+            var photoUrl = recipient?.PersonAlias?.Person != null
+                ? Rock.Model.Person.GetPersonPhotoUrl( recipient.PersonAlias.Person, 256, 256 )
+                : "/Assets/Images/person-no-photo-unknown.svg?width=256&height=256";
+
+            if ( !Uri.IsWellFormedUriString( photoUrl, UriKind.Absolute ) )
             {
-                bag.PhotoUrl = $"{publicUrl}GetImage.ashx?Id={recipient.PersonAlias.Person.PhotoId}&maxwidth=256&maxheight=256";
+                photoUrl = VirtualPathUtility.ToAbsolute( photoUrl );
             }
+
+            bag.PhotoUrl = publicUrl.IsNotNullOrWhiteSpace() ? publicUrl + photoUrl : photoUrl;
 
             var attachmentGuids = recipient.Communication.Attachments
                 .Where( ca => ca.CommunicationType == CommunicationType.SMS )
@@ -103,18 +109,18 @@ namespace Rock.Model
 
             foreach ( var attachment in recipient.Communication.Attachments )
             {
-                var ext = System.IO.Path.GetExtension( attachment.BinaryFile.FileName ).ToLower();
-                var isImage = attachment.BinaryFile.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) == true;
+                var isImage = attachment.BinaryFile.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase );
 
                 bag.Attachments.Add( new ConversationAttachmentBag
                 {
                     FileName = attachment.BinaryFile.FileName,
-                    Url = $"{publicUrl}GetImage.ashx?Guid={attachment.BinaryFile.Guid}",
-                    ThumbnailUrl = isImage ? $"{publicUrl}GetImage.ashx?Guid={attachment.BinaryFile.Guid}&maxwidth=512&maxheight=512" : null
+                    Url = FileUrlHelper.GetImageUrl( attachment.BinaryFile.Guid, new GetImageUrlOptions { PublicAppRoot = publicUrl } ),
+                    ThumbnailUrl = isImage ? FileUrlHelper.GetImageUrl( attachment.BinaryFile.Guid, new GetImageUrlOptions { PublicAppRoot = publicUrl, Width = 512, Height = 512 } ) : null
                 } );
             }
 
             return bag;
         }
+
     }
 }

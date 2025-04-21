@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,24 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( PageShortLink.PageShortLinkQueryableAttributeValue ), nameof( PageShortLinkAttributeValues ) )]
+    public partial class PageShortLink
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<PageShortLinkQueryableAttributeValue> PageShortLinkAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class PageShortLinkQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -111,6 +130,8 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this PageShortLink target, PageShortLink source )
         {
             target.Id = source.Id;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
+            target.CategoryId = source.CategoryId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.SiteId = source.SiteId;

@@ -2,7 +2,6 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-
         <asp:HiddenField ID="hfScheduledTransactionGuid" runat="server" />
         <asp:HiddenField ID="hfFinancialGatewayId" runat="server" />
         <Rock:HiddenFieldWithClass ID="hfChangePaymentInfoVisible" CssClass="js-change-paymentinfo-visible" runat="server" />
@@ -20,10 +19,11 @@
             <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" Visible="false" Label=" "
                 DataTextField="PublicName" DataValueField="Guid" OnSelectionChanged="btnAddAccount_SelectionChanged" />
 
-            <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Frequency" FormGroupCssClass="margin-t-md" />
+            <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Frequency" FormGroupCssClass="margin-t-md" AutoPostBack="true" OnSelectedIndexChanged="ddlFrequency_SelectedIndexChanged" />
 
-            <div class="margin-t-md">
+            <div class="margin-t-md d-flex gap-3 flex-wrap">
                 <Rock:DatePicker ID="dtpStartDate" runat="server" Label="Next Gift" />
+                <Rock:DatePicker ID="dtpEndDate" runat="server" Label="End Date" />
             </div>
 
             <Rock:RockControlWrapper ID="rcsPaymentMethod" runat="server" FormGroupCssClass="form-group-auto" Label="Payment Method">

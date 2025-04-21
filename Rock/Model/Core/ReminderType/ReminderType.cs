@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "ReminderType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.REMINDER_TYPE )]
     public partial class ReminderType : Model<ReminderType>, IOrdered
     {

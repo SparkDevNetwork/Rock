@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning" v-text="blockError" />
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError" />
 
-    <NotificationBox v-if="errorMessage" alertType="danger" v-text="errorMessage" />
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -11,12 +11,13 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.MediaFolder"
                  :entityTypeName="panelName"
-                 :isAuditHidden="false"
+                 :isAuditHidden="true"
                  :isBadgesVisible="false"
                  :isDeleteVisible="false"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"

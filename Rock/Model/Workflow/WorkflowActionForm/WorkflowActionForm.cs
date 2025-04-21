@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
@@ -33,8 +34,9 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActionForm" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "FDAB9AEB-B2AA-4FB5-A35D-83254A9B014C")]
-    public partial class WorkflowActionForm : Model<WorkflowActionForm>, ICacheable
+    public partial class WorkflowActionForm : Model<WorkflowActionForm>, ICacheable, IHasAdditionalSettings
     {
         #region Entity Properties
 
@@ -387,6 +389,10 @@ namespace Rock.Model
         public bool PersonEntryShowHeadingSeparator { get; set; }
 
         #endregion Person entry related Entity Properties
+
+        /// <inheritdoc/>
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
 
         #endregion Entity Properties
 

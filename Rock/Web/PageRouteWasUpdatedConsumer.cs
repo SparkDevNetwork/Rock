@@ -14,19 +14,22 @@
 // limitations under the License.
 // </copyright>
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus;
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
+using Rock.Configuration;
 using Rock.Logging;
 using Rock.Model;
-using Rock.Utility.Settings;
 
 namespace Rock.Web
 {
     /// <summary>
     /// Page Route Was Updated Consumer
     /// </summary>
+    [RockLoggingCategory]
     public sealed class PageRouteWasUpdatedConsumer : RockConsumer<PageRouteEventQueue, PageRouteWasUpdatedMessage>
     {
         /// <summary>
@@ -45,16 +48,16 @@ namespace Rock.Web
                 // Don't publish events until Rock is all the way started
                 var logMessage = $"'Page Route Was Updated' message was not consumed because Rock is not fully started.";
 
-                var elapsedSinceProcessStarted = RockDateTime.Now - RockInstanceConfig.ApplicationStartedDateTime;
+                var elapsedSinceProcessStarted = RockDateTime.Now - RockApp.Current.HostingSettings.ApplicationStartDateTime;
 
                 if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Bus, logMessage );
+                    Logger.LogError( logMessage );
                     ExceptionLogService.LogException( new BusException( logMessage ) );
                 }
                 else
                 {
-                    RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
+                    Logger.LogDebug( logMessage );
                 }
 
                 return;
@@ -63,11 +66,11 @@ namespace Rock.Web
             // Do not reregister the routes is the message was sent from this node as that has already been done.
             if ( RockMessageBus.IsFromSelf( message ) )
             {
-                RockLogger.Log.Debug( RockLogDomains.Bus, $"Skipping 'Page Route Was Updated Message' because this node ({message.SenderNodeName}) was the publisher." );
+                Logger.LogDebug( $"Skipping 'Page Route Was Updated Message' because this node ({message.SenderNodeName}) was the publisher." );
                 return;
             }
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, $"Consumed 'Page Route Was Updated Message' on node {RockMessageBus.NodeName}." );
+            Logger.LogDebug( $"Consumed 'Page Route Was Updated Message' on node {RockMessageBus.NodeName}." );
             RockRouteHandler.RemoveRockPageRoutes();
             RockRouteHandler.RegisterRoutes();
         }

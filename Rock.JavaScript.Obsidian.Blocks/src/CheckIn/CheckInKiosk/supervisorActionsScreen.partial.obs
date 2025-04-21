@@ -1,0 +1,182 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="supervisor-action-screen">
+        <MainPanel title="Locations"
+                   subtitle="Tap locations to open or close"
+                   :configuration="configuration">
+            <div class="button-list">
+                <RockButton v-for="location in locations"
+                            :key="location.id"
+                            class="location-button"
+                            btnType="primary"
+                            autoDisable
+                            @click="onLocationClick(location)">
+                    <span v-if="location.isOpen" class="label label-success">Open</span>
+                    <span v-else class="label label-danger">Closed</span>
+                    <span class="title">{{ location.name }}</span>
+                    <span class="subtitle">{{ location.currentCount }}</span>
+                </RockButton>
+            </div>
+        </MainPanel>
+
+        <MainPanel title="Supervisor Actions"
+                   subtitle="Select an action from the list below"
+                   class="flex-grow-1"
+                   :configuration="configuration">
+            <RockButton class="reprint-labels-button"
+                        btnType="primary"
+                        @click="onReprintLabelsClick">
+                Reprint Labels
+            </RockButton>
+
+            <RockButton class="override-button"
+                        btnType="primary"
+                        @click="onOverrideClick">
+                Override
+            </RockButton>
+
+            <RockButton class="schedule-locations-button"
+                        btnType="primary"
+                        @click="onScheduleLocationsClick">
+                Schedule Locations
+            </RockButton>
+
+            <RockButton class="close-button"
+                        btnType="primary"
+                        @click="onCloseClick">
+                Close
+            </RockButton>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { computed, PropType } from "vue";
+    import { GetCurrentAttendanceResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/getCurrentAttendanceResponseBag";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { SupervisorScreen, SupervisorScreenData, KioskButton } from "./types.partial";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+
+    type LocationData = {
+        id: string;
+        name: string;
+        isOpen: boolean;
+        currentCount: number;
+    };
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        supervisorData: {
+            type: Object as PropType<SupervisorScreenData>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "updateActions", actions: KioskButton[]): void;
+        (event: "supervisorScreen", screen: SupervisorScreen): void;
+        (event: "closeSupervisor"): void;
+        (event: "enableOverride", pinCode: string): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    // #endregion
+
+    // #region Computed Values
+
+    const locations = computed((): LocationData[] => {
+        if (!props.supervisorData.counts?.locations) {
+            return [];
+        }
+
+        const locs: LocationData[] = [];
+
+        for (const location of props.supervisorData.counts.locations) {
+            const isLocationValid = props.supervisorData.counts
+                .groups
+                ?.some(g => g.locations?.some(gl => gl.locationId === location.id));
+
+            if (!location.id || !location.name || !isLocationValid) {
+                continue;
+            }
+
+            locs.push({
+                id: location.id,
+                name: location.name,
+                isOpen: location.isOpen,
+                currentCount: props.supervisorData.counts.attendance
+                    ?.filter(a => a.locationId === location.id)
+                    .length ?? 0
+            });
+        }
+
+        locs.sort((a, b) => a.name.localeCompare(b.name));
+
+        return locs;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        emit("updateActions", actions);
+    }
+
+    async function onLocationClick(location: LocationData): Promise<void> {
+        const data = {
+            pinCode: props.supervisorData.pinCode,
+            locationId: location.id,
+            isOpen: !location.isOpen
+        };
+
+        const response = await invokeBlockAction("SetLocationStatus", data);
+
+        if (!response.isSuccess) {
+            return await alert(response.errorMessage || "Unable to change room status.");
+        }
+
+        const newCounts = JSON.parse(JSON.stringify(props.supervisorData.counts)) as GetCurrentAttendanceResponseBag;
+        const newLocation = newCounts.locations?.find(l => l.id === location.id);
+
+        if (newLocation) {
+            newLocation.isOpen = data.isOpen;
+            props.supervisorData.counts = newCounts;
+        }
+    }
+
+    function onReprintLabelsClick(): void {
+        emit("supervisorScreen", SupervisorScreen.Reprint);
+    }
+
+    function onOverrideClick(): void {
+        emit("enableOverride", props.supervisorData.pinCode);
+    }
+
+    function onScheduleLocationsClick(): void {
+        emit("supervisorScreen", SupervisorScreen.ScheduleLocations);
+    }
+
+    function onCloseClick(): void {
+        emit("closeSupervisor");
+    }
+
+    // #endregion
+
+    updateActions();
+</script>

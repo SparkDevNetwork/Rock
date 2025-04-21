@@ -11,7 +11,8 @@
             <TextBox v-model="message"
                      label="Completion Message"
                      textMode="multiline"
-                     rules="required" />
+                     rules="required"
+                     allowHtml />
         </div>
 
         <div v-else-if="isTypeRedirect">

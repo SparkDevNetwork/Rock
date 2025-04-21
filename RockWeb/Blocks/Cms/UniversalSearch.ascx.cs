@@ -195,8 +195,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 // Check if this is a request for a specific document from the results list of smart search.
@@ -251,6 +249,8 @@ namespace RockWeb.Blocks.Cms
                     lPostHtml.Text = postHtml.ResolveMergeFields( mergeFields );
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -788,11 +788,16 @@ namespace RockWeb.Blocks.Cms
 
             ddlSearchType.BindToEnum<SearchType>();
             ddlSearchType.SelectedValue = GetAttributeValue( AttributeKey.SearchType );
+            var searchType = PageParameter( PageParameterKey.SearchType );
 
-            // override the block setting if passed in the query string
-            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.SearchType ) ) )
+            // override the block setting if passed in the query string and valid search type.
+            if ( !string.IsNullOrWhiteSpace( searchType ) )
             {
-                ddlSearchType.SelectedValue = PageParameter( PageParameterKey.SearchType );
+                var searchTypeValue = searchType.ConvertToEnumOrNull<SearchType>();
+                if ( searchTypeValue.HasValue )
+                {
+                    ddlSearchType.SelectedValue = searchTypeValue.Value.ConvertToInt().ToString();
+                }
             }
 
             // set setting values from query string

@@ -198,13 +198,13 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( System.EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 SetGridFilters();
                 BindOpportunitiesGrid();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -947,7 +947,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     var scheduleId = gls.Schedule.Id;
 
                     var participants = assignments
-                        .Where( a => a.LocationId == locationId && a.ScheduleId == scheduleId )
+                        .Where( a => a.LocationId == locationId && a.ScheduleId == scheduleId && a.GroupId == gls.Group.Id)
                         .ToList();
 
                     DateTime? nextStartDateTime = gls.Schedule.NextStartDateTime;

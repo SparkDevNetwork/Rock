@@ -19,6 +19,9 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Web;
 
+using Rock.Net.Geolocation;
+using Rock.Web.HttpModules;
+
 using UAParser;
 
 namespace Rock.Net
@@ -68,6 +71,14 @@ namespace Rock.Net
         /// </value>
         public string UserAgent { get; }
 
+        /// <summary>
+        /// Gets the geolocation data.
+        /// </summary>
+        /// <value>
+        /// The geolocation data.
+        /// </value>
+        public IpGeolocation Geolocation { get; }
+
         #endregion
 
         #region Constructors
@@ -90,12 +101,17 @@ namespace Rock.Net
             }
 
             UserAgent = request.UserAgent;
+
+            if ( request.RequestContext.HttpContext.Items[RockGateway.GeolocationContextKey] is IpGeolocation geolocation )
+            {
+                Geolocation = geolocation;
+            }
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientInformation"/> class.
         /// </summary>
-        /// <param name="request">The request to initalize from.</param>
+        /// <param name="request">The request to initialize from.</param>
         internal ClientInformation( IRequest request )
         {
             IpAddress = Rock.Utility.WebRequestHelper.GetXForwardedForIpAddress( request.Headers["X-FORWARDED-FOR"] )
@@ -107,6 +123,8 @@ namespace Rock.Net
             {
                 IpAddress = "localhost";
             }
+
+            Geolocation = IpGeoLookup.Instance.GetGeolocation( IpAddress );
 
             UserAgent = request.Headers.GetValues( "USER-AGENT" )?.FirstOrDefault() ?? string.Empty;
         }

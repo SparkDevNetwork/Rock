@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -65,6 +66,12 @@ namespace Rock.Model
             }
 
             if ( new Service<Attendance>( Context ).Queryable().Any( a => a.SearchTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Attendance.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<Attendance>( Context ).Queryable().Any( a => a.SourceValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Attendance.FriendlyTypeName );
                 return false;
@@ -115,6 +122,12 @@ namespace Rock.Model
             if ( new Service<CampusTopic>( Context ).Queryable().Any( a => a.TopicTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, CampusTopic.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<Communication>( Context ).Queryable().Any( a => a.CommunicationTopicValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Communication.FriendlyTypeName );
                 return false;
             }
 
@@ -262,11 +275,19 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<Metric>( Context ).Queryable().Any( a => a.MeasurementClassificationValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Metric.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Metric>( Context ).Queryable().Any( a => a.SourceValueTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Metric.FriendlyTypeName );
                 return false;
             }
+
+            // ignoring PeerNetwork,RelationshipTypeValueId
 
             if ( new Service<Person>( Context ).Queryable().Any( a => a.ConnectionStatusValueId == item.Id ) )
             {
@@ -412,6 +433,24 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( DefinedValue.DefinedValueQueryableAttributeValue ), nameof( DefinedValueAttributeValues ) )]
+    public partial class DefinedValue
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<DefinedValueQueryableAttributeValue> DefinedValueAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class DefinedValueQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

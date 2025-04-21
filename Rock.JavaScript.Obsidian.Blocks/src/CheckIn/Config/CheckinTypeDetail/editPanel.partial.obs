@@ -1,0 +1,889 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+            <div class="col-md-6">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="iconCssClass"
+                         label="Icon CSS Class"
+                         help="The Font Awesome icon class to use when displaying check-in of this check-in type." />
+            </div>
+        </div>
+
+        <!-- General Settings -->
+        <Panel title="General Settings" :modelValue="true" :hasCollapse="true">
+            <div class="row">
+                <div class="col-md-6">
+                    <DropDownList v-model="checkInType"
+                                  label="Check-in Type"
+                                  help="The type of check-in experience to use for this type. Family check-in allows more than one person in the family to be checked in at a time."
+                                  :showBlankItem="false"
+                                  :items="checkInTypeOptions" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <CheckBox v-model="allowCheckoutAtKiosk"
+                                      label="Enable Check-out at Kiosk"
+                                      help="Allows individuals to check-out using the kiosks." />
+                        </div>
+                        <div class="col-md-6">
+                            <CheckBox v-model="allowCheckoutInManager"
+                                      label="Enable Check-out in Manager"
+                                      help="Allows check-out to be enabled in the Check-in Manager." />
+                        </div>
+                    </div>
+                    <CheckBox v-model="enablePresence"
+                              label="Enable Presence"
+                              help="When enabled, the attendance record will not be marked as being 'present' until the individual is set to 'Present' by the assistant using the Check-in Manager application." />
+                    <CheckBox v-model="enableManager"
+                              label="Enable Manager Option"
+                              help="Should an option be displayed on the check-in welcome screen that allows an individual to view the management screen (after entering a passcode)?" />
+                    <CheckBox v-model="enableOverride"
+                              label="Enable Override"
+                              help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirements?" />
+                    <DropDownList v-model="achievementTypes"
+                                  label="Achievement Types"
+                                  help="Select achievement types that will used for checkin celebrations."
+                                  :items="achievementTypeOptions"
+                                  multiple />
+
+                </div>
+                <div class="col-md-6">
+                    <TextBox v-if="isFamilyType"
+                             v-model="autoSelectDaysBack"
+                             :rules="validateNumberValue"
+                             label="Auto Select Days Back"
+                             help="The number of days back to look for a previous check-in for each person in the family (or related person). If they have previously checked within this number of days, they will automatically be selected during the Family check-in process." />
+                    <DropDownList v-if="isFamilyType"
+                                  v-model="autoSelectOptions"
+                                  label="Auto Select Options"
+                                  help="The options that should be pre-selected if an individual has previously checked in."
+                                  :items="autoSelectOptionsItems" />
+                    <CheckBox v-if="isFamilyType"
+                              v-model="useSameOptions"
+                              label="Use Same Service Options"
+                              help="If family member(s) is checking into more than one service, should the same options for additional services be automatically selected that were selected for first service?" />
+                    <CheckBox v-model="preventInactivePeople"
+                              label="Prevent Inactive People"
+                              help="Should people who are inactive be excluded from being able to check-in?" />
+                    <CheckBox v-if="isFamilyType"
+                              v-model="preventDuplicateCheckin"
+                              label="Prevent Duplicate Check-in"
+                              help="Should people be prevented from checking into a specifice service time (schedule) more than once?" />
+                </div>
+            </div>
+
+        </Panel>
+
+        <!-- Barcode Settings -->
+        <Panel title="Barcode Settings" :hasCollapse="true">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="well">
+                        <RockLabel help="The number of alpha-numeric, alpha, and/or numeric characters to use when generating a unique security code for labels.Note: Alpha-Numeric characters will be printed first, followed by Alpha characters, then by numeric characters.">
+                            Label Security Code Length
+                        </RockLabel>
+                        <div class="row">
+                            <div class="col-sm-4 col-xs-12">
+                                <TextBox v-model="codeAlphaNumericLength"
+                                         label="Alpha-Numeric"
+                                         :rules="[validateNumberValue, minZeroMaxten]" />
+                            </div>
+                            <div class="col-sm-4 col-xs-6">
+                                <TextBox v-model="codeAlphaLength"
+                                         label="Alpha"
+                                         :rules="[validateNumberValue, minZeroMaxten]" />
+                            </div>
+                            <div class="col-sm-4 col-xs-6">
+                                <TextBox v-model="codeNumericLength"
+                                         label="Numeric"
+                                         :rules="[validateNumberValue, minZeroMaxten]" />
+                            </div>
+                        </div>
+                        <div class="checkbox">
+                            <label title="">
+                                <input type="checkbox" v-model="codeRandom">
+                                <span class="label-text ">Random Numeric Values</span>
+                            </label>
+                            <HelpBlock text="Should the numbers be randomized (vs. generated in order)." />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <CheckBox v-if="isFamilyType"
+                              v-model="reuseCode"
+                              label="Use Same Code for Family"
+                              help="Should the same security code be used for each person from the same family that is checking in at the same time?" />
+                </div>
+            </div>
+        </Panel>
+
+        <!-- Search Settings -->
+        <Panel title="Search Settings" :hasCollapse="true">
+            <div class="row">
+                <div class="col-md-6">
+                    <DropDownList v-model="searchType"
+                                  label="Search Type"
+                                  rules="required"
+                                  Required="true"
+                                  :items="searchTypeOptions"
+                                  :showBlankItem="false"
+                                  help="The type of search that is available after person clicks the check-in button on the check-in Welcome screen. Note, the individual can also always check-in using a scanned barcode, fingerprint, RFID card, etc. if the scanner is attached and configured for keyboard wedge mode." />
+                    <TextBox v-model="maxResults"
+                             label="Maximum Number of Results"
+                             help="The maximum number of search results to return when searching (default is 100)."
+                             :rules="validateNumberValue" />
+                </div>
+                <div class="col-md-6">
+                    <TextBox v-if="showPhoneFields"
+                             v-model="minPhoneLength"
+                             label="Minimum Phone Number Length"
+                             :rules="[validateNumberValue, minOneMaxten]"
+                             help="The minimum number of digits that needs to be entered for a phone number search (default is 4)." />
+                    <TextBox v-if="showPhoneFields"
+                             v-model="maxPhoneLength"
+                             label="Maximum Phone Number Length"
+                             :rules="[validateNumberValue, minOneMaxten]"
+                             help="The maximum number of digits that can to be entered for a phone number search (default is 10)." />
+                    <DropDownList v-if="showPhoneFields"
+                                  v-model="phoneSearchType"
+                                  label="Phone Search Type"
+                                  help="Controls how a person's phone number should be compared to the digits that were entered by person when checking in."
+                                  :items="phoneSearchTypeOptions" />
+                </div>
+            </div>
+        </Panel>
+
+        <!-- Header Text -->
+        <Panel title="Header Text" :hasCollapse="true">
+            <CodeEditor v-model="actionSelectHeaderTemplate"
+                        mode="lava"
+                        label="Action Select"
+                        help="Lava template to use for the 'Action Select' check-in block header. The available merge fields are:<br>{{ Family }} which is a Group object and is the current family." />
+            <CodeEditor v-model="checkoutPersonSelectHeaderTemplate"
+                        mode="lava"
+                        label="Checkout Person Select"
+                        help="Lava template to use for the 'Checkout Person Select' check-in block header. The available merge fields are:<br>{{ Family }} which is a Group object and is the current family." />
+            <CodeEditor v-model="personSelectHeaderTemplate"
+                        mode="lava"
+                        label="Person Select"
+                        help="Lava template to use for the 'Person Select' check-in block header. The available merge fields are:<br>{{ Family }} which is a Group object and is the current family." />
+            <CodeEditor v-model="multiPersonSelectHeaderTemplate"
+                        mode="lava"
+                        label="Multi Person Select"
+                        help="Lava template to use for the 'Multi Person Select' check-in block header. The available merge fields are:<br>{{ Family }} which is a Group object and is the current family." />
+            <CodeEditor v-model="groupTypeSelectHeaderTemplate"
+                        mode="lava"
+                        label="Group Type Select"
+                        help="Lava template to use for the 'Group Type Select' check-in block header. The available merge fields are:<br>{{ Family }} which is a Group object and is the current family.<br>{{ Individual }} which is a Person object and is the current selected person.<br>{{ SelectedSchedule}} is a Schedule object and is the current selected schedule." />
+            <CodeEditor v-model="timeSelectHeaderTemplate"
+                        mode="lava"
+                        label="Time Select" help="Lava template to use for the 'Time Select' check-in block header. The available merge fields are:<br>{{ Family }} which is a Group object and is the current family.<br>{{ SelectedIndividuals }} is a list of Person objects which contains all of the currently selected persons.<br>{{ CheckinType }} is the type of check-in given as a string which will be either 'Family' or 'Individual'.<br>{{ SelectedGroup }} is a Group object and corresponds to the selected check-in group listed in Areas and Groups. This only applies for individual checkin types.<br>{{ SelectedLocation }} is a Location and corresponds to the selected location for the group. This only applies for individual checkin types." />
+            <CodeEditor v-model="abilityLevelSelectHeaderTemplate"
+                        mode="lava"
+                        label="Ability Level Select"
+                        help="Lava template to use for the 'Ability Level Select' check-in block header. The available merge fields are:<br>{{ Family }} which is a Group object and is the current family.<br>{{ Individual }} which is a Person object and is the current selected person.<br>{{ SelectedArea }} is a GroupType object and corresponds to the selected check-in Area listed in Areas and Groups." />
+            <CodeEditor v-model="locationSelectHeaderTemplate"
+                        mode="lava"
+                        label="Location Select"
+                        help="Lava template to use for the 'Location Select' check-in block header. The available merge fields are:<br>{{ Family }} which is a Group object and is the current family.<br>{{ Individual }} which is a Person object and is the current selected person.<br>{{ SelectedGroup }} is a Group object and corresponds to the selected check-in group listed in Areas and Groups.<br>{{ SelectedSchedule}} is a Schedule object and is the current selected schedule." />
+            <CodeEditor v-model="groupSelectHeaderTemplate"
+                        mode="lava"
+                        label="Group Select"
+                        help="Lava template to use for the 'Group Select' check-in block header. The available merge fields are:<br>{{ Family }} which is a Group object and is the current family.<br>{{ Individual }} which is a Person object and is the current selected person.<br>{{ SelectedArea }} is a GroupType object and corresponds to the selected check-in Area listed in Areas and Groups.<br>{{ SelectedSchedule }} is a Schedule object and is the current selected schedule.." />
+        </Panel>
+
+        <!-- Display Settings -->
+        <Panel title="Display Settings" :hasCollapse="true">
+            <div class="row">
+                <div class="col-md-12">
+                    <CheckBox v-if="isFamilyType"
+                              v-model="hidePhotos"
+                              label="Hide Photos"
+                              help="Select this option if person photos should not be displayed when selecting the people from the selected family that are checking in." />
+                    <CodeEditor v-model="startTemplate"
+                                label="Start Template"
+                                help="The lava template to use when rendering the Start button on the Welcome Block"
+                                mode="lava" />
+                    <CodeEditor v-model="familySelectTemplate"
+                                label="Family Select Template"
+                                help="The lava template to use when rendering each family button on the Family Select"
+                                mode="lava" />
+                    <CodeEditor v-model="personSelectTemplate"
+                                label="Person Select Template"
+                                help="The lava template used to append additional information to each person button on the Person Select & Multi-Person Select Check-in blocks."
+                                mode="lava" />
+                    <DropDownList v-model="successTemplateOverrideDisplayMode"
+                                  help="'Never' will hide the custom success template. 'Replace' will replace the current success content with the template. 'Append' will place the success template content under the existing content."
+                                  label="Success Template Display Mode"
+                                  :items="templateDisplayOptions" />
+                    <CodeEditor v-if="isSuccessTemplateVisible"
+                                v-model="successTemplate"
+                                label="Success Template"
+                                help="The lava template to use when rendering the Success result on the Success Block"
+                                mode="lava" />
+                </div>
+            </div>
+        </Panel>
+
+        <!-- Registration Settings -->
+        <Panel title="Registration Settings" :hasCollapse="true">
+            <div class="row">
+                <div class="col-md-6">
+                    <DefinedValuePicker v-model="registrationDefaultPersonConnectionStatus"
+                                        label="Default Person Connection Status"
+                                        :definedTypeGuid="DefinedType.PersonConnectionStatus"
+                                        showBlankItem />
+
+                    <CheckBox v-model="registrationDisplayAlternateIdFieldForAdults"
+                              label="Display Alternate ID Field for Adults" />
+
+                    <CheckBox v-model="registrationDisplayAlternateIdFieldForChildren"
+                              label="Display Alternate ID Field for Children" />
+
+                    <CheckBox v-model="registrationDisplaySmsEnabled"
+                              label="Display SMS Enabled Selection for Phone Number" />
+
+                    <CheckBox v-model="registrationSmsEnabledByDefault"
+                              label="Set the SMS Enabled for the phone number by default" />
+
+                    <CheckBox v-model="enableCheckInAfterRegistration"
+                              label="Enable Check-in After Registration"
+                              help="This determines if the family should continue on the check-in path after being registered, or if they should be directed to a different kiosk after registration (take them back to search )." />
+
+                    <DropDownList v-model="knownRelationshipTypes"
+                                  label="Known Relationship Types"
+                                  help="The known relationships to display in the child's 'Relationship to Adult' field."
+                                  :items="relationshipTypeOptions"
+                                  multiple />
+
+                    <DropDownList v-model="sameFamilyKnownRelationshipTypes"
+                                  label="Same Family Known Relationship Types"
+                                  help="Of the known relationships defined above which should be used to place the child in the family with the adults."
+                                  :items="relationshipTypeOptions"
+                                  multiple />
+
+                    <DropDownList v-model="canCheckInKnownRelationshipTypes"
+                                  label="Can Check-in Known Relationship Types"
+                                  help="The known relationships that will place the child in a separate family with a 'Can Check-in' relationship back to the person."
+                                  :items="relationshipTypeOptions"
+                                  multiple />
+
+                    <WorkflowTypePicker v-model="registrationAddFamilyWorkflowTypes"
+                                        mutiple
+                                        label="New Family Workflow Types"
+                                        help="The workflow types that should be launched when a family is added."
+                                        multiple />
+
+                    <WorkflowTypePicker v-model="registrationAddPersonWorkflowTypes"
+                                        mutiple
+                                        label="New Person Workflow Types"
+                                        help="The workflow types that should be launched when a person is added to a family."
+                                        multiple />
+                </div>
+                <div class="col-md-6">
+                    <DropDownList v-model="registrationRequiredAttributesForAdults" runat="server" label="Required Attributes for Adults" :items="personAttributeOptions" multiple />
+                    <DropDownList v-model="registrationOptionalAttributesForAdults" runat="server" label="Optional Attributes for Adults" :items="personAttributeOptions" multiple />
+                    <DropDownList v-model="registrationRequiredAttributesForChildren" runat="server" label="Required Attributes for Children" :items="personAttributeOptions" multiple />
+                    <DropDownList v-model="registrationOptionalAttributesForChildren" runat="server" label="Optional Attributes for Children" :items="personAttributeOptions" multiple />
+                    <DropDownList v-model="registrationRequiredAttributesForFamilies" runat="server" label="Required Attributes for Families" :items="familyAttributeOptions" multiple />
+                    <DropDownList v-model="registrationOptionalAttributesForFamilies" runat="server" label="Optional Attributes for Families" :items="familyAttributeOptions" multiple />
+                    <DropDownList v-model="registrationDisplayBirthdateOnAdults" runat="server" label="Display Birthdate on Adults" help="How should Birthdate be displayed for adults?" :items="displayOptions" />
+                    <DropDownList v-model="registrationDisplayBirthdateOnChildren" runat="server" label="Display Birthdate on Children" help="How should Birthdate be displayed for children?" :items="displayOptions" />
+                    <DropDownList v-model="registrationDisplayGradeOnChildren" runat="server" label="Display Grade on Children" help="How should Grade be displayed for children?" :items="displayOptions" />
+                    <DropDownList v-model="registrationDisplayRaceOnAdults" runat="server" label="Display Race on Adults" help="How should race be displayed for adults?" :items="displayOptions" />
+                    <DropDownList v-model="registrationDisplayEthnicityOnAdults" runat="server" label="Display Ethnicity on Adults" help="How should ethnicity be displayed for adults?" :items="displayOptions" />
+                    <DropDownList v-model="registrationDisplayRaceOnChildren" runat="server" label="Display Race on Children" help="How should race be displayed for children?" :items="displayOptions" />
+                    <DropDownList v-model="registrationDisplayEthnicityOnChildren" runat="server" label="Display Ethnicity on Children" help="How should ethnicity be displayed for children?" :items="displayOptions" />
+                </div>
+            </div>
+        </Panel>
+
+        <!-- Advanced Settings -->
+        <Panel title="Advanced Settings" :hasCollapse="true">
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="searchRegex"
+                             label="Regular Expression Filter"
+                             help="An optional regular expression that will be run against any search input before the search is performed. This is useful for removing any special characters." />
+
+                    <TextBox v-model="refreshInterval"
+                             label="Refresh Interval"
+                             help="How often (seconds) should the welcome page automatically refresh and check for updated configuration information."
+                             :rules="validateNumberValue" />
+
+                    <CheckBoxList v-model="specialNeedsValues"
+                                  :items="specialNeedsOptions"
+                                  label="Special Needs"
+                                  help="This feature is only supported on next-gen check-in. When Remove Special Needs Groups is selected, then a group will not be available unless the person is also marked as special needs. When Remove Non-Special Needs Groups is selected, then a group will not be available unless the person is not marked as special needs." />
+                </div>
+                <div class="col-md-6">
+                    <CheckBox v-model="ageRequired"
+                              label="Age is Required"
+                              help="If an area and/or group has an age requirement, check this option to prevent people without an age from checking in to that area/group." />
+                    <CheckBox v-model="gradeRequired"
+                              label="Grade is Required"
+                              help="If an area and/or group has a grade requirement, check this option to prevent people without a grade from checking in to that area/group." />
+
+                    <RadioButtonList v-model="abilityLevelDetermination"
+                                     label="Ability Level Determination"
+                                     help="Determines how check-in should gather the individual's current ability level.
+                                            &quot;Ask&quot; means that the individual will be asked as a part of each check-in.
+                                            &quot;Don't Ask&quot; will trust that there is another process in place to gather ability level information and the individual will not be asked for their level during check-in.
+                                            &quot;Don't Ask if...&quot; will only ask if they already have an ability level. This will allow a person's ability level to be updated during the check-in process."
+                                     :items="abilityLevelDeterminationOptions" />
+
+                    <CheckBox v-model="displayLocCount"
+                              label="Display Location Count"
+                              help="Should the room locations options include a count of how many people are currently checked into that location?" />
+                </div>
+            </div>
+        </Panel>
+
+        <!-- Custom Settings -->
+        <Panel v-if="hasAttributeValues" title="Custom Settings" :hasCollapse="true">
+            <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+        </Panel>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { CheckinTypeBag } from "@Obsidian/ViewModels/Blocks/Checkin/Config/CheckinTypeDetail/checkinTypeBag";
+    import { CheckinTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Checkin/Config/CheckinTypeDetail/checkinTypeDetailOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { CheckInGeneralSettingsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Config/CheckinTypeDetail/checkInGeneralSettingsBag";
+    import { CheckInBarcodeSettingsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Config/CheckinTypeDetail/checkInBarcodeSettingsBag";
+    import { CheckInSearchSettingsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Config/CheckinTypeDetail/checkInSearchSettingsBag";
+    import { CheckInHeaderTextBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Config/CheckinTypeDetail/checkInHeaderTextBag";
+    import { CheckInDisplaySettingsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Config/CheckinTypeDetail/checkInDisplaySettingsBag";
+    import { CheckInRegistrationSettingsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Config/CheckinTypeDetail/checkInRegistrationSettingsBag";
+    import { CheckInAdvancedSettingsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Config/CheckinTypeDetail/checkInAdvancedSettingsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<CheckinTypeBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<CheckinTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<CheckinTypeBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const iconCssClass = propertyRef(props.modelValue?.bag?.iconCssClass ?? "", "iconCssClass");
+
+    // General Settings
+    const checkInType = ref(props.modelValue?.bag?.generalSettings?.checkInType ?? "");
+    const allowCheckoutAtKiosk = ref(props.modelValue?.bag?.generalSettings?.allowCheckoutAtKiosk ?? false);
+    const allowCheckoutInManager = ref(props.modelValue?.bag?.generalSettings?.allowCheckoutInManager ?? false);
+    const enablePresence = ref(props.modelValue?.bag?.generalSettings?.enablePresence ?? false);
+    const enableManager = ref(props.modelValue?.bag?.generalSettings?.enableManager ?? false);
+    const enableOverride = ref(props.modelValue?.bag?.generalSettings?.enableOverride ?? false);
+    const achievementTypes = ref(props.modelValue?.bag?.generalSettings?.achievementTypes ?? []);
+    const autoSelectDaysBack = ref(props.modelValue?.bag?.generalSettings?.autoSelectDaysBack ?? "");
+    const autoSelectOptions = ref(props.modelValue?.bag?.generalSettings?.autoSelectOptions ?? "");
+    const useSameOptions = ref(props.modelValue?.bag?.generalSettings?.useSameOptions ?? false);
+    const preventInactivePeople = ref(props.modelValue?.bag?.generalSettings?.preventInactivePeople ?? false);
+    const preventDuplicateCheckin = ref(props.modelValue?.bag?.generalSettings?.preventDuplicateCheckin ?? false);
+
+    // Barcode Settings
+    const codeAlphaLength = ref(props.modelValue?.bag?.barcodeSettings?.codeAlphaLength ?? "");
+    const codeAlphaNumericLength = ref(props.modelValue?.bag?.barcodeSettings?.codeAlphaNumericLength ?? "");
+    const codeNumericLength = ref(props.modelValue?.bag?.barcodeSettings?.codeNumericLength ?? "");
+    const codeRandom = ref(props.modelValue?.bag?.barcodeSettings?.codeRandom ?? false);
+    const reuseCode = ref(props.modelValue?.bag?.barcodeSettings?.reuseCode ?? false);
+
+    // Search Settings
+    const searchType = ref(props.modelValue?.bag?.searchSettings?.searchType ?? "");
+    const maxResults = ref(props.modelValue?.bag?.searchSettings?.maxResults ?? "");
+    const minPhoneLength = ref(props.modelValue?.bag?.searchSettings?.minPhoneLength ?? "");
+    const maxPhoneLength = ref(props.modelValue?.bag?.searchSettings?.maxPhoneLength ?? "");
+    const phoneSearchType = ref(props.modelValue?.bag?.searchSettings?.phoneSearchType ?? "");
+
+    // Header Text
+    const actionSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.actionSelectHeaderTemplate ?? "");
+    const checkoutPersonSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.checkoutPersonSelectHeaderTemplate ?? "");
+    const personSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.personSelectHeaderTemplate ?? "");
+    const multiPersonSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.multiPersonSelectHeaderTemplate ?? "");
+    const groupTypeSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.groupTypeSelectHeaderTemplate ?? "");
+    const timeSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.timeSelectHeaderTemplate ?? "");
+    const abilityLevelSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.abilityLevelSelectHeaderTemplate ?? "");
+    const locationSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.locationSelectHeaderTemplate ?? "");
+    const groupSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.groupSelectHeaderTemplate ?? "");
+
+    // Display Settings
+    const hidePhotos = ref(props.modelValue?.bag?.displaySettings?.hidePhotos ?? false);
+    const startTemplate = ref(props.modelValue?.bag?.displaySettings?.startTemplate ?? "");
+    const familySelectTemplate = ref(props.modelValue?.bag?.displaySettings?.familySelectTemplate ?? "");
+    const personSelectTemplate = ref(props.modelValue?.bag?.displaySettings?.personSelectTemplate ?? "");
+    const successTemplateOverrideDisplayMode = ref(props.modelValue?.bag?.displaySettings?.successTemplateOverrideDisplayMode ?? "");
+    const successTemplate = ref(props.modelValue?.bag?.displaySettings?.successTemplate ?? "");
+
+    // Registration Settings
+    const registrationDefaultPersonConnectionStatus = ref(props.modelValue?.bag?.registrationSettings?.registrationDefaultPersonConnectionStatus ?? {});
+    const registrationDisplayAlternateIdFieldForAdults = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayAlternateIdFieldForAdults ?? false);
+    const registrationDisplayAlternateIdFieldForChildren = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayAlternateIdFieldForChildren ?? false);
+    const registrationDisplaySmsEnabled = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplaySmsEnabled ?? false);
+    const registrationSmsEnabledByDefault = ref(props.modelValue?.bag?.registrationSettings?.registrationSmsEnabledByDefault ?? false);
+    const enableCheckInAfterRegistration = ref(props.modelValue?.bag?.registrationSettings?.enableCheckInAfterRegistration ?? false);
+    const knownRelationshipTypes = ref(props.modelValue?.bag?.registrationSettings?.knownRelationshipTypes ?? []);
+    const sameFamilyKnownRelationshipTypes = ref(props.modelValue?.bag?.registrationSettings?.sameFamilyKnownRelationshipTypes ?? []);
+    const canCheckInKnownRelationshipTypes = ref(props.modelValue?.bag?.registrationSettings?.canCheckInKnownRelationshipTypes ?? []);
+    const registrationAddFamilyWorkflowTypes = ref(props.modelValue?.bag?.registrationSettings?.registrationAddFamilyWorkflowTypes ?? []);
+    const registrationAddPersonWorkflowTypes = ref(props.modelValue?.bag?.registrationSettings?.registrationAddPersonWorkflowTypes ?? []);
+    const registrationRequiredAttributesForAdults = ref(props.modelValue?.bag?.registrationSettings?.registrationRequiredAttributesForAdults ?? []);
+    const registrationOptionalAttributesForAdults = ref(props.modelValue?.bag?.registrationSettings?.registrationOptionalAttributesForAdults ?? []);
+    const registrationRequiredAttributesForChildren = ref(props.modelValue?.bag?.registrationSettings?.registrationRequiredAttributesForChildren ?? []);
+    const registrationOptionalAttributesForChildren = ref(props.modelValue?.bag?.registrationSettings?.registrationOptionalAttributesForChildren ?? []);
+    const registrationRequiredAttributesForFamilies = ref(props.modelValue?.bag?.registrationSettings?.registrationRequiredAttributesForFamilies ?? []);
+    const registrationOptionalAttributesForFamilies = ref(props.modelValue?.bag?.registrationSettings?.registrationOptionalAttributesForFamilies ?? []);
+    const registrationDisplayBirthdateOnAdults = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayBirthdateOnAdults ?? "");
+    const registrationDisplayBirthdateOnChildren = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayBirthdateOnChildren ?? "");
+    const registrationDisplayGradeOnChildren = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayGradeOnChildren ?? "");
+    const registrationDisplayRaceOnAdults = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayRaceOnAdults ?? "");
+    const registrationDisplayEthnicityOnAdults = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayEthnicityOnAdults ?? "");
+    const registrationDisplayRaceOnChildren = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayRaceOnChildren ?? "");
+    const registrationDisplayEthnicityOnChildren = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayEthnicityOnChildren ?? "");
+
+    // Advanced Settings
+    const searchRegex = ref(props.modelValue?.bag?.advancedSettings?.searchRegex ?? "");
+    const refreshInterval = ref(props.modelValue?.bag?.advancedSettings?.refreshInterval ?? "");
+    const ageRequired = ref(props.modelValue?.bag?.advancedSettings?.ageRequired ?? false);
+    const gradeRequired = ref(props.modelValue?.bag?.advancedSettings?.gradeRequired ?? false);
+    const abilityLevelDetermination = ref(props.modelValue?.bag?.advancedSettings?.abilityLevelDetermination ?? "");
+    const displayLocCount = ref(props.modelValue?.bag?.advancedSettings?.displayLocCount ?? false);
+    const specialNeedsValues = ref(props.modelValue?.bag?.advancedSettings?.specialNeedsValues ?? []);
+
+    // Dropdown Options
+    const nameSearch = ref(props.options.nameSearch ?? null);
+    const achievementTypeOptions = ref(props.options.achievementTypeOptions ?? []);
+    const templateDisplayOptions = ref(props.options.templateDisplayOptions ?? []);
+    const relationshipTypeOptions = ref(props.options.relationshipTypeOptions ?? []);
+    const familyAttributeOptions = ref(props.options.familyAttributeOptions ?? []);
+    const personAttributeOptions = ref(props.options.personAttributeOptions ?? []);
+    const displayOptions = ref(props.options.displayOptions ?? []);
+    const searchTypeOptions = ref(props.options.searchTypeOptions ?? []);
+    const checkInTypeOptions = ref<ListItemBag[]>([
+        {
+            text: "Family",
+            value: "1",
+        },
+        {
+            text: "Individual",
+            value: "0",
+        }
+    ]);
+    const autoSelectOptionsItems = ref<ListItemBag[]>([
+        {
+            text: "People Only",
+            value: "0",
+        },
+        {
+            text: "People and Their Area/Group/Location",
+            value: "1",
+        }
+    ]);
+    const phoneSearchTypeOptions = ref<ListItemBag[]>([
+        {
+            text: "Contains",
+            value: "0",
+        },
+        {
+            text: "Ends With",
+            value: "1",
+        }
+    ]);
+    const abilityLevelDeterminationOptions = ref<ListItemBag[]>([
+        {
+            text: "Ask",
+            value: "0",
+        },
+        {
+            text: "Don't Ask",
+            value: "1",
+        },
+        {
+            text: "Don't Ask If There Is No Ability Level",
+            value: "2",
+        }
+    ]);
+    const specialNeedsOptions = ref<ListItemBag[]>([
+        {
+            text: "Remove Special Needs Groups",
+            value: "special-needs",
+        },
+        {
+            text: "Remove Non-Special Needs Groups",
+            value: "non-special-needs",
+        }
+    ]);
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, name, iconCssClass];
+
+    const generalSettingsRefs = [checkInType, allowCheckoutAtKiosk, allowCheckoutInManager, enablePresence, enableManager, enableOverride, achievementTypes,
+        autoSelectDaysBack, autoSelectOptions, useSameOptions, preventInactivePeople, preventDuplicateCheckin];
+
+    const barcodeSettingsRefs = [codeAlphaLength, codeAlphaNumericLength, codeNumericLength, codeRandom, reuseCode];
+
+    const searchSettingsRefs = [searchType, maxResults, minPhoneLength, maxPhoneLength, phoneSearchType];
+
+    const headerTextRefs = [actionSelectHeaderTemplate, checkoutPersonSelectHeaderTemplate, personSelectHeaderTemplate, multiPersonSelectHeaderTemplate,
+        groupTypeSelectHeaderTemplate, timeSelectHeaderTemplate, abilityLevelSelectHeaderTemplate, locationSelectHeaderTemplate, groupSelectHeaderTemplate];
+
+    const displaySettingsRefs = [hidePhotos, startTemplate, familySelectTemplate, personSelectTemplate, successTemplateOverrideDisplayMode, successTemplate];
+
+    const registrationSettingsRefs = [registrationDefaultPersonConnectionStatus, registrationDisplayAlternateIdFieldForAdults, registrationDisplayAlternateIdFieldForChildren,
+        registrationDisplaySmsEnabled, registrationSmsEnabledByDefault, enableCheckInAfterRegistration, knownRelationshipTypes, sameFamilyKnownRelationshipTypes,
+        canCheckInKnownRelationshipTypes, registrationAddFamilyWorkflowTypes, registrationAddPersonWorkflowTypes, registrationRequiredAttributesForAdults, registrationOptionalAttributesForAdults,
+        registrationRequiredAttributesForChildren, registrationOptionalAttributesForChildren, registrationRequiredAttributesForFamilies, registrationDisplayBirthdateOnAdults, registrationDisplayBirthdateOnChildren,
+        registrationDisplayGradeOnChildren, registrationDisplayRaceOnAdults, registrationDisplayEthnicityOnAdults, registrationDisplayRaceOnChildren, registrationDisplayEthnicityOnChildren];
+
+    const advancedSettingsRefs = [searchRegex, refreshInterval, ageRequired, gradeRequired, abilityLevelDetermination, displayLocCount, specialNeedsValues];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const hasAttributeValues = computed((): boolean => {
+        return Object.keys(attributeValues.value).length > 0;
+    });
+
+    const isFamilyType = computed((): boolean => {
+        return checkInType.value === "1";
+    });
+
+    const showPhoneFields = computed((): boolean => {
+        let showPhoneFields = true;
+        if (searchType.value) {
+            showPhoneFields = nameSearch.value == null || searchType.value.toUpperCase() !== nameSearch.value.value?.toUpperCase();
+        }
+        return showPhoneFields;
+    });
+
+    const isSuccessTemplateVisible = computed((): boolean => {
+        return successTemplateOverrideDisplayMode.value !== "0";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function validateNumberValue(value: unknown): string | boolean {
+
+        const stringValue = value as string;
+
+        if (stringValue) {
+            if (!isValidNumber(stringValue)) {
+                return "must be a valid number.";
+            }
+            else if (Number(stringValue) < 0) {
+                return "must have a value of 0 or more.";
+            }
+        }
+
+        return true;
+    }
+
+    function minZeroMaxten(value: unknown): string | boolean {
+
+        const stringValue = value as string;
+
+        if (stringValue && isValidNumber(stringValue)) {
+            const numberValue = Number(stringValue);
+            if (numberValue < 0) {
+                return "must have a value of 0 or more.";
+            }
+            if (numberValue > 10) {
+                return "must have a value between 0 and 10.";
+            }
+        }
+
+        return true;
+    }
+
+    function minOneMaxten(value: unknown): string | boolean {
+
+        const stringValue = value as string;
+
+        if (stringValue && isValidNumber(stringValue)) {
+            const numberValue = Number(stringValue);
+            if (numberValue < 1) {
+                return "must have a value of 1 or more.";
+            }
+            if (numberValue > 10) {
+                return "must have a value between 1 and 10.";
+            }
+        }
+
+        return true;
+    }
+
+    function isValidNumber(value: string | null | undefined): boolean {
+        if (!value) {
+            return false;
+        }
+
+        const num = Number(value);
+        return !isNaN(num) && isFinite(num);
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(iconCssClass, props.modelValue?.bag?.iconCssClass ?? "");
+
+        // Advavnced Settings
+        updateRefValue(searchRegex, props.modelValue?.bag?.advancedSettings?.searchRegex ?? "");
+        updateRefValue(refreshInterval, props.modelValue?.bag?.advancedSettings?.refreshInterval ?? "");
+        updateRefValue(ageRequired, props.modelValue?.bag?.advancedSettings?.ageRequired ?? false);
+        updateRefValue(gradeRequired, props.modelValue?.bag?.advancedSettings?.gradeRequired ?? false);
+        updateRefValue(abilityLevelDetermination, props.modelValue?.bag?.advancedSettings?.abilityLevelDetermination ?? "");
+        updateRefValue(displayLocCount, props.modelValue?.bag?.advancedSettings?.displayLocCount ?? false);
+        updateRefValue(specialNeedsValues, props.modelValue?.bag?.advancedSettings?.specialNeedsValues ?? []);
+
+        // General Settings
+        updateRefValue(checkInType, props.modelValue?.bag?.generalSettings?.checkInType ?? "");
+        updateRefValue(allowCheckoutAtKiosk, props.modelValue?.bag?.generalSettings?.allowCheckoutAtKiosk ?? false);
+        updateRefValue(allowCheckoutInManager, props.modelValue?.bag?.generalSettings?.allowCheckoutInManager ?? false);
+        updateRefValue(enablePresence, props.modelValue?.bag?.generalSettings?.enablePresence ?? false);
+        updateRefValue(enableManager, props.modelValue?.bag?.generalSettings?.enableManager ?? false);
+        updateRefValue(enableOverride, props.modelValue?.bag?.generalSettings?.enableOverride ?? false);
+        updateRefValue(achievementTypes, props.modelValue?.bag?.generalSettings?.achievementTypes ?? []);
+        updateRefValue(autoSelectDaysBack, props.modelValue?.bag?.generalSettings?.autoSelectDaysBack ?? "");
+        updateRefValue(autoSelectOptions, props.modelValue?.bag?.generalSettings?.autoSelectOptions ?? "");
+        updateRefValue(useSameOptions, props.modelValue?.bag?.generalSettings?.useSameOptions ?? false);
+        updateRefValue(preventInactivePeople, props.modelValue?.bag?.generalSettings?.preventInactivePeople ?? false);
+        updateRefValue(preventDuplicateCheckin, props.modelValue?.bag?.generalSettings?.preventDuplicateCheckin ?? false);
+
+        // Barcode Settings
+        updateRefValue(codeAlphaLength, props.modelValue?.bag?.barcodeSettings?.codeAlphaLength ?? "");
+        updateRefValue(codeAlphaNumericLength, props.modelValue?.bag?.barcodeSettings?.codeAlphaNumericLength ?? "");
+        updateRefValue(codeNumericLength, props.modelValue?.bag?.barcodeSettings?.codeNumericLength ?? "");
+        updateRefValue(codeRandom, props.modelValue?.bag?.barcodeSettings?.codeRandom ?? false);
+        updateRefValue(reuseCode, props.modelValue?.bag?.barcodeSettings?.reuseCode ?? false);
+
+        // Search Settings
+        updateRefValue(searchType, props.modelValue?.bag?.searchSettings?.searchType ?? "");
+        updateRefValue(maxResults, props.modelValue?.bag?.searchSettings?.maxResults ?? "");
+        updateRefValue(minPhoneLength, props.modelValue?.bag?.searchSettings?.minPhoneLength ?? "");
+        updateRefValue(maxPhoneLength, props.modelValue?.bag?.searchSettings?.maxPhoneLength ?? "");
+        updateRefValue(phoneSearchType, props.modelValue?.bag?.searchSettings?.phoneSearchType ?? "");
+
+        // Header Text
+        updateRefValue(actionSelectHeaderTemplate, props.modelValue?.bag?.headerText?.actionSelectHeaderTemplate ?? "");
+        updateRefValue(checkoutPersonSelectHeaderTemplate, props.modelValue?.bag?.headerText?.checkoutPersonSelectHeaderTemplate ?? "");
+        updateRefValue(personSelectHeaderTemplate, props.modelValue?.bag?.headerText?.personSelectHeaderTemplate ?? "");
+        updateRefValue(multiPersonSelectHeaderTemplate, props.modelValue?.bag?.headerText?.multiPersonSelectHeaderTemplate ?? "");
+        updateRefValue(groupTypeSelectHeaderTemplate, props.modelValue?.bag?.headerText?.groupTypeSelectHeaderTemplate ?? "");
+        updateRefValue(timeSelectHeaderTemplate, props.modelValue?.bag?.headerText?.timeSelectHeaderTemplate ?? "");
+        updateRefValue(abilityLevelSelectHeaderTemplate, props.modelValue?.bag?.headerText?.abilityLevelSelectHeaderTemplate ?? "");
+        updateRefValue(locationSelectHeaderTemplate, props.modelValue?.bag?.headerText?.locationSelectHeaderTemplate ?? "");
+        updateRefValue(groupSelectHeaderTemplate, props.modelValue?.bag?.headerText?.groupSelectHeaderTemplate ?? "");
+
+        // Display Settings
+        updateRefValue(hidePhotos, props.modelValue?.bag?.displaySettings?.hidePhotos ?? false);
+        updateRefValue(startTemplate, props.modelValue?.bag?.displaySettings?.startTemplate ?? "");
+        updateRefValue(familySelectTemplate, props.modelValue?.bag?.displaySettings?.familySelectTemplate ?? "");
+        updateRefValue(personSelectTemplate, props.modelValue?.bag?.displaySettings?.personSelectTemplate ?? "");
+        updateRefValue(successTemplateOverrideDisplayMode, props.modelValue?.bag?.displaySettings?.successTemplateOverrideDisplayMode ?? "");
+        updateRefValue(successTemplate, props.modelValue?.bag?.displaySettings?.successTemplate ?? "");
+
+        // Registration Settings
+        updateRefValue(registrationDefaultPersonConnectionStatus, props.modelValue?.bag?.registrationSettings?.registrationDefaultPersonConnectionStatus ?? {});
+        updateRefValue(registrationDisplayAlternateIdFieldForAdults, props.modelValue?.bag?.registrationSettings?.registrationDisplayAlternateIdFieldForAdults ?? false);
+        updateRefValue(registrationDisplayAlternateIdFieldForChildren, props.modelValue?.bag?.registrationSettings?.registrationDisplayAlternateIdFieldForChildren ?? false);
+        updateRefValue(registrationDisplaySmsEnabled, props.modelValue?.bag?.registrationSettings?.registrationDisplaySmsEnabled ?? false);
+        updateRefValue(registrationSmsEnabledByDefault, props.modelValue?.bag?.registrationSettings?.registrationSmsEnabledByDefault ?? false);
+        updateRefValue(enableCheckInAfterRegistration, props.modelValue?.bag?.registrationSettings?.enableCheckInAfterRegistration ?? false);
+        updateRefValue(knownRelationshipTypes, props.modelValue?.bag?.registrationSettings?.knownRelationshipTypes ?? []);
+        updateRefValue(sameFamilyKnownRelationshipTypes, props.modelValue?.bag?.registrationSettings?.sameFamilyKnownRelationshipTypes ?? []);
+        updateRefValue(canCheckInKnownRelationshipTypes, props.modelValue?.bag?.registrationSettings?.canCheckInKnownRelationshipTypes ?? []);
+        updateRefValue(registrationAddFamilyWorkflowTypes, props.modelValue?.bag?.registrationSettings?.registrationAddFamilyWorkflowTypes ?? []);
+        updateRefValue(registrationAddPersonWorkflowTypes, props.modelValue?.bag?.registrationSettings?.registrationAddPersonWorkflowTypes ?? []);
+        updateRefValue(registrationRequiredAttributesForAdults, props.modelValue?.bag?.registrationSettings?.registrationRequiredAttributesForAdults ?? []);
+        updateRefValue(registrationOptionalAttributesForAdults, props.modelValue?.bag?.registrationSettings?.registrationOptionalAttributesForAdults ?? []);
+        updateRefValue(registrationRequiredAttributesForChildren, props.modelValue?.bag?.registrationSettings?.registrationRequiredAttributesForChildren ?? []);
+        updateRefValue(registrationOptionalAttributesForChildren, props.modelValue?.bag?.registrationSettings?.registrationOptionalAttributesForChildren ?? []);
+        updateRefValue(registrationRequiredAttributesForFamilies, props.modelValue?.bag?.registrationSettings?.registrationRequiredAttributesForFamilies ?? []);
+        updateRefValue(registrationOptionalAttributesForFamilies, props.modelValue?.bag?.registrationSettings?.registrationOptionalAttributesForFamilies ?? []);
+        updateRefValue(registrationDisplayBirthdateOnAdults, props.modelValue?.bag?.registrationSettings?.registrationDisplayBirthdateOnAdults ?? "");
+        updateRefValue(registrationDisplayBirthdateOnChildren, props.modelValue?.bag?.registrationSettings?.registrationDisplayBirthdateOnChildren ?? "");
+        updateRefValue(registrationDisplayGradeOnChildren, props.modelValue?.bag?.registrationSettings?.registrationDisplayGradeOnChildren ?? "");
+        updateRefValue(registrationDisplayRaceOnAdults, props.modelValue?.bag?.registrationSettings?.registrationDisplayRaceOnAdults ?? "");
+        updateRefValue(registrationDisplayEthnicityOnAdults, props.modelValue?.bag?.registrationSettings?.registrationDisplayEthnicityOnAdults ?? "");
+        updateRefValue(registrationDisplayRaceOnChildren, props.modelValue?.bag?.registrationSettings?.registrationDisplayRaceOnChildren ?? "");
+        updateRefValue(registrationDisplayEthnicityOnChildren, props.modelValue?.bag?.registrationSettings?.registrationDisplayEthnicityOnChildren ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...generalSettingsRefs, ...barcodeSettingsRefs, ...searchSettingsRefs, ...headerTextRefs,
+        ...displaySettingsRefs, ...registrationSettingsRefs, ...advancedSettingsRefs, ...propRefs], () => {
+
+            const newValue: ValidPropertiesBox<CheckinTypeBag> = {
+                bag: { ...props.modelValue.bag } as CheckinTypeBag,
+                validProperties: props.modelValue.validProperties
+            };
+
+            const advancedSettings: CheckInAdvancedSettingsBag = {
+                searchRegex: searchRegex.value,
+                refreshInterval: refreshInterval.value,
+                ageRequired: ageRequired.value,
+                gradeRequired: gradeRequired.value,
+                abilityLevelDetermination: abilityLevelDetermination.value,
+                displayLocCount: displayLocCount.value,
+                specialNeedsValues: specialNeedsValues.value
+            };
+
+            const registrationSettings: CheckInRegistrationSettingsBag = {
+                registrationDefaultPersonConnectionStatus: registrationDefaultPersonConnectionStatus.value,
+                registrationDisplayAlternateIdFieldForAdults: registrationDisplayAlternateIdFieldForAdults.value,
+                registrationDisplayAlternateIdFieldForChildren: registrationDisplayAlternateIdFieldForChildren.value,
+                registrationDisplaySmsEnabled: registrationDisplaySmsEnabled.value,
+                registrationSmsEnabledByDefault: registrationSmsEnabledByDefault.value,
+                enableCheckInAfterRegistration: enableCheckInAfterRegistration.value,
+                knownRelationshipTypes: knownRelationshipTypes.value,
+                sameFamilyKnownRelationshipTypes: sameFamilyKnownRelationshipTypes.value,
+                canCheckInKnownRelationshipTypes: canCheckInKnownRelationshipTypes.value,
+                registrationAddFamilyWorkflowTypes: registrationAddFamilyWorkflowTypes.value,
+                registrationAddPersonWorkflowTypes: registrationAddPersonWorkflowTypes.value,
+                registrationRequiredAttributesForAdults: registrationRequiredAttributesForAdults.value,
+                registrationOptionalAttributesForAdults: registrationOptionalAttributesForAdults.value,
+                registrationRequiredAttributesForChildren: registrationRequiredAttributesForChildren.value,
+                registrationOptionalAttributesForChildren: registrationOptionalAttributesForChildren.value,
+                registrationRequiredAttributesForFamilies: registrationRequiredAttributesForFamilies.value,
+                registrationOptionalAttributesForFamilies: registrationOptionalAttributesForFamilies.value,
+                registrationDisplayBirthdateOnAdults: registrationDisplayBirthdateOnAdults.value,
+                registrationDisplayBirthdateOnChildren: registrationDisplayBirthdateOnChildren.value,
+                registrationDisplayGradeOnChildren: registrationDisplayGradeOnChildren.value,
+                registrationDisplayRaceOnAdults: registrationDisplayRaceOnAdults.value,
+                registrationDisplayRaceOnChildren: registrationDisplayRaceOnChildren.value,
+                registrationDisplayEthnicityOnAdults: registrationDisplayEthnicityOnAdults.value,
+                registrationDisplayEthnicityOnChildren: registrationDisplayEthnicityOnChildren.value,
+            };
+
+            const displaySettings: CheckInDisplaySettingsBag = {
+                hidePhotos: hidePhotos.value,
+                startTemplate: startTemplate.value,
+                familySelectTemplate: familySelectTemplate.value,
+                personSelectTemplate: personSelectTemplate.value,
+                successTemplateOverrideDisplayMode: successTemplateOverrideDisplayMode.value,
+                successTemplate: successTemplate.value,
+            };
+
+            const generalSettings: CheckInGeneralSettingsBag = {
+                checkInType: checkInType.value,
+                allowCheckoutAtKiosk: allowCheckoutAtKiosk.value,
+                allowCheckoutInManager: allowCheckoutInManager.value,
+                enablePresence: enablePresence.value,
+                enableManager: enableManager.value,
+                enableOverride: enableOverride.value,
+                achievementTypes: achievementTypes.value,
+                autoSelectDaysBack: autoSelectDaysBack.value,
+                autoSelectOptions: autoSelectOptions.value,
+                useSameOptions: useSameOptions.value ?? false,
+                preventInactivePeople: preventInactivePeople.value,
+                preventDuplicateCheckin: preventDuplicateCheckin.value,
+            };
+
+            const barcodeSettings: CheckInBarcodeSettingsBag = {
+                codeAlphaLength: codeAlphaLength.value,
+                codeAlphaNumericLength: codeAlphaNumericLength.value,
+                codeNumericLength: codeNumericLength.value,
+                codeRandom: codeRandom.value,
+                reuseCode: reuseCode.value,
+            };
+
+            const searchSettings: CheckInSearchSettingsBag = {
+                searchType: searchType.value,
+                maxResults: maxResults.value,
+                minPhoneLength: minPhoneLength.value,
+                maxPhoneLength: maxPhoneLength.value,
+                phoneSearchType: phoneSearchType.value,
+            };
+
+            const headerText: CheckInHeaderTextBag = {
+                actionSelectHeaderTemplate: actionSelectHeaderTemplate.value,
+                checkoutPersonSelectHeaderTemplate: checkoutPersonSelectHeaderTemplate.value,
+                personSelectHeaderTemplate: personSelectHeaderTemplate.value,
+                multiPersonSelectHeaderTemplate: multiPersonSelectHeaderTemplate.value,
+                groupTypeSelectHeaderTemplate: groupTypeSelectHeaderTemplate.value,
+                timeSelectHeaderTemplate: timeSelectHeaderTemplate.value,
+                abilityLevelSelectHeaderTemplate: abilityLevelSelectHeaderTemplate.value,
+                locationSelectHeaderTemplate: locationSelectHeaderTemplate.value,
+                groupSelectHeaderTemplate: groupSelectHeaderTemplate.value,
+            };
+
+            // This should suffice for now, but if a conclusion is reached on how to handle bags with nested properties
+            // this will warrant a second look.
+            setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+            setPropertiesBoxValue(newValue, "description", description.value);
+            setPropertiesBoxValue(newValue, "name", name.value);
+            setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+            setPropertiesBoxValue(newValue, "generalSettings", generalSettings);
+            setPropertiesBoxValue(newValue, "barcodeSettings", barcodeSettings);
+            setPropertiesBoxValue(newValue, "searchSettings", searchSettings);
+            setPropertiesBoxValue(newValue, "displaySettings", displaySettings);
+            setPropertiesBoxValue(newValue, "registrationSettings", registrationSettings);
+            setPropertiesBoxValue(newValue, "headerText", headerText);
+            setPropertiesBoxValue(newValue, "advancedSettings", advancedSettings);
+
+            emit("update:modelValue", newValue);
+        });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

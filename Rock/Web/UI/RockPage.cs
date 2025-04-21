@@ -35,6 +35,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Attribute;
 using Rock.Blocks;
+using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -44,14 +45,10 @@ using Rock.Security;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
-using Rock.Utility.Settings;
-using Rock.ViewModels;
 using Rock.ViewModels.Crm;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Web.HttpModules;
 using Rock.Web.UI.Controls;
-
-using static Rock.Security.Authorization;
 
 using Page = System.Web.UI.Page;
 
@@ -68,6 +65,7 @@ namespace Rock.Web.UI
         private PlaceHolder phLoadStats;
         private LinkButton _btnRestoreImpersonatedByUser;
         private ScriptManager _scriptManager;
+        private HiddenField _hfInteractionGuid;
         private PageCache _pageCache = null;
 
         private string _clientType = null;
@@ -86,6 +84,11 @@ namespace Rock.Web.UI
         /// Obsidian libraries to be loaded.
         /// </summary>
         private bool _pageNeedsObsidian = false;
+
+        /// <summary>
+        /// Will be <c>true</c> if the page has any Obsidian blocks to initialize.
+        /// </summary>
+        private bool _pageHasObsidianBlock = false;
 
         private readonly string _obsidianPageTimingControlId = "lObsidianPageTimings";
         private readonly List<DebugTimingViewModel> _debugTimingViewModels = new List<DebugTimingViewModel>();
@@ -111,6 +114,11 @@ namespace Rock.Web.UI
         /// </summary>
         private readonly List<IServiceScope> _pageServiceScopes = new List<IServiceScope>();
 
+        /// <summary>
+        /// The currently running Rock version.
+        /// </summary>
+        private static string _rockVersion = "";
+        
         /// <summary>
         /// A list of blocks (their paths) that will force the obsidian libraries to be loaded.
         /// This is particularly useful when a block has a settings dialog that is dependent on
@@ -648,6 +656,7 @@ namespace Rock.Web.UI
         static RockPage()
         {
             InitializeObsidianFingerprint();
+            _rockVersion = "Rock v" + typeof( Rock.Web.UI.RockPage ).Assembly.GetName().Version.ToString();
         }
 
         #endregion
@@ -713,6 +722,51 @@ namespace Rock.Web.UI
             {
                 ViewStatePersisted( this, EventArgs.Empty );
             }
+        }
+
+        /// <summary>
+        /// Occurs when [page initialized]. This event is for registering any custom event shortkeys for the page.
+        /// </summary>
+        protected virtual void RegisterShortcutKeys()
+        {
+            // Register the shortcut keys with debouncing
+            string script = @"
+                (function() {
+                    var lastDispatchTime = 0;
+                    var lastDispatchedElement = null;
+                    var debounceDelay = 500;
+
+                    document.addEventListener('keydown', function (event) {
+                        if (event.altKey) {
+                            var shortcutKey = event.key.toLowerCase();
+
+                            // Check if a shortcut key is registered for the pressed key
+                            var element = document.querySelector('[data-shortcut-key=""' + shortcutKey + '""]');
+
+                    
+                            if (element) {
+                                var currentTime = performance.now();
+
+                                if (lastDispatchedElement === element && (currentTime - lastDispatchTime) < debounceDelay) {
+                                    return;
+                                }
+
+                                lastDispatchTime = currentTime;
+                                lastDispatchedElement = element;
+
+                                if (shortcutKey === 'arrowright' || shortcutKey === 'arrowleft') {
+                                    event.preventDefault();
+                                }
+
+                                event.preventDefault();
+                                element.click();
+                            }
+                        }
+                    });
+                })();
+            ";
+
+            ScriptManager.RegisterStartupScript( this, typeof( RockPage ), "ShortcutKeys", script, true );
         }
 
         #endregion
@@ -795,11 +849,12 @@ namespace Rock.Web.UI
 
             var stopwatchInitEvents = Stopwatch.StartNew();
 
+            // Register shortcut keys
+            RegisterShortcutKeys();
+
 #pragma warning disable 618
             ConvertLegacyContextCookiesToJSON();
 #pragma warning restore 618
-
-            RequestContext = new RockRequestContext( Request, new RockResponseContext( this ), CurrentUser );
 
             if ( _pageCache != null )
             {
@@ -867,10 +922,9 @@ namespace Rock.Web.UI
 
             // Add a Rock version meta tag
             Page.Trace.Warn( "Adding Rock metatag" );
-            string version = typeof( Rock.Web.UI.RockPage ).Assembly.GetName().Version.ToString();
             HtmlMeta rockVersion = new HtmlMeta();
             rockVersion.Attributes.Add( "name", "generator" );
-            rockVersion.Attributes.Add( "content", string.Format( "Rock v{0}", version ) );
+            rockVersion.Attributes.Add( "content", _rockVersion );
             AddMetaTag( this.Page, rockVersion );
 
             if ( _showDebugTimings )
@@ -1042,10 +1096,10 @@ namespace Rock.Web.UI
                 }
 
                 // Add CSS class to body
-                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) && this.Master != null )
+                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) )
                 {
                     // attempt to find the body tag
-                    var body = ( HtmlGenericControl ) this.Master.FindControl( "body" );
+                    var body = ( HtmlGenericControl ) this.Master?.FindControl( "body" );
                     if ( body != null )
                     {
                         // determine if we need to append or add the class
@@ -1057,6 +1111,11 @@ namespace Rock.Web.UI
                         {
                             body.Attributes.Add( "class", this.BodyCssClass );
                         }
+                    }
+                    else
+                    {
+                        var bodyClasses = BodyCssClass.Split( new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries ).ToJson();
+                        ClientScript.RegisterStartupScript( GetType(), "initialize-body-class", $"document.body.classList.add(...{bodyClasses});\n", true );
                     }
                 }
 
@@ -1081,7 +1140,7 @@ namespace Rock.Web.UI
                     SessionStateSection sessionState = ( SessionStateSection ) ConfigurationManager.GetSection( "system.web/sessionState" );
                     string sidCookieName = sessionState.CookieName; // ASP.NET_SessionId
                     var cookie = Response.Cookies[sidCookieName];
-                    cookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1 );
+                    cookie.Expires = RockDateTime.SystemDateTime.AddDays( -1 );
                     AddOrUpdateCookie( cookie );
 
                     Response.Redirect( redirectUrl, false );
@@ -1197,6 +1256,12 @@ namespace Rock.Web.UI
 
                     Page.Trace.Warn( "Checking if user can administer" );
                     canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+
+                    // The Short Link Modal in the System Dialogs need the page to have obsidian.
+                    if ( canAdministratePage )
+                    {
+                        _pageNeedsObsidian = true;
+                    }
                     canEditPage = _pageCache.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                     // If the current person isn't allowed to edit or administrate the page, check to see if they are being impersonated by someone who
@@ -1264,6 +1329,8 @@ Rock.settings.initialize({{
                     {
                         AddGoogleAnalytics( _pageCache.Layout.Site.GoogleAnalyticsCode );
                     }
+
+                    AddJesusHook();
 
                     // Flag indicating if user has rights to administer one or more of the blocks on page
                     bool canAdministrateBlockOnPage = false;
@@ -1366,6 +1433,7 @@ Rock.settings.initialize({{
                                         if ( blockEntity is IRockObsidianBlockType )
                                         {
                                             _pageNeedsObsidian = true;
+                                            _pageHasObsidianBlock = true;
                                         }
                                     }
 
@@ -1415,6 +1483,7 @@ Rock.settings.initialize({{
                                 {
                                     Page.Trace.Warn( "\tSetting block properties" );
                                     blockControl.SetBlock( _pageCache, block, canEdit, canAdministrate );
+                                    blockControl.RequestContext = RequestContext;
                                     control = new RockBlockWrapper( blockControl );
                                 }
                             }
@@ -1441,12 +1510,6 @@ Rock.settings.initialize({{
 
                         Page.Trace.Warn( "Initializing Obsidian" );
 
-                        var body = ( HtmlGenericControl ) this.Master?.FindControl( "body" );
-                        if ( body != null )
-                        {
-                            body.AddCssClass( "obsidian-loading" );
-                        }
-
                         if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
                         {
                             var currentPersonJson = "null";
@@ -1457,11 +1520,14 @@ Rock.settings.initialize({{
                                 currentPersonJson = new CurrentPersonBag
                                 {
                                     IdKey = CurrentPerson.IdKey,
+                                    Guid = CurrentPerson.Guid,
+                                    PrimaryAliasIdKey = CurrentPerson.PrimaryAlias.IdKey,
+                                    PrimaryAliasGuid = CurrentPerson.PrimaryAlias.Guid,
                                     FirstName = CurrentPerson.FirstName,
                                     NickName = CurrentPerson.NickName,
                                     LastName = CurrentPerson.LastName,
                                     FullName = CurrentPerson.FullName,
-                                    Email = CurrentPerson.Email
+                                    Email = CurrentPerson.Email,
                                 }.ToCamelCaseJson( false, false );
                             }
                             else if ( CurrentPerson != null )
@@ -1487,6 +1553,7 @@ Obsidian.onReady(() => {{
             pageId: {_pageCache.Id},
             pageGuid: '{_pageCache.Guid}',
             pageParameters: {sanitizedPageParameters.ToJson()},
+            interactionGuid: '{RequestContext.RelatedInteractionGuid}',
             currentPerson: {currentPersonJson},
             isAnonymousVisitor: {( isAnonymousVisitor ? "true" : "false" )},
             loginUrlWithReturnUrl: '{GetLoginUrlWithReturnUrl()}'
@@ -1496,6 +1563,11 @@ Obsidian.onReady(() => {{
 
 Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
 ";
+
+                            if ( _pageHasObsidianBlock )
+                            {
+                                script = "document.body.classList.add(\"obsidian-loading\")\n" + script;
+                            }
 
                             ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-init", script, true );
                         }
@@ -1644,14 +1716,18 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             iPageSecurity.Attributes.Add( "class", "fa fa-lock" );
 
                             // ShortLink Properties
+                            var administratorShortlinkScript = $@"Obsidian.onReady(() => {{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.showShortLink('{ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&Url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.UrlProxySafe().AbsoluteUri.ToString() ) ) )}');
+    }});
+}});";
                             HtmlGenericControl aShortLink = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aShortLink );
                             aShortLink.ID = "aShortLink";
                             aShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                             aShortLink.Attributes.Add( "class", "btn properties" );
-                            aShortLink.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" +
-                                ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&Url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.UrlProxySafe().AbsoluteUri.ToString() ) ) )
-                                + "')" );
+                            aShortLink.Attributes.Add( "href", "#" );
+                            aShortLink.Attributes.Add( "onclick", $"event.preventDefault(); {administratorShortlinkScript}" );
                             aShortLink.Attributes.Add( "Title", "Add Short Link" );
                             HtmlGenericControl iShortLink = new HtmlGenericControl( "i" );
                             aShortLink.Controls.Add( iShortLink );
@@ -1679,6 +1755,17 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                         _pageCache.CacheControlHeader.SetupHttpCachePolicy( Response.Cache );
                     }
                 }
+
+                // Put a hidden field on the form that contains the interaction
+                // unique identifier of the original page load. When the view
+                // state is loaded the value will be replaced with the original.
+                _hfInteractionGuid = new HiddenField
+                {
+                    ID = "hfInteractionGuid",
+                    Value = RequestContext.RelatedInteractionGuid.ToString()
+                };
+
+                Form.Controls.Add( _hfInteractionGuid );
 
                 Page.Trace.Warn( "Setting meta tags" );
 
@@ -1715,7 +1802,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     Page.Header.Controls.Add( new LiteralControl( "<meta name=\"robots\" content=\"noindex, nofollow\"/>" ) );
                 }
 
-                // Add reponse headers to request that the client tell us if they prefer dark mode
+                // Add response headers to request that the client tell us if they prefer dark mode
                 Response.Headers.Add( "Accept-CH", "Sec-CH-Prefers-Color-Scheme" );
                 Response.Headers.Add( "Vary", "Sec-CH-Prefers-Color-Scheme" );
                 Response.Headers.Add( "Critical-CH", "Sec-CH-Prefers-Color-Scheme" );
@@ -2363,7 +2450,7 @@ Obsidian.onReady(() => {{
         {
             var googleAPIKey = GlobalAttributesCache.Get().GetValue( "GoogleAPIKey" );
             string keyParameter = string.IsNullOrWhiteSpace( googleAPIKey ) ? "" : string.Format( "key={0}&", googleAPIKey );
-            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}libraries=drawing,visualization,geometry", keyParameter );
+            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}libraries=drawing,visualization,geometry,marker", keyParameter );
 
             // first, add it to the page to handle cases where the api is needed on first page load
             if ( this.Page != null && this.Page.Header != null )
@@ -2397,6 +2484,12 @@ Obsidian.onReady(() => {{
             _onLoadStopwatch = Stopwatch.StartNew();
 
             base.OnLoad( e );
+
+            // Attempt to restore the original interaction unique identifier.
+            if ( IsPostBack && Guid.TryParse( _hfInteractionGuid.Value, out var originalInteractionGuid ) )
+            {
+                RequestContext.RelatedInteractionGuid = originalInteractionGuid;
+            }
 
             Page.Header.DataBind();
 
@@ -2489,6 +2582,12 @@ Sys.Application.add_load(function () {
             }
         }
 
+        /// <inheritdoc/>
+        protected override void Render( HtmlTextWriter writer )
+        {
+            base.Render( writer );
+        }
+
         /// <summary>
         /// Process page view interactions if they are enabled for this website.
         /// </summary>
@@ -2506,18 +2605,44 @@ Sys.Application.add_load(function () {
                 return;
             }
 
-            // If we have identified a logged-in user, record the page interaction immediately and return.
+            // Attempt to retrieve geolocation data.
+            var geolocation = this.RequestContext?.ClientInformation?.Geolocation;
+
+            // If we have identified a logged-in user, record the page interaction immediately and return. (Does not include anonymous visitors)
             if ( CurrentPerson != null )
             {
+                var interactionInfo = new InteractionTransactionInfo
+                {
+                    InteractionGuid = RequestContext.RelatedInteractionGuid,
+                    InteractionTimeToServe = _tsDuration.TotalSeconds,
+                    InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(),
+                    InteractionChannelCustom2 = Request.UrlReferrerSearchTerms(),
+                    GeolocationIpAddress = geolocation?.IpAddress,
+                    GeolocationLookupDateTime = geolocation?.LookupDateTime,
+                    City = geolocation?.City,
+                    RegionName = geolocation?.RegionName,
+                    RegionCode = geolocation?.RegionCode,
+                    RegionValueId = geolocation?.RegionValueId,
+                    CountryCode = geolocation?.CountryCode,
+                    CountryValueId = geolocation?.CountryValueId,
+                    PostalCode = geolocation?.PostalCode,
+                    Latitude = geolocation?.Latitude,
+                    Longitude = geolocation?.Longitude,
+                    InteractionChannelCustom1 = Activity.Current?.TraceId.ToString()
+                };
+
+                // If we have a UTM cookie, add the information to the interaction.
+                var utmInfo = UtmHelper.GetUtmCookieDataFromRequest( this.Request );
+                UtmHelper.AddUtmInfoToInteractionTransactionInfo( interactionInfo, utmInfo );
+
                 var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ),
                     this.Site,
                     _pageCache,
-                    new InteractionTransactionInfo { InteractionTimeToServe = _tsDuration.TotalSeconds, InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(), InteractionChannelCustom2 = Request.UrlReferrerSearchTerms() } );
+                    interactionInfo );
 
                 pageViewTransaction.Enqueue();
 
-                var intentSettings = _pageCache.GetAdditionalSettings<PageService.IntentSettings>();
-                InteractionService.RegisterIntentInteractions( intentSettings.InteractionIntentValueIds );
+                InteractionService.RegisterIntentInteractions( _pageCache.InteractionIntentValueIds );
 
                 return;
             }
@@ -2538,6 +2663,7 @@ Sys.Application.add_load(function () {
             // extracted from the request header to prevent cross-site scripting (XSS) issues.
             var pageInteraction = new PageInteractionInfo
             {
+                Guid = RequestContext.RelatedInteractionGuid,
                 ActionName = "View",
                 BrowserSessionGuid = rockSessionGuid,
                 PageId = this.PageId,
@@ -2547,32 +2673,61 @@ Sys.Application.add_load(function () {
                 UrlReferrerHostAddress = Request.UrlReferrerNormalize(),
                 UrlReferrerSearchTerms = Request.UrlReferrerSearchTerms(),
                 UserAgent = Request.UserAgent.SanitizeHtml(),
-                UserHostAddress = Request.UserHostAddress.SanitizeHtml(),
-                UserIdKey = CurrentPersonAlias?.IdKey
+                UserHostAddress = GetClientIpAddress().SanitizeHtml(),
+                UserIdKey = CurrentPersonAlias?.IdKey,
+                GeolocationIpAddress = geolocation?.IpAddress,
+                GeolocationLookupDateTime = geolocation?.LookupDateTime,
+                City = geolocation?.City,
+                RegionName = geolocation?.RegionName,
+                RegionCode = geolocation?.RegionCode,
+                RegionValueId = geolocation?.RegionValueId,
+                CountryCode = geolocation?.CountryCode,
+                CountryValueId = geolocation?.CountryValueId,
+                PostalCode = geolocation?.PostalCode,
+                Latitude = geolocation?.Latitude,
+                Longitude = geolocation?.Longitude
             };
 
             // This script adds a callback to record a View interaction for this page.
             // If the user is logged in, they are identified by the supplied UserIdKey representing their current PersonAlias.
             // If the user is a visitor, the ROCK_VISITOR_KEY cookie is read from the client browser to obtain the
             // UserIdKey supplied to them. For a first visit, the cookie is set in this response.
+            // Additionally, this script now stores a list of interaction GUIDs in sessionStorage to prevent duplicate interactions.
+            // Each time a new interaction is recorded, the GUID is checked against the stored list in sessionStorage.
+            // If the GUID has already been recorded in the current session, the interaction will not be sent again, ensuring
+            // that only unique interactions are tracked during the session. This additional change was needed to prevent the
+            // scenario where a duplicate interaction would be sent whenever an individual used a browser's back arrow to navigate
+            // back to a page that had already sent an interaction. 
             string script = @"
 Sys.Application.add_load(function () {
     const getCookieValue = (name) => {
-        return document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || '';
+        const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+
+        return !match ? '' : match.pop();
     };
-    var interactionArgs = <jsonData>;
-    if (!interactionArgs.<userIdProperty>) {
-        interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
+
+    var interactionGuid = '<interactionGuid>';
+    var interactionGuids = JSON.parse(sessionStorage.getItem('interactionGuids')) || [];
+
+    if (!interactionGuids.includes(interactionGuid)) {
+        interactionGuids.push(interactionGuid);
+        sessionStorage.setItem('interactionGuids', JSON.stringify(interactionGuids));
+
+        var interactionArgs = <jsonData>;
+        if (!interactionArgs.<userIdProperty>) {
+            interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
+        }
+        $.ajax({
+            url: '/api/Interactions/RegisterPageInteraction',
+            type: 'POST',
+            data: interactionArgs
+            });
     }
-    $.ajax({
-        url: '/api/Interactions/RegisterPageInteraction',
-        type: 'POST',
-        data: interactionArgs
-        });
 });
 ";
 
             script = script.Replace( "<rockVisitorCookieName>", Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY );
+            script = script.Replace( "<interactionGuid>", pageInteraction.Guid.ToString() );
             script = script.Replace( "<jsonData>", pageInteraction.ToJson() );
             script = script.Replace( "<userIdProperty>", nameof( pageInteraction.UserIdKey ) );
 
@@ -2639,13 +2794,6 @@ Sys.Application.add_load(function () {
             var scope = _lazyServiceProvider.Value.CreateScope();
 
             _pageServiceScopes.Add( scope );
-
-            var accessor = scope.ServiceProvider.GetRequiredService<IRockRequestContextAccessor>();
-
-            if ( accessor is RockRequestContextAccessor internalAccessor )
-            {
-                internalAccessor.RockRequestContext = RequestContext;
-            }
 
             return scope;
         }
@@ -2836,6 +2984,21 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
+        /// Adds the Crafting Code For Christ script.
+        /// </summary>
+        private void AddJesusHook()
+        {
+            var script = $@"
+    <script>
+      console.info(
+        '%cCrafting Code For Christ | Col. 3:23-24',
+        'background: #ee7625; border-radius:0.5em; padding:0.2em 0.5em; color: white; font-weight: bold');
+      console.info('{_rockVersion}');
+    </script>";
+            AddScriptToHead( this.Page, script, false );
+        }
+
+        /// <summary>
         /// Adds an icon icon (favicon) link using a binary file id.
         /// </summary>
         /// <param name="binaryFileId">The binary file identifier.</param>
@@ -2846,9 +3009,10 @@ Sys.Application.add_load(function () {
         {
             Literal favIcon = new Literal();
             favIcon.Mode = LiteralMode.PassThrough;
-            var url = ResolveRockUrl( $"~/GetImage.ashx?id={binaryFileId}&width={size}&height={size}&mode=crop&format=png" );
+            var baseUrl = FileUrlHelper.GetImageUrl( binaryFileId );
+            var url = ResolveRockUrl( $"{baseUrl}&width={size}&height={size}&mode=crop&format=png" );
             favIcon.Text = $"<link rel=\"{rel}\" sizes=\"{size}x{size}\" href=\"{url}\" />";
-
+             
             AddHtmlLink( favIcon );
         }
 
@@ -3542,7 +3706,7 @@ Sys.Application.add_load(function () {
                 if ( LinkPersonAliasToDevice( ( int ) personAliasId, httpCookie.Values["ROCK_PERSONALDEVICE_ADDRESS"] ) )
                 {
                     var wiFiCookie = Response.Cookies["rock_wifi"];
-                    wiFiCookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1 );
+                    wiFiCookie.Expires = RockDateTime.SystemDateTime.AddDays( -1 );
                     AddOrUpdateCookie( wiFiCookie );
                 }
             }
@@ -3989,7 +4153,7 @@ Sys.Application.add_load(function () {
                         and ignore the value stored in the QueryString list (the value is the same). In any case if there is contention between a
                         Route Key and QueryString Key the Route will take precedence.
                     */
-                    parameters.AddOrIgnore( param, Request.QueryString[param] );
+                    parameters.TryAdd( param, Request.QueryString[param] );
                 }
             }
 
@@ -4441,7 +4605,15 @@ Sys.Application.add_load(function () {
 
                     StringBuilder sbScriptTagHTML = new StringBuilder();
                     sbScriptTagHTML.Append( $"<script id='{scriptId}' src='{src}'" );
-                    string additionalAttributesHtml = additionalAttributes?.Select( a => $"{a.Key}='{a.Value}'" ).ToList().AsDelimited( " " );
+                    string additionalAttributesHtml = additionalAttributes?
+                        .Select( a =>
+                            a.Value == null
+                                ? $"{a.Key}"
+                                : $"{a.Key}='{a.Value}'"
+                        )
+                        .ToList()
+                        .AsDelimited( " " );
+
                     if ( additionalAttributesHtml.IsNotNullOrWhiteSpace() )
                     {
                         sbScriptTagHTML.Append( $" {additionalAttributesHtml}" );
@@ -4513,7 +4685,13 @@ Sys.Application.add_load(function () {
         /// <returns></returns>
         public static string GetClientIpAddress()
         {
-            return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current?.Request ) );
+            var request = HttpContext.Current?.Request;
+            if ( request == null )
+            {
+                return string.Empty;
+            }
+
+            return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper(request) );
         }
 
         #endregion
@@ -4535,6 +4713,7 @@ Sys.Application.add_load(function () {
             {
                 var obsidianPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/Obsidian" );
                 var pluginsPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/Plugins" );
+                var now = RockDateTime.Now;
 
                 // Find the last date any obsidian file was modified.
                 var lastWriteTime = Directory.EnumerateFiles( obsidianPath, "*.js", SearchOption.AllDirectories )
@@ -4552,10 +4731,15 @@ Sys.Application.add_load(function () {
                     } )
                     .Where( d => d.HasValue )
                     .Select( d => ( DateTime? ) RockDateTime.ConvertLocalDateTimeToRockDateTime( d.Value ) )
+                    // This is an attempt to fix random issues where people have the
+                    // JS file cached in the browser. A theory is that some JS file
+                    // has a future date time, so even after an upgrade the same
+                    // fingerprint value is used. Ignore any dates in the future.
+                    .Where( d => d < now )
                     .OrderByDescending( d => d )
                     .FirstOrDefault();
 
-                _obsidianFingerprint = ( lastWriteTime ?? RockDateTime.Now ).Ticks;
+                _obsidianFingerprint = ( lastWriteTime ?? now ).Ticks;
 
                 // Check if we are in debug mode and if so enable the watchers.
                 var cfg = ( CompilationSection ) ConfigurationManager.GetSection( "system.web/compilation" );
@@ -4711,7 +4895,7 @@ Sys.Application.add_load(function () {
 
             foreach ( var key in preferences.GetKeys().Where( k => k.StartsWith( keyPrefix ) ) )
             {
-                selectedValues.AddOrIgnore( key, preferences.GetValue( key ) );
+                selectedValues.TryAdd( key, preferences.GetValue( key ) );
             }
 
             return selectedValues;
@@ -4776,7 +4960,7 @@ Sys.Application.add_load(function () {
 
             foreach ( var key in preferences.GetKeys() )
             {
-                userPreferences.AddOrIgnore( key, preferences.GetValue( key ) );
+                userPreferences.TryAdd( key, preferences.GetValue( key ) );
             }
 
             return userPreferences;
@@ -4896,6 +5080,13 @@ Sys.Application.add_load(function () {
         /// <inheritdoc/>
         public IAsyncResult BeginProcessRequest( HttpContext context, AsyncCallback cb, object extraData )
         {
+            RequestContext = new RockRequestContext( context.Request, new RockResponseContext( this ), CurrentUser );
+
+            if ( _lazyServiceProvider.Value.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
+            {
+                internalAccessor.RockRequestContext = RequestContext;
+            }
+
             return AsyncPageBeginProcessRequest( context, cb, extraData );
         }
 
@@ -4903,6 +5094,14 @@ Sys.Application.add_load(function () {
         public void EndProcessRequest( IAsyncResult result )
         {
             AsyncPageEndProcessRequest( result );
+
+            if ( _lazyServiceProvider.Value.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
+            {
+                if ( ReferenceEquals( internalAccessor.RockRequestContext, RequestContext ) )
+                {
+                    internalAccessor.RockRequestContext = null;
+                }
+            }
         }
 
         #endregion

@@ -28,6 +28,7 @@ using Rock.Field.Types;
 using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
+using Rock.Web.Cache.Entities;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -348,12 +349,12 @@ Guid - ContentChannelItem Guid";
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowView();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -932,8 +933,7 @@ Guid - ContentChannelItem Guid";
 
             interactionTransaction.Enqueue();
 
-            var intentSettings = contentChannelItem.GetAdditionalSettings<ContentChannelItemService.IntentSettings>();
-            InteractionService.RegisterIntentInteractions( intentSettings.InteractionIntentValueIds );
+            InteractionService.RegisterIntentInteractions( EntityIntentCache.GetIntentValueIds<ContentChannelItem>( contentChannelItem.Id ) );
         }
 
         /// <summary>

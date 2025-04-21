@@ -1,0 +1,165 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="location-select-screen">
+        <MainPanel :title="title"
+                   :subtitle="subtitle"
+                   :person="session.getCurrentAttendee()?.person"
+                   :configuration="configuration">
+            <div class="button-list">
+                <RockButton v-for="location in locations"
+                            btnType="primary"
+                            class="location-button"
+                            :disabled="isProcessing"
+                            @click="onLocationClick(location)">
+                    <span class="title">{{ location.name }}</span>
+                    <span v-if="showLocationCount"
+                          class="subtitle">
+                        Count: {{ getLocationCount(location) }}
+                    </span>
+                </RockButton>
+            </div>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { computed, onBeforeUnmount, PropType, ref } from "vue";
+    import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
+    import { CheckInSession } from "./checkInSession.partial";
+    import { alert, UnexpectedErrorMessage } from "./utils.partial";
+    import { KioskButton, KioskConfiguration, LocationCountAdjustment } from "./types.partial";
+    import { LocationOpportunityBag } from "@Obsidian/ViewModels/CheckIn/locationOpportunityBag";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfiguration>,
+            required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "next", session: CheckInSession): void;
+        (event: "updateActions", actions: KioskButton[]): void;
+    }>();
+
+    // #region Values
+
+    const isProcessing = ref(false);
+    const cancellationTokenSource = new CancellationTokenSource();
+
+    // #endregion
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        return props.session.appendScheduleName(props.session.selectedGroup?.name ?? "Location");
+    });
+
+    const subtitle = computed((): string => {
+        return `Select the location you would like to check ${props.session.getCurrentAttendee()?.person?.nickName} into`;
+    });
+
+    const locations = computed((): LocationOpportunityBag[] => {
+        return props.session.getAvailableLocations();
+    });
+
+    const showLocationCount = computed((): boolean => {
+        return props.configuration.template?.isLocationCountDisplayed === true;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        emit("updateActions", actions);
+    }
+
+    /**
+     * Gets the current number of attendees in the location. This uses the data
+     * from the server when we started the session as well as any data from
+     * RealTime messages.
+     *
+     * @param location The location whose count is to be retrieved.
+     *
+     * @returns The current number of attendees in the location.
+     */
+    function getLocationCount(location: LocationOpportunityBag): number {
+        let count = location.currentCount;
+
+        for (const adj of getLocationAdjustments(location)) {
+            count += adj.count;
+        }
+
+        return count;
+    }
+
+    /**
+     * Gets the location count adjustements that are valid for the location.
+     *
+     * @param location The location whose adjustements are to be retrieved.
+     *
+     * @returns An array of {@link LocationCountAdjustement} objects.
+     */
+    function getLocationAdjustments(location: LocationOpportunityBag): LocationCountAdjustment[] {
+        // Always snag this so we trigger updates from reactivity.
+        const adjustments = props.configuration.locationCountAdjustments;
+        const currentAttendanceIds = props.session.attendances.map(a => a.attendance?.id);
+        const timestamp = props.session.currentAttendeeSelectedTimestamp;
+
+        if (!timestamp) {
+            return [];
+        }
+
+        // Filter this down to just adjustments for this location as well as
+        // only those changes since we got the data from the server.
+        // Additionally, filter out any adjustments for other people checked in
+        // this session, otherwise we end up double counting.
+        return adjustments
+            .filter(a => a.locationId === location.id && a.timestamp > timestamp)
+            .filter(a => !currentAttendanceIds.includes(a.id));
+    }
+
+    /**
+     * Handles the click event for an location button.
+     *
+     * @param location The location that was selected.
+     */
+    async function onLocationClick(location: LocationOpportunityBag): Promise<void> {
+        if (!location.id) {
+            return;
+        }
+
+        try {
+            isProcessing.value = true;
+
+            const newSession = props.session.withSelectedLocation(location.id);
+
+            emit("next", await newSession.withNextScreen());
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage, cancellationTokenSource.token);
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
+    // #endregion
+
+    onBeforeUnmount(() => cancellationTokenSource.cancel());
+
+    updateActions();
+</script>

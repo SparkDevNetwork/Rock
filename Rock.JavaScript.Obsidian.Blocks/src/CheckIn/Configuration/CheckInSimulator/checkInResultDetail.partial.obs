@@ -1,0 +1,79 @@
+<template>
+    <div v-if="props.result.messages && props.result.messages.length > 0">
+        <div>Messages:</div>
+
+        <ul>
+            <li v-for="msg in result.messages">{{ msg }}</li>
+        </ul>
+    </div>
+
+    <div v-if="result.attendances && result.attendances.length > 0">
+        <div>Attendance:</div>
+
+        <ul>
+            <li v-for="item in result.attendances">
+                {{ item.attendance?.person?.fullName }}
+                <ul>
+                    <li>Status: {{ getCheckInStatus(item.attendance?.status) }}</li>
+                    <li>Area: {{ item.attendance?.area?.name }}</li>
+                    <li>Group: {{ item.attendance?.group?.name }}</li>
+                    <li>Location: {{ item.attendance?.location?.name }}</li>
+                    <li>Schedule: {{ item.attendance?.schedule?.name }}</li>
+
+                    <li v-if="item.previouslyCompletedAchievements && item.previouslyCompletedAchievements.length > 0">
+                        Previously Completed Achievements
+
+                        <ul>
+                            <AchievementListItem v-for="achievement in item.previouslyCompletedAchievements"
+                                                 :achievement="achievement" />
+                        </ul>
+                    </li>
+
+                    <li v-if="item.inProgressAchievements && item.inProgressAchievements.length > 0">
+                        In Progress Achievements
+
+                        <ul>
+                            <AchievementListItem v-for="achievement in item.inProgressAchievements"
+                                                 :achievement="achievement" />
+                        </ul>
+                    </li>
+
+                    <li v-if="item.justCompletedAchievements && item.justCompletedAchievements.length > 0">
+                        Just Completed Achievements
+
+                        <ul>
+                            <AchievementListItem v-for="achievement in item.justCompletedAchievements"
+                                                 :achievement="achievement" />
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import AchievementListItem from "./achievementListItem.partial.obs";
+    import { CheckInStatus, CheckInStatusDescription } from "@Obsidian/Enums/Event/checkInStatus";
+    import { CheckInResultBag } from "@Obsidian/ViewModels/CheckIn/checkInResultBag";
+    import { PropType } from "vue";
+
+    const props = defineProps({
+        result: {
+            type: Object as PropType<CheckInResultBag>,
+            required: true
+        }
+    });
+
+    function getCheckInStatus(status?: CheckInStatus): string {
+        if (status === undefined) {
+            return "Unknown";
+        }
+
+        if (status in CheckInStatusDescription) {
+            return CheckInStatusDescription[status];
+        }
+
+        return "Unknown";
+    }
+</script>

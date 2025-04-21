@@ -678,7 +678,7 @@
                             <div class="col-md-6">
                                 <asp:Repeater ID="rptSearchModalResult" runat="server" OnItemCommand="rptSearchModalResult_ItemCommand">
                                     <ItemTemplate>
-                                        <Rock:PanelWidget ID="pwSearchModalPanel" runat="server" CssClass="panel panel-block" TitleIconCssClass='<%# Eval("IconCssClass") %>' Title='<%# Eval("Name") %>'>
+                                        <Rock:PanelWidget ID="pwSearchModalPanel" runat="server" TitleIconCssClass='<%# Eval("IconCssClass") %>' Title='<%# Eval("Name") %>'>
                                             <div class="row">
                                                 <div class="col-md-4">
                                                     <div class="photo">

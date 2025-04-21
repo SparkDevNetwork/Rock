@@ -1,7 +1,8 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <form @submit.prevent.stop="onInternalSubmit()">
-        <RockValidation v-if="!hideErrors" :errors="visibleErrors" />
+    <form ref="formElement" @submit.prevent.stop="onInternalSubmit()">
+        <RockValidation v-if="!hideErrors"
+                        :errors="visibleErrors" />
         <slot />
     </form>
 </template>
@@ -12,6 +13,7 @@
     import { updateRefValue } from "@Obsidian/Utility/component";
     import RockValidation from "./rockValidation.obs";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { scrollElementStartToTop } from "@Obsidian/Utility/dom";
 
     const props = defineProps({
         /** True if the form should attempt to submit. */
@@ -50,14 +52,15 @@
         (e: "update:submit", value: boolean): void;
     }>();
 
+    // #region Values
+
     const visibleErrors = ref<FormError[]>([]);
     const errorValues = ref<FormError[]>([]);
     const errors = ref<Record<string, FormError>>({});
     const submit = ref(props.submit);
+    const formElement = ref<HTMLElement | undefined>();
 
-    const onInternalSubmit = (): void => {
-        submit.value = true;
-    };
+    // #endregion Values
 
     // Construct the form state.
     const formState = reactive<FormState>({
@@ -84,6 +87,16 @@
     });
 
     provideFormState(formState);
+
+    // #region Functions
+
+    function onInternalSubmit(): void {
+        submit.value = true;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
 
     // Watch for requests to submit from the parent component.
     watch(() => props.submit, () => {
@@ -140,4 +153,14 @@
         updateRefValue(visibleErrors, []);
         emit("visibleValidationChanged", visibleErrors.value);
     });
+
+    watch(visibleErrors, (errors) => {
+        if (errors.length && formElement.value) {
+            // Wait until the errors are rendered to scroll to them.
+            const element = formElement.value;
+            scrollElementStartToTop(element);
+        }
+    });
+
+    // #endregion Watchers
 </script>

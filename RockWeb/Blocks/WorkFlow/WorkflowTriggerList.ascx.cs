@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -36,6 +37,20 @@ namespace RockWeb.Blocks.WorkFlow
     [Rock.SystemGuid.BlockTypeGuid( "72F48121-2CE2-4696-840C-CF404EAF7EEE" )]
     public partial class WorkflowTriggerList : RockBlock, ICustomGridColumns
     {
+        #region PageParameterKeys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string WorkflowTriggerId = "WorkflowTriggerId";
+            public const string ReturnUrl = "returnUrl";
+            public const string AutoEdit = "autoEdit";
+        }
+
+        #endregion PageParameterKey
+
         #region Control Methods
 
         /// <summary>
@@ -101,7 +116,11 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gWorkflowTrigger_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "WorkflowTriggerId", e.RowKeyId );
+            var queryParams = new Dictionary<string, string>();
+            queryParams.AddOrReplace( PageParameterKey.WorkflowTriggerId, e.RowKeyId.ToString() );
+            queryParams.AddOrReplace( PageParameterKey.AutoEdit, "true" );
+            queryParams.AddOrReplace( PageParameterKey.ReturnUrl, Request.RawUrl );
+            NavigateToLinkedPage( "DetailPage", queryParams );
         }
 
         /// <summary>

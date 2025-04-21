@@ -80,7 +80,7 @@
 
 {% if Pagination.CurrentPage == 1 %}
 <a href="{{ LinkedPages.DetailPage }}?Item={{ currentSeries.Id }}">
-  <header class="current-series" style="background-image: url('/GetImage.ashx?Guid={{ currentSeriesImageGuid }}')">
+  <header class="current-series" style="background-image: url('/GetImage.ashx?guid={{ currentSeriesImageGuid }}')">
 	  <h1>Current Series</h1>
   </header>
 </a>
@@ -94,7 +94,7 @@
 		<a class="series-link" href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
 		<article class="series">
 			{% if detailImageGuid != '' %}
-				<div class="series-image" style="background-image: url('/GetImage.ashx?Guid={{ seriesImageGuid }}');" ></div>
+				<div class="series-image" style="background-image: url('/GetImage.ashx?guid={{ seriesImageGuid }}');" ></div>
 			{% endif %}
 
 			<div class="series-body">

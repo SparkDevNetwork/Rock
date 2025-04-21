@@ -19,8 +19,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -82,6 +85,28 @@ namespace Rock.Extension
         }
 
         #endregion Attribute Keys
+
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private ILogger _logger;
+
+        /// <summary>
+        /// Gets the logger for this instance.
+        /// </summary>
+        /// <value>The logger for this instance.</value>
+        protected ILogger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                }
+
+                return _logger;
+            }
+        }
 
         /// <summary>
         /// Gets the id.

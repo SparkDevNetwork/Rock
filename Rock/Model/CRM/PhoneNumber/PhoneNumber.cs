@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,18 +15,16 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text.RegularExpressions;
+
 using Rock.Data;
 using Rock.Lava;
-using Rock.Web.Cache;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -36,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "PhoneNumber" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "AD7E27CB-036D-40C6-B352-81B38BFAE798")]
     public partial class PhoneNumber : Model<PhoneNumber>
     {
@@ -148,6 +147,24 @@ namespace Rock.Model
         [DataMember]
         [LavaHidden]
         public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating whether the phone number has opted out of messages through the SMS provider.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the PhoneNumber has opted out of messaging; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsMessagingOptedOut { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time when the phone number opted out of messaging.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing the date and time when the phone number opted out of messaging. If the opted out date is not known or the phone number has not opted out this value will be null.
+        /// </value>
+        [DataMember]
+        public DateTime? MessagingOptedOutDateTime { get; set; }
 
         #endregion
 

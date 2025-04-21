@@ -68,6 +68,23 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets an enumerable collection of <see cref="Rock.Model.Page" /> entities associated with a <see cref="Rock.Model.Site" />.
+        /// </summary>
+        /// <param name="siteId">The IdKey or Guid of the site.</param>
+        /// <returns></returns>
+        public IOrderedQueryable<Page> GetBySiteIdKey( string siteId )
+        {
+            var site = SiteCache.Get( siteId, false );
+
+            if( site == null )
+            {
+                return null;
+            }
+
+            return GetBySiteId( site.Id );
+        }
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Page">Pages</see> that are descendants of a <see cref="Rock.Model.Page"/>
         /// </summary>
         /// <param name="parentPageId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Page"/></param>
@@ -373,29 +390,5 @@ namespace Rock.Model
         }
 
         #endregion
-
-        #region IHasAdditionalSettings Models
-
-        /// <summary>
-        /// Page intent settings.
-        /// </summary>
-        /// <remarks>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
-        /// </remarks>
-        [RockInternal( "1.16.4" )]
-        public class IntentSettings
-        {
-            /// <summary>
-            /// Interaction intent defined value identifiers.
-            /// </summary>
-            public List<int> InteractionIntentValueIds { get; set; }
-        }
-
-        #endregion IHasAdditionalSettings Models
     }
 }

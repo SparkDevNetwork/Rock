@@ -16,6 +16,7 @@
 //
 
 using System.Collections.Generic;
+using System.Web;
 
 using Rock.Blocks;
 using Rock.Web.Cache;
@@ -124,7 +125,7 @@ namespace Rock
                     continue;
                 }
 
-                parameters.AddOrIgnore( qp.Key, qp.Value );
+                parameters.TryAdd( qp.Key, qp.Value );
             }
 
             var pageReference = new Rock.Web.PageReference( block.PageCache.Guid.ToString(), parameters );
@@ -159,6 +160,17 @@ namespace Rock
             if ( pageReference.PageId > 0 )
             {
                 return pageReference.BuildUrl();
+            }
+            else if ( block.RequestContext != null )
+            {
+                var url = block.RequestContext.ResolveRockUrl( "~/Login" );
+
+                if ( returnUrl.IsNotNullOrWhiteSpace() )
+                {
+                    url = $"{url}?returnurl={HttpUtility.UrlEncode( returnUrl )}";
+                }
+
+                return url;
             }
             else
             {

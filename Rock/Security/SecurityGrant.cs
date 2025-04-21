@@ -90,7 +90,7 @@ namespace Rock.Security
 
         /// <summary>
         /// Creates a security grant from a security grant token that was previously
-        /// created by a call to the <see cref="ToToken"/> method.
+        /// created by a call to the <see cref="ToToken()"/> method.
         /// </summary>
         /// <param name="token">The security grant token.</param>
         /// <returns>A new instance of <see cref="SecurityGrant"/> that represents the information in the token.</returns>
@@ -101,11 +101,18 @@ namespace Rock.Security
                 return null;
             }
 
-            var segments = token.Split( ';' );
+            try
+            {
+                var segments = token.Split( ';' );
 
-            var json = Encryption.DecryptString( segments[2] );
+                var json = Encryption.DecryptString( segments.Length >= 3 ? segments[2] : segments[0] );
 
-            return JsonConvert.DeserializeObject<SecurityGrant>( json );
+                return JsonConvert.DeserializeObject<SecurityGrant>( json );
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         #endregion
@@ -119,9 +126,22 @@ namespace Rock.Security
         /// <returns>A string that represents the security grant as an opaque token.</returns>
         public string ToToken()
         {
+            return ToToken( false );
+        }
+
+        /// <summary>
+        /// Encodes the security grant into a token that can be passed to another
+        /// system and then later sent back here for decoding.
+        /// </summary>
+        /// <param name="rawToken">If <c>true</c> then just the raw encrypted token will be returned; otherwise a token with refresh information will be returned.</param>
+        /// <returns>A string that represents the security grant as an opaque token.</returns>
+        public string ToToken( bool rawToken )
+        {
             var json = JsonConvert.SerializeObject( this );
 
-            return $"{Version};{ExpiresDateTime.ToRockDateTimeOffset():O};{Encryption.EncryptString( json )}";
+            return rawToken
+                ? Encryption.EncryptString( json )
+                : $"{Version};{ExpiresDateTime.ToRockDateTimeOffset():O};{Encryption.EncryptString( json )}";
         }
 
         /// <summary>

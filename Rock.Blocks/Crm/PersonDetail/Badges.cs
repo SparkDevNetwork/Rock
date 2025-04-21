@@ -40,6 +40,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [Description( "Handles displaying badges for a person." )]
     [IconCssClass( "fa fa-certificate" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
+    [InitialBlockHeight( 100 )]
 
     #region Block Attributes
 

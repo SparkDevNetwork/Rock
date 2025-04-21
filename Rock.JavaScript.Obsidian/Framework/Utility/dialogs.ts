@@ -16,21 +16,50 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { ICancellationToken } from "./cancellation";
 import { trackModalState } from "./page";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/naming-convention
 declare const Rock: any;
 
-type DialogOptions = {
-    message: string;
+/** The options that describe the dialog. */
+export type DialogOptions = {
+    /** The text to display inside the dialog. */
+    message: string | HTMLElement;
+
+    /** A list of buttons to display, rendered left to right. */
     buttons: ButtonOptions[];
+
+    /**
+     * An optional container element for the dialog. If not specified then one
+     * will be chosen automatically.
+     */
     container?: string | Element;
+
+    /**
+     * Determines if the standard close button in the corner of the dialog
+     * should be hidden.
+     */
+    hideCloseButton?: boolean;
+
+    /**
+     * An optional cancellation token that will dismiss the dialog automatically
+     * and return `cancel` as the button clicked.
+     */
+    cancellationToken?: ICancellationToken;
 };
 
-type ButtonOptions = {
+/** The options that describe a single button in the dialog. */
+export type ButtonOptions = {
+    /** The key that uniquely identifies this button. */
     key: string;
+
+    /** The text to display in the button. */
     label: string;
+
+    /** The CSS classes to assign to the button, such as `btn btn-primary`. */
     className: string;
+    autoFocus?: boolean;
 };
 
 /**
@@ -147,12 +176,19 @@ function createBackdrop(): HTMLElement {
  *
  * @returns The key of the button that was clicked, or "cancel" if the cancel button was clicked.
  */
-function showDialog(options: DialogOptions): Promise<string> {
+export function showDialog(options: DialogOptions): Promise<string> {
     return new Promise<string>(resolve => {
         let timer: NodeJS.Timeout | null = null;
         const container = document.fullscreenElement || document.body;
         const body = document.createElement("div");
-        body.innerText = options.message;
+        let autoFocus: null | HTMLElement = null;
+
+        if (options.message instanceof HTMLElement) {
+            body.appendChild(options.message);
+        }
+        else {
+            body.innerText = options.message;
+        }
 
         const buttons: HTMLElement[] = [];
 
@@ -203,16 +239,25 @@ function showDialog(options: DialogOptions): Promise<string> {
             btn.addEventListener("click", () => {
                 clearDialog(button.key);
             });
+            if (button.autoFocus) {
+                autoFocus = btn;
+            }
             buttons.push(btn);
         }
 
-        // Construct the close (cancel) button.
-        const closeButton = createCloseButton();
-        closeButton.addEventListener("click", () => {
-            clearDialog("cancel");
-        });
+        const dialogBody: HTMLElement[] = [body];
 
-        const dialog = createDialog([closeButton, body], buttons);
+        if (!options.hideCloseButton) {
+            // Construct the close (cancel) button.
+            const closeButton = createCloseButton();
+            closeButton.addEventListener("click", () => {
+                clearDialog("cancel");
+            });
+
+            dialogBody.splice(0, 0, closeButton);
+        }
+
+        const dialog = createDialog(dialogBody, buttons);
         const backdrop = createBackdrop();
 
         const modal = dialog.querySelector(".modal") as HTMLElement;
@@ -223,9 +268,18 @@ function showDialog(options: DialogOptions): Promise<string> {
         container.appendChild(backdrop);
         modal.style.marginTop = `-${modal.offsetHeight / 2.0}px`;
 
+        if (autoFocus) {
+            autoFocus.focus();
+        }
+
         // Show the backdrop and the modal.
         backdrop.classList.add("in");
         modal.classList.add("in");
+
+        // Handle dismissal of the dialog by cancellation token.
+        options.cancellationToken?.onCancellationRequested(() => {
+            clearDialog("cancel");
+        });
     });
 }
 
@@ -265,7 +319,8 @@ export async function confirm(message: string): Promise<boolean> {
             {
                 key: "ok",
                 label: "OK",
-                className: "btn btn-primary"
+                className: "btn btn-primary",
+                autoFocus: true
             },
             {
                 key: "cancel",
@@ -307,4 +362,12 @@ export function confirmDelete(typeName: string, additionalMessage?: string): Pro
  */
 export function showSecurity(entityTypeIdKey: Guid | string | number, entityIdKey: Guid | string | number, entityTitle: string = "Item"): void {
     Rock.controls.modal.show(undefined, `/Secure/${entityTypeIdKey}/${entityIdKey}?t=Secure ${entityTitle}&pb=&sb=Done`);
+}
+
+/**
+ * Shows the child pages for the given page.
+ * @param pageId The page identifier
+ */
+export function showChildPages(pageId: Guid | string | number): void {
+    Rock.controls.modal.show(undefined, `/pages/${pageId}?t=Child Pages&pb=&sb=Done`);
 }

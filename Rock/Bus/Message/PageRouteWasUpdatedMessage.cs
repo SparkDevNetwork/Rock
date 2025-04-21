@@ -16,16 +16,19 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus.Queue;
+using Rock.Configuration;
 using Rock.Logging;
 using Rock.Model;
-using Rock.Utility.Settings;
 
 namespace Rock.Bus.Message
 {
     /// <summary>
     /// Event bus message class used to indicate that a Page Route was updated. The consumer will rebuild the RouteTable when received.
     /// </summary>
+    [RockLoggingCategory]
     public class PageRouteWasUpdatedMessage : IEventMessage<PageRouteEventQueue>
     {
         /// <inheritdoc />
@@ -36,21 +39,23 @@ namespace Rock.Bus.Message
         /// </summary>
         public static void Publish()
         {
+            var logger = RockLogger.LoggerFactory.CreateLogger<PageRouteWasUpdatedMessage>();
+
             if ( !RockMessageBus.IsRockStarted )
             {
                 // Don't publish events until Rock is all the way started
                 var logMessage = $"'Page Route Was Updated' message was not published because Rock is not fully started.";
 
-                var elapsedSinceProcessStarted = RockDateTime.Now - RockInstanceConfig.ApplicationStartedDateTime;
+                var elapsedSinceProcessStarted = RockDateTime.Now - RockApp.Current.HostingSettings.ApplicationStartDateTime;
 
                 if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Bus, logMessage );
+                    logger.LogError( logMessage );
                     ExceptionLogService.LogException( new BusException( logMessage ) );
                 }
                 else
                 {
-                    RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
+                    logger.LogDebug( logMessage );
                 }
 
                 return;
@@ -60,7 +65,7 @@ namespace Rock.Bus.Message
 
             _ = RockMessageBus.PublishAsync<PageRouteEventQueue, PageRouteWasUpdatedMessage>( message );
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, $"Published 'Page Route Was Updated' message." );
+            logger.LogDebug( "Published 'Page Route Was Updated' message." );
         }
     }
 }

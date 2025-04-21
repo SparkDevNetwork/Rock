@@ -119,8 +119,6 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 var allowIncludingChildGroups = GetAttributeValue( AttributeKey.AllowIncludingChildGroups ).AsBoolean();
@@ -145,6 +143,8 @@ namespace RockWeb.Blocks.GroupScheduling
             {
                 HandleCustomPostbackEvents();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -259,6 +259,11 @@ namespace RockWeb.Blocks.GroupScheduling
             var scheduledAttendancesForOccurrenceQuery = attendanceOccurrenceQuery
                     .SelectMany( a => a.Attendees )
                     .WhereHasScheduledAttendanceItemStatus( selectedInviteStatus );
+
+            if ( !selectedInviteStatus.Contains( ScheduledAttendanceItemStatus.Declined ) )
+            {
+                scheduledAttendancesForOccurrenceQuery = scheduledAttendancesForOccurrenceQuery.Where( a => a.RSVP != RSVP.No );
+            }
 
             var personIds = scheduledAttendancesForOccurrenceQuery.Select( a => a.PersonAlias.PersonId ).Distinct().ToList();
             if ( !personIds.Any() )

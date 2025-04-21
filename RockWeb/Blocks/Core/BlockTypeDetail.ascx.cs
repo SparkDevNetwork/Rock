@@ -15,14 +15,12 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
-using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -30,9 +28,6 @@ using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-
-using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Core
 {
@@ -50,19 +45,12 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
-            // assign attributes grid actions
-            gBlockTypeAttributes.DataKeyNames = new string[] { "Guid" };
-            gBlockTypeAttributes.Actions.ShowAdd = true;
-            gBlockTypeAttributes.Actions.AddClick += gBlockTypeAttributes_AddClick;
-            gBlockTypeAttributes.GridRebind += gBlockTypeAttributes_GridRebind;
-            gBlockTypeAttributes.GridReorder += gBlockTypeAttributes_GridReorder;
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "BlockTypeId" ).AsInteger() );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -90,7 +78,6 @@ namespace RockWeb.Blocks.Core
             btnEdit.Visible = !editMode;
             btnSave.Visible = editMode;
             btnCancel.Visible = editMode;
-            pnlBlockTypeAttributesGrid.Visible = !editMode && hfIsDynamicAttributesBlock.Value.AsBoolean();
         }
 
         /// <summary>
@@ -176,35 +163,24 @@ namespace RockWeb.Blocks.Core
             tbPath.Text = blockType.Path;
             tbDescription.Text = blockType.Description;
 
-            try
-            {
-                var blockControlType = System.Web.Compilation.BuildManager.GetCompiledType( blockType.Path );
-                bool dynamicAttributesBlock = typeof( Rock.Web.UI.IDynamicAttributesBlock ).IsAssignableFrom( blockControlType );
-                hfIsDynamicAttributesBlock.Value = dynamicAttributesBlock.ToTrueFalse();
-            }
-            catch
-            {
-                // if the block can't compile, ignore
-            }
-
             lReadonlySummary.Text = new DescriptionList().Add( "Name", blockType.Name ).Add( "Path", blockType.Path ).Add( "Description", blockType.Description ).Html;
 
             var blocks = BlockCache.All()
                 .Where( b => b.BlockTypeId == blockTypeId );
             var pages = blocks
-                .Where( b => b.PageId != null )
+                .Where( b => b.Page != null )
                 .OrderBy( b => b.Page.GetFullyQualifiedPageName() )
                 .Select( b => b.Page.GetHyperLinkedPageBreadCrumbs() )
                 .Select( p => $"<li>{p}</li>" )
                 .ToList();
             var layouts = blocks
-                .Where( b => b.LayoutId != null )
+                .Where( b => b.Layout != null )
                 .Select( b => $"<a href='/admin/cms/sites/layouts/{b.LayoutId}'>{b.Layout.Name}</a> (Layout), {b.Zone} (Zone)" )
                 .Select( l => $"<li>{l}</li>" )
                 .OrderBy( l => l )
                 .ToList();
             var sites = blocks
-                .Where( b => b.SiteId != null )
+                .Where( b => b.Site != null )
                 .Select( b => $"<a href='/admin/cms/sites/{b.SiteId}'>{b.Site.Name}</a> (Site), {b.Zone} (Zone)" )
                 .Select( s => $"<li>{s}</li>" )
                 .OrderBy( s => s )
@@ -277,279 +253,7 @@ namespace RockWeb.Blocks.Core
             pnlReadOnly.Visible = true;
             btnSave.Visible = false;
             btnCancel.Visible = false;
-
-            BindBlockTypeAttributesGrid();
         }
-
-        #endregion
-
-        #region DynamicBlockTypeAttributes
-
-        /// <summary>
-        /// Handles the GridRebind event of the gBlockTypeAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.GridRebindEventArgs"/> instance containing the event data.</param>
-        private void gBlockTypeAttributes_GridRebind( object sender, Rock.Web.UI.Controls.GridRebindEventArgs e )
-        {
-            BindBlockTypeAttributesGrid();
-        }
-
-        /// <summary>
-        /// Handles the AddClick event of the gBlockTypeAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gBlockTypeAttributes_AddClick( object sender, EventArgs e )
-        {
-            gBlockTypeAttributes_ShowEdit( Guid.Empty );
-        }
-
-        /// <summary>
-        /// Handles the EditClick event of the gBlockTypeAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        protected void gBlockTypeAttributes_EditClick( object sender, Rock.Web.UI.Controls.RowEventArgs e )
-        {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
-            gBlockTypeAttributes_ShowEdit( attributeGuid );
-        }
-
-        /// <summary>
-        /// Binds the block type attributes grid.
-        /// </summary>
-        private void BindBlockTypeAttributesGrid()
-        {
-            if ( hfIsDynamicAttributesBlock.Value.AsBoolean() )
-            {
-                string qualifierValue = hfBlockTypeId.Value;
-                List<string> blockStaticAttributeKeys = GetBlockTypeStaticAttributeKeys();
-
-                var attributes = new AttributeService( new RockContext() )
-                    .GetByEntityTypeId( new Rock.Model.Block().TypeId, true ).AsQueryable()
-                    .Where( a =>
-                        a.EntityTypeQualifierColumn.Equals( "BlockTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                        a.EntityTypeQualifierValue.Equals( qualifierValue ) )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name )
-                    .ToList()
-                    .Select( a => new
-                    {
-                        a.Guid,
-                        a.Name,
-                        IsDynamicAttribute = !blockStaticAttributeKeys.Contains( a.Key )
-                    } ).ToList();
-
-                gBlockTypeAttributes.DataSource = attributes;
-                gBlockTypeAttributes.DataBind();
-            }
-        }
-
-        /// <summary>
-        /// Gets the block type attributes that are defined in code in the blocktype
-        /// </summary>
-        /// <returns></returns>
-        private List<string> GetBlockTypeStaticAttributeKeys()
-        {
-            var blockTypeCache = BlockTypeCache.Get( hfBlockTypeId.Value.AsInteger() );
-            List<FieldAttribute> blockProperties = new List<FieldAttribute>(); ;
-            try
-            {
-                var blockControlType = System.Web.Compilation.BuildManager.GetCompiledType( blockTypeCache.Path );
-
-                foreach ( var customAttribute in blockControlType.GetCustomAttributes( typeof( FieldAttribute ), true ) )
-                {
-                    blockProperties.Add( (FieldAttribute)customAttribute );
-                }
-            }
-            catch
-            {
-                // ignore if the block can't compile
-            }
-
-            var blockStaticAttributeKeys = blockProperties.Select( a => a.Key ).ToList();
-            return blockStaticAttributeKeys;
-        }
-
-        /// <summary>
-        /// gs the block type attributes show edit.
-        /// </summary>
-        /// <param name="attributeGuid">The attribute unique identifier.</param>
-        protected void gBlockTypeAttributes_ShowEdit( Guid attributeGuid )
-        {
-            pnlDetails.Visible = false;
-            vsDetails.Enabled = false;
-            pnlBlockTypeAttributesEdit.Visible = true;
-
-            Attribute attribute;
-            if ( attributeGuid.Equals( Guid.Empty ) )
-            {
-                attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
-                edtBlockTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for block type " + tbName.Text );
-            }
-            else
-            {
-                AttributeService attributeService = new AttributeService( new RockContext() );
-                attribute = attributeService.Get( attributeGuid );
-                edtBlockTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for block type " + tbName.Text );
-            }
-
-            edtBlockTypeAttributes.ReservedKeyNames = new AttributeService( new RockContext() )
-                .GetByEntityTypeId( new Rock.Model.Block().TypeId, true ).AsQueryable()
-                .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "BlockTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                    a.EntityTypeQualifierValue.Equals( hfBlockTypeId.Value ) &&
-                    !a.Guid.Equals( attributeGuid ) )
-                .Select( a => a.Key )
-                .Distinct()
-                .ToList();
-
-            edtBlockTypeAttributes.SetAttributeProperties( attribute, typeof( BlockType ) );
-
-            this.HideSecondaryBlocks( true );
-        }
-
-        /// <summary>
-        /// Handles the GridReorder event of the gBlockTypeAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
-        void gBlockTypeAttributes_GridReorder( object sender, GridReorderEventArgs e )
-        {
-            var blockTypeStaticAttributeKeys = GetBlockTypeStaticAttributeKeys();
-            string qualifierValue = hfBlockTypeId.Value;
-
-            var rockContext = new RockContext();
-            var attributeService = new AttributeService( rockContext );
-
-            int order = 0;
-            var attributes = attributeService
-                .GetByEntityTypeId( new Rock.Model.Block().TypeId, true ).AsQueryable()
-                .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "BlockTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                    a.EntityTypeQualifierValue.Equals( qualifierValue ) )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Name )
-                .ToList();
-
-            foreach ( var attribute in attributes )
-            {
-                attribute.Order = order++;
-            }
-
-            var movedItem = attributes.Where( a => a.Order == e.OldIndex ).FirstOrDefault();
-            if ( movedItem != null )
-            {
-                if ( e.NewIndex < e.OldIndex )
-                {
-                    // Moved up
-                    foreach ( var otherItem in attributes.Where( a => a.Order < e.OldIndex && a.Order >= e.NewIndex ) )
-                    {
-                        otherItem.Order = otherItem.Order + 1;
-                    }
-                }
-                else
-                {
-                    // Moved Down
-                    foreach ( var otherItem in attributes.Where( a => a.Order > e.OldIndex && a.Order <= e.NewIndex ) )
-                    {
-                        otherItem.Order = otherItem.Order - 1;
-                    }
-                }
-
-                movedItem.Order = e.NewIndex;
-                rockContext.SaveChanges();
-            }
-
-            BindBlockTypeAttributesGrid();
-        }
-
-        /// <summary>
-        /// Handles the DeleteClick event of the gBlockTypeAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        protected void gBlockTypeAttributes_DeleteClick( object sender, Rock.Web.UI.Controls.RowEventArgs e )
-        {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
-            var rockContext = new RockContext();
-            AttributeService attributeService = new AttributeService( rockContext );
-            Attribute attribute = attributeService.Get( attributeGuid );
-
-            if ( attribute != null )
-            {
-                string errorMessage;
-                if ( !attributeService.CanDelete( attribute, out errorMessage ) )
-                {
-                    mdGridWarningAttributes.Show( errorMessage, ModalAlertType.Information );
-                    return;
-                }
-                
-                attributeService.Delete( attribute );
-                rockContext.SaveChanges();
-            }
-
-            BindBlockTypeAttributesGrid();
-        }
-
-        /// <summary>
-        /// Handles the SaveClick event of the edtBlockTypeAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void edtBlockTypeAttributes_SaveClick( object sender, EventArgs e )
-        {
-            var attribute = Rock.Attribute.Helper.SaveAttributeEdits(
-                edtBlockTypeAttributes, EntityTypeCache.Get( typeof( Rock.Model.Block ) ).Id, "BlockTypeId", hfBlockTypeId.Value );
-
-            // Attribute will be null if it was not valid
-            if ( attribute == null )
-            {
-                return;
-            }
-
-            pnlDetails.Visible = true;
-            pnlBlockTypeAttributesEdit.Visible = false;
-
-            BindBlockTypeAttributesGrid();
-            this.HideSecondaryBlocks( false );
-        }
-
-        /// <summary>
-        /// Handles the CancelClick event of the edtBlockTypeAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void edtBlockTypeAttributes_CancelClick( object sender, EventArgs e )
-        {
-            pnlDetails.Visible = true;
-            pnlBlockTypeAttributesEdit.Visible = false;
-
-            this.HideSecondaryBlocks( false );
-        }
-
-        /// <summary>
-        /// Handles the RowDataBound event of the gBlockTypeAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void gBlockTypeAttributes_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
-        {
-            if ( e.Row.DataItem != null )
-            {
-                bool isDynamicAttribute = (bool)e.Row.DataItem.GetPropertyValue( "IsDynamicAttribute" );
-                if ( !isDynamicAttribute )
-                {
-                    // don't allow static attributes on to be edited or deleted (but reordering them is OK)
-                    e.Row.Cells.OfType<DataControlFieldCell>().First( a => a.ContainingField is EditField ).Controls[0].Visible = false;
-                    e.Row.Cells.OfType<DataControlFieldCell>().First( a => a.ContainingField is DeleteField ).Controls[0].Visible = false;
-                }
-            }
-        }
-
-
 
         #endregion
     }

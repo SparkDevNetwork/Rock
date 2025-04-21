@@ -79,7 +79,7 @@ namespace Rock
                 {
                     if ( string.IsNullOrWhiteSpace( typeName ) || typeEntry.Key == typeName )
                     {
-                        types.AddOrIgnore( typeEntry.Key, typeEntry.Value );
+                        types.TryAdd( typeEntry.Key, typeEntry.Value );
                     }
                 }
             }
@@ -95,7 +95,28 @@ namespace Rock
         /// <returns></returns>
         public static Dictionary<string, Type> SearchAssembly( Assembly assembly, Type baseType )
         {
-            Dictionary<string, Type> types = new Dictionary<string, Type>();
+            var cacheKey = $"{assembly.FullName}:{baseType.FullName}";
+
+            // Searching an assembly is relatively slow. Every single type has
+            // to be enumerated and checked. Because some assemblies can have
+            // tens of thousands of types, caching the results provides a
+            // significant boost to performance. This is especially true when
+            // it is being called inside a loop such as when registering REST
+            // controllers and actions.
+            return ( Dictionary<string, Type> ) RockCache.GetOrAddExisting( cacheKey, () => SearchAssemblyInternal( assembly, baseType ) );
+        }
+
+        /// <summary>
+        /// Searches the assembly.
+        /// </summary>
+        /// <param name="assembly">The assembly.</param>
+        /// <param name="baseType">Type of the base.</param>
+        /// <returns></returns>
+        private static Dictionary<string, Type> SearchAssemblyInternal( Assembly assembly, Type baseType )
+        {
+            // Pre-allocate for up to 32 types. It's probably safe to assume
+            // we will find close to that many for a given base type.
+            Dictionary<string, Type> types = new Dictionary<string, Type>( 32 );
 
             try
             {
@@ -150,7 +171,7 @@ namespace Rock
         /// <returns></returns>
         public static string GetDisplayName( Type type )
         {
-            return type.GetCustomAttribute<DisplayNameAttribute>( true )?.DisplayName;
+            return type?.GetCustomAttribute<DisplayNameAttribute>( true )?.DisplayName;
         }
 
         /// <summary>
@@ -160,7 +181,7 @@ namespace Rock
         /// <returns></returns>
         public static string GetCategory( Type type )
         {
-            return type.GetCustomAttribute<CategoryAttribute>( true )?.Category;
+            return type?.GetCustomAttribute<CategoryAttribute>( true )?.Category;
         }
 
         /// <summary>
@@ -170,7 +191,7 @@ namespace Rock
         /// <returns></returns>
         public static string GetDescription( Type type )
         {
-            return type.GetCustomAttribute<DescriptionAttribute>( true )?.Description;
+            return type?.GetCustomAttribute<DescriptionAttribute>( true )?.Description;
         }
 
         /// <summary>
@@ -357,6 +378,28 @@ namespace Rock
         }
 
         /// <summary>
+        /// Gets the specified entity.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="dbContext">The database context.</param>
+        /// <returns></returns>
+        public static IEntity GetIEntityForEntityType( int entityTypeId, int entityId, Data.DbContext dbContext = null )
+        {
+            var type = EntityTypeCache.Get( entityTypeId )?.GetEntityType();
+
+            if ( type == null )
+            {
+                return null;
+            }
+
+            var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+            var getMethod = serviceInstance?.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+
+            return getMethod?.Invoke( serviceInstance, new object[] { entityId } ) as IEntity;
+        }
+
+        /// <summary>
         /// Gets the type of the entity identifier for entity.
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
@@ -416,8 +459,12 @@ namespace Rock
             {
                 var cacheType = Type.GetType( $"Rock.Web.Cache.{type.Name}Cache" );
 
-                // Make sure the base type inherits from ModelCache<,>
-                if ( cacheType != null && cacheType.BaseType.IsGenericType && cacheType.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) )
+                // Make sure the base type inherits from ModelCache<,> or EntityCache<,>
+                var isValidCacheType = cacheType != null
+                    && cacheType.BaseType.IsGenericType
+                    && ( cacheType.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) || cacheType.BaseType.GetGenericTypeDefinition() == typeof( EntityCache<,> ) );
+
+                if ( isValidCacheType )
                 {
                     // Make sure the base type is the expected type, e.g. ModelCache<CampusCache, Campus>
                     if ( cacheType.BaseType.GenericTypeArguments[1] == type )
@@ -596,7 +643,7 @@ namespace Rock
 
                 if ( entityId.HasValue )
                 {
-                    entityIds.AddOrIgnore( entityKey, entityId.Value );
+                    entityIds.TryAdd( entityKey, entityId.Value );
                 }
                 else if ( Guid.TryParse( entityKey, out var guid ) )
                 {
@@ -641,7 +688,7 @@ namespace Rock
 
                         if ( key != null )
                         {
-                            entityIds.AddOrIgnore( key, id.Id );
+                            entityIds.TryAdd( key, id.Id );
                         }
                     }
                 }

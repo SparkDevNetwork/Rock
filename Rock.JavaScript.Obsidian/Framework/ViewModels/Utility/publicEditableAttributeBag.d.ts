@@ -32,6 +32,9 @@ export type PublicEditableAttributeBag = {
     /** Gets or sets the abbreviated name of the attribute. */
     abbreviatedName?: string | null;
 
+    /** Gets or sets a color to visually distinguish this attribute. */
+    attributeColor?: string | null;
+
     /** Gets or sets the categories the attribute is associated with. */
     categories?: ListItemBag[] | null;
 
@@ -61,6 +64,9 @@ export type PublicEditableAttributeBag = {
      */
     guid?: Guid | null;
 
+    /** Gets or sets the CSS class for the icon to show as a distinguishing mark for this attribute. */
+    iconCssClass?: string | null;
+
     /** Gets or sets a value indicating whether the attribute is active. */
     isActive: boolean;
 
@@ -85,7 +91,7 @@ export type PublicEditableAttributeBag = {
     /** Gets or sets a value indicating whether this attribute is indexed by universal search. */
     isIndexEnabled: boolean;
 
-    /** Gets or sets a value indicating whether the attribute is publically visible. */
+    /** Gets or sets a value indicating whether the attribute is publicly visible. */
     isPublic: boolean;
 
     /**
@@ -102,6 +108,9 @@ export type PublicEditableAttributeBag = {
      * bulk update screens.
      */
     isShowOnBulk: boolean;
+
+    /** Gets or sets a flag indicating if changes to the attribute values should be recorded into the generic History log table. */
+    isSuppressHistoryLogging: boolean;
 
     /**
      * Gets or sets a value indicating whether this attribute is a system

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AttributeQualifier" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "EC7EB9AC-8B52-4A3D-8587-4A08050780CC")]
     public partial class AttributeQualifier : Entity<AttributeQualifier>, ICacheable
     {

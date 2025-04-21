@@ -25,6 +25,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Update;
@@ -154,18 +155,9 @@ namespace RockWeb.Blocks.Core
                     nbSqlServerVersionIssue.Visible = true;
                 }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-                var lavaSupportLevel = GlobalAttributesCache.Get().LavaSupportLevel;
-                var isConfiguredForLegacyLava = lavaSupportLevel != Rock.Lava.LavaSupportLevel.NoLegacy;
-#pragma warning restore CS0618 // Type or member is obsolete
-                if ( isConfiguredForLegacyLava )
-                {
-                    nbLegacyLavaIssue.Visible = true;
-                }
-
                 _releases = GetOrderedReleaseList( rockUpdateService, _installedVersion );
 
-                if ( _releases.Exists( r => new Version( r.SemanticVersion ) >= new Version( "1.17.0" ) ) && RockInstanceConfig.LavaEngineName != "Fluid" )
+                if ( _releases.Exists( r => new Version( r.SemanticVersion ) >= new Version( "1.17.0" ) ) && RockApp.Current.GetCurrentLavaEngineName() != "Fluid" )
                 {
                     nbLavaEngineIssue.Visible = true;
                 }
@@ -184,12 +176,6 @@ namespace RockWeb.Blocks.Core
                         if ( !hasMinimumCompatibilityLevelOrHigher )
                         {
                             nbSqlServerVersionIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
-                        }
-
-                        // if LegacyLavaIssue is visible, and they are updating to v16 or later, show the version Warning as an Danger instead.
-                        if ( isConfiguredForLegacyLava )
-                        {
-                            nbLegacyLavaIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                         }
                     }
 
@@ -332,7 +318,11 @@ namespace RockWeb.Blocks.Core
             string version = e.CommandArgument.ToString();
 
             hdnInstallVersion.Value = version;
-            litConfirmationMessage.Text = string.Format( "Are you sure you want to upgrade to Rock {0}?", RockVersion( new Version( version ) ) );
+
+            var litPackageDescription = ( Literal ) e.Item.FindControl( "litPackageDescription" );
+            string versionDescription = litPackageDescription?.Text ?? version;
+            litConfirmationMessage.Text = string.Format( "Are you sure you want to upgrade to {0}?", versionDescription );
+
             mdConfirmInstall.Show();
         }
 
@@ -354,7 +344,7 @@ namespace RockWeb.Blocks.Core
                 var installedRelease = rockInstaller.InstallVersion();
 
                 nbSuccess.Text = ConvertToHtmlLiWrappedUl( installedRelease.ReleaseNotes ).ConvertCrLfToHtmlBr();
-                lSuccessVersion.Text = GetRockVersion( installedRelease.SemanticVersion );
+                lSuccessVersion.Text = installedRelease.Description;
             }
             catch ( OutOfMemoryException ex )
             {
@@ -496,7 +486,7 @@ namespace RockWeb.Blocks.Core
             try
             {
                 var ipAddress = Request.ServerVariables["LOCAL_ADDR"];
-                var environmentData = RockUpdateHelper.GetEnvDataAsJson( Request, ResolveRockUrl( "~/" ) );
+                var environmentData = Rock.Web.Utilities.RockUpdateHelper.GetEnvDataAsJson( Request, ResolveRockUrl( "~/" ) );
                 using ( var rockContext = new RockContext() )
                 {
                     var instanceStatistics = new RockInstanceImpactStatistics( new RockImpactService(), rockContext );
@@ -570,31 +560,24 @@ namespace RockWeb.Blocks.Core
         private string CreatePendingRunOnceJobsMessage( List<string> pendingStartupRunOnceJobs, List<string> pendingScheduledRunOnceJobs )
         {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine( "<strong><i class=\"fa fa-exclamation-triangle\"></i> Cannot Update Rock: Migration Jobs Pending</strong>" );
-            stringBuilder.AppendLine( "<p>" );
-            stringBuilder.AppendLine( "The following jobs need to complete before updating to the latest version of Rock.<br>" );
+            stringBuilder.AppendLine( "<strong><i class=\"fa fa-info-circle\"></i> Migration Jobs Pending</strong>" );
+            stringBuilder.AppendLine( "<p>The jobs listed below must finish before you can update to another version of Rock.</p>" );
 
             if ( pendingStartupRunOnceJobs.Any() )
             {
-                stringBuilder.AppendLine( "These jobs run automatically when Rock starts after an update and should finish soon.<br>" );
+                stringBuilder.AppendLine( "<p>These jobs run automatically when Rock starts after an update and typically finish quickly.</p>" );
                 stringBuilder.AppendLine( "<ul>" );
-
                 pendingStartupRunOnceJobs.ForEach( j => stringBuilder.AppendLine( $"<li>{j}</li>" ) );
-
                 stringBuilder.AppendLine( "</ul>" );
             }
 
             if ( pendingScheduledRunOnceJobs.Any() )
             {
-                stringBuilder.AppendLine( "These jobs are scheduled to run at 2 AM when usage is low because they could affect performance. If needed they can be run manually by going to Admin Tools --> System Settings --> Jobs Administration.<br>" );
+                stringBuilder.AppendLine( "<p>These jobs are scheduled to run at 2 AM during low-usage hours to avoid performance issues. If needed, they can be run manually from Admin Tools > System Settings > Jobs Administration.</p>" );
                 stringBuilder.AppendLine( "<ul>" );
-
                 pendingScheduledRunOnceJobs.ForEach( j => stringBuilder.AppendLine( $"<li>{j}</li>" ) );
-
                 stringBuilder.AppendLine( "</ul>" );
             }
-
-            stringBuilder.AppendLine( "</p>" );
 
             return stringBuilder.ToString();
         }

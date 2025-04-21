@@ -15,10 +15,13 @@
 // </copyright>
 //
 
+import { CancellationTokenSource, ICancellationToken } from "./cancellation";
+import { isHTMLElement } from "./dom";
+
 /**
  * Compares two values for equality by performing deep nested comparisons
  * if the values are objects or arrays.
- * 
+ *
  * @param a The first value to compare.
  * @param b The second value to compare.
  * @param strict True if strict comparision is required (meaning 1 would not equal "1").
@@ -71,6 +74,11 @@ export function deepEqual(a: unknown, b: unknown, strict: boolean): boolean {
                 return false;
             }
 
+            // The objects must be the same instance if they are both HTML elements.
+            if (isHTMLElement(a) && isHTMLElement(b)) {
+                return a === b;
+            }
+
             // Get all the key/value pairs of each object and sort them so they
             // are in the same order as each other.
             const aEntries = Object.entries(a).sort((a, b) => a[0] < b[0] ? -1 : (a[0] > b[0] ? 1 : 0));
@@ -108,7 +116,7 @@ export function deepEqual(a: unknown, b: unknown, strict: boolean): boolean {
  * Debounces the function so it will only be called once during the specified
  * delay period. The returned function should be called to trigger the original
  * function that is to be debounced.
- * 
+ *
  * @param fn The function to be called once per delay period.
  * @param delay The period in milliseconds. If the returned function is called
  * more than once during this period then fn will only be executed once for
@@ -143,4 +151,120 @@ export function debounce(fn: (() => void), delay: number = 250, eager: boolean =
             fn();
         }, delay);
     };
+}
+
+/**
+ * Options for debounceAsync function
+ */
+type DebounceAsyncOptions = {
+    /**
+     * The period in milliseconds. If the returned function is called more than
+     * once during this period, then `fn` will only be executed once for the
+     * period.
+     * @default 250
+     */
+    delay?: number;
+
+    /**
+     * If `true`, then the `fn` function will be called immediately on the first
+     * call, and any subsequent calls will be debounced.
+     * @default false
+     */
+    eager?: boolean;
+};
+
+/**
+ * Debounces the function so it will only be called once during the specified
+ * delay period. The returned function should be called to trigger the original
+ * function that is to be debounced.
+ *
+ * **Note:** Due to the asynchronous nature of JavaScript and how promises work,
+ * `fn` may be invoked multiple times before previous invocations have completed.
+ * To ensure that only the latest invocation proceeds and to prevent stale data,
+ * you should check `cancellationToken.isCancellationRequested` at appropriate
+ * points within your `fn` implementation—ideally after you `await` data from the
+ * server. If cancellation is requested, `fn` should promptly abort execution.
+ *
+ * @param fn The function to be called once per delay period.
+ * @param options An optional object specifying debounce options.
+ *
+ * @returns A function to be called when `fn` should be executed. This function
+ * accepts an optional `parentCancellationToken` that, when canceled, will also
+ * cancel the execution of `fn`.
+ */
+export function debounceAsync<T>(
+    fn: ((cancellationToken: ICancellationToken) => PromiseLike<T>),
+    options?: DebounceAsyncOptions
+): ((parentCancellationToken?: ICancellationToken) => Promise<T>) {
+    const delay = options?.delay ?? 250;
+    const eager = options?.eager ?? false;
+
+    let timeout: NodeJS.Timeout | null = null;
+    let source: CancellationTokenSource | null = null;
+    let isEagerExecutionInProgress = false;
+    let pendingPromise: PromiseLike<T> | null = null;
+
+    return async (parentCancellationToken?: ICancellationToken): Promise<T> => {
+        // Always cancel any ongoing execution of fn.
+        source?.cancel();
+
+        if (timeout) {
+            clearTimeout(timeout);
+            timeout = null;
+        }
+        else if (eager && !isEagerExecutionInProgress) {
+            // Execute immediately on the first call.
+            isEagerExecutionInProgress = true;
+            source = new CancellationTokenSource(parentCancellationToken);
+
+            // Set the timeout before awaiting fn.
+            timeout = setTimeout(() => {
+                timeout = null;
+                isEagerExecutionInProgress = false;
+            }, delay);
+
+            try {
+                pendingPromise = fn(source.token);
+                return await pendingPromise;
+            }
+            catch (e) {
+                console.error(e || "Unknown error while debouncing async function call.");
+                throw e;
+            }
+        }
+
+        // Schedule the function to run after the delay.
+        source = new CancellationTokenSource(parentCancellationToken);
+        const cts = source;
+
+        return new Promise<T>((resolve, reject) => {
+            timeout = setTimeout(async () => {
+                try {
+                    pendingPromise = fn(cts.token);
+                    resolve(await pendingPromise);
+                }
+                catch (e) {
+                    console.error(e || "Unknown error while debouncing async function call.");
+                    reject(e);
+                }
+
+                timeout = null;
+                isEagerExecutionInProgress = false;
+            }, delay);
+        });
+    };
+}
+
+/**
+ * Returns `true` if the value is `null` or `undefined` (nullish).
+ */
+export function isNullish(value: unknown): value is null | undefined {
+    return (value ?? null) === null;
+}
+
+/**
+ * Returns `true` if the value is not `null` or `undefined` (nullish).
+ */
+export function isNotNullish<T>(item: T): item is NonNullable<T> {
+    return !isNullish(item);
 }

@@ -67,9 +67,9 @@ namespace Rock.ViewModels.Utility
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the attribute is publically visible.
+        /// Gets or sets a value indicating whether the attribute is publicly visible.
         /// </summary>
-        /// <value><c>true</c> if the attribute is publically visible; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if the attribute is publicly visible; otherwise, <c>false</c>.</value>
         public bool IsPublic { get; set; }
 
         /// <summary>
@@ -179,5 +179,20 @@ namespace Rock.ViewModels.Utility
         /// </summary>
         /// <value>The default value of the attribute.</value>
         public string DefaultValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if changes to the attribute values should be recorded into the generic History log table.
+        /// </summary>
+        public bool IsSuppressHistoryLogging { get; set; }
+
+        /// <summary>
+        /// Gets or sets a color to visually distinguish this attribute.
+        /// </summary>
+        public string AttributeColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CSS class for the icon to show as a distinguishing mark for this attribute.
+        /// </summary>
+        public string IconCssClass { get; set; }
     }
 }

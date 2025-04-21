@@ -43,6 +43,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "Page" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PAGE )]
     public partial class Page : Model<Page>, IOrdered, ICacheable, IHasAdditionalSettings
     {
@@ -93,6 +94,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> that represents the Id of the parent Page.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? ParentPageId { get; set; }
 
         /// <summary>
@@ -111,7 +113,19 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Layout"/> that this Page uses.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int LayoutId { get; set; }
+
+        /// <summary>
+        /// Gets the site identifier of the Page's Layout.
+        /// NOTE: This is needed so that Page Attributes qualified by SiteId work.
+        /// </summary>
+        /// <value>
+        /// The site identifier.
+        /// </value>
+        [DataMember]
+        [EnableAttributeQualification]
+        public int SiteId { get; private set; }
 
         /// <summary>
         /// Gets or sets a flag that indicates if the Page requires SSL encryption.
@@ -402,7 +416,6 @@ namespace Rock.Model
         public string AdditionalSettings { get; set; }
 
         /// <inheritdoc/>
-        [RockInternal( "1.16.4" )]
         [DataMember]
         public string AdditionalSettingsJson { get; set; }
 
@@ -454,13 +467,34 @@ namespace Rock.Model
         public int? RateLimitRequestPerPeriod { get; set; }
 
         /// <summary>
-        /// Gets or sets the rate limit period.
+        /// Gets or sets the rate limit period (in seconds).
         /// </summary>
         /// <value>
-        /// The rate limit period.
+        /// The rate limit period (in seconds).
+        /// </value>
+        [Obsolete( "Use RateLimitPeriodDurationSeconds instead." )]
+        [RockObsolete( "1.16.7" )]
+        [NotMapped]
+        public int? RateLimitPeriod
+        {
+            get
+            {
+                return this.RateLimitPeriodDurationSeconds;
+            }
+            set
+            {
+                this.RateLimitPeriodDurationSeconds = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the rate limit period (in seconds).
+        /// </summary>
+        /// <value>
+        /// The rate limit period (in seconds).
         /// </value>
         [DataMember]
-        public int? RateLimitPeriod { get; set; }
+        public int? RateLimitPeriodDurationSeconds { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is rate limited.
@@ -474,7 +508,7 @@ namespace Rock.Model
         {
             get
             {
-                return RateLimitPeriod != null && RateLimitRequestPerPeriod != null;
+                return RateLimitPeriodDurationSeconds != null && RateLimitPeriodDurationSeconds != null;
             }
         }
 
@@ -525,20 +559,13 @@ namespace Rock.Model
         public virtual Layout Layout { get; set; }
 
         /// <summary>
-        /// Gets the site identifier of the Page's Layout.
-        /// NOTE: This is needed so that Page Attributes qualified by SiteId work.
+        /// Gets or sets the <see cref="Rock.Model.Site"/> that the pages uses.
         /// </summary>
         /// <value>
-        /// The site identifier.
+        /// The <see cref="Rock.Model.Site"/> entity that the Page is using
         /// </value>
-        public virtual int SiteId
-        {
-            get
-            {
-                var layout = LayoutCache.Get( this.LayoutId );
-                return layout != null ? layout.SiteId : 0;
-            }
-        }
+        [LavaVisible]
+        public virtual Site Site { get; set; }
 
         /// <summary>
         /// Gets or sets the collection of <see cref="Rock.Model.Block">Blocks</see> that are used on the page.
@@ -631,6 +658,7 @@ namespace Rock.Model
         public PageConfiguration()
         {
             this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.Site ).WithMany().HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Layout ).WithMany( p => p.Pages ).HasForeignKey( p => p.LayoutId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.IconBinaryFile ).WithMany().HasForeignKey( p => p.IconBinaryFileId ).WillCascadeOnDelete( false );
         }

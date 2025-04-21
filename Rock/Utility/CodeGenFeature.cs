@@ -30,11 +30,6 @@ namespace Rock.Utility
         None = 0,
 
         /// <summary>
-        /// The view model file used by clients.
-        /// </summary>
-        ViewModelFile = 0x0001,
-
-        /// <summary>
         /// Excludes the default REST controller that would be generated for a model.
         /// </summary>
         DefaultRestController = 0x0002,

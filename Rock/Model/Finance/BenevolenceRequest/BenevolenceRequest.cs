@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "BenevolenceRequest" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.BENEVOLENCE_REQUEST )]
     public partial class BenevolenceRequest : Model<BenevolenceRequest>
     {
@@ -69,7 +70,7 @@ namespace Rock.Model
         [DataMember]
         [MaxLength( 254 )]
         [Previewable]
-        [RegularExpression( @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]
+        [EmailAddressValidation]
         public string Email { get; set; }
 
         /// <summary>
@@ -218,6 +219,7 @@ namespace Rock.Model
         /// </value>
         [HideFromReporting]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int BenevolenceTypeId { get; set; }
 
         /// <summary>

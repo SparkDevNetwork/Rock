@@ -1,84 +1,100 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="grid-obsidian" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light }">
+    <div class="grid-obsidian styled-scroll" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light }">
         <div class="grid-heading">
-            <FilterHeaderRow v-if="!light"
+            <FilterHeaderRow v-if="!light && !hideFilterHeaderRow"
                              v-model:quickFilterValue="quickFilterValue"
                              :grid="gridState"
+                             :title="title"
+                             :isTitleHidden="isTitleHidden"
                              :gridActions="gridActions"
                              :visibleColumnCount="visibleColumnCount"
                              :countMessage="countMessage"
+                             :selectedRowCount="selectedRowCount"
                              :isCountMessageVisible="isCountMessageVisible"
                              :isSearchVisible="isSearchVisible" />
-
-            <slot name="gridHeaderPrepend" />
-
-            <ColumnHeaderRow :columns="visibleColumnDefinitions"
-                             v-model:columnFilters="columnFilterValues"
-                             v-model:columnSort="columnSortDirection"
-                             :grid="gridState"
-                             :light="light" />
-
-            <slot name="gridHeaderAppend" />
         </div>
 
-        <div class="grid-body" v-if="loadingData">
-            <SkeletonRows :columns="visibleColumnDefinitions"
+        <div :class="{ 'grid-overflow': overflow, }">
+
+            <div :class="{ 'sticky-column-header': !overflow }">
+                <slot name="gridHeaderPrepend" />
+                <ColumnHeaderRow :columns="visibleColumnDefinitions"
+                                 v-model:columnFilters="columnFilterValues"
+                                 v-model:columnSort="columnSortDirection"
+                                 :grid="gridState"
+                                 :light="light" />
+                <slot name="gridHeaderAppend" />
+            </div>
+
+            <div class="grid-body" v-if="loadingData">
+                <SkeletonRows :columns="visibleColumnDefinitions"
+                              :grid="gridState"
+                              :count="skeletonRowCount" />
+            </div>
+
+            <div class="grid-body" v-else-if="gridErrorMessage">
+                <NotificationBox alertType="warning">{{ gridErrorMessage }}</NotificationBox>
+            </div>
+
+            <DataRows v-else-if="dragOptions"
+                      :dragOptions="dragOptions"
+                      :columns="visibleColumnDefinitions"
+                      :rows="visibleRows"
+                      :grid="gridState"
+                      :tooltipField="tooltipField"
+                      :isSelectable="isSelectionEnabled"
+                      :itemTerm="gridState.itemTerm"
+                      :markInactiveRows="markInactiveRows"
+                      :rowClass="rowClass"
+                      :emptyDataText="emptyDataText"
+                      @width="calculateOverflow"
+                      @click="onRowClick" />
+
+            <div class="grid-body" v-else-if="!keyField || light">
+                <DataRows
+                          :columns="visibleColumnDefinitions"
+                          :rows="visibleRows"
                           :grid="gridState"
-                          :count="skeletonRowCount" />
-        </div>
+                          :tooltipField="tooltipField"
+                          :isSelectable="isSelectionEnabled"
+                          :itemTerm="gridState.itemTerm"
+                          :markInactiveRows="markInactiveRows"
+                          :rowClass="rowClass"
+                          :emptyDataText="emptyDataText"
+                          @width="calculateOverflow"
+                          @click="onRowClick" />
+            </div>
 
-        <div class="grid-body" v-else-if="gridErrorMessage">
-            <NotificationBox alertType="warning">{{ gridErrorMessage }}</NotificationBox>
+            <VirtualDataRows v-else
+                             :columns="visibleColumnDefinitions"
+                             :rows="visibleRows"
+                             :grid="gridState"
+                             :tooltipField="tooltipField"
+                             :isSelectable="isSelectionEnabled"
+                             :itemTerm="gridState.itemTerm"
+                             :markInactiveRows="markInactiveRows"
+                             :rowClass="rowClass"
+                             :emptyDataText="emptyDataText"
+                             @width="calculateOverflow"
+                             @click="onRowClick" />
         </div>
-
-        <div class="grid-body" v-else-if="dragOptions" v-dragSource="dragOptions" v-dragTarget="dragOptions">
-            <DataRows
-                      :columns="visibleColumnDefinitions"
-                      :rows="visibleRows"
-                      :grid="gridState"
-                      :tooltipField="tooltipField"
-                      :isSelectable="isSelectionEnabled"
-                      :markInactiveRows="markInactiveRows"
-                      :rowClass="rowClass"
-                      @click="onRowClick" />
-        </div>
-
-        <div class="grid-body" v-else-if="!keyField || light">
-            <DataRows
-                      :columns="visibleColumnDefinitions"
-                      :rows="visibleRows"
-                      :grid="gridState"
-                      :tooltipField="tooltipField"
-                      :isSelectable="isSelectionEnabled"
-                      :markInactiveRows="markInactiveRows"
-                      :rowClass="rowClass"
-                      @click="onRowClick" />
-        </div>
-
-        <VirtualDataRows v-else
-                         :columns="visibleColumnDefinitions"
-                         :rows="visibleRows"
-                         :grid="gridState"
-                         :tooltipField="tooltipField"
-                         :isSelectable="isSelectionEnabled"
-                         :markInactiveRows="markInactiveRows"
-                         :rowClass="rowClass"
-                         @click="onRowClick" />
 
         <div class="grid-footing">
             <slot name="gridFooterPrepend" />
 
-            <PagerRow v-if="!light"
-                      v-model:pageSize="pageSize"
-                      v-model:currentPage="currentPage"
-                      :pageCount="pageCount"
-                      :pageSizes="pageSizes"
-                      :visibleColumnCount="visibleColumnCount" />
+            <template v-if="!isFooterHidden">
+                <PagerRow v-if="isPagerRowVisible"
+                          v-model:pageSize="pageSize"
+                          v-model:currentPage="currentPage"
+                          :pageCount="pageCount"
+                          :pageSizes="pageSizes"
+                          :visibleColumnCount="visibleColumnCount" />
 
-            <LightFooterRow v-else
-                            :grid="gridState"
-                            :gridActions="gridActions" />
+                <LightFooterRow v-else
+                                :grid="gridState"
+                                :gridActions="gridActions" />
+            </template>
 
             <slot name="gridFooterAppend" />
         </div>
@@ -86,10 +102,17 @@
 </template>
 
 <style>
+.grid-overflow {
+    overflow-x: auto;
+}
+
 .grid-obsidian {
     --table-cell-padding-x: 16px;
     --table-cell-padding-y: 16px;
     color: var(--theme-darkest);
+    margin-bottom: var(--spacing-large);
+    /* Allow some of the popups to be positioned relative to the grid */
+    position: relative;
 }
 
 .grid-obsidian.grid-bordered {
@@ -104,12 +127,18 @@
 .grid-heading {
     background: var(--theme-white);
     border-radius: 4px 4px 0 0;
+    z-index: 1;
 }
 
 .grid-obsidian.grid-sticky > .grid-heading {
     position: sticky;
     top: var(--sticky-element-offset);
-    z-index: 10;
+}
+
+.grid-obsidian.grid-sticky .sticky-column-header {
+    position: sticky;
+    top: calc(var(--sticky-element-offset) + 56px);
+    z-index: 1;
 }
 
 .grid-obsidian > .grid-heading > .grid-title-heading {
@@ -122,7 +151,7 @@
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-title {
     flex-grow: 1;
-    font-size: 22px;
+    font-size: var(--font-size-h5);
     font-weight: 500;
     line-height: 1;
     padding-left: 24px;
@@ -162,6 +191,12 @@
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action:hover {
     background-color: var(--theme-light);
+}
+
+.grid-actions-dropdown-menu {
+    position: fixed;
+    display: block;
+    margin-top: 0;
 }
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter {
@@ -207,16 +242,18 @@
 .grid-column-heading {
     display: flex;
     font-weight: 500;
-    border-bottom: 1px solid var(--theme-light);
     color: var(--theme-dark);
 }
 
 .grid-column-header {
     position: relative;
     display: flex;
+    justify-content: center;
     align-items: center;
     font-size: 14px;
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+    min-width: 120px;
+    border-bottom: 1px solid var(--theme-light);
 }
 
 .grid-bordered .grid-column-header {
@@ -233,6 +270,7 @@
 
 .grid-column-title {
     flex: 1 1 auto;
+    overflow: hidden;
 }
 
 .grid-sort-direction {
@@ -269,7 +307,6 @@
     color: var(--theme-medium);
     opacity: 0;
     transition: opacity 250ms, color 250ms;
-    z-index: 10;
 }
 
 .grid-column-heading:hover .btn-grid-column-filter {
@@ -291,11 +328,18 @@
     color: var(--color-info);
 }
 
-.grid-column-header > .grid-filter-popup {
-    position: absolute;
+.grid-filter-popup-container {
+    position: fixed;
+    /* 1050 matches the bootstrap dropdown menu used in other parts of the grid. */
+    z-index: 1050;
+}
+
+.grid-filter-popup-container .grid-filter-popup {
     display: flex;
     flex-direction: column;
-    margin-top: 6px;
+    margin-top: 1px;
+    margin-left: auto;
+    margin-right: auto;
     min-width: 240px;
     max-width: 320px;
     max-height: 400px;
@@ -307,24 +351,20 @@
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
     cursor: initial;
     font-weight: initial;
-    z-index: 10;
-    /* Temporary Fix Until JS */
-    bottom: 0;
-    transform: translateY(100%);
 }
 
-.grid-column-header > .grid-filter-popup > .grid-filter-popup-content {
+.grid-filter-popup-container .grid-filter-popup > .grid-filter-popup-content {
     flex-grow: 1;
     overflow-y: auto;
 }
 
-.grid-column-header > .grid-filter-popup > .grid-filter-popup-content > .grid-filter-popup-body {
+.grid-filter-popup-container .grid-filter-popup > .grid-filter-popup-content > .grid-filter-popup-body {
     margin: 10px;
     padding: 2px;
     overflow-x: clip;
 }
 
-.grid-column-header > .grid-filter-popup > .actions {
+.grid-filter-popup-container .grid-filter-popup > .actions {
     display: flex;
     border-top: 1px solid var(--theme-light);
     background-color: #fcfcfc;
@@ -332,10 +372,15 @@
     gap: 8px;
 }
 
+.grid-filter-popup-container .grid-filter-popup .alert {
+    border-top: 0;
+    box-shadow: none;
+    padding: 8px;
+}
+
 .grid-row {
     display: flex;
     background-color: #fff;
-    border-bottom: 1px solid var(--theme-light);
     transition: background-color 70ms cubic-bezier(0, 0, .38, .9);
 }
 
@@ -353,9 +398,27 @@
 
 .grid-cell {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
-    overflow-x: hidden;
+    line-height: 1.4;
+    align-self: stretch;
+    background-color: inherit;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    min-width: 120px;
+    border-bottom: 1px solid var(--theme-light);
+}
+
+.grid-cell.grid-columnreorder {
+    min-width: fit-content;
+}
+
+.grid-cell.grid-wrapcell {
+    flex-wrap: wrap;
+}
+
+.grid-select-field {
+    min-width: 60px;
 }
 
 .grid-select-field:first-child {
@@ -366,8 +429,10 @@
 
 .grid-columncommand {
     --table-cell-padding-y: 0;
+    display: flex;
     align-items: center;
     padding: 0;
+    min-width: fit-content;
 }
 
 .grid-columncommand .btn {
@@ -457,9 +522,24 @@
     background-color: var(--theme-light);
 }
 
+.grid-obsidian .grid-cell .highlight-detail {
+    color: var(--theme-medium);
+    font-size: 14px;
+}
+
+.grid-obsidian .grid-cell .highlight-title {
+    font-weight: 600;
+}
+
 @media (max-width: 767px) {
     .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > .page-num {
         display: none;
+    }
+}
+
+@media (max-width:992px) {
+    .grid-obsidian.grid-sticky .sticky-column-header {
+        top: calc(var(--sticky-element-offset) + 114px);
     }
 }
 </style>
@@ -477,7 +557,7 @@
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { getColumnDefinitions, getEntitySetBag, GridActionUrlKey, GridState } from "@Obsidian/Core/Controls/grid";
-    import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions, useDragReorder } from "@Obsidian/Directives/dragDrop";
+    import { IDragSourceOptions, useDragReorder } from "@Obsidian/Directives/dragDrop";
     import { ColumnSort, GridAction, ColumnDefinition, EntitySetOptions, IGridState } from "@Obsidian/Types/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
@@ -485,6 +565,7 @@
     import { Guid } from "@Obsidian/Types";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
     import { useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { downloadFile } from "@Obsidian/Utility/file";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -533,6 +614,21 @@
         definition: {
             type: Object as PropType<GridDefinitionBag>,
             required: false
+        },
+
+        /**
+         * The title of the grid. If not provided and `isTitleHidden` is `false`,
+         * the default title of `${itemTerm} List` will be shown.
+         */
+        title: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /** When `true`, the grid's title will be hidden. */
+        isTitleHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         /**
@@ -591,6 +687,15 @@
         liveUpdates: {
             type: Boolean as PropType<boolean>,
             required: false
+        },
+
+        /**
+         * If true, the filter header row containing the row counts,
+         * quick filters and other grid data will be hidden. Defaults to false.
+         * */
+        hideFilterHeaderRow: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         /** If enabled then the grid will have a sticky header. */
@@ -729,6 +834,15 @@
         },
 
         /**
+         * The text to display in the empty data row. The default is an empty string (""), which indicates that this property is not set.
+         */
+        emptyDataText: {
+            type: String,
+            default: "",
+            required: false,
+        },
+
+        /**
          * Any fields that should be included when sending a communication. If
          * a column name matches the field name then the formatted value of
          * the column will be used. Otherwise the raw field value will be used.
@@ -833,6 +947,35 @@
             default: true
         },
 
+        /**
+         * Light mode: When `true`, the actions row will be hidden.
+         *
+
+         * Full mode: When `true`, paging will be disabled, making all data rows
+         * visible. Both the pager and actions rows will be hidden. If instead,
+         * you only want to disable paging, but still want the actions row to be
+         * shown, leave this property set to `false`, and set the `disablePaging`
+         * property to `true`.
+         */
+        isFooterHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Light mode: This property will have no effect.
+         *
+         * Full mode: When `true`, paging will be disabled, making all data rows
+         * visible. The pager row will be hidden but the actions row will be
+         * shown. If instead, you want to hide BOTH the pager and actions rows,
+         * leave this property set to `false`, and set the `isFooterHidden`
+         * property to `true`.
+         */
+        disablePaging: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
     });
 
     const emit = defineEmits<{
@@ -854,6 +997,7 @@
 
     // #region Values
 
+    const overflow = ref(false);
     const currentPage = ref(1);
     const pageSize = ref(50);
     const pageSizes = [50, 500, 5000];
@@ -865,6 +1009,7 @@
     const visibleRows = ref<Record<string, unknown>[]>([]);
     const pageCount = ref(0);
     const countMessage = ref("");
+    const selectedRowCount = ref(0);
     const visibleColumnDefinitions = shallowRef<ReadonlyArray<ColumnDefinition>>([]);
     const dragOptions = ref<IDragSourceOptions | undefined>();
     const isRowSelectionInProgress = ref(false);
@@ -1044,7 +1189,8 @@
                 iconCssClass: "fa fa-plus-square",
                 isPrimary: true,
                 title: "Add item",
-                tooltip: "Add a new item."
+                tooltip: "Add a new item. (Alt+N)",
+                shortcutKey: "n"
             });
         }
 
@@ -1178,6 +1324,21 @@
         return !!props.onSelectItem;
     });
 
+    /**
+     * Contains `true` if paging should be disabled on this grid.
+     */
+    const isPagingDisabled = computed((): boolean => {
+        return props.isFooterHidden || props.disablePaging;
+    });
+
+    /**
+     * Contains `true` if this grid is not operating in light mode
+     * and paging has not been disabled.
+     */
+    const isPagerRowVisible = computed((): boolean => {
+        return !props.light && !isPagingDisabled.value;
+    });
+
     // #endregion
 
     // #region Functions
@@ -1203,9 +1364,14 @@
      * Updates the {@link visibleRows} value based on the current selections.
      */
     function updateVisibleRows(): void {
-        const startIndex = (currentPage.value - 1) * pageSize.value;
+        if (isPagingDisabled.value) {
+            visibleRows.value = gridState.sortedRows.slice();
+        }
+        else {
+            const startIndex = (currentPage.value - 1) * pageSize.value;
 
-        visibleRows.value = gridState.sortedRows.slice(startIndex, startIndex + pageSize.value);
+            visibleRows.value = gridState.sortedRows.slice(startIndex, startIndex + pageSize.value);
+        }
     }
 
     /**
@@ -1213,7 +1379,12 @@
      * selected page size.
      */
     function updatePageCount(): void {
-        pageCount.value = Math.ceil(gridState.filteredRows.length / pageSize.value);
+        if (isPagingDisabled.value) {
+            pageCount.value = 1;
+        }
+        else {
+            pageCount.value = Math.ceil(gridState.filteredRows.length / pageSize.value);
+        }
     }
 
     /**
@@ -1350,24 +1521,11 @@
             ? await workbook.xlsx.writeBuffer()
             : await workbook.csv.writeBuffer();
 
-        // Create the URL that contains the file data.
-        const url = URL.createObjectURL(new Blob([buffer], {
+        const data = new Blob([buffer], {
             type: "application/octet-stream"
-        }));
+        });
 
-        // Create a fake hyperlink to simulate an attempt to download a file.
-        const element = document.createElement("a");
-        element.innerText = "Download";
-        element.style.position = "absolute";
-        element.style.top = "-100px";
-        element.style.left = "0";
-        element.href = url;
-        element.download = `${title.replace(/[^a-zA-Z0-9\-_]/g, "")}.${format}`;
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-
-        setTimeout(() => URL.revokeObjectURL(url), 100);
+        await downloadFile(data, `${title.replace(/[^a-zA-Z0-9\-_]/g, "")}.${format}`);
     }
 
     /**
@@ -1949,6 +2107,16 @@
     }
 
     /**
+     * Called when the {@link gridState.selectedKeys} value has changed.
+     * Update the UI to reflect the selection count.
+     */
+    function onSelectedKeysChanged(): void {
+        selectedRowCount.value = gridState.selectedKeys.length;
+
+        emit("selectedKeysChanged", gridState);
+    }
+
+    /**
      * Called when a row has been clicked if selection is enabled.
      *
      * @param key The key of the row that was clicked.
@@ -1975,6 +2143,20 @@
             isRowSelectionInProgress.value = false;
         }
     }
+
+    /**
+     * Called when a new width has been emit from the DataRow or VirtualDataRow.
+     */
+    function calculateOverflow(width: { offsetWidth: number, scrollWidth: number }): void {
+        if (width.offsetWidth < width.scrollWidth) {
+            overflow.value = true;
+            return;
+        }
+
+        overflow.value = false;
+    }
+
+
 
     // #endregion
 
@@ -2008,8 +2190,13 @@
         saveSortPreferences();
     });
 
-    watch([currentPage, pageSize], () => {
+    watch([currentPage, pageSize], (newValues, oldValues) => {
+        // If the page size changed, reset to the first page.
+        if (newValues[1] !== oldValues[1] && currentPage.value !== 1) {
+            currentPage.value = 1;
+        }
         updateVisibleRows();
+        updatePageCount();
     });
 
     watch(() => props.keyField, () => {
@@ -2027,9 +2214,10 @@
     gridState.on("sortedRowsChanged", onSortedRowsChanged);
     gridState.on("visibleColumnsChanged", () => visibleColumnDefinitions.value = gridState.visibleColumns);
     gridState.on("filteredRowsChanged", () => emit("filteredRowsChanged", gridState));
-    gridState.on("selectedKeysChanged", () => emit("selectedKeysChanged", gridState));
+    gridState.on("selectedKeysChanged", onSelectedKeysChanged);
 
     onUnmounted(() => {
+        gridState.off("selectedKeysChanged", onSelectedKeysChanged);
         gridState.off("sortedRowsChanged", onSortedRowsChanged);
         gridState.dispose();
     });

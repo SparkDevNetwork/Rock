@@ -26,6 +26,8 @@ using System.Text;
 using System.Web.UI;
 using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 
 using RestSharp;
@@ -33,6 +35,7 @@ using RestSharp;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
+using Rock.Logging;
 using Rock.Model;
 using Rock.NMI.Controls;
 using Rock.Web.Cache;
@@ -128,6 +131,7 @@ namespace Rock.NMI
         IsRequired = false,
         DefaultValue = null,
         Order = 10 )]
+
     [Rock.SystemGuid.EntityTypeGuid( "B8282486-7866-4ED5-9F24-093D25FF0820")]
     public class Gateway : GatewayComponent, IThreeStepGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent, IObsidianHostedGatewayComponent, IAutomatedGatewayComponent
     {
@@ -176,7 +180,7 @@ namespace Rock.NMI
         {
             get
             {
-                return string.Format( "~/NMIGatewayStep2.html?timestamp={0}", RockDateTime.Now.Ticks );
+                return $"~/NMIGatewayStep2.html?timestamp={RockDateTime.Now.Ticks}";
             }
         }
 
@@ -1214,12 +1218,12 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     string prefix = element.Name.LocalName;
                     foreach ( XElement childElement in element.Elements() )
                     {
-                        additionalLavaFields.AddOrIgnore( prefix + "_" + childElement.Name.LocalName, childElement.Value.Trim() );
+                        additionalLavaFields.TryAdd( prefix + "_" + childElement.Name.LocalName, childElement.Value.Trim() );
                     }
                 }
                 else
                 {
-                    additionalLavaFields.AddOrIgnore( element.Name.LocalName, element.Value.Trim() );
+                    additionalLavaFields.TryAdd( element.Name.LocalName, element.Value.Trim() );
                 }
             }
 
@@ -1486,12 +1490,10 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 string resultCodeMessage = FriendlyMessageHelper.GetResultCodeMessage( chargeResponse.ResponseCode.AsInteger(), chargeResponse.ResponseText );
                 if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
                 {
-                    errorMessage += string.Format( " ({0})", resultCodeMessage );
+                    errorMessage += $" ({resultCodeMessage})";
                 }
 
-                // write result error as an exception
-                var exception = new NMIGatewayException( $"Error processing NMI transaction. Result Code:  {chargeResponse.ResponseCode} ({resultCodeMessage}). Result text: {chargeResponse.ResponseText} " );
-                ExceptionLogService.LogException( exception );
+                LogGatewayError( chargeResponse, resultCodeMessage );
 
                 return null;
             }
@@ -1659,12 +1661,10 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     string resultCodeMessage = FriendlyMessageHelper.GetResultCodeMessage( addSubscriptionResponse.ResponseCode.AsInteger(), addSubscriptionResponse.ResponseText );
                     if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
                     {
-                        errorMessage += string.Format( " ({0})", resultCodeMessage );
+                        errorMessage += $" ({resultCodeMessage})";
                     }
 
-                    // write result error as an exception
-                    var exception = new NMIGatewayException( $"Error processing NMI subscription. Result Code:  {addSubscriptionResponse.ResponseCode} ({resultCodeMessage}). Result text: {addSubscriptionResponse.ResponseText} " );
-                    ExceptionLogService.LogException( exception );
+                    LogGatewayError( addSubscriptionResponse, resultCodeMessage, "subscription" );
 
                     return null;
                 }
@@ -2448,5 +2448,29 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         }
 
         #endregion
+
+        /// <summary>
+        /// Logs a gateway error response after determining whether it is an actual error (which should be added to the exception log) or just a declined transaction.
+        /// </summary>
+        /// <param name="response">The <see cref="ChargeResponse"/>.</param>
+        /// <param name="resultCodeMessage">The result code message.</param>
+        /// <param name="transactionDescription">A description of the type of transaction (i.e., transaction or subscription).</param>
+        private void LogGatewayError( ChargeResponse response, string resultCodeMessage, string transactionDescription = "transaction" )
+        {
+            var logger = RockLogger.LoggerFactory.CreateLogger<Gateway>();
+            var errorDescription = $"Error processing NMI {transactionDescription}. Result Code:  {response.ResponseCode} ({resultCodeMessage}). Result text: {response.ResponseText}";
+
+            if ( FriendlyMessageHelper.ResultCodeIsError( response.ResponseCode.AsInteger() ) )
+            {
+                // For actual error responses, write an exception to the exception log.
+                var exception = new NMIGatewayException( errorDescription );
+                ExceptionLogService.LogException( exception );
+                logger.LogError( errorDescription, exception );
+            }
+            else
+            {
+                logger.LogInformation( errorDescription );
+            }
+        }
     }
 }

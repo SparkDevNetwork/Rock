@@ -19,10 +19,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
@@ -59,6 +63,11 @@ namespace Rock.Blocks
         #region Fields
 
         /// <summary>
+        /// The logger backing field for the <see cref="Logger"/> property.
+        /// </summary>
+        private ILogger _logger;
+
+        /// <summary>
         /// The serializer settings to use when encoding block configurationd ata.
         /// </summary>
         private static readonly Lazy<Newtonsoft.Json.JsonSerializerSettings> _serializerSettings = new Lazy<Newtonsoft.Json.JsonSerializerSettings>( () =>
@@ -88,7 +97,7 @@ namespace Rock.Blocks
         /// <value>
         /// The block cache.
         /// </value>
-        public BlockCache BlockCache { get; set ; }
+        public BlockCache BlockCache { get; set; }
 
         /// <summary>
         /// Gets or sets the page cache.
@@ -143,6 +152,24 @@ namespace Rock.Blocks
 
         /// <inheritdoc/>
         public virtual string ObsidianFileUrl => GetObsidianFileUrl();
+
+        /// <summary>
+        /// Gets the logger instance that can be used to write log messages for
+        /// this block.
+        /// </summary>
+        /// <value>The logger instance.</value>
+        public ILogger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                }
+
+                return _logger;
+            }
+        }
 
         #endregion
 
@@ -252,7 +279,7 @@ namespace Rock.Blocks
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>A list of attribute value strings or an empty list if no attribute values exist.</returns>
-        internal List<string> GetAttributeValues( string key )
+        public List<string> GetAttributeValues( string key )
         {
             return BlockCache.GetAttributeValues( key );
         }
@@ -378,7 +405,7 @@ namespace Rock.Blocks
             // Filename convention is camelCase.
             var fileName = $"{type.Name.Substring( 0, 1 ).ToLower()}{type.Name.Substring( 1 )}";
 
-            return $"/Obsidian/Blocks/{namespaces.AsDelimited( "/" )}/{fileName}.obs";
+            return $"~/Obsidian/Blocks/{namespaces.AsDelimited( "/" )}/{fileName}.obs";
         }
 
         /// <summary>
@@ -409,6 +436,10 @@ namespace Rock.Blocks
 
             var rootElementId = $"obsidian-{BlockCache.Guid}";
             var rootElementStyle = "";
+            var rootElementClasses = "obsidian-block-loading";
+            var placeholderContent = GetPlaceholderContent( RockClientType.Web );
+            var initialContent = GetInitialHtmlContent() ?? string.Empty;
+            var config = await GetConfigBagAsync( rootElementId );
 
             if ( !IsBrowserSupported() )
             {
@@ -428,8 +459,10 @@ namespace Rock.Blocks
                 rootElementStyle += $" --initial-block-height: {initialHeight.Value}px";
             }
 
-            var config = await GetConfigBagAsync( rootElementId );
-            var initialContent = GetInitialHtmlContent() ?? string.Empty;
+            if ( initialContent.IsNullOrWhiteSpace() && placeholderContent.IsNotNullOrWhiteSpace() )
+            {
+                rootElementClasses += " obsidian-block-has-placeholder";
+            }
 
             // If any text value contains "</script>" then it will be interpreted
             // by the browser as the end of the main script tag, even if it is
@@ -437,15 +470,26 @@ namespace Rock.Blocks
             // that have an option enabled to escape HTML characters in strings.
             var configJson = Newtonsoft.Json.JsonConvert.SerializeObject( config, _serializerSettings.Value );
 
-            return
-$@"<div id=""{rootElementId}"" class=""obsidian-block-loading"" style=""{rootElementStyle.Trim()}"">{initialContent}</div>
+            var sb = new StringBuilder();
+
+            sb.AppendLine( $"<div id=\"{rootElementId}\" class=\"{rootElementClasses}\" style=\"{rootElementStyle.Trim()}\">" );
+
+            if ( initialContent.IsNullOrWhiteSpace() && placeholderContent.IsNotNullOrWhiteSpace() )
+            {
+                sb.AppendLine( $"    <div class=\"obsidian-block-placeholder\">{placeholderContent}</div>" );
+            }
+
+            sb.AppendLine( $@"    <div class=""obsidian-block-wrapper"">{initialContent}</div>
+</div>
 <script type=""text/javascript"">
 Obsidian.onReady(() => {{
     System.import('@Obsidian/Templates/rockPage.js').then(module => {{
         module.initializeBlock({configJson});
     }});
 }});
-</script>";
+</script>" );
+
+            return sb.ToString();
         }
 
         /// <summary>
@@ -470,6 +514,7 @@ Obsidian.onReady(() => {{
         private async Task<ObsidianBlockConfigBag> GetConfigBagAsync( string rootElementId )
         {
             List<BlockCustomActionBag> configActions = null;
+            var reloadModeAttribute = GetType().GetCustomAttribute<ConfigurationChangedReloadAttribute>();
 
             if ( this is IHasCustomActions customActionsBlock )
             {
@@ -489,14 +534,15 @@ Obsidian.onReady(() => {{
 
             return new ObsidianBlockConfigBag
             {
-                BlockFileUrl = ObsidianFileUrl,
+                BlockFileUrl = RequestContext.ResolveRockUrl( ObsidianFileUrl ),
                 RootElementId = rootElementId,
                 BlockGuid = BlockCache.Guid,
+                BlockTypeGuid = BlockCache.BlockType.Guid,
                 ConfigurationValues = await GetBlockInitializationAsync( RockClientType.Web ),
                 CustomConfigurationActions = configActions,
-                Preferences = blockPreferences
+                Preferences = blockPreferences,
+                ReloadMode = reloadModeAttribute?.ReloadMode ?? Enums.Cms.BlockReloadMode.None
             };
-
         }
 
         /// <summary>
@@ -551,6 +597,22 @@ Obsidian.onReady(() => {{
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets the placeholder content to use for the block. On a web block this
+        /// would be HTML and a mobile block would use XAML.
+        /// </summary>
+        /// <param name="clientType">Type of the client.</param>
+        /// <returns>System.String.</returns>
+        protected virtual string GetPlaceholderContent( RockClientType clientType )
+        {
+            if ( clientType == RockClientType.Web )
+            {
+                return $"<div class=\"skeleton skeleton-block h-100\"></div>";
+            }
+
+            return string.Empty;
         }
 
         #endregion
@@ -757,7 +819,7 @@ Obsidian.onReady(() => {{
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>A BlockActionResult instance.</returns>
-        protected virtual BlockActionResult ActionInternalServerError( string message = null)
+        protected virtual BlockActionResult ActionInternalServerError( string message = null )
         {
             return new BlockActionResult( System.Net.HttpStatusCode.InternalServerError )
             {
@@ -774,7 +836,7 @@ Obsidian.onReady(() => {{
         /// </summary>
         /// <returns>A response that contains the new security grant token or an empty string.</returns>
         [BlockAction( "RenewSecurityGrantToken" )]
-        [RockInternal( "1.14" )]
+        [RockInternal( "1.14", true )]
         public BlockActionResult RenewSecurityGrantTokenAction()
         {
             return ActionOk( RenewSecurityGrantToken() );
@@ -787,12 +849,16 @@ Obsidian.onReady(() => {{
         /// </summary>
         /// <returns>An action result that contains the block configuration data.</returns>
         [BlockAction]
-        [RockInternal( "1.14" )]
+        [RockInternal( "1.14", true )]
         public async Task<BlockActionResult> RefreshObsidianBlockInitialization()
         {
             var rootElementId = $"obsidian-{BlockCache.Guid}";
 
-            return ActionOk( await GetConfigBagAsync( rootElementId ) );
+            var config = await GetConfigBagAsync( rootElementId );
+
+            config.InitialContent = GetInitialHtmlContent();
+
+            return ActionOk( config );
         }
 
         #endregion

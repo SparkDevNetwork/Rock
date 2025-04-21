@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -96,6 +97,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<LearningProgram>( Context ).Queryable().Any( a => a.SystemCommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, LearningProgram.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.CompletionSystemCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );
@@ -114,6 +121,24 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( SystemCommunication.SystemCommunicationQueryableAttributeValue ), nameof( SystemCommunicationAttributeValues ) )]
+    public partial class SystemCommunication
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<SystemCommunicationQueryableAttributeValue> SystemCommunicationAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class SystemCommunicationQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -190,6 +215,7 @@ namespace Rock.Model
             target.PushMessage = source.PushMessage;
             target.PushOpenAction = source.PushOpenAction;
             target.PushOpenMessage = source.PushOpenMessage;
+            target.PushOpenMessageJson = source.PushOpenMessageJson;
             target.PushSound = source.PushSound;
             target.PushTitle = source.PushTitle;
             #pragma warning disable 612, 618

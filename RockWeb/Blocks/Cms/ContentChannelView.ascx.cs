@@ -64,12 +64,6 @@ namespace RockWeb.Blocks.Cms
         IsRequired = false,
         Order = 1,
         Key = AttributeKey.DetailPage )]
-    [BooleanField(
-        "Enable Legacy Global Attribute Lava",
-        Description = "This should only be enabled if your lava is using legacy Global Attributes. Enabling this option, will negatively affect the performance of this block.",
-        DefaultBooleanValue = false,
-        Order = 2,
-        Key = AttributeKey.SupportLegacy )]
 
     // Custom Settings
     [ContentChannelField(
@@ -212,7 +206,6 @@ namespace RockWeb.Blocks.Cms
         {
             public const string EnabledLavaCommands = "EnabledLavaCommands";
             public const string DetailPage = "DetailPage";
-            public const string SupportLegacy = "SupportLegacy";
             public const string Channel = "Channel";
             public const string Status = "Status";
             public const string Template = "Template";
@@ -340,12 +333,12 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowView();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -434,13 +427,13 @@ namespace RockWeb.Blocks.Cms
         {
             var dataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
 
-            // update Guids since we are creating a new dataFilter and children and deleting the old one
-            SetNewDataFilterGuids( dataViewFilter );
-
             if ( !Page.IsValid )
             {
                 return;
             }
+
+            // Clone here before the IsValid call to ensure the DataViewFilter has a valid Guid.
+            dataViewFilter = CloneDataViewFilterWithoutIdentity( dataViewFilter );
 
             if ( !dataViewFilter.IsValid )
             {
@@ -455,11 +448,25 @@ namespace RockWeb.Blocks.Cms
             if ( dataViewFilterId.HasValue )
             {
                 var oldDataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
-                DeleteDataViewFilter( oldDataViewFilter, dataViewFilterService );
+
+                var blockEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.BLOCK ).ToIntSafe();
+                var contentChannelViewBlockTypeId = BlockTypeCache.GetId( Rock.SystemGuid.BlockType.CONTENT_CHANNEL_VIEW.AsGuid() ).ToIntSafe().ToString();
+
+                var countOfContentChannelViewsUsingFilterId = new AttributeValueService( rockContext )
+                    .GetByEntityTypeQualified( blockEntityTypeId, "BlockTypeId", contentChannelViewBlockTypeId )
+                    .Count( av => av.Attribute.Key == AttributeKey.FilterId && av.Value == dataViewFilterId.Value.ToString() );
+
+                // If another ContentChannelView block uses the same DataViewFilter don't delete it.
+                // In this case it likely means this block is a copy of, or was copied from another page/block.
+                // Instead we'll create a new DataViewFilter and remove references to the existing one(s).
+                if ( countOfContentChannelViewsUsingFilterId == 1 )
+                {
+                    // If we're the only block instance using this DataViewFilterId it's safe to delete the old one.
+                    DeleteDataViewFilter( oldDataViewFilter, dataViewFilterService );
+                }
             }
 
             dataViewFilterService.Add( dataViewFilter );
-
             rockContext.SaveChanges();
 
             SetAttributeValue( AttributeKey.Status, cblStatus.SelectedValuesAsInt.AsDelimited( "," ) );
@@ -643,6 +650,7 @@ $(document).ready(function() {
             kvlOrder.Required = true;
 
             ShowEdit();
+            ShowView(); // Populate the placeholder so that incase the model is closed a blank page is not shown.
 
             upnlContent.Update();
         }
@@ -777,7 +785,7 @@ $(document).ready(function() {
                 mergeFields.Add( "ArchiveSummaryPageUrl", archivePageRef.BuildUrl() );
 
                 // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                mergeFields.AddOrIgnore( "Person", CurrentPerson );
+                mergeFields.TryAdd( "Person", CurrentPerson );
 
                 // set page title
                 if ( isSetPageTitleEnabled && contentItemList.Count > 0 )
@@ -847,14 +855,22 @@ $(document).ready(function() {
                     {
                         var proxySafeUri = Request.UrlProxySafe();
 
+                        var imageUrl = FileUrlHelper.GetImageUrl(
+                            attributeValue.AsGuid(),
+                            new GetImageUrlOptions
+                            {
+                                PublicAppRoot = $"{proxySafeUri.Scheme}://{proxySafeUri.Authority}/"
+                            }
+                        );
+
                         HtmlMeta metaDescription = new HtmlMeta();
                         metaDescription.Name = "og:image";
-                        metaDescription.Content = $"{proxySafeUri.Scheme}://{proxySafeUri.Authority}/GetImage.ashx?guid={attributeValue}";
+                        metaDescription.Content = imageUrl;
                         RockPage.Header.Controls.Add( metaDescription );
 
                         HtmlLink imageLink = new HtmlLink();
                         imageLink.Attributes.Add( "rel", "image_src" );
-                        imageLink.Attributes.Add( "href", $"{proxySafeUri.Scheme}://{proxySafeUri.Authority}/GetImage.ashx?guid={attributeValue}" );
+                        imageLink.Attributes.Add( "href", imageUrl );
                         RockPage.Header.Controls.Add( imageLink );
                     }
                 }
@@ -1732,18 +1748,6 @@ $(document).ready(function() {
             }
         }
 
-        private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )
-        {
-            if ( dataViewFilter != null )
-            {
-                dataViewFilter.Guid = Guid.NewGuid();
-                foreach ( var childFilter in dataViewFilter.ChildFilters )
-                {
-                    SetNewDataFilterGuids( childFilter );
-                }
-            }
-        }
-
         private void DeleteDataViewFilter( DataViewFilter dataViewFilter, DataViewFilterService service )
         {
             if ( dataViewFilter != null )
@@ -1755,6 +1759,20 @@ $(document).ready(function() {
 
                 service.Delete( dataViewFilter );
             }
+        }
+
+        private DataViewFilter CloneDataViewFilterWithoutIdentity( DataViewFilter dataViewFilter )
+        {
+            var cloned = dataViewFilter.CloneWithoutIdentity();
+            var clonedChildren = new List<DataViewFilter>();
+
+            foreach ( var childFilter in dataViewFilter.ChildFilters.ToList() )
+            {
+                clonedChildren.Add( CloneDataViewFilterWithoutIdentity( childFilter ));
+            }
+
+            cloned.ChildFilters = clonedChildren;
+            return cloned;
         }
 
         #endregion
@@ -1790,7 +1808,7 @@ $(document).ready(function() {
             public int Count { get; set; }
         }
 
-        private class ArchiveSummaryModel : DotLiquid.Drop
+        private class ArchiveSummaryModel : LavaDataObject
         {
             public int Month { get; set; }
             public string MonthName { get; set; }

@@ -49,6 +49,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save and display a location value
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LOCATION )]
     public class LocationFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
@@ -164,7 +165,7 @@ namespace Rock.Field.Types
                     }
                 }
             }
-            else if(publicValue.IsNotNullOrWhiteSpace())
+            else if ( publicValue.IsNotNullOrWhiteSpace() )
             {
                 if ( publicValue.Contains( "POINT" ) || publicValue.Contains( "POLYGON" ) )
                 {
@@ -237,6 +238,47 @@ namespace Rock.Field.Types
             return string.Empty;
         }
 
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+            string[] allowedPickerModesConfig = null;
+            List<string> allowedPickerModeValues = new List<string>();
+            if ( publicConfigurationValues.ContainsKey( ConfigurationKey.AllowedPickerMode ) && publicConfigurationValues[ConfigurationKey.AllowedPickerMode].IsNotNullOrWhiteSpace() )
+            {
+                allowedPickerModesConfig = publicConfigurationValues[ConfigurationKey.AllowedPickerMode].Split( ',' );
+
+                if ( allowedPickerModesConfig != null && allowedPickerModesConfig.Any() )
+                {
+                    foreach ( var allowedPickerMode in allowedPickerModesConfig )
+                    {
+                        if ( !allowedPickerMode.IsDigitsOnly() )
+                        {
+                            allowedPickerModeValues.Add( allowedPickerMode.ConvertToEnum<LocationPickerMode>().ConvertToInt().ToString() );
+                        }
+                        else
+                        {
+                            allowedPickerModeValues.Add( allowedPickerMode );
+                        }
+                    }
+                }
+
+                publicConfigurationValues[ConfigurationKey.AllowedPickerMode] = allowedPickerModeValues.AsDelimited( "," );
+            }
+
+            if ( publicConfigurationValues.ContainsKey( CURRENT_PICKER_MODE ) )
+            {
+                var currentPickerMode = publicConfigurationValues[CURRENT_PICKER_MODE];
+                if ( !currentPickerMode.IsDigitsOnly() )
+                {
+                    publicConfigurationValues[CURRENT_PICKER_MODE] = currentPickerMode.ConvertToEnumOrNull<LocationPickerMode>().ConvertToInt().ToString();
+                }
+            }
+
+            return publicConfigurationValues;
+        }
+        
         #endregion
 
         #region Entity Methods

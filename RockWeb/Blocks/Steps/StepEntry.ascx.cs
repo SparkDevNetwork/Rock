@@ -108,6 +108,11 @@ namespace RockWeb.Blocks.Steps
             /// The person identifier
             /// </summary>
             public const string PersonId = "PersonId";
+
+            /// <summary>
+            /// The general person identifier which can be either the Id, PersonIdKey or PersonGuid
+            /// </summary>
+            public const string Person = "Person";
         }
 
         #endregion Keys
@@ -132,11 +137,10 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !IsPostBack && !ValidateRequiredModels() )
             {
                 pnlEditDetails.Visible = false;
+                base.OnLoad( e );
                 return;
             }
 
@@ -148,6 +152,8 @@ namespace RockWeb.Blocks.Steps
             {
                 BindWorkflows();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -556,6 +562,7 @@ namespace RockWeb.Blocks.Steps
             if ( step != null )
             {
                 stepId = step.Id;
+                pdAuditDetails.SetEntity( step, ResolveRockUrl( "~" ) );
             }
 
             pnlDetails.Visible = true;
@@ -567,6 +574,7 @@ namespace RockWeb.Blocks.Steps
 
             if ( stepId == 0 )
             {
+                pdAuditDetails.Visible = false;
                 ShowEditDetails();
             }
             else
@@ -823,8 +831,16 @@ namespace RockWeb.Blocks.Steps
             var parameters = new Dictionary<string, string>();
             var stepTypeIdParam = PageParameter( ParameterKey.StepTypeId ).AsIntegerOrNull();
             var personIdParam = PageParameter( ParameterKey.PersonId ).AsIntegerOrNull();
+            var personKey = PageParameter( ParameterKey.Person );
 
-            if ( personIdParam.HasValue )
+            // Going forward, we'd like to use page parameters with this new naming convention (Person),
+            // but we still have to support the original convention (PersonId).
+            if ( personKey.IsNotNullOrWhiteSpace() )
+            {
+                parameters.Add( ParameterKey.Person, personKey );
+            }
+            // Fall-back logic:
+            else if ( personIdParam.HasValue )
             {
                 parameters.Add( ParameterKey.PersonId, personIdParam.Value.ToString() );
             }
@@ -925,13 +941,19 @@ namespace RockWeb.Blocks.Steps
                 }
                 else
                 {
-                    var personId = PageParameter( ParameterKey.PersonId ).AsIntegerOrNull();
+                    // Going forward, we'd like to use page parameters with this new naming convention (Person),
+                    // but we still have to support the original convention (PersonId).
+                    var personKey = PageParameter( ParameterKey.Person );
+                    // Fall-back logic:
+                    if ( personKey.IsNullOrWhiteSpace() )
+                    {
+                        personKey = PageParameter( ParameterKey.PersonId );
+                    }
 
-                    if ( personId.HasValue )
+                    if ( !personKey.IsNullOrWhiteSpace() )
                     {
                         var rockContext = GetRockContext();
-                        var service = new PersonService( rockContext );
-                        _person = service.Get( personId.Value );
+                        _person = new PersonService( rockContext ).Get( personKey, !PageCache.Layout.Site.DisablePredictableIds );
                     }
                     else
                     {

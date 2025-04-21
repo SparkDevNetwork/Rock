@@ -16,7 +16,7 @@
 //
 using System.Linq;
 using Rock.Data;
-using Rock.Model;
+using Rock.Reporting;
 
 namespace Rock.Lava
 {
@@ -32,14 +32,14 @@ namespace Rock.Lava
         public static bool IsInDataView( ILavaRenderContext context, object input, object dataViewIdentifier )
         {
             var dataContext = LavaHelper.GetRockContextFromLavaContext( context );
-            var dataView = LavaHelper.GetDataViewFromInputParameter( dataViewIdentifier, dataContext );
+            var dataView = LavaHelper.GetDataViewDefinitionFromInputParameter( dataViewIdentifier, dataContext );
 
             if ( dataView == null )
             {
                 return false;
             }
 
-            var qry = dataView.GetQuery();
+            var qry = DataViewQueryBuilder.Instance.GetDataViewQuery( dataView );
 
             // Apply a filter to limit the result set to the target entity.
             if ( input is IEntity e )

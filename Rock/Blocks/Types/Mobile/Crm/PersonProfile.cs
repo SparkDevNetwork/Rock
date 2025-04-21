@@ -185,63 +185,62 @@ namespace Rock.Blocks.Types.Mobile.Crm
       <Button Text=""Edit""
         Command=""{Binding ShowEdit}""
         HorizontalOptions=""End""
-        StyleClass=""btn, btn-link"" />
+        StyleClass=""btn, btn-link, p-0"" />
     {% endif %}
     
     <!-- The main layout of the block. -->
-    <StackLayout HorizontalOptions=""Center""
+    <StackLayout 
+        HorizontalOptions=""Center""
         Spacing=""4"">
         <Rock:Image Source=""{{ 'Global' | Attribute:'PublicApplicationRoot' | Append:Person.PhotoUrl | Escape }}"" 
-            WidthRequest=""128"" 
-            HeightRequest=""128"">
+            WidthRequest=""100"" 
+            HeightRequest=""100"">
             <Rock:CircleTransformation />
         </Rock:Image>
-        
+
         {% if Person.IsDeceased %}
             <Label Text=""Deceased""
-                StyleClass=""text-danger""
-                FontAttributes=""Bold""
+                StyleClass=""text-danger-strong, body, bold""
                 HorizontalTextAlignment=""Center"" />
         {% endif %}
         
-        <Label Text=""{{ Person.FullName }}""
-            StyleClass=""h2""
+        <Label Text=""{{ Person.FullName | Escape }}""
+            StyleClass=""title1, bold, text-interface-strongest""
             HorizontalTextAlignment=""Center"" />
             
         <!-- Our campus, connection status and record status -->
         <StackLayout Orientation=""Horizontal""
-            HorizontalOptions=""Center"">
+            HorizontalOptions=""Center""
+            StyleClass=""spacing-4"">
             
             <!-- Campus -->
             <Frame Padding=""4""
                 CornerRadius=""4""
-                HasShadow=""False""
-                BackgroundColor=""#d9f2fe"">
-                <Label Text=""{{ Person | Campus | Property:'Name' }}""
-                    TextColor=""#0079b0""
+                StyleClass=""bg-info, bg-info-soft""
+                HasShadow=""false"">
+                <Label Text=""{{ Person | Campus | Property:'Name' | Escape }}""
                     VerticalTextAlignment=""Center""
-                    FontSize=""14"" />
+                    StyleClass=""text-info, text-info-strong, body"" />
             </Frame>
             
             <!-- Connection Status -->
             <Frame Padding=""4""
                 CornerRadius=""4""
-                HasShadow=""False""
-                BackgroundColor=""#dcf6ed"">
-                <Label Text=""{{ Person.ConnectionStatusValue.Value }}""
-                    FontSize=""14""
-                    TextColor=""#065f46"" />
+                StyleClass=""bg-success, bg-success-soft""
+                HasShadow=""false"">
+                <Label Text=""{{ Person.ConnectionStatusValue.Value | Escape }}""
+                    StyleClass=""text-success, text-success-strong, body""/>
             </Frame>
             
             <!-- Record Status -->
             {% assign recordStatus = Person.RecordStatusValue.Value %}
             {% if recordStatus == 'Inactive' %}
-                <Frame Padding=""8""
+                <Frame Padding=""4""
                     CornerRadius=""4""
                     HasShadow=""False""
-                    BackgroundColor=""#f9e5e2"">
-                    <Label Text=""{{ Person.RecordStatusValue.Value }}""
-                        TextColor=""#ac3523"" />
+                    StyleClass=""bg-warning, bg-warning-soft"">
+                    <Label Text=""{{ Person.RecordStatusValue.Value | Escape }}""
+                        StyleClass=""text-warning, text-warning-strong, body""/>
                 </Frame>
             {% endif %}
             

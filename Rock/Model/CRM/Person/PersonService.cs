@@ -27,6 +27,8 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.BulkExport;
+using Rock.Communication.Chat;
+using Rock.Communication.Chat.DTO;
 using Rock.Data;
 using Rock.Security;
 using Rock.SystemKey;
@@ -253,6 +255,15 @@ namespace Rock.Model
                 if ( recordTypeNamelessId.HasValue )
                 {
                     excludedPersonRecordTypeIds.Add( recordTypeNamelessId.Value );
+                }
+            }
+
+            if ( !personQueryOptions.IncludeRestUsers )
+            {
+                int? recordTypeRestUserId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() );
+                if ( recordTypeRestUserId.HasValue )
+                {
+                    excludedPersonRecordTypeIds.Add( recordTypeRestUserId.Value );
                 }
             }
 
@@ -1439,12 +1450,20 @@ namespace Rock.Model
                 nameParts = fullName.Split( ',' ).ToList();
                 if ( nameParts.Count >= 1 )
                 {
-                    lastNames.Add( nameParts[0].Trim() );
+                    var lastName = nameParts[0];
+                    if ( !string.IsNullOrWhiteSpace( lastName ) )
+                    {
+                        lastNames.Add( lastName.Trim() );
+                    }
                 }
 
                 if ( nameParts.Count >= 2 )
                 {
-                    firstNames.Add( nameParts[1].Trim() );
+                    var firstName = nameParts[1];
+                    if ( !string.IsNullOrWhiteSpace( firstName ) )
+                    {
+                        firstNames.Add( firstName.Trim() );
+                    }
                 }
             }
             else if ( fullName.Contains( ' ' ) )
@@ -1546,7 +1565,10 @@ namespace Rock.Model
                     {
                         var lastName = string.Join( " ", nameParts.TakeLast( 2 ) );
 
-                        qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ).Select( p => p.Id ) );
+                        if ( !string.IsNullOrWhiteSpace( lastName ) )
+                        {
+                            qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ).Select( p => p.Id ) );
+                        }
                     }
 
                     // If searching for businesses, search by the full name as well to handle "," in the name
@@ -1559,11 +1581,16 @@ namespace Rock.Model
                     // initially by the GetByFirstLastName() call.
                     return Queryable( includeDeceased, includeBusinesses ).Where( p => qry.Contains( p.Id ) );
                 }
-                else
+                else if ( allowFirstNameOnly && firstNames.Any() )
                 {
-                    // Blank string was used, return empty list
-                    return new List<Person>().AsQueryable();
+                    return GetByFirstLastName( firstNames[0], string.Empty, includeDeceased, includeBusinesses );
                 }
+                else if ( lastNames.Any() && !string.IsNullOrWhiteSpace( lastNames[0] ) )
+                {
+                    return GetByLastName( lastNames[0], includeDeceased, includeBusinesses );
+                }
+
+                return new List<Person>().AsQueryable();
             }
         }
 
@@ -2423,23 +2450,8 @@ namespace Rock.Model
         /// Get the person associated with the phone number. Filter to any matching phone number, regardless
         /// of type. Then order by those with a matching number and SMS enabled; then further order
         /// by matching number with type == mobile; finally order by person Id to get the oldest
-        /// person in the case of duplicate records.
-        /// </summary>
-        /// <param name="phoneNumber">The phone number.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "Use other GetPersonFromMobilePhoneNumber that has createNamelessPersonIfNotFound parameter", true )]
-        public Person GetPersonFromMobilePhoneNumber( string phoneNumber )
-        {
-            return GetPersonFromMobilePhoneNumber( phoneNumber, false );
-        }
-
-        /// <summary>
-        /// Get the person associated with the phone number. Filter to any matching phone number, regardless
-        /// of type. Then order by those with a matching number and SMS enabled; then further order
-        /// by matching number with type == mobile; finally order by person Id to get the oldest
         /// person in the case of duplicate records. If no person is found and <paramref name="createNamelessPersonIfNotFound" /> = true, a
-        /// Nameless person record will created which can later be matched to a person
+        /// Nameless person record will be created which can later be matched to a person
         /// </summary>
         /// <param name="phoneNumber">The phone number.</param>
         /// <param name="createNamelessPersonIfNotFound">if set to <c>true</c> [create nameless person if not found].</param>
@@ -2476,6 +2488,57 @@ namespace Rock.Model
                     person = new Person();
                     person.RecordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
                     person.PhoneNumbers.Add( smsPhoneNumber );
+                    new PersonService( nameLessPersonRockContext ).Add( person );
+                    nameLessPersonRockContext.SaveChanges();
+
+                    person = this.Get( person.Id );
+                }
+            }
+
+            return person;
+        }
+
+        /// <summary>
+        /// Get the person associated with an email address.
+        /// If no person is found and <paramref name="createNamelessPersonIfNotFound" /> = <see langword="true"/>,
+        /// a Nameless person record will be created which can later be matched to a person.
+        /// </summary>
+        /// <param name="emailAddress">The email address.</param>
+        /// <param name="createNamelessPersonIfNotFound">if set to <see langword="true"/>, creates a nameless person if a person is not found.</param>
+        /// <returns>The located person or a new nameless person.</returns>
+        internal Person GetPersonFromEmailAddress( string emailAddress, bool createNamelessPersonIfNotFound )
+        {
+            var recordTypeValueIdNameless = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
+
+            // Order so that non-nameless people with the email address are listed first,
+            // then sort by the oldest person record in case there are multiple people with the same email.
+            var person = Queryable(
+                new PersonQueryOptions
+                {
+                    IncludeDeceased = true,
+                    IncludeNameless = true
+                } )
+                .Where( pn => pn.Email == emailAddress )
+                .OrderByDescending( p => p.RecordTypeValueId != recordTypeValueIdNameless )
+                .ThenBy( pn => pn.Id )
+                .FirstOrDefault();
+
+            if ( person == null && createNamelessPersonIfNotFound )
+            {
+                using ( var nameLessPersonRockContext = new RockContext() )
+                {
+                    var emailUsername = emailAddress.Substring( 0, emailAddress.IndexOf( "@" ) );
+
+                    person = new Person
+                    {
+                        RecordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ),
+                        Email = emailAddress,
+
+                        // Set the first name and nickname to the username portion of the email address (text to the left of @).
+                        FirstName = emailUsername,
+                        NickName = emailUsername
+                    };
+
                     new PersonService( nameLessPersonRockContext ).Add( person );
                     nameLessPersonRockContext.SaveChanges();
 
@@ -3071,35 +3134,6 @@ namespace Rock.Model
         #region Update Person
 
         /// <summary>
-        /// Inactivates a person and adds additional info to the HistoryChangeList. The Person model already checks for and adds changes to the History table.
-        /// Using the HistoryChangeList obj in this method's out param will create duplicate changes in the History table for "Record Status", "Record Status Reason", and "Inactive Reason Note".
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="reason">The reason.</param>
-        /// <param name="reasonNote">The reason note.</param>
-        /// <param name="historyChangeList">The history change list.</param>
-        [RockObsolete( "1.12" )]
-        [Obsolete( @"Use one of the InactivatePerson overloads without the HistoryChangeList out param. The Person model takes care of updating the HistoryChangeList.
-            Using the HistoryChangeList obj in this method's out param will create duplicate changes in the History table for
-            ""Record Status"", ""Record Status Reason"", and ""Inactive Reason Note""." )]
-        public void InactivatePerson( Person person, DefinedValueCache reason, string reasonNote, out History.HistoryChangeList historyChangeList )
-        {
-            historyChangeList = new History.HistoryChangeList();
-
-            var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
-            if ( inactiveStatus != null && reason != null )
-            {
-                History.EvaluateChange( historyChangeList, "Record Status", person.RecordStatusValue?.Value, inactiveStatus.Value );
-                History.EvaluateChange( historyChangeList, "Record Status Reason", person.RecordStatusReasonValue?.Value, reason.Value );
-                History.EvaluateChange( historyChangeList, "Inactive Reason Note", person.InactiveReasonNote, reasonNote );
-
-                person.RecordStatusValueId = inactiveStatus.Id;
-                person.RecordStatusReasonValueId = reason.Id;
-                person.InactiveReasonNote = reasonNote;
-            }
-        }
-
-        /// <summary>
         /// Inactivates the person.
         /// </summary>
         /// <param name="person">The person.</param>
@@ -3532,47 +3566,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.17" )]
+        [Obsolete( "Peer Networks can now be found in the PeerNetwork table, and are no longer tied to Groups." )]
         public Group GetPeerNetworkGroup( int personId )
         {
-            var peerNetworkGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK.AsGuid() );
-            var impliedOwnerRole = peerNetworkGroupType.Roles.Where( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ).FirstOrDefault();
-
-            var rockContext = this.Context as RockContext;
-
-            var peerNetworkGroup = new GroupMemberService( rockContext ).Queryable()
-                                    .Where(
-                                        m => m.PersonId == personId
-                                        && m.GroupRoleId == impliedOwnerRole.Id
-                                        && m.Group.GroupTypeId == peerNetworkGroupType.Id )
-                                    .Select( m => m.Group )
-                                    .FirstOrDefault();
-
-            // It's possible that a implied group does not exist for this person due to poor migration from a different system or a manual insert of the data
-            if ( peerNetworkGroup == null )
-            {
-                // Create the new peer network group using a new context so as not to save changes in the current one
-                using ( var rockContextClean = new RockContext() )
-                {
-                    var groupServiceClean = new GroupService( rockContextClean );
-
-                    var groupMember = new GroupMember();
-                    groupMember.PersonId = personId;
-                    groupMember.GroupRoleId = impliedOwnerRole.Id;
-
-                    var peerNetworkGroupClean = new Group();
-                    peerNetworkGroupClean.Name = peerNetworkGroupType.Name;
-                    peerNetworkGroupClean.GroupTypeId = peerNetworkGroupType.Id;
-                    peerNetworkGroupClean.Members.Add( groupMember );
-
-                    groupServiceClean.Add( peerNetworkGroupClean );
-                    rockContextClean.SaveChanges();
-
-                    // Get the new peer network group using the original context
-                    peerNetworkGroup = new GroupService( rockContext ).Get( peerNetworkGroupClean.Id );
-                }
-            }
-
-            return peerNetworkGroup;
+            return null;
         }
 
         #endregion
@@ -3680,30 +3678,6 @@ namespace Rock.Model
                     var group = new Group();
                     group.Name = knownRelationshipGroupType.Name;
                     group.GroupTypeId = knownRelationshipGroupType.Id;
-                    group.Members.Add( groupMember );
-
-                    var groupService = new GroupService( rockContext );
-                    groupService.Add( group );
-                }
-            }
-
-            // Create/Save Implied Relationship Group
-            var impliedRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK );
-            if ( impliedRelationshipGroupType != null )
-            {
-                var ownerRole = impliedRelationshipGroupType.Roles
-                    .FirstOrDefault( r =>
-                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ) );
-                if ( ownerRole != null )
-                {
-                    var groupMember = new GroupMember();
-                    groupMember.Person = person;
-                    groupMember.GroupRoleId = ownerRole.Id;
-                    groupMember.GroupTypeId = impliedRelationshipGroupType.Id;
-
-                    var group = new Group();
-                    group.Name = impliedRelationshipGroupType.Name;
-                    group.GroupTypeId = impliedRelationshipGroupType.Id;
                     group.Members.Add( groupMember );
 
                     var groupService = new GroupService( rockContext );
@@ -4002,7 +3976,6 @@ namespace Rock.Model
         /// <param name="filename">The filename.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>The new person profile image (built with the Public Application Root), or an empty string if something went wrong.</returns>
-        [RockInternal( "1.15" )]
         internal static string UpdatePersonProfilePhoto( Guid personGuid, byte[] photoBytes, string filename, RockContext rockContext = null )
         {
             // If rockContext is null, create a new RockContext object.
@@ -4207,7 +4180,7 @@ namespace Rock.Model
 
             foreach ( var key in preferences.GetKeys() )
             {
-                prefs.AddOrIgnore( key, preferences.GetValue( key ) );
+                prefs.TryAdd( key, preferences.GetValue( key ) );
             }
 
             return prefs;
@@ -4653,16 +4626,16 @@ FROM (
             bool includeDeceased = true;
             bool includeArchived = false;
 
-            /* Determine people in security role groups with ElevatedSecurityLevel.High */
+            /* Determine people in security role groups with ElevatedSecurityLevel.Extreme */
             var groupMemberService = new GroupMemberService( rockContext );
-            var personIdsInGroupsWithHighSecurityLevelQuery = groupMemberService
+            var personIdsInGroupsWithExtremeSecurityLevelQuery = groupMemberService
                 .Queryable( includeDeceased, includeArchived )
                 .IsInSecurityRoleGroupOrSecurityRoleGroupType()
                 .Where( gm => gm.Group.IsActive && gm.Group.ElevatedSecurityLevel == ElevatedSecurityLevel.Extreme )
                 .Select( gm => gm.PersonId );
 
-            /* Determine people in security role groups with ElevatedSecurityLevel.Low */
-            var personIdsInGroupsWithLowSecurityLevelQuery = groupMemberService
+            /* Determine people in security role groups with ElevatedSecurityLevel.High */
+            var personIdsInGroupsWithHighSecurityLevelQuery = groupMemberService
                 .Queryable( includeDeceased, includeArchived )
                 .IsInSecurityRoleGroupOrSecurityRoleGroupType()
                 .Where( gm => gm.Group.IsActive && gm.Group.ElevatedSecurityLevel == ElevatedSecurityLevel.High )
@@ -4721,16 +4694,18 @@ FROM (
                   - No Risk Items
 
                 Medium
-                  - Individual Has Login
+                  - one or more of the following -
+                    + Individual Has Login
 
                 High
                   - one or more of the following -
                     + Active Scheduled Financial Transaction (inactive are not viewable)
                     + Saved Payment Account
-                    + in a Security Role Marked w/ Low Elevated Security 
+                    + in a Security Role Marked w/ High Elevated Security
 
                 Extreme
-                  - in a Security Role marked w/ High Elevated Security Level 
+                  - one or more of the following -
+                    + in a Security Role marked w/ Extreme Elevated Security Level
              */
 
             // set up query as all person records regardless of Deceased, record type, etc
@@ -4745,9 +4720,9 @@ FROM (
             //  -- No Risk Items
             var personToSetAsAccountProtectionProfileLowQuery = personQuery.Where( p =>
                     !personIdsWithLoginsQuery.Contains( p.Id )
-                    && !personIdsInGroupsWithLowSecurityLevelQuery.Contains( p.Id )
-                    && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) )
                     && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
+                    && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) )
+                    && !personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id )
                     && p.AccountProtectionProfile != AccountProtectionProfile.Low );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileLowQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Low } );
@@ -4757,27 +4732,27 @@ FROM (
             //  -- No other Risk items
             var personToSetAsAccountProtectionProfileMediumQuery = personQuery.Where( p =>
                     personIdsWithLoginsQuery.Contains( p.Id )
-                    && !personIdsInGroupsWithLowSecurityLevelQuery.Contains( p.Id )
-                    && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) )
                     && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
+                    && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) )
+                    && !personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id )
                     && p.AccountProtectionProfile != AccountProtectionProfile.Medium );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileMediumQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Medium } );
 
-            // update the people that meet the AccountProtectionProfile.Medium criteria:
-            //   -- In a Low Security Role Group or Has Financial Data
-            //   -- Not in a High security role group
+            // update the people that meet the AccountProtectionProfile.High criteria:
+            //   -- In a High Security Role Group or Has Financial Data
+            //   -- Not in an Extreme security role group
             var personToSetAsAccountProtectionProfileHighQuery = personQuery.Where( p =>
-                    ( personIdsInGroupsWithLowSecurityLevelQuery.Contains( p.Id ) || personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) ) )
-                    && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
+                    ( personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id ) || personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) ) )
+                    && !personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id )
                     && p.AccountProtectionProfile != AccountProtectionProfile.High );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileHighQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.High } );
 
             // update the people that meet the AccountProtectionProfile.Extreme criteria:
-            //   -- In a High security role group
+            //   -- In an Extreme security role group
             var personToSetAsAccountProtectionProfileExtremeQuery = personQuery.Where( p =>
-                personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
+                personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id )
                 && p.AccountProtectionProfile != AccountProtectionProfile.Extreme );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileExtremeQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Extreme } );
@@ -4799,6 +4774,26 @@ UPDATE Person
 SET PrimaryAliasId = @primaryAliasId
 WHERE Id = @personId",
         new System.Data.SqlClient.SqlParameter( "@personId", personId ), new System.Data.SqlClient.SqlParameter( "@primaryAliasId", primaryAliasId ) );
+        }
+
+        /// <summary>
+        /// Sets the PrimaryAliasId and PrimaryAliasGuid for the specified person
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="primaryAliasId">The PrimaryAlias identifier.</param>
+        /// <param name="primaryAliasGuid">The PrimaryAlias guid identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdatePrimaryAlias( int personId, int primaryAliasId, Guid primaryAliasGuid, RockContext rockContext )
+        {
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE Person
+SET PrimaryAliasId = @primaryAliasId,
+    PrimaryAliasGuid = @primaryAliasGuid
+WHERE Id = @personId",
+        new System.Data.SqlClient.SqlParameter( "@personId", personId ),
+        new System.Data.SqlClient.SqlParameter( "@primaryAliasId", primaryAliasId ),
+        new System.Data.SqlClient.SqlParameter( "@primaryAliasGuid", primaryAliasGuid ) );
         }
 
         /// <summary>
@@ -5182,6 +5177,216 @@ AND GroupTypeId = ${familyGroupType.Id}
                 recipientToInactivate.ModifiedByPersonAliasId = personPrimaryAliasId;
                 recipientToInactivate.ModifiedAuditValuesAlreadyUpdated = true;
             }
+        }
+
+        /// <summary>
+        /// Gets a Queryable of the distinct identifiers of <see cref="Person"/> records for non-deceased individuals
+        /// who have at least one chat-specific <see cref="PersonAlias"/> record.
+        /// </summary>
+        /// <returns>A Queryable of the distinct <see cref="Person"/> identifiers of all non-deceased, chat-enabled individuals.</returns>
+        internal IQueryable<int> GetNonDeceasedChatUserPersonIdsQuery()
+        {
+            var rockContext = this.Context as RockContext;
+
+            var chatAliasQry = new PersonAliasService( rockContext ).GetChatPersonAliasesQuery();
+
+            return Queryable( includeDeceased: false )
+                .Join(
+                    chatAliasQry,
+                    p => p.Id,
+                    pa => pa.PersonId,
+                    ( p, pa ) => p.Id
+                )
+                .Distinct();
+        }
+
+        /// <summary>
+        /// Gets a Queryable of the distinct identifiers of <see cref="Person"/> records for deceased individuals who
+        /// have at least one chat-specific <see cref="PersonAlias"/> record.
+        /// </summary>
+        /// <returns>A Queryable of the distinct <see cref="Person"/> identifiers of all deceased, chat-enabled individuals.</returns>
+        /// <remarks>
+        /// This is useful when determining which <see cref="ChatUser"/>s to delete in the external chat system.
+        /// </remarks>
+        internal IQueryable<int> GetDeceasedChatUserPersonIdsQuery()
+        {
+            var rockContext = this.Context as RockContext;
+
+            var chatAliasQry = new PersonAliasService( rockContext ).GetChatPersonAliasesQuery();
+
+            return Queryable( includeDeceased: true )
+                .Where( p => p.IsDeceased )
+                .Join(
+                    chatAliasQry,
+                    p => p.Id,
+                    pa => pa.PersonId,
+                    ( p, pa ) => p.Id
+                )
+                .Distinct();
+        }
+
+        /// <summary>
+        /// Gets the active <see cref="RockChatUserKey"/> for each provided, non-deceased <see cref="Person"/> identifier.
+        /// </summary>
+        /// <param name="personIds">The list of <see cref="Person"/> identifiers for whom to get <see cref="RockChatUserKey"/>s.</param>
+        /// <returns>
+        /// A list of <see cref="RockChatUserKey"/>s, with one entry for each <see cref="Person"/> who already has a
+        /// chat-specific <see cref="PersonAlias"/> record.</returns>
+        /// <remarks>
+        /// If a <see cref="Person"/> has more than one chat-specific <see cref="PersonAlias"/> record, the earliest
+        /// one will be used to represent the <see cref="ChatUser.Key"/>.
+        /// </remarks>
+        internal List<RockChatUserKey> GetActiveRockChatUserKeys( List<int> personIds )
+        {
+            var rockContext = this.Context as RockContext;
+
+            var personQry = Queryable();
+            var chatAliasQry = new PersonAliasService( rockContext ).GetChatPersonAliasesQuery();
+
+            if ( personIds.Count == 1 )
+            {
+                // Most performant: limit queries to just this person.
+                var firstPersonId = personIds.First();
+                personQry = personQry.Where( p => p.Id == firstPersonId );
+                chatAliasQry = chatAliasQry.Where( pa => pa.PersonId == firstPersonId );
+            }
+            else if ( personIds.Count < 1000 )
+            {
+                // For fewer than 1k people, allow a SQL `WHERE...IN` clause.
+                personQry = personQry.Where( p => personIds.Contains( p.Id ) );
+                chatAliasQry = chatAliasQry.Where( pa => personIds.Contains( pa.PersonId ) );
+            }
+            else
+            {
+                // For 1k or more people, create and join to an entity set.
+                var entitySetOptions = new AddEntitySetActionOptions
+                {
+                    Name = $"{nameof( PersonService )}_{nameof( GetActiveRockChatUserKeys )}",
+                    EntityTypeId = EntityTypeCache.Get<Person>().Id,
+                    EntityIdList = personIds,
+                    ExpiryInMinutes = 20
+                };
+
+                var entitySetService = new EntitySetService( rockContext );
+                var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
+                var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
+
+                personQry = personQry.Where( p => entitySetItemQry.Contains( p.Id ) );
+                chatAliasQry = chatAliasQry.Where( pa => entitySetItemQry.Contains( pa.PersonId ) );
+            }
+
+            return personQry
+                .GroupJoin(
+                    chatAliasQry,
+                    p => p.Id,
+                    pa => pa.PersonId,
+                    ( p, chatAliases ) => new
+                    {
+                        Person = p,
+                        ChatAliases = chatAliases.Select( ca => new { ca.Id, ca.Guid } )
+                    }
+                )
+                .ToList() // Materialize everything in a single query; we'll perform in-memory sorting of chat aliases below.
+                .Select( p =>
+                {
+                    var firstChatAlias = p.ChatAliases.Any()
+                        ? p.ChatAliases.OrderBy( a => a.Id ).First() // Get the earliest chat alias in the case of multiple.
+                        : null;
+
+                    return new RockChatUserKey
+                    {
+                        PersonId = p.Person.Id,
+                        ChatPersonAliasId = firstChatAlias?.Id,
+                        ChatPersonAliasGuid = firstChatAlias?.Guid
+                    };
+                } )
+                .Where( k => k.ChatPersonAliasGuid.HasValue ) // Only include results that actually have a chat alias guid.
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the per-<see cref="Person"/> lists of <see cref="RockChatUserKey"/>s for individuals who have more than
+        /// one <see cref="ChatUser.Key"/>.
+        /// </summary>
+        /// <param name="personId">
+        /// The optional <see cref="Person"/> identifier, to check if just one particular person has multiple
+        /// <see cref="ChatUser.Key"/>s.
+        /// </param>
+        /// <param name="includeDeceased">
+        /// Whether to include deceased individuals in the results. If <paramref name="personId"/> is provided, this will
+        /// be auto-set to <see langword="true"/>.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Dictionary{TKey, TValue}"/> where the key is the <see cref="Person"/> identifier and the value is
+        /// their list of <see cref="RockChatUserKey"/>s.
+        /// </returns>
+        internal Dictionary<int, List<RockChatUserKey>> GetPeopleWithMultipleChatUserKeys( int? personId = null, bool includeDeceased = false )
+        {
+            var rockContext = this.Context as RockContext;
+
+            // Always include deceased individuals if this query is targeting a specific person.
+            if ( personId.HasValue )
+            {
+                includeDeceased = true;
+            }
+
+            var personQry = Queryable( includeDeceased );
+            if ( personId.HasValue )
+            {
+                personQry = personQry.Where( p => p.Id == personId.Value );
+            }
+
+            var chatAliasQry = new PersonAliasService( rockContext ).GetChatPersonAliasesQuery();
+
+            return personQry
+                .Join(
+                    chatAliasQry,
+                    p => p.Id,
+                    pa => pa.PersonId,
+                    ( p, pa ) => new RockChatUserKey
+                    {
+                        PersonId = p.Id,
+                        ChatPersonAliasId = pa.Id,
+                        ChatPersonAliasGuid = pa.Guid,
+                    }
+                )
+                .GroupBy( p => p.PersonId )
+                .Where( g => g.Count() > 1 )
+                .ToDictionary(
+                    p => p.Key,
+                    p => p.ToList()
+                );
+        }
+
+        /// <summary>
+        /// Gets a Queryable of a chat-enabled <see cref="Person"/>'s complete list of <see cref="RockChatUserKey"/>s,
+        /// including those for deceased individuals.
+        /// </summary>
+        /// <param name="personId">The identifier of the <see cref="Person"/> for whom to get <see cref="RockChatUserKey"/>s.</param>
+        /// <returns>A Queryable of a chat-enabled <see cref="Person"/>'s complete list of <see cref="RockChatUserKey"/>s</returns>
+        /// <remarks>
+        /// This is probably only useful when deleting all of a <see cref="Person"/>'s <see cref="ChatUser"/>s in the
+        /// external chat system.
+        /// </remarks>
+        internal IQueryable<RockChatUserKey> GetAllRockChatUserKeysQuery( int personId )
+        {
+            var rockContext = this.Context as RockContext;
+
+            var chatAliasQry = new PersonAliasService( rockContext ).GetChatPersonAliasesQuery();
+
+            return Queryable( includeDeceased: true )
+                .Where( p => p.Id == personId )
+                .Join(
+                    chatAliasQry,
+                    p => p.Id,
+                    pa => pa.PersonId,
+                    ( p, pa ) => new RockChatUserKey
+                    {
+                        PersonId = p.Id,
+                        ChatPersonAliasId = pa.Id,
+                        ChatPersonAliasGuid = pa.Guid,
+                    }
+                );
         }
     }
 }

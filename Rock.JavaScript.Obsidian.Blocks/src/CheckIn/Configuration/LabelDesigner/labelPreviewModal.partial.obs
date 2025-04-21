@@ -1,0 +1,167 @@
+<template>
+    <Modal v-model="isPreviewOpen"
+           title="Preview"
+           cancelText="Close">
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox label="Attendance Id"
+                         v-model="previewAttendanceId"
+                         help="To generate a preview of what this label looks like with an actual attendance record, you can enter an Attendance Id that's associated with a Next-gen Label." />
+            </div>
+
+            <div v-if="showCustomSize" class="col-md-2">
+                <NumberBox label="Label Width"
+                           v-model="customLabelWidth" />
+            </div>
+
+            <div v-if="showCustomSize" class="col-md-2">
+                <NumberBox label="Label Height"
+                           v-model="customLabelHeight" />
+            </div>
+
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label class="control-label">&nbsp;</label>
+                    <div class="control-wrapper">
+                        <RockButton btnType="default"
+                                    autoDisable
+                                    @click="onPreviewRefreshClick">
+                            Refresh
+                        </RockButton>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="text-right mb-2">
+            <span class="label label-info">{{ previewDuration }}ms</span>
+        </div>
+
+        <img class="preview-image"
+             :src="previewSource" />
+    </Modal>
+</template>
+
+<style>
+.preview-image {
+    border-radius: 12px;
+    border: 1px solid var(--theme-light);
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, .1);
+    display: block;
+    margin: auto;
+}
+</style>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { PropType, ref, watch } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { PreviewResultBag } from "./types.partial";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { blobToBase64 } from "./utils.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        refreshCallback: {
+            type: Function as PropType<(id: string) => Promise<{ data: PreviewResultBag, size: string } | undefined>>,
+            required: true
+        },
+
+        showCustomSize: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    const isPreviewOpen = useVModelPassthrough(props, "modelValue", emit);
+    const previewAttendanceId = ref("");
+    const previewSource = ref<string | undefined>();
+    const previewDuration = ref(0);
+    const customLabelWidth = ref(4);
+    const customLabelHeight = ref(2);
+
+    /**
+     * Updates the preview data from selections made in the preview modal.
+     */
+    async function updatePreview(): Promise<boolean> {
+        let result: { data: PreviewResultBag, size: string } | undefined;
+
+        try {
+            result = await props.refreshCallback(previewAttendanceId.value);
+        }
+        catch (error) {
+            if (error instanceof Error) {
+                await alert(error.message);
+            }
+            else {
+                await alert("Unknown error while trying to preview check-in label.");
+            }
+
+            return false;
+        }
+
+        if (!result) {
+            return false;
+        }
+
+        let size = result.size;
+
+        if (props.showCustomSize && !size) {
+            size = `${customLabelWidth.value}x${customLabelHeight.value}`;
+        }
+
+        // Can't use our normal http post function because it does something
+        // weird to the response data that corrupts the binary data.
+        const labelaryResult = await fetch(`https://api.labelary.com/v1/printers/8dpmm/labels/${size}/0`, {
+            method: "POST",
+            body: result.data.content,
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        });
+
+        if (!labelaryResult.ok) {
+            await alert("Unknown error while trying to render preview image.");
+
+            return false;
+        }
+
+        const blob = await labelaryResult.blob();
+        const image64 = await blobToBase64(blob);
+
+        previewSource.value = `data:image/png;base64,${image64}`;
+        previewDuration.value = result.data.duration;
+
+        return true;
+    }
+
+    /**
+     * Event handler for the refresh button being clicked. Update the rendered
+     * preview.
+     */
+    async function onPreviewRefreshClick(): Promise<void> {
+        await updatePreview();
+    }
+
+    watch(() => props.modelValue, () => {
+        if (props.modelValue) {
+            previewDuration.value = 0;
+            previewSource.value = undefined;
+
+            updatePreview();
+        }
+    });
+</script>

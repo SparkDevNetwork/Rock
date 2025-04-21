@@ -154,21 +154,33 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// <summary>
             /// The event summary default value
             /// </summary>
-            public const string EventSummary = @"<Frame HasShadow=""false"" StyleClass=""calendar-event-summary"">
-    <StackLayout Spacing=""0"">
-        <Label StyleClass=""calendar-event-title"" Text=""{Binding Name}"" />
+            public const string EventSummary = @"<Rock:StyledBorder>
+    <StackLayout>
+        <Label StyleClass=""body, bold, text-interface-stronger""
+            Text=""{Binding Name}"" />
+        
         {% if Item.EndDateTime == null %}
-            <Label StyleClass=""calendar-event-text"" Text=""{{ Item.StartDateTime | Date:'h:mm tt' }}"" LineBreakMode=""NoWrap"" />
+            <Label StyleClass=""footnote, text-interface-strong"" 
+                Text=""{{ Item.StartDateTime | Date:'h:mm tt' }}"" 
+                LineBreakMode=""NoWrap"" />
         {% else %}
-            <Label StyleClass=""calendar-event-text"" Text=""{{ Item.StartDateTime | Date:'h:mm tt' }} - {{ Item.EndDateTime | Date:'h:mm tt' }}"" LineBreakMode=""NoWrap"" />
+            <Label StyleClass=""footnote, text-interface-strong"" 
+                Text=""{{ Item.StartDateTime | Date:'h:mm tt' }} - {{ Item.EndDateTime | Date:'h:mm tt' }}"" 
+                LineBreakMode=""NoWrap"" />
         {% endif %}
-        <StackLayout Orientation=""Horizontal"">
-            <Label HorizontalOptions=""FillAndExpand"" StyleClass=""calendar-event-audience"" Text=""{{ Item.Audiences | Select:'Name' | Join:', ' }}"" />
-            <Label StyleClass=""calendar-event-campus"" Text=""{{ Item.Campus }}"" HorizontalTextAlignment=""End"" LineBreakMode=""NoWrap"" />
-        </StackLayout>
+
+        <Grid ColumnDefinitions=""*, Auto""
+            StyleClass=""mt-16"">
+            <Label StyleClass=""caption1, text-interface-strong"" 
+                Text=""{{ Item.Audiences | Select:'Name' | Join:', ' | Escape }}"" />
+
+            <Label StyleClass=""caption1, text-interface-strong""
+                Text=""{{ Item.Campus | Escape }}""
+                HorizontalTextAlignment=""End"" 
+                LineBreakMode=""NoWrap"" />
+        </Grid>
     </StackLayout>
-</Frame>
-";
+</Rock:StyledBorder>";
         }
 
         /// <summary>

@@ -27,6 +27,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -186,19 +187,19 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !IsPostBack )
             {
                 if ( !_pushTransportEnabled )
                 {
                     nbNoMediumError.Visible = true;
-
+                    base.OnLoad( e );
                     return;
                 }
 
                 ShowTemplateSelection();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -510,7 +511,7 @@ namespace RockWeb.Blocks.Communication
 
                 if ( communicationTemplate.ImageFileId.HasValue )
                 {
-                    var imageUrl = string.Format( "~/GetImage.ashx?id={0}", communicationTemplate.ImageFileId );
+                    var imageUrl = FileUrlHelper.GetImageUrl( communicationTemplate.ImageFileId.Value );
                     lTemplateImagePreview.Text = string.Format( "<img src='{0}' width='100%'/>", this.ResolveRockUrl( imageUrl ) );
                 }
                 else
@@ -564,6 +565,7 @@ namespace RockWeb.Blocks.Communication
                 PushMessage = communicationTemplate.PushMessage,
                 PushTitle = communicationTemplate.PushTitle,
                 PushOpenMessage = communicationTemplate.PushOpenMessage,
+                PushOpenMessageJson = communicationTemplate.PushOpenMessageJson,
                 PushOpenAction = communicationTemplate.PushOpenAction
             };
 

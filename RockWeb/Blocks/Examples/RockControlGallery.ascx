@@ -51,8 +51,6 @@
 
                     <h1 runat="server">General Information</h1>
 
-                    <Rock:BlockTemplatePicker ID="lfkjs" runat="server" />
-
                     <h2 id="input-sizing">Input Sizing Rules</h2>
 
                     <div class="alert alert-warning">
@@ -201,9 +199,9 @@
 
 <div runat="server" class="r-example">
 <div class="form-group">
-	<label class="control-label">Group</label> 
+	<label class="control-label">Group</label>
 	<div class="control-wrapper">
-		<p>A/V Team</p>	
+		<p>A/V Team</p>
 	</div>
 </div>
 </div>

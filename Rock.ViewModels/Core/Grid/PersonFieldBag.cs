@@ -24,6 +24,12 @@ namespace Rock.ViewModels.Core.Grid
     public class PersonFieldBag
     {
         /// <summary>
+        /// Gets or sets the hashed identifier key.
+        /// </summary>
+        /// <value>The hashed identifier key.</value>
+        public string IdKey { get; set; }
+
+        /// <summary>
         /// Gets or sets the nick name.
         /// </summary>
         /// <value>The nick name.</value>
@@ -40,5 +46,11 @@ namespace Rock.ViewModels.Core.Grid
         /// </summary>
         /// <value>The photo URL.</value>
         public string PhotoUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection status.
+        /// </summary>
+        /// <value>The connection status.</value>
+        public string ConnectionStatus { get; set; }
     }
 }

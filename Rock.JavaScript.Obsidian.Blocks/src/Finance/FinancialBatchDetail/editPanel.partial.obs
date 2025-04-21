@@ -4,46 +4,46 @@
         <div class="row">
             <div class="col-md-6">
                 <DefinedValuePicker v-if="shouldGetNameFromDefinedType"
-                        v-model="definedValueName"
-                        label="Name"
-                        :definedTypeGuid="toGuidOrNull(props.options.batchNameDefinedTypeGuid) ?? emptyGuid" />
+                                    v-model="definedValueName"
+                                    label="Name"
+                                    :definedTypeGuid="props.options.batchNameDefinedTypeGuid ?? ''" />
                 <TextBox v-else v-model="name"
                          label="Name"
                          rules="required"
                          :disabled="isStatusClosed" />
                 <DropDownList v-model="status"
-                    label="Status"
-                    :items="batchStatusOptions"
-                    :disabled="options.isStatusChangeDisabled"
-                    blankValue="1"
-                    rules="required" />
+                              label="Status"
+                              :items="batchStatusOptions"
+                              :disabled="options.isStatusChangeDisabled"
+                              blankValue="1"
+                              rules="required" />
                 <DateTimePicker v-model="batchStartDateTime"
-                    label="Batch Start"
-                    rules="required"
-                    :disabled="isStatusClosed" />
+                                label="Batch Start"
+                                rules="required"
+                                :disabled="isStatusClosed" />
                 <DateTimePicker v-model="batchEndDateTime"
-                    label="Batch End"
-                    :disabled="isStatusClosed" />
+                                label="Batch End"
+                                :disabled="isStatusClosed" />
             </div>
             <div class="col-md-6">
                 <CurrencyBox v-model="controlAmount"
-                    label="Control Amount"
-                    :disabled="isStatusClosed" />
+                             label="Control Amount"
+                             :disabled="isStatusClosed" />
                 <NumberBox v-model="controlItemCount"
-                        label="Control Item Count"
-                        :disabled="isStatusClosed" />
+                           label="Control Item Count"
+                           :disabled="isStatusClosed" />
                 <CampusPicker label="Campus" v-model="campus"
-                        showBlankItem
-                        :disabled="isStatusClosed"
-                        includeInactive />
+                              showBlankItem
+                              :disabled="isStatusClosed"
+                              includeInactive />
                 <TextBox v-model="accountingSystemCode"
-                        label="Accounting Code"
-                        help="Optional id or code from an external accounting system."
-                        :disabled="isStatusClosed" />
+                         label="Accounting Code"
+                         help="Optional id or code from an external accounting system."
+                         :disabled="isStatusClosed" />
                 <TextBox v-model="note"
-                        label="Notes"
-                        textMode="multiline"
-                        :disabled="isStatusClosed" />
+                         label="Notes"
+                         textMode="multiline"
+                         :disabled="isStatusClosed" />
             </div>
         </div>
 
@@ -72,7 +72,7 @@
     import { FinancialBatchBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchBag";
     import { FinancialBatchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -107,10 +107,10 @@
     const definedValueName = ref<ListItemBag | null>(null);
 
     const batchStatusOptions: ListItemBag[] = [
-                { text: "Pending", value: "0" },
-                { text: "Open", value: "1" },
-                { text: "Closed", value: "2" }
-            ];
+        { text: "Pending", value: "0" },
+        { text: "Open", value: "1" },
+        { text: "Closed", value: "2" }
+    ];
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -136,7 +136,7 @@
     watch([() => props.modelValue, () => definedValueName], () => {
         updateRefValue(attributes, props.modelValue.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        if(definedValueName.value != null) {
+        if (definedValueName.value != null) {
             updateRefValue(name, definedValueName.value.text ?? "");
         }
         else {

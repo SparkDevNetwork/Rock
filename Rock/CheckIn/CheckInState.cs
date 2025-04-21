@@ -160,23 +160,6 @@ namespace Rock.CheckIn
         public List<CheckInMessage> Messages { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CheckInState" /> class.
-        /// </summary>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="checkinTypeId">The checkin type identifier.</param>
-        /// <param name="configuredGroupTypes">The configured group types.</param>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use the other constructor" )]
-        public CheckInState( int deviceId, int? checkinTypeId, List<int> configuredGroupTypes )
-        {
-            DeviceId = deviceId;
-            CheckinTypeId = checkinTypeId;
-            ConfiguredGroupTypes = configuredGroupTypes;
-            CheckIn = new CheckInStatus();
-            Messages = new List<CheckInMessage>();
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="CheckInState"/> class.
         /// </summary>
         /// <param name="localDeviceConfiguration">The local device configuration.</param>
@@ -189,18 +172,6 @@ namespace Rock.CheckIn
             ConfiguredGroups = localDeviceConfiguration.CurrentGroupIds == null ? new List<int>() : localDeviceConfiguration.CurrentGroupIds.ToList();
             CheckIn = new CheckInStatus();
             Messages = new List<CheckInMessage>();
-        }
-
-        /// <summary>
-        /// Creates a new CheckInState object Froms a json string.
-        /// </summary>
-        /// <param name="json">The json.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "use the FromJson() string extension instead", true )]
-        public static CheckInState FromJson( string json )
-        {
-            return json.FromJsonOrNull<CheckInState>();
         }
     }
 }

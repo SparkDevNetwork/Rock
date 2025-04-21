@@ -214,6 +214,28 @@ namespace Rock
         }
 
         /// <summary>
+        /// Converts a single entity to a ListItemBag.
+        /// </summary>
+        /// <param name="entity">The entity to be represented by the bag.</param>
+        /// <param name="text">The value to use for the Text property of the ListItemBag.</param>
+        /// <returns>A <see cref="ListItemBag"/> that represents the entity.</returns>
+        public static ListItemBag ToListItemBag( this IEntity entity, string text )
+        {
+            if ( entity == null )
+            {
+                return null;
+            }
+
+            var viewModel = new ListItemBag
+            {
+                Value = entity.Guid.ToString(),
+                Text = text
+            };
+
+            return viewModel;
+        }
+
+        /// <summary>
         /// Converts a collection of entities to ListItemBags.
         /// </summary>
         /// <param name="entities">The entities to be represented by the bags.</param>
@@ -225,7 +247,51 @@ namespace Rock
                 return new List<ListItemBag>();
             }
 
-            return entities.Select( e => e.ToListItemBag() ).ToList();
+            return entities
+                .Where( e => e != null )
+                .Select( e => e.ToListItemBag() )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Converts a collection of entities to ListItemBags.
+        /// </summary>
+        /// <param name="entities">The entities to be represented by the bags.</param>
+        /// <param name="toText">A function that can set the Text property of the ListItemBag for the entity.</param>
+        /// <returns>A collection of <see cref="ListItemBag"/> that represents the entities.</returns>
+        [Obsolete( "Use the method that takes a generic enumerable set." )]
+        [RockObsolete( "17.0" )]
+        public static List<ListItemBag> ToListItemBagList( IEnumerable<IEntity> entities, Func<IEntity, string> toText )
+        {
+            if ( entities == null )
+            {
+                return new List<ListItemBag>();
+            }
+
+            return entities
+                .Where( e => e != null )
+                .Select( e => e.ToListItemBag( toText( e ) ) )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Converts a collection of entities to ListItemBags.
+        /// </summary>
+        /// <param name="entities">The entities to be represented by the bags.</param>
+        /// <param name="toText">A function that can set the Text property of the ListItemBag for the entity.</param>
+        /// <returns>A collection of <see cref="ListItemBag"/> that represents the entities.</returns>
+        public static List<ListItemBag> ToListItemBagList<T>( this IEnumerable<T> entities, Func<T, string> toText )
+            where T : IEntity
+        {
+            if ( entities == null )
+            {
+                return new List<ListItemBag>();
+            }
+
+            return entities
+                .Where( e => e != null )
+                .Select( e => e.ToListItemBag( toText( e ) ) )
+                .ToList();
         }
 
         /// <summary>
@@ -261,7 +327,10 @@ namespace Rock
                 return new List<ListItemBag>();
             }
 
-            return entities.Select( e => e.ToListItemBag() ).ToList();
+            return entities
+                .Where( e => e != null )
+                .Select( e => e.ToListItemBag() )
+                .ToList();
         }
 
 
@@ -285,9 +354,11 @@ namespace Rock
                 CreatedByPersonId = model.CreatedByPersonAlias?.PersonId,
                 CreatedByName = model.CreatedByPersonAlias?.Person?.FullName,
                 CreatedRelativeTime = model.CreatedDateTime?.ToRelativeDateString(),
+                CreatedDateTime = model.CreatedDateTime,
                 ModifiedByPersonId = model.ModifiedByPersonAlias?.PersonId,
                 ModifiedByName = model.ModifiedByPersonAlias?.Person?.FullName,
-                ModifiedRelativeTime = model.ModifiedDateTime?.ToRelativeDateString()
+                ModifiedRelativeTime = model.ModifiedDateTime?.ToRelativeDateString(),
+                ModifiedDateTime = model.ModifiedDateTime
             };
         }
 

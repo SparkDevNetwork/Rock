@@ -53,7 +53,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
     [BlockTemplateField( "Opportunity Template",
         Description = "The template used to render the connection opportunities.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CONNECTION_CONNECTION_OPPORTUNITY_LIST,
-        DefaultValue = "1FB8E236-DF34-4BA2-B5C6-CA8B542ABC7A",
+        DefaultValue = "A7D8FB47-A779-4427-B41D-2C0F0E6DB0FF",
         IsRequired = true,
         Key = AttributeKey.OpportunityTemplate,
         Order = 1 )]

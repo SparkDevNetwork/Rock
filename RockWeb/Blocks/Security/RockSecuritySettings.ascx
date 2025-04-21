@@ -74,9 +74,18 @@
                             runat="server"
                             ID="cblIgnoredAccountProtectionProfiles"
                             Label="Disable Duplicate Checking for the Following Protection Profiles"
-                            Help="This disables duplication protection checks for individuals with the selected Account Protection Profiles. People with these checked values will always create duplicates (i.e., they will not match existing records.) We highly recommend enabling this for all but the low profile."
+                            Help="This disables duplication protection checks for individuals with the selected Account Protection Profiles. People with these checked values will always create duplicates (i.e., they will not match existing records.) We highly recommend enabling this for the High and the Extreme profile."
                             RepeatDirection="Horizontal"
                             CssClass="js-ignored-protection-profile" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox
+                            ID="cbDisablePredictableIds"
+                            runat="server"
+                            Label="Disable Predictable IDs"
+                            Help="When checked, the GetFile, GetImage and GetAvatar endpoints will use IdKeys and GUID values instead of predictable IDs." />
                     </div>
                 </div>
                 <div class="row mt-3">
@@ -112,7 +121,7 @@
                             runat="server"
                             ID="cblRequireTwoFactorAuthenticationForAccountProtectionProfiles"
                             Label="Require Two-Factor Authentication for the Following Protection Profiles"
-                            Help="2FA - Selected protection profiles will require two-factor authentication when logging in."
+                            Help="2FA - Selected protection profiles will require two-factor authentication when logging in. If you turn on two-factor authentication (2FA) for a Protection Profile, make sure Passwordless login for that Protection Profile is also turned on. If two-factor authentication (2FA) is enabled without Passwordless login, someone could get locked out."
                             RepeatDirection="Horizontal"
                             CssClass="js-ignored-protection-profile" />
                         <Rock:NotificationBox
@@ -154,7 +163,7 @@
                                     runat="server"
                                     ID="cblDisablePasswordlessSignInForAccountProtectionProfiles"
                                     Label="Disable Passwordless Sign In for the Following Protection Profiles"
-                                    Help="Determines which individuals can use passwordless login depending on their protection profile."
+                                    Help="Determines which individuals can use passwordless login depending on their protection profile. If you turn off Passwordless login for a Protection Profile, make sure two-factor authentication (2FA) for that Protection Profile is also turned off. If two-factor authentication (2FA) is enabled without Passwordless login, someone could get locked out."
                                     RepeatDirection="Horizontal" />
                             </div>
                             <div class="col-md-6">
@@ -166,6 +175,15 @@
                                     DataValueField="Guid"
                                     EnhanceForLongLists="true"
                                     Help="The system communication template to use for passwordless confirmations." />
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <Rock:DateTimePicker
+                                    runat="server"
+                                    ID="dtpRejectAuthenticationCookiesIssuedBefore"
+                                    Label="Reject Authentication Cookies Issued Before"
+                                    Help="If a date and time are entered here, any authentication cookies issued before then will be rejected." />
                             </div>
                         </div>
                     </Body>

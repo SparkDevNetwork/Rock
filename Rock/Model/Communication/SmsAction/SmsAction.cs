@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "SmsAction" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "1F5E26BE-0ED4-4250-8FFC-1DED5E9EACF0")]
     public partial class SmsAction : Model<SmsAction>, IOrdered, ICacheable
     {
@@ -55,6 +56,15 @@ namespace Rock.Model
         public bool IsActive { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether an interaction should be recorded after this action is processed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if an interaction should be logged; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsInteractionLoggedAfterProcessing { get; set; }
+
+        /// <summary>
         /// Gets or sets the order of this action in the system.
         /// </summary>
         /// <value>
@@ -70,6 +80,7 @@ namespace Rock.Model
         /// The identifier for the entity type that handles this action's logic.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int SmsActionComponentEntityTypeId { get; set; }
 
         /// <summary>

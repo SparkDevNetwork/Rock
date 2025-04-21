@@ -37,12 +37,11 @@ namespace Rock.Blocks.WebFarm
     /// Displays the details of a web farm.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
-
     [DisplayName( "Web Farm Settings" )]
     [Category( "WebFarm" )]
     [Description( "Displays the details of the Web Farm." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -179,7 +178,9 @@ namespace Rock.Blocks.WebFarm
         {
             return new WebFarmSettingsBag
             {
-                IsActive = RockWebFarm.IsEnabled(),
+                IsEnabled = RockWebFarm.IsEnabled(),
+                HasValidKey = RockWebFarm.HasValidKey(),
+                IsRunning = RockWebFarm.IsRunning(),
                 WebFarmKey = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.WEBFARM_KEY ),
                 LowerPollingLimit = RockWebFarm.GetLowerPollingLimitSeconds(),
                 UpperPollingLimit = RockWebFarm.GetUpperPollingLimitSeconds(),
@@ -254,7 +255,7 @@ namespace Rock.Blocks.WebFarm
                 {
                     var metrics = node.WebFarmNodeMetrics.ConvertAll( x => new MetricViewModel() { MetricValue = x.MetricValue, MetricValueDateTime = x.MetricValueDateTime } );
                     var samples = WebFarmNodeMetricService.CalculateMetricSamples( metrics, _cpuMetricSampleCount, ChartMinDate, ChartMaxDate );
-                    node.ChartHtml = GetChartHtml( samples );
+                    node.ChartData = GetChartData( samples );
                 }
             }
 
@@ -264,7 +265,6 @@ namespace Rock.Blocks.WebFarm
         /// <summary>
         /// Gets the bag for editing the specified entity.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>A <see cref="WebFarmSettingsBag"/> that represents the entity.</returns>
         private WebFarmSettingsBag GetEntityBagForEdit()
         {
@@ -274,38 +274,36 @@ namespace Rock.Blocks.WebFarm
         /// <summary>
         /// Updates the entity from the data in the save box.
         /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
         /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( DetailBlockBox<WebFarmSettingsBag, WebFarmSettingsDetailOptionsBag> box, RockContext rockContext )
+        private bool UpdateEntityFromBox( DetailBlockBox<WebFarmSettingsBag, WebFarmSettingsDetailOptionsBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => RockWebFarm.SetIsEnabled( box.Entity.IsActive ) );
+            box.IfValidProperty( nameof( box.Entity.IsEnabled ),
+                () => RockWebFarm.SetIsEnabled( box.Entity.IsEnabled ) );
 
             box.IfValidProperty( nameof( box.Entity.WebFarmKey ),
                 () => SystemSettings.SetValue( Rock.SystemKey.SystemSetting.WEBFARM_KEY, box.Entity.WebFarmKey ) );
 
             box.IfValidProperty( nameof( box.Entity.LowerPollingLimit ),
                 () => SystemSettings.SetValue( Rock.SystemKey.SystemSetting.WEBFARM_LEADERSHIP_POLLING_INTERVAL_LOWER_LIMIT_SECONDS,
-                ( box.Entity.LowerPollingLimit == 0 ? RockWebFarm.DefaultValue.DefaultLeadershipPollingIntervalLowerLimitSeconds : box.Entity.LowerPollingLimit ).ToString() ) );
+                ( box.Entity.LowerPollingLimit ?? RockWebFarm.DefaultValue.DefaultLeadershipPollingIntervalLowerLimitSeconds ).ToString() ) );
 
             box.IfValidProperty( nameof( box.Entity.UpperPollingLimit ),
                 () => SystemSettings.SetValue( Rock.SystemKey.SystemSetting.WEBFARM_LEADERSHIP_POLLING_INTERVAL_UPPER_LIMIT_SECONDS,
-                ( box.Entity.UpperPollingLimit == 0 ? RockWebFarm.DefaultValue.DefaultLeadershipPollingIntervalUpperLimitSeconds : box.Entity.UpperPollingLimit ).ToString() ) );
+                ( box.Entity.UpperPollingLimit ?? RockWebFarm.DefaultValue.DefaultLeadershipPollingIntervalUpperLimitSeconds ).ToString() ) );
 
             box.IfValidProperty( nameof( box.Entity.MaxPollingWaitSeconds ),
                 () => SystemSettings.SetValue( Rock.SystemKey.SystemSetting.WEBFARM_LEADERSHIP_MAX_WAIT_SECONDS,
-                ( box.Entity.MaxPollingWaitSeconds == 0 ? RockWebFarm.DefaultValue.DefaultPollingMaxWaitSeconds : box.Entity.MaxPollingWaitSeconds ).ToString() ) );
+                ( box.Entity.MaxPollingWaitSeconds ?? RockWebFarm.DefaultValue.DefaultPollingMaxWaitSeconds ).ToString() ) );
 
             box.IfValidProperty( nameof( box.Entity.MinimumPollingDifference ),
                 () => SystemSettings.SetValue( Rock.SystemKey.SystemSetting.WEBFARM_LEADERSHIP_MIN_POLLING_DIFFERENCE_SECONDS,
-                ( box.Entity.MinimumPollingDifference == 0 ? RockWebFarm.DefaultValue.DefaultMinimumPollingDifferenceSeconds : box.Entity.MinimumPollingDifference ).ToString() ) );
+                ( box.Entity.MinimumPollingDifference ?? RockWebFarm.DefaultValue.DefaultMinimumPollingDifferenceSeconds ).ToString() ) );
 
             return true;
         }
@@ -340,10 +338,10 @@ namespace Rock.Blocks.WebFarm
         }
 
         /// <summary>
-        /// Gets the chart HTML.
+        /// Gets the chart data.
         /// </summary>
         /// <returns></returns>
-        private string GetChartHtml( decimal[] samples )
+        private string GetChartData( decimal[] samples )
         {
             if ( samples == null || samples.Length <= 1 )
             {
@@ -351,20 +349,19 @@ namespace Rock.Blocks.WebFarm
             }
 
             return string.Format(
-@"<canvas
-    class='js-chart''
-    data-chart='{{
-        ""labels"": [{0}],
-        ""datasets"": [{{
-            ""data"": [{1}],
-            ""backgroundColor"": ""rgba(128, 205, 241, 0.25)"",
-            ""borderColor"": ""#009CE3"",
-            ""borderWidth"": 2,
-            ""pointRadius"": 0,
-            ""pointHoverRadius"": 0
-        }}]
-    }}'>
-</canvas>",
+@"{{
+            ""labels"": [{0}],
+            ""datasets"": [{{
+                ""data"": [{1}],
+                ""fill"": true,
+                ""backgroundColor"": ""rgba(128, 205, 241, 0.25)"",
+                ""borderColor"": ""#009CE3"",
+                ""borderWidth"": 2,
+                ""pointRadius"": 0,
+                ""pointHoverRadius"": 0,
+                ""tension"": 0.5
+            }}]
+        }}",
                 samples.Select( s => "\"\"" ).JoinStrings( "," ),
                 samples.Select( s => ( ( int ) s ).ToString() ).JoinStrings( "," )
             );
@@ -378,10 +375,9 @@ namespace Rock.Blocks.WebFarm
         /// Gets the box that will contain all the information needed to begin
         /// the edit operation.
         /// </summary>
-        /// <param name="key">The identifier of the entity to be edited.</param>
         /// <returns>A box that contains the entity and any other information required.</returns>
         [BlockAction]
-        public BlockActionResult Edit( string key )
+        public BlockActionResult Edit()
         {
             var box = new DetailBlockBox<WebFarmSettingsBag, WebFarmSettingsDetailOptionsBag>
             {
@@ -409,7 +405,7 @@ namespace Rock.Blocks.WebFarm
                 }
 
                 // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( box, rockContext ) )
+                if ( !UpdateEntityFromBox( box ) )
                 {
                     return ActionBadRequest( "Invalid data." );
                 }

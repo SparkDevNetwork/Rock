@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 
 namespace Rock.RealTime.Topics
 {
@@ -129,8 +130,8 @@ namespace Rock.RealTime.Topics
                     {
                         FileName = bf.FileName,
                         Url = isImage
-                            ? $"{publicAppRoot}GetImage.ashx?Id={bf.Id}"
-                            : $"{publicAppRoot}GetFile.ashx?Id={bf.Id}"
+                            ? FileUrlHelper.GetImageUrl( bf.Id, new GetImageUrlOptions { PublicAppRoot = publicAppRoot } )
+                            : FileUrlHelper.GetFileUrl( bf.Id, new GetFileUrlOptions { PublicAppRoot = publicAppRoot } )
                     };
                 } )
                 .ToList();

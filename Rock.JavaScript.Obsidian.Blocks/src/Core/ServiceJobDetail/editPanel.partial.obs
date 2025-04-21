@@ -1,6 +1,10 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
+        <NotificationBox v-if="isSystem" alertType="info">
+            <strong>Note</strong> Because this service job is used by Rock, editing is restricted.
+        </NotificationBox>
+
         <div class="row">
             <div class="col-md-6">
                 <TextBox v-model="name"
@@ -34,6 +38,7 @@
                 <DropDownList label="Job Type"
                               v-model="jobTypeClass"
                               :items="jobTypeOptions"
+                              :enhanceForLongLists="true"
                               rules="required"
                               :disabled="!isEditable || isSystem"/>
                 <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" :isEditMode="isEditable" :numberOfColumns="1" />
@@ -75,6 +80,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { ServiceJobBag } from "@Obsidian/ViewModels/Blocks/Core/ServiceJobDetail/serviceJobBag";

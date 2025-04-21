@@ -1,0 +1,88 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div class="col-md-4">
+            <NumberUpDown label="Attendee Number"
+                            v-model="attendeeNumber"
+                            :min="1" />
+        </div>
+
+        <div v-if="attendee" class="col-md-8">
+            <div v-if="attendee.opportunities">
+                <div>Opportunities:</div>
+
+                <ul>
+                    <li v-if="attendee.opportunities.abilityLevels && attendee.opportunities.abilityLevels.length > 0">
+                        Ability Levels
+                        <ol>
+                            <li v-for="item in attendee.opportunities.abilityLevels" :key="item.id!">
+                                {{ item.name }}
+                            </li>
+                        </ol>
+                    </li>
+
+                    <li v-if="attendee.opportunities.areas && attendee.opportunities.areas.length > 0">
+                        Areas
+                        <ol>
+                            <li v-for="item in attendee.opportunities.areas" :key="item.id!">
+                                {{ item.name }}
+                            </li>
+                        </ol>
+                    </li>
+
+                    <li v-if="attendee.opportunities.groups && attendee.opportunities.groups.length > 0">
+                        Groups
+                        <ol>
+                            <li v-for="item in attendee.opportunities.groups" :key="item.id!">
+                                {{ item.name }}
+                            </li>
+                        </ol>
+                    </li>
+
+                    <li v-if="attendee.opportunities.locations && attendee.opportunities.locations.length > 0">
+                        Locations
+                        <ol>
+                            <li v-for="item in attendee.opportunities.locations" :key="item.id!">
+                                {{ item.name }}
+                            </li>
+                        </ol>
+                    </li>
+
+                    <li v-if="attendee.opportunities.schedules && attendee.opportunities.schedules.length > 0">
+                        Schedules
+                        <ol>
+                            <li v-for="item in attendee.opportunities.schedules" :key="item.id!">
+                                {{ item.name }}
+                            </li>
+                        </ol>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { AttendeeOpportunitiesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/attendeeOpportunitiesResponseBag";
+
+    const props = defineProps({
+        attendeeNumber: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        attendee: {
+            type: Object as PropType<AttendeeOpportunitiesResponseBag>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:attendeeNumber", value: number): void
+    }>();
+
+    const attendeeNumber = useVModelPassthrough(props, "attendeeNumber", emit);
+</script>

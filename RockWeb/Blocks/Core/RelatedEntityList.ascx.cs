@@ -349,8 +349,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             var configurationCorrect = SetupEnvironment();
 
             RouteAction();
@@ -362,11 +360,14 @@ namespace RockWeb.Blocks.Core
                 if ( !configurationCorrect )
                 {
                     nbMessages.Text = "The configuration of this block is not correct.";
+                    base.OnLoad( e );
                     return;
                 }
 
                 ShowContent();
             }
+
+            base.OnLoad( e );
         }
         #endregion
 

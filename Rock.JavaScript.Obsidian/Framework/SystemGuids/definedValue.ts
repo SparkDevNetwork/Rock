@@ -23,6 +23,12 @@
 
 /** Static Guids used by the Rock application */
 export const DefinedValue = {
+    /** The attendance record came from a kiosk. */
+    AttendanceSourceKiosk: "9A21D7EB-BCB5-4466-B62F-70EC5008B6B9",
+    /** The attendance record came from a legacy kiosk. */
+    AttendanceSourceLegacyKiosk: "0B25A627-679B-4B73-AA84-305DEF24815A",
+    /** The attendance record came from a mobile check-in. */
+    AttendanceSourceMobile: "972E8841-A3C9-4DDD-BD24-A414C0290331",
     /** Benevolence Approved */
     BenevolenceApproved: "18D3A2DA-F2BA-49AE-83EB-7E60DCD18A3B",
     /** Benevolence Denied */
@@ -53,6 +59,8 @@ export const DefinedValue = {
     BlockTemplateMobileDailyChallengeEntry: "30ECA4B6-0869-4656-A4CD-B8729CB29E76",
     /** The block template mobile event item occurrence list by audience */
     BlockTemplateMobileEventItemOccurrenceListByAudience: "26944B71-7B69-4943-8EC2-3506F728D943",
+    /** The block template for ScheduledTransactionList block. */
+    BlockTemplateMobileFinanceScheduledTransactionList: "4FB77C19-3D70-4051-9FED-DF254B3FB310",
     /** The block template for the mobile group member list. */
     BlockTemplateMobileGroupMemberList: "E5618730-9E50-4BDA-9E13-D27697F83980",
     /** The block template for the mobile group member view. */
@@ -73,6 +81,8 @@ export const DefinedValue = {
     BlockTemplateMobileGroupView: "559346FB-C684-42CF-8F4C-CF4A1C278AD6",
     /** The block template for the mobile group finder. */
     BlockTemplateMobileGroupsGroupFinder: "1B6D540A-2E40-44F6-8AE9-2857DE913459",
+    /** The block template for the mobile my notes block. */
+    BlockTemplateMobileMyNotes: "652A4E12-6C15-407D-9620-ED39190899A5",
     /** The block template for mobile my prayer requests. */
     BlockTemplateMobileMyPrayerRequests: "198F3006-5F0F-48AB-9EA0-2FA56F633753",
     /** The block template for the mobile notes block. */
@@ -177,10 +187,14 @@ export const DefinedValue = {
     DefaultRssChannel: "D6149581-9EFC-40D8-BD38-E92C0717BEDA",
     /** Check-in Kiosk device type */
     DeviceTypeCheckinKiosk: "BC809626-1389-4543-B8BB-6FAC79C27AFD",
+    /** Cloud Print Proxy device type */
+    DeviceTypeCloudPrintProxy: "EF5BF148-C9E0-4F96-8152-BB23CD85D845",
     /** Giving Kiosk device type */
     DeviceTypeGivingKiosk: "64A1DBE5-10AD-42F1-A9BA-646A781D4112",
     /** Printer device type */
     DeviceTypePrinter: "8284B128-E73B-4863-9FC2-43E6827B65E6",
+    /** Proxy device type */
+    DeviceTypeProxy: "EF5BF148-C9E0-4F96-8152-BB23CD85D845",
     /** Entity Set for the purpose of doing a Person Merge request */
     EntitySetPurposePersonMergeRequest: "214EB26F-5493-4540-B2EF-F0887C8FBB9E",
     /** Amazon External Link Type */
@@ -234,6 +248,8 @@ export const DefinedValue = {
     InteractionchanneltypeChallengeProgress: "6AA529BD-9FA5-43AD-A98E-B8DF5F997146",
     /** Interaction Channel Type: Challenges */
     InteractionchanneltypeChallenges: "593607DC-4537-46E4-939F-60E0F74A1518",
+    /** Interaction Channel Type: Chat */
+    InteractionchanneltypeChat: "0E2EAE2C-957B-4CCB-8826-AA5627C27BBD",
     /** Interaction Channel Type: Communication */
     InteractionchanneltypeCommunication: "55004F5C-A8ED-7CB7-47EE-5988E9F8E0A8",
     /** Interaction Channel Type: Content Channel */

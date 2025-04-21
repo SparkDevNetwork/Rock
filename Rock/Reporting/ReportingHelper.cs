@@ -37,63 +37,6 @@ namespace Rock.Reporting
     public static class ReportingHelper
     {
         /// <summary>
-        /// Shows the preview.
-        /// </summary>
-        /// <param name="report">The report.</param>
-        /// <param name="gReport">The g report.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
-        /// <param name="errorMessage">The error message.</param>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use BindGrid( report, gReport, bindGridOptions )" )]
-        public static void BindGrid( Report report, Grid gReport, Person currentPerson, int? databaseTimeoutSeconds, out string errorMessage )
-        {
-            BindGrid( report, gReport, currentPerson, null, databaseTimeoutSeconds, false, out errorMessage );
-        }
-
-        /// <summary>
-        /// Shows the preview.
-        /// </summary>
-        /// <param name="report">The report.</param>
-        /// <param name="gReport">The g report.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
-        /// <param name="isCommunication">if set to <c>true</c> [is communication].</param>
-        /// <param name="errorMessage">The error message.</param>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use BindGrid( report, gReport, bindGridOptions )" )]
-        public static void BindGrid( Report report, Grid gReport, Person currentPerson, int? databaseTimeoutSeconds, bool isCommunication, out string errorMessage )
-        {
-            BindGrid( report, gReport, currentPerson, null, databaseTimeoutSeconds, isCommunication, out errorMessage );
-        }
-
-        /// <summary>
-        /// Binds the grid.
-        /// </summary>
-        /// <param name="report">The report.</param>
-        /// <param name="gReport">The g report.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
-        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
-        /// <param name="isCommunication">if set to <c>true</c> [is communication].</param>
-        /// <param name="errorMessage">The error message.</param>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use BindGrid( report, gReport, bindGridOptions )" )]
-        public static void BindGrid( Report report, Grid gReport, Person currentPerson, DataViewFilterOverrides dataViewFilterOverrides, int? databaseTimeoutSeconds, bool isCommunication, out string errorMessage )
-        {
-            errorMessage = string.Empty;
-            BindGridOptions bindGridOptions = new BindGridOptions
-            {
-                CurrentPerson = currentPerson,
-                DataViewFilterOverrides = dataViewFilterOverrides,
-                DatabaseTimeoutSeconds = databaseTimeoutSeconds,
-                IsCommunication = isCommunication
-            };
-
-            BindGrid( report, gReport, bindGridOptions );
-        }
-
-        /// <summary>
         /// 
         /// </summary>
         public class BindGridOptions
@@ -676,17 +619,6 @@ namespace Rock.Reporting
             return filter;
         }
 
-        /// <summary>
-        /// Registers the javascript include needed for reporting client controls
-        /// </summary>
-        /// <param name="filterField">The filter field.</param>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "No Longer Needed", true )]
-        public static void RegisterJavascriptInclude( FilterField filterField )
-        {
-            // no longer needed since the required javascript is now bundled
-        }
-
         #region FilterInfo Helpers
 
         /// <summary>
@@ -824,24 +756,6 @@ namespace Rock.Reporting
             }
 
             /// <summary>
-            /// Gets or sets the filter list.
-            /// </summary>
-            /// <value>
-            /// The filter list.
-            /// </value>
-            [RockObsolete( "1.10" )]
-            [Obsolete( "Changed to internal property", true )]
-            public List<FilterInfo> FilterList
-            {
-                get => AllFilterList;
-
-                internal set
-                {
-                    // obsolete internal set, so no need to do anything
-                }
-            }
-
-            /// <summary>
             /// Gets or sets all filter list.
             /// </summary>
             /// <value>
@@ -864,24 +778,6 @@ namespace Rock.Reporting
             /// The report entity type model.
             /// </value>
             public Type ReportEntityTypeModel { get; internal set; }
-
-            /// <summary>
-            /// Gets or sets name of the other data view.
-            /// </summary>
-            /// <value>
-            /// From other data view.
-            /// </value>
-            [RockObsolete( "1.10" )]
-            [Obsolete( "Use FromOtherDataViewName instead", true )]
-            public string FromOtherDataView
-            {
-                get => FromDataView?.Name;
-                set
-                {
-
-                }
-            }
-
 
             /// <summary>
             /// If this Filter is an OtherDataViewFilter, gets the DataView that this filter has selected

@@ -254,8 +254,6 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 if ( PageParameter( PageParameterKey.BypassConfirm ).AsBoolean() && !PageParameter( PageParameterKey.WorkflowTypeId ).IsNullOrWhiteSpace() )
@@ -266,6 +264,8 @@ namespace RockWeb.Blocks.WorkFlow
 
                 RenderState();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods

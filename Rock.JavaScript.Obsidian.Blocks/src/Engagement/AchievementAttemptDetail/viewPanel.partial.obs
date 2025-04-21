@@ -123,7 +123,6 @@
 
             }
         }).on("mouseenter", (e: Event) => {
-            console.log(e);
             var target = e.target;
             $(target).popover("show");
             $(target).siblings(".popover").on("mouseleave", () => {

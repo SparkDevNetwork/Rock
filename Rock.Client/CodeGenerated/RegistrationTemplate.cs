@@ -135,6 +135,9 @@ namespace Rock.Client
         public string PaymentPlanFrequencyValueIds { get; set; }
 
         /// <summary />
+        public ICollection<int> PaymentPlanFrequencyValueIdsCollection { get; set; }
+
+        /// <summary />
         public string PaymentReminderEmailTemplate { get; set; }
 
         /// <summary />
@@ -291,6 +294,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.Notify = source.Notify;
             this.PaymentPlanFrequencyValueIds = source.PaymentPlanFrequencyValueIds;
+            this.PaymentPlanFrequencyValueIdsCollection = source.PaymentPlanFrequencyValueIdsCollection;
             this.PaymentReminderEmailTemplate = source.PaymentReminderEmailTemplate;
             this.PaymentReminderFromEmail = source.PaymentReminderFromEmail;
             this.PaymentReminderFromName = source.PaymentReminderFromName;

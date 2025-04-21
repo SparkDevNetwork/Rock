@@ -1,0 +1,242 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid
+          :definition="gridDefinitionBag"
+          :data="gridDataSource"
+          keyField="idKey"
+          title="Students"
+          itemTerm="Student"
+          :entityTypeGuid="EntityType.LearningParticipant"
+          :expectedRowCount="10"
+          :isCountMessageVisible="false"
+          stickyHeader
+          :markInactiveRows="true"
+          liveUpdates
+          :onSelectItem="onRowClicked"
+          :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
+        <SelectColumn />
+
+        <Column name="name"
+                title="Name"
+                field="name"
+                :filter="pickExistingValueFilter"
+                :filterValue="getPersonNameFilterValue"
+                :quickFilterValue="getPersonNameFilterValue"
+                :sortValue="getFormattedName"
+                visiblePriority="xs">
+            <template #format="{ row }">
+
+                <div class="d-flex flex-fill align-items-center">
+                    <div class="mr-2 flex-shrink-0"
+                         :style="{ 'width': '24px', 'height': '24px', 'border-radius': '12px', 'background-image': `url('${getPhotoUrl(row)}')`, 'background-size': 'cover' }">
+                    </div>
+                    <div class="flex-grow-1">
+                        <span>
+                            <strong>{{ getFormattedName(row) }}</strong>
+                            <span
+                                  v-if="row.note"
+                                  :ref="(el) => addTooltip(el as Element)"
+                                  data-toggle="tooltip"
+                                  data-placement="auto"
+                                  data-container="body"
+                                  data-html="true"
+                                  class="note-tooltip ml-2"
+                                  :data-original-title="row.note">
+                                <i class='fa fa-file-text-o text-info'></i>
+                            </span>
+                        </span>
+                        <div v-if="row.role" class="text-muted">{{ row.role }}</div>
+                    </div>
+                </div>
+            </template>
+        </Column>
+
+        <TextColumn
+                    name="currentAssignment"
+                    title="Current Assignment"
+                    field="currentAssignment"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="xs" />
+
+        <Column
+                v-if="showGrades"
+                name="currentGradePercent"
+                title="Current Grade"
+                field="currentGradePercent"
+                :filter="numberValueFilter"
+                :quickFilterValue="getGradeText"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                {{ getGradeText(row) }}
+            </template>
+        </Column>
+
+        <Column
+                v-if="hasAbsencesColumn"
+                name="absences"
+                title="Absences"
+                field="absences"
+                :filter="numberValueFilter"
+                visiblePriority="sm">
+            <template #format="{ row }">
+                <span :class="'label label-' + row.absencesLabelStyle">{{ row.absences }}</span>
+            </template>
+        </Column>
+
+        <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" :disableConfirmation="true" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { PropType, reactive, ref } from "vue";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { SelectColumn, Column, numberValueFilter, TextColumn, pickExistingValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const emit = defineEmits<{
+        (e: "rowClick", idKey: string, gridData: GridDataBag | undefined): void;
+        (e: "deleteClick", idKey: string, gridData: GridDataBag | undefined): void;
+        (e: "addClick"): void;
+    }>();
+
+    const props = defineProps({
+        gridDefinitionBag: {
+            type: Object as PropType<GridDefinitionBag>,
+            required: true
+        },
+        isAddEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: true,
+            default: false
+        },
+        isDeleteEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: true,
+            default: false
+        },
+        showGrades: {
+            type: Boolean as PropType<boolean>,
+            required: true,
+            default: false
+        }
+    });
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const gridDefinitionBag = ref(props.gridDefinitionBag);
+    const isAddEnabled = ref(props.isAddEnabled);
+    const isDeleteEnabled = ref(props.isDeleteEnabled);
+
+    // The grid data will include an absences column only if the class takes attendance.
+    const hasAbsencesColumn = ref(false);
+
+    // #endregion
+
+    // #region Functions
+
+    /** Adds the tooltip behavior to the element. */
+    function addTooltip(noteElement: Element | null): void {
+        if (noteElement) {
+            tooltip(noteElement);
+        }
+    }
+
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["name"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /** Contains the URL for the avatar. */
+    function getPhotoUrl(row: Record<string, unknown>): string {
+        if (!row["name"]) {
+            return "";
+        }
+
+        const value = row["name"] as PersonFieldBag;
+
+        if (!value || typeof value !== "object") {
+            return "";
+        }
+
+        return value.photoUrl ?? "";
+    }
+
+    /** Contains the full name in the correct format. */
+    function getFormattedName(row: Record<string, unknown>): string {
+        if (!row["name"]) {
+            return "";
+        }
+
+        const value = row["name"] as PersonFieldBag;
+
+        if (!value || typeof value !== "object") {
+            return "";
+        }
+
+        return `${value.nickName ?? ""} ${value.lastName ?? ""}`;
+    }
+
+    function getGradeText(row: Record<string, unknown>): string {
+        if (!row.currentGrade && !row.currentGradePercent) {
+            return "";
+        }
+
+        if (!row.currentGrade && row.currentGradePercent) {
+            return `${row.currentGradePercent}%`;
+        }
+
+        return `${row.currentGrade} (${row.currentGradePercent}%)`;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetStudents");
+
+        if (result.isSuccess && result.data) {
+            hasAbsencesColumn.value = result.data.rows?.find(r => r.key === "absences") != null;
+            gridData = reactive(result.data);
+
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load students grid data.");
+        }
+    }
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onRowClicked(key: string): void {
+        emit("rowClick", key, gridData);
+    }
+
+    function onAddItemClicked(): void {
+        emit("addClick");
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

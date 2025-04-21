@@ -233,6 +233,8 @@ namespace Rock.Rest
         [Authenticate, Secured]
         [ActionName( "GetByCampus" )]
         [EnableQuery]
+        [RockObsolete( "17.0" )]
+        [Obsolete( "The EntityCampusFilter feature is no longer used and will be removed in the future." )]
         public virtual IQueryable<T> GetByCampus( [FromUri] int campusId )
         {
             /*
@@ -434,7 +436,17 @@ namespace Rock.Rest
                                 try
                                 {
                                     var int32 = Convert.ToInt32( currentValue );
-                                    property.SetValue( targetModel, int32 );
+                                
+                                    if ( !propertyType.IsEnum )
+                                    {
+                                        property.SetValue( targetModel, int32 );
+                                    }
+                                    else
+                                    {
+                                        // Convert the int to the enum type per https://stackoverflow.com/a/54627581
+                                        var convertedValue = Enum.ToObject( propertyType, int32 );
+                                        property.SetValue( targetModel, convertedValue, null );
+                                    }
                                 }
                                 catch ( OverflowException )
                                 {
@@ -545,8 +557,7 @@ namespace Rock.Rest
              *
              */
 
-            var rockContext = new RockContext();
-            var dataView = new DataViewService( rockContext ).Get( id );
+            var dataView = DataViewCache.Get( id );
 
             ValidateDataView( dataView );
 
@@ -576,10 +587,7 @@ namespace Rock.Rest
              * See: https://app.asana.com/0/495431846745457/1201138340787294/f
              *
              */
-
-            var rockContext = new RockContext();
-
-            var dataView = new DataViewService( rockContext ).Get( dataViewId );
+            var dataView = DataViewCache.Get( dataViewId );
 
             ValidateDataView( dataView );
 
@@ -595,7 +603,7 @@ namespace Rock.Rest
         /// <param name="dataView">The data view.</param>
         /// <exception cref="HttpResponseException">
         /// </exception>
-        private void ValidateDataView( DataView dataView )
+        private void ValidateDataView( DataViewCache dataView )
         {
             if ( dataView == null )
             {

@@ -16,6 +16,8 @@
 //
 
 using System.Data.Entity;
+
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -44,6 +46,13 @@ namespace Rock.Model
             // Tell the CategoryCache that is has been modified since its ScheduleExclusions modified
             CategoryCache.UpdateCachedEntity( this.CategoryId, EntityState.Modified );
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => Category ?? base.ParentAuthority;
 
         #endregion
     }

@@ -63,12 +63,12 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Control Methods
@@ -149,6 +149,8 @@ namespace RockWeb.Blocks.Security
             var parms = new Dictionary<string, string>();
             var restUserId = e.RowKeyId;
             parms.Add( "RestUserId", restUserId.ToString() );
+            parms.Add( "autoEdit", "true" );
+            parms.Add( "returnUrl", Request.RawUrl );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 

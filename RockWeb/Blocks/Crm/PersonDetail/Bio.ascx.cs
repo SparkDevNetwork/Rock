@@ -340,14 +340,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 // dont' show if there isn't a person, or if it is a 'Nameless" person record type
                 if ( Person == null || Person.Id == 0 || Person.RecordTypeValueId == DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ) )
                 {
                     pnlContent.Visible = false;
+                    base.OnLoad( e );
                     return;
                 }
 
@@ -371,6 +370,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 ShowSocialMediaButtons();
                 ShowCustomContent();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -449,6 +450,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             var phoneType = DefinedValueCache.Get( phoneNumber.NumberTypeValueId ?? 0 ).Value;
             var messaging = phoneNumber.IsMessagingEnabled ? @"<i class=""fa fa-comment text-muted text-sm ml-1""></i>" : string.Empty;
+            var formattedOptOutDate = phoneNumber.MessagingOptedOutDateTime?.ToString( "MMMM d, yyyy" );
+            var optedOutTooltip = phoneNumber.MessagingOptedOutDateTime != null ? $@"{phoneNumber.Person.NickName} opted out from messaging on {formattedOptOutDate}" : $"{phoneNumber.Person.NickName} opted out from messaging.";
+            var optedOut = phoneNumber.IsMessagingOptedOut ? $@"<i class=""fa fa-ban text-danger text-sm ml-1"" data-toggle=""tooltip"" data-placement=""top"" title=""{optedOutTooltip}"" aria-label=""{optedOutTooltip}""></i>" : string.Empty;
             string formattedNumber = phoneNumber.IsUnlisted ? "Unlisted" : PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number, showCountryCode );
 
             var phoneMarkup = formattedNumber;
@@ -476,6 +480,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             <dt>
                                 {phoneMarkup}
                                 {messaging}
+                                {optedOut}
                             </dt>
                             <dd>{phoneType}</dd>
                         </dl>
@@ -997,7 +1002,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 if ( item.Value.IsActive && item.Value.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
-                    mediums.AddOrIgnore( item.Value.EntityType.FriendlyName, item.Value.EntityType.Id );
+                    mediums.TryAdd( item.Value.EntityType.FriendlyName, item.Value.EntityType.Id );
                 }
             }
 

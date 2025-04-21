@@ -81,7 +81,7 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="btnEdit" runat="server" data-shortcut-key="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
@@ -118,14 +118,12 @@
                                 SourceTypeName="Rock.Model.StepType, Rock"
                                 PropertyName="AllowMultiple"
                                 Label="Allow Multiple"
-                                Text="Yes"
                                 Help="Determines if a person can complete a step more than once." />
                             <Rock:RockCheckBox ID="cbHasDuration"
                                 runat="server"
                                 SourceTypeName="Rock.Model.StepType, Rock"
                                 PropertyName="HasEndDate"
                                 Label="Spans Time"
-                                Text="Yes"
                                 Help="Determines if the step occurs at a specific point or over a period of time." />
                             <Rock:RockCheckBox ID="cbShowBadgeCount"
                                 runat="server"
@@ -133,8 +131,7 @@
                                 PropertyName="ShowCountOnBadge"
                                 Label="Show Count on Badge"
                                 Help="Determines if the count of the number of times a step has been completed should be shown on the badge for the person profile page."
-                                Checked="false"
-                                Text="Yes" />
+                                Checked="false" />
                         </div>
                         <div class="col-md-6">
                             <Rock:ColorPicker ID="cpHighlight"
@@ -154,8 +151,7 @@
                                 PropertyName="IsDateRequired"
                                 Label="Is Date Required"
                                 Help="Determines if the date for the step is required."
-                                Checked="false"
-                                Text="Yes" />
+                                Checked="false" />
                         </div>
                         <div class="col-md-12">
                             <Rock:AttributeValuesContainer runat="server" ID="avcStepProgramAttributes" NumberOfColumns="3" />
@@ -213,8 +209,7 @@
                                     PropertyName="AllowManualEditing"
                                     Label="Allow Manual Edit"
                                     Help="Can the step be manually added or edited?"
-                                    Checked="false"
-                                    Text="Yes" />
+                                    Checked="false" />
                             </div>
                         </div>
                         <div class="row">
@@ -227,8 +222,8 @@
                     </Rock:PanelWidget>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
                 </div>
             </div>

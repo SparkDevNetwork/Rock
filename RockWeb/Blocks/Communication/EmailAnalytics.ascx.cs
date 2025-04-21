@@ -137,8 +137,6 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 var preferences = GetBlockPersonPreferences();
@@ -146,6 +144,8 @@ namespace RockWeb.Blocks.Communication
                 hfSelectedMonthsDateRange.Value = preferences.GetValue( UserPreferenceKey.SelectedMonthsDateRange );
                 ShowCharts();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus.Queue;
 using Rock.Logging;
 
@@ -51,6 +53,7 @@ namespace Rock.Bus.Message
     /// <summary>
     /// Cache Update Message
     /// </summary>
+    [RockLoggingCategory]
     public class CacheWasUpdatedMessage : ICacheWasUpdatedMessage
     {
         /// <summary>
@@ -165,7 +168,8 @@ namespace Rock.Bus.Message
 
             _ = RockMessageBus.PublishAsync<CacheEventQueue, CacheWasUpdatedMessage>( message );
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, $"Published Cache Update message. {message.ToDebugString()}." );
+            RockLogger.LoggerFactory.CreateLogger<CacheWasUpdatedMessage>()
+                .LogDebug( $"Published Cache Update message. {message.ToDebugString()}." );
         }
     }
 }

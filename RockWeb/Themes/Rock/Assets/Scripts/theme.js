@@ -143,7 +143,6 @@ function navMouseEvents() {
       }
     });
   } else {
-    console.log("remove mouseenter mouseleave");
     navbarSideLi.off(".sidenav");
   }
 }

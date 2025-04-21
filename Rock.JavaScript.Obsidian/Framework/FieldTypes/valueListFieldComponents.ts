@@ -15,31 +15,21 @@
 // </copyright>
 //
 import { computed, defineComponent, ref, watch } from "vue";
+import ValueList from "@Obsidian/Controls/valueList.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import RockFormField from "@Obsidian/Controls/rockFormField.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import { asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationPropertyKey, ConfigurationValueKey } from "./valueListField.partial";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 
-function parseModelValue(modelValue: string | undefined): { value: string }[] {
-    try {
-        return (JSON.parse(modelValue ?? "[]") as string[]).map(s => ({ value: s }));
-    }
-    catch {
-        return [];
-    }
-}
 
 export const EditComponent = defineComponent({
     name: "ValueListField.Edit",
 
     components: {
-        RockFormField,
-        DropDownList,
-        TextBox
+        ValueList
     },
 
     props: getFieldEditorProps(),
@@ -69,6 +59,7 @@ export const EditComponent = defineComponent({
         });
 
         const hasValues = computed((): boolean => valueOptions.value !== null && valueOptions.value.length > 0);
+        const allowHtml = computed((): boolean => asBooleanOrNull(props.configurationValues[ConfigurationValueKey.AllowHtml]) ?? false);
 
         const valuePlaceholder = computed((): string => {
             return props.configurationValues[ConfigurationValueKey.ValuePrompt] ?? "";
@@ -79,61 +70,29 @@ export const EditComponent = defineComponent({
         });
 
         watch(() => internalValues.value, () => {
-            emit("update:modelValue", JSON.stringify(internalValues.value.map(v => v.value)));
-        }, {
-            deep: true
-        });
+            emit("update:modelValue", JSON.stringify(internalValues.value));
+        }, { deep: true });
 
-        const onAddClick = (): void => {
-            let defaultValue = "";
-
-            if (hasValues.value) {
-                defaultValue = valueOptions.value[0].value ?? "";
+        function parseModelValue(modelValue: string | undefined): string[] {
+            try {
+                return (JSON.parse(modelValue ?? "[]") as string[]);
             }
-
-            internalValues.value.push({ value: defaultValue });
-        };
-
-        const onRemoveClick = (index: number): void => {
-            internalValues.value.splice(index, 1);
-        };
+            catch {
+                return [];
+            }
+        }
 
         return {
             internalValues,
             hasValues,
             options,
             valuePlaceholder,
-            onAddClick,
-            onRemoveClick
+            allowHtml
         };
     },
 
     template: `
-<RockFormField
-    :modelValue="internalValues"
-    formGroupClasses="value-list"
-    name="value-list">
-    <template #default="{uniqueId}">
-        <div class="control-wrapper">
-            <span :id="uniqueId" class="value-list">
-                <span class="value-list-rows">
-                    <div v-for="(value, valueIndex) in internalValues" class="controls controls-row form-control-group">
-                        <select v-if="hasValues" v-model="value.value" class="form-control input-width-lg">
-                            <option v-for="option in options" :value="option.value" :key="option.value">{{ option.text }}</option>
-                        </select>
-                        <input v-else v-model="value.value" class="key-value-value form-control input-width-lg" type="text" :placeholder="valuePlaceholder">
-
-                        <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a>
-                    </div>
-                </span>
-
-                <div class="control-actions">
-                    <a class="btn btn-action btn-square btn-xs" href="#" @click.prevent="onAddClick"><i class="fa fa-plus-circle"></i></a>
-                </div>
-            </span>
-        </div>
-    </template>
-</RockFormField>
+<ValueList v-model="internalValues" :customValues="options" :valuePrompt="valuePlaceholder" :allowHtml="allowHtml" />
 `
 });
 

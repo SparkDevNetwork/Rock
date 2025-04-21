@@ -3,6 +3,7 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
+          title="Reports"
           itemTerm="Report"
           :entityTypeGuid="EntityType.Report"
           stickyHeader

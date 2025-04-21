@@ -20,6 +20,8 @@ import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+import { resolveMergeFields } from "@Obsidian/Utility/lava";
 
 /**
  * The key names for the configuration properties available when editing the
@@ -38,7 +40,19 @@ export const enum ConfigurationValueKey {
     BinaryFileType = "binaryFileType",
 
     /** Determines if the rendered HTML should be clickable. */
-    FormatAsLink = "formatAsLink"
+    FormatAsLink = "formatAsLink",
+
+    /** The Lava template to use when rendering as an html img tag. */
+    ImageTagTemplate = "img_tag_template",
+
+    /** The width property to use when rendering as an html img tag. */
+    Width = "width",
+
+    /** The height property to use when rendering as an html img tag. */
+    Height = "height",
+
+    /** The image url to use when rendering as an html img tag. */
+    ImageUrl = "imageUrl"
 }
 
 // The edit component can be quite large, so load it only as needed.
@@ -70,7 +84,7 @@ export class ImageFieldType extends FieldTypeBase {
         }
     }
 
-    public override getHtmlValue(value: string, _configurationValues: Record<string, string>, isEscaped: boolean = false): string {
+    public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         try {
             const realValue = JSON.parse(value ?? "") as ListItemBag;
 
@@ -78,7 +92,33 @@ export class ImageFieldType extends FieldTypeBase {
                 return "";
             }
 
-            const html = `<img src="/GetImage.ashx?guid=${realValue.value}" class="img-responsive" />`;
+            const width = configurationValues[ConfigurationValueKey.Width];
+            const height = configurationValues[ConfigurationValueKey.Height];
+            let imageUrl = configurationValues[ConfigurationValueKey.ImageUrl] ?? `/GetImage.ashx?guid=${realValue.value}`;
+            let queryParms = "";
+
+            if (width) {
+                queryParms += `&width=${width}`;
+            }
+
+            if (height) {
+                queryParms += `&height=${height}`;
+            }
+
+            if (!this.hasQueryParams(imageUrl)) {
+                imageUrl += `?guid=${realValue.value}`;
+            }
+
+            const imageTagTemplate = configurationValues[ConfigurationValueKey.ImageTagTemplate];
+            const formatAsLink = asBoolean(configurationValues[ConfigurationValueKey.FormatAsLink]);
+            const mergeFields: Record<string, unknown> = {
+                "ImageUrl": imageUrl + queryParms,
+                "ImageGuid": realValue.value
+            };
+
+            const imageTag = resolveMergeFields(imageTagTemplate, mergeFields);
+
+            const html = formatAsLink ? `<a href='${imageUrl}'>${imageTag}</a>` : imageTag;
 
             if (isEscaped) {
                 escapeHtml(html);
@@ -95,29 +135,14 @@ export class ImageFieldType extends FieldTypeBase {
         }
     }
 
-    public override getCondensedHtmlValue(value: string, _configurationValues: Record<string, string>, isEscaped: boolean = false): string {
-        try {
-            const realValue = JSON.parse(value ?? "") as ListItemBag;
+    public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
+        const width = configurationValues[ConfigurationValueKey.Width];
 
-            if (!realValue.value) {
-                return "";
-            }
-
-            const html = `<img src="/GetImage.ashx?guid=${realValue.value}&width=120" class="img-responsive" />`;
-
-            if (isEscaped) {
-                return escapeHtml(html);
-            }
-
-            return html;
+        if (!width) {
+            configurationValues[ConfigurationValueKey.Width] = "120";
         }
-        catch {
-            if (isEscaped) {
-                escapeHtml(value ?? "");
-            }
 
-            return value ?? "";
-        }
+        return this.getHtmlValue(value, configurationValues, isEscaped);
     }
 
     public override getEditComponent(): Component {
@@ -131,4 +156,12 @@ export class ImageFieldType extends FieldTypeBase {
     public override getSupportedComparisonTypes(): ComparisonType {
         return ComparisonType.IsBlank | ComparisonType.IsNotBlank;
     }
+
+    private hasQueryParams(url: string): boolean {
+        const { protocol, host } = window.location;
+        const baseUrl = `${protocol}//${host}`;
+        const urlObj = new URL(url, baseUrl);
+        return urlObj.searchParams.toString() !== "";
+    }
 }
+

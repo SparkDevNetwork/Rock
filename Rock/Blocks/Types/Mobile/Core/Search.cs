@@ -73,7 +73,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Lava template for rendering each result item. The Lava merge field will be 'Item'.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CORE_SEARCH,
         IsRequired = true,
-        DefaultValue = "50FABA2A-B23C-46CD-A634-2F54BC1AE8C3",
+        DefaultValue = "351A873D-B82E-4700-99ED-5A6D5B3E4149",
         Key = AttributeKey.ResultItemTemplate,
         Order = 4 )]
 
@@ -128,69 +128,46 @@ namespace Rock.Blocks.Types.Mobile.Core
     {
         #region Constants
 
-        private const string defaultHistoricalItemTemplate = @"<StackLayout
-    Spacing=""0"">
-    <Frame StyleClass=""search-item-container"" 
-        Margin=""0""
-        BackgroundColor=""White""
-        HasShadow=""false""
-        HeightRequest=""40"">
-            <StackLayout Orientation=""Horizontal""
-                Spacing=""0""
-                VerticalOptions=""Center"">
-                <Rock:Image Source=""{{ PhotoUrl | Escape }}""
-                    StyleClass=""search-image""
-                    VerticalOptions=""Start""
-                    Aspect=""AspectFit""
-                    Margin=""0, 4, 8, 0"">
-                    <Rock:CircleTransformation />
-                </Rock:Image>
-                
-                <StackLayout Spacing=""0"" 
-                    HorizontalOptions=""FillAndExpand"">
-                    <StackLayout Orientation=""Horizontal""
-                    VerticalOptions=""Center"">
-                        <Label StyleClass=""search-item-name""
-                            Text=""{{ Name }}""
-                            LineBreakMode=""TailTruncation""
-                            HorizontalOptions=""FillAndExpand"" />
-                    </StackLayout>
-                    {% if Text == null or Text == """" %}
-                        {% assign Text = ""No Email"" %}
-                    {% endif %}
-                        <Label StyleClass=""search-item-text""
-                            Grid.Column=""0""
-                            MaxLines=""2""
-                            LineBreakMode=""TailTruncation"">{{ Text | XamlWrap }}</Label> 
-                </StackLayout>
+        private const string defaultHistoricalItemTemplate = @"<Grid RowDefinitions=""40""
+    ColumnDefinitions=""32, *, Auto""
+    StyleClass=""gap-column-8"">
+    <Rock:Avatar Source=""{{ PhotoUrl | Escape }}""
+        Grid.Row=""0""
+        Grid.Column=""0""
+        VerticalOptions=""Center""
+        ShowStroke=""false""
+        HorizontalOptions=""Center""
+        HeightRequest=""32""
+        WidthRequest=""32"" />
+    
+    <VerticalStackLayout Grid.Row=""0""
+        Grid.Column=""1""
+        VerticalOptions=""Center"">
+        <Label Text=""{{ Name | Escape }}""
+            StyleClass=""body, bold, text-interface-stronger""
+            MaxLines=""1""
+            VerticalTextAlignment=""Center""
+            LineBreakMode=""TailTruncation"" />
 
-                <Rock:Icon IconClass=""times""
-                    VerticalTextAlignment=""Center""
-                    Grid.Column=""1"" 
-                    StyleClass=""note-read-more-icon""
-                    HorizontalOptions=""End""
-                    Padding=""8, 0"">
-                    <Rock:Icon.GestureRecognizers>
-                        <TapGestureRecognizer
-                            Command=""{Binding DeleteFromSearchHistory}""
-                            CommandParameter=""{{ Guid }}"" />
-                    </Rock:Icon.GestureRecognizers>
-                </Rock:Icon>
-            </StackLayout>
-        </Frame>
-    <BoxView HorizontalOptions=""FillAndExpand""
-        HeightRequest=""1""
-        Color=""#cccccc"" />
-</StackLayout>";
+        {% if itemText != null and itemText != """" %}
+            <Label StyleClass=""footnote, text-interface-strong"" 
+                MaxLines=""1"" 
+                LineBreakMode=""TailTruncation"">{{ Text |  XamlWrap  }}</Label>
+        {% endif %}
+    </VerticalStackLayout>
+
+    <Rock:Icon IconClass=""chevron-right""
+        VerticalTextAlignment=""Center""
+        Grid.Column=""2"" 
+        StyleClass=""text-interface-medium, body"" />
+</Grid>";
 
         /// <summary>
         /// The default attribute values.
         /// </summary>
         private static class DefaultAttributeValue
         {
-            public const string ResultsSeparatorContent = @"<StackLayout StyleClass=""search-result-header"">
-    <Rock:Divider />
-</StackLayout>";
+            public const string ResultsSeparatorContent = @"";
         }
 
         /// <summary>

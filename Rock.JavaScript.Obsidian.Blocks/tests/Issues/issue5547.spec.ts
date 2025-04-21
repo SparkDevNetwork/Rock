@@ -1,10 +1,11 @@
-import RegistrationEntry from "../../src/Event/registrationEntry";
-import { RegistrationEntryBlockViewModel } from "../../src/Event/RegistrationEntry/types.partial";
+import RegistrationEntry from "../../src/Event/registrationEntry.obs";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { mockBlockActions, mountBlock } from "../blocks";
 import { HttpResult } from "@Obsidian/Types/Utility/http";
 import { Guid } from "@Obsidian/Types";
+import { waitFor } from "../utils";
 
-function getConfigurationValues(): RegistrationEntryBlockViewModel {
+function getConfigurationValues(): RegistrationEntryInitializationBox {
     // This is weird, but we have to do this because the block actually
     // modifies the configuration values which is non-standard.
     return JSON.parse(JSON.stringify(configurationValues));
@@ -76,9 +77,14 @@ describe("Issue 5547", () => {
         expect(noConditionalField).toBeDefined();
         expect(noConditionalField.isVisible()).toBe(true);
 
-        await registrant.findAll(".toggle-container a")
-            .filter(node => node.text() === "Yes")[0]
-            .trigger("click");
+        const yesButton = await waitFor(() => {
+            const yesButton = registrant.findAll(".toggle-container a")
+                .filter(node => node.text() === "Yes")[0];
+            expect(yesButton).toBeDefined();
+            return yesButton;
+        });
+
+        await yesButton.trigger("click");
 
         const yesConditionalField = registrant.findAll("label")
             .filter(node => node.text().startsWith("If yes, which flavor do you like best?"))[0];
@@ -146,7 +152,7 @@ describe("Issue 5547", () => {
 /**
  * Configuration values returned by the block to replicate this issue.
  */
-const configurationValues: RegistrationEntryBlockViewModel = {
+const configurationValues: RegistrationEntryInitializationBox = {
     "currentPersonFamilyGuid": "8611f5e6-c63f-4c2a-ae5c-859cdb350cd0",
     "allowRegistrationUpdates": true,
     "timeoutMinutes": null,
@@ -177,7 +183,6 @@ const configurationValues: RegistrationEntryBlockViewModel = {
         "discountAmount": 0.0,
         "discountPercentage": 0.0,
         "previouslyPaid": 0.0,
-        "savedAccountGuid": null,
         "discountMaxRegistrants": 0
     },
     "isUnauthorized": false,
@@ -199,7 +204,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
                     "preHtml": "<div class='row'><div class='col-md-6'>",
                     "postHtml": "    </div>",
                     "showOnWaitList": true,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 },
                 {
                     "guid": "88e99b84-edd9-41e6-b37d-c5a612984f23",
@@ -212,7 +218,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
                     "preHtml": "    <div class='col-md-6'>",
                     "postHtml": "    </div></div>",
                     "showOnWaitList": true,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 },
                 {
                     "guid": "ec86a84a-b558-409e-879a-5bac0033963d",
@@ -241,7 +248,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
                     "preHtml": "",
                     "postHtml": "",
                     "showOnWaitList": false,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 },
                 {
                     "guid": "3db902c3-4c74-4059-9563-d97bf4017fd7",
@@ -278,7 +286,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
                     "preHtml": "",
                     "postHtml": "",
                     "showOnWaitList": false,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 },
                 {
                     "guid": "6bad5189-e622-4a69-bec1-7217a1998f8d",
@@ -315,7 +324,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
                     "preHtml": "",
                     "postHtml": "",
                     "showOnWaitList": false,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 }
             ]
         }
@@ -555,5 +565,9 @@ const configurationValues: RegistrationEntryBlockViewModel = {
             "disabled": null
         }
     ],
-    "showSmsOptIn": false
+    "hideProgressBar": false,
+    "showSmsOptIn": false,
+    "isPaymentPlanAllowed": false,
+    "isPaymentPlanConfigured": false,
+    "disableCaptchaSupport": true
 };

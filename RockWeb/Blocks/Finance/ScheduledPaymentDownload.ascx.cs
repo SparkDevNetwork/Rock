@@ -64,8 +64,6 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // Set timeout for up to 15 minutes (just like installer)
             Server.ScriptTimeout = 900;
             ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 900;
@@ -88,6 +86,8 @@ namespace RockWeb.Blocks.Finance
                     drpDates.LowerValue = drpDates.UpperValue.Value.Subtract( days );
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

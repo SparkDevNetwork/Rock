@@ -85,13 +85,13 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindFilter();
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Control Methods
@@ -212,13 +212,14 @@ namespace RockWeb.Blocks.Finance
 
             var businessName = string.Empty;
             bool viaSearch = false;
+            var searchTerm = PageParameter( "SearchTerm" );
 
             // Use the name passed in the page parameter if given
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "SearchTerm" ) ) )
+            if ( !string.IsNullOrWhiteSpace( searchTerm ) )
             {
                 viaSearch = true;
                 gfBusinessFilter.Visible = false;
-                businessName = PageParameter( "SearchTerm" );
+                businessName = !searchTerm.IsSingleSpecialCharacter() ? searchTerm : businessName;
             }
             else
             {
@@ -226,13 +227,13 @@ namespace RockWeb.Blocks.Finance
                 businessName = gfBusinessFilter.GetFilterPreference( "Business Name" );
             }
 
-            if ( !string.IsNullOrWhiteSpace( businessName ) )
-            {
-                businessQueryable = businessQueryable.Where( a => a.LastName.Contains( businessName ) );
-            }
-
             if ( !viaSearch )
             {
+                if ( !string.IsNullOrWhiteSpace( businessName ) )
+                {
+                    businessQueryable = businessQueryable.Where( a => a.LastName.Contains( businessName ) );
+                }
+
                 var activeRecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                 string activeFilterValue = gfBusinessFilter.GetFilterPreference( "Active Status" );
                 if ( activeFilterValue == "inactive" )
@@ -243,6 +244,10 @@ namespace RockWeb.Blocks.Finance
                 {
                     businessQueryable = businessQueryable.Where( b => b.RecordStatusValueId == activeRecordStatusValueId );
                 }
+            }
+            else
+            {
+                businessQueryable = searchTerm.IsSingleSpecialCharacter() ? Enumerable.Empty<Person>().AsQueryable() : businessQueryable.Where( a => a.LastName.Contains( businessName ) );
             }
 
             bool showBusinessDetail = false;

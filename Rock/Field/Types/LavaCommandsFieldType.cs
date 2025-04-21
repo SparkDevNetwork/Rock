@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -31,7 +32,8 @@ namespace Rock.Field.Types
     /// Stored as a comma-delimited list of LavaCommand names
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LAVA_COMMANDS )]
     public class LavaCommandsFieldType : FieldType
     {
@@ -42,6 +44,35 @@ namespace Rock.Field.Types
         #endregion Configuration
 
         #region Edit Control
+
+        /// <inheritdoc />
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var splitValues = privateValue.SplitDelimitedValues( ",", StringSplitOptions.RemoveEmptyEntries );
+
+            if ( splitValues.Length > 0 )
+            {
+                var values = splitValues.Select( lc => new ListItemBag() { Text = lc.SplitCase(), Value = lc } );
+                return values.ToCamelCaseJson( false, true );
+            }
+
+            return base.GetPublicEditValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var jsonValues = publicValue.FromJsonOrNull<List<ListItemBag>>();
+
+            if ( jsonValues != null )
+            {
+                var values = jsonValues.Select( li => li.Value );
+                return values.JoinStrings( "," );
+            }
+
+            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
+
 
         #endregion
 

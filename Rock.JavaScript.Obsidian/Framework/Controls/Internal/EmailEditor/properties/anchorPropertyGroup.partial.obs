@@ -1,0 +1,154 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div class="col-sm-12">
+            <DropDownList v-model="linkType"
+                          :items="linkTypeItems"
+                          label="Link Type"
+                          :showBlankItem="false"
+                          @update:modelValue="onLinkTypeUpdated" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <RockForm v-model:submit="submit"
+                      @submit="onFormSubmitted">
+                <EmailBox v-if="linkType === 'email'"
+                          v-model="email"
+                          label="Link"
+                          @blur="onHrefBlurred" />
+
+                <PhoneNumberBox v-if="linkType === 'tel'"
+                                v-model="tel"
+                                label="Link"
+                                @blur="onHrefBlurred" />
+
+                <UrlLinkBox v-if="linkType === 'url'"
+                            v-model="url"
+                            label="Link"
+                            @blur="onHrefBlurred" />
+            </RockForm>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { get } from "../utils.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    type LinkType = "url" | "email" | "tel";
+
+    const linkTypeItems: ListItemBag[] = [
+        {
+            value: get<LinkType>("url"),
+            text: "URL"
+        },
+        {
+            value: get<LinkType>("tel"),
+            text: "Tel"
+        },
+        {
+            value: get<LinkType>("email"),
+            text: "Email"
+        },
+    ];
+
+    // #region Values
+
+    const submit = ref<boolean>(false);
+    const initialHref = props.element.getAttribute("href") ?? "";
+    const linkType = ref<LinkType>(getLinkTypeFromHref(initialHref));
+    const email = ref<string>(linkType.value === "email" ? initialHref.startsWith("mailto:") ? initialHref.substring(7) : initialHref : "");
+    const tel = ref<string>(linkType.value === "tel" ? initialHref.startsWith("tel:") ? initialHref.substring(4) : initialHref : "");
+    const url = ref<string>(linkType.value === "url" ? initialHref.startsWith("http") ? initialHref : `https://${initialHref}` : "https://");
+
+    // #endregion Values
+
+    // #region Functions
+
+    function getLinkTypeFromHref(href: string): LinkType {
+        if (href.startsWith("mailto:")) {
+            return "email";
+        }
+        else if (href.startsWith("tel:")) {
+            return "tel";
+        }
+        else {
+            return "url";
+        }
+    }
+
+    function sanitizePhoneNumber(phone: string): string {
+        return phone.replace(/(?!^\+)[^\d]/g, "");
+    }
+
+    function buildHrefValue(type: LinkType, emailAddress: string, phoneNumber: string, url: string): string {
+        if (type === "email") {
+            return `mailto:${emailAddress}`;
+        }
+        else if (type === "tel") {
+            return `tel:${sanitizePhoneNumber(phoneNumber)}`;
+        }
+        else {
+            if (url.startsWith("http")) {
+                return url;
+            }
+            else {
+                return `https://${url}`;
+            }
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onLinkTypeUpdated(): void {
+        // When the link type changes, clear all fields.
+        email.value = "";
+        tel.value = "";
+        url.value = "https://";
+
+        // Also clear the href attribute on the element.
+        const href = buildHrefValue(linkType.value, email.value, tel.value, url.value);
+        props.element.setAttribute("href", href);
+    }
+
+    function onHrefBlurred(): void {
+        // Trigger the form submission.
+        submit.value = true;
+    }
+
+    function onFormSubmitted(): void {
+        const href = buildHrefValue(linkType.value, email.value, tel.value, url.value);
+        props.element.setAttribute("href", href);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.element, () => {
+        const href = props.element.getAttribute("href") ?? "";
+        linkType.value = getLinkTypeFromHref(href);
+        email.value = linkType.value === "email" ? href.startsWith("mailto:") ? href.substring(7) : href : "";
+        tel.value = linkType.value === "tel" ? href.startsWith("tel:") ? href.substring(4) : href : "";
+        url.value = linkType.value === "url" ? href.startsWith("http") ? href : `https://${href}` : "https://";
+    });
+
+    // #endregion
+</script>

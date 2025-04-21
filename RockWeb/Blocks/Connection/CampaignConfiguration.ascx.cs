@@ -91,8 +91,6 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 var connectionCampaignGuid = PageParameter( PageParameterKey.ConnectionCampaignGuid ).AsGuidOrNull();
@@ -106,6 +104,8 @@ namespace RockWeb.Blocks.Connection
                     pnlDetail.Visible = false;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

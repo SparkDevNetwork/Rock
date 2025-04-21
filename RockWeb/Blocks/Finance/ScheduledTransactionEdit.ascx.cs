@@ -106,6 +106,13 @@ achieve our mission.  We are so grateful for your commitment.
         order: 13,
         key: AttributeKey.WorkflowType )]
 
+    [BooleanField(
+        "Enable End Date",
+        Description = "When enabled, this setting allows an individual to specify an optional end date for their recurring scheduled gifts.",
+        Key = AttributeKey.EnableEndDate,
+        DefaultBooleanValue = false,
+        Order = 14 )]
+
     #endregion
 
     [Rock.SystemGuid.BlockTypeGuid( "5171C4E5-7698-453E-9CC8-088D362296DE" )]
@@ -130,6 +137,11 @@ achieve our mission.  We are so grateful for your commitment.
             /// The impersonator can see saved accounts
             /// </summary>
             public const string ImpersonatorCanSeeSavedAccounts = "ImpersonatorCanSeeSavedAccounts";
+
+            /// <summary>
+            /// Determines whether End Date should be displayed.
+            /// </summary>
+            public const string EnableEndDate = "EnableEndDate";
         }
 
         private static class PageParameterKey
@@ -255,6 +267,11 @@ achieve our mission.  We are so grateful for your commitment.
         /// </summary>
         protected string ScheduleId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the End Date of a scheduled transaction.
+        /// </summary>
+        protected DateTime? EndDate { get; set; }
+
         #endregion
 
         #region base control methods
@@ -269,6 +286,7 @@ achieve our mission.  We are so grateful for your commitment.
             ViewState["TransactionCode"] = TransactionCode;
             ViewState["ScheduleId"] = ScheduleId;
             ViewState["ForeignCurrencyCodeDefinedValueId"] = ForeignCurrencyCodeDefinedValueId;
+            ViewState["EndDate"] = EndDate;
             return base.SaveViewState();
         }
 
@@ -284,6 +302,7 @@ achieve our mission.  We are so grateful for your commitment.
             TransactionCode = ViewState["TransactionCode"] as string ?? string.Empty;
             ScheduleId = ViewState["ScheduleId"] as string ?? string.Empty;
             ForeignCurrencyCodeDefinedValueId = ( int ) ViewState["ForeignCurrencyCodeDefinedValueId"];
+            EndDate = ViewState["EndDate"] as DateTime?;
         }
 
         /// <summary>
@@ -316,7 +335,18 @@ achieve our mission.  We are so grateful for your commitment.
                     SetSavedAccounts( scheduledTransaction );
 
                     dtpStartDate.SelectedDate = scheduledTransaction.NextPaymentDate;
+                    EndDate = scheduledTransaction.EndDate;
+                    dtpEndDate.SelectedDate = scheduledTransaction.EndDate;
                     tbComments.Text = scheduledTransaction.Summary;
+
+                    int oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() ) ?? 0;
+                    int selectedScheduleFrequencyId = btnFrequency.SelectedValue.AsInteger();
+                    bool isOneTime = selectedScheduleFrequencyId == oneTimeFrequencyId;
+
+                    if ( !GetAttributeValue( AttributeKey.EnableEndDate ).AsBoolean() || isOneTime )
+                    {
+                        dtpEndDate.Visible = false;
+                    }
 
                     dvpForeignCurrencyCode.SelectedDefinedValueId = scheduledTransaction.ForeignCurrencyCodeValueId;
                     dvpForeignCurrencyCode.Visible = !new RockCurrencyCodeInfo( scheduledTransaction.ForeignCurrencyCodeValueId ).IsOrganizationCurrency;
@@ -362,8 +392,6 @@ achieve our mission.  We are so grateful for your commitment.
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // Hide the error box on every postback
             nbMessage.Visible = false;
             pnlDupWarning.Visible = false;
@@ -372,6 +400,7 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 SetPage( 0 );
                 ShowMessage( NotificationBoxType.Danger, "Invalid Transaction", "The transaction you've selected either does not exist or is not valid." );
+                base.OnLoad( e );
                 return;
             }
 
@@ -390,6 +419,7 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 SetPage( 0 );
                 ShowMessage( NotificationBoxType.Danger, "Configuration", "This page is not configured to allow edits for the payment gateway associated with the selected transaction." );
+                base.OnLoad( e );
                 return;
             }
 
@@ -464,6 +494,8 @@ achieve our mission.  We are so grateful for your commitment.
                 // Get the list of accounts that can be used
                 BindAccounts();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -986,6 +1018,11 @@ achieve our mission.  We are so grateful for your commitment.
                 errorMessages.Add( "Make sure the Next Gift date is in the future (after today)" );
             }
 
+            if ( dtpEndDate.SelectedDate < dtpStartDate.SelectedDate )
+            {
+                errorMessages.Add( "Make sure the End Date is not before the Next Gift date" );
+            }
+
             if ( hfPaymentTab.Value == "ACH" )
             {
                 // Validate ach options
@@ -1106,8 +1143,16 @@ achieve our mission.  We are so grateful for your commitment.
             rptAccountListConfirmation.DataBind();
 
             string nextDate = dtpStartDate.SelectedDate.HasValue ? dtpStartDate.SelectedDate.Value.ToShortDateString() : "?";
+            string endDate = dtpEndDate.SelectedDate.HasValue ? dtpEndDate.SelectedDate.Value.ToShortDateString() : "";
             string frequency = DefinedValueCache.Get( btnFrequency.SelectedValueAsInt() ?? 0 ).Description;
-            tdWhen.Description = frequency + " starting on " + nextDate;
+            if ( dtpEndDate.SelectedDate.HasValue )
+            {
+                tdWhen.Description = frequency + " starting on " + nextDate + " and ending on " + endDate;
+            }
+            else
+            {
+                tdWhen.Description = frequency + " starting on " + nextDate;
+            }
 
             return true;
         }
@@ -1171,6 +1216,15 @@ achieve our mission.  We are so grateful for your commitment.
                 // ProcessPaymentInfo ensures that dtpStartDate.SelectedDate has a value and is after today
                 scheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
                 scheduledTransaction.NextPaymentDate = Gateway.CalculateNextPaymentDate( scheduledTransaction, null );
+
+                if ( dtpEndDate.SelectedDate.HasValue )
+                {
+                    scheduledTransaction.EndDate = dtpEndDate.SelectedDate.Value;
+                }
+                else
+                {
+                    scheduledTransaction.EndDate = null;
+                }
 
                 scheduledTransaction.ForeignCurrencyCodeValueId = dvpForeignCurrencyCode.SelectedDefinedValueId;
 
@@ -1789,6 +1843,33 @@ achieve our mission.  We are so grateful for your commitment.
             ForeignCurrencyCodeDefinedValueId = dvpForeignCurrencyCode.SelectedDefinedValueId ?? 0;
             BindAccounts();
             lblTotalAmount.Text = SelectedAccounts.Sum( f => f.Amount ).FormatAsCurrency( ForeignCurrencyCodeDefinedValueId );
+        }
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the btnFrequency control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
+        protected void btnFrequency_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            int oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() ) ?? 0;
+            int selectedScheduleFrequencyId = btnFrequency.SelectedValue.AsInteger();
+            bool isOneTime = selectedScheduleFrequencyId == oneTimeFrequencyId;
+
+            if ( isOneTime )
+            {
+                EndDate = dtpEndDate.SelectedDate;
+                dtpEndDate.SelectedDate = null;
+                dtpEndDate.Visible = false;
+            }
+            else if ( GetAttributeValue( AttributeKey.EnableEndDate ).AsBoolean() )
+            {
+                if (!dtpEndDate.SelectedDate.HasValue)
+                {
+                    dtpEndDate.SelectedDate = EndDate;
+                }
+                dtpEndDate.Visible = true;
+            }
         }
     }
 }

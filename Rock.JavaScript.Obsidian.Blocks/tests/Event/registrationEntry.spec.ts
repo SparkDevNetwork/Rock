@@ -1,17 +1,17 @@
-import RegistrationEntry from "../../src/Event/registrationEntry";
-import { RegistrationEntryBlockViewModel } from "../../src/Event/RegistrationEntry/types.partial";
+import RegistrationEntry from "../../src/Event/registrationEntry.obs";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { mountBlock } from "../blocks";
 
 describe("RegistrationEntry", () => {
     it("Displays default not found message when no configuration values sent", () => {
-        const instance = mountBlock(RegistrationEntry, null);
+        const instance = mountBlock(RegistrationEntry, {});
 
         expect(instance.find(".alert-warning > strong").text()).toBe("Sorry");
         expect(instance.find(".alert-warning > p").text()).toBe("The selected registration could not be found or is no longer active.");
     });
 
     it("Displays custom not found message", () => {
-        const configuration: Partial<RegistrationEntryBlockViewModel> = {
+        const configuration: Partial<RegistrationEntryInitializationBox> = {
             registrationInstanceNotFoundMessage: "Custom Not Found"
         };
 

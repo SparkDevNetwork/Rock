@@ -1,0 +1,67 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage"
+        v-text="errorMessage"
+        alertType="warning" />
+    <div class="d-flex flex-wrap gap-x-5">
+        <ImageEditor
+            v-for="(person, index) in personPhotoList"
+            :key="index"
+            v-model="person.profilePhoto"
+            :binaryFileTypeGuid="BinaryFiletype.PersonImage"
+            :disabled="person.isStaffMemberDisabled || isLoading"
+            :label="person.fullName ?? ''"
+            :noPictureUrl="person.noPhotoUrl ?? '/Assets/Images/person-no-photo-unknown.svg'"
+            :hideDeleteButton="true"
+            :buttonCssClass="person.isStaffMemberDisabled ? 'btn btn-default btn-sm margin-t-sm text-muted' : 'btn btn-primary btn-sm margin-t-sm'"
+            :buttonIconCssClass="person.isStaffMemberDisabled ? 'fa fa-ban text-muted' : 'fa fa-pencil'"
+            :buttonText="person.isStaffMemberDisabled ? 'Staff Member' : 'Select Photo'"
+            @update:modelValue="updatePersonProfilePhoto(person.idKey ?? null, person.profilePhoto?.value ?? null)" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
+    import { PhotoUploadInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/PhotoUpload/photoUploadInitializationBox";
+    import { PersonPhotoBag } from "@Obsidian/ViewModels/Blocks/Crm/PhotoUpload/personPhotoBag";
+    import { Guid } from "@Obsidian/Types";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    // #region Values
+
+    const config = useConfigurationValues<PhotoUploadInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const personPhotoList = ref<PersonPhotoBag[]>(config.personPhotoList ?? []);
+    const isLoading = ref<boolean>(false);
+    const errorMessage = ref<string | null>("");
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Uploads a photo to a person's profile.
+     *
+     * @param personIdKey The Id Key of the person that the photo is being uploaded for.
+     * @param photoGuid The Guid that is attached to the uploaded photo.
+     */
+    async function updatePersonProfilePhoto(personIdKey: string | null, photoGuid: Guid | null): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("UpdatePersonProfilePhoto", {
+            personIdKey,
+            photoGuid
+        });
+
+        if (result.isError) {
+            errorMessage.value = result.errorMessage;
+        }
+    }
+
+    // #endregion
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

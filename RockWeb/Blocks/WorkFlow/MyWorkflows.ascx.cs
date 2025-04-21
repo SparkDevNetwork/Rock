@@ -131,8 +131,6 @@ namespace RockWeb.Blocks.WorkFlow
         /// </remarks>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             RockPage.AddScriptLink( "~/Scripts/jquery.visible.min.js" );
 
             if ( !Page.IsPostBack )
@@ -158,6 +156,8 @@ namespace RockWeb.Blocks.WorkFlow
 
                 GetData();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

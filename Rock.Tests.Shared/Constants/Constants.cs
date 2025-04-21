@@ -37,12 +37,17 @@ namespace Rock.Tests.Shared
 
     public static class TestFeatures
     {
+        // Tests having this property relate to AI completions.
+        public const string AICompletions = "AI Completions";
+
         // Tests having this property relate to data setup for integration tests.
         public const string DataSetup = "Data Setup (Basic)";
         public const string DataSetupBulk = "Data Setup (Bulk)";
 
         // Tests having this property relate to data maintenance that may be needed during the development process.
-        public const string DataMaintenance = "Data Maintenance";
+        public const string LocalDbUtilities = "Utility.Actions.LocalDb";
+
+        public const string TestDataUtilities = "Utility.Actions.TestData";
 
         // Tests having this property relate to the Reporting feature of Rock.
         public const string Reporting = "Reporting";
@@ -55,6 +60,7 @@ namespace Rock.Tests.Shared
         public const string Personalization = "Personalization";
 
         public const string Lava = "Core.Lava";
+        public const string DataModelValidation = "Core.Model.Validation";
     }
 
     public static class TestPurposes
@@ -63,6 +69,11 @@ namespace Rock.Tests.Shared
         public const string Performance = "Performance";
         // Tests having this purpose are intended to validate the function being tested.
         public const string Validation = "Validation";
+    }
+
+    public static class TestConfigurationKeys
+    {
+        public const string UtilityTestActionsEnabled = "UtilityTestActionsEnabled";
     }
 
 }

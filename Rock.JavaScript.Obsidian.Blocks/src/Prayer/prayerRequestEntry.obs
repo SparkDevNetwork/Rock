@@ -12,17 +12,17 @@
                     <fieldset>
 
                         <div v-if="config.isRequesterInfoShown" class="prayer-requester">
-                            <TextBox v-model="firstName"
-                                     autocomplete="given-name"
-                                     :disabled="isSaving || isNavigating"
-                                     label="First Name"
-                                     rules="required" />
+                            <FirstNameTextBox v-model="firstName"
+                                              autocomplete="given-name"
+                                              :disabled="isSaving || isNavigating"
+                                              label="First Name"
+                                              :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
 
                             <TextBox v-model="lastName"
                                      autocomplete="family-name"
                                      :disabled="isSaving || isNavigating"
                                      label="Last Name"
-                                     :rules="config.isLastNameRequired ? 'required' : ''" />
+                                     :rules="config.isLastNameRequired ? ['required', 'nospecialcharacters', 'noemojisorspecialfonts'] : ['nospecialcharacters', 'noemojisorspecialfonts']" />
 
                             <EmailBox v-model="email"
                                       autocomplete="email"
@@ -41,6 +41,8 @@
                                           :disabled="isSaving || isNavigating"
                                           :includeInactive="false"
                                           label="Campus"
+                                          :campusStatusFilter="campusStatusFilter"
+                                          :campusTypeFilter="campusTypeFilter"
                                           :rules="config.isCampusRequired ? 'required' : ''" />
                         </div>
 
@@ -73,25 +75,22 @@
                                   v-model="internalIsUrgent"
                                   :disabled="isSaving || isNavigating"
                                   help="If 'Yes' is checked, the request will be flagged as urgent in need of attention quickly."
-                                  label="Urgent?"
-                                  text="Yes" />
+                                  label="Urgent?" />
 
                         <CheckBox v-if="config.isAllowCommentsShown"
                                   v-model="internalAllowComments"
                                   :disabled="isSaving || isNavigating"
                                   help="If 'Yes' is checked, the prayer team can offer encouraging comments on the request."
-                                  label="Allow Encouraging Comments?"
-                                  text="Yes" />
+                                  label="Allow Encouraging Comments?" />
 
                         <CheckBox v-if="config.isIsPublicShown"
                                   v-model="internalIsPublic"
                                   :disabled="isSaving || isNavigating"
                                   help="If 'Yes' is checked, you give permission to show the request on the public website."
-                                  label="Allow Publication?"
-                                  text="Yes" />
+                                  label="Allow Publication?" />
                     </fieldset>
 
-                    <RockButton accesskey="s"
+                    <RockButton shortcutKey="s"
                                 btnType="primary"
                                 :disabled="isSaving || isNavigating"
                                 type="submit">{{ saveButtonText }}</RockButton>
@@ -121,6 +120,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { PrayerRequestEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestEntry/prayerRequestEntrySaveResponseBag";
     import { PrayerRequestEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestEntry/prayerRequestEntrySaveRequestBag";
@@ -157,6 +157,8 @@
     const isNavigating = ref<boolean>(false);
     const attributes = ref<Record<string, PublicAttributeBag> | null>(config.attributes || null);
     const attributeValues = ref<Record<string, string>>({});
+    const campusTypeFilter = ref<string[] | undefined>(config.campusTypeFilter ?? undefined);
+    const campusStatusFilter = ref<string[] | undefined>(config.campusStatusFilter ?? undefined);
 
     //#endregion
 

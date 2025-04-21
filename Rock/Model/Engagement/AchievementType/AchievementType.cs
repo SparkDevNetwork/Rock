@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "AchievementType" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ACHIEVEMENT_TYPE )]
     public partial class AchievementType : Model<AchievementType>, IHasActiveFlag, ICacheable
     {
@@ -79,6 +80,7 @@ namespace Rock.Model
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int ComponentEntityTypeId { get; set; }
 
         /// <summary>
@@ -204,6 +206,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? AlternateImageBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the target count of things that must be done for this
+        /// achievement to be considered accomplished.
+        /// </summary>
+        /// <value>
+        /// The number of things that must be accomplished to complete this achievement or <c>null</c> if not known.
+        /// </value>
+        public int? TargetCount { get; set; }
 
         #endregion Entity Properties
 

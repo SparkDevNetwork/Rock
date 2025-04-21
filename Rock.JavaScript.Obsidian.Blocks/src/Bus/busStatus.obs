@@ -1,0 +1,87 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel type="block">
+        <template #title>
+            <i class="fa fa-bus"></i> Message Bus
+        </template>
+        <template #subheaderLeft>
+            <span :class="`label label-${activeStatus.type}`">
+                {{ activeStatus.text }}
+            </span>
+        </template>
+
+        <ValueDetailList :modelValue="detailItems" />
+
+        <div class="actions">
+            <RockButton @click="onConfigureTransports">Configure Transports</RockButton>
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { ValueDetailListItem, } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { BusStatusBag } from "@Obsidian/ViewModels/Blocks/Bus/BusStatus/busStatusBag";
+    import { BusStatusOptionsBag } from "@Obsidian/ViewModels/Blocks/Bus/BusStatus/busStatusOptionsBag";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { NavigationUrlKey } from "./BusStatus/types.partial";
+
+    const config = useConfigurationValues<DetailBlockBox<BusStatusBag, BusStatusOptionsBag>>();
+
+    // #region Computed Values
+
+    const activeStatus = computed(() => ({
+        text: config.entity?.isReady ? "Active" : "Inactive",
+        type: config.entity?.isReady ? "success" : "danger"
+    }));
+
+    const detailItems = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+        const busStatus = config.entity;
+
+        if (!busStatus) {
+            return valueBuilder.build();
+        }
+
+        if (busStatus?.transportName) {
+            valueBuilder.addTextValue("Transport", busStatus?.transportName);
+        }
+        if (busStatus?.nodeName) {
+            valueBuilder.addTextValue("NodeName", busStatus?.nodeName);
+        }
+        if (busStatus?.messagesPerMinute != null) {
+            valueBuilder.addTextValue("Messages Per Minute", busStatus?.messagesPerMinute?.toString() ?? "");
+        }
+        if (busStatus?.messagesPerHour != null) {
+            valueBuilder.addTextValue("Messages Per Hour", busStatus?.messagesPerHour?.toString() ?? "");
+        }
+        if (busStatus?.messagesPerDay != null) {
+            valueBuilder.addTextValue("Messages Per Day", busStatus?.messagesPerDay?.toString() ?? "");
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Navigates to the transport select page.
+     *
+     * @returns {void}
+     */
+    function onConfigureTransports() {
+        const url = config.navigationUrls?.[NavigationUrlKey.TransportSelectPage];
+        if (url) {
+            window.location.href = url;
+        }
+    }
+
+    // #endregion
+</script>

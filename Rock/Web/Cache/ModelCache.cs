@@ -56,6 +56,8 @@ namespace Rock.Web.Cache
             {
                 CreatedDateTime = modelModel.CreatedDateTime;
                 ModifiedDateTime = modelModel.ModifiedDateTime;
+                CreatedByPersonAliasId = modelModel.CreatedByPersonAliasId;
+                ModifiedByPersonAliasId = modelModel.ModifiedByPersonAliasId;
             }
 
             // If this model implements ISecured, set up those properties
@@ -121,6 +123,24 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public virtual DateTime? ModifiedDateTime { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets the created by person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The created by person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? CreatedByPersonAliasId { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets the modified by person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The modified by person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? ModifiedByPersonAliasId { get; protected set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to

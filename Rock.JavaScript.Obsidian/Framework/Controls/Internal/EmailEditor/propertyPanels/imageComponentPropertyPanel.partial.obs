@@ -1,0 +1,1239 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ComponentPropertyPanelBase v-if="componentHelper"
+                                :componentElement="componentElement"
+                                title="Image"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')">
+        <AccordionGroup>
+            <Accordion title="Settings">
+                <div class="form-group">
+                    <ButtonGroup v-model="imageSourceType"
+                                 :items="imageSourceTypes"
+                                 @update:modelValue="onImageSourceTypeUpdated" />
+                </div>
+
+                <template v-if="imageSourceType === 'image'">
+                    <ImageUploader v-model="imageGuidAndName"
+                                   :binaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
+                                   label="Choose Image"
+                                   :uploadAsTemporary="false"
+                                   @update:modelValue="onImageUpdated" />
+
+                    <p class="text-sm text-muted">
+                        *For best results, use static images ~600px wide, &lt;1MB. Avoid text overlays, patterns, or animations; they may not display correctly in some email clients.
+                    </p>
+                </template>
+
+                <div v-else-if="imageSourceType === 'asset'">
+                    <AssetPicker v-model="fileAsset"
+                                 label="Choose Asset"
+                                 @update:modelValue="onAssetUpdated" />
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <TextBox v-model="anchorHref"
+                                 help="Add the URL that the image will direct the recipient to."
+                                 label="Link"
+                                 @update:modelValue="onAnchorHrefUpdated">
+                            <template #inputGroupPrepend>
+                                <span class="input-group-addon">
+                                    <i class="fa fa-link"></i>
+                                </span>
+                            </template>
+                        </TextBox>
+                    </div>
+
+                    <div v-if="imageElement" class="col-sm-12">
+                        <AltAttributeProperty :element="imageElement"
+                                              help="Provide a brief description of the image or for better accessibility. Keep it concise and relevant."
+                                              label="Alt Text"
+                                              placeholder="Add image description..." />
+                    </div>
+                </div>
+
+                <div class="row" v-show="imageSourceType === 'image'">
+                    <div class="col-sm-6">
+                        <DropDownList v-model="imageSize"
+                                      help="Choose how the image is displayed:  Original keeps its size, Scale resizes proportionally, and Crop trims to fit specific dimensions."
+                                      :items="imageSizeItems"
+                                      label="Image Size"
+                                      :showBlankItem="false"
+                                      @update:modelValue="onImageSizeUpdated" />
+                    </div>
+                </div>
+
+                <div v-if="imageSize === 'scale'" class="row">
+                    <div class="col-sm-12">
+                        <!-- <RangeSliderProperty v-model="imageWidth" :min="5" :max="100" /> -->
+                        <RangeSlider v-model="scaleImageWidth"
+                                     label="Image Width"
+                                     :min="5"
+                                     :max="100"
+                                     :showValueBar="true"
+                                     valueSuffix="%"
+                                     @update:modelValue="onScaleWidthUpdated" />
+                    </div>
+                </div>
+
+                <template v-else-if="imageSize === 'crop'">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <NumberBox v-model="imageWidth"
+                                       label="Width"
+                                       @update:modelValue="onCropWidthUpdated">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">px</span>
+                                </template>
+                            </NumberBox>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <NumberBox v-model="imageHeight"
+                                       label="Height"
+                                       @update:modelValue="onCropHeightUpdated">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">px</span>
+                                </template>
+                            </NumberBox>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <Switch v-model="isHighResEnabled"
+                                    text="Enable High-Res Images"
+                                    @update:modelValue="onIsHighResEnabledUpdated" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <DropDownList v-model="resizeMode"
+                                          help="Select how the image fits its container:  Cover fills it by cropping, Contain fits it without cropping, and Stretch scales the image to fill."
+                                          :items="resizeModeItems"
+                                          label="Resize Mode"
+                                          :showBlankItem="false"
+                                          @update:modelValue="onResizeModeUpdated" />
+                        </div>
+                    </div>
+                </template>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <HorizontalAlignmentTextAlignProperty :element="componentElement"
+                                                              :hooks="{
+                                                                  onSourceValueUpdated: onHorizontalAlignmentUpdated
+                                                              }" />
+                    </div>
+                </div>
+
+                <div v-if="imageElement"
+                     class="row">
+                    <div class="col-sm-12">
+                        <BorderRadiusProperty :element="imageElement"
+                                              :copyToElements="[componentHelper.marginWrapper.borderWrapper.td]" />
+                    </div>
+                </div>
+            </Accordion>
+
+            <Accordion title="Spacing">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <PaddingProperty :element="componentHelper.marginWrapper.td"
+                                         label="Margin" />
+                    </div>
+                </div>
+            </Accordion>
+
+            <Accordion v-if="imageElement" title="Border">
+                <BorderPropertyGroup :element="imageElement" />
+            </Accordion>
+        </AccordionGroup>
+    </ComponentPropertyPanelBase>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
+    import Accordion from "../accordion.partial.obs";
+    import AltAttributeProperty from "../properties/altAttributeProperty.partial.obs";
+    import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
+    import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
+    import HorizontalAlignmentTextAlignProperty from "../properties/horizontalAlignmentTextAlignProperty.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import { HorizontalAlignment } from "../types.partial";
+    import { get, getImageComponentHelper, getPaddingWrapperCellSelector, pixelConverter } from "../utils.partial";
+    import AssetPicker from "@Obsidian/Controls/Internal/assetPicker.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { toKebabCase } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    type ImageSize = "original" | "crop" | "scale";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        imageComponentBinaryFileTypeGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+
+    const imageSourceTypes = [
+        {
+            text: "Image",
+            value: "image"
+        }, {
+            text: "Asset",
+            value: "asset"
+        }
+    ];
+
+    // The value casing is inconsistent but is backward compatible with the old block.
+    const dataAttributeKey = {
+        // Image keys
+        imageWidth: "imageWidth",
+        imageId: "imageId",
+        imageHeight: "imageHeight",
+        imageGuid: "imageGuid",
+        imageFileName: "imageFilename",
+        imgCssWidth: "imgcsswidth",
+        imageResizemode: "imageResizemode",
+        imageHighRes: "imageHighRes",
+
+        // Asset keys
+        imageAssetstorageproviderid: "imageAssetstorageproviderid",
+        imageKey: "imageKey",
+        imageIconpath: "imageIconpath",
+        imageName: "imageName",
+        imageUrl: "imageUrl",
+        imageScale: "imageScale"
+    } as const;
+
+    const imageSizeItems = computed<ListItemBag[]>(() => {
+        if (imageSourceType.value === "image") {
+            return [
+                {
+                    text: "Original",
+                    value: get<ImageSize>("original")
+                },
+                {
+                    text: "Crop",
+                    value: get<ImageSize>("crop")
+                },
+                {
+                    text: "Scale",
+                    value: get<ImageSize>("scale")
+                }
+            ];
+        }
+        else {
+            return [
+                {
+                    text: "Scale",
+                    value: get<ImageSize>("scale")
+                }
+            ];
+        }
+    });
+
+    const resizeModeItems: ListItemBag[] = [
+        {
+            text: "Cover",
+            value: get<ResizeMode>("crop")
+        }, {
+            text: "Contain",
+            value: get<ResizeMode>("pad")
+        }, {
+            text: "Stretch",
+            value: get<ResizeMode>("stretch")
+        }
+    ];
+
+    type ResizeMode = "crop" | "pad" | "stretch" | "";
+
+    type ImageSourceType = "image" | "asset";
+
+    const placeholderImageSrc = "/Assets/Images/image-placeholder.jpg";
+
+    // #region Values
+
+    const componentHelper = ref(getImageComponentHelper(props.componentElement));
+    const imageElement = ref<HTMLImageElement | null | undefined>(props.componentElement?.querySelector("img"));
+    const anchorElement = ref<HTMLAnchorElement | null | undefined>(imageElement.value?.closest("a") === imageElement.value?.parentElement ? imageElement.value?.parentElement as HTMLAnchorElement : null);
+    const anchorHref = ref<string>(anchorElement.value?.getAttribute("href") ?? "");
+    const imageGuidAndName = ref<ListItemBag | null | undefined>(getImageFromComponent());
+    const fileAsset = ref<FileAsset | undefined>(getAssetFromComponent());
+    const imageSourceType = ref<ImageSourceType>(fileAsset.value ? "asset" : "image");
+    const resizeMode = ref<ResizeMode>((props.componentElement?.dataset[dataAttributeKey.imageResizemode] as ResizeMode) ?? "");
+    const imageWidth = ref<number | null>(props.componentElement?.dataset[dataAttributeKey.imageWidth] ? parseInt(props.componentElement.dataset[dataAttributeKey.imageWidth] ?? "0") : null);
+    const imageHeight = ref<number | null>(props.componentElement?.dataset[dataAttributeKey.imageHeight] ? parseInt(props.componentElement.dataset[dataAttributeKey.imageHeight] ?? "0") : null);
+    const imageSize = ref<ImageSize>(getImageOrAssetSizeFromComponent());
+    const scaleImageWidth = ref<number>(getScaleWidthFromComponent());
+    const isHighResEnabled = ref<boolean>(getIsHighResEnabledFromComponent());
+    const emailContentTd = ref<HTMLTableCellElement | null | undefined>(getEmailContentTdFromComponent());
+
+    // #endregion
+
+    // #region Commands
+
+    /**
+     * - `render*Command` - Update the UI like setting `src` or inline styles.
+     * - `set*MetadataCommand` - Update descriptive state, but don't affect the UI directly.
+     * - `set*Command` - Update both the UI and descriptive state. This is for commands that inheritantly update both, such as a command that sets an image's width.
+     * - `apply*Command` - A composite command that wraps others.
+     *
+     * This clean separation allows us to easily compose commands
+     * with minimal intercommand dependencies, as well as execute and undo them.
+     */
+    type Command = {
+        /** Executes the command. */
+        execute(): void;
+        /** Undoes the command. */
+        undo(): void;
+    };
+
+    const nullCommand: Command = {
+        execute() { },
+        undo() { }
+    };
+
+    // #region Placeholder Commands
+
+    /** Sets the placeholder metadata (data-* attributes). */
+    const setPlaceholderMetadataCommand: Command = {
+        execute() {
+            if (imageElement.value) {
+                imageElement.value.dataset[dataAttributeKey.imgCssWidth] = "full";
+            }
+        },
+
+        undo() {
+            if (imageElement.value) {
+                removeDatasetAttributes(imageElement.value, dataAttributeKey.imgCssWidth);
+            }
+        }
+    };
+
+    /** Renders the placeholder using the current placeholder state. */
+    const renderPlaceholderCommand: Command = {
+        execute() {
+            if (imageElement.value) {
+                imageElement.value.src = placeholderImageSrc;
+                imageElement.value.style.width = "100%";
+            }
+        },
+
+        undo() {
+            if (imageElement.value) {
+                imageElement.value.src = "";
+                imageElement.value.style.removeProperty("width");
+            }
+        }
+    };
+
+    /** Sets placeholder metadata + renders it.  */
+    const applyPlaceholderCommand: Command = {
+        execute() {
+            setPlaceholderMetadataCommand.execute();
+            renderPlaceholderCommand.execute();
+        },
+
+        undo() {
+            setPlaceholderMetadataCommand.undo();
+            renderPlaceholderCommand.undo();
+        }
+    };
+
+    // #endregion Placeholder Commands
+
+    // #region Image Commands
+
+    /** Sets the Image metadata (guid, filename, etc.). */
+    const setImageMetadataCommand: Command = {
+        execute() {
+            if (imageGuidAndName.value) {
+                // Update image guid and file name data attributes.
+                const fileGuid = toGuidOrNull(imageGuidAndName.value.value);
+                const fileName = imageGuidAndName.value?.text;
+
+                if (fileGuid) {
+                    props.componentElement.dataset[dataAttributeKey.imageGuid] = fileGuid;
+                }
+                else {
+                    removeDatasetAttributes(props.componentElement, dataAttributeKey.imageGuid);
+                }
+
+                if (fileName) {
+                    props.componentElement.dataset[dataAttributeKey.imageFileName] = fileName ?? "";
+                }
+                else {
+                    removeDatasetAttributes(props.componentElement, dataAttributeKey.imageFileName);
+                }
+
+                if (imageElement.value) {
+                    imageElement.value.dataset[dataAttributeKey.imgCssWidth] = "image";
+                }
+            }
+            else {
+                removeDatasetAttributes(
+                    props.componentElement,
+                    dataAttributeKey.imageGuid,
+                    dataAttributeKey.imageFileName);
+
+                if (imageElement.value) {
+                    removeDatasetAttributes(imageElement.value, dataAttributeKey.imgCssWidth);
+                }
+            }
+        },
+
+        undo(): void {
+            removeDatasetAttributes(
+                props.componentElement,
+                dataAttributeKey.imageGuid,
+                dataAttributeKey.imageFileName);
+
+            if (imageElement.value) {
+                removeDatasetAttributes(imageElement.value, dataAttributeKey.imgCssWidth);
+            }
+        }
+    };
+
+    /** Renders the Image using the current state. */
+    const renderImageCommand: Command = {
+        execute() {
+            if (imageElement.value) {
+                const fileGuid = props.componentElement.dataset[dataAttributeKey.imageGuid] || "";
+                const fileName = props.componentElement.dataset[dataAttributeKey.imageFileName] || "";
+
+                if (fileGuid) {
+                    // Clear placeholder first.
+                    applyPlaceholderCommand.undo();
+
+                    // Set image src.
+                    const params = new URLSearchParams();
+                    params.set("isBinaryFile", "T");
+                    params.set("guid", fileGuid);
+                    params.set("fileName", fileName);
+
+                    if (imageSize.value === "crop") {
+                        const resolutionFactor = isHighResEnabled.value ? 2 : 1;
+
+                        if (imageWidth.value) {
+                            params.set("width", `${imageWidth.value * resolutionFactor}`);
+                        }
+
+                        if (imageHeight.value) {
+                            params.set("height", `${imageHeight.value * resolutionFactor}`);
+                        }
+
+                        if (resizeMode.value) {
+                            params.set("mode", resizeMode.value);
+                        }
+
+                        params.set("scale", "both");
+                    }
+                    else if (imageSize.value === "scale" && scaleImageWidth.value <= 100) {
+                        if (scaleImageWidth.value === 100) {
+                            params.set("zoom", "100");
+                        }
+                        else {
+                            params.set("zoom", `0.${scaleImageWidth.value}`);
+                        }
+                    }
+
+                    imageElement.value.src = `/GetImage.ashx?${params.toString()}`;
+                }
+                else {
+                    // No file is selected, so show the placeholder image.
+                    applyPlaceholderCommand.execute();
+                }
+            }
+        },
+
+        undo() {
+            if (imageElement.value) {
+                imageElement.value.src = "";
+            }
+
+            // Restore the placeholder image.
+            applyPlaceholderCommand.undo();
+        }
+    };
+
+    /** Sets Image metadata + renders it. */
+    const applyImageCommand: Command = {
+        execute() {
+            setImageMetadataCommand.execute();
+            renderImageCommand.execute();
+        },
+
+        undo() {
+            setImageMetadataCommand.undo();
+            renderImageCommand.undo();
+        }
+    };
+
+    // #endregion Image Commands
+
+    // #region Asset Commands
+
+    /** Sets the asset metadata (key, provider, etc.). */
+    const setAssetMetadataCommand: Command = {
+        execute(): void {
+            if (fileAsset.value) {
+                props.componentElement.dataset[dataAttributeKey.imageAssetstorageproviderid] = `${fileAsset.value.assetStorageProviderId}`;
+                props.componentElement.dataset[dataAttributeKey.imageKey] = `${fileAsset.value.key}`;
+                props.componentElement.dataset[dataAttributeKey.imageIconpath] = `${fileAsset.value.iconPath}`;
+                props.componentElement.dataset[dataAttributeKey.imageName] = `${fileAsset.value.name}`;
+                props.componentElement.dataset[dataAttributeKey.imageUrl] = `${fileAsset.value.uri}`;
+
+                if (imageElement.value) {
+                    imageElement.value.dataset[dataAttributeKey.imgCssWidth] = "image";
+                }
+
+                // Also update the size.
+                activeSetSizeCommand.execute();
+            }
+            else {
+                removeDatasetAttributes(
+                    props.componentElement,
+                    dataAttributeKey.imageAssetstorageproviderid,
+                    dataAttributeKey.imageKey,
+                    dataAttributeKey.imageIconpath,
+                    dataAttributeKey.imageName,
+                    dataAttributeKey.imageUrl
+                );
+
+                if (imageElement.value) {
+                    removeDatasetAttributes(imageElement.value, dataAttributeKey.imgCssWidth);
+                }
+            }
+        },
+
+        undo(): void {
+            removeDatasetAttributes(
+                props.componentElement,
+                dataAttributeKey.imageAssetstorageproviderid,
+                dataAttributeKey.imageKey,
+                dataAttributeKey.imageIconpath,
+                dataAttributeKey.imageName,
+                dataAttributeKey.imageUrl
+            );
+
+            if (imageElement.value) {
+                removeDatasetAttributes(imageElement.value, dataAttributeKey.imgCssWidth);
+            }
+        }
+    };
+
+    /** Renders the asset using the current state. */
+    const renderAssetCommand: Command = {
+        execute() {
+            if (imageElement.value) {
+                const assetUrl = props.componentElement.dataset[dataAttributeKey.imageUrl];
+
+                if (assetUrl) {
+                    // Clear placeholder first.
+                    applyPlaceholderCommand.undo();
+
+                    imageElement.value.src = assetUrl;
+
+                    // Assets always have a width of auto.
+                    imageElement.value.style.width = "auto";
+                }
+                else {
+                    // Show the placeholder.
+                    applyPlaceholderCommand.execute();
+                }
+            }
+        },
+
+        undo() {
+            // Undo asset rendering changes.
+            if (imageElement.value) {
+                imageElement.value.src = "";
+                imageElement.value.style.removeProperty("width");
+            }
+
+            applyPlaceholderCommand.execute();
+        }
+    };
+
+    /** Sets asset metadata + renders it. */
+    const applyAssetCommand: Command = {
+        execute() {
+            setAssetMetadataCommand.execute();
+            renderAssetCommand.execute();
+        },
+
+        undo() {
+            setAssetMetadataCommand.undo();
+            renderAssetCommand.undo();
+        }
+    };
+
+    // #endregion Asset Commands
+
+    // Image Size - Crop
+
+    const setImageSizeCropCommand: Command = {
+        execute() {
+            setImageCropWidthCommand.execute();
+            setImageCropHeightCommand.execute();
+            setImageHighResCommand.execute();
+            setImageResizeModeCommand.execute();
+        },
+        undo() {
+            // Clear fields first.
+            imageWidth.value = null;
+            imageHeight.value = null;
+            resizeMode.value = "crop";
+
+            // Reset component.
+            setImageCropWidthCommand.undo();
+            setImageCropHeightCommand.undo();
+            setImageHighResCommand.undo();
+            setImageResizeModeCommand.undo();
+        }
+    };
+
+    const setAssetSizeCropCommand: Command = {
+        execute() {
+            setAssetCropWidthCommand.execute();
+            setAssetCropHeightCommand.execute();
+            setAssetResizeModeCommand.execute();
+        },
+        undo() {
+            // Clear fields first.
+            imageWidth.value = null;
+            imageHeight.value = null;
+            resizeMode.value = "crop";
+
+            // Reset component.
+            setAssetCropWidthCommand.undo();
+            setAssetCropHeightCommand.undo();
+            setAssetResizeModeCommand.undo();
+        }
+    };
+
+    // Image Size - Crop - Width
+
+    const setImageCropWidthCommand: Command = {
+        execute() {
+            props.componentElement.dataset[dataAttributeKey.imageWidth] = `${imageWidth.value}`;
+
+            // Set the width inline style on the image element.
+            // Previously, the image width was determined by the image's natural width.
+            // However, we may want to support retina (high-DPI) displays in the future,
+            // which would increase the image's natural size by some factor,
+            // but keep the rendered width as the specified width.
+            // Doing this would produces a crisper image on high-resolution displays.
+            if (!isNullish(imageWidth.value)) {
+                imageElement.value?.style.setProperty("width", `${imageWidth.value}px`);
+                imageElement.value?.setAttribute("width", `${imageWidth.value}`);
+            }
+            else {
+                imageElement.value?.style.removeProperty("width");
+                imageElement.value?.removeAttribute("width");
+            }
+
+            // Update the image src whenever the width is updated.
+            setImageMetadataCommand.execute();
+        },
+        undo() {
+            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageWidth);
+
+            imageElement.value?.style.removeProperty("width");
+            imageElement.value?.removeAttribute("width");
+
+            // Update the image src whenever the width is removed.
+            setImageMetadataCommand.execute();
+        }
+    };
+
+    const setAssetCropWidthCommand: Command = {
+        execute() {
+            props.componentElement.dataset[dataAttributeKey.imageWidth] = `${imageWidth.value}`;
+
+            if (imageElement.value) {
+                imageElement.value.style.width = pixelConverter.toTarget(imageWidth.value) ?? "";
+            }
+        },
+        undo() {
+            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageWidth);
+
+            // Reset the image width to auto.
+            if (imageElement.value) {
+                imageElement.value.style.width = "auto";
+            }
+        }
+    };
+
+    // Image Size - Crop - Height
+
+    const setImageCropHeightCommand: Command = {
+        execute() {
+            props.componentElement.dataset[dataAttributeKey.imageHeight] = `${imageHeight.value}`;
+
+            // Set the height inline style on the image element.
+            // Previously, the image height was determined by the image's natural height.
+            // However, we may want to support retina (high-DPI) displays in the future,
+            // which would increase the image's natural size by some factor,
+            // but keep the rendered height as the specified height.
+            // Doing this would produces a crisper image on high-resolution displays.
+            if (!isNullish(imageHeight.value)) {
+                imageElement.value?.style.setProperty("height", `${imageHeight.value}px`);
+                imageElement.value?.setAttribute("height", `${imageHeight.value}`);
+            }
+            else {
+                imageElement.value?.style.removeProperty("height");
+                imageElement.value?.removeAttribute("height");
+            }
+
+            // Update the image src whenever the height is updated.
+            setImageMetadataCommand.execute();
+        },
+        undo() {
+            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageHeight);
+
+            imageElement.value?.style.removeProperty("height");
+            imageElement.value?.removeAttribute("height");
+
+            // Update the image src whenever the height is removed.
+            setImageMetadataCommand.execute();
+        }
+    };
+
+    const setAssetCropHeightCommand: Command = {
+        execute() {
+            props.componentElement.dataset[dataAttributeKey.imageHeight] = `${imageHeight.value}`;
+
+            if (imageElement.value) {
+                imageElement.value.style.height = pixelConverter.toTarget(imageHeight.value) ?? "";
+            }
+        },
+        undo() {
+            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageHeight);
+
+            if (imageElement.value) {
+                // Reset the image height.
+                imageElement.value.style.removeProperty("height");
+            }
+        }
+    };
+
+    // Image Size - Crop - High-Res
+
+    const setImageHighResCommand: Command = {
+        execute() {
+            if (isHighResEnabled.value) {
+                props.componentElement.dataset[dataAttributeKey.imageHighRes] = "true";
+            }
+            else {
+                removeDatasetAttributes(props.componentElement, dataAttributeKey.imageHighRes);
+            }
+        },
+        undo() {
+            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageHighRes);
+        }
+    };
+
+    // Image Size - Crop - Resize Mode
+
+    const setImageResizeModeCommand: Command = {
+        execute() {
+            props.componentElement.dataset[dataAttributeKey.imageResizemode] = resizeMode.value;
+
+            // Update the image src attribute whenever the resize mode is updated.
+            setImageMetadataCommand.execute();
+        },
+        undo() {
+            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageResizemode);
+
+            // Update the image src attribute whenever the resize mode is removed.
+            setImageMetadataCommand.execute();
+        }
+    };
+
+    const setAssetResizeModeCommand: Command = {
+        execute() {
+            props.componentElement.dataset[dataAttributeKey.imageResizemode] = resizeMode.value;
+
+            if (imageElement.value) {
+                switch (resizeMode.value) {
+                    case "pad":
+                        imageElement.value.style.objectFit = "contain";
+                        break;
+                    case "stretch":
+                        imageElement.value.style.objectFit = "fill";
+                        break;
+                    case "crop":
+                    default:
+                        imageElement.value.style.objectFit = "cover";
+                        break;
+                }
+            }
+        },
+        undo() {
+            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageResizemode);
+
+            if (imageElement.value) {
+                imageElement.value.style.objectFit = "";
+                imageElement.value.style.removeProperty("object-fit");
+            }
+        }
+    };
+
+    const refreshImageMetadataCommand: Command = {
+        execute() {
+            setImageMetadataCommand.execute();
+        },
+        undo() { }
+    };
+
+    function onSetAssetScaleWidth(): void {
+        if (imageElement.value && imageElement.value.naturalWidth) {
+            imageElement.value.style.width = `${imageElement.value.naturalWidth * (scaleImageWidth.value / 100)}px`;
+        }
+    }
+
+    const setAssetScaleWidthCommand: Command = {
+        execute() {
+            props.componentElement.dataset[dataAttributeKey.imageScale] = `${scaleImageWidth.value}%`;
+            if (imageElement.value) {
+                // naturalWidth is always in pixels.
+                if (!imageElement.value.complete) {
+                    // Temporarily set the width while waiting for the image to load.
+                    imageElement.value.style.width = "100%";
+                    imageElement.value.addEventListener("load", onSetAssetScaleWidth, {
+                        once: true
+                    });
+                }
+                else {
+                    imageElement.value.style.width = `${imageElement.value.naturalWidth * (scaleImageWidth.value / 100)}px`;
+                }
+            }
+        },
+        undo() {
+            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageScale);
+
+            if (imageElement.value) {
+                imageElement.value.removeEventListener("load", onSetAssetScaleWidth);
+                imageElement.value.style.width = "auto";
+            }
+        }
+    };
+
+    // #endregion Commands
+
+    // #region Functions
+
+    /**
+     * Gets the table.email-content td from the component if set.
+     */
+    function getEmailContentTdFromComponent(): HTMLTableCellElement | null | undefined {
+        const td = props.componentElement.querySelector(getPaddingWrapperCellSelector("image"));
+
+        if (td) {
+            return td as HTMLTableCellElement;
+        }
+    }
+
+    /**
+     * Gets the image from the component if set.
+     */
+    function getImageFromComponent(): ListItemBag | null | undefined {
+        const imageGuid = toGuidOrNull(props.componentElement?.dataset[dataAttributeKey.imageGuid]);
+        const imageFileName = props.componentElement.dataset[dataAttributeKey.imageFileName];
+
+        if (isNullish(imageGuid)) {
+            return;
+        }
+        else {
+            return {
+                value: imageGuid,
+                text: imageFileName,
+            };
+        }
+    }
+
+    /**
+     * Gets the asset from the component if set.
+     */
+    function getAssetFromComponent(): FileAsset | undefined {
+        const imageAssetstorageproviderid = toNumberOrNull(props.componentElement.dataset[dataAttributeKey.imageAssetstorageproviderid]);
+        const imageKey = props.componentElement.dataset[dataAttributeKey.imageKey];
+        const imageIconpath = props.componentElement.dataset[dataAttributeKey.imageIconpath];
+        const imageName = props.componentElement.dataset[dataAttributeKey.imageName];
+        const imageUrl = props.componentElement.dataset[dataAttributeKey.imageUrl];
+
+        if (isNullish(imageAssetstorageproviderid)
+            || isNullish(imageKey)
+            || isNullish(imageIconpath)
+            || isNullish(imageName)
+            || isNullish(imageUrl)) {
+            return;
+        }
+        else {
+            return {
+                assetStorageProviderId: imageAssetstorageproviderid,
+                key: imageKey,
+                iconPath: imageIconpath,
+                name: imageName,
+                uri: imageUrl,
+
+                // defaults
+                description: "",
+                fileSize: 0,
+                formattedFileSize: "",
+                lastModifiedDateTime: "",
+                type: 0
+            };
+        }
+    }
+
+    /**
+     * Gets the image or asset size from the component.
+     */
+    function getImageOrAssetSizeFromComponent(): ImageSize {
+        if (props.componentElement.dataset[dataAttributeKey.imageResizemode]) {
+            // If there is any resize mode (Cover "crop", Contain "pad", Stretch "stretch"),
+            // then return "crop".
+            return "crop";
+        }
+        else if (imageElement.value?.src.includes("zoom=") || props.componentElement.dataset[dataAttributeKey.imageScale]) {
+            return "scale";
+        }
+        else {
+            return "original";
+        }
+    }
+
+    /**
+     * Gets the scale width from the component.
+     */
+    function getScaleWidthFromComponent(): number {
+        if (imageSourceType.value === "image") {
+            if (imageSize.value === "scale" && imageElement.value) {
+                let scale: number | null | undefined;
+                try {
+                    const params = new URL(imageElement.value.src).searchParams;
+                    const zoomParts = params.get("zoom")?.split(".") ?? [];
+
+                    if (zoomParts.length === 2) {
+                        scale = toNumberOrNull(zoomParts[1]);
+                    }
+                }
+                catch {
+                    // The image element src is not a valid URL
+                    // so try looking for the zoom parameter manually.
+                    const regex = /zoom=\d+\.(\d+)/;
+                    const match = imageElement.value.src.match(regex);
+                    if (match) {
+                        scale = toNumberOrNull(match[1]);
+                    }
+                }
+
+                if (!isNullish(scale)) {
+                    return scale;
+                }
+            }
+        }
+        else if (imageSourceType.value === "asset") {
+            if (imageElement.value) {
+                const imageScale = pixelConverter.toSource(props.componentElement.dataset[dataAttributeKey.imageScale] ?? null);
+                if (!isNullish(imageScale)) {
+                    return imageScale;
+                }
+            }
+        }
+
+        // Return 100% scale width by default.
+        return 100;
+    }
+
+    /**
+     * Removes [data-] attributes from an element.
+     */
+    function removeDatasetAttributes(element: HTMLElement, ...keys: string[]): void {
+        // `delete el.dataset["key"]` doesn't always work.
+        // Using `el.removeAttribute("data-key")` instead.
+        keys.forEach(key => {
+            element.removeAttribute(`data-${toKebabCase(key)}`);
+        });
+    }
+
+    function getIsHighResEnabledFromComponent(): boolean {
+        return props.componentElement?.dataset[dataAttributeKey.imageHighRes] === "true";
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onIsHighResEnabledUpdated(): void {
+        setImageHighResCommand.execute();
+        renderImageCommand.execute();
+    }
+
+    function onAnchorHrefUpdated(href: string): void {
+        if (href) {
+            if (!anchorElement.value) {
+                // Create the anchor element.
+                anchorElement.value = props.componentElement.ownerDocument.createElement("a");
+
+                if (imageElement.value) {
+                    imageElement.value.replaceWith(anchorElement.value);
+                    anchorElement.value.appendChild(imageElement.value);
+                }
+            }
+
+            // Update the anchor element's href attribute.
+            anchorElement.value.setAttribute("href", href);
+        }
+        else if (anchorElement.value) {
+            if (imageElement.value) {
+                anchorElement.value.replaceWith(imageElement.value);
+            }
+            else {
+                anchorElement.value.remove();
+            }
+
+            anchorElement.value = null;
+        }
+    }
+
+    /**
+     * Handles the event when the image is updated.
+     */
+    function onImageUpdated(): void {
+        // Skip the command factory since this is an image.
+        applyImageCommand.execute();
+    }
+
+    /**
+     * Handles the event when an asset is updated.
+     */
+    function onAssetUpdated(): void {
+        activeSetSizeCommand.execute();
+        applyAssetCommand.execute();
+    }
+
+    function onImageSizeUpdated(): void {
+        // Undo the old size.
+        activeSetSizeCommand.undo();
+
+        // Apply the new size.
+        activeSetSizeCommand = getActiveSetSizeCommand();
+        activeSetSizeCommand.execute();
+
+        // Update the UI.
+        if (imageSourceType.value === "image") {
+            renderImageCommand.execute();
+        }
+        else if (imageSourceType.value === "asset") {
+            renderAssetCommand.execute();
+        }
+    }
+
+    function onHorizontalAlignmentUpdated(sourceValue: "" | HorizontalAlignment | null | undefined): void {
+        if (!emailContentTd.value) {
+            return;
+        }
+
+        // sourceValue is a `text-align` CSS property value.
+        // Convert it to a td `align` attribute value
+        // and set the td `align` attribute for email compatibility.
+        const conversions: Record<string, string> = {
+            "start": "left",
+            "left": "left",
+            "end": "right",
+            "right": "right",
+            "center": "center",
+            "justify": "center"
+        };
+
+        const alignValue = conversions[sourceValue ?? ""];
+
+        if (alignValue) {
+            emailContentTd.value.setAttribute("align", alignValue);
+        }
+        else {
+            emailContentTd.value.removeAttribute("align");
+        }
+    }
+
+    let activeApplyCommand: Command = getActiveApplyCommand();
+    let activeSetSizeCommand: Command = getActiveSetSizeCommand();
+
+    function getActiveApplyCommand(): Command {
+        if (imageSourceType.value === "image") {
+            return applyImageCommand;
+        }
+        else if (imageSourceType.value === "asset") {
+            return applyAssetCommand;
+        }
+        else {
+            return applyPlaceholderCommand;
+        }
+    }
+
+    function getActiveSetSizeCommand(): Command {
+        if (imageSourceType.value === "image") {
+            switch (imageSize.value) {
+                case "crop":
+                    return setImageSizeCropCommand;
+                case "scale":
+                    return refreshImageMetadataCommand; // Treat as size command
+                case "original":
+                    return refreshImageMetadataCommand;
+            }
+        }
+        else if (imageSourceType.value === "asset") {
+            switch (imageSize.value) {
+                case "crop":
+                    return setAssetSizeCropCommand;
+                case "scale":
+                    return setAssetScaleWidthCommand; // Treat as size command
+                case "original":
+                    return nullCommand;
+            }
+        }
+
+        return nullCommand;
+    }
+
+    function onImageSourceTypeUpdated(): void {
+        // Clear all image sources and size properties.
+        fileAsset.value = undefined;
+        imageGuidAndName.value = null;
+        resizeMode.value = "";
+        imageWidth.value = null;
+        imageHeight.value = null;
+        // Don't reset the image size. It will reset on its own.
+        //imageSize.value = "original";
+        scaleImageWidth.value = 100;
+        isHighResEnabled.value = false;
+
+        // Undo previous apply and set size commands.
+        activeSetSizeCommand.undo();
+        activeApplyCommand.undo();
+
+        // Get new commands.
+        activeApplyCommand = getActiveApplyCommand();
+        activeSetSizeCommand = getActiveSetSizeCommand();
+
+        // Apply the new source.
+        activeSetSizeCommand.execute();
+        activeApplyCommand.execute();
+    }
+
+    function getCropWidthCommand(): Command {
+        if (imageSourceType.value === "image") {
+            return setImageCropWidthCommand;
+        }
+        else if (imageSourceType.value === "asset") {
+            return setAssetCropWidthCommand;
+        }
+
+        return nullCommand;
+    }
+
+    function getCropHeightCommand(): Command {
+        if (imageSourceType.value === "image") {
+            return setImageCropHeightCommand;
+        }
+        else if (imageSourceType.value === "asset") {
+            return setAssetCropHeightCommand;
+        }
+
+        return nullCommand;
+    }
+
+    function getResizeModeCommand(): Command {
+        if (imageSourceType.value === "image") {
+            return setImageResizeModeCommand;
+        }
+        else if (imageSourceType.value === "asset") {
+            return setAssetResizeModeCommand;
+        }
+
+        return nullCommand;
+    }
+
+    function onCropWidthUpdated(): void {
+        getCropWidthCommand().execute();
+        renderImageCommand.execute();
+    }
+
+    function onCropHeightUpdated(): void {
+        getCropHeightCommand().execute();
+        renderImageCommand.execute();
+    }
+
+    function onResizeModeUpdated(): void {
+        getResizeModeCommand().execute();
+        renderImageCommand.execute();
+    }
+
+    function onScaleWidthUpdated(): void {
+        if (imageSourceType.value === "image") {
+            // Assets and images handle scale width differently,
+            // so only render the image if it's an image.
+            refreshImageMetadataCommand.execute();
+            renderImageCommand.execute();
+        }
+        else if (imageSourceType.value === "asset") {
+            setAssetScaleWidthCommand.execute();
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.componentElement, () => {
+        componentHelper.value = getImageComponentHelper(props.componentElement);
+        imageElement.value = props.componentElement?.querySelector("img");
+        imageGuidAndName.value = getImageFromComponent();
+        fileAsset.value = getAssetFromComponent();
+        imageSourceType.value = fileAsset.value ? "asset" : "image";
+        resizeMode.value = (props.componentElement?.dataset[dataAttributeKey.imageResizemode] as ResizeMode) ?? "";
+        imageWidth.value = props.componentElement?.dataset[dataAttributeKey.imageWidth] ? parseInt(props.componentElement.dataset[dataAttributeKey.imageWidth] ?? "0") : null;
+        imageHeight.value = props.componentElement?.dataset[dataAttributeKey.imageHeight] ? parseInt(props.componentElement.dataset[dataAttributeKey.imageHeight] ?? "0") : null;
+        imageSize.value = getImageOrAssetSizeFromComponent();
+        scaleImageWidth.value = getScaleWidthFromComponent();
+        isHighResEnabled.value = getIsHighResEnabledFromComponent();
+        emailContentTd.value = getEmailContentTdFromComponent();
+
+        activeSetSizeCommand = getActiveSetSizeCommand();
+        activeApplyCommand = getActiveApplyCommand();
+    });
+
+    // #endregion Watchers
+</script>

@@ -35,11 +35,6 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        // Made Obsolete in Rock "1.11"
-        [Obsolete( "Use CacheToServerFileSystem instead.", false )]
-        public bool AllowCaching { get; set; }
-
-        /// <summary />
         public string CacheControlHeaderSettings { get; set; }
 
         /// <summary />
@@ -128,9 +123,6 @@ namespace Rock.Client
         public void CopyPropertiesFrom( BinaryFileType source )
         {
             this.Id = source.Id;
-            #pragma warning disable 612, 618
-            this.AllowCaching = source.AllowCaching;
-            #pragma warning restore 612, 618
             this.CacheControlHeaderSettings = source.CacheControlHeaderSettings;
             this.CacheToServerFileSystem = source.CacheToServerFileSystem;
             this.Description = source.Description;

@@ -2,7 +2,7 @@
 <template>
     <div class="progress">
         <div class="progress-bar" role="progressbar" :aria-valuenow="roundedBoundedPercent" aria-valuemin="0" aria-valuemax="100" :style="style">
-            <span class="sr-only">{{ roundedBoundedPercent }}% Complete</span>
+            <span :class="{'sr-only': !showCompletionText}">{{ roundedBoundedPercent }}% Complete</span>
         </div>
     </div>
 </template>
@@ -14,6 +14,11 @@
         percent: {
             type: Number as PropType<number>,
             required: true
+        },
+
+        showCompletionText: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 

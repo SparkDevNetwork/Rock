@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -106,6 +107,24 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( Page.PageQueryableAttributeValue ), nameof( PageAttributeValues ) )]
+    public partial class Page
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<PageQueryableAttributeValue> PageAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class PageQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -200,7 +219,10 @@ namespace Rock.Model
             target.PageDisplayTitle = source.PageDisplayTitle;
             target.PageTitle = source.PageTitle;
             target.ParentPageId = source.ParentPageId;
+            #pragma warning disable 612, 618
             target.RateLimitPeriod = source.RateLimitPeriod;
+            #pragma warning restore 612, 618
+            target.RateLimitPeriodDurationSeconds = source.RateLimitPeriodDurationSeconds;
             target.RateLimitRequestPerPeriod = source.RateLimitRequestPerPeriod;
             target.RequiresEncryption = source.RequiresEncryption;
             target.CreatedDateTime = source.CreatedDateTime;

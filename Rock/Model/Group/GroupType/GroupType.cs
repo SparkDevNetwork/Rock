@@ -22,10 +22,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.CheckIn;
 using Rock.Enums.Group;
 using Rock.Lava;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -37,6 +40,8 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupType" )]
     [DataContract]
+    [CodeGenerateRest]
+    [EnableAttributeQualification( nameof( Id ) )]
     [Rock.SystemGuid.EntityTypeGuid( "0DD30B04-01CF-4B38-8E83-BE661E2F7286" )]
     public partial class GroupType : Model<GroupType>, IOrdered, ICacheable
     {
@@ -212,6 +217,25 @@ namespace Rock.Model
         public AttendanceRule AttendanceRule { get; set; }
 
         /// <summary>
+        /// <para>
+        /// When <see cref="AttendanceRule"/> is set to <see cref="AttendanceRule.AlreadyEnrolledInGroup"/>
+        /// then this specifies the group matching logic used.
+        /// </para>
+        /// <para>
+        /// <see cref="AlreadyEnrolledMatchingLogic.MustBeEnrolled"/> simply
+        /// that the person be a member of the group and no additional filtering
+        /// is performed.
+        /// </para>
+        /// <para>
+        /// <see cref="AlreadyEnrolledMatchingLogic.PreferEnrolledGroups"/> will
+        /// additionally then filter out any non-preferred groups if the person
+        /// is a member of any preferred groups.
+        /// </para>
+        /// </summary>
+        [DataMember]
+        public AlreadyEnrolledMatchingLogic AlreadyEnrolledMatchingLogic { get; set; }
+
+        /// <summary>
         /// Gets or sets the group capacity rule.
         /// </summary>
         /// <value>
@@ -296,6 +320,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.GROUPTYPE_PURPOSE )]
+        [EnableAttributeQualification]
         public int? GroupTypePurposeValueId { get; set; }
 
         /// <summary>
@@ -686,10 +711,136 @@ namespace Rock.Model
         /// </summary>
         /// <value>The attendance reminder followup days.</value>
         [DataMember]
-        [MaxLength(100)]
+        [MaxLength( 100 )]
         public string AttendanceReminderFollowupDays { get; set; }
 
         //AttendanceReminderLastSentDateTime
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Group Type has Peer Network enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if peer network is enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsPeerNetworkEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether relationship growth is enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [relationship growth enabled]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RelationshipGrowthEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the relationship strength.
+        /// </summary>
+        /// <value>
+        /// The relationship strength.
+        /// </value>
+        [DataMember]
+        public int RelationshipStrength { get; set; }
+
+        /// <summary>
+        /// Gets or sets the leader to leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The leader to leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal LeaderToLeaderRelationshipMultiplier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the leader to non leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The leader to non leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal LeaderToNonLeaderRelationshipMultiplier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the non leader to non leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The non leader to non leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal NonLeaderToNonLeaderRelationshipMultiplier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the non leader to leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The non leader to leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal NonLeaderToLeaderRelationshipMultiplier { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that groups in this area should not be available
+        /// when a person already has a check-in for the same schedule.
+        /// </summary>
+        [DataMember]
+        public bool IsConcurrentCheckInPrevented { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether groups of this type are allowed to participate in the chat system as a chat channel.
+        /// </summary>
+        /// <value>
+        /// Whether groups of this type are allowed to participate in the chat system as a chat channel.
+        /// </value>
+        [DataMember]
+        public bool IsChatAllowed { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether all groups of this type have the chat feature enabled by default. This can be overridden
+        /// by the value of <see cref="Group.IsChatEnabledOverride"/>.
+        /// </summary>
+        /// <value>
+        /// Whether all groups of this type have the chat feature enabled by default.
+        /// </value>
+        [DataMember]
+        public bool IsChatEnabledForAllGroups { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether individuals are allowed to leave chat channels of this type. If set to
+        /// <see langword="false"/>, then they will only be allowed to mute the channel. This can be overridden by the
+        /// value of <see cref="Group.IsLeavingChatChannelAllowedOverride"/>.
+        /// </summary>
+        /// <value>
+        /// Whether individuals are allowed to leave chat channels of this type.
+        /// </value>
+        [DataMember]
+        public bool IsLeavingChatChannelAllowed { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether chat channels of this type are public. A public channel is visible to everyone when
+        /// performing a search. This also implies that the channel may be joined by any person via the chat application.
+        /// This can be overridden by the value of <see cref="Group.IsChatChannelPublicOverride"/>.
+        /// </summary>
+        /// <value>
+        /// Whether chat channels of this type are public.
+        /// </value>
+        [DataMember]
+        public bool IsChatChannelPublic { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether chat channels of this type are always shown in the channel list even if the person has
+        /// not joined the channel. This also implies that the channel may be joined by any person via the chat
+        /// application. This can be overridden by the value of <see cref="Group.IsChatChannelAlwaysShownOverride"/>.
+        /// </summary>
+        /// <value>
+        /// Whether chat channels of this type are always shown in the channel list.
+        /// </value>
+        [DataMember]
+        public bool IsChatChannelAlwaysShown { get; set; }
 
         #endregion Entity Properties
 
@@ -817,6 +968,15 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool ShowAdministrator { get; set; }
+
+        /// <summary>
+        /// Gets or sets the types of notifications the coordinator receives about scheduled individuals.
+        /// </summary>
+        /// <value>
+        /// The schedule coordinator notification types.
+        /// </value>
+        [DataMember]
+        public ScheduleCoordinatorNotificationType? ScheduleCoordinatorNotificationTypes { get; set; }
 
         #endregion
 

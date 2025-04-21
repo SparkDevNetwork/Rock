@@ -116,7 +116,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_MEMBER_EDIT_BLOCK_TYPE )]
-    [Rock.SystemGuid.BlockTypeGuid( "514B533A-8970-4628-A4C8-35388CD869BC")]
+    [Rock.SystemGuid.BlockTypeGuid( "514B533A-8970-4628-A4C8-35388CD869BC" )]
     public class GroupMemberEdit : RockBlockType
     {
         /// <summary>
@@ -267,7 +267,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             //
             // Indicate that we are a dynamic content providing block.
             //
-            return new 
+            return new
             {
                 // Rock Mobile Shell below v1.2.1
                 Content = ( string ) null,
@@ -345,7 +345,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
                 // Get the header content to send down.
                 string headerContent = ShowHeader
-                    ? "<StackLayout><Label StyleClass=\"h2\" Text=\"Group Member Edit\" /><Rock:Divider /></StackLayout>"
+                    ? @"<StackLayout><Label StyleClass=""h2, title1, text-interface-strongest, bold"" Text=""Group Member Edit"" /></StackLayout>"
                     : string.Empty;
 
                 // Get all the attribute fields.
@@ -453,9 +453,9 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 }
 
                 // Verify and save the communication preference.
-                if( AllowCommunicationPreferenceChange )
+                if ( AllowCommunicationPreferenceChange )
                 {
-                    foreach( var groupMemberOccurrence in groupMemberService.GetByGroupIdAndPersonId( member.GroupId, member.PersonId ) )
+                    foreach ( var groupMemberOccurrence in groupMemberService.GetByGroupIdAndPersonId( member.GroupId, member.PersonId ) )
                     {
                         groupMemberOccurrence.CommunicationPreference = groupMemberData.CommunicationPreference;
                     }
@@ -659,7 +659,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <returns><c>true</c> if the person has a member occurrence with that role, <c>false</c> otherwise.</returns>
         private bool PersonHasGroupMemberRole( int personId, int groupId, int groupTypeRoleId )
         {
-            using( var rockContext = new RockContext() )
+            using ( var rockContext = new RockContext() )
             {
                 var groupMemberRecords = new GroupMemberService( rockContext ).GetByGroupIdAndPersonId( groupId, personId );
                 return groupMemberRecords.Any( gm => gm.GroupRoleId == groupTypeRoleId );
@@ -683,7 +683,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 var roles = GroupTypeCache.Get( member.Group.GroupTypeId ).Roles
                     .Where( r => PersonHasGroupMemberRole( member.PersonId, member.GroupId, member.GroupRoleId ) );
 
-                if( roles.Any() )
+                if ( roles.Any() )
                 {
                     var items = roles.Select( a => new KeyValuePair<string, string>( a.Id.ToString(), a.Name ) );
                     sb.AppendLine( MobileHelper.GetSingleFieldXaml( MobileHelper.GetDropDownFieldXaml( "role", "Role", member.GroupRoleId.ToString(), true, items ) ) );
@@ -734,7 +734,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 var groupMemberGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupMemberGuid ).AsGuid();
                 var member = new GroupMemberService( rockContext ).Get( groupMemberGuid );
 
-                if ( member == null || (!member.Group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && !member.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, RequestContext.CurrentPerson ) ) )
+                if ( member == null || ( !member.Group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && !member.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, RequestContext.CurrentPerson ) ) )
                 {
                     return new CallbackResponse
                     {

@@ -103,6 +103,11 @@ namespace Rock.Model
         /// <returns></returns>
         internal static async Task<bool> RunNowAsync( ServiceJob job )
         {
+            if ( job == null )
+            {
+                return false;
+            }
+
             // use a new RockContext instead of using this.Context so we can SaveChanges without affecting other RockContext's with pending changes.
             var rockContext = new RockContext();
 
@@ -175,19 +180,20 @@ namespace Rock.Model
                 sched.ScheduleJob( jobDetail, jobTrigger );
 
                 // set up the listener to report back from the job when it completes
-                sched.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
+                var listener = new RunNowRockJobListener( job.Id );
+                sched.ListenerManager.AddJobListener( listener, EverythingMatcher<JobKey>.AllJobs() );
 
                 // start the scheduler
                 sched.Start();
 
-                // Wait 10secs to give scheduler to start the job.
-                // If we don't do this, the scheduler might Shutdown thinking there are no running jobs
-                Task.Delay( 10 * 1000 ).Wait();
+                // Wait up to 10 seconds for the job to complete. If the job
+                // hasn't completed yet, the Shutdown call below will wait.
+                await Task.WhenAny( listener.JobCompletedTask, Task.Delay( 10 * 1000 ) );
 
                 // stop the scheduler when done with job
                 sched.Shutdown( true );
 
-                return await Task.FromResult( true );
+                return true;
             }
             catch ( Exception ex )
             {
@@ -202,7 +208,7 @@ namespace Rock.Model
                 jobHistoryService.AddErrorServiceJobHistory( job );
                 rockContext.SaveChanges();
 
-                return await Task.FromResult( false );
+                return false;
             }
 
         }

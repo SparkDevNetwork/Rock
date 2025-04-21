@@ -746,6 +746,8 @@
 
                             $registrantDiv.toggle(anyMatch);
                         }
+
+                        self.checkVisibleRegistrants();
                     });
                 });
 

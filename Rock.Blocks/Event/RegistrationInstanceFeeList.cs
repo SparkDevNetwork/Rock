@@ -39,7 +39,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the fees related to an event registration instance." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "10f4d211-fc60-40d5-b96b-6b9fcbdbefac" )]
     [Rock.SystemGuid.BlockTypeGuid( "dbcfb477-0553-4bae-bac9-2aec38e1da37" )]
@@ -54,35 +54,11 @@ namespace Rock.Blocks.Event
             public const string RegistrationInstanceId = "RegistrationInstanceId";
         }
 
-        private static class PreferenceKey
-        {
-            public const string FilterDateRange = "filter-date-range";
-
-            public const string FilterFeeName = "filter-fee-name";
-
-            public const string FilterFeeOptions = "filter-fee-options";
-        }
-
         #endregion Keys
 
         #region Fields
 
         protected RegistrationInstance _registrationInstance;
-
-        #endregion
-
-        #region Properties
-
-        protected string FilterDateRange => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterDateRange );
-
-        protected Guid? FilterFeeName => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterFeeName )
-            .AsGuidOrNull();
-
-        protected List<Guid> FilterFeeOptions => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterFeeOptions )
-            .FromJsonOrNull<List<Guid>>() ?? new List<Guid>();
 
         #endregion
 
@@ -116,48 +92,9 @@ namespace Rock.Blocks.Event
             {
                 options.ExportTitleName = registrationInstance.Name + " - Registration Fees";
                 options.ExportFileName = registrationInstance.Name + "RegistrationFees";
-                options.FeeNameItems = GetTemplateFees();
-                options.FeeOptionsItems = GetTemplateFeeItems( FilterFeeName );
             }
 
             return options;
-        }
-
-        private List<ListItemBag> GetTemplateFees()
-        {
-            var instanceId = GetRegistrationInstance()?.Id;
-
-            if ( !instanceId.HasValue )
-            {
-                return new List<ListItemBag>();
-            }
-
-            var registrationInstanceService = new RegistrationInstanceService( RockContext );
-            var templateId = registrationInstanceService.Get( instanceId.Value ).RegistrationTemplateId;
-
-            var templateFees = new RegistrationTemplateFeeService( RockContext ).Queryable()
-                .Where( f => f.RegistrationTemplateId == templateId )
-                .Select( f => new ListItemBag() { Text = f.Name, Value = f.Guid.ToString() } )
-                .ToList();
-
-            return templateFees;
-        }
-
-        private List<ListItemBag> GetTemplateFeeItems( Guid? templateFeeGuid )
-        {
-            var items = new List<ListItemBag>();
-            var templateService = new RegistrationTemplateFeeItemService( RockContext );
-
-            if ( templateFeeGuid.HasValue || FilterFeeOptions.Count > 0 )
-            {
-                var activeOptions = templateService.Queryable()
-                    .Where( a => templateFeeGuid.HasValue ? a.RegistrationTemplateFee.Guid == templateFeeGuid.Value : FilterFeeOptions.Contains( a.Guid ) )
-                    .Select( a => new ListItemBag() { Text = a.Name, Value = a.Guid.ToString() } );
-
-                items.AddRange( activeOptions );
-            }
-
-            return items.ToList();
         }
 
         /// <inheritdoc/>
@@ -174,31 +111,6 @@ namespace Rock.Blocks.Event
                     .Include( a => a.RegistrationTemplateFee )
                     .Include( a => a.RegistrationTemplateFeeItem )
                     .Where( a => a.RegistrationRegistrant.Registration.RegistrationInstanceId == instanceId );
-
-                var dateRange = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( FilterDateRange, RockDateTime.Now );
-
-                // Filter by Date Range
-                if ( dateRange.Start.HasValue )
-                {
-                    registrationFees = registrationFees.Where( r => r.RegistrationRegistrant.Registration.CreatedDateTime >= dateRange.Start.Value );
-                }
-
-                if ( dateRange.End.HasValue )
-                {
-                    registrationFees = registrationFees.Where( r => r.RegistrationRegistrant.Registration.CreatedDateTime < dateRange.End.Value );
-                }
-
-                // Filter by Fee Name
-                if ( FilterFeeName.HasValue )
-                {
-                    registrationFees = registrationFees.Where( r => r.RegistrationTemplateFee.Guid == FilterFeeName.Value );
-                }
-
-                // Filter by Fee Options
-                if ( FilterFeeOptions.Count > 0 )
-                {
-                    registrationFees = registrationFees.Where( r => FilterFeeOptions.Contains( r.RegistrationTemplateFeeItem.Guid ) );
-                }
             }
 
             return registrationFees.AsQueryable();
@@ -250,21 +162,5 @@ namespace Rock.Blocks.Event
         }
 
         #endregion
-
-        #region Block Actions
-
-        /// <summary>
-        /// ets the Template Fee Items for the selected template fees.
-        /// </summary>
-        /// <param name="templateFeeGuid">The template fee unique identifier.</param>
-        /// <returns></returns>
-        [BlockAction]
-        public BlockActionResult FeeItems( Guid? templateFeeGuid )
-        {
-            var items = GetTemplateFeeItems( templateFeeGuid );
-            return ActionOk( items );
-        }
-
-        #endregion 
     }
 }

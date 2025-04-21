@@ -39,6 +39,11 @@ namespace Rock.Tv.Classes
         /// <summary>
         /// Apple TV
         /// </summary>
-        AppleTv = 0
+        AppleTv = 0,
+
+        /// <summary>
+        /// Roku
+        /// </summary>
+        Roku = 1
     }
 }

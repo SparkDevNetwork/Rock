@@ -302,6 +302,19 @@ namespace Rock.Web.UI.Controls
 
         #endregion Properties
 
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeMatrixEditor"/> class.
+        /// </summary>
+        public AttributeMatrixEditor()
+            : base()
+        {
+            RockControlHelper.Init( this );
+        }
+
+        #endregion
+
         #region Overridden Control Methods
 
         /// <summary>
@@ -328,10 +341,29 @@ namespace Rock.Web.UI.Controls
                 if ( !attributeMatrixGuid.HasValue )
                 {
                     // if the AttributeMatrixGuid isn't known yet, try to scrape it from the PostBack Params
-                    attributeMatrixGuid = this.Page.Request.Params[_hfAttributeMatrixGuid.UniqueID].AsGuidOrNull();
+                    AttributeMatrixGuid = attributeMatrixGuid = this.Page.Request.Params[_hfAttributeMatrixGuid.UniqueID].AsGuidOrNull();
                 }
 
                 BindGrid( attributeMatrixGuid );
+            }
+        }
+
+        /// <summary>
+        /// Restores view-state information from a previous request that was saved with the <see cref="M:System.Web.UI.WebControls.WebControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An object that represents the control state to restore.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            var matrixItemId = _hfMatrixItemId.Value.AsIntegerOrNull();
+
+            // If the matrixItemId has value we are in edit mode, create the edit mode controls so their state can be preserved,
+            // this is necessary since they are created dynamically.
+            if ( matrixItemId.HasValue )
+            {
+                AttributeMatrixGuid = this.Page.Request.Params[_hfAttributeMatrixGuid.UniqueID].AsGuidOrNull();
+                EditMatrixItem( matrixItemId.Value, false );
             }
         }
 
@@ -380,6 +412,7 @@ namespace Rock.Web.UI.Controls
             {
                 tempAttributeMatrixItem = new AttributeMatrixItem();
                 tempAttributeMatrixItem.AttributeMatrix = new AttributeMatrix { AttributeMatrixTemplateId = this.AttributeMatrixTemplateId.Value };
+                tempAttributeMatrixItem.AttributeMatrixTemplateId = this.AttributeMatrixTemplateId.Value;
                 tempAttributeMatrixItem.LoadAttributes();
 
                 foreach ( var attribute in tempAttributeMatrixItem.Attributes.Select( a => a.Value ) )
@@ -530,7 +563,8 @@ namespace Rock.Web.UI.Controls
         /// Edits the matrix item.
         /// </summary>
         /// <param name="matrixItemId">The matrix item identifier.</param>
-        private void EditMatrixItem( int matrixItemId )
+        /// <param name="setValue">if set to <c>true</c> values for the attributes will be set.</param>
+        private void EditMatrixItem( int matrixItemId, bool setValue = true )
         {
             _hfMatrixItemId.Value = matrixItemId.ToString();
 
@@ -548,6 +582,7 @@ namespace Rock.Web.UI.Controls
                 {
                     attributeMatrixItem = new AttributeMatrixItem();
                     attributeMatrixItem.AttributeMatrix = new AttributeMatrixService( rockContext ).Get( this.AttributeMatrixGuid.Value );
+                    attributeMatrixItem.AttributeMatrixTemplateId = attributeMatrixItem.AttributeMatrix.AttributeMatrixTemplateId;
                 }
 
                 if ( this.AttributeMatrixTemplateId.HasValue && attributeMatrixItem.AttributeMatrix.AttributeMatrixTemplateId != this.AttributeMatrixTemplateId )
@@ -563,7 +598,7 @@ namespace Rock.Web.UI.Controls
 
             // set the validation group on the controls and save button
             string validationGroup = GetValidationGroupForAttributeControls();
-            Rock.Attribute.Helper.AddEditControls( attributeMatrixItem, _phMatrixItemAttributes, true, validationGroup );
+            Rock.Attribute.Helper.AddEditControls( attributeMatrixItem, _phMatrixItemAttributes, setValue, validationGroup );
 
             // Make sure to set the validategroup on the save button to match, just in case it changed since CreateChildControls
             _btnSaveMatrixItem.ValidationGroup = validationGroup;
@@ -593,6 +628,7 @@ namespace Rock.Web.UI.Controls
             {
                 attributeMatrixItem = new AttributeMatrixItem();
                 attributeMatrixItem.AttributeMatrix = new AttributeMatrixService( rockContext ).Get( this.AttributeMatrixGuid.Value );
+                attributeMatrixItem.AttributeMatrixTemplateId = attributeMatrixItem.AttributeMatrix.AttributeMatrixTemplateId;
                 attributeMatrixItemService.Add( attributeMatrixItem );
             }
 
@@ -603,6 +639,7 @@ namespace Rock.Web.UI.Controls
 
             _gMatrixItems.Visible = true;
             _pnlEditMatrixItem.Visible = false;
+            _hfMatrixItemId.Value = null;
 
             BindGrid( this.AttributeMatrixGuid );
         }
@@ -616,6 +653,7 @@ namespace Rock.Web.UI.Controls
         {
             _gMatrixItems.Visible = true;
             _pnlEditMatrixItem.Visible = false;
+            _hfMatrixItemId.Value = null;
         }
 
         #endregion EditMatrixItem

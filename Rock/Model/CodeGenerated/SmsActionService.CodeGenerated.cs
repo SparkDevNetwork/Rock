@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,24 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( SmsAction.SmsActionQueryableAttributeValue ), nameof( SmsActionAttributeValues ) )]
+    public partial class SmsAction
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<SmsActionQueryableAttributeValue> SmsActionAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class SmsActionQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -116,6 +135,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
+            target.IsInteractionLoggedAfterProcessing = source.IsInteractionLoggedAfterProcessing;
             target.Name = source.Name;
             target.Order = source.Order;
             target.SmsActionComponentEntityTypeId = source.SmsActionComponentEntityTypeId;

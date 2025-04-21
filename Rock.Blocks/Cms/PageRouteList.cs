@@ -15,10 +15,8 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -28,7 +26,6 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PageRouteList;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
@@ -36,12 +33,11 @@ namespace Rock.Blocks.Cms
     /// <summary>
     /// Displays a list of page routes.
     /// </summary>
-
     [DisplayName( "Route List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of page routes." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the page route details.",
@@ -64,20 +60,7 @@ namespace Rock.Blocks.Cms
             public const string DetailPage = "DetailPage";
         }
 
-        private static class PreferenceKey
-        {
-            public const string FilterSite = "filter-site";
-        }
-
         #endregion Keys
-
-        #region Properties
-
-        protected Guid? FilterSite => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterSite )
-            .AsGuidOrNull();
-
-        #endregion
 
         #region Methods
 
@@ -128,21 +111,14 @@ namespace Rock.Blocks.Cms
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "PageRouteId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["PageRouteId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } )
             };
         }
 
         /// <inheritdoc/>
         protected override IQueryable<PageRoute> GetListQueryable( RockContext rockContext )
         {
-            var queryable = base.GetListQueryable( rockContext );
-
-            if ( FilterSite.HasValue )
-            {
-                queryable = queryable.Where( d => d.Page.Layout.Site.Guid == FilterSite.Value );
-            }
-
-            return queryable;
+            return new PageRouteService( rockContext ).Queryable();
         }
 
         /// <inheritdoc/>
@@ -190,7 +166,7 @@ namespace Rock.Blocks.Cms
 
                 if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${PageRoute.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {PageRoute.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

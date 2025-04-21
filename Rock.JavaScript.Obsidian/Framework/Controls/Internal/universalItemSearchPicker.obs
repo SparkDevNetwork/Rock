@@ -217,6 +217,7 @@
             searchValue.value = "";
             searchResults.value = [];
             includeInactive.value = false;
+            lastSelectedValue = null;
 
             nextTick(() => {
                 if (searchPanel.value) {

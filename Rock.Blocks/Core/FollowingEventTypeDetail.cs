@@ -188,7 +188,7 @@ namespace Rock.Blocks.Core
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -207,7 +207,7 @@ namespace Rock.Blocks.Core
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -235,12 +235,6 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.EntityType ),
                 () => entity.EntityTypeId = box.Entity.EntityType.GetEntityId<EntityType>( rockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.FollowedEntityType ),
-                () => entity.FollowedEntityTypeId = box.Entity.FollowedEntityType.GetEntityId<EntityType>( rockContext ) );
-
-            box.IfValidProperty( nameof( box.Entity.FollowedEntityTypeId ),
-                () => entity.FollowedEntityTypeId = box.Entity.FollowedEntityTypeId );
-
             box.IfValidProperty( nameof( box.Entity.IncludeNonPublicRequests ),
                 () => entity.IncludeNonPublicRequests = box.Entity.IncludeNonPublicRequests );
 
@@ -267,7 +261,7 @@ namespace Rock.Blocks.Core
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -436,6 +430,17 @@ namespace Rock.Blocks.Core
                 }
 
                 var isNew = entity.Id == 0;
+
+                entity.FollowedEntityTypeId = null;
+                var eventComponent = entity.GetEventComponent();
+                if ( eventComponent != null )
+                {
+                    var followedEntityType = EntityTypeCache.Get( eventComponent.FollowedType );
+                    if ( followedEntityType != null )
+                    {
+                        entity.FollowedEntityTypeId = followedEntityType.Id;
+                    }
+                }
 
                 rockContext.WrapTransaction( () =>
                 {

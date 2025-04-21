@@ -116,7 +116,6 @@
                                 <Rock:RockCheckBox ID="cbEnableIndexing" runat="server" Label="Is Indexed" Help="Enables the Rock indexer for this site." AutoPostBack="true" OnCheckedChanged="cbEnableIndexing_CheckedChanged" />
                                 <Rock:RockTextBox ID="tbIndexStartingLocation" runat="server" Label="Crawling Starting Location" Help="The URL for the Rock indexer to use to start crawling the site." />
                                 <Rock:RockCheckBox ID="cbEnableExclusiveRoutes" runat="server" Label="Enable Exclusive Routes" Help="Enabling this feature will prevent other sites from using this sites routes and prevent routes from other sites from working on this site. This means the domain in the URL used with the route must match the site's configured Domain(s). If the route is configured as 'Is Global' then this setting is ignored." />
-                                <Rock:RockCheckBox ID="cbEnablePageViewGeoTracking" runat="server" Label="Enable Page View Geo Tracking" Help="Enabling this feature will allow the PopulateInteractionSessionData job to begin performing geolocation lookup on the IP addresses in the Interaction Session data. This also requires setting up a IP Address Location Service found under System Settings." />
                                 <Rock:RockCheckBox ID="cbDisablePredictableIds" runat="server" Label="Disable Predictable Ids" Help="This should be disabled only with the knowledge that the site was created/built to handle this (rare)." />
                             </div>
                         </div>
@@ -128,8 +127,8 @@
                     </Rock:PanelWidget>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </div>
@@ -148,7 +147,7 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnEdit" runat="server" data-shortcut-key="e" AccessKey="m" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" OnClick="btnDelete_Click" />
 

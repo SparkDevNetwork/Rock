@@ -33,19 +33,11 @@
                             field="name"
                             visiblePriority="xs" />
 
-                <Column name="segments"
-                        title="Segments"
-                        visiblePriority="lg">
-                    <template #format="{ row }">
-                        <span class='label label-info margin-r-sm' v-for="segment in row.segments">
-                            {{ segment }}
-                        </span>
-                    </template>
-
-                    <template #skeleton>
-                        <div class="skeleton skeleton-text skeleton-rounded" />
-                    </template>
-                </Column>
+                <LabelColumn name="segments"
+                             title="Segments"
+                             field="segments"
+                             defaultLabelClass="info"
+                             visiblePriority="lg" />
 
                 <TextColumn name="saturation"
                             title="Saturation"
@@ -77,7 +69,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { NavigationUrlKey } from "./types.partial";
-    import Grid, { TextColumn, DeleteColumn, ReorderColumn, EditColumn } from "@Obsidian/Controls/grid";
+    import Grid, { LabelColumn, TextColumn, DeleteColumn, ReorderColumn, EditColumn, NumberColumn } from "@Obsidian/Controls/grid";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { Guid } from "@Obsidian/Types";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
@@ -170,7 +162,13 @@
      */
     function onEditAdaptation(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.AdaptationDetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.AdaptationDetailPage].replace("((Key))", key);
+            const baseUrlString = config.navigationUrls[NavigationUrlKey.AdaptationDetailPage].replace("((Key))", key);
+            const baseUrl = new URL(baseUrlString, window.location.origin);
+
+            baseUrl.searchParams.set("AdaptiveMessageId", props.modelValue?.idKey ?? "");
+            baseUrl.searchParams.set("autoEdit", "true");
+
+            window.location.href = baseUrl.toString();
         }
     }
 
@@ -209,9 +207,8 @@
 
         if (result.isSuccess) {
             if (adaptationsGridDataSource) {
-                const index = adaptationsGridDataSource.value.rows?.findIndex(r => r["idKey"] === key);
-
-                if (index && index !== -1) {
+                const index = adaptationsGridDataSource.value.rows?.findIndex(r => r["idKey"] === key) ?? -1;
+                if (index > -1) {
                     adaptationsGridDataSource.value.rows?.splice(index, 1);
                 }
             }

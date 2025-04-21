@@ -1,0 +1,63 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <slot name="prepend" />
+    <div v-if="label || help" class="form-group rock-bulleted-list">
+        <RockLabel :help="help">
+            {{ label }}
+            <slot name="besideLabel" />
+        </RockLabel>
+        <ul v-bind="$attrs">
+            <li v-for="(item, index) of listItems" :key="item + index">{{ item }}</li>
+        </ul>
+    </div>
+    <ul v-else v-bind="$attrs">
+        <li v-for="(item, index) of listItems" :key="item + index">{{ item }}</li>
+    </ul>
+    <slot name="append" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed } from "vue";
+    import RockLabel from "./rockLabel.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    defineOptions({
+        inheritAttrs: false
+    });
+
+    const props = defineProps({
+        /**
+         * List of items to display. List can container either strings or ListItemBags with at least
+         * a `text` property as that property is the only property used and is the displayed text.
+         */
+        items: {
+            type: Array as PropType<Array<ListItemBag | string>>,
+            default: []
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        help: {
+            type: String as PropType<string>,
+            default: ""
+        },
+    });
+
+    const listItems = computed<string[]>(() => {
+        return props.items.map(item => {
+            if (typeof item == "string") {
+                return item;
+            }
+
+            if ("text" in item) {
+                return item["text"] ?? "";
+            }
+
+            return "";
+        }).filter(item => !!item);
+    });
+
+</script>

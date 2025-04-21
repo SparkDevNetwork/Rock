@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "InteractiveExperience" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "3D90E693-476E-4DFC-B958-A28D1DD370BF" )]
     public partial class InteractiveExperience : Model<InteractiveExperience>, IHasActiveFlag, ICacheable
     {

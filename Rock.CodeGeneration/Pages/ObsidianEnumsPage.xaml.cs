@@ -115,20 +115,7 @@ namespace Rock.CodeGeneration.Pages
         /// <returns>A string that represents the file name.</returns>
         private string GetFileNameForType( Type type )
         {
-            var name = type.Name.Split( '`' )[0];
-
-            // If the type name is all CAPS then just convert the whole thing
-            // to lowercase. Otherwise convert to camelCase.
-            if ( name.All( c => char.IsUpper( c ) ) )
-            {
-                name = name.ToLower();
-            }
-            else
-            {
-                name = name.CamelCase();
-            }
-
-            return $"{name}.ts";
+            return $"{type.Name.ToCamelCase()}.ts";
         }
 
         /// <summary>
@@ -178,7 +165,7 @@ namespace Rock.CodeGeneration.Pages
                         var file = createdFiles[i];
                         var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
 
-                        if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) )
+                        if ( filename.EndsWith( ".cs" ) )
                         {
                             var projectName = file.SolutionRelativePath.Split( '\\' )[0];
 

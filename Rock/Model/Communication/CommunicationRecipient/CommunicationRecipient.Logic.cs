@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using Rock.Data;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Model
@@ -177,6 +178,13 @@ namespace Rock.Model
                 return base.ToString();
             }
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => Communication ?? base.ParentAuthority;
 
         #endregion
 

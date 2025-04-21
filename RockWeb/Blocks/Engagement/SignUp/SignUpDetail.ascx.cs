@@ -452,8 +452,6 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             int? groupId = 0;
             if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.GroupId ) ) )
             {
@@ -482,6 +480,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -2940,7 +2940,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             BuildProjectTypeRadioButtonList( group );
 
-            if ( !IsAuthorizedToAdministrate( group ) )
+            if ( !IsAuthorizedToEdit( group ) )
             {
                 wpMemberAttributes.Visible = false;
                 wpMemberOpportunityAttributes.Visible = false;
@@ -3054,7 +3054,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         private void BuildProjectTypeRadioButtonList( Group group )
         {
             var projectTypeAttribute = group.Attributes.FirstOrDefault( a => a.Key == AttributeKey.ProjectType ).Value;
-            if ( projectTypeAttribute == null || !projectTypeAttribute.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+            if ( projectTypeAttribute == null )
             {
                 pnlProjectType.Visible = false;
                 return;

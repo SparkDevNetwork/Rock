@@ -65,8 +65,6 @@ namespace RockWeb.Blocks.CheckIn
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
@@ -106,6 +104,8 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         private void ClearSelection()

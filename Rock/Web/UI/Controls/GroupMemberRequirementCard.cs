@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -608,11 +609,9 @@ namespace Rock.Web.UI.Controls
             rockContext.SaveChanges();
             _modalDialog.Hide();
 
-            // Reload the page to make sure that the current status is reflected in the card styling.
-            var currentPageReference = this.RockBlock().CurrentPageReference;
-            Dictionary<string, string> currentPageParameters = this.RockBlock().PageParameters().ToDictionary( k => k.Key, k => k.Value.ToString() );
-            var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId, currentPageParameters );
-            this.RockBlock().NavigateToPage( pageRef );
+            this.MeetsGroupRequirement = MeetsGroupRequirement.Meets;
+            this.GroupMemberRequirementId = groupMemberRequirement.Id;
+            this.GroupMemberRequirementDueDate = null;
         }
 
         /// <summary>

@@ -45,7 +45,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [BlockTemplateField( "Schedule Preference Landing Template",
         Description = "The XAML passed into the landing page, where the user's groups are listed.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_PREFERENCE_LANDING_PAGE,
-        DefaultValue = "C3A98DBE-E977-499C-B823-0B3676731E48",
+        DefaultValue = "8DF04E4B-9ABF-477D-8CD2-D36FF06DBDB8",
         IsRequired = true,
         Key = AttributeKey.LandingTemplate,
         Order = 0 )]
@@ -56,7 +56,6 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_GROUPS_GROUP_SCHEDULE_PREFERENCE )]
     public class GroupSchedulePreference : RockBlockType
     {
-
         #region Block Attributes
 
         private static class AttributeKey
@@ -212,7 +211,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             var assignmentScheduleList = GetAssignmentScheduleList( group.Id );
 
             DateTimeOffset? selectedStartDate = null;
-            if(groupMember.ScheduleStartDate != null)
+            if ( groupMember.ScheduleStartDate != null )
             {
                 selectedStartDate = groupMember.ScheduleStartDate.Value.ToRockDateTimeOffset();
             }
@@ -443,7 +442,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     groupMember.ScheduleTemplateId = null;
                 }
 
-                if( startDate.HasValue )
+                if ( startDate.HasValue )
                 {
                     groupMember.ScheduleStartDate = startDate.Value.Date;
                 }
@@ -451,7 +450,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 {
                     groupMember.ScheduleStartDate = null;
                 }
-                
+
                 groupMember.ScheduleReminderEmailOffsetDays = reminderOffset ?? 0;
 
                 rockContext.SaveChanges();
@@ -615,6 +614,5 @@ namespace Rock.Blocks.Types.Mobile.Groups
         #region Helper Classes
 
         #endregion
-
     }
 }

@@ -1,0 +1,39 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <SchedulePicker label="Schedule"
+                        v-model="value"
+                        :multiple="multiple"
+                        :showOnlyPublic="showOnlyPublic" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Limit to Public Only" v-model="showOnlyPublic" />
+                </div>
+            </div>
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const multiple = ref(false);
+    const showOnlyPublic = ref(false);
+    const value = ref(null);
+    const importCode = getSfcControlImportPath("schedulePicker");
+    const exampleCode = `<SchedulePicker label="Schedule" v-model="value" :multiple="false" />`;
+</script>

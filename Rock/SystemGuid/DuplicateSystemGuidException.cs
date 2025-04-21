@@ -33,10 +33,20 @@ namespace Rock.SystemGuid
             this.itemMessage = itemMessage;
         }
 
+        internal DuplicateSystemGuidException( string message )
+            : base( message )
+        {
+        }
+
         public override string Message
         {
             get
             {
+                if ( itemMessage == null || sqlException == null )
+                {
+                    return base.Message;
+                }
+
                 if ( itemMessage.IsNotNullOrWhiteSpace() )
                 {
                     return $"{itemMessage}, SQL Exception: {sqlException.Message}";
@@ -46,7 +56,20 @@ namespace Rock.SystemGuid
             }
         }
 
-        public override string StackTrace => $"{thrownException.StackTrace}\r\n\r\nSQL Stacktrace:\r\n{sqlException.StackTrace}";
+        public override string StackTrace
+        {
+            get
+            {
+                if ( thrownException != null && sqlException != null )
+                {
+                    return $"{thrownException.StackTrace}\r\n\r\nSQL Stacktrace:\r\n{sqlException.StackTrace}";
+                }
+                else
+                {
+                    return base.StackTrace;
+                }
+            }
+        }
 
         private static System.Data.SqlClient.SqlException FindDuplicateGuidSqlException( Exception ex )
         {

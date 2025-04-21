@@ -46,7 +46,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { dispatchBlockEvent, getSecurityGrant, provideSecurityGrant, useBlockGuid, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { dispatchBlockEvent, getSecurityGrant, provideSecurityGrant, useBlockBrowserBus, useBlockGuid, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
     import { SearchOrder } from "@Obsidian/Enums/Blocks/Cms/ContentCollectionView/searchOrder";
     import { ContentCollectionInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionView/contentCollectionInitializationBox";
@@ -56,13 +56,14 @@
     import { Guid } from "@Obsidian/Types";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { SortOrdersKey } from "./ContentCollectionView/types.partial";
 
     const config = useConfigurationValues<ContentCollectionInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
     const blockGuid = useBlockGuid() ?? emptyGuid;
     const securityGrant = getSecurityGrant(config.securityGrantToken);
+    const browserBus = useBlockBrowserBus();
 
     // #region Values
 
@@ -332,9 +333,13 @@
         updateResults(searchResultContainerElement.value, data, onLoadMore);
 
         if (initialResults) {
+            browserBus.publish("full-search");
             dispatchBlockEvent("content-collection-view-full-search", blockGuid);
         }
         else if (sourceGuid) {
+            browserBus.publish("results-updated", {
+                sourceGuid
+            });
             dispatchBlockEvent("content-collection-view-results-updated", blockGuid, {
                 sourceGuid
             });

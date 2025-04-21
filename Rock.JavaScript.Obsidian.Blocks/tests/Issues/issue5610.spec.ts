@@ -1,12 +1,13 @@
 import { HttpResult } from "@Obsidian/Types/Utility/http";
-import RegistrationEntry from "../../src/Event/registrationEntry";
-import { RegistrationEntryBlockViewModel } from "../../src/Event/RegistrationEntry/types.partial";
+import RegistrationEntry from "../../src/Event/registrationEntry.obs";
+import Registrant from "../../src/Event/RegistrationEntry/registrant.partial.obs";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { mockBlockActions, mountBlock } from "../blocks";
 import { waitFor } from "../utils";
 import { Guid } from "@Obsidian/Types";
 import { flushPromises } from "@vue/test-utils";
 
-function getConfigurationValues(): RegistrationEntryBlockViewModel {
+function getConfigurationValues(): RegistrationEntryInitializationBox {
     // This is weird, but we have to do this because the block actually
     // modifies the configuration values which is non-standard.
     return JSON.parse(JSON.stringify(configurationValues));
@@ -36,8 +37,7 @@ describe("Issue 5610", () => {
 
         const instance = mountBlock(RegistrationEntry,
             getConfigurationValues(),
-            blockActions, {
-        });
+            blockActions);
 
         // Configure registration for 2 registrants.
         await instance.find(".registrationentry-intro .numberincrement-up").trigger("click");
@@ -60,7 +60,7 @@ describe("Issue 5610", () => {
         // this because Ant Select does not have an actual HTML element backing
         // it that we can change to trigger the update.
         instance.get(".registrationentry-registrant > div:nth-child(1)")
-            .findAllComponents({name: "DropDownList"})[0]
+            .findAllComponents({ name: "DropDownList" })[0]
             .vm
             .$emit("update:modelValue", "");
 
@@ -100,9 +100,9 @@ describe("Issue 5610", () => {
         // Select the family member. I can't find a better way to do this
         // because Ant Select does not have an actual HTML element backing
         // it that we can change to trigger the update.
-        const secondRegistrant = instance.findAllComponents({name: "Event.RegistrationEntry.Registrant"})[1];
+        const secondRegistrant = instance.findAllComponents(Registrant)[1];
         instance.get(".registrationentry-registrant > div:nth-child(2)")
-            .findAllComponents({name: "DropDownList"})[0]
+            .findAllComponents({ name: "DropDownList" })[0]
             .vm
             .$emit("update:modelValue", secondRegistrant.vm.familyMemberOptions[0].value);
 
@@ -152,7 +152,7 @@ describe("Issue 5610", () => {
         // this because Ant Select does not have an actual HTML element backing
         // it that we can change to trigger the update.
         instance.get(".registrationentry-registrant > div:nth-child(1)")
-            .findAllComponents({name: "DropDownList"})[0]
+            .findAllComponents({ name: "DropDownList" })[0]
             .vm
             .$emit("update:modelValue", "");
 
@@ -192,9 +192,9 @@ describe("Issue 5610", () => {
         // Select the family member. I can't find a better way to do this
         // because Ant Select does not have an actual HTML element backing
         // it that we can change to trigger the update.
-        const secondRegistrant = instance.findAllComponents({name: "Event.RegistrationEntry.Registrant"})[1];
+        const secondRegistrant = instance.findAllComponents(Registrant)[1];
         instance.get(".registrationentry-registrant > div:nth-child(2)")
-            .findAllComponents({name: "DropDownList"})[0]
+            .findAllComponents({ name: "DropDownList" })[0]
             .vm
             .$emit("update:modelValue", secondRegistrant.vm.familyMemberOptions[0].value);
 
@@ -241,7 +241,7 @@ describe("Issue 5610", () => {
         // this because Ant Select does not have an actual HTML element backing
         // it that we can change to trigger the update.
         instance.get(".registrationentry-registrant > div:nth-child(1)")
-            .findAllComponents({name: "DropDownList"})[0]
+            .findAllComponents({ name: "DropDownList" })[0]
             .vm
             .$emit("update:modelValue", "");
 
@@ -288,7 +288,7 @@ describe("Issue 5610", () => {
         // this because Ant Select does not have an actual HTML element backing
         // it that we can change to trigger the update.
         instance.get(".registrationentry-registrant > div:nth-child(1)")
-            .findAllComponents({name: "DropDownList"})[0]
+            .findAllComponents({ name: "DropDownList" })[0]
             .vm
             .$emit("update:modelValue", "");
 
@@ -307,7 +307,7 @@ describe("Issue 5610", () => {
 /**
  * Configuration values returned by the block to replicate this issue.
  */
-const configurationValues: RegistrationEntryBlockViewModel = {
+const configurationValues: RegistrationEntryInitializationBox = {
     "allowRegistrationUpdates": true,
     "timeoutMinutes": null,
     "session": {
@@ -337,8 +337,7 @@ const configurationValues: RegistrationEntryBlockViewModel = {
         "discountAmount": 0.0,
         "discountMaxRegistrants": 0,
         "discountPercentage": 0.0,
-        "previouslyPaid": 0.0,
-        "savedAccountGuid": null
+        "previouslyPaid": 0.0
     },
     "isUnauthorized": false,
     "instructionsHtml": "",
@@ -359,7 +358,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
                     "preHtml": "<div class='row'><div class='col-md-6'>",
                     "postHtml": "    </div>",
                     "showOnWaitList": true,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 },
                 {
                     "guid": "4ab11894-2b0a-43a4-89ba-d2f69935fb67",
@@ -372,7 +372,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
                     "preHtml": "    <div class='col-md-6'>",
                     "postHtml": "    </div></div>",
                     "showOnWaitList": true,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 },
                 {
                     "guid": "f8d52608-9763-43c6-98c4-d2a6e89e4f95",
@@ -413,7 +414,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
                     "preHtml": "",
                     "postHtml": "",
                     "showOnWaitList": false,
-                    "isSharedValue": true
+                    "isSharedValue": true,
+                    "isLockedIfValuesExist": false
                 },
                 {
                     "guid": "8d0045c6-ded4-4771-9164-f17bbefaa338",
@@ -442,7 +444,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
                     "preHtml": "",
                     "postHtml": "",
                     "showOnWaitList": false,
-                    "isSharedValue": true
+                    "isSharedValue": true,
+                    "isLockedIfValuesExist": false
                 }
             ]
         }
@@ -465,7 +468,7 @@ const configurationValues: RegistrationEntryBlockViewModel = {
     "registrationAttributesStart": [],
     "registrationAttributesEnd": [],
     "maxRegistrants": 10,
-    "registrantsSameFamily": 2,
+    "registrantsSameFamily": 1,
     "forceEmailUpdate": false,
     "registrarOption": 0,
     "cost": 0.00,
@@ -693,5 +696,10 @@ const configurationValues: RegistrationEntryBlockViewModel = {
             "disabled": null
         }
     ],
-    "hideProgressBar": false
+    "hideProgressBar": false,
+    "showSmsOptIn": false,
+    "isPaymentPlanAllowed": false,
+    "isPaymentPlanConfigured": false,
+    "disableCaptchaSupport": true,
+    "areCurrentFamilyMembersShown": true
 };

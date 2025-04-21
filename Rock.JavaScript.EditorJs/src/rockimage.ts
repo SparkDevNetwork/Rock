@@ -48,7 +48,7 @@ async function uploadByFile(file: File, fileTypeGuid: string): Promise<ImageUplo
             return {
                 success: true,
                 file: {
-                    url: `/GetImage.ashx?Id=${uploadedFile.Id}`,
+                    url: `/GetImage.ashx?guid=${uploadedFile.Guid}`,
                     fileId: uploadedFile.Id
                 }
             }
@@ -123,23 +123,26 @@ export class RockImage extends EditorImage {
      * @returns The HTML element that contains our actions.
      */
     public renderSettings() {
-        const element = <HTMLElement>super.renderSettings();
+        let settings = super.renderSettings();
+
+        if (!Array.isArray(settings)) {
+            settings = [settings];
+        }
 
         /* Remove the withBorder and withBackground actions. They don't make
          * sense in our use case. */
-        for (let i = 0; i < element.children.length;) {
-            const child = <HTMLElement>element.children[i];
-            const tune = child.dataset.tune;
+        for (let i = 0; i < settings.length; ) {
+            const child = settings[i];
 
-            if (tune === "withBorder" || tune === "withBackground") {
-                element.removeChild(child);
+            if (child.name === "withBorder" || child.name === "withBackground") {
+                settings.splice(i, 1);
             }
             else {
                 i++;
             }
         }
 
-        return element;
+        return settings;
     }
 
     /**

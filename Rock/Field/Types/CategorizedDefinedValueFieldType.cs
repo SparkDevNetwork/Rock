@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Attribute;
 #endif
 using Rock.Data;
@@ -28,17 +29,21 @@ using Rock.Model;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+
 using TreeNode = Rock.Web.UI.Controls.TreeNode;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field used to save and display a selection from a Defined Type that supports categorized values.
+    /// Field Name: Defined Value (Categorized)
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( "3217C31F-85B6-4E0D-B6BE-2ADB0D28588D" )]
-    public class CategorizedDefinedValueFieldType : FieldType, IEntityReferenceFieldType
+    [IconSvg( @"<svg viewBox=""0 0 16 16"" xmlns=""http://www.w3.org/2000/svg""><path d=""M13.8973 11.9293C13.7824 12.2848 13.7824 13.3402 13.8973 13.6957C14.0969 13.734 14.25 13.9117 14.25 14.125V14.5625C14.25 14.8031 14.0531 15 13.8125 15H4.1875C2.97891 15 2 14.0211 2 12.8125V3.1875C2 1.97891 2.97891 1 4.1875 1H13.8125C14.0531 1 14.25 1.19687 14.25 1.4375V11.5C14.25 11.7133 14.0996 11.8883 13.8973 11.9293ZM12.7734 11.9375H4.1875C3.70625 11.9375 3.3125 12.3312 3.3125 12.8125C3.3125 13.2965 3.70352 13.6875 4.1875 13.6875H12.7734C12.6996 13.2145 12.6996 12.4105 12.7734 11.9375ZM12.9375 2.3125H4.1875C3.70352 2.3125 3.3125 2.70352 3.3125 3.1875V10.8082C3.58047 10.6906 3.87578 10.625 4.1875 10.625H12.9375V2.3125Z"" /><path d=""M5.21875 4.3125H10.9062C11.0266 4.3125 11.125 4.21406 11.125 4.09375V3.21875C11.125 3.09844 11.0266 3 10.9062 3H5.21875C5.09844 3 5 3.09844 5 3.21875V4.09375C5 4.21406 5.09844 4.3125 5.21875 4.3125ZM11.7812 5.40625H6.09375C5.97344 5.40625 5.875 5.50469 5.875 5.625V6.5C5.875 6.62031 5.97344 6.71875 6.09375 6.71875H11.7812C11.9016 6.71875 12 6.62031 12 6.5V5.625C12 5.50469 11.9016 5.40625 11.7812 5.40625ZM10.9062 7.8125H5.21875C5.09844 7.8125 5 7.91094 5 8.03125V8.90625C5 9.02656 5.09844 9.125 5.21875 9.125H10.9062C11.0266 9.125 11.125 9.02656 11.125 8.90625V8.03125C11.125 7.91094 11.0266 7.8125 10.9062 7.8125Z"" /></svg>" )]
+    public class CategorizedDefinedValueFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -46,7 +51,6 @@ namespace Rock.Field.Types
         private const string DEFINED_TYPES_KEY = "DefinedTypes";
         private const string DEFINED_TYPE_VALUES_KEY = "DefinedTypeValues";
         private const string SELECTABLE_VALUES_KEY = "SelectableDefinedValues";
-        private const string CONFIGURATION_MODE_KEY = "ConfigurationMode";
 
         /// <summary>
         /// The settings for this Field Type.
@@ -177,7 +181,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetPublicValue(string privateValue, Dictionary<string, string> privateConfigurationValues)
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return GetTextValue( privateValue, privateConfigurationValues );
         }
@@ -208,7 +212,6 @@ namespace Rock.Field.Types
 
             privateConfigurationValues.Remove( DEFINED_TYPES_KEY );
             privateConfigurationValues.Remove( DEFINED_TYPE_VALUES_KEY );
-            privateConfigurationValues.Remove( CONFIGURATION_MODE_KEY );
 
             return privateConfigurationValues;
         }
@@ -219,66 +222,68 @@ namespace Rock.Field.Types
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
             var definedTypes = new List<DefinedTypeCache>();
 
-            if ( publicConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) )
+            if ( usage != ConfigurationValueUsage.View )
             {
-                var selectedValueIds = publicConfigurationValues[SELECTABLE_VALUES_KEY].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList();
-                publicConfigurationValues[SELECTABLE_VALUES_KEY] = selectedValueIds.ConvertAll( i => DefinedValueCache.Get( i )?.Guid ).ToCamelCaseJson( false, true );
-            }
-
-            if ( publicConfigurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
-            {
-                var definedTypeValue = publicConfigurationValues[DEFINED_TYPE_KEY];
-                if ( int.TryParse( definedTypeValue, out int definedTypeId ) )
+                if ( publicConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) )
                 {
-                    var definedType = DefinedTypeCache.Get( definedTypeId );
-                    if ( definedType != null )
-                    {
-                        publicConfigurationValues[DEFINED_TYPE_KEY] = new ListItemBag()
-                        {
-                            Text = definedType.Name,
-                            Value = definedType.Guid.ToString()
-                        }.ToCamelCaseJson( false, true );
+                    var selectedValueIds = publicConfigurationValues[SELECTABLE_VALUES_KEY].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList();
+                    publicConfigurationValues[SELECTABLE_VALUES_KEY] = selectedValueIds.ConvertAll( i => DefinedValueCache.Get( i )?.Guid ).ToCamelCaseJson( false, true );
+                }
 
-                        // If in Edit mode add CategorizedDefinedTypes if any so we get its DefinedValues.
-                        if ( usage == ConfigurationValueUsage.Edit && definedType != null )
+                if ( publicConfigurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
+                {
+                    var definedTypeValue = publicConfigurationValues[DEFINED_TYPE_KEY];
+                    if ( int.TryParse( definedTypeValue, out int definedTypeId ) )
+                    {
+                        var definedType = DefinedTypeCache.Get( definedTypeId );
+                        if ( definedType != null )
                         {
-                            definedTypes.Add( definedType );
+                            publicConfigurationValues[DEFINED_TYPE_KEY] = new ListItemBag()
+                            {
+                                Text = definedType.Name,
+                                Value = definedType.Guid.ToString()
+                            }.ToCamelCaseJson( false, true );
+
+                            // If in Edit mode add CategorizedDefinedTypes if any so we get its DefinedValues.
+                            if ( usage == ConfigurationValueUsage.Edit && definedType != null )
+                            {
+                                definedTypes.Add( definedType );
+                            }
                         }
                     }
                 }
-            }
 
-            // If in Configure mode get all CategorizedDefinedTypes so we can get their DefinedValues
-            if ( usage == ConfigurationValueUsage.Configure )
-            {
-                definedTypes = DefinedTypeCache.All()
-                    .Where( x => x.CategorizedValuesEnabled ?? false )
-                    .OrderBy( d => d.Order )
-                    .ToList();
-
-                publicConfigurationValues[DEFINED_TYPES_KEY] = definedTypes.ConvertAll( dt => new ListItemBag()
+                // If in Configure mode get all CategorizedDefinedTypes so we can get their DefinedValues
+                if ( usage == ConfigurationValueUsage.Configure )
                 {
-                    Text = dt.Name,
-                    Value = dt.Guid.ToString()
-                } ).ToCamelCaseJson( false, true );
-            }
+                    definedTypes = DefinedTypeCache.All()
+                        .Where( x => x.CategorizedValuesEnabled ?? false )
+                        .OrderBy( d => d.Order )
+                        .ToList();
 
-            var definedValues = new Dictionary<string, string>();
-            foreach ( var definedType in definedTypes )
-            {
-                var definedValueValues = definedType.DefinedValues
-                    .ConvertAll( g => new ListItemBag()
+                    publicConfigurationValues[DEFINED_TYPES_KEY] = definedTypes.ConvertAll( dt => new ListItemBag()
                     {
-                        Text = g.Value,
-                        Value = g.Guid.ToString(),
-                        Category = CategoryCache.Get( g.CategoryId ?? 0 )?.Name ?? "All Categories"
-                    } );
-                definedValues.Add( definedType.Guid.ToString(), definedValueValues.ToCamelCaseJson( false, true ) );
+                        Text = dt.Name,
+                        Value = dt.Guid.ToString()
+                    } ).ToCamelCaseJson( false, true );
+                }
+
+                var definedValues = new Dictionary<string, string>();
+                foreach ( var definedType in definedTypes )
+                {
+                    var definedValueValues = definedType.DefinedValues
+                        .ConvertAll( g => new ListItemBag()
+                        {
+                            Text = g.Value,
+                            Value = g.Guid.ToString(),
+                            Category = CategoryCache.Get( g.CategoryId ?? 0 )?.Name ?? "All Categories"
+                        } );
+                    definedValues.Add( definedType.Guid.ToString(), definedValueValues.ToCamelCaseJson( false, true ) );
+                }
+
+                publicConfigurationValues.Add( DEFINED_TYPE_VALUES_KEY, definedValues.ToCamelCaseJson( false, true ) );
+
             }
-
-            publicConfigurationValues.Add( DEFINED_TYPE_VALUES_KEY, definedValues.ToCamelCaseJson( false, true ) );
-
-            publicConfigurationValues[CONFIGURATION_MODE_KEY] = usage.ToString();
 
             return publicConfigurationValues;
         }
@@ -865,6 +870,35 @@ namespace Rock.Field.Types
         }
 
 #endif
+        #endregion
+
+        #region IEntityFieldType
+
+        /// <inheritdoc/>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return GetEditValue( control, configurationValues ).ToIntSafe();
+        }
+
+        /// <inheritdoc/>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            SetEditValue( control, configurationValues, id.ToString() );
+        }
+
+        /// <inheritdoc/>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity(value, null );
+        }
+
+        /// <inheritdoc/>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            rockContext = rockContext ?? new RockContext();
+            return new DefinedValueService( rockContext ).Get( value );
+        }
+
         #endregion
     }
 }

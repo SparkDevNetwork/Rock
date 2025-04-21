@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -34,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "AdaptiveMessageAdaptation" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ADAPTIVE_MESSAGE_ADAPTATION )]
     public partial class AdaptiveMessageAdaptation : Model<AdaptiveMessageAdaptation>, IHasActiveFlag, IOrdered, ICacheable
     {
@@ -104,6 +106,26 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int AdaptiveMessageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the optional start date of the <see cref="Rock.Model.AdaptiveMessageAdaptation"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing start date of the <see cref="Rock.Model.AdaptiveMessageAdaptation"/>.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime? StartDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end date of the <see cref="Rock.Model.AdaptiveMessageAdaptation"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing end date of the <see cref="Rock.Model.AdaptiveMessageAdaptation"/>.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime? EndDate { get; set; }
 
         #endregion Entity Properties
 

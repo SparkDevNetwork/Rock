@@ -19,7 +19,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+
 using DotLiquid.Util;
+
+using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Cms;
@@ -37,6 +40,7 @@ namespace Rock.Model
     /// <summary>
     /// Manually created Service methods for ContentChannelItem
     /// </summary>
+    [RockLoggingCategory]
     public partial class ContentChannelItemService
     {
         /// <summary>
@@ -281,7 +285,7 @@ namespace Rock.Model
                         }
                         catch ( Exception ex )
                         {
-                            RockLogger.Log.Error( RockLogDomains.Cms, ex, "Failed to download Content Library Item image at {Url}", contentLibraryItem.ImageDownloadUrl );
+                            Logger.LogError( ex, "Failed to download Content Library Item image at {Url}", contentLibraryItem.ImageDownloadUrl );
 
                             // Although the Content Library item image failed to download,
                             // the rest of the data was downloaded successfully.
@@ -552,29 +556,5 @@ namespace Rock.Model
         }
 
         #endregion
-
-        #region IHasAdditionalSettings Models
-
-        /// <summary>
-        /// Content channel item intent settings.
-        /// </summary>
-        /// <remarks>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
-        /// </remarks>
-        [RockInternal( "1.16.4" )]
-        public class IntentSettings
-        {
-            /// <summary>
-            /// Interaction intent defined value identifiers.
-            /// </summary>
-            public List<int> InteractionIntentValueIds { get; set; }
-        }
-
-        #endregion IHasAdditionalSettings Models
     }
 }

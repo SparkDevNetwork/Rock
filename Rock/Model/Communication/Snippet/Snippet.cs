@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "Snippet" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "93548852-201B-4EF6-AF27-BBF535A2CC2B" )]
     public partial class Snippet : Model<Snippet>, IOrdered
     {
@@ -59,6 +60,7 @@ namespace Rock.Model
         /// Gets or sets the snippet type identifier.
         /// </summary>
         [DataMember]
+        [EnableAttributeQualification]
         public int SnippetTypeId { get; set; }
 
         /// <summary>

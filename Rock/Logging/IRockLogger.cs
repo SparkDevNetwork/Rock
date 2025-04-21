@@ -22,6 +22,8 @@ namespace Rock.Logging
     /// <summary>
     /// The interface that RockLogger uses to log.
     /// </summary>
+    [Obsolete( "Use RockLogger.LoggerFactory instead." )]
+    [RockObsolete( "1.17" )]
     public interface IRockLogger
     {
         /// <summary>

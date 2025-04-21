@@ -707,7 +707,11 @@ export class RecurrenceRule {
             attributes.push(`BYMONTHDAY=${monthDayValues}`);
         }
 
-        if (this.byDay.length > 0) {
+        if (this.frequency === "MONTHLY" && this.byDay.length > 0) {
+            const dayValues = this.byDay.map(d => `${d.value}${getiCalDay(d.day)}`);
+            attributes.push(`BYDAY=${dayValues}`);
+        }
+        else if (this.byDay.length > 0) {
             const dayValues = this.byDay.map(d => d.value !== 1 ? `${d.value}${getiCalDay(d.day)}` : getiCalDay(d.day));
             attributes.push(`BYDAY=${dayValues}`);
         }

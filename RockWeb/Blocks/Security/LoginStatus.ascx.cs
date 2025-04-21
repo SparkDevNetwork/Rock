@@ -75,8 +75,6 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             var currentPerson = CurrentPerson;
             if ( currentPerson != null )
             {
@@ -159,6 +157,8 @@ namespace RockWeb.Blocks.Security
             }
 
             hfActionType.Value = lbLoginLogout.Text;
+
+            base.OnLoad( e );
         }
 
         #endregion

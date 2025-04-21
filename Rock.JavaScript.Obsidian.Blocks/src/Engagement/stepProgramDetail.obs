@@ -1,13 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <RockForm v-if="!blockError" v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
         <Panel type="block" :title="panelName" :headerSecondaryActions="blockLabels">
-            <template v-if="categoryName" #headerActions>
-                <span class="label label-info">{{ categoryName }}</span>
+            <template #headerActions>
+                <span v-if="categoryName" class="label label-info mr-1">{{ categoryName }}</span>
+                <span v-if="!stepProgramViewBag?.isActive" class="label label-danger">Inactive</span>
             </template>
             <template #default>
                 <ViewPanel v-if="panelMode == DetailPanelMode.View"
@@ -54,13 +55,13 @@
             </template>
             <template #footerSecondaryActions>
                 <RockButton v-if="panelMode === DetailPanelMode.View"
-                            :btnSize="BtnSize.Default"
+                            :btnSize="BtnSize.Small"
                             :btnType="BtnType.Default"
                             @click="onStepFlowClick">
                     <i class="fas fa-project-diagram"></i> Step Flow
                 </RockButton>
                 <RockButton v-if="panelMode === DetailPanelMode.View && stepProgramViewBag?.canAdministrate"
-                            :btnSize="BtnSize.Default"
+                            :btnSize="BtnSize.Small"
                             :btnType="BtnType.Default"
                             @click="onSecurityClick">
                     <i class="fa fa-lock"></i>

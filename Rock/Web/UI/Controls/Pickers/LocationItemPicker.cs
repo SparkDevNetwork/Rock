@@ -110,24 +110,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="location">The location.</param>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use SetValue(int) or SetValueFromNamedLocation (NamedLocationCache) instead" )]
-        public void SetValue( Rock.Model.Location location )
-        {
-            if ( location != null )
-            {
-                SetValueFromNamedLocation( NamedLocationCache.Get( location ) );
-            }
-            else
-            {
-                SetValueFromNamedLocation( ( NamedLocationCache ) null );
-            }
-        }
-
-        /// <summary>
         /// Sets the values.
         /// </summary>
         /// <param name="namedLocations">The named locations.</param>
@@ -172,17 +154,6 @@ namespace Rock.Web.UI.Controls
                 ItemId = Constants.None.IdValue;
                 ItemName = Constants.None.TextHtml;
             }
-        }
-
-        /// <summary>
-        /// Sets the values.
-        /// </summary>
-        /// <param name="locations">The locations.</param>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use SetValue (int) or SetValueFromNamedLocation(NamedLocationCache) instead" )]
-        public void SetValues( IEnumerable<Location> locations )
-        {
-            SetValuesFromNamedLocations( locations.Select( a => NamedLocationCache.Get( a ) ).ToList() );
         }
 
         /// <summary>

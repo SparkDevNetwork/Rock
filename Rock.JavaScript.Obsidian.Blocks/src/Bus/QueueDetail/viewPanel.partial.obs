@@ -23,6 +23,7 @@
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { QueueBag } from "@Obsidian/ViewModels/Blocks/Bus/QueueDetail/queueBag";
     import { QueueDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Bus/QueueDetail/queueDetailOptionsBag";
+    import { pluralConditional } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         modelValue: {
@@ -62,8 +63,11 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.timeToLiveSeconds) {
-            valueBuilder.addTextValue("Time To Live", `${props.modelValue.timeToLiveSeconds.toString()} seconds`);
+        if (props.modelValue.timeToLiveSeconds != null && props.modelValue.timeToLiveSeconds >= 1) {
+            valueBuilder.addTextValue("Time To Live", `${props.modelValue.timeToLiveSeconds.toString()} ${pluralConditional(props.modelValue.timeToLiveSeconds, "second", "seconds")}`);
+        }
+        else {
+            valueBuilder.addTextValue("Time To Live", `Indefinite`);
         }
 
         if (props.modelValue.messagesConsumedLastMinute != null) {

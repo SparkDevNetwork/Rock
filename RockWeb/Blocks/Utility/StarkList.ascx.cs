@@ -33,7 +33,9 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Utility
 {
-    [DisplayName( "Stark List" )]
+    [RockObsolete( "1.16.7" )]
+    [Obsolete( "This block type has been deprecated." )]
+    [DisplayName( "Stark List (Legacy)" )]
     [Category( "Utility" )]
     [Description( "Template block for developers to use to start a new list block." )]
     [Rock.SystemGuid.BlockTypeGuid( "E333D1CC-CB55-4E73-8568-41DAD296971C" )]
@@ -75,12 +77,12 @@ namespace RockWeb.Blocks.Utility
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

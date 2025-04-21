@@ -456,7 +456,18 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "well well-message flex-eq mr-2 p-2 js-media-selector-item" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Style, "display: grid; text-align: left;" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    var itemWidth = Unit.Parse( ItemWidth );
+                    var itemWidth = Unit.Empty;
+                    try
+                    {
+                        itemWidth = Unit.Parse( ItemWidth );
+                    }
+                    catch ( Exception ex )
+                    {
+                        Rock.Model.ExceptionLogService.LogException( ex, Context );
+                        ItemWidth = "";
+                        itemWidth = Unit.Parse( ItemWidth );
+
+                    }
 
                     if ( Mode == MediaSelectorMode.Audio )
                     {

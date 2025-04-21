@@ -25,6 +25,9 @@ import { PhoneNumberCountryCodeRulesConfigurationBag } from "@Obsidian/ViewModel
 
 /** The results from the GetConfiguration API action of the PhoneNumberBox control. */
 export type PhoneNumberBoxGetConfigurationResultsBag = {
+    /** A list of each of the country codes, in the order they should be shown */
+    countryCodes?: string[] | null;
+
     /** The default country code */
     defaultCountryCode?: string | null;
 

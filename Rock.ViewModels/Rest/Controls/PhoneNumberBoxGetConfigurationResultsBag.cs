@@ -16,7 +16,6 @@
 //
 
 using System.Collections.Generic;
-using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Rest.Controls
 {
@@ -31,10 +30,14 @@ namespace Rock.ViewModels.Rest.Controls
         public string DefaultCountryCode { get; set; }
 
         /// <summary>
+        /// A list of each of the country codes, in the order they should be shown
+        /// </summary>
+        public List<string> CountryCodes { get; set; }
+
+        /// <summary>
         /// The list of validation/formatting rules for each country code
         /// </summary>
         public Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>> Rules { get; set; }
-
 
         /// <summary>
         /// Gets or sets the SMS opt in text.

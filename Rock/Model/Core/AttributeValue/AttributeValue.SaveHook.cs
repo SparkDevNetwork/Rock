@@ -40,6 +40,13 @@ namespace Rock.Model
                 var rockContext = ( RockContext ) this.RockContext;
                 var attributeCache = AttributeCache.Get( Entity.AttributeId );
 
+                // Null values should never be saved to the database. Instead
+                // empty strings are used.
+                if ( Entity.Value == null )
+                {
+                    Entity.Value = string.Empty;
+                }
+
                 if ( attributeCache != null )
                 {
                     // Check to see if this attribute value if for a File, Image, or BackgroundCheck field type.

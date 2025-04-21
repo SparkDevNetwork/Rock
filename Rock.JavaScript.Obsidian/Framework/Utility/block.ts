@@ -27,10 +27,13 @@ import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionCo
 import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 import { IEntity } from "@Obsidian/ViewModels/entity";
 import { debounce } from "./util";
+import { BrowserBus, useBrowserBus } from "./browserBus";
+import { ICancellationToken } from "./cancellation";
 
 const blockReloadSymbol = Symbol();
 const configurationValuesChangedSymbol = Symbol();
-const staticContentSymbol = Symbol();
+const staticContentSymbol = Symbol("static-content");
+const blockBrowserBusSymbol = Symbol("block-browser-bus");
 
 // TODO: Change these to use symbols
 
@@ -65,6 +68,21 @@ export function useInvokeBlockAction(): InvokeBlockActionFunc {
 }
 
 /**
+ * Gets the function that will return the URL for a block action.
+ *
+ * @returns A function that can be called to determine the URL for a block action.
+ */
+export function useBlockActionUrl(): (actionName: string) => string {
+    const result = inject<(actionName: string) => string>("blockActionUrl");
+
+    if (result === undefined) {
+        throw "Attempted to access block action URL outside of a RockBlock.";
+    }
+
+    return result;
+}
+
+/**
  * Creates a function that can be provided to the block that allows calling
  * block actions.
  *
@@ -77,8 +95,8 @@ export function useInvokeBlockAction(): InvokeBlockActionFunc {
  *
  * @returns A function that can be used to provide the invoke block action.
  */
-export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, blockGuid: Guid, pageParameters: Record<string, string>): InvokeBlockActionFunc {
-    async function invokeBlockAction<T>(actionName: string, data: HttpBodyData | undefined = undefined, actionContext: BlockActionContextBag | undefined = undefined): Promise<HttpResult<T>> {
+export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, blockGuid: Guid, pageParameters: Record<string, string>, interactionGuid: Guid): InvokeBlockActionFunc {
+    async function invokeBlockAction<T>(actionName: string, data: HttpBodyData | undefined = undefined, actionContext: BlockActionContextBag | undefined = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> {
         let context: BlockActionContextBag = {};
 
         if (actionContext) {
@@ -86,11 +104,16 @@ export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, bloc
         }
 
         context.pageParameters = pageParameters;
+        context.interactionGuid = interactionGuid;
 
-        return await post<T>(`/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`, undefined, {
-            __context: context,
-            ...data
-        });
+        return await post<T>(
+            `/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`,
+            undefined,
+            {
+                __context: context,
+                ...data
+            },
+            cancellationToken);
     }
 
     return invokeBlockAction;
@@ -160,7 +183,7 @@ export function onConfigurationValuesChanged(callback: () => void): void {
  *
  * @param content The static content from the server.
  */
-export function provideStaticContent(content: string | undefined): void {
+export function provideStaticContent(content: Ref<Node[]>): void {
     provide(staticContentSymbol, content);
 }
 
@@ -169,8 +192,36 @@ export function provideStaticContent(content: string | undefined): void {
  *
  * @returns A string of HTML content or undefined.
  */
-export function useStaticContent(): string | undefined {
-    return inject<string>(staticContentSymbol);
+export function useStaticContent(): Node[] {
+    const content = inject<Ref<Node[]>>(staticContentSymbol);
+
+    if (!content) {
+        return [];
+    }
+
+    return content.value;
+}
+
+/**
+ * Provides the browser bus configured to publish messages for the current
+ * block.
+ *
+ * @param bus The browser bus.
+ */
+export function provideBlockBrowserBus(bus: BrowserBus): void {
+    provide(blockBrowserBusSymbol, bus);
+}
+
+/**
+ * Gets the browser bus configured for use by the current block. If available
+ * this will be properly configured to publish messages with the correct block
+ * and block type. If this is called outside the context of a block then a
+ * generic use {@link BrowserBus} will be returned.
+ *
+ * @returns An instance of {@link BrowserBus}.
+ */
+export function useBlockBrowserBus(): BrowserBus {
+    return inject<BrowserBus>(blockBrowserBusSymbol, () => useBrowserBus(), true);
 }
 
 
@@ -239,6 +290,9 @@ export function setPropertiesBoxValue<T extends Record<string, unknown>, K exten
 /**
  * Dispatches a block event to the document.
  *
+ * @deprecated Do not use this function anymore, it will be removed in the future.
+ * Use the BrowserBus instead.
+ *
  * @param eventName The name of the event to be dispatched.
  * @param eventData The custom data to be attached to the event.
  *
@@ -265,7 +319,10 @@ export function dispatchBlockEvent(eventName: string, blockGuid: Guid, eventData
  * @returns true if the event is a block event.
  */
 export function isBlockEvent<TData = undefined>(event: Event): event is CustomEvent<BlockEvent<TData>> {
-    return "guid" in event && "data" in event;
+    return event instanceof CustomEvent
+        && typeof event.detail === "object"
+        && "guid" in event.detail
+        && "data" in event.detail;
 }
 
 // #region Entity Detail Blocks
@@ -453,7 +510,7 @@ export function getSecurityGrant(token: string | null | undefined): SecurityGran
 /**
  * Provides the security grant to child components to use in their API calls.
  *
- * @param grant The grant ot provide to child components.
+ * @param grant The grant to provide to child components.
  */
 export function provideSecurityGrant(grant: SecurityGrant): void {
     provide(securityGrantSymbol, grant);
@@ -562,9 +619,10 @@ export async function refreshDetailAttributes<TEntityBag>(bag: Ref<TEntityBag>, 
 
 // #endregion Extended Refs
 
-// #region Block Guid
+// #region Block and BlockType Guid
 
 const blockGuidSymbol = Symbol("block-guid");
+const blockTypeGuidSymbol = Symbol("block-type-guid");
 
 /**
  * Provides the block unique identifier to all child components.
@@ -583,6 +641,26 @@ export function provideBlockGuid(blockGuid: string): void {
  */
 export function useBlockGuid(): Guid | undefined {
     return inject<Guid>(blockGuidSymbol);
+}
+
+/**
+ * Provides the block type unique identifier to all child components.
+ * This is an internal method and should not be used by plugins.
+ *
+ * @param blockTypeGuid The unique identifier of the block type.
+ */
+export function provideBlockTypeGuid(blockTypeGuid: string): void {
+    provide(blockTypeGuidSymbol, blockTypeGuid);
+}
+
+/**
+ * Gets the block type unique identifier of the current block in this component
+ * chain.
+ *
+ * @returns The unique identifier of the block type.
+ */
+export function useBlockTypeGuid(): Guid | undefined {
+    return inject<Guid>(blockTypeGuidSymbol);
 }
 
 // #endregion

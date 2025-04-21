@@ -24,6 +24,8 @@ namespace Rock.Lava
     /// <summary>
     /// Defines static helper functions for working with Lava data objects and types.
     /// </summary>
+    [Obsolete("Use Rock.Lava.Shared.LavaDataHelper instead.")]
+    [RockObsolete("1.17")]
     public static class LavaDataObjectHelper
     {
         /// <summary>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StreakTypeExclusion" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "1F00C782-F8A2-4CFA-B7DF-E5B3B6D36069")]
     public partial class StreakTypeExclusion : Model<StreakTypeExclusion>, ICacheable
     {
@@ -56,7 +57,6 @@ namespace Rock.Model
         /// More significant bits (going left) are more recent dates.
         /// </summary>
         [DataMember]
-        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public byte[] ExclusionMap { get; set; }
 
         #endregion Entity Properties

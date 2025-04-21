@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using Microsoft.Extensions.Logging;
+
 using Rock.Logging;
 using System;
 using System.Collections;
@@ -30,6 +32,7 @@ namespace Rock.Web.UI
     /// Optionally compresses the ViewState before storing it into a hidden field on the
     /// page to increase postback speed.
     /// </summary>
+    [RockLoggingCategory]
     public class RockHiddenFieldPageStatePersister : HiddenFieldPageStatePersister
     {
         // This  custom viewstate controller serves two purposes
@@ -125,8 +128,8 @@ namespace Rock.Web.UI
             }
             catch ( System.Security.Cryptography.CryptographicException cryptographicException )
             {
-                RockLogger.Log.Error( RockLogDomains.Core, cryptographicException, "Failed decrypting the encrypted View state Props" +
-                    "" );
+                RockLogger.LoggerFactory.CreateLogger<RockHiddenFieldPageStatePersister>()
+                    .LogError( cryptographicException, "Failed decrypting the encrypted View state Props" );
                 return;
             }
 

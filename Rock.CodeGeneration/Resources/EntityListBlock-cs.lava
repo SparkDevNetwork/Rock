@@ -39,7 +39,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
     [Category( "{{ Domain }}" )]
     [Description( "Displays a list of {{ EntityName | SplitCase | Downcase | Pluralize }}." )]
     [IconCssClass( "fa fa-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the {{ EntityName | SplitCase | Downcase }} details.",
@@ -113,7 +113,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "{{ EntityName }}Id", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["{{ EntityName }}Id"] = "((Key))", ["autoEdit"] = "true" } )
             };
         }
 
@@ -185,7 +185,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
 
             if ( !{% if UseEntitySecurity == true %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${{'{'}}{{ EntityName }}.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {{'{'}}{{ EntityName }}.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

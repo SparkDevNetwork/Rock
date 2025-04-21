@@ -81,21 +81,16 @@ namespace Rock.Lava.Fluid
 
         private FluidValue Evaluate( FluidValue leftValue, FluidValue rightValue )
         {
+            // If either value is null, the comparison should evaluate to false.
+            // This aligns with the behavior of Shopify Liquid and the historical DotLiquid implementation of Lava,
+            // but differs from the standard Fluid implementation (v2.3.1)
             if ( leftValue.IsNil() || rightValue.IsNil() )
             {
-                if ( FailIfEqual )
-                {
-                    return BooleanValue.False;
-                }
-
-                return leftValue.IsNil() && rightValue.IsNil()
-                    ? BooleanValue.True
-                    : BooleanValue.False;
+                return BooleanValue.False;
             }
 
             // If either value is numeric, perform a numeric comparison.
-            if ( leftValue is NumberValue
-                 || rightValue is NumberValue )
+            if ( leftValue is NumberValue || rightValue is NumberValue )
             {
                 var leftDecimal = leftValue.ToNumberValue();
                 var rightDecimal = rightValue.ToNumberValue();
@@ -113,8 +108,7 @@ namespace Rock.Lava.Fluid
             }
 
             // If either value is a Date, perform a Date comparison.
-            if ( leftValue.Type == FluidValues.DateTime
-                 || rightValue.Type == FluidValues.DateTime )
+            if ( leftValue.Type == FluidValues.DateTime || rightValue.Type == FluidValues.DateTime )
             {
                 var leftDateTime = leftValue.AsDateTimeOrDefault();
                 var rightDateTime = rightValue.AsDateTimeOrDefault();

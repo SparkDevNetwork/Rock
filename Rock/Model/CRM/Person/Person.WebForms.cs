@@ -21,6 +21,8 @@ using System.Text;
 using System.Web;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using Rock.Data;
+using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -90,7 +92,7 @@ namespace Rock.Model
                         case EmailPreference.NoMassEmails:
                             {
                                 return string.Format(
-                                    "<span class='js-email-status email-status no-mass-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'><a class='{0}' href='{1}'>{2} {3} {4} <i class='fa fa-exchange'></i></a> </span>",
+                                    "<span class='js-email-status email-status no-mass-email'><a class='{0}' href='{1}'>{2} {3} {4} <i class='fa fa-exchange' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'></i></a> </span>",
                                     cssClass,
                                     emailLink,
                                     preText,
@@ -101,7 +103,7 @@ namespace Rock.Model
                         case EmailPreference.DoNotEmail:
                             {
                                 return string.Format(
-                                    "<span class='{0} js-email-status email-status do-not-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"Do Not Email\"'>{1} {2} {3} <i class='fa fa-ban'></i></span>",
+                                    "<span class='{0} js-email-status email-status do-not-email'>{1} {2} {3} <i class='fa fa-ban text-sm text-danger' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"Do Not Email\"'></i></span>",
                                     cssClass,
                                     preText,
                                     Email,
@@ -112,7 +114,7 @@ namespace Rock.Model
                 else
                 {
                     return string.Format(
-                        "<span class='js-email-status not-active email-status' data-toggle='tooltip' data-placement='top' title='Email is not active. {0}'>{1} <i class='fa fa-exclamation-triangle'></i></span>",
+                        "<span class='js-email-status not-active email-status'>{1} <i class='fa fa-exclamation-triangle' data-toggle='tooltip' data-placement='top' title='Email is not active. {0}'></i></span>",
                         HttpUtility.HtmlEncode( EmailNote ),
                         Email );
                 }
@@ -173,14 +175,12 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoUrl( string initials, int? photoId, int? age, Gender gender, int? recordTypeValueId, AgeClassification? ageClassification, int? size = null )
         {
-            string virtualPath = string.Empty;
+            var virtualPath = string.Empty;
 
             // If there are no initials provided we'll change the style of the avatar to be an icon
             var stylingOverride = string.Empty;
-            if ( initials.IsNullOrWhiteSpace() )
-            {
-                stylingOverride = "&Style=icon";
-            }
+
+            SecuritySettingsService securitySettingsService = new SecuritySettingsService();
 
             // Determine if we need to provide a size
             var sizeParamter = string.Empty;
@@ -190,7 +190,22 @@ namespace Rock.Model
                 sizeParamter = $"&Size={size}";
             }
 
-            virtualPath = $"~/GetAvatar.ashx?PhotoId={photoId}&AgeClassification={ageClassification}&Gender={gender}&RecordTypeId={recordTypeValueId}&Text={initials}{stylingOverride}{sizeParamter}";
+            if ( initials.IsNullOrWhiteSpace() )
+            {
+                stylingOverride = "&Style=icon";
+            }
+
+            var disablePredictableIds = securitySettingsService.SecuritySettings.DisablePredictableIds;
+
+            if ( disablePredictableIds && photoId.HasValue )
+            {
+                var photoIdHash = IdHasher.Instance.GetHash( photoId.Value );
+                virtualPath = $"~/GetAvatar.ashx?fileIdKey={photoIdHash}&AgeClassification={ageClassification}&Gender={gender}&RecordTypeId={recordTypeValueId}&Text={initials}{stylingOverride}{sizeParamter}";
+            }
+            else
+            {
+                virtualPath = $"~/GetAvatar.ashx?PhotoId={photoId}&AgeClassification={ageClassification}&Gender={gender}&RecordTypeId={recordTypeValueId}&Text={initials}{stylingOverride}{sizeParamter}";
+            }
 
             if ( System.Web.HttpContext.Current == null )
             {
@@ -291,7 +306,7 @@ namespace Rock.Model
         {
             var photoUrl = new StringBuilder();
 
-            photoUrl.Append( VirtualPathUtility.ToAbsolute( "~/" ) );
+            string baseUrl = Rock.Configuration.RockApp.Current.HostingSettings.VirtualRootPath;
             string altText = personPhotoImageTagArgs.AltText;
             string className = personPhotoImageTagArgs.ClassName;
             int? photoId = personPhotoImageTagArgs.PhotoId;
@@ -311,7 +326,7 @@ namespace Rock.Model
 
             if ( photoId.HasValue )
             {
-                photoUrl.AppendFormat( "GetImage.ashx?id={0}", photoId );
+                photoUrl.Append( FileUrlHelper.GetImageUrl( photoId.Value ) );
                 if ( maxWidth.HasValue )
                 {
                     photoUrl.AppendFormat( "&maxwidth={0}", maxWidth.Value );
@@ -326,12 +341,12 @@ namespace Rock.Model
             {
                 if ( recordTypeValueGuid.HasValue && recordTypeValueGuid.Value == SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
                 {
-                    photoUrl.Append( "Assets/Images/business-no-photo.svg?" );
+                    photoUrl.Append( baseUrl + "Assets/Images/business-no-photo.svg?" );
                 }
                 else if ( age.HasValue && age.Value < 18 )
                 {
                     // it's a child
-                    photoUrl.Append( GetPhotoPath( gender, false ) );
+                    photoUrl.Append( baseUrl + GetPhotoPath( gender, false ) );
                 }
                 else
                 {
@@ -347,12 +362,12 @@ namespace Rock.Model
                     if ( ageClassification.HasValue && ageClassification == AgeClassification.Child )
                     {
                         // it's a child
-                        photoUrl.Append( GetPhotoPath( gender, false ) );
+                        photoUrl.Append( baseUrl + GetPhotoPath( gender, false ) );
                     }
                     else
                     {
                         // it's an adult
-                        photoUrl.Append( GetPhotoPath( gender, true ) );
+                        photoUrl.Append( baseUrl + GetPhotoPath( gender, true ) );
                     }
                 }
             }

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowFormBuilderTemplate" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "65FA3078-9D42-4857-B78A-F32A05F7A4C1")]
     public partial class WorkflowFormBuilderTemplate : Model<WorkflowFormBuilderTemplate>, IHasActiveFlag, ICacheable
     {

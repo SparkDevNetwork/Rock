@@ -1,0 +1,35 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <ThemeField v-for="field in fields"
+                    :field="field"
+                    :values="props.values"
+                    @updateValue="onUpdateValue" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import ThemeField from "./themeField.partial.obs";
+    import { ThemeFieldBag } from "@Obsidian/ViewModels/Blocks/Cms/ThemeDetail/themeFieldBag";
+    import { PropType } from "vue";
+
+    const props = defineProps({
+        fields: {
+            type: Array as PropType<ThemeFieldBag[]>,
+            required: true
+        },
+
+        values: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "updateValue", key: string, value: string | null): void;
+    }>();
+
+    function onUpdateValue(key: string, value: string | null): void {
+        emit("updateValue", key, value);
+    }
+</script>

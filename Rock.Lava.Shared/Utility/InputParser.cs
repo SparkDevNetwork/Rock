@@ -88,6 +88,23 @@ namespace Rock.Lava
             return valueIfInvalid;
         }
 
+        /// <summary>
+        /// Try to convert an input object to a boolean value, or throw an exception if unsuccessful.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="returnDefaultIfNullOrEmpty"></param>
+        /// <returns></returns>
+        public static bool ConvertToBooleanOrThrow( this object input, bool returnDefaultIfNullOrEmpty = true )
+        {
+            var value = ConvertToBooleanOrDefault( input, returnDefaultIfNullOrEmpty ? false : ( bool? ) null, null );
+            if ( value == null )
+            {
+                throw new Exception( $"Invalid boolean value. [Value={input}]" );
+            }
+
+            return value.Value;
+        }
+
         #region Integers
 
         /// <summary>
@@ -195,6 +212,47 @@ namespace Rock.Lava
 
         #endregion
 
+        #region DateTime
+
+        /// <summary>
+        /// Try to convert an input object to a DateTimeOffset.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
+        /// <param name="format"></param>
+        /// <returns></returns>
+        public static bool TryConvertToDateTimeOffset( object input, out DateTimeOffset output, string format = null )
+        {
+            if ( input is DateTimeOffset dto )
+            {
+                output = dto;
+                return true;
+            }
+            else if ( input is DateTime dt )
+            {
+                output = new DateTimeOffset( dt );
+                return true;
+            }
+            else if ( input is string inputString )
+            {
+                if ( format != null )
+                {
+                    var isValid = DateTimeOffset.TryParseExact( inputString, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out output );
+                    return isValid;
+                }
+                else
+                {
+                    var isValid = DateTimeOffset.TryParse( inputString, out output );
+                    return isValid;
+                }
+            }
+
+            output = DateTimeOffset.MinValue;
+            return false;
+        }
+
+        #endregion
+
         #region Guid
 
         /// <summary>
@@ -254,45 +312,108 @@ namespace Rock.Lava
             throw new Exception( $"Invalid Value. The input does not represent a valid Guid. [Name={inputFieldName}, Value={input}]" );
         }
 
-        #endregion
+        /// <summary>
+        /// Try to convert an input object to a Guid value, or return a default value if unsuccessful.
+        /// </summary>
+        /// <param name="input">The input object.</param>
+        /// <param name="valueIfEmpty">The value to return if the input object is null or empty.</param>
+        /// <param name="valueIfInvalid">The value to return if the input object contains data that cannot be converted to a Guid.</param>
+        /// <returns></returns>
+        public static Guid? ConvertToGuidOrDefault( this object input, Guid? valueIfEmpty = null, Guid? valueIfInvalid = null )
+        {
+            // If the input is null or whitespace, return the empty value.
+            if ( input is string inputString )
+            {
+                if ( string.IsNullOrWhiteSpace( inputString ) )
+                {
+                    return valueIfEmpty;
+                }
+            }
+            else if ( input == null )
+            {
+                return valueIfEmpty;
+            }
 
-        #region DateTime
+            Guid value;
+            if ( Guid.TryParse( input.ToString(), out value ) )
+            {
+                // Return the parsed Guid value.
+                return value;
+            }
+
+            // Parsing failed, so return the invalid value.
+            return valueIfInvalid;
+        }
 
         /// <summary>
-        /// Try to convert an input object to a DateTimeOffset.
+        /// Try to convert an input object to a Guid value, or throw an exception if unsuccessful.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
-        /// <param name="format"></param>
+        /// <param name="input">The input object.</param>
+        /// <param name="returnDefaultIfNullOrEmpty">
+        /// A flag indicating if the Guid.Empty value should be returned if the input object is null or empty.
+        /// If set to false, an Exception will be thrown if the input object does not have a value.
+        /// </param>
         /// <returns></returns>
-        public static bool TryConvertToDateTimeOffset( object input, out DateTimeOffset output, string format = null )
+        public static Guid ConvertToGuidOrThrow( this object input, bool returnDefaultIfNullOrEmpty = true )
         {
-            if ( input is DateTimeOffset dto )
+            var value = ConvertToGuidOrDefault( input, returnDefaultIfNullOrEmpty ? Guid.Empty : ( Guid? ) null, null );
+            if ( value == null )
             {
-                output = dto;
-                return true;
-            }
-            else if ( input is DateTime dt )
-            {
-                output = new DateTimeOffset( dt );
-                return true;
-            }
-            else if ( input is string inputString )
-            {
-                if ( format != null )
-                {
-                    var isValid = DateTimeOffset.TryParseExact( inputString, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out output );
-                    return isValid;
-                }
-                else
-                {
-                    var isValid = DateTimeOffset.TryParse( inputString, out output );
-                    return isValid;
-                }
+                throw new Exception( $"Invalid Guid value. [Value={input}]" );
             }
 
-            output = DateTimeOffset.MinValue;
-            return false;
+            return value.Value;
+        }
+
+        /// <summary>
+        /// Try to convert an input string to a list of Guids, or return a default value if unsuccessful.
+        /// </summary>
+        /// <param name="input">The input string.</param>
+        /// <param name="output">A List containing the converted Guid values.</param>
+        /// <param name="delimiter">The token used to separate the values in the input string.</param>
+        /// <returns></returns>
+        public static bool TryConvertToGuidList( string input, out List<Guid> output, string delimiter )
+        {
+            // If the input is null or whitespace, return the empty value.
+            if ( string.IsNullOrWhiteSpace( input ) )
+            {
+                output = new List<Guid>();
+                return true;
+            }
+
+            var inputList = input.Split( new string[] { delimiter }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+            var isValid = TryConvertToGuidList( inputList, out output );
+            return isValid;
+        }
+
+        /// <summary>
+        /// Try to convert an input object to a list of Guids, or return a default value if unsuccessful.
+        /// </summary>
+        /// <param name="input">The input object.</param>
+        /// <param name="output">A List containing the converted Guid values.</param>
+        /// <returns></returns>
+        public static bool TryConvertToGuidList( IEnumerable<object> input, out List<Guid> output )
+        {
+            output = new List<Guid>();
+
+            if ( input == null )
+            {
+                return true;
+            }
+
+            foreach ( var value in input )
+            {
+                var guidValue = ConvertToGuidOrDefault( value, Guid.Empty, null );
+                if ( guidValue == null )
+                {
+                    return false;
+                }
+
+                output.Add( guidValue.Value );
+            }
+
+            return true;
         }
 
         #endregion

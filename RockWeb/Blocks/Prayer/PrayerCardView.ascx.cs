@@ -248,8 +248,6 @@ function ReviewFlag(elem) {
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindFilter();
@@ -259,6 +257,8 @@ function ReviewFlag(elem) {
             {
                RouteAction();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

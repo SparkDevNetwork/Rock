@@ -819,6 +819,7 @@ namespace Rock.Data
 
                 DECLARE @ParentPageId int = ( SELECT [Id] FROM [Page] WHERE [Guid] = {0} )
                 DECLARE @LayoutId int = ( SELECT [Id] FROM [Layout] WHERE [Guid] = '{1}' )
+                DECLARE @SiteId int = ( SELECT [SiteId] FROM [Layout] WHERE [Guid] = '{1}' )
                 DECLARE @Order int = ( SELECT [order] + 1 FROM [Page] WHERE [Guid] = {6} )
 
                 IF @Order IS NULL
@@ -830,22 +831,57 @@ namespace Rock.Data
                     UPDATE [Page] SET [Order] = [Order] + 1 WHERE [ParentPageId] = @ParentPageId AND [Order] >= @Order
                 END
 
-                INSERT INTO [Page] (
-                    [InternalName],[PageTitle],[BrowserTitle],[IsSystem],[ParentPageId],[LayoutId],
-                    [RequiresEncryption],[EnableViewState],
-                    [PageDisplayTitle],[PageDisplayBreadCrumb],[PageDisplayIcon],[PageDisplayDescription],
-                    [MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
-                    [BreadCrumbDisplayName],[BreadCrumbDisplayIcon],
-                    [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
-                    [IconCssClass],[Guid])
-                VALUES(
-                    '{2}','{2}','{2}',1,@ParentPageId,@LayoutId,
-                    0,1,
-                    1,1,1,1,
-                    0,0,1,0,
-                    1,0,
-                    @Order,0,'{3}',1,
-                    '{5}','{4}')
+                IF EXISTS (SELECT 1 FROM sys.columns WHERE [Name] = N'SiteId' AND [Object_ID] = Object_ID(N'dbo.Page'))
+                BEGIN
+                    -- The database may not be in a state yet where it has the SiteId column.
+                    -- If that is the case we can't have a SQL statement with SiteId referenced
+                    -- in it otherwise SQL parser will fail. Running it inside the sp_executesql
+                    -- means it won't parse it until we've already detected that we have SiteId.
+                    EXECUTE sp_executesql N'
+                        INSERT INTO [Page] (
+                            [InternalName],[PageTitle],[BrowserTitle],[IsSystem],[ParentPageId],[LayoutId],[SiteId],
+                            [RequiresEncryption],[EnableViewState],
+                            [PageDisplayTitle],[PageDisplayBreadCrumb],[PageDisplayIcon],[PageDisplayDescription],
+                            [MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
+                            [BreadCrumbDisplayName],[BreadCrumbDisplayIcon],
+                            [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
+                            [IconCssClass],[Guid])
+                        VALUES(
+                            @Name,@Name,@Name,1,@ParentPageId,@LayoutId,@SiteId,
+                            0,1,
+                            1,1,1,1,
+                            0,0,1,0,
+                            1,0,
+                            @Order,0,@Description,1,
+                            @IconCssClass,''{4}'')',
+                            N'@ParentPageId INT, @LayoutId INT, @SiteId INT, @Order INT, @Name NVARCHAR(MAX), @Description NVARCHAR(MAX), @IconCssClass NVARCHAR(MAX)',
+                            @ParentPageId = @ParentPageId,
+                            @LayoutId = @LayoutId,
+                            @SiteId = @SiteId,
+                            @Order = @Order,
+                            @Name = '{2}',
+                            @Description = '{3}',
+                            @IconCssClass = '{5}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Page] (
+                        [InternalName],[PageTitle],[BrowserTitle],[IsSystem],[ParentPageId],[LayoutId],
+                        [RequiresEncryption],[EnableViewState],
+                        [PageDisplayTitle],[PageDisplayBreadCrumb],[PageDisplayIcon],[PageDisplayDescription],
+                        [MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
+                        [BreadCrumbDisplayName],[BreadCrumbDisplayIcon],
+                        [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
+                        [IconCssClass],[Guid])
+                    VALUES(
+                        '{2}','{2}','{2}',1,@ParentPageId,@LayoutId,
+                        0,1,
+                        1,1,1,1,
+                        0,0,1,0,
+                        1,0,
+                        @Order,0,'{3}',1,
+                        '{5}','{4}')
+                END
 ",
                     string.IsNullOrWhiteSpace( parentPageGuid ) ? "NULL" : "'" + parentPageGuid + "'",
                     layoutGuid,
@@ -908,8 +944,13 @@ namespace Rock.Data
         /// Adds a new PageRoute to the given page but only if the given route name does not exist for the specified page
         /// **NOTE**: If a *different* Page has this route, it'll still get added since it could be valid if it is on a different site
         /// </summary>
+        /// <remarks>
+        ///     WARNING! This method is deprecated and should not be used for new code.
+        /// </remarks>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="route">The route.</param>
+        [Obsolete( "Use AddOrUpdatePageRoute instead." )]
+        [RockObsolete( "1.16.6" )]
         public void AddPageRoute( string pageGuid, string route )
         {
             AddPageRoute( pageGuid, route, null );
@@ -919,9 +960,14 @@ namespace Rock.Data
         /// Adds a new PageRoute to the given page but only if the given route name does not exist for the specified page
         /// **NOTE**: If a *different* Page has this route, it'll still get added since it could be valid if it is on a different site
         /// </summary>
+        /// <remarks>
+        ///     WARNING! This method is deprecated and should not be used for new code.
+        /// </remarks>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="route">The route.</param>
         /// <param name="guid">The unique identifier.</param>
+        [Obsolete( "Use AddOrUpdatePageRoute instead." )]
+        [RockObsolete( "1.16.6" )]
         public void AddPageRoute( string pageGuid, string route, string guid )
         {
             // Known GUID or create one. This is needed because we don't want ticks around the NEWID function.
@@ -937,6 +983,50 @@ namespace Rock.Data
                     VALUES(1, @PageId, '{route}', {guid} )
                 END" );
 
+        }
+
+        /// <summary>
+        /// Add or Updates the PageId and/or Route for the given PageRouteGuid.
+        /// **NOTE**: If it is a new route and a *different* Page has this route, it'll still get added since it could be valid if it is on a different site
+        /// </summary>
+        /// <param name="pageGuid">The GUID.</param>
+        /// <param name="route">The route.</param>
+        public void AddOrUpdatePageRoute( string pageGuid, string route )
+        {
+            AddOrUpdatePageRoute( pageGuid, route, null );
+        }
+
+        /// <summary>
+        /// Add or Updates the PageId and/or Route for the given PageRouteGuid.
+        /// **NOTE**: If it is a new route and a *different* Page has this route, it'll still get added since it could be valid if it is on a different site
+        /// </summary>
+        /// <param name="pageGuid">The GUID.</param>
+        /// <param name="route">The route.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddOrUpdatePageRoute( string pageGuid, string route, string guid )
+        {
+            guid = guid ?? Guid.NewGuid().ToString();
+
+            string sql = $@"
+                DECLARE @pageId INT = (SELECT [Id] FROM [dbo].[Page] WHERE [Guid] = '{pageGuid}')
+                IF @pageId IS NULL
+                BEGIN
+                    RETURN;
+                END
+
+                IF (EXISTS(SELECT [Id] FROM [dbo].[PageRoute] WHERE [Guid] = '{guid}'))
+                BEGIN
+                    UPDATE [dbo].[PageRoute]
+                    SET [PageId] = @pageId, [Route] = '{route}'
+                    WHERE [Guid] = '{guid}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [dbo].[PageRoute] ([IsSystem],[PageId],[Route],[Guid])
+                    VALUES(1, @PageId, '{route}', '{guid}' )
+                END";
+
+            Migration.Sql( sql );
         }
 
         /// <summary>
@@ -2537,7 +2627,7 @@ END" );
                     VALUES(
                           1
                         , @FieldTypeId
-                        , @EntityTypeid
+                        , @EntityTypeId
                         , '{entityTypeQualifierColumn}'
                         , '{entityTypeQualifierValue}'
                         , '{key}'
@@ -3952,6 +4042,95 @@ END";
         }
 
         /// <summary>
+        /// Adds a new DefinedType, or Updates it if it already exists
+        /// </summary>
+        /// <param name="category">The category.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="helpText">The help text.</param>
+        /// <param name="categorizedValuesEnabled">Whether defined values of this type can have categories.</param>
+        public void AddDefinedType( string category, string name, string description, string guid, string helpText, bool? categorizedValuesEnabled )
+        {
+            var areCategorizedValuesEnabledBit = "NULL";
+            if ( categorizedValuesEnabled.HasValue )
+            {
+                if ( categorizedValuesEnabled.Value )
+                {
+                    areCategorizedValuesEnabledBit = "1";
+                }
+                else
+                {
+                    areCategorizedValuesEnabledBit = "0";
+                }
+            }
+
+            Migration.Sql( string.Format( @"
+
+                DECLARE @DefinedTypeEntityTypeId int = (
+                    SELECT TOP 1 [Id]
+                    FROM [EntityType]
+                    WHERE [Name] = 'Rock.Model.DefinedType' )
+
+                DECLARE @CategoryId int = (
+                    SELECT TOP 1 [Id] FROM [Category]
+                    WHERE [EntityTypeId] = @DefinedTypeEntityTypeId
+                    AND [Name] = '{0}' )
+
+                IF @CategoryId IS NULL AND @DefinedTypeEntityTypeId IS NOT NULL
+                BEGIN
+                    INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[Name],[Order],[Guid] )
+                    VALUES( 0, @DefinedTypeEntityTypeId,'{0}', 0, NEWID() )
+                    SET @CategoryId = SCOPE_IDENTITY()
+                END
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = '9C204CD0-1233-41C5-818A-C5DA439445AA')
+
+                DECLARE @Order int
+                SELECT @Order = ISNULL(MAX([order])+1,0) FROM [DefinedType];
+
+                IF NOT EXISTS (
+                    SELECT [Id]
+                    FROM [DefinedType]
+                    WHERE [Guid] = '{3}' )
+
+                BEGIN
+
+                    INSERT INTO [DefinedType] (
+                        [IsSystem],[FieldTypeId],[Order],
+                        [CategoryId],[Name],[Description],[HelpText],[CategorizedValuesEnabled],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId,@Order,
+                        @CategoryId,'{1}','{2}','{4}',{5},
+                        '{3}')
+                END
+                ELSE
+                BEGIN
+
+                    UPDATE [DefinedType] SET
+                        [IsSystem] = 1,
+                        [FieldTypeId] = @FieldTypeId,
+                        [CategoryId] = @CategoryId,
+                        [Name] = '{1}',
+                        [Description] = '{2}',
+                        [HelpText] = '{4}',
+                        [CategorizedValuesEnabled] = {5}
+                    WHERE [Guid] = '{3}'
+
+                END
+",
+                    category,
+                    name,
+                    description.Replace( "'", "''" ),
+                    guid,
+                    helpText ?? string.Empty,
+                    areCategorizedValuesEnabledBit
+                    ) );
+        }
+
+        /// <summary>
         /// Deletes the DefinedType.
         /// </summary>
         /// <param name="guid">The GUID.</param>
@@ -4617,6 +4796,17 @@ SET @entityId = (
 		WHERE [{entityGuidField}] = '{entityGuid}'
 		);
 
+-- If order was specified as Int.MaxValue then append to the end.
+IF @order = {int.MaxValue}
+BEGIN
+    SET @order = (
+        SELECT ISNULL(MAX([Order]), -1) + 1
+        FROM [dbo].[Auth]
+        WHERE [EntityTypeId] = @entityTypeId AND [EntityId] = 0 AND [Action] = @action
+        );
+END
+
+
 IF (
 		@entityId IS NOT NULL
 		AND @entityId != 0
@@ -4795,7 +4985,7 @@ END
         /// Adds or Updates the security auth for the specified NoteType if it doesn't already exist
         /// </summary>
         /// <param name="noteTypeGuid">The note type unique identifier.</param>
-        /// <param name="order">The order.</param>
+        /// <param name="order">The order of the auth record. Specify <see cref="int.MaxValue"/> to append to the end of the rule list.</param>
         /// <param name="action">The action.</param>
         /// <param name="allow">if set to <c>true</c> [allow].</param>
         /// <param name="groupGuid">The group unique identifier.</param>
@@ -5108,7 +5298,7 @@ INSERT INTO [dbo].[Auth]
         /// Adds the security auth record for the given entity type and group.
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
-        /// <param name="order">The order.</param>
+        /// <param name="order">The order of the auth record. Specify <see cref="int.MaxValue"/> to append to the end of the rule list.</param>
         /// <param name="action">The action.</param>
         /// <param name="allow">if set to <c>true</c> [allow].</param>
         /// <param name="groupGuid">The group unique identifier.</param>
@@ -5129,6 +5319,14 @@ SET @groupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
 
 DECLARE @entityTypeId int
 SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
+
+DECLARE @order int = {2}
+
+-- If order was specified as Int.MaxValue then append to the end.
+IF @order = {7}
+BEGIN
+    SELECT @order = ISNULL(MAX([Order]), -1) + 1 FROM [dbo].[Auth] WHERE [EntityTypeId] = @entityTypeId AND [EntityId] = 0 AND [Action] = '{3}'
+END
 
 IF NOT EXISTS (
     SELECT [Id] FROM [dbo].[Auth]
@@ -5151,7 +5349,7 @@ BEGIN
          VALUES
                (@entityTypeId
                ,0
-               ,{2}
+               ,@order
                ,'{3}'
                ,'{4}'
                ,{5}
@@ -5166,7 +5364,8 @@ END
                 action, // {3}
                 ( allow ? "A" : "D" ), // {4}
                 specialRole, // {5}
-                authGuid // {6}
+                authGuid, // {6}
+                int.MaxValue // {7}
                 ) );
         }
 
@@ -5180,10 +5379,26 @@ END
         }
 
         /// <summary>
+        /// Adds the site security authentication (or ignores if it already exists).
+        /// Set <paramref name="groupGuid"/> to null when setting to a special role.
+        /// </summary>
+        /// <param name="siteGuid">The site unique identifier.</param>
+        /// <param name="order">The order of the auth record. Specify <see cref="int.MaxValue"/> to append to the end of the rule list.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForSite( string siteGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
+        {
+            AddSecurityAuthForEntityBase( "Rock.Model.Site", "Site", siteGuid, order, action, allow, groupGuid, ( Rock.Model.SpecialRole ) specialRole, authGuid );
+        }
+
+        /// <summary>
         /// Adds the page security authentication (or ignores if it already exists). Set GroupGuid to null when setting to a special role
         /// </summary>
         /// <param name="pageGuid">The page unique identifier.</param>
-        /// <param name="order">The order.</param>
+        /// <param name="order">The order of the auth record. Specify <see cref="int.MaxValue"/> to append to the end of the rule list.</param>
         /// <param name="action">The action.</param>
         /// <param name="allow">if set to <c>true</c> [allow].</param>
         /// <param name="groupGuid">The group unique identifier.</param>
@@ -5207,7 +5422,7 @@ END
         /// Adds the page security authentication. Set GroupGuid to null when setting to a special role
         /// </summary>
         /// <param name="blockGuid">The block unique identifier.</param>
-        /// <param name="order">The order.</param>
+        /// <param name="order">The order of the auth record. Specify <see cref="int.MaxValue"/> to append to the end of the rule list.</param>
         /// <param name="action">The action.</param>
         /// <param name="allow">if set to <c>true</c> [allow].</param>
         /// <param name="groupGuid">The group unique identifier.</param>
@@ -5222,7 +5437,7 @@ END
         /// Adds the binaryfiletype security authentication. Set GroupGuid to null when setting to a special role
         /// </summary>
         /// <param name="binaryFileTypeGuid">The binary file type unique identifier.</param>
-        /// <param name="order">The order.</param>
+        /// <param name="order">The order of the auth record. Specify <see cref="int.MaxValue"/> to append to the end of the rule list.</param>
         /// <param name="action">The action.</param>
         /// <param name="allow">if set to <c>true</c> [allow].</param>
         /// <param name="groupGuid">The group unique identifier.</param>
@@ -5246,7 +5461,7 @@ END
         /// Adds the page security authentication. Set GroupGuid to null when setting to a special role
         /// </summary>
         /// <param name="groupTypeGuid">The group type unique identifier.</param>
-        /// <param name="order">The order.</param>
+        /// <param name="order">The order of the auth record. Specify <see cref="int.MaxValue"/> to append to the end of the rule list.</param>
         /// <param name="action">The action.</param>
         /// <param name="allow">if set to <c>true</c> [allow].</param>
         /// <param name="groupGuid">The group unique identifier.</param>
@@ -5270,7 +5485,7 @@ END
         /// Adds the attribute security authentication if it doesn't already exist. Set GroupGuid to null when setting to a special role
         /// </summary>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
-        /// <param name="order">The order.</param>
+        /// <param name="order">The order of the auth record. Specify <see cref="int.MaxValue"/> to append to the end of the rule list.</param>
         /// <param name="action">The action.</param>
         /// <param name="allow">if set to <c>true</c> [allow].</param>
         /// <param name="groupGuid">The group unique identifier.</param>
@@ -5285,7 +5500,7 @@ END
         /// Adds the security authentication for calendar.
         /// </summary>
         /// <param name="calendarGuid">The calendar unique identifier.</param>
-        /// <param name="order">The order.</param>
+        /// <param name="order">The order of the auth record. Specify <see cref="int.MaxValue"/> to append to the end of the rule list.</param>
         /// <param name="action">The action.</param>
         /// <param name="allow">if set to <c>true</c> [allow].</param>
         /// <param name="groupGuid">The group unique identifier.</param>
@@ -5310,7 +5525,7 @@ END
         /// Adds the category security authentication. Set GroupGuid to null when setting to a special role
         /// </summary>
         /// <param name="categoryGuid">The category unique identifier.</param>
-        /// <param name="order">The order.</param>
+        /// <param name="order">The order of the auth record. Specify <see cref="int.MaxValue"/> to append to the end of the rule list.</param>
         /// <param name="action">The action.</param>
         /// <param name="allow">if set to <c>true</c> [allow].</param>
         /// <param name="groupGuid">The group unique identifier.</param>
@@ -5334,15 +5549,33 @@ END
         /// Adds the security authentication for rest controller.
         /// </summary>
         /// <param name="restControllerClass">The rest controller class.</param>
-        /// <param name="order">The order.</param>
+        /// <param name="order">The order of the auth record. Specify <see cref="int.MaxValue"/> to append to the end of the rule list.</param>
         /// <param name="action">The action.</param>
         /// <param name="allow">if set to <c>true</c> [allow].</param>
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
+        [RockObsolete( "17.0" )]
+        [Obsolete( "Use the AddSecurityAuthForRestControllerByFullClassName method instead." )]
         public void AddSecurityAuthForRestController( string restControllerClass, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
         {
             AddSecurityAuthForEntityBase( "Rock.Model.RestController", "RestController", restControllerClass, order, action, allow, groupGuid, specialRole, authGuid, "Name" );
+        }
+
+        /// <summary>
+        /// Adds the security authentication for rest controller by the full class name.
+        /// This is temporary until we can fully migrate to Guids. Please don't make public.
+        /// </summary>
+        /// <param name="restControllerClass">The rest controller full class name.</param>
+        /// <param name="order">The order of the auth record. Specify <see cref="int.MaxValue"/> to append to the end of the rule list.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForRestControllerByFullClassName( string restControllerClass, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        {
+            AddSecurityAuthForEntityBase( "Rock.Model.RestController", "RestController", restControllerClass, order, action, allow, groupGuid, specialRole, authGuid, nameof( RestController.ClassName ) );
         }
 
         /// <summary>
@@ -5393,7 +5626,8 @@ END
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
-        [Obsolete( "1.15.2" )]
+        [RockObsolete( "1.15.2" )]
+        [Obsolete( "Use the method that takes a restActionGuid parameter." )]
         public void AddSecurityAuthForRestAction( string restActionMethod, string restActionPath, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
         {
             /*
@@ -7850,7 +8084,8 @@ END
         /// <param name="controllerClass">The controller class.</param>
         /// <param name="actionMethod">The action method.</param>
         /// <param name="actionPath">The action path.</param>
-        [Obsolete( message: "1.15.2" )]
+        [RockObsolete( "1.15.2" )]
+        [Obsolete( "Use the method that takes the restActionGuid parameter." )]
         public void AddRestAction( string controllerName, string controllerClass, string actionMethod, string actionPath )
         {
             /*

@@ -63,7 +63,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_ANSWER_TO_PRAYER_BLOCK_TYPE )]
-    [Rock.SystemGuid.BlockTypeGuid( "324D5295-72E6-42DF-B111-E428E811B786")]
+    [Rock.SystemGuid.BlockTypeGuid( "324D5295-72E6-42DF-B111-E428E811B786" )]
     public class AnswerToPrayer : RockBlockType
     {
         /// <summary>
@@ -186,7 +186,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                 var prayerRequestXaml = Template.ResolveMergeFields( mergeFields, RequestContext.CurrentPerson );
 
                 return $@"
-<StackLayout StyleClass=""prayerdetail"">
+<StackLayout StyleClass=""prayerdetail, spacing-24"">
     {prayerRequestXaml}
 
     <Rock:FieldContainer>
@@ -199,16 +199,18 @@ namespace Rock.Blocks.Types.Mobile.Prayer
     </Rock:Validator>
     
     <Rock:NotificationBox x:Name=""nbError"" NotificationType=""Warning"" />
-    
-    <Button StyleClass=""btn,btn-primary,save-button"" Text=""Save"" Command=""{{Binding Callback}}"">
-        <Button.CommandParameter>
-            <Rock:CallbackParameters Name="":SaveAnswer"" Validator=""{{x:Reference vForm}}"" Notification=""{{x:Reference nbError}}"">
-                <Rock:Parameter Name=""answer"" Value=""{{Binding Text, Source={{x:Reference tbAnswer}}}}"" />
-            </Rock:CallbackParameters>
-        </Button.CommandParameter>
-    </Button>
 
-    <Button StyleClass=""btn,btn-link,cancel-button"" Text=""Cancel"" Command=""{{Binding PopPage}}"" />
+    <StackLayout>
+        <Button StyleClass=""btn,btn-primary,save-button"" Text=""Save"" Command=""{{Binding Callback}}"">
+            <Button.CommandParameter>
+                <Rock:CallbackParameters Name="":SaveAnswer"" Validator=""{{x:Reference vForm}}"" Notification=""{{x:Reference nbError}}"">
+                    <Rock:Parameter Name=""answer"" Value=""{{Binding Text, Source={{x:Reference tbAnswer}}}}"" />
+                </Rock:CallbackParameters>
+            </Button.CommandParameter>
+        </Button>
+
+        <Button StyleClass=""btn,btn-link,cancel-button"" Text=""Cancel"" Command=""{{Binding PopPage}}"" />
+    </StackLayout>
 </StackLayout>";
             }
         }

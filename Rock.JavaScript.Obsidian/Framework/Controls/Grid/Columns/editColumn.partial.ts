@@ -18,7 +18,11 @@
 import { standardColumnProps } from "@Obsidian/Core/Controls/grid";
 import { Component, defineComponent, PropType } from "vue";
 import EditCell from "../Cells/editCell.partial.obs";
+import { IGridState } from "@Obsidian/Types/Controls/grid";
 
+/**
+ * Shows an edit button that will call the click handler when clicked.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,
@@ -48,8 +52,24 @@ export default defineComponent({
             default: "52px"
         },
 
+        columnType: {
+            type: String as PropType<string>,
+            default: "edit"
+        },
+
         /**
-         * Called when the edit button has been clicked.
+        * An optional callback that will be used to determine if the delete
+        * button is disabled for the specified row.
+        */
+        rowDisabled: {
+            type: Function as PropType<((row: Record<string, unknown>, grid: IGridState) => boolean)>,
+            required: false
+        },
+
+        /**
+         * Called when the edit button has been clicked. If a Promise is
+         * returned then the button will remain disabled until the Promise is
+         * resolved.
          */
         onClick: {
             type: Function as PropType<((key: string) => void) | ((key: string) => Promise<void>)>,

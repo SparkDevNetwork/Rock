@@ -1,0 +1,178 @@
+<template>
+    <DropDownList label="Field"
+                  v-model="selectedField"
+                  :items="fieldItems"
+                  enhanceForLongLists
+                  grouped />
+
+    <DropDownList v-if="isSelectedFieldCollection"
+                  label="Multiple Values"
+                  v-model="collectionFormat"
+                  :items="collectionFormatItems"
+                  :showBlankItem="false" />
+
+    <DropDownList v-if="formatterOptionItems.length > 0"
+                  label="Format"
+                  :showBlankItem="false"
+                  v-model="formatterOption"
+                  :items="formatterOptionItems" />
+
+    <FieldConfigText :labelManager="labelManager"
+                     showPlaceholder
+                     showAdaptiveFontSize />
+
+    <TextBox v-for="customField in customFields"
+             :label="customField.label || undefined"
+             :help="customField.helpText || undefined"
+             :modelValue="customFieldData[customField.key!]"
+             :modelModifiers="{ lazy: true }"
+             @update:modelValue="v => onCustomFieldDataChanged(customField.key!, v)" />
+</template>
+
+<script setup lang="ts">
+    import FieldConfigText from "./fieldConfigText.partial.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { TextCollectionFormat, TextCollectionFormatDescription } from "@Obsidian/Enums/CheckIn/Labels/textCollectionFormat";
+    import { computed, PropType, ref, watch } from "vue";
+    import { LabelUndoManager } from "./undoManager.partial";
+    import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { CustomFieldInputBag } from "@Obsidian/ViewModels/CheckIn/Labels/customFieldInputBag";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDesignerOptionsBag";
+
+    const blockConfig = useConfigurationValues<LabelDesignerOptionsBag>();
+
+    const props = defineProps({
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
+            required: true
+        }
+    });
+
+    const selectedField = ref("");
+    const collectionFormat = ref("");
+    const formatterOption = ref("");
+    const customFieldData = ref<Record<string, string>>({});
+
+    const fieldItems = getFieldItems();
+
+    const isSelectedFieldCollection = computed((): boolean => {
+        const field = blockConfig.dataSources
+            ?.find(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType
+                && s.key == selectedField.value);
+
+        return field?.isCollection === true;
+    });
+
+    const collectionFormatItems = computed((): ListItemBag[] => {
+        return enumToListItemBag(TextCollectionFormatDescription);
+    });
+
+    const formatterOptionItems = computed((): ListItemBag[] => {
+        const field = blockConfig.dataSources
+            ?.find(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType
+                && s.key == selectedField.value);
+
+        if (!field?.formatterOptions) {
+            return [];
+        }
+
+        return field.formatterOptions.map(o => {
+            return {
+                value: o.key,
+                text: o.name
+            };
+        });
+    });
+
+    const customFields = computed((): CustomFieldInputBag[] => {
+        const field = blockConfig.dataSources
+            ?.find(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType
+                && s.key == selectedField.value);
+
+        if (!field?.customFields) {
+            return [];
+        }
+
+        return field.customFields.filter(f => !!f.key && !!f.label);
+    });
+
+    /**
+     * Gets the field items from the block configuration that are valid for
+     * the currently selected field.
+     *
+     * @returns The list of valid field data source items.
+     */
+    function getFieldItems(): ListItemBag[] {
+        return blockConfig.dataSources
+            ?.filter(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType)
+            .map(s => {
+                return {
+                    value: s.key,
+                    text: s.name,
+                    category: s.category
+                };
+            }) ?? [];
+    }
+
+    /**
+     * Set the internal values to match those from the selected field.
+     */
+    function setInternalValues(): void {
+        const configuration = (props.labelManager.selectedField.value
+            ?.configurationValues ?? {}) as TextFieldConfigurationBag;
+
+        selectedField.value = configuration.sourceKey ?? "";
+        collectionFormat.value = configuration.collectionFormat ?? TextCollectionFormat.FirstItemOnly.toString();
+        formatterOption.value = configuration.formatterOptionKey ?? "";
+        customFieldData.value = props.labelManager.selectedField.value?.customData ?? {};
+    }
+
+    /**
+     * Event handler for when a custom data value has been changed in the UI.
+     *
+     * @param key The custom data key that was changed.
+     * @param value The new custom data value.
+     */
+    function onCustomFieldDataChanged(key: string, value: string): void {
+        props.labelManager.mutateSelectedField(field => {
+            field.customData = field.customData ?? {};
+            field.customData[key] = value;
+        });
+    }
+
+    // Watch for changes in the UI that require an update to the label.
+    watch([selectedField, collectionFormat, formatterOption], (newValues, oldValues) => {
+        props.labelManager.mutateSelectedField(field => {
+            field.configurationValues = field.configurationValues ?? {};
+
+            const fieldConfig = field.configurationValues as TextFieldConfigurationBag;
+
+            fieldConfig.sourceKey = selectedField.value;
+            fieldConfig.collectionFormat = collectionFormat.value;
+            fieldConfig.formatterOptionKey = formatterOption.value;
+
+            // If the field source changed, then update the placeholder text
+            // to match the name of the field.
+            if (newValues[0] !== oldValues[0]) {
+                const field = blockConfig.dataSources
+                    ?.find(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType
+                        && s.key == selectedField.value);
+
+                if (field) {
+                    fieldConfig.placeholderText = field.name;
+                }
+            }
+        });
+    });
+
+    // Watch for changes on the label that need to be reflected in the UI.
+    watch(props.labelManager.selectedField, () => {
+        setInternalValues();
+    });
+
+    setInternalValues();
+</script>

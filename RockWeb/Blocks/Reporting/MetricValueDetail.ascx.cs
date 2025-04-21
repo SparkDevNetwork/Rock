@@ -59,8 +59,6 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( Page.IsPostBack )
             {
                 // create dynamic controls
@@ -114,6 +112,8 @@ namespace RockWeb.Blocks.Reporting
                     pnlDetails.Visible = false;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -220,6 +220,7 @@ namespace RockWeb.Blocks.Reporting
             MetricValue metricValue;
             var rockContext = new RockContext();
             MetricValueService metricValueService = new MetricValueService( rockContext );
+            var campusEntityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.CAMPUS.AsGuid() );
 
             int metricValueId = int.Parse( hfMetricValueId.Value );
 
@@ -263,6 +264,15 @@ namespace RockWeb.Blocks.Reporting
                 else
                 {
                     metricValuePartition.EntityId = null;
+                }
+
+                if ( metricPartition.IsRequired && metricPartitionEntityType?.Guid == campusEntityType.Guid )
+                {
+                    var campuses = CampusCache.All( false );
+                    if ( campuses.Count == 1 )
+                    {
+                        metricValuePartition.EntityId = campuses[0].Id;
+                    }
                 }
 
                 if ( metricPartition.IsRequired && metricPartitionEntityType != null && !metricValuePartition.EntityId.HasValue )

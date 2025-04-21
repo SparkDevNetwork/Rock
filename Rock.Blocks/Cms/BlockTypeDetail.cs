@@ -200,7 +200,7 @@ namespace Rock.Blocks.Cms
             var blocks = BlockCache.All()
                 .Where( b => b.BlockTypeId == entity.Id );
             bag.Pages = blocks
-                .Where( b => b.PageId != null )
+                .Where( b => b.Page != null )
                 .OrderBy( b => b.Page.GetFullyQualifiedPageName() ) // ordering by FullyQualifiedPageName to keep it consistent with the ordering used before HyperLinkedPageBreadCrumbs.
                 .Select( b => b.Page.GetHyperLinkedPageBreadCrumbs() )
                 .ToList();
@@ -214,7 +214,7 @@ namespace Rock.Blocks.Cms
                 .Select( b => $"<a href='/admin/cms/sites/{b.SiteId}'>{b.Site.Name}</a> (Site), {b.Zone} (Zone)" )
                 .OrderBy( s => s )
                 .ToList();
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -235,7 +235,7 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -277,7 +277,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;

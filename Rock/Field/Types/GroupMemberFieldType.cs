@@ -38,6 +38,7 @@ namespace Rock.Field.Types
     /// Stored as either a single GroupMember.Guid or a comma-delimited list of GroupMember.Guids (if AllowMultiple)
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_MEMBER )]
     public class GroupMemberFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType, IEntityReferenceFieldType
@@ -196,7 +197,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            if ( publicConfigurationValues?.ContainsKey( GROUP_KEY ) == true && int.TryParse( publicConfigurationValues[GROUP_KEY], out int groupId ) )
+            if ( usage != ConfigurationValueUsage.View && publicConfigurationValues?.ContainsKey( GROUP_KEY ) == true && int.TryParse( publicConfigurationValues[GROUP_KEY], out int groupId ) )
             {
                 using ( var rockContext = new RockContext() )
                 {
@@ -578,7 +579,6 @@ namespace Rock.Field.Types
             cb.AutoPostBack = true;
             cb.CheckedChanged += OnQualifierUpdated;
             cb.Label = "Allow Multiple Values";
-            cb.Text = "Yes";
             cb.Help = "When set, allows multiple group members to be selected.";
 
             // option for Displaying an enhanced 'chosen' value picker
@@ -587,7 +587,6 @@ namespace Rock.Field.Types
             cbEnanced.AutoPostBack = true;
             cbEnanced.CheckedChanged += OnQualifierUpdated;
             cbEnanced.Label = "Enhance For Long Lists";
-            cbEnanced.Text = "Yes";
             cbEnanced.Help = "When set, will render a searchable selection of options.";
 
             return controls;
@@ -894,7 +893,7 @@ namespace Rock.Field.Types
             bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
             if ( allowMultiple && string.IsNullOrWhiteSpace( value ) )
             {
-                return null;
+                return string.Empty;
             }
 
             return value;

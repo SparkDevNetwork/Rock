@@ -3,27 +3,30 @@
     <div v-if="isDiscountPanelVisible || discountCodeInput" class="clearfix">
         <NotificationBox v-if="discountCodeWarningMessage" alertType="warning">{{ discountCodeWarningMessage }}</NotificationBox>
         <NotificationBox v-if="discountCodeSuccessMessage" alertType="success">{{ discountCodeSuccessMessage }}</NotificationBox>
-        <div class="form-group pull-right">
-            <label class="control-label">Discount Code</label>
-            <div class="input-group">
-                <input type="text" :disabled="loading || !isDiscountCodeAllowed" class="form-control input-width-md input-sm" v-model="discountCodeInput" />
-                <RockButton v-if="isDiscountCodeAllowed" btnSize="sm" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode(false)">
+        <TextBox v-model="discountCodeInput"
+                 formGroupClasses="pull-right"
+                 inputClasses="input-width-md input-sm"
+                 :disabled="isDisabled"
+                 :label="registrationEntryTerms.discountCodeSingularTitleCase">
+            <template #inputGroupAppend>
+                <RockButton v-if="isDiscountCodeAllowed" btnSize="sm" :disabled="isDisabled" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode(false)">
                     Apply
                 </RockButton>
-            </div>
-        </div>
+            </template>
+        </TextBox>
     </div>
 </template>
 <script setup lang="ts">
     import { computed, onMounted, ref, watch } from "vue";
-    import { CurrentRegistrationEntryState, GetPersistSessionArgs, use } from "./utils.partial";
+    import { CurrentRegistrationEntryState, GetPersistSessionArgs, RegistrationEntryTerms, use } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { Guid } from "@Obsidian/Types";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
     import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
-    import { toGuidOrNull } from "@Obsidian/Utility/guid";
-    import { Guid } from "@Obsidian/Types";
 
     type CheckDiscountCodeResult = {
         discountCode: string;
@@ -36,6 +39,7 @@
     const getPersistSessionArgs = use(GetPersistSessionArgs);
     const invokeBlockAction = useInvokeBlockAction();
     const registrationEntryState = use(CurrentRegistrationEntryState);
+    const registrationEntryTerms = use(RegistrationEntryTerms);
 
     // #region Values
 
@@ -54,6 +58,17 @@
     // #endregion
 
     // #region Computed Values
+
+    const isDisabled = computed<boolean>(() => {
+        return loading.value
+            || !isDiscountCodeAllowed.value
+
+            // Is a payment plan already set up?
+            || !!registrationEntryState.viewModel.session?.activePaymentPlan
+
+            // Is a payment plan being set up?
+            || !!registrationEntryState.paymentPlan;
+    });
 
     /** Should the discount panel be shown? */
     const isDiscountPanelVisible = computed<boolean>(() => {
@@ -102,7 +117,7 @@
                         discountCodeWarningMessage.value = result.errorMessage;
                     }
                     else if (discountCodeInput.value != "") {
-                        discountCodeWarningMessage.value = `'${discountCodeInput.value}' is not a valid Discount Code.`;
+                        discountCodeWarningMessage.value = `'${discountCodeInput.value}' is not a valid ${registrationEntryTerms.value.discountCodeSingularTitleCase}.`;
                     }
                 }
             }
@@ -140,13 +155,18 @@
         const discountText = discountPercent ?
             `${asFormattedString(discountPercent * 100, 0)}%` :
             `$${asFormattedString(discountAmount, 2)}`;
+        const {
+            registrantSingularLowerCase,
+            registrantPluralLowerCase,
+            discountCodeSingularLowerCase
+        } = registrationEntryTerms.value;
 
         if (discountMaxRegistrants != 0 && registrantCount > discountMaxRegistrants) {
-            const registrantTerm = discountMaxRegistrants == 1 ? "registrant" : "registrants";
-            return `Your ${discountText} discount code was successfully applied to the maximum allowed number of ${discountMaxRegistrants} ${registrantTerm}`;
+            const registrantTerm = discountMaxRegistrants == 1 ? registrantSingularLowerCase : registrantPluralLowerCase;
+            return `Your ${discountText} ${discountCodeSingularLowerCase} was successfully applied to the maximum allowed number of ${discountMaxRegistrants} ${registrantTerm}`;
         }
 
-        return `Your ${discountText} discount code for all registrants was successfully applied.`;
+        return `Your ${discountText} ${discountCodeSingularLowerCase} for all ${registrantPluralLowerCase} was successfully applied.`;
     }
 
     // #endregion

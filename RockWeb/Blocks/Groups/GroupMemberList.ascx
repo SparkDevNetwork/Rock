@@ -9,7 +9,7 @@
             .on('mouseenter', function () {
                 // the sync-button in the popover would use the lbGroupSync asp control as a proxy to invoke the postback call
                 // Motive: there was no other way to make a postback call to the C# method from the javascript in the frontend.
-                $('#sync-button').click(function (e) {
+                $('#sync-button').off('click').on('click', function (e) {
                     $("#<%= lbGroupSync.ClientID %>")[0].click();
                 })
             })
@@ -151,6 +151,12 @@
                                             <Rock:DefinedValueField DataField="Person.RecordStatusValueId" HeaderText="Record Status" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                             <Rock:RockBoundField DataField="Person.Gender" HeaderText="Gender" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                             <Rock:RockBoundField DataField="Person.IsDeceased" HeaderText="Is Deceased" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+
+                                            <Rock:RockLiteralField ID="lRequirementExportHomePhone" HeaderText="Home Phone" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockLiteralField ID="lRequirementExportCellPhone" HeaderText="Cell Phone" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockLiteralField ID="lRequirementExportHomeAddress" HeaderText="Home Address" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockLiteralField ID="lRequirementExportLatitude" HeaderText="Latitude" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockLiteralField ID="lRequirementExportLongitude" HeaderText="Longitude" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         </Columns>
                                     </Rock:Grid>
                                 </div>

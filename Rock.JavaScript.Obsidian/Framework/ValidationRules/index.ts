@@ -22,6 +22,7 @@ import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { isNullOrWhiteSpace, containsHtmlTag } from "@Obsidian/Utility/stringUtils";
 import { isUrl } from "@Obsidian/Utility/url";
 import { containsRequiredRule, defineRule, normalizeRules, parseRule, rulesPropType, validateValue } from "@Obsidian/Utility/validationRules";
+import { getSpecialCharacterPattern, getEmojiPattern, getSpecialFontPattern } from "@Obsidian/Utility/regexPatterns";
 
 // For backwards compatibility:
 export {
@@ -104,6 +105,30 @@ defineRule("required", (value: unknown, params?: unknown[]): ValidationResult =>
 
     if (!value) {
         return "is required";
+    }
+
+    return true;
+});
+
+defineRule("nospecialcharacters", (value: unknown): ValidationResult => {
+    // Gets or sets a value indicating whether the an input will allow special characters. This property is meant to be used when dealing with Person names.
+    if (typeof value === "string") {
+        // Checks if a string contains special characters
+        if (getSpecialCharacterPattern().test(value)) {
+            return "cannot contain special characters such as quotes, parentheses, etc.";
+        }
+    }
+
+    return true;
+});
+
+defineRule("noemojisorspecialfonts", (value: unknown): ValidationResult => {
+    // Gets or sets a value indicating whether the an input will allow emojis and special fonts. This property is meant to be used when dealing with Person names.
+    if (typeof value === "string") {
+        // Checks if a string contains emojis or special fonts.
+        if (getEmojiPattern().test(value) || getSpecialFontPattern().test(value)) {
+            return "cannot contain emojis or special fonts.";
+        }
     }
 
     return true;
@@ -256,6 +281,19 @@ defineRule("datekey", value => {
     }
 
     return true;
+});
+
+defineRule("number", (value: unknown) => {
+    // Field is empty, should pass
+    if (isNullOrWhiteSpace(value)) {
+        return true;
+    }
+
+    if (isNumeric(value)) {
+        return true;
+    }
+
+    return "must be a valid number.";
 });
 
 defineRule("integer", (value: unknown) => {

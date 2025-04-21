@@ -52,26 +52,6 @@ namespace Rock.Transactions
         public int? TimeToRunDurationMilliseconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the persisted last run date.
-        /// </summary>
-        /// <value>
-        /// The persisted last run date.
-        /// </value>
-        [RockObsolete( "1.12.4" )]
-        [Obsolete( "This update is now handled by the DataView PersistResult method." )]
-        public DateTime? PersistedLastRefreshDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the persisted last run duration in milliseconds.
-        /// </summary>
-        /// <value>
-        /// The persisted last run duration in milliseconds.
-        /// </value>
-        [RockObsolete( "1.12.4" )]
-        [Obsolete( "This update is now handled by the DataView PersistResult method." )]
-        public int? PersistedLastRunDurationMilliseconds { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether the run count should be incremented.
         /// </summary>
         /// <value>

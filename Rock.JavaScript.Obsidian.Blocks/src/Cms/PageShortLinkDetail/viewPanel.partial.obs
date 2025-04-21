@@ -14,17 +14,35 @@
         </div>
 
         <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+
+        <SectionHeader title="Usage Analytics"
+                       description="Monitor your Rock shortlinks with usage analytics to see clicks, traffic sources and user interactions." />
+
+        <ViewAnalytics v-if="modelValue?.idKey"
+            :shortLinkId="modelValue.idKey" />
     </fieldset>
 </template>
+
+<style scoped>
+:deep(.scheduled-redirect-list) {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(min-content, max-content));
+    column-gap: 16px;
+    text-wrap: nowrap;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import ViewAnalytics from "./viewAnalytics.partial.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
     import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         modelValue: {
@@ -72,7 +90,26 @@
         }
 
         if (props.modelValue.url) {
-            valueBuilder.addTextValue("URL", props.modelValue.url);
+            if ((props.modelValue.scheduledRedirects ?? []).length > 0) {
+                valueBuilder.addTextValue("Default URL", props.modelValue.url);
+            }
+            else {
+                valueBuilder.addTextValue("URL", props.modelValue.url);
+            }
+        }
+
+        if (props.modelValue.scheduledRedirects && props.modelValue.scheduledRedirects.length > 0) {
+            let html = `<div class="scheduled-redirect-list">`;
+
+            for (const sr of props.modelValue.scheduledRedirects) {
+                html += `<span>${escapeHtml(sr.url ?? "")}</span>`;
+                html += `<span class="text-muted">${escapeHtml(sr.scheduleText ?? "")}</span>`;
+                html += `<span class="text-muted">${escapeHtml(sr.scheduleRangeText ?? "")}</span>`;
+            }
+
+            html += "</div>";
+
+            valueBuilder.addHtmlValue("Scheduled Redirects", html);
         }
 
         return valueBuilder.build();

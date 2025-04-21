@@ -59,6 +59,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 MobilePhone = settings.MobilePhone.ToFormFieldVisibility(),
                 RecordStatus = Utility.GetDefinedValueGuid( settings.RecordStatusValueId ),
                 ShowCampus = settings.ShowCampus,
+                IncludeInactiveCampus = settings.IncludeInactiveCampus,
                 SpouseEntry = settings.SpouseEntry.ToFormFieldVisibility(),
                 SpouseLabel = settings.SpouseLabel,
                 RaceEntry = settings.RaceEntry.ToFormFieldVisibility(),
@@ -90,6 +91,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 MobilePhone = viewModel.MobilePhone.ToPersonEntryOption(),
                 RecordStatusValueId = Utility.GetDefinedValueId( viewModel.RecordStatus ),
                 ShowCampus = viewModel.ShowCampus,
+                IncludeInactiveCampus = viewModel.IncludeInactiveCampus,
                 SpouseEntry = viewModel.SpouseEntry.ToPersonEntryOption(),
                 SpouseLabel = viewModel.SpouseLabel,
                 RaceEntry = viewModel.RaceEntry.ToPersonEntryOption(),
@@ -485,7 +487,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             return new FieldFilterGroupBag
             {
                 Guid = Guid.NewGuid(),
-                ExpressionType = ( int ) rules.FilterExpressionType,
+                ExpressionType = rules.FilterExpressionType,
                 Rules = rules.RuleList.Select( r => r.ToViewModel() ).ToList()
             };
         }
@@ -500,7 +502,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         {
             return new Rock.Field.FieldVisibilityRules
             {
-                FilterExpressionType = ( FilterExpressionType ) viewModel.ExpressionType,
+                FilterExpressionType = viewModel.ExpressionType,
                 RuleList = viewModel.Rules.Select( r => r.FromViewModel( formFields ) ).ToList()
             };
         }
@@ -515,7 +517,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             var viewModel = new FieldFilterRuleBag
             {
                 Guid = rule.Guid,
-                ComparisonType = ( int ) rule.ComparisonType,
+                ComparisonType = rule.ComparisonType,
                 SourceType = 0,
                 AttributeGuid = rule.ComparedToFormFieldGuid,
                 Value = rule.ComparedToValue

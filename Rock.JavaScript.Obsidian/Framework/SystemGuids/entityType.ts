@@ -37,6 +37,10 @@ export const EntityType = {
     AdaptiveMessageAdaptation: "39753CCE-184A-4F14-AE80-08241DE8FC2E",
     /** The EntityType Guid for Rock.Model.AdaptiveMessageAdaptationSegment  */
     AdaptiveMessageAdaptationSegment: "40EDF82B-EFF5-4253-A129-965F7BC90033",
+    /** The EntityType Guid for Rock.Model.AdaptiveMessageCategory  */
+    AdaptiveMessageCategory: "D47BDA25-03A3-46EE-A0A6-F8B220E39E4A",
+    /** The EntityType Guid for Rock.Model.AIProvider  */
+    AiProvider: "945A994F-F15E-43AC-B503-A54BDE70F77F",
     /** The EntityType Guid for Rock.Model.AnalyticsDimCampus  */
     AnalyticsDimCampus: "DCEB0575-1351-4CFF-BA4F-410BA2D638CB",
     /** The EntityType Guid for Rock.Model.AnalyticsDimFamilyCurrent  */
@@ -149,6 +153,8 @@ export const EntityType = {
     CampusTopic: "0FFDCB0B-B435-4E66-9085-2750534E706A",
     /** The EntityType Guid for Rock.Model.Category  */
     Category: "1D68154E-EC76-44C8-9813-7736B27AECF9",
+    /** The EntityType Guid for Rock.Model.CheckInLabel  */
+    CheckInLabel: "8B651EB1-492F-46D0-821B-CA7355C6E6E7",
     /** The checkr provider */
     CheckrProvider: "8D9DE88A-C649-47B2-BA5C-92A24F60AE61",
     /** The EntityType Guid for Rock.Model.Communication  */
@@ -229,8 +235,14 @@ export const EntityType = {
     Document: "7CEFA340-9D98-4B2C-B462-313C61944B6C",
     /** The EntityType Guid for Rock.Model.DocumentType  */
     DocumentType: "18CF366F-46B6-49CA-B557-BCABD6BBD175",
+    /** The EntityType Guid for Rock.Model.EmailSection  */
+    EmailSection: "86B2CE94-9DC3-463C-B2B1-DEECAB70474E",
     /** The EntityType Guid for Rock.Model.EntityCampusFilter  */
     EntityCampusFilter: "A736A9FB-F2A5-4458-B126-FAD6BD3F3B78",
+    /** The EntityType Guid for Rock.Model.EntityIntent  */
+    EntityIntent: "15CE39A3-193F-44E5-80C7-DE47DA3EAF97",
+    /** The guid for Rock.Model.EntitySearch entity. */
+    EntitySearch: "080374B4-C765-4F90-8B85-BC2635164275",
     /** The EntityType Guid for Rock.Model.EntitySet  */
     EntitySet: "50E3F9C8-4010-41AF-8F61-08308DC44640",
     /** The EntityType Guid for Rock.Model.EntitySetItem  */
@@ -345,12 +357,16 @@ export const EntityType = {
     GroupTypeRole: "D155C373-9E47-4C6A-BADD-792F31AF5FBA",
     /** The guid for the Rock.Model.History entity. */
     History: "546D5F43-1184-47C9-8265-2D7BF4E1BCA5",
+    /** The guid for the Rock.Model.HistoryLogin entity. */
+    HistoryLogin: "B0C039E1-D2B0-460A-A787-83565BCB665C",
     /** The EntityType Guid for Rock.Model.HtmlContent  */
     HtmlContent: "FB30EC4C-7DCC-41A4-94AB-E728A8CE537B",
     /** The HTTP module component */
     HttpModuleComponent: "EDE69F48-5E05-4260-B360-DA37DFD1AB83",
-    /** The EntityType Guid for Rock.Web.HttpModules.Observability  */
+    /** The EntityType Guid for Rock.Web.HttpModules.RockGateway  */
     HttpModuleObservability: "FE7A8295-9383-4FD8-9FB2-FF77A8042462",
+    /** The EntityType Guid for Rock.Web.HttpModules.RockGateway  */
+    HttpModuleRockGateway: "FE7A8295-9383-4FD8-9FB2-FF77A8042462",
     /** The EntityType Guid for Rock.Model.IdentityVerification  */
     IdentityVerification: "C76071B0-0C2F-4A3F-88BF-08B2E006C614",
     /** The EntityType Guid for Rock.Model.IdentityVerificationCode  */
@@ -363,6 +379,8 @@ export const EntityType = {
     InteractionComponent: "ACE6145B-57D6-4694-972F-EC43AF776DE7",
     /** The EntityType Guid for Rock.Model.InteractionDeviceType  */
     InteractionDeviceType: "C1A24534-C77F-41A8-BCA9-73ABA57348E3",
+    /** The guid for the Rock.Model.InteractionEntity entity. */
+    InteractionEntity: "AB3AC547-CCEF-4662-9646-64F16813DAC4",
     /** The EntityType Guid for Rock.Model.InteractionSession  */
     InteractionSession: "338025DE-C16F-47BB-BA31-6DE0C59E59AA",
     /** The EntityType Guid for Rock.Model.InteractionSessionLocation  */
@@ -387,6 +405,34 @@ export const EntityType = {
     LavaShortcodeCategory: "6CFE20AD-F883-4F53-A678-0D048406299D",
     /** The EntityType Guid for Rock.Model.Layout */
     Layout: "9DACC861-FED4-47FC-946D-D6A120FF6D56",
+    /** The EntityType Guid for Rock.Model.LearningActivity */
+    LearningActivity: "98B98FA8-A92D-4E10-AA3E-B3082E61976F",
+    /** The EntityType Guid for Rock.Model.LearningClass */
+    LearningClass: "EB41E4E1-64B1-4AA1-8F66-F0DFD81557D9",
+    /** The EntityType Guid for Rock.Model.LearningClassActivity */
+    LearningClassActivity: "E82F540C-F483-4D4A-898A-3AE7FF76F75A",
+    /** The EntityType Guid for Rock.Model.LearningClassActivityCompletion */
+    LearningClassActivityCompletion: "14D1295A-CE9E-4FCB-A63C-6DF04DB5E9B1",
+    /** The EntityType Guid for Rock.Model.LearningClassAnnouncement */
+    LearningClassAnnouncement: "D2CE59D3-55E1-4275-9EA1-38C18A05A32B",
+    /** The EntityType Guid for Rock.Model.LearningClassContentPage */
+    LearningClassContentPage: "72A061C4-B7E6-4A91-A4F2-80551F772D46",
+    /** The EntityType Guid for Rock.Model.LearningCourse */
+    LearningCourse: "21870376-4A6E-4402-ACE3-42AA4441FC2E",
+    /** The EntityType Guid for Rock.Model.LearningCourseRequirement */
+    LearningCourseRequirement: "576F54E1-CE70-43ED-A7D8-5169529C70E9",
+    /** The EntityType Guid for Rock.Model.LearningGradingSystem */
+    LearningGradingSystem: "0B693CAF-3718-4913-B7AC-61D31B4DF099",
+    /** The EntityType Guid for Rock.Model.LearningGradingSystem */
+    LearningGradingSystemScale: "14BA9B5B-6B4A-4462-ACDF-898DCEC9EC0D",
+    /** The EntityType Guid for Rock.Model.LearningParticipant */
+    LearningParticipant: "03195758-1770-4794-9487-7A4AA02930A7",
+    /** The EntityType Guid for Rock.Model.LearningProgram */
+    LearningProgram: "AFD89885-6923-4FA1-B6FE-A1DF8D821BBC",
+    /** The EntityType Guid for Rock.Model.LearningProgramCompletion */
+    LearningProgramCompletion: "B82813A7-E70E-4F04-8568-0D84EFB484B2",
+    /** The EntityType Guid for Rock.Model.LearningSemester */
+    LearningSemester: "F9A40931-0ACE-4B50-A507-0D1D75F92BC4",
     /** The EntityType Guid for Rock.Model.Location  */
     Location: "0D6410AD-C83C-47AC-AF3D-616D09EDF63B",
     /** The EntityType Guid for Rock.Model.MediaAccount  */
@@ -415,6 +461,8 @@ export const EntityType = {
     Metriccategory: "3D35C859-DF37-433F-A20A-0FFD0FCB9862",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.AnswerToPrayer. */
     MobileAnswerToPrayerBlockType: "759AFCA0-9E0B-4A22-A402-CD4499F2A457",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.CheckIn.CheckIn. */
+    MobileCheckinCheckin: "BC0A4B6C-9F6D-4D39-8FFE-B6F9FA4B2F49",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Cms.DailyChallengeEntry */
     MobileCmsDailyChallengeEntry: "E9BC058A-CFE4-498B-A7E7-DD38DC74B30E",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Cms.Hero */
@@ -443,8 +491,12 @@ export const EntityType = {
     MobileContentChannelItemViewBlockType: "44A8B647-E0A7-42E7-9A75-276310F7E7BB",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.AttributeValues. */
     MobileCoreAttributeValues: "6751AC1E-C467-4416-9F02-0B9A0D1FAC2D",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.MyNotes. */
+    MobileCoreMyNotesBlockType: "1CCC09C4-2994-4009-813F-2F4B86C13BFE",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.Notes */
     MobileCoreNotesBlockType: "2FED71D1-4A60-4EB5-B971-530B5D1FC041",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.QuickNote. */
+    MobileCoreQuickNoteBlockType: "9AA328FB-8FBB-4C5D-A898-C9B355051ADD",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.Search. */
     MobileCoreSearchBlockType: "F81015CD-EBA9-4358-B930-4F1AB29AF879",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.SmartSearch. */
@@ -469,6 +521,12 @@ export const EntityType = {
     MobileEventsPrayerSessionBlockType: "BCAF9B7B-2ADE-496B-9303-150F495851FC",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Events.PrayerSessionSetup */
     MobileEventsPrayerSessionSetupBlockType: "51431866-FF92-433C-8B0F-0F6BBAD9BCE7",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.ScheduledTransactionList. */
+    MobileFinanceScheduledTransactionListBlockType: "7698E529-6834-46B0-BC5A-D466A6BCE4F6",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.TransactionDetail. */
+    MobileFinanceTransactionDetailBlockType: "3355006B-4C1F-4F85-8390-7C83C26D5C4A",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.TransactionList. */
+    MobileFinanceTransactionListBlockType: "4196280F-0204-4268-A19F-773336B8BEA2",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupRegistration */
     MobileGroupsGroupAddToGroup: "E0664BDC-9583-44F2-AC8D-23AE48603EAB",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupAttendanceEntry */
@@ -595,6 +653,8 @@ export const EntityType = {
     PersonalLinkSectionOrder: "648325DC-1555-44B7-AFA4-1971E57F7E11",
     /** The EntityType Guid for Rock.Model.PersonalizationSegment  */
     PersonalizationSegment: "368A3581-C8C4-4960-901A-9587864226F3",
+    /** The EntityType Guid for PersonalizationSegmentCategory 'joiner' table Rock.Model.PersonalizationSegment */
+    PersonalizationSegmentCategory: "D2026C0C-6C5F-4BB8-B085-9928E373812D",
     /** The EntityType Guid for Rock.Model.PhoneNumber  */
     PhoneNumber: "AD7E27CB-036D-40C6-B352-81B38BFAE798",
     /** The EntityType Guid for Rock.Model.PluginMigration  */

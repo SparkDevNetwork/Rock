@@ -40,7 +40,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Allows the details of a given pledge to be edited." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
     [GroupTypeField( "Select Group Type",
@@ -104,7 +104,7 @@ namespace Rock.Blocks.Finance
             var options = new FinancialPledgeDetailOptionsBag
             {
                 SelectGroupTypeGuid = selectedGroupTypeGuid,
-                Groups = LoadGroups( bag.PersonAlias?.Value?.AsGuidOrNull(), rockContext ),
+                Groups = LoadGroups( bag?.PersonAlias?.Value?.AsGuidOrNull(), rockContext ),
                 GroupType = GroupTypeCache.Get( selectedGroupTypeGuid ?? Guid.Empty )?.Name
             };
             return options;
@@ -124,7 +124,7 @@ namespace Rock.Blocks.Finance
 
             if ( !financialPledge.IsValid )
             {
-                errorMessage = string.Join("</br>", financialPledge.ValidationResults.Select( x => x.ErrorMessage ) );
+                errorMessage = string.Format( "Please correct the following:<ul><li>{0}</li></ul>", financialPledge.ValidationResults.AsDelimited( "</li><li>" ) ); ;
                 return false;
             }
 
@@ -147,8 +147,8 @@ namespace Rock.Blocks.Finance
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
@@ -204,8 +204,8 @@ namespace Rock.Blocks.Finance
 
             if ( entity.Id != 0 )
             {
-                bag.StartDate = entity.StartDate == DateTime.MinValue ? ( DateTime? ) null : entity.StartDate;
-                bag.EndDate = entity.EndDate;
+                bag.StartDate = entity.StartDate == DateTime.MinValue.Date ? ( DateTime? ) null : entity.StartDate;
+                bag.EndDate = entity.EndDate == DateTime.MaxValue.Date ? ( DateTime? ) null : entity.EndDate;
             }
 
             return bag;
@@ -239,7 +239,7 @@ namespace Rock.Blocks.Finance
 
             var bag = GetCommonEntityBag( entity, rockContext );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -258,7 +258,7 @@ namespace Rock.Blocks.Finance
 
             var bag = GetCommonEntityBag( entity, rockContext );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -303,7 +303,7 @@ namespace Rock.Blocks.Finance
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;
@@ -395,7 +395,7 @@ namespace Rock.Blocks.Finance
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${FinancialPledge.FriendlyTypeName}." );
                 return false;

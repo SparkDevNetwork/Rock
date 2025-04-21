@@ -6,12 +6,12 @@
                 <PersonPicker v-model="requestedByPersonAlias"
                               label="Requested By"
                               @update:modelValue="updatePersonName($event)" />
-                <TextBox v-model="firstName"
-                         label="First Name"
-                         rules="required" />
+                <FirstNameTextBox v-model="firstName"
+                                  label="First Name"
+                                  :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
                 <TextBox v-model="lastName"
                          label="Last Name"
-                         :rules="isLastNameRequired" />
+                         :rules="[isLastNameRequired, 'nospecialcharacters', 'noemojisorspecialfonts']" />
                 <EmailBox v-model="email"
                           label="Email" />
                 <DatePicker v-model="expirationDate"
@@ -23,26 +23,25 @@
             <div class="col-md-3">
                 <CheckBox v-model="isActive"
                           label="Active" />
-                <div v-if="props.modelValue?.flagCount">
-                    <span ref="flagCountRef" class="label label-warning" tabindex="-1" data-toggle="tooltip"
-                          data-placement="auto" data-container="body" data-html="true"
-                          data-original-title="re-approve the request to clear the flags">
-                        <i class="fa fa-flag"></i> flagged {{ props.modelValue?.flagCount }} times
-                    </span>
-                </div>
                 <CheckBoxList label="Options"
                               v-model="optionsListValue"
                               :items="optionsList" />
             </div>
 
             <div class="col-md-3">
-                <Toggle v-model="isApproved"
-                        trueText="Approved"
-                        falseText="Pending"
+                <Toggle v-model="isPending"
+                        trueText="Pending"
+                        falseText="Approved"
                         btnSize="xs"
-                        onButtonActiveCssClass="btn-success"
-                        offButtonActiveCssClass="btn-warning"
+                        onButtonActiveCssClass="btn-warning"
+                        offButtonActiveCssClass="btn-success"
                         label="Status" />
+                <HighlightLabel v-if="props.modelValue?.flagCount"
+                                labelType="warning" tooltip="Re-approve the request to clear the flags."
+                                tooltipPlacement="top"
+                                iconCssClass="fa fa-flag">
+                    flagged {{ props.modelValue?.flagCount }} times
+                </HighlightLabel>
             </div>
         </div>
 
@@ -57,13 +56,18 @@
                          label="Request"
                          textMode="multiline"
                          rules="required" />
+                <RockLiteral v-if="!isNullOrWhiteSpace(originalRequest)"
+                             label="Original Request"
+                             labelCssClass="text-muted">
+                    <span class="text-muted">{{ originalRequest }}</span>
+                </RockLiteral>
                 <TextBox v-model="answer"
                          textMode="multiline"
                          label="Answer" />
             </div>
         </div>
 
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" :showEmptyValues="false" />
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>
 </template>
 
@@ -80,6 +84,7 @@
     import Toggle from "@Obsidian/Controls/toggle.obs";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -89,6 +94,9 @@
     import { PrayerRequestDetailAddPersonResponseBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestDetail/prayerRequestDetailAddPersonResponseBag";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { Guid } from "@Obsidian/Types";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         modelValue: {
@@ -111,9 +119,10 @@
 
     const attributes = ref(props.modelValue.attributes ?? {});
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const originalRequest = ref<string>(props.modelValue.originalRequest ?? "");
     const isActive = propertyRef(props.modelValue.isActive ?? true, "IsActive");
     const requestedByPersonAlias = propertyRef(props.modelValue.requestedByPersonAlias ?? undefined, "RequestedByPersonAliasId");
-    const isApproved = propertyRef(props.modelValue.isApproved ?? false, "IsApproved");
+    const isPending = propertyRef(!(props.modelValue.isApproved ?? false), "IsApproved");
     const firstName = propertyRef(props.modelValue.firstName ?? "", "FirstName");
     const lastName = propertyRef(props.modelValue.lastName ?? "", "LastName");
     const email = propertyRef(props.modelValue.email ?? "", "Email");
@@ -136,7 +145,7 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [isActive, requestedByPersonAlias, isApproved, firstName, lastName, email, expirationDate, campus, category, request, answer, isPublic, isUrgent, allowComments];
+    const propRefs = [isActive, requestedByPersonAlias, isPending, firstName, lastName, email, expirationDate, campus, category, request, answer, isPublic, isUrgent, allowComments];
     const invokeBlockAction = useInvokeBlockAction();
 
     // #endregion
@@ -202,7 +211,7 @@
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(isActive, props.modelValue.isActive ?? false);
         updateRefValue(requestedByPersonAlias, props.modelValue.requestedByPersonAlias ?? undefined);
-        updateRefValue(isApproved, props.modelValue.isApproved ?? false);
+        updateRefValue(isPending, !(props.modelValue.isApproved ?? false));
         updateRefValue(firstName, props.modelValue.firstName ?? "");
         updateRefValue(lastName, props.modelValue.lastName ?? "");
         updateRefValue(email, props.modelValue.email ?? "");
@@ -224,11 +233,12 @@
             attributeValues: attributeValues.value,
             isActive: isActive.value,
             requestedByPersonAlias: requestedByPersonAlias.value,
-            isApproved: isApproved.value,
+            isApproved: !isPending.value,
             firstName: firstName.value,
             lastName: lastName.value,
             email: email.value,
             expirationDate: expirationDate.value,
+            campus: campus.value,
             category: category.value,
             text: request.value,
             answer: answer.value,

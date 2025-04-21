@@ -21,7 +21,9 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -212,7 +214,7 @@ namespace RockWeb.Blocks.Connection
         #region Fields
 
         private const string CAMPUS_SETTING = "default-campus";
-        
+
         #endregion
 
         #region Properties
@@ -273,7 +275,6 @@ namespace RockWeb.Blocks.Connection
             gConnectionRequestActivities.DataKeyNames = new string[] { "Guid" };
             gConnectionRequestActivities.Actions.AddClick += gConnectionRequestActivities_Add;
             gConnectionRequestActivities.GridRebind += gConnectionRequestActivities_GridRebind;
-            gConnectionRequestActivities.RowDataBound += gConnectionRequestActivities_RowDataBound;
 
             gConnectionRequestWorkflows.DataKeyNames = new string[] { "Guid" };
             gConnectionRequestWorkflows.GridRebind += gConnectionRequestWorkflows_GridRebind;
@@ -315,8 +316,6 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             HandleFormPostbacks();
             HandlePostbackActions();
 
@@ -324,18 +323,25 @@ namespace RockWeb.Blocks.Connection
             nbRequirementsErrors.Visible = false;
             nbNoParameterMessage.Visible = false;
 
-            if ( PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger() == 0 && PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() == null )
+            var connectionRequestId = PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger();
+            if ( connectionRequestId == 0 )
+            {
+                connectionRequestId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ConnectionRequestId ) ).ToIntSafe();
+            }
+
+            if ( connectionRequestId == 0 && PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() == null )
             {
                 nbNoParameterMessage.Visible = true;
                 pnlContents.Visible = false;
                 wpConnectionRequestWorkflow.Visible = false;
                 pnlConnectionRequestActivities.Visible = false;
+                base.OnLoad( e );
                 return;
             }
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger(), PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() );
+                ShowDetail( connectionRequestId, PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() );
             }
             else if ( IsEditAllowed.HasValue && IsEditAllowed.Value )
             {
@@ -349,6 +355,8 @@ namespace RockWeb.Blocks.Connection
                 // Set the person
                 Person = connectionRequest.PersonAlias.Person;
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -486,7 +494,12 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowDetail( PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger(), PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() );
+            var connectionRequestId = PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger();
+            if ( connectionRequestId == 0 )
+            {
+                connectionRequestId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ConnectionRequestId ) ).ToIntSafe();
+            }
+            ShowDetail( connectionRequestId, PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() );
         }
 
         /// <summary>
@@ -642,6 +655,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest = new ConnectionRequest();
                         connectionRequest.ConnectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
+                        connectionRequest.ConnectionTypeId = new ConnectionOpportunityService( rockContext ).Get( connectionRequest.ConnectionOpportunityId ).ConnectionTypeId;
 
                         if ( cpCampus.SelectedCampusId.HasValue )
                         {
@@ -926,6 +940,7 @@ namespace RockWeb.Blocks.Connection
 
                     ddlTransferOpportunity.Items.Clear();
                     foreach ( var opportunity in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities
+                        .Where( o => o.IsActive )
                         .OrderBy( o => o.Order )
                         .ThenBy( o => o.Name ) )
                     {
@@ -1049,6 +1064,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest.ConnectionOpportunity = connectionOpportunity;
                         connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
+                        connectionRequest.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
                     }
                 }
 
@@ -1070,6 +1086,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest.ConnectionOpportunity = connectionOpportunity;
                         connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
+                        connectionRequest.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
                     }
                 }
 
@@ -1091,6 +1108,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest.ConnectionOpportunity = connectionOpportunity;
                         connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
+                        connectionRequest.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
                     }
                 }
 
@@ -1161,6 +1179,7 @@ namespace RockWeb.Blocks.Connection
                         connectionRequestActivity.Note = tbTransferNote.Text;
                         connectionRequestActivityService.Add( connectionRequestActivity );
                         connectionRequest.ConnectionOpportunityId = newOpportunityId.Value;
+                        connectionRequest.ConnectionTypeId = newOpportunity.ConnectionTypeId;
 
                         if ( newOpportunity.ShowStatusOnTransfer && ddlTransferStatus.Visible )
                         {
@@ -1723,9 +1742,18 @@ namespace RockWeb.Blocks.Connection
         /// <returns></returns>
         private int? GetConnectionRequestId()
         {
-            return
-                hfConnectionRequestId.Value.ToStringSafe().AsIntegerOrNull() ??
-                PageParameter( PageParameterKey.ConnectionRequestId ).AsIntegerOrNull();
+            var connectionRequestId = hfConnectionRequestId.Value.ToStringSafe().AsIntegerOrNull();
+            if ( connectionRequestId != null )
+            {
+                return connectionRequestId;
+            }
+
+            connectionRequestId = PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger();
+            if ( connectionRequestId == 0 )
+            {
+                connectionRequestId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ConnectionRequestId ) ).ToIntSafe();
+            }
+            return connectionRequestId;
         }
 
         /// <summary>
@@ -1762,13 +1790,13 @@ namespace RockWeb.Blocks.Connection
                         .AsNoTracking()
                         .ToList();
 
-                    connectionOpportunityConnectorPersonList.ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
+                    connectionOpportunityConnectorPersonList.ForEach( p => connectors.TryAdd( p.Id, p ) );
                 }
 
                 // Add the current person as possible connector
                 if ( CurrentPerson != null )
                 {
-                    connectors.AddOrIgnore( CurrentPerson.Id, CurrentPerson );
+                    connectors.TryAdd( CurrentPerson.Id, CurrentPerson );
                 }
 
                 // Add connectors to dropdown list
@@ -1987,6 +2015,7 @@ namespace RockWeb.Blocks.Connection
                         connectionRequest = new ConnectionRequest();
                         connectionRequest.ConnectionOpportunity = connectionOpportunity;
                         connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
+                        connectionRequest.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
                         connectionRequest.ConnectionState = ConnectionState.Active;
                         connectionRequest.ConnectionStatus = connectionStatus;
                         connectionRequest.ConnectionStatusId = connectionStatus.Id;
@@ -2522,7 +2551,7 @@ namespace RockWeb.Blocks.Connection
                             .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                             .Select( m => m.Person ).AsNoTracking()
                             .ToList()
-                            .ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
+                            .ForEach( p => connectors.TryAdd( p.Id, p ) );
                     }
 
                     if ( !currentConnectorId.HasValue && campusId.HasValue )
@@ -2535,7 +2564,7 @@ namespace RockWeb.Blocks.Connection
             // Add the current person as possible connector
             if ( CurrentPerson != null )
             {
-                connectors.AddOrIgnore( CurrentPerson.Id, CurrentPerson );
+                connectors.TryAdd( CurrentPerson.Id, CurrentPerson );
             }
 
             // Make sure the current value is an option
@@ -2544,7 +2573,7 @@ namespace RockWeb.Blocks.Connection
                 var person = new PersonService( rockContext ).Get( currentConnectorId.Value );
                 if ( person != null )
                 {
-                    connectors.AddOrIgnore( person.Id, person );
+                    connectors.TryAdd( person.Id, person );
                 }
             }
 
@@ -2592,7 +2621,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         if ( groupConfig.GroupMemberRole != null )
                         {
-                            roles.AddOrIgnore( groupConfig.GroupMemberRole.Id, groupConfig.GroupMemberRole.Name );
+                            roles.TryAdd( groupConfig.GroupMemberRole.Id, groupConfig.GroupMemberRole.Name );
                         }
                     }
                 }
@@ -2643,7 +2672,7 @@ namespace RockWeb.Blocks.Connection
                                 c.GroupTypeId == group.GroupTypeId &&
                                 c.GroupMemberRoleId == roleId.Value ) )
                         {
-                            statuses.AddOrIgnore( groupConfig.GroupMemberStatus.ConvertToInt(), groupConfig.GroupMemberStatus.ConvertToString() );
+                            statuses.TryAdd( groupConfig.GroupMemberStatus.ConvertToInt(), groupConfig.GroupMemberStatus.ConvertToString() );
                         }
                     }
                 }
@@ -3037,7 +3066,7 @@ namespace RockWeb.Blocks.Connection
                     activity = new ConnectionRequestActivityService( rockContext ).Get( activityGuid );
                     if ( activity != null && activity.ConnectorPersonAlias != null && activity.ConnectorPersonAlias.Person != null )
                     {
-                        connectors.AddOrIgnore( activity.ConnectorPersonAlias.Person.Id, activity.ConnectorPersonAlias.Person );
+                        connectors.TryAdd( activity.ConnectorPersonAlias.Person.Id, activity.ConnectorPersonAlias.Person );
                     }
                 }
 
@@ -3068,13 +3097,13 @@ namespace RockWeb.Blocks.Connection
                         .SelectMany( g => g.ConnectorGroup.Members )
                         .Select( m => m.Person )
                         .ToList()
-                        .ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
+                        .ForEach( p => connectors.TryAdd( p.Id, p ) );
                 }
             }
 
             if ( CurrentPerson != null )
             {
-                connectors.AddOrIgnore( CurrentPerson.Id, CurrentPerson );
+                connectors.TryAdd( CurrentPerson.Id, CurrentPerson );
             }
 
             ddlActivity.SetValue( activity != null ? activity.ConnectionActivityTypeId : 0 );
@@ -3222,7 +3251,7 @@ namespace RockWeb.Blocks.Connection
                         }
                         else
                         {
-                            mdWorkflowLaunched.Show( $"A '{ workflowType.Name }' workflow was started.",
+                            mdWorkflowLaunched.Show( $"A '{workflowType.Name}' workflow was started.",
                                 ModalAlertType.Information );
                         }
                     }

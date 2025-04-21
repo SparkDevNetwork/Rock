@@ -1,16 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="grid-cell" :class="additionalItemClass" :style="additionalCellStyles">
-        <Skeleton v-if="props.column.skeletonComponent">
-            <component :is="props.column.skeletonComponent"
-                       :column="props.column"
-                       :grid="props.grid" />
-        </Skeleton>
+        <component v-if="props.column.skeletonComponent"
+                   :is="props.column.skeletonComponent"
+                   :column="props.column"
+                   :grid="props.grid" />
     </div>
 </template>
 
 <script setup lang="ts">
-    import Skeleton from "@Obsidian/Controls/skeleton.obs";
     import { PropType, computed } from "vue";
     import { ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
     import { getColumnStyles } from "@Obsidian/Core/Controls/grid";

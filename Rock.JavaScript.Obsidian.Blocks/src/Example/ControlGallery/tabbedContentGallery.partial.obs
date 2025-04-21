@@ -1,0 +1,24 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <TabbedContent :tabs="list">
+            <template #tabpane="{ item }">
+                This is the content for {{ item }}.
+            </template>
+        </TabbedContent>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const list = ["Matthew", "Mark", "Luke", "John"];
+    const importCode = getSfcControlImportPath("tabbedContent");
+    const exampleCode = `<TabbedContent :tabs="arrayOfItems">
+    <template #tabpane="{item}">
+        This is the content for {{item}}.
+    </template>
+</TabbedContent>`;
+</script>

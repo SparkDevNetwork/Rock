@@ -14,14 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Utility;
-using Rock.ViewModels.Utility;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+
+using Rock.Enums;
+using Rock.ViewModels.Utility;
 
 namespace Rock
 {
@@ -43,7 +44,11 @@ namespace Rock
             var enumFieldsOrder = new Dictionary<TEnum, int>();
             foreach ( var enumField in enumFields )
             {
-                var enumFieldOrder = enumField.GetCustomAttribute<EnumOrderAttribute>()?.Order ?? int.MaxValue;
+#pragma warning disable CS0618 // Type or member is obsolete
+                var enumFieldOrder = enumField.GetCustomAttribute<EnumOrderAttribute>()?.Order
+                    ?? enumField.GetCustomAttribute<Utility.EnumOrderAttribute>()?.Order
+                    ?? int.MaxValue;
+#pragma warning restore CS0618 // Type or member is obsolete
                 enumFieldsOrder.Add( ( TEnum ) enumField.GetValue( null ), enumFieldOrder );
             }
 

@@ -31,6 +31,7 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StepProgramDetail;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -76,7 +77,7 @@ namespace Rock.Blocks.Engagement
 
     [Rock.SystemGuid.EntityTypeGuid( "7260278e-efb7-4b98-a862-15bf0a40ba2e" )]
     [Rock.SystemGuid.BlockTypeGuid( "e2f965d1-7419-4062-9568-08613bb696e3" )]
-    public class StepProgramDetail : RockDetailBlockType
+    public class StepProgramDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -126,12 +127,38 @@ namespace Rock.Blocks.Engagement
         private RockContext _rockContext;
 
         /// <summary>
-        /// The step type, should be accessed using the <see cref="GetStepType"/> since performs a null check on <see cref="_stepType"/>
+        /// The step type, should be accessed using the <see cref="GetStepProgram"/> since performs a null check on <see cref="_stepProgram"/>
         /// before assigning a value when possible.
         /// </summary>
         private StepProgram _stepProgram;
 
         #region Methods
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var key = pageReference.GetPageParameter( PageParameterKey.StepProgramId );
+                var pageParameters = new Dictionary<string, string>();
+
+                var name = new StepProgramService( rockContext )
+                    .GetSelect( key, mf => mf.Name );
+
+                if ( name != null )
+                {
+                    pageParameters.Add( PageParameterKey.StepProgramId, key );
+                }
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( name ?? "New Step Program", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+                };
+            }
+        }
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
@@ -276,7 +303,7 @@ namespace Rock.Blocks.Engagement
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             var defaultDateRange = GetAttributeValue( AttributeKey.SlidingDateRange );
 
@@ -318,9 +345,9 @@ namespace Rock.Blocks.Engagement
             var bag = GetCommonEntityBag( entity );
             var rockContext = GetRockContext();
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
-            bag.StepProgramAttributes = GetStepTypeAttributes( rockContext, entity.Id.ToString() ).ConvertAll( e => PublicAttributeHelper.GetPublicEditableAttributeViewModel( e ) );
+            bag.StepProgramAttributes = GetStepTypeAttributes( rockContext, entity.Id.ToString() ).ConvertAll( e => PublicAttributeHelper.GetPublicEditableAttribute( e ) );
 
             bag.Statuses = entity.StepStatuses.Select( s => new StepStatusBag()
             {
@@ -442,7 +469,7 @@ namespace Rock.Blocks.Engagement
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -819,15 +846,19 @@ namespace Rock.Blocks.Engagement
         {
             // Set the visibility of the Activity Summary chart.
             var showActivitySummary = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean( true );
-            var stepTypeId = GetStepProgramId();
+            var stepProgramId = GetStepProgramId();
 
             if ( showActivitySummary )
             {
                 // If the Step Type does not have any activity, hide the Activity Summary.
                 var dataContext = GetRockContext();
                 var stepService = new StepService( dataContext );
-                var stepsQuery = stepService.Queryable().AsNoTracking()
-                                    .Where( x => x.StepTypeId == stepTypeId );
+                var stepsQuery = stepService.Queryable()
+                    .AsNoTracking()
+                    .Where( x => x.StepType.StepProgramId == stepProgramId
+                        && x.StepType.IsActive
+                        && x.CompletedDateKey.HasValue );
+
                 showActivitySummary = stepsQuery.Any();
             }
 

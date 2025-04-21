@@ -7,7 +7,7 @@
                 <dd>
                     <a v-if="createdByPersonId" :href="getPersonLink(createdByPersonId)">{{ createdByName }}</a>
                     <span v-else-if="createdByName">{{ createdByName }}</span>
-                    <small v-if="createdRelativeTime">&nbsp;({{ createdRelativeTime }})</small>
+                    <small ref="createdTimeRef" v-show="createdRelativeTime" class="js-date-rollover" data-toggle="tooltip" data-placement="top" :data-original-title="createdDateTime">&nbsp;({{ createdRelativeTime }})</small>
                 </dd>
             </dl>
         </div>
@@ -18,7 +18,7 @@
                 <dd>
                     <a v-if="modifiedByPersonId" :href="getPersonLink(modifiedByPersonId)">{{ modifiedByName }}</a>
                     <span v-else-if="createdByName">{{ modifiedByName }}</span>
-                    <small v-if="modifiedRelativeTime">&nbsp;({{ modifiedRelativeTime }})</small>
+                    <small ref="modifiedTimeRef" v-show="modifiedRelativeTime" class="js-date-rollover" data-toggle="tooltip" data-placement="top" :data-original-title="modifiedDateTime">&nbsp;({{ modifiedRelativeTime }})</small>
                 </dd>
             </dl>
         </div>
@@ -41,13 +41,15 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch, onMounted } from "vue";
     import { EntityAuditBag } from "@Obsidian/ViewModels/Utility/entityAuditBag";
     import { AuditDetailGetAuditDetailsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/auditDetailGetAuditDetailsOptionsBag";
     import { Guid } from "@Obsidian/Types";
     import { useHttp } from "@Obsidian/Utility/http";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
 
     const props = defineProps({
         /**
@@ -74,6 +76,8 @@
     const securityGrantToken = useSecurityGrantToken();
     const http = useHttp();
     const auditBag = ref<EntityAuditBag | null>(null);
+    const createdTimeRef = ref<HTMLElement>();
+    const modifiedTimeRef = ref<HTMLElement>();
 
     // #endregion
 
@@ -92,11 +96,15 @@
 
     const createdRelativeTime = computed(() => auditBag.value?.createdRelativeTime);
 
+    const createdDateTime = computed(() => RockDateTime.parseISO(auditBag.value?.createdDateTime ?? "")?.localDateTime.toASPString("G"));
+
     const modifiedByPersonId = computed(() => auditBag.value?.modifiedByPersonId);
 
     const modifiedByName = computed(() => auditBag.value?.modifiedByName ?? "");
 
     const modifiedRelativeTime = computed(() => auditBag.value?.modifiedRelativeTime);
+
+    const modifiedDateTime = computed(() => RockDateTime.parseISO(auditBag.value?.modifiedDateTime ?? "")?.localDateTime.toASPString("G"));
 
     const showId = ref(true);
 
@@ -154,6 +162,15 @@
     }
 
     // #endregion
+
+    onMounted(() => {
+        if (createdTimeRef.value) {
+            tooltip(createdTimeRef.value);
+        }
+        if (modifiedTimeRef.value) {
+            tooltip(modifiedTimeRef.value);
+        }
+    });
 
     watch([() => props.entityTypeGuid, () => props.entityKey], () => {
         loadAuditBag();

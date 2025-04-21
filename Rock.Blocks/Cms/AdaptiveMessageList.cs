@@ -18,7 +18,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
+
+using DotLiquid.Tags;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -26,7 +30,9 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.AdaptiveMessageList;
+using Rock.ViewModels.Blocks.Core.ScheduleList;
 using Rock.Web.Cache;
+
 using static Rock.Blocks.Cms.AdaptiveMessageList;
 
 namespace Rock.Blocks.Cms
@@ -62,6 +68,15 @@ namespace Rock.Blocks.Cms
             public const string DetailPage = "DetailPage";
         }
 
+        private static class PageParameterKey
+        {
+            public const string CategoryId = "CategoryId";
+            public const string ParentCategoryId = "ParentCategoryId";
+            public const string CategoryGuid = "CategoryGuid";
+            public const string AdaptiveMessageGuid = "AdaptiveMessageGuid";
+            public const string AdaptiveMessageId = "AdaptiveMessageId";
+        }
+
         #endregion Keys
 
         #region Fields
@@ -70,6 +85,8 @@ namespace Rock.Blocks.Cms
         /// The batch attributes that are configured to show on the grid.
         /// </summary>
         private readonly Lazy<List<AttributeCache>> _gridAttributes = new Lazy<List<AttributeCache>>( BuildGridAttributes );
+
+        private Guid? _categoryGuid;
 
         #endregion
 
@@ -97,7 +114,11 @@ namespace Rock.Blocks.Cms
         /// <returns>The options that provide additional details to the block.</returns>
         private AdaptiveMessageListOptionsBag GetBoxOptions()
         {
-            var options = new AdaptiveMessageListOptionsBag();
+            var categoryGuid = GetCategoryGuid();
+            var options = new AdaptiveMessageListOptionsBag()
+            {
+                IsGridVisible = PageParameter( PageParameterKey.AdaptiveMessageId ).IsNullOrWhiteSpace() && categoryGuid.HasValue && BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson )
+            };
 
             return options;
         }
@@ -119,9 +140,14 @@ namespace Rock.Blocks.Cms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            Dictionary<string, string> queryParams = new Dictionary<string, string>()
+            {
+                { PageParameterKey.AdaptiveMessageId, "((Key))" },
+                { PageParameterKey.ParentCategoryId, PageParameter( PageParameterKey.CategoryId ) },
+            };
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "AdaptiveMessageId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams ),
             };
         }
 
@@ -130,12 +156,25 @@ namespace Rock.Blocks.Cms
         /// </summary>
         /// <param name="rockContext">The database context.</param>
         /// <returns>A queryable for <see cref="FinancialBatch"/>.</returns>
-        private IQueryable<AdaptiveMessage> GetAdaptiveMessageQueryable( RockContext rockContext )
+        private IQueryable<AdaptiveMessageCategory> GetAdaptiveMessageCategoryQueryable( RockContext rockContext )
         {
-            var qry = new AdaptiveMessageService( rockContext )
-                .Queryable();
+            var qry = new AdaptiveMessageCategoryService( rockContext )
+                .Queryable()
+                .Include( a => a.AdaptiveMessage );
 
-            return qry;
+            var categoryGuid = GetCategoryGuid();
+
+            // Filter by Category
+            if ( categoryGuid.HasValue )
+            {
+                var category = CategoryCache.Get( categoryGuid.Value );
+                if ( category != null )
+                {
+                    qry = qry.Where( a => a.CategoryId == category.Id );
+                }
+            }
+
+            return qry.OrderBy( a => a.Order ).ThenBy( a => a.AdaptiveMessageId );
         }
 
         /// <inheritdoc/>
@@ -143,10 +182,11 @@ namespace Rock.Blocks.Cms
         {
             var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.ADAPTIVE_MESSAGES.AsGuid() );
             var interactionQry = new InteractionService( rockContext ).Queryable().Where( a => a.InteractionComponent.InteractionChannelId == interactionChannelId );
-            return GetAdaptiveMessageQueryable( rockContext ).Select( b => new AdaptiveMessageData
+            return GetAdaptiveMessageCategoryQueryable( rockContext ).Select( b => new AdaptiveMessageData
             {
-                AdaptiveMessage = b,
-                Views = interactionQry.Where( a => a.InteractionComponent.EntityId == b.Id ).Count()
+                AdaptiveMessage = b.AdaptiveMessage,
+                Views = interactionQry.Where( a => a.InteractionComponent.EntityId == b.AdaptiveMessageId ).Count(),
+                AdaptiveMessageCategory = b
             } );
         }
 
@@ -161,13 +201,15 @@ namespace Rock.Blocks.Cms
             return new GridBuilder<AdaptiveMessageData>()
                 .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.AdaptiveMessage.IdKey )
+                .AddField( "order", a => a.AdaptiveMessageCategory.Order )
                 .AddTextField( "name", a => a.AdaptiveMessage.Name )
                 .AddTextField( "description", a => a.AdaptiveMessage.Description )
                 .AddField( "isActive", a => a.AdaptiveMessage.IsActive )
                 .AddTextField( "key", a => a.AdaptiveMessage.Key )
-                .AddField( "categories", p => p.AdaptiveMessage.Categories.Select( a => a.Name ).ToList() )
+                .AddField( "categories", p => p.AdaptiveMessage.AdaptiveMessageCategories.Select( a => a.Category?.Name ).ToList() )
                 .AddField( "views", p => p.Views )
                 .AddField( "adaptations", p => p.AdaptiveMessage.AdaptiveMessageAdaptations.Count() )
+                .AddTextField( "adaptiveMessageCategoryIdKey", a => a.AdaptiveMessageCategory.IdKey )
                 .AddAttributeFieldsFrom( a => a.AdaptiveMessage, _gridAttributes.Value );
         }
 
@@ -188,6 +230,29 @@ namespace Rock.Blocks.Cms
             }
 
             return new List<AttributeCache>();
+        }
+
+        /// <summary>
+        /// Gets the category unique identifier from the Page parameters.
+        /// </summary>
+        /// <returns></returns>
+        private Guid? GetCategoryGuid()
+        {
+            if ( _categoryGuid == null )
+            {
+                var categoryId = this.PageParameter( PageParameterKey.CategoryId ).AsIntegerOrNull();
+
+                if ( !categoryId.HasValue )
+                {
+                    _categoryGuid = this.PageParameter( PageParameterKey.CategoryGuid ).AsGuidOrNull();
+                }
+                else
+                {
+                    _categoryGuid = CategoryCache.Get( categoryId.Value )?.Guid;
+                }
+            }
+
+            return _categoryGuid;
         }
 
         #endregion
@@ -214,7 +279,7 @@ namespace Rock.Blocks.Cms
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${AdaptiveMessage.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {AdaptiveMessage.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -224,6 +289,37 @@ namespace Rock.Blocks.Cms
 
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
+
+                return ActionOk();
+            }
+        }
+
+        /// <summary>
+        /// Changes the ordered position of a single item.
+        /// </summary>
+        /// <param name="idKey">The identifier of the item that will be moved.</param>
+        /// <param name="beforeIdKey">The identifier of the item it will be placed before.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult ReorderItem( string idKey, string beforeIdKey )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var adaptiveMessageCategoryService = new AdaptiveMessageCategoryService( rockContext );
+                var categoryGuid = GetCategoryGuid();
+                var adaptiveMessages = GetAdaptiveMessageCategoryQueryable( rockContext ).ToList();
+
+
+                // Find the current and new index for the moved item
+                int currentIndex = adaptiveMessages.FindIndex( sp => sp.IdKey == idKey );
+                int newIndex = beforeIdKey.IsNotNullOrWhiteSpace() ? adaptiveMessages.FindIndex( sp => sp.IdKey == beforeIdKey ) : adaptiveMessages.Count - 1;
+
+                // Perform the reordering
+                if ( currentIndex != newIndex )
+                {
+                    adaptiveMessageCategoryService.Reorder( adaptiveMessages, currentIndex, newIndex );
+                    rockContext.SaveChanges();
+                }
 
                 return ActionOk();
             }
@@ -254,6 +350,14 @@ namespace Rock.Blocks.Cms
             /// The number of transactions in this batch.
             /// </value>
             public int Views { get; set; }
+
+            /// <summary>
+            /// Gets or sets the whole adaptive message category message object from the database.
+            /// </summary>
+            /// <value>
+            /// The whole adaptive message category message object from the database.
+            /// </value>
+            public AdaptiveMessageCategory AdaptiveMessageCategory { get; set; }
         }
 
         #endregion

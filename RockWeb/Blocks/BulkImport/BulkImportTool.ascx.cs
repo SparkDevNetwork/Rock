@@ -106,8 +106,6 @@ namespace RockWeb.Blocks.BulkImport
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( this.IsPostBack )
             {
                 if ( !string.IsNullOrEmpty( tbForeignSystemKey.Text ) )
@@ -115,6 +113,8 @@ namespace RockWeb.Blocks.BulkImport
                     btnCheckForeignSystemKey_Click( null, null );
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

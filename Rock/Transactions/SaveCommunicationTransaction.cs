@@ -31,22 +31,6 @@ namespace Rock.Transactions
     public class SaveCommunicationTransaction : ITransaction
     {
         /// <summary>
-        /// If <see cref="Recipients"/> is not specified, this is the list of email addresses to set the email to
-        /// </summary>
-        /// <value>
-        /// The recipient emails.
-        /// </value>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use Recipients instead to ensure the correct person is associated with the communication.", true )]
-        public List<string> RecipientEmails
-        {
-            get => _recipientEmailAddresses;
-            set => _recipientEmailAddresses = value;
-        }
-
-        private List<string> _recipientEmailAddresses;
-
-        /// <summary>
         /// Gets or sets the rock message recipients.
         /// </summary>
         /// <value>
@@ -175,38 +159,6 @@ namespace Rock.Transactions
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SaveCommunicationTransaction"/> class.
-        /// </summary>
-        /// <param name="to">The email address (or a delimited list of email addresses) that the message should be sent to</param>
-        /// <param name="fromName">From name.</param>
-        /// <param name="fromAddress">From address.</param>
-        /// <param name="subject">The subject.</param>
-        /// <param name="message">The message.</param>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use the constructor that takes RockMessageRecipient as a parameter to ensure the correct person is associated with the communication.", true )]
-        public SaveCommunicationTransaction( string to, string fromName, string fromAddress, string subject, string message )
-            : this( fromName, fromAddress, subject, message )
-        {
-            RecipientEmails = to.SplitDelimitedValues().ToList();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SaveCommunicationTransaction"/> class.
-        /// </summary>
-        /// <param name="to">To.</param>
-        /// <param name="fromName">From name.</param>
-        /// <param name="fromAddress">From address.</param>
-        /// <param name="subject">The subject.</param>
-        /// <param name="message">The message.</param>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use the constructor that takes RockMessageRecipient as a parameter to ensure the correct person is associated with the communication.", true )]
-        public SaveCommunicationTransaction( List<string> to, string fromName, string fromAddress, string subject, string message )
-            : this( fromName, fromAddress, subject, message )
-        {
-            RecipientEmails = to;
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="SaveCommunicationTransaction" /> class.
         /// </summary>
         /// <param name="recipients">The recipients.</param>
@@ -240,6 +192,16 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
+            ExecuteAndReturnCommunicationId();
+        }
+
+        /// <summary>
+        /// Executes the transaction and returns the created communication
+        /// identifier.
+        /// </summary>
+        /// <returns>The identifier of the communication or <c>null</c> if one was not created.</returns>
+        internal int? ExecuteAndReturnCommunicationId()
+        {
             using ( var rockContext = new RockContext() )
             {
                 var personService = new PersonService( rockContext );
@@ -271,12 +233,6 @@ namespace Rock.Transactions
                     }
                 }
 
-                if ( this.Recipients?.Any() != true && _recipientEmailAddresses != null )
-                {
-                    this.Recipients = new List<RockMessageRecipient>();
-                    this.Recipients.AddRange( _recipientEmailAddresses.Select( a => RockEmailMessageRecipient.CreateAnonymous( a, null ) ).ToList() );
-                }
-
                 if ( this.Recipients?.Any() == true )
                 {
                     var emailRecipients = this.Recipients.OfType<RockEmailMessageRecipient>().ToList();
@@ -297,7 +253,7 @@ namespace Rock.Transactions
 
                     var communication = new CommunicationService( rockContext ).CreateEmailCommunication( createEmailCommunicationArgs );
 
-                    if ( communication != null  )
+                    if ( communication != null )
                     {
                         if ( communication.Recipients.Count() == 1 && this.RecipientGuid.HasValue )
                         {
@@ -306,7 +262,11 @@ namespace Rock.Transactions
                     }
 
                     rockContext.SaveChanges();
+
+                    return communication.Id;
                 }
+
+                return null;
             }
         }
     }

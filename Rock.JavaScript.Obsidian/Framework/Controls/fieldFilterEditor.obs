@@ -13,7 +13,14 @@
         </div>
 
         <div class="filtervisibilityrules-ruleslist ">
-            <FieldFilterRuleRow v-for="rule in rules" :key="rule.guid!" :modelValue="rule" :sources="sources" @update:modelValue="onUpdateRule" @removeRule="onRemoveRule" />
+            <FieldFilterRuleRow v-for="rule in rules"
+                                :key="rule.guid!"
+                                :modelValue="rule"
+                                :sources="sources"
+                                :enhanceForLongSourceLists="enhanceForLongSourceLists"
+                                :groupSources="groupSources"
+                                @update:modelValue="onUpdateRule"
+                                @removeRule="onRemoveRule" />
         </div>
 
         <div class="filter-actions">
@@ -78,7 +85,19 @@
         allowNestedGroups: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        /** Enables grouping of the field sources picker. */
+        groupSources: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Uses an enhanced picker that allows searching in the source list. */
+        enhanceForLongSourceLists: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
     });
 
     const emit = defineEmits<{
@@ -101,14 +120,19 @@
      * rule with default values into the list of rules.
      */
     function onAddRuleClick(): void {
+        if (!props.sources.length) {
+            return;
+        }
+
         rules.value = [
             ...rules.value,
             {
                 guid: newGuid(),
                 comparisonType: 0,
                 value: "",
-                sourceType: 0,
-                attributeGuid: props.sources[0].attribute?.attributeGuid
+                sourceType: props.sources[0].type,
+                attributeGuid: props.sources[0].attribute?.attributeGuid,
+                propertyName: props.sources[0].property?.name
             }
         ];
     }

@@ -5,23 +5,38 @@
                    name="colorpicker">
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
+                <slot name="prepend" :isInputGroupSupported="true" />
+
                 <div ref="colorPicker" class="input-group input-width-lg">
+                    <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+
                     <input v-model="internalValue" :id="uniqueId" type="text" class="form-control" v-bind="field" :placeholder="placeholder" />
                     <span class="input-group-addon">
                         <i></i>
                     </span>
+
+                    <slot name="inputGroupAppend" :isInputGroupSupported="true" />
                 </div>
+
+                <slot name="append" :isInputGroupSupported="true" />
             </div>
         </template>
     </RockFormField>
 </template>
 
 <script setup lang="ts">
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { onMounted, PropType, ref } from "vue";
+    import { onMounted, PropType, ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DefinedValuePickerGetDefinedValuesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetDefinedValuesOptionsBag";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
 
     // TODO: This should be replaced with a version that does not require jQuery.
+
+    const http = useHttp();
 
     const props = defineProps({
         modelValue: {
@@ -31,6 +46,9 @@
         placeholder: {
             type: String as PropType<string>,
             default: ""
+        },
+        modelModifiers: {
+            type: Object as PropType<{ hex?: boolean } | undefined>
         }
     });
 
@@ -38,19 +56,114 @@
         (e: "update:modelValue", value: string): void;
     }>();
 
-    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const internalValue = ref(getModifiedValue(props.modelValue));
     const colorPicker = ref<HTMLElement>();
 
-    onMounted(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const $colorPicker = (<any>window[<any>"$"])(colorPicker.value);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let $colorPicker: any;
 
-        $colorPicker.colorpicker();
+    watch(() => props.modelValue, (newValue) => {
+        newValue = getModifiedValue(newValue);
+
+        if (newValue) {
+            if (newValue !== internalValue.value) {
+                $colorPicker?.colorpicker("setValue", newValue);
+            }
+        }
+        else if ($colorPicker) {
+            // When we try to call setValue with an empty string it freaks out
+            // and puts "#aN" in the text box.
+            const c = $colorPicker?.data("colorpicker").createColor("");
+            $colorPicker.data("colorpicker").color = c;
+            $colorPicker?.data("colorpicker").updateComponent("transparent");
+        }
+
+        internalValue.value = newValue;
+    });
+
+    watch(internalValue, (newValue) => {
+        newValue = getModifiedValue(newValue);
+
+        if (newValue !== getModifiedValue(props.modelValue)) {
+            emit("update:modelValue", newValue);
+        }
+    });
+
+    function getModifiedValue(value: string): string {
+        if (props.modelModifiers?.hex && value) {
+            if (value.startsWith("#") && value.length < 7) {
+                // The color is being entered manually so do not modify it yet.
+                return value;
+            }
+
+            const color = new RockColor(value);
+            const hex = color.toHex();
+            const hexToCompare = hex.toLowerCase();
+
+            const isHexBlack = hexToCompare === "#000000"
+                || hexToCompare === "#000"
+                || hexToCompare === "#000f"
+                || hexToCompare === "#000000ff";
+
+            const valueToCompare = value.toLowerCase().replace(/ /g, "");
+            const isValueBlack = valueToCompare === "#000000"
+                || valueToCompare === "#000"
+                || valueToCompare === "#000f"
+                || valueToCompare === "#000000ff"
+                || valueToCompare === "black"
+                || valueToCompare === "rgb(0,0,0)"
+                || valueToCompare === "rgba(0,0,0,1)";
+
+            if (isHexBlack && !isValueBlack) {
+                // Do not modify value. It is likely being entered manually by the user.
+                return value;
+            }
+            else {
+                return hex;
+            }
+        }
+
+        // The color picker wants things in lower case.
+        return value.toLowerCase();
+    }
+
+    /**
+     * Load color swatch defined type from server to display at the bottom of the picker.
+     */
+    async function loadColorSwatches(): Promise<ListItemBag[]> {
+        const options: DefinedValuePickerGetDefinedValuesOptionsBag = {
+            definedTypeGuid: toGuidOrNull(DefinedType.ColorPickerSwatches) ?? emptyGuid,
+            includeInactive: false,
+        };
+        const url = "/api/v2/Controls/DefinedValuePickerGetDefinedValues";
+        const result = await http.post<ListItemBag[]>(url, undefined, options);
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            return [];
+        }
+    }
+
+    onMounted(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        $colorPicker = (<any>window[<any>"$"])(colorPicker.value);
+        const colorSwatches = await loadColorSwatches();
+
+        $colorPicker.colorpicker({
+            colorSelectors: colorSwatches.map(c => c.text)
+        });
 
         // Vue will not detect the change if it happens from jQuery, so we need
         // to detect the change and make sure Vue knows.
-        $colorPicker.find("> input").on("change", () => {
-            internalValue.value = <string>$colorPicker.find("> input").val();
+        $colorPicker.on("changeColor", () => {
+            const newValue = getModifiedValue(<string>$colorPicker.find("> input").val() ?? "");
+
+            if (internalValue.value !== newValue) {
+                internalValue.value = newValue;
+            }
         });
     });
 </script>

@@ -1,0 +1,113 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="firstName" label="First Name" />
+            </div>
+
+            <div class="col-md-4">
+                <TextBox v-model="lastName" label="Last Name" />
+            </div>
+
+            <div class="col-md-4">
+                <DefinedValuePicker v-model="result"
+                                    label="Result"
+                                    showBlankItem
+                                    :definedTypeGuid="DefinedType.BenevolenceResultType" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBoxList v-model="benevolenceTypes"
+                              label="Benevolence Types"
+                              :items="benevolenceTypeItems"
+                              :horizontal="true"
+                              :repeatColumns="2" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        caseWorkerItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        benevolenceTypeItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const firstName = ref(props.modelValue.firstName ?? "");
+    const lastName = ref(props.modelValue.lastName ?? "");
+    const result = ref(props.modelValue.result);
+    const benevolenceTypes = ref(props.modelValue.benevolenceTypes);
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            firstName: firstName.value,
+            lastName: lastName.value,
+            result: result.value,
+            benevolenceTypes: benevolenceTypes.value,
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        firstName.value = props.modelValue.firstName ?? "";
+        lastName.value = props.modelValue.lastName ?? "";
+        result.value = props.modelValue.result;
+        benevolenceTypes.value = props.modelValue.benevolenceTypes;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

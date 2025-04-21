@@ -37,6 +37,17 @@
                     <CheckBox v-model="showSort"
                               label="Show Sort" />
                 </div>
+
+                <div class="col-md-4">
+                    <CheckBox v-model="autoFocus"
+                              label="Auto Focus" />
+                </div>
+
+                <div class="col-md-4">
+                    <CheckBox v-model="includeUnapproved"
+                              label="Include Unapproved"
+                              help="Determines if unapproved items should be included in the search results." />
+                </div>
             </div>
 
             <div class="row">
@@ -146,7 +157,6 @@
                                help="The amount of boost to apply to each shared request filter. A value of 1 = no boost, a value of > 1 will increase the match score while a value of < 1 will reduce the match score." />
                 </div>
             </div>
-
         </div>
 
     </Modal>
@@ -226,6 +236,7 @@
     const showFiltersPanel = ref(false);
     const showFullTextSearch = ref(false);
     const showSort = ref(false);
+    const autoFocus = ref(true);
     const enabledSortOrders = ref<string[]>([]);
     const trendingTerm = ref("");
     const filters = ref<FilterOptionsBag[]>([]);
@@ -238,6 +249,7 @@
     const boostMatchingRequestFilters = ref(false);
     const segmentBoostAmount = ref<number | null>(null);
     const requestFilterBoostAmount = ref<number | null>(null);
+    const includeUnapproved = ref<boolean>(false);
 
     const editingFilter = ref<FilterOptionsBag | null>(null);
     const editingFilterHeaderMarkup = ref("");
@@ -280,6 +292,7 @@
             showFullTextSearch.value = result.data.settings.showFullTextSearch;
             showSort.value = result.data.settings.showSort;
             numberOfResults.value = result.data.settings.numberOfResults ?? null;
+            autoFocus.value = result.data.settings.autoFocus;
             searchOnLoad.value = result.data.settings.searchOnLoad;
             groupResultsBySource.value = result.data.settings.groupResultsBySource;
             enabledSortOrders.value = result.data.settings.enabledSortOrders ?? [];
@@ -292,6 +305,7 @@
             boostMatchingRequestFilters.value = result.data.settings.boostMatchingRequestFilters;
             segmentBoostAmount.value = result.data.settings.segmentBoostAmount ?? null;
             requestFilterBoostAmount.value = result.data.settings.requestFilterBoostAmount ?? null;
+            includeUnapproved.value = result.data.settings.includeUnapproved;
             siteType.value = result.data.settings.siteType ?? "web";
             groupHeaderTemplate.value = result.data.settings.groupHeaderTemplate ?? "";
 
@@ -339,6 +353,7 @@
         setCustomSettingsBoxValue(box, "showFiltersPanel", showFiltersPanel.value);
         setCustomSettingsBoxValue(box, "showFullTextSearch", showFullTextSearch.value);
         setCustomSettingsBoxValue(box, "showSort", showSort.value);
+        setCustomSettingsBoxValue(box, "autoFocus", autoFocus.value);
         setCustomSettingsBoxValue(box, "numberOfResults", numberOfResults.value);
         setCustomSettingsBoxValue(box, "searchOnLoad", searchOnLoad.value);
         setCustomSettingsBoxValue(box, "groupResultsBySource", groupResultsBySource.value);
@@ -352,6 +367,7 @@
         setCustomSettingsBoxValue(box, "boostMatchingRequestFilters", boostMatchingRequestFilters.value);
         setCustomSettingsBoxValue(box, "segmentBoostAmount", segmentBoostAmount.value);
         setCustomSettingsBoxValue(box, "requestFilterBoostAmount", requestFilterBoostAmount.value);
+        setCustomSettingsBoxValue(box, "includeUnapproved", includeUnapproved.value);
         setCustomSettingsBoxValue(box, "groupHeaderTemplate", groupHeaderTemplate.value);
 
         const data = {

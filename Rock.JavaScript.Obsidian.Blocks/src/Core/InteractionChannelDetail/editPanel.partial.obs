@@ -12,17 +12,23 @@
                           label="Active" />
             </div>
             <div class="col-md-6">
-                <NumberBox label="Engagement Strength" v-model="engagementStrength" />
+                <NumberBox label="Engagement Strength"
+                           v-model="engagementStrength"
+                           :minimumValue="0" />
             </div>
             <div class="col-md-6">
-                <NumberBox label="Retention Duration" v-model="retentionDuration">
+                <NumberBox label="Retention Duration"
+                           v-model="retentionDuration"
+                           :minimumValue="0">
                     <template v-slot:inputGroupAppend>
                         <span class="input-group-addon">days</span>
                     </template>
                 </NumberBox>
             </div>
             <div class="col-md-6">
-                <NumberBox label="Component Cache Duration" v-model="componentCacheDuration" >
+                <NumberBox label="Component Cache Duration"
+                           v-model="componentCacheDuration"
+                           :minimumValue="0">
                     <template v-slot:inputGroupAppend>
                         <span class="input-group-addon">minutes</span>
                     </template>
@@ -92,14 +98,15 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { InteractionChannelBag } from "@Obsidian/ViewModels/Blocks/Core/InteractionChannelDetail/interactionChannelBag";
     import { InteractionChannelDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/InteractionChannelDetail/interactionChannelDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<InteractionChannelBag>,
+            type: Object as PropType<ValidPropertiesBox<InteractionChannelBag>>,
             required: true
         },
 
@@ -110,29 +117,29 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: InteractionChannelBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<InteractionChannelBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const engagementStrength = propertyRef(props.modelValue.engagementStrength, "EngagementStrength");
-    const retentionDuration = propertyRef(props.modelValue.retentionDuration, "RetentionDuration");
-    const componentCacheDuration = propertyRef(props.modelValue.componentCacheDuration, "ComponentCacheDuration");
-    const interactionCustom1Label = propertyRef(props.modelValue.interactionCustom1Label ?? "", "InteractionCustom1Label");
-    const interactionCustom2Label = propertyRef(props.modelValue.interactionCustom2Label ?? "", "InteractionCustom2Label");
-    const interactionCustomIndexed1Label = propertyRef(props.modelValue.interactionCustomIndexed1Label ?? "", "InteractionCustomIndexed1Label");
-    const channelListTemplate = propertyRef(props.modelValue.channelListTemplate ?? "", "ChannelListTemplate");
-    const channelDetailTemplate = propertyRef(props.modelValue.channelDetailTemplate ?? "", "ChannelDetailTemplate");
-    const componentListTemplate = propertyRef(props.modelValue.componentListTemplate ?? "", "ComponentListTemplate");
-    const componentDetailTemplate = propertyRef(props.modelValue.componentDetailTemplate ?? "", "ComponentDetailTemplate");
-    const sessionListTemplate = propertyRef(props.modelValue.sessionListTemplate ?? "", "SessionListTemplate");
-    const interactionListTemplate = propertyRef(props.modelValue.interactionListTemplate ?? "", "InteractionListTemplate");
-    const interactionDetailTemplate = propertyRef(props.modelValue.interactionDetailTemplate ?? "", "InteractionDetailTemplate");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const engagementStrength = propertyRef(props.modelValue?.bag?.engagementStrength, "EngagementStrength");
+    const retentionDuration = propertyRef(props.modelValue?.bag?.retentionDuration, "RetentionDuration");
+    const componentCacheDuration = propertyRef(props.modelValue?.bag?.componentCacheDuration, "ComponentCacheDuration");
+    const interactionCustom1Label = propertyRef(props.modelValue?.bag?.interactionCustom1Label ?? "", "InteractionCustom1Label");
+    const interactionCustom2Label = propertyRef(props.modelValue?.bag?.interactionCustom2Label ?? "", "InteractionCustom2Label");
+    const interactionCustomIndexed1Label = propertyRef(props.modelValue?.bag?.interactionCustomIndexed1Label ?? "", "InteractionCustomIndexed1Label");
+    const channelListTemplate = propertyRef(props.modelValue?.bag?.channelListTemplate ?? "", "ChannelListTemplate");
+    const channelDetailTemplate = propertyRef(props.modelValue?.bag?.channelDetailTemplate ?? "", "ChannelDetailTemplate");
+    const componentListTemplate = propertyRef(props.modelValue?.bag?.componentListTemplate ?? "", "ComponentListTemplate");
+    const componentDetailTemplate = propertyRef(props.modelValue?.bag?.componentDetailTemplate ?? "", "ComponentDetailTemplate");
+    const sessionListTemplate = propertyRef(props.modelValue?.bag?.sessionListTemplate ?? "", "SessionListTemplate");
+    const interactionListTemplate = propertyRef(props.modelValue?.bag?.interactionListTemplate ?? "", "InteractionListTemplate");
+    const interactionDetailTemplate = propertyRef(props.modelValue?.bag?.interactionDetailTemplate ?? "", "InteractionDetailTemplate");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -142,61 +149,51 @@
 
     // #endregion
 
-    // #region Computed Values
-
-    // #endregion
-
-    // #region Functions
-
-    // #endregion
-
-    // #region Event Handlers
-
-    // #endregion
-
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(engagementStrength, props.modelValue.engagementStrength);
-        updateRefValue(retentionDuration, props.modelValue.retentionDuration);
-        updateRefValue(componentCacheDuration, props.modelValue.componentCacheDuration);
-        updateRefValue(interactionCustom1Label, props.modelValue.interactionCustom1Label ?? "");
-        updateRefValue(interactionCustom2Label, props.modelValue.interactionCustom2Label ?? "");
-        updateRefValue(interactionCustomIndexed1Label, props.modelValue.interactionCustomIndexed1Label ?? "");
-        updateRefValue(channelListTemplate, props.modelValue.channelListTemplate ?? "");
-        updateRefValue(channelDetailTemplate, props.modelValue.channelDetailTemplate ?? "");
-        updateRefValue(componentListTemplate, props.modelValue.componentListTemplate ?? "");
-        updateRefValue(componentDetailTemplate, props.modelValue.componentDetailTemplate ?? "");
-        updateRefValue(sessionListTemplate, props.modelValue.sessionListTemplate ?? "");
-        updateRefValue(interactionListTemplate, props.modelValue.interactionListTemplate ?? "");
-        updateRefValue(interactionDetailTemplate, props.modelValue.interactionDetailTemplate ?? "");
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(engagementStrength, props.modelValue?.bag?.engagementStrength);
+        updateRefValue(retentionDuration, props.modelValue?.bag?.retentionDuration);
+        updateRefValue(componentCacheDuration, props.modelValue?.bag?.componentCacheDuration);
+        updateRefValue(interactionCustom1Label, props.modelValue?.bag?.interactionCustom1Label ?? "");
+        updateRefValue(interactionCustom2Label, props.modelValue?.bag?.interactionCustom2Label ?? "");
+        updateRefValue(interactionCustomIndexed1Label, props.modelValue?.bag?.interactionCustomIndexed1Label ?? "");
+        updateRefValue(channelListTemplate, props.modelValue?.bag?.channelListTemplate ?? "");
+        updateRefValue(channelDetailTemplate, props.modelValue?.bag?.channelDetailTemplate ?? "");
+        updateRefValue(componentListTemplate, props.modelValue?.bag?.componentListTemplate ?? "");
+        updateRefValue(componentDetailTemplate, props.modelValue?.bag?.componentDetailTemplate ?? "");
+        updateRefValue(sessionListTemplate, props.modelValue?.bag?.sessionListTemplate ?? "");
+        updateRefValue(interactionListTemplate, props.modelValue?.bag?.interactionListTemplate ?? "");
+        updateRefValue(interactionDetailTemplate, props.modelValue?.bag?.interactionDetailTemplate ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
-        const newValue: InteractionChannelBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            isActive: isActive.value,
-            name: name.value,
-            engagementStrength: engagementStrength.value,
-            retentionDuration: retentionDuration.value,
-            componentCacheDuration: componentCacheDuration.value,
-            interactionCustom1Label: interactionCustom1Label.value,
-            interactionCustom2Label: interactionCustom2Label.value,
-            interactionCustomIndexed1Label: interactionCustomIndexed1Label.value,
-            channelListTemplate: channelListTemplate.value,
-            channelDetailTemplate: channelDetailTemplate.value,
-            componentListTemplate: componentListTemplate.value,
-            componentDetailTemplate: componentDetailTemplate.value,
-            sessionListTemplate: sessionListTemplate.value,
-            interactionListTemplate: interactionListTemplate.value,
-            interactionDetailTemplate: interactionDetailTemplate.value,
+        const newValue: ValidPropertiesBox<InteractionChannelBag> = {
+            bag: { ...props.modelValue.bag } as InteractionChannelBag
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "engagementStrength", engagementStrength.value);
+        setPropertiesBoxValue(newValue, "retentionDuration", retentionDuration.value);
+        setPropertiesBoxValue(newValue, "componentCacheDuration", componentCacheDuration.value);
+        setPropertiesBoxValue(newValue, "interactionCustom1Label", interactionCustom1Label.value);
+        setPropertiesBoxValue(newValue, "interactionCustom2Label", interactionCustom2Label.value);
+        setPropertiesBoxValue(newValue, "interactionCustomIndexed1Label", interactionCustomIndexed1Label.value);
+        setPropertiesBoxValue(newValue, "channelListTemplate", channelListTemplate.value);
+        setPropertiesBoxValue(newValue, "channelDetailTemplate", channelDetailTemplate.value);
+        setPropertiesBoxValue(newValue, "componentListTemplate", componentListTemplate.value);
+        setPropertiesBoxValue(newValue, "componentDetailTemplate", componentDetailTemplate.value);
+        setPropertiesBoxValue(newValue, "sessionListTemplate", sessionListTemplate.value);
+        setPropertiesBoxValue(newValue, "interactionListTemplate", interactionListTemplate.value);
+        setPropertiesBoxValue(newValue, "interactionDetailTemplate", interactionDetailTemplate.value);
+
 
         emit("update:modelValue", newValue);
     });

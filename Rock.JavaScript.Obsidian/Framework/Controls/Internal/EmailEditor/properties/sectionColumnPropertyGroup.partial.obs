@@ -1,0 +1,139 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="section-column-property-header">
+        <RockLabel class="section-column-property-label">Column {{ columnNumber }}</RockLabel>
+        <RockButton v-if="!isDeleteHidden"
+                    btnSize="xs"
+                    btnType="link"
+                    class="section-column-property-remove-button"
+                    @click="$emit('delete')"><i class="fa fa-trash"></i> Remove</RockButton>
+    </div>
+
+    <template v-if="componentWrapper">
+        <HorizontalAlignmentProperty :valueProvider="horizontalAlignmentProvider" />
+
+        <ColorPickerProperty v-if="backgroundColorProvider"
+                             label="Background Color"
+                             :valueProvider="backgroundColorProvider" />
+
+        <PaddingProperty :element="componentWrapper.marginWrapper.borderWrapper.paddingWrapper.td" />
+
+        <BorderRadiusProperty :element="componentWrapper.marginWrapper.borderWrapper.td" />
+
+        <BorderPropertyGroup :element="componentWrapper.marginWrapper.borderWrapper.td" />
+    </template>
+</template>
+
+<style scoped>
+.section-column-property-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-small);
+}
+
+.section-column-property-label {
+    font-size: var(--font-size-h5);
+    color: var(--color-info-strong);
+}
+
+.section-column-property-remove-button {
+    color: var(--color-danger-strong);
+    font-weight: bold;
+}
+</style>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import BorderPropertyGroup from "./borderPropertyGroup.partial.obs";
+    import BorderRadiusProperty from "./borderRadiusProperty.partial.obs";
+    import ColorPickerProperty from "./colorPickerProperty.partial.obs";
+    import PaddingProperty from "./paddingProperty.partial.obs";
+    import HorizontalAlignmentProperty from "./horizontalAlignmentProperty.partial.obs";
+    import { attributeProvider, createBackgroundColorProvider } from "../providers.partial";
+    import { HorizontalAlignment, ValueConverter, ValueProvider } from "../types.partial";
+    import { findComponentInnerWrappers } from "../utils.partial";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        columnNumber: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        isDeleteHidden: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "delete"): void;
+    }>();
+
+    // #region Values
+
+    const componentWrapper = ref(findComponentInnerWrappers(props.element));
+    const horizontalAlignmentProvider = ref<ValueProvider<HorizontalAlignment | "" | null | undefined>>(
+        createValueProvider()
+    );
+    const backgroundColorProvider = ref(componentWrapper.value ? createBackgroundColorProvider(componentWrapper.value) : null);
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): ValueProvider<HorizontalAlignment | "" | null | undefined> {
+        const converter: ValueConverter<"" | HorizontalAlignment | null | undefined, string | null> = {
+            toSource(target: string | null): "" | HorizontalAlignment | null | undefined {
+                return target === "center"
+                    ? "center"
+                    : target === "left"
+                        ? "left"
+                        : target === "right"
+                            ? "right"
+                            : null;
+            },
+            toTarget(source: "" | HorizontalAlignment | null | undefined): string | null {
+                return source ?? null;
+            }
+        };
+        return attributeProvider<HorizontalAlignment | "" | null | undefined>(
+            componentWrapper.value!.marginWrapper.borderWrapper.paddingWrapper.td,
+            "align",
+            converter
+        );
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.element, () => {
+        componentWrapper.value = findComponentInnerWrappers(props.element);
+
+        horizontalAlignmentProvider.value.dispose();
+        horizontalAlignmentProvider.value = createValueProvider();
+
+        backgroundColorProvider.value?.dispose();
+        backgroundColorProvider.value = componentWrapper.value ? createBackgroundColorProvider(componentWrapper.value) : null;
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        horizontalAlignmentProvider.value.dispose();
+        backgroundColorProvider.value?.dispose();
+    });
+
+    // #endregion Hooks
+</script>

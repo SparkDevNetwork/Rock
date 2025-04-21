@@ -2,21 +2,33 @@
 <template>
     <fieldset>
         <NotificationBox alertType="info">In order to respect any new setting changes made here, please restart this node after saving.</NotificationBox>
-
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
     </fieldset>
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { WebFarmNodeBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeBag";
     import { WebFarmNodeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<WebFarmNodeBag>,
+            type: Object as PropType<ValidPropertiesBox<WebFarmNodeBag>>,
             required: true
         },
 
@@ -27,16 +39,16 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: WebFarmNodeBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<WebFarmNodeBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const name = propertyRef(props.modelValue.nodeName ?? "", "NodeName");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const name = propertyRef(props.modelValue?.bag?.nodeName ?? "", "NodeName");
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -44,35 +56,24 @@
 
     // #endregion
 
-    // #region Computed Values
-
-    // #endregion
-
-    // #region Functions
-
-    // #endregion
-
-    // #region Event Handlers
-
-    // #endregion
-
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(name, props.modelValue.nodeName ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(name, props.modelValue?.bag?.nodeName ?? "");
+        updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
-        const newValue: WebFarmNodeBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            nodeName: name.value,
-            isActive: isActive.value
+        const newValue: ValidPropertiesBox<WebFarmNodeBag> = {
+            bag: { ...props.modelValue.bag } as WebFarmNodeBag,
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "nodeName", name.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
 
         emit("update:modelValue", newValue);
     });

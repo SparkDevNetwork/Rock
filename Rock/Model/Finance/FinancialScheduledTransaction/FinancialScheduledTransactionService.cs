@@ -353,18 +353,18 @@ namespace Rock.Model
         public static string ProcessPayments( FinancialGateway gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat,
             Guid? receiptEmail, Guid? failedPaymentEmail, Guid? failedPaymentWorkflowType, bool verboseLogging )
         {
-            int totalPayments = 0;
-            int totalAlreadyDownloaded = 0;
+            var totalPayments = 0;
+            var totalAlreadyDownloaded = 0;
 
             // If there is a payment without a transaction, but has one of the following status, don't report it as a 'unmatched' transaction.
             // If they have one of these statuses, and can't be matched, the user probably closed the browser or walked away before completing the transaction.
-            string[] ignorableUnMatchedStatuses = new string[2] { "in_progress", "abandoned" };
+            var ignorableUnMatchedStatuses = new string[2] { "in_progress", "abandoned" };
 
-            List<Payment> paymentsWithoutTransaction = new List<Payment>();
-            int totalAdded = 0;
-            int totalReversals = 0;
-            int totalFailures = 0;
-            int totalStatusChanges = 0;
+            var paymentsWithoutTransaction = new List<Payment>();
+            var totalAdded = 0;
+            var totalReversals = 0;
+            var totalFailures = 0;
+            var totalStatusChanges = 0;
 
             var batchSummary = new Dictionary<Guid, List<Decimal>>();
 
@@ -390,7 +390,7 @@ namespace Rock.Model
             var batchTxnChanges = new Dictionary<Guid, List<string>>();
             var batchBatchChanges = new Dictionary<Guid, List<string>>();
             var scheduledTransactionIds = new List<int>();
-            List<FinancialTransaction> transactionsWithAttributes = new List<FinancialTransaction>();
+            var transactionsWithAttributes = new List<FinancialTransaction>();
 
             foreach ( var payment in payments.Where( p => p.Amount > 0.0M ) )
             {
@@ -432,16 +432,18 @@ namespace Rock.Model
                         // Verify that the payment is for an existing scheduled transaction, or has the same transaction code as an existing payment
                         if ( scheduledTransaction != null || originalTxn != null )
                         {
-                            var transaction = new FinancialTransaction();
-                            transaction.Guid = Guid.NewGuid();
-                            transaction.TransactionCode = payment.TransactionCode;
-                            transaction.TransactionDateTime = payment.TransactionDateTime;
-                            transaction.Status = payment.Status;
-                            transaction.IsSettled = payment.IsSettled;
-                            transaction.SettledGroupId = payment.SettledGroupId;
-                            transaction.SettledDate = payment.SettledDate;
-                            transaction.StatusMessage = payment.StatusMessage;
-                            transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+                            var transaction = new FinancialTransaction
+                            {
+                                Guid = Guid.NewGuid(),
+                                TransactionCode = payment.TransactionCode,
+                                TransactionDateTime = payment.TransactionDateTime,
+                                Status = payment.Status,
+                                IsSettled = payment.IsSettled,
+                                SettledGroupId = payment.SettledGroupId,
+                                SettledDate = payment.SettledDate,
+                                StatusMessage = payment.StatusMessage,
+                                FinancialPaymentDetail = new FinancialPaymentDetail()
+                            };
 
                             if ( payment.ForeignKey.IsNotNullOrWhiteSpace() )
                             {
@@ -698,6 +700,7 @@ namespace Rock.Model
                     rockContext.SaveChanges();
                 }
             }
+
             if ( transactionsWithAttributes.Count > 0 )
             {
                 foreach ( var transaction in transactionsWithAttributes )

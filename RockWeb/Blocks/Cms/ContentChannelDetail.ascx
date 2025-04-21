@@ -134,7 +134,7 @@
                     <Rock:PanelWidget ID="wbAdvanced" runat="server" Title="Advanced">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockCheckBox ID="cbEnableRss" runat="server" Label="Enable RSS" Text="Yes" CssClass="js-content-channel-enable-rss" />
+                                <Rock:RockCheckBox ID="cbEnableRss" runat="server" Label="Enable RSS" CssClass="js-content-channel-enable-rss" />
                                 <div id="divRss" runat="server" class="js-content-channel-rss">
                                     <Rock:DataTextBox ID="tbChannelUrl" runat="server" Label="Channel URL" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="ChannelUrl"
                                         Help="The Content Channel Item Publishing Point will be used for the Item URL in the RSS feed." />
@@ -163,8 +163,8 @@
                     </Rock:PanelWidget>
 
                     <div class="actions">
-                        <asp:LinkButton ID="lbSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
-                        <asp:LinkButton ID="lbCancel" runat="server"  AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
+                        <asp:LinkButton ID="lbSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                        <asp:LinkButton ID="lbCancel" runat="server"  data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                     </div>
 
                 </div>

@@ -25,6 +25,8 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Microsoft.Extensions.Logging;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -164,8 +166,6 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbPeople.Visible = false;
             nbError.Visible = false;
 
@@ -182,6 +182,8 @@ namespace RockWeb.Blocks.Crm
             {
                 LoadViewDetails();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -309,6 +311,7 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 var selectedPrimaryPersonId = hfSelectedColumnPersonId.Value.AsIntegerOrNull();
+                var showMatchingData = hfSwitchState.Value.AsBoolean();
 
                 // Save the primary header radio button's selection
                 foreach ( var col in gValues.Columns.OfType<MergePersonField>() )
@@ -319,6 +322,17 @@ namespace RockWeb.Blocks.Crm
                         MergeData.PrimaryPersonId = col.PersonId;
                     }
                 }
+
+                if ( showMatchingData )
+                {
+                    gValues.AddCssClass( "show-matching-data" );
+                }
+                else
+                {
+                    gValues.RemoveCssClass( "show-matching-data" );
+                }
+
+                swShowMatchingData.Checked = showMatchingData;
             }
         }
 
@@ -447,6 +461,12 @@ namespace RockWeb.Blocks.Crm
                 {
                     e.Row.Cells[1].AddCssClass( "grid-row-header" );
                 }
+
+                var dataItem = e.Row.DataItem as ValuesRow;
+                if ( dataItem.IsMatchingRow )
+                {
+                    e.Row.AddCssClass( "matching-data" );
+                }
             }
         }
 
@@ -501,11 +521,7 @@ namespace RockWeb.Blocks.Crm
 
             var oldPhotos = new List<int>();
 
-            var logger = new RockProcessLogger
-            {
-                DefaultTopic = "PersonMerge",
-                LogDomain = RockLogDomains.Crm
-            };
+            var logger = new RockProcessLogger( Logger );
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = 90;
 
@@ -525,7 +541,7 @@ namespace RockWeb.Blocks.Crm
                     Person primaryPerson = personService.Get( MergeData.PrimaryPersonId ?? 0 );
                     if ( primaryPerson != null )
                     {
-                        logger.DefaultTopic = $"PersonMerge:{primaryPerson.FullName}";
+                        logger.DefaultTopic = $"{primaryPerson.FullName}";
                         logger.Write( $"Merge started. [TargetPersonId={primaryPerson.Id}]" );
 
                         primaryPersonId = primaryPerson.Id;
@@ -1186,6 +1202,7 @@ namespace RockWeb.Blocks.Crm
 
                 var labelCol = new BoundField();
                 labelCol.DataField = "PropertyLabel";
+                labelCol.HeaderStyle.CssClass = "show-matching-data-switch";
                 ////labelCol.HeaderStyle.CssClass = "grid-section-header";
                 gValues.Columns.Add( labelCol );
 
@@ -1813,6 +1830,7 @@ FROM [GroupMember] GMO
 	LEFT OUTER JOIN [GroupMember] GMN
 		ON GMN.[GroupId] = GMO.[GroupId]
 		AND GMN.[PersonId] = @NewId
+        AND GMN.[IsArchived] = 0
 		AND (GTR.[MaxCount] <= 1 OR GMN.[GroupRoleId] = GMO.[GroupRoleId])
 WHERE GMO.[PersonId] = @OldId
 	AND GMN.[Id] IS NULL
@@ -2173,14 +2191,25 @@ AND Attendance.Id != @FirstTimeRecordId
         /// </summary>
         private class RockProcessLogger
         {
-            public string LogDomain { get; set; }
-            public string DefaultTopic { get; set; }
-            public RockLogLevel DefaultLogLevel { get; set; } = RockLogLevel.Debug;
+            private readonly ILogger _logger;
 
-            public void Write( string message, string topic = null, RockLogLevel? logLevel = null )
+            public string DefaultTopic { get; set; }
+
+            public RockProcessLogger( ILogger logger )
             {
-                var msg = $"({ topic ?? DefaultTopic }) { message }";
-                RockLogger.Log.WriteToLog( logLevel ?? DefaultLogLevel, domain: LogDomain, messageTemplate: msg );
+                _logger = logger;
+            }
+
+            public void Write( string message )
+            {
+                if ( DefaultTopic.IsNullOrWhiteSpace() )
+                {
+                    _logger.LogDebug( message );
+                }
+                else
+                {
+                    _logger.LogDebug( $"({DefaultTopic}) {message}" );
+                }
             }
         }
 
@@ -2584,9 +2613,9 @@ AND Attendance.Id != @FirstTimeRecordId
 
             ValuesRow headingRow = null;
 
-            // Only show properties that match the selected headingKeys, and have more than one distinct value.
+            // Show properties the user can view that match headingKeys or contain non-empty values.
             var visibleProperties = Properties.Where( p => ( p.HasViewPermission || _ShowSecuredProperties )
-                                                           && ( headingKeys.Contains( p.Key ) || p.Values.Select( v => v.Value ?? string.Empty ).Distinct().Count() > 1 ) )
+                                                           && ( headingKeys.Contains( p.Key ) || p.Values.Any( v => !string.IsNullOrEmpty( v.Value ) ) ) )
                                               .ToList();
 
             foreach ( var personProperty in visibleProperties )
@@ -2594,6 +2623,13 @@ AND Attendance.Id != @FirstTimeRecordId
                 var valuesRow = new ValuesRow();
                 valuesRow.PersonProperty = personProperty;
                 valuesRow.PersonPersonPropertyList = new List<ValuesRowPersonPersonProperty>();
+
+                // Check if this row should be considered "matching" and set the IsMatchingRow property
+                if ( personProperty.Values.Select( v => v.Value ).Distinct().Count() == 1 )
+                {
+                    valuesRow.IsMatchingRow = true;
+                }
+
                 foreach ( var person in People )
                 {
                     ValuesRowPersonPersonProperty valuesRowPersonPersonProperty = new ValuesRowPersonPersonProperty();
@@ -3036,6 +3072,8 @@ AND Attendance.Id != @FirstTimeRecordId
         /// The person property.
         /// </value>
         public PersonProperty PersonProperty { get; internal set; }
+
+        public bool IsMatchingRow { get; set; }
     }
 
     /// <summary>

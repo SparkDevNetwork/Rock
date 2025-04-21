@@ -195,7 +195,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_PRAYER_PRAYER_REQUEST_DETAILS_BLOCK_TYPE )]
-    [Rock.SystemGuid.BlockTypeGuid( "EBB91B46-292E-4784-9E37-38781C714008")]
+    [Rock.SystemGuid.BlockTypeGuid( "EBB91B46-292E-4784-9E37-38781C714008" )]
     public class PrayerRequestDetails : RockBlockType
     {
         #region Page Parameters
@@ -561,10 +561,12 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                 }
 
                 content = $@"
-<StackLayout StyleClass=""prayerdetail"">
+<StackLayout StyleClass=""prayerdetail, spacing-8"">
     ##HEADER##
 
-    ##FIELDS##
+    <StackLayout StyleClass=""spacing-24"">
+        ##FIELDS##
+    </StackLayout>
     
     <Rock:Validator x:Name=""vForm"">
         ##VALIDATORS##
@@ -572,7 +574,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
     
     <Rock:NotificationBox x:Name=""nbError"" NotificationType=""Error"" />
     
-    <Button StyleClass=""btn,btn-primary"" Text=""Save"" Margin=""24 0 0 0"" Command=""{{Binding Callback}}"">
+    <Button StyleClass=""btn,btn-primary"" Text=""Save"" Margin=""16 0 0 0"" Command=""{{Binding Callback}}"">
         <Button.CommandParameter>
             <Rock:CallbackParameters Name=""Save"" Validator=""{{x:Reference vForm}}"" Notification=""{{x:Reference nbError}}"">
                 ##PARAMETERS##
@@ -585,8 +587,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
                 if ( ShowHeader )
                 {
-                    content = content.Replace( "##HEADER##", $@"<Label StyleClass=""h2"" Text=""{( request == null ? "Add" : "Edit" )} Prayer Request"" />
-    <Rock:Divider />" );
+                    content = content.Replace( "##HEADER##", $@"<Label StyleClass=""h2, title1, bold, text-interface-strongest"" Text=""{( request == null ? "Add" : "Edit" )} Prayer Request"" />" );
                 }
                 else
                 {
@@ -631,7 +632,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                 var usePassedInRequestor = requestorPersonGuid.HasValue;
 
                 string firstName, lastName, email;
-                if( usePassedInRequestor )
+                if ( usePassedInRequestor )
                 {
                     rockContext = rockContext ?? new RockContext();
 
@@ -648,7 +649,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                     lastName = request != null ? request.LastName : RequestContext.CurrentPerson?.LastName;
                     email = request != null ? request.Email : RequestContext.CurrentPerson?.Email;
                 }
-                
+
 
                 field = MobileHelper.GetTextEditFieldXaml( "firstName", "First Name", firstName, !usePassedInRequestor, true );
                 sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
@@ -690,6 +691,9 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             field = MobileHelper.GetTextEditFieldXaml( "request", "Request", request?.Text, true, true, true, CharacterLimit );
             sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
             parameters.Add( "request", "Text" );
+
+            field = MobileHelper.GetEditAttributesXaml( request, null, parameters, false, RequestContext.CurrentPerson );
+            sb.AppendLine( field );
 
             if ( ShowPublicDisplayFlag )
             {
@@ -787,6 +791,8 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                 prayerRequest.Email = ( string ) parameters["email"];
                 prayerRequest.Text = ( string ) parameters["request"];
 
+                MobileHelper.UpdateEditAttributeValues( prayerRequest, parameters, null, null );
+
                 if ( ShowCampus )
                 {
                     if ( parameters.ContainsKey( "campus" ) )
@@ -844,7 +850,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                     {
                         prayerRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
                     }
-                }    
+                }
                 else if ( RequestContext.CurrentPerson != null )
                 {
                     //
@@ -870,10 +876,12 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                     }
                 }
 
-                //
                 // Save all changes to database.
-                //
-                rockContext.SaveChanges();
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    prayerRequest.SaveAttributeValues( rockContext );
+                } );
 
                 StartWorkflow( prayerRequest, rockContext );
             }

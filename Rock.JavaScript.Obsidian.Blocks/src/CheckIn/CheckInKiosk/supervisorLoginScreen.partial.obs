@@ -1,0 +1,248 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="supervisor-login-screen">
+        <MainPanel title="Supervisor Login"
+                   subtitle="Enter your PIN to login as a supervisor"
+                   :configuration="configuration">
+            <!--
+                The form is here to prevent iOS from causing the Return key
+                to become a Go key and triggering a WebForms postback.
+            -->
+            <RockForm>
+                <TextBox v-model="pinCode"
+                         class="pin-code"
+                         type="password"
+                         @keypress.enter="onLoginClick" />
+            </RockForm>
+
+            <NumberPad v-model="pinCode"
+                       documentListener
+                       @submit="onLoginClick" />
+
+            <RockButton class="login-button"
+                        btnType="primary"
+                        :disabled="isLoginDisabled"
+                        autoDisable
+                        @click="onLoginClick">
+                Login
+            </RockButton>
+        </MainPanel>
+
+        <MainPanel title="Current Counts"
+                   subtitle="Below are the current check-in counts"
+                   class="flex-grow-1"
+                   :configuration="configuration">
+            <SupervisorLoginScreenCounts :counts="counts"
+                                         :showCountsByLocation="showCountsByLocation" />
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import SupervisorLoginScreenCounts from "./supervisorLoginScreenCounts.partial.obs";
+    import MainPanel from "./mainPanel.partial.obs";
+    import NumberPad from "./numberPad.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { computed, PropType, ref, watch } from "vue";
+    import { GetCurrentAttendanceResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/getCurrentAttendanceResponseBag";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { SupervisorScreen, SupervisorScreenData, AttendanceCountGroup, KioskButton } from "./types.partial";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        supervisorData: {
+            type: Object as PropType<SupervisorScreenData>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "updateActions", actions: KioskButton[]): void;
+        (event: "supervisorScreen", screen: SupervisorScreen): void;
+    }>();
+
+    const blockConfiguration = useConfigurationValues<Record<string, unknown>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const pinCode = ref("");
+    const counts = ref<AttendanceCountGroup[]>([]);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isLoginDisabled = computed((): boolean => {
+        return pinCode.value.length === 0;
+    });
+
+    const showCountsByLocation = computed((): boolean => {
+        return blockConfiguration.showCountsByLocation === true;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        emit("updateActions", actions);
+    }
+
+    function getCountsByArea(data: GetCurrentAttendanceResponseBag): AttendanceCountGroup[] {
+        const areas: AttendanceCountGroup[] = [];
+
+        for (const area of props.configuration.areas ?? []) {
+            if (!area.id || !area.name) {
+                continue;
+            }
+
+            const areaCounts: AttendanceCountGroup = {
+                id: area.id,
+                name: area.name,
+                count: 0,
+                children: []
+            };
+
+            areas.push(areaCounts);
+
+            for (const group of data.groups?.filter(g => g.areaId === area.id) ?? []) {
+                if (!group.id || !group.name) {
+                    continue;
+                }
+
+                const groupCounts: AttendanceCountGroup = {
+                    id: group.id,
+                    name: group.name,
+                    count: 0,
+                    children: []
+                };
+
+                areaCounts.children.push(groupCounts);
+
+                for (const locId of group.locations?.map(gl => gl.locationId) ?? []) {
+                    const location = data.locations?.find(l => l.id === locId);
+
+                    if (!location || !location.id || !location.name) {
+                        continue;
+                    }
+
+                    const locationCounts: AttendanceCountGroup = {
+                        id: location.id,
+                        name: location.name,
+                        count: data.attendance?.filter(a => a.groupId === group.id && a.locationId === location.id).length ?? 0,
+                        children: []
+                    };
+
+                    groupCounts.children.push(locationCounts);
+                }
+
+                groupCounts.children.sort((a, b) => a.name.localeCompare(b.name));
+                groupCounts.count = groupCounts.children.map(a => a.count).reduce((partial, a) => partial + a, 0);
+            }
+
+            areaCounts.children.sort((a, b) => a.name.localeCompare(b.name));
+            areaCounts.count = areaCounts.children.map(a => a.count).reduce((partial, a) => partial + a, 0);
+        }
+
+        areas.sort((a, b) => a.name.localeCompare(b.name));
+
+        return areas;
+    }
+
+    function getCountsByLocation(data: GetCurrentAttendanceResponseBag): AttendanceCountGroup[] {
+        const locations: AttendanceCountGroup[] = [];
+
+        for (const location of data.locations ?? []) {
+            if (!location.id || !location.name || !data.groups?.some(g => g.locations?.some(gl => gl.locationId === location.id))) {
+                continue;
+            }
+
+            const locationCounts: AttendanceCountGroup = {
+                id: location.id,
+                name: location.name,
+                count: 0,
+                children: []
+            };
+
+            locations.push(locationCounts);
+
+            for (const group of data.groups?.filter(g => g.locations?.some(gl => gl.locationId === location.id)) ?? []) {
+                if (!group.id || !group.name) {
+                    continue;
+                }
+
+                const groupCounts: AttendanceCountGroup = {
+                    id: group.id,
+                    name: group.name,
+                    count: data.attendance?.filter(a => a.groupId === group.id && a.locationId === location.id).length ?? 0,
+                    children: []
+                };
+
+                locationCounts.children.push(groupCounts);
+            }
+
+            locationCounts.children.sort((a, b) => a.name.localeCompare(b.name));
+            locationCounts.count = locationCounts.children.map(a => a.count).reduce((partial, a) => partial + a, 0);
+        }
+
+        locations.sort((a, b) => a.name.localeCompare(b.name));
+
+        return locations;
+    }
+
+    async function updateCounts(): Promise<void> {
+        const data = {
+            kioskId: props.configuration.kiosk?.id,
+            areaIds: props.configuration.areas?.map(a => a.id) ?? []
+        };
+
+        const response = await invokeBlockAction<GetCurrentAttendanceResponseBag>("GetCurrentAttendance", data);
+
+        if (response.isSuccess && response.data) {
+            props.supervisorData.counts = response.data;
+        }
+    }
+
+    async function onLoginClick(): Promise<void> {
+        const data = {
+            pinCode: pinCode.value
+        };
+
+        const response = await invokeBlockAction("ValidatePinCode", data);
+
+        if (!response.isSuccess) {
+            return await alert(response.errorMessage || "Unable to authenticate.");
+        }
+
+        props.supervisorData.pinCode = pinCode.value;
+        emit("supervisorScreen", SupervisorScreen.Actions);
+    }
+
+    // #endregion
+
+    updateActions();
+    updateCounts();
+
+    watch(() => props.supervisorData.counts, () => {
+        if (!showCountsByLocation.value) {
+            counts.value = getCountsByArea(props.supervisorData.counts ?? {});
+        }
+        else {
+            counts.value = getCountsByLocation(props.supervisorData.counts ?? {});
+        }
+    }, { deep: true });
+</script>

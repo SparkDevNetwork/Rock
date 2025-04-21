@@ -234,21 +234,5 @@ namespace Rock.Rest.Controllers
                 }
             }
         }
-
-        /// <summary>
-        /// Executes an action handler on a specific block.
-        /// </summary>
-        /// <param name="pageIdentifier">The page unique identifier.</param>
-        /// <param name="blockIdentifier">The block unique identifier.</param>
-        /// <param name="actionName">Name of the action.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Does not provide access to site-level or layout-level blocks. Use api/blocks/actions/{pageGuid}/{blockGuid}/{actionName} instead." )]
-        [Authenticate]
-        public async Task<IHttpActionResult> BlockAction( string pageIdentifier, string blockIdentifier, string actionName, [FromBody] JToken parameters )
-        {
-            return await v2.BlockActionsController.ProcessAction( this, pageIdentifier.AsGuidOrNull(), blockIdentifier.AsGuidOrNull(), actionName, parameters, _serviceProvider );
-        }
     }
 }

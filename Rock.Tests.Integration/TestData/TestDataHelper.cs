@@ -17,15 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Tests.Integration.TestData.Engagement;
 using Rock.Tests.Shared;
-using Rock.Tests.Integration.Crm.Prayer;
-using Rock.Tests.Integration.Crm.Steps;
+using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration
+namespace Rock.Tests.Integration.TestData
 {
     public static partial class TestDataHelper
     {
@@ -428,7 +429,7 @@ namespace Rock.Tests.Integration
 
         #endregion
 
-        private static RockContext GetActiveRockContext( RockContext rockContext )
+        internal static RockContext GetActiveRockContext( RockContext rockContext )
         {
             return rockContext ?? new RockContext();
         }

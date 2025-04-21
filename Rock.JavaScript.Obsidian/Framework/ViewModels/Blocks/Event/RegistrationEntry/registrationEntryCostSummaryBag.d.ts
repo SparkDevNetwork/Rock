@@ -22,6 +22,7 @@
 //
 
 import { RegistrationCostSummaryType } from "@Obsidian/Enums/Event/registrationCostSummaryType";
+import { Guid } from "@Obsidian/Types";
 
 /** Contains the cost summary information for the Registration Entry block. */
 export type RegistrationEntryCostSummaryBag = {
@@ -39,6 +40,9 @@ export type RegistrationEntryCostSummaryBag = {
 
     /** Gets or sets the minimum payment amount. */
     minimumPaymentAmount: number;
+
+    /** Gets or sets the registrant unique identifier if this cost is associated with a registrant. */
+    registrationRegistrantGuid?: Guid | null;
 
     /** Gets or sets the cost summary type. */
     type: RegistrationCostSummaryType;

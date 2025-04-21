@@ -2,7 +2,7 @@ import { RockColor } from "../../../Framework/Core/Utilities/rockColor";
 import { ColorRecipe } from "../../../Framework/Enums/Core/colorRecipe";
 
 // NOTICE!!!
-// This file has a C# version in the Rock.Tests.UnitTests project. If changes
+// This file has a C# version in the Rock.Tests project. If changes
 // are made to one the same changes must be made to the other.
 // NOTICE!!!
 
@@ -512,12 +512,12 @@ describe("RockColor", () => {
 
     describe("calculateColorPair", () => {
         test.each([
-            ["#219ff3", "#143952", "#c1e4fb"],
-            ["#4caf50", "#145217", "#c1fbc3"],
-            ["#cd2bba", "#52144a", "#fbc1f4"],
-            ["#cdb6b6", "#521414", "#fbc1c1"],
-            ["#8f5252", "#521414", "#fbc1c1"],
-            ["#ffffff", "#333333", "#dedede"]
+            ["#219ff3", "#143952", "#e6f5fe"],
+            ["#4caf50", "#145217", "#e6fee7"],
+            ["#cd2bba", "#52144a", "#fee6fc"],
+            ["#cdb6b6", "#521414", "#fee6e6"],
+            ["#8f5252", "#521414", "#fee6e6"],
+            ["#ffffff", "#333333", "#f2f2f2"]
         ])("Color '%s' produces '%s' and '%s'", (hexColor: string, expectedForegroundColor: string, expectedBackgroundColor: string) => {
             const color = new RockColor(hexColor);
             const pair = RockColor.calculateColorPair(color);
@@ -529,8 +529,8 @@ describe("RockColor", () => {
 
     describe("calculateColorRecipe", () => {
         test.each([
-            ["#219ff3", ColorRecipe.Lightest, "#c1e4fb"],
-            ["#219ff3", ColorRecipe.Light, "#f1f3f4"],
+            ["#219ff3", ColorRecipe.Lightest, "#e6f5fe"],
+            ["#219ff3", ColorRecipe.Light, "#c4dae8"],
             ["#219ff3", ColorRecipe.Medium, "#97acba"],
             ["#219ff3", ColorRecipe.Dark, "#507a95"],
             ["#219ff3", ColorRecipe.Darkest, "#143952"],

@@ -95,6 +95,10 @@ export const BlockType = {
     MobileConnectionConnectionTypeList: "31E1FCCF-C4B1-4D84-992C-DEACAF3697CF",
     /** The mobile attribute values &gt; Attribute Values block type. */
     MobileCoreAttributeValues: "DF110543-C295-4DD9-B06E-82640AC63610",
+    /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.MyNotes block type. */
+    MobileCoreMyNotes: "9BDE231C-B6A7-4753-BBB8-1531F6362387",
+    /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.QuickNote block type. */
+    MobileCoreQuickNote: "B7E187C8-6F74-4FBD-8853-5BAC48F5822C",
     /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.Search block type. */
     MobileCoreSearch: "41174BEA-6567-430C-AAD4-A89A5CF70FB0",
     /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.SmartSearch block type. */
@@ -103,6 +107,12 @@ export const BlockType = {
     MobileCrmGroupMembers: "1F1E7598-8D51-4750-8D61-E5791A226FDB",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Crm.PersonProfile. */
     MobileCrmPersonProfile: "F97E2359-BB2D-4534-821D-870F853CA5CC",
+    /** The mobile scheduled transaction list &gt; Scheduled Transaction block type. */
+    MobileFinanceScheduledTransactionList: "CAFF9FD9-A5DD-472B-B303-A53D94183568",
+    /** The mobile transaction detail &gt; Transaction Detail block type. */
+    MobileFinanceTransactionDetail: "01A68151-30CC-4FBC-9FE5-2F20A2C1BB4F",
+    /** The mobile transaction list &gt; Transaction List block type. */
+    MobileFinanceTransactionList: "D29C24EA-A52B-4470-A8D9-D7082FFF19DE",
     /** The mobile Groups &gt; Group Finder block type. */
     MobileGroupsGroupFinder: "BAC6671E-4D6F-4428-A6FA-69B8BEADF55C",
     /** The mobile Groups &gt; Group Registration block type. */
@@ -127,6 +137,8 @@ export const BlockType = {
     Motivators: "18CF8DA8-5DE0-49EC-A279-D5507CFA5713",
     /** The notes */
     Notes: "2E9F32D4-B4FC-4A5F-9BE1-B2E3EA624DD3",
+    /** The obsidian category detail block type. */
+    ObsidianCategoryDetail: "515dc5c2-4fbd-4eea-9d8e-a807409defde",
     /** The obsidian event registration entry */
     ObsidianEventRegistrationEntry: "0252E237-0684-4426-9E5C-D454A13E152A",
     /** The obsidian event control gallery */

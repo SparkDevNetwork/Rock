@@ -8,6 +8,7 @@
 
 <script setup lang="ts">
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { Guid } from "@Obsidian/Types";
     import { emptyGuid } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { EntityTypePickerGetEntityTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTypePickerGetEntityTypesOptionsBag";
@@ -24,6 +25,11 @@
         includeGlobalOption: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        entityTypeGuids: {
+            type: Array as PropType<Guid[]>,
+            default: []
         },
 
         ...standardAsyncPickerProps
@@ -81,7 +87,9 @@
      * Loads the items from the server.
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
-        const options: EntityTypePickerGetEntityTypesOptionsBag = {};
+        const options: EntityTypePickerGetEntityTypesOptionsBag = {
+            entityTypeGuids: props.entityTypeGuids
+        };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/EntityTypePickerGetEntityTypes", undefined, options);
 
         if (result.isSuccess && result.data) {

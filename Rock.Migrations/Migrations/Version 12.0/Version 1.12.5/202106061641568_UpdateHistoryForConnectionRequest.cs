@@ -44,8 +44,10 @@ namespace Rock.Migrations
 
         private void AddedConnectionRequestHistoryUp()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route for Connection Board            
             RockMigrationHelper.AddPageRoute( "4FBCEB52-8892-4035-BDEA-112A494BE81F", "ConnectionRequest/{ConnectionRequestId}", "717F02B0-E112-4602-9AAC-2200E9212C3E" );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             RockMigrationHelper.UpdateCategory( "546D5F43-1184-47C9-8265-2D7BF4E1BCA5", "Connection Request", "", "", "4B472C6A-1ACF-481E-A2D4-9C44436BBCF5", 7, "6F09163D-7DDD-4E1E-8D18-D7CAA04451A7" );
 

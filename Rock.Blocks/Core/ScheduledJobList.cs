@@ -146,7 +146,7 @@ namespace Rock.Blocks.Core
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "ServiceJobId", "((Key))" ),
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["ServiceJobId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } ),
                 [NavigationUrlKey.HistoryPage] = this.GetLinkedPageUrl( AttributeKey.HistoryPage, new Dictionary<string, string>
                 {
                     { "ScheduledJobId", "((Key))" }
@@ -189,7 +189,11 @@ namespace Rock.Blocks.Core
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddDateTimeField( "lastSuccessfulRun", a => a.LastSuccessfulRunDateTime )
+                .AddTextField( "lastSuccessfulRunDate", a => a.LastSuccessfulRunDateTime?.ToShortDateString() )
+                .AddTextField( "lastSuccessfulRunTime", a => a.LastSuccessfulRunDateTime?.ToShortTimeString() )
                 .AddDateTimeField( "lastRunDateTime", a => a.LastRunDateTime )
+                .AddTextField( "lastRunDate", a => a.LastRunDateTime?.ToShortDateString() )
+                .AddTextField( "lastRunTime", a => a.LastRunDateTime?.ToShortTimeString() )
                 .AddTextField( "lastRunDurationSeconds", a => FormatDuration( a.LastRunDurationSeconds ) )
                 .AddTextField( "lastStatus", a => a.LastStatus )
                 .AddTextField( "lastStatusMessage", a => a.LastStatusMessage )
@@ -259,7 +263,7 @@ namespace Rock.Blocks.Core
 
                 if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${ServiceJob.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {ServiceJob.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

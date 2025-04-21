@@ -28,7 +28,9 @@ using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.LayoutDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Blocks.Cms
 {
@@ -49,7 +51,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "b85c080a-f645-430a-b0d4-8eee689f4265" )]
     [Rock.SystemGuid.BlockTypeGuid( "64c3b64a-cdb3-4e5f-bc54-0e3d50aac564" )]
-    public class LayoutDetail : RockDetailBlockType
+    public class LayoutDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -82,6 +84,32 @@ namespace Rock.Blocks.Cms
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Layout>();
 
                 return box;
+            }
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var key = pageReference.GetPageParameter( PageParameterKey.LayoutId );
+                var pageParameters = new Dictionary<string, string>();
+
+                var name = new LayoutService( rockContext )
+                    .GetSelect( key, l => l.Name );
+
+                if ( name != null )
+                {
+                    pageParameters.Add( PageParameterKey.LayoutId, key );
+                }
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( name ?? "New Layout", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+                };
             }
         }
 
@@ -231,7 +259,7 @@ namespace Rock.Blocks.Cms
 
             if ( loadAttributes )
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
             }
 
             return bag;
@@ -254,7 +282,7 @@ namespace Rock.Blocks.Cms
 
             if ( loadAttributes )
             {
-                bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+                bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
             }
 
             return bag;
@@ -298,7 +326,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;
@@ -316,7 +344,8 @@ namespace Rock.Blocks.Cms
 
             if ( layout.Id == 0 )
             {
-                var siteId = RequestContext.GetPageParameter( PageParameterKey.SiteId )?.AsIntegerOrNull();
+                var siteIdParam = PageParameter( PageParameterKey.SiteId );
+                var siteId = Rock.Utility.IdHasher.Instance.GetId( siteIdParam ) ?? siteIdParam.AsIntegerOrNull();
                 if ( siteId.HasValue )
                 {
                     layout.SiteId = siteId.Value;
@@ -332,9 +361,13 @@ namespace Rock.Blocks.Cms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var siteId = RequestContext.GetPageParameter( PageParameterKey.SiteId );
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.SiteId] = siteId
+                } )
             };
         }
 
@@ -481,8 +514,7 @@ namespace Rock.Blocks.Cms
                 {
                     return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
                     {
-                        [PageParameterKey.LayoutId] = entity.IdKey,
-                        [PageParameterKey.SiteId] = entity.SiteId.ToString()
+                        [PageParameterKey.LayoutId] = entity.IdKey
                     } ) );
                 }
 

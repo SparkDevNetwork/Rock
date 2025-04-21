@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -58,6 +59,8 @@ namespace Rock.Model
                 return false;
             }
 
+            // ignoring HistoryLogin,SourceSiteId
+
             if ( new Service<NotificationMessageType>( Context ).Queryable().Any( a => a.RelatedMobileApplicationSiteId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Site.FriendlyTypeName, NotificationMessageType.FriendlyTypeName );
@@ -73,6 +76,12 @@ namespace Rock.Model
             if ( new Service<NotificationMessageType>( Context ).Queryable().Any( a => a.RelatedWebSiteId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Site.FriendlyTypeName, NotificationMessageType.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<Page>( Context ).Queryable().Any( a => a.SiteId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Site.FriendlyTypeName, Page.FriendlyTypeName );
                 return false;
             }
 
@@ -100,6 +109,24 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( Site.SiteQueryableAttributeValue ), nameof( SiteAttributeValues ) )]
+    public partial class Site
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<SiteQueryableAttributeValue> SiteAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class SiteQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -176,7 +203,9 @@ namespace Rock.Model
             target.EnabledForShortening = source.EnabledForShortening;
             target.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             target.EnableMobileRedirect = source.EnableMobileRedirect;
+            #pragma warning disable 612, 618
             target.EnablePageViewGeoTracking = source.EnablePageViewGeoTracking;
+            #pragma warning restore 612, 618
             target.EnablePageViews = source.EnablePageViews;
             target.EnablePersonalization = source.EnablePersonalization;
             target.EnableVisitorTracking = source.EnableVisitorTracking;

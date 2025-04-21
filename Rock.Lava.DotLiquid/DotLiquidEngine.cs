@@ -150,7 +150,7 @@ namespace Rock.Lava.DotLiquid
                     {
                         registeringTypeName = type.Name;
 
-                        var lavaInfo = LavaDataObjectHelper.GetLavaTypeInfo( type );
+                        var lavaInfo = LavaDataHelper.GetLavaTypeInfo( type );
 
                         if ( lavaInfo.HasLavaTypeAttribute )
                         {
@@ -362,7 +362,7 @@ namespace Rock.Lava.DotLiquid
 
             if ( allowedMembers == null )
             {
-                allowedMembersArray = LavaDataObjectHelper.GetLavaTypeInfo( type ).VisiblePropertyNames.ToArray();
+                allowedMembersArray = LavaDataHelper.GetLavaTypeInfo( type ).VisiblePropertyNames.ToArray();
             }
             else
             {

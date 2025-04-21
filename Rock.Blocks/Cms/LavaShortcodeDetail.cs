@@ -42,6 +42,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular lava shortcode." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -114,7 +115,7 @@ namespace Rock.Blocks.Cms
 
             if ( lavaShortCodeService.Queryable().Any( a => a.TagName == lavaShortcode.TagName && a.Id != lavaShortcode.Id ) )
             {
-                errorMessage = "Tag with the same name is already in use.";
+                errorMessage = @"This ""Tag Name"" is already in use. Please enter a new ""Tag Name"".";
                 return false;
             }
 
@@ -139,25 +140,28 @@ namespace Rock.Blocks.Cms
 
             var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
-
             entity.LoadAttributes( rockContext );
 
             if ( entity.Id != 0 )
             {
                 // Existing entity was found, prepare for view mode by default.
-                if ( isViewable )
+                if ( box.IsEditable )
+                {
+                    box.Entity = GetEntityBagForEdit( entity );
+                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                }
+                else if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( Snippet.FriendlyTypeName );
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( LavaShortcode.FriendlyTypeName );
                 }
             }
             else
             {
-                // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity );
@@ -165,7 +169,7 @@ namespace Rock.Blocks.Cms
                 }
                 else
                 {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Snippet.FriendlyTypeName );
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( LavaShortcode.FriendlyTypeName );
                 }
             }
         }
@@ -196,8 +200,6 @@ namespace Rock.Blocks.Cms
                 TagType = entity.TagType.ToString(),
             };
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
-
             return bag;
         }
 
@@ -215,7 +217,7 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -234,7 +236,7 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
             bag.EnabledCommands = entity.EnabledLavaCommands.SplitDelimitedValues().Select( lc => new ViewModels.Utility.ListItemBag() { Text = lc, Value = lc } ).ToList();
             bag.Parameters = GetParameterValues( entity.Parameters );
 
@@ -299,7 +301,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -573,10 +575,7 @@ namespace Rock.Blocks.Cms
 
                 if ( isNew )
                 {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.LavaShortcodeId] = entity.IdKey
-                    } ) );
+                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl() );
                 }
 
                 // Ensure navigation properties will work now.
@@ -609,6 +608,8 @@ namespace Rock.Blocks.Cms
                     return ActionBadRequest( errorMessage );
                 }
 
+                // unregister the shortcode
+                LavaService.DeregisterShortcode( entity.TagName );
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 

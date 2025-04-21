@@ -99,26 +99,24 @@
             <Content>
                 <Rock:NotificationBox ID="nbSmsError" runat="server" Visible="false" NotificationBoxType="Danger" />
 
-                <div>
-                    <Rock:RockLiteral ID="lSmsRecipient" runat="server" Label="Recipient" />
-                </div>
+                <Rock:RockLiteral ID="lSmsRecipient" runat="server" Label="Recipient" />
 
-                <div class="row">
-                    <div class="col-xs-9">
+                <div class="row d-flex flex-wrap">
+                    <div class="col">
                         <Rock:RockTextBox ID="tbSmsMessage" runat="server" TextMode="MultiLine" Rows="5" Placeholder="Your SMS message here..." Label="Message" />
                     </div>
-                    <div class="col-xs-3">
+                    <div class="col flex-grow-0">
                         <Rock:ImageUploader ID="imgSmsImage" runat="server" BinaryFileTypeGuid="<%# new Guid( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT ) %>" Help="Optional image to include in the message." Label="Image" />
                     </div>
                 </div>
 
-                <div class="form-group static-control">
+                <div class="form-group">
                     <div class="row">
-                        <div class="col-xs-9">
+                        <div class="col-xs-6">
                             <label class="control-label">Snippets</label>
                         </div>
 
-                        <div class="col-xs-3">
+                        <div class="col-xs-6">
                             <Rock:Toggle runat="server" ID="tglUsePersonal"
                                 CssClass="pull-right"
                                 ButtonSizeCssClass="btn-xs"
@@ -130,15 +128,20 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <asp:Repeater ID="rptrSmsSnippets" runat="server">
-                            <ItemTemplate>
-                                <div class="col-xs-4 pt-2">
-                                    <asp:LinkButton ID="btnSmsSnippet" runat="server" CssClass="btn btn-default btn-block overflow-hidden" OnCommand="btnSmsSnippet_Command" CommandName="InputSnippet" CommandArgument='<%#Eval("Id") %>' Text='<%#Eval("Name") %>' />
-                                </div>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                    </div>
+
+                    <asp:Repeater ID="rptrSmsSnippets" runat="server">
+                        <HeaderTemplate>
+                            <div class="row form-row">
+                        </HeaderTemplate>
+                        <ItemTemplate>
+                            <div class="col-xs-6 col-sm-4 mt-2">
+                                <asp:LinkButton ID="btnSmsSnippet" runat="server" CssClass="btn btn-default btn-block text-truncate" OnCommand="btnSmsSnippet_Command" CommandName="InputSnippet" CommandArgument='<%#Eval("Id") %>' Text='<%#Eval("Name") %>' />
+                            </div>
+                        </ItemTemplate>
+                        <FooterTemplate>
+                            </div>
+                        </FooterTemplate>
+                    </asp:Repeater>
 
                     <asp:Panel ID="pnlSmsNoSnippets" runat="server" Visible="false">
                         There are no <asp:Label ID="lblSmsSnippetType" runat="server" Text="shared" /> SMS snippets available.

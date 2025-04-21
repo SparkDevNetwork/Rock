@@ -95,8 +95,6 @@ namespace RockWeb.Blocks.Streaks
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 var enrollment = GetStreak();
@@ -107,10 +105,12 @@ namespace RockWeb.Blocks.Streaks
                 if ( streakType == null )
                 {
                     nbEditModeMessage.Text = "A streak type is required.";
+                    base.OnLoad( e );
                     return;
                 }
 
                 RenderState();
+                base.OnLoad( e );
             }
         }
 
@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Streaks
         private void InitializeActionButtons()
         {
             btnRebuild.Attributes["onclick"] = "javascript: return Rock.dialogs.confirmDelete(event, 'data', 'Enrollment map data belonging to this person for this streak type will be deleted and rebuilt from attendance records! This process occurs real-time (not in a job).');";
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'Are you sure?');", Streak.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Streak.FriendlyTypeName );
         }
 
         /// <summary>

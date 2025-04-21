@@ -20,10 +20,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Achievement.Component;
 using Rock.Data;
 using Rock.Model;
-using Rock.Reporting.DataFilter.ContentChannelItem;
 
 namespace Rock.Web.Cache.Entities
 {
@@ -100,6 +98,24 @@ namespace Rock.Web.Cache.Entities
         public int AdaptiveMessageId { get; set; }
 
         /// <summary>
+        /// Gets or sets the optional start date of the <see cref="Rock.Model.AdaptiveMessageAdaptation"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing start date of the <see cref="Rock.Model.AdaptiveMessageAdaptation"/>.
+        /// </value>
+        [DataMember]
+        public DateTime? StartDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end date of the <see cref="Rock.Model.AdaptiveMessageAdaptation"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing end date of the <see cref="Rock.Model.AdaptiveMessageAdaptation"/>.
+        /// </value>
+        [DataMember]
+        public DateTime? EndDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the segment ids.
         /// </summary>
         /// <value>
@@ -145,6 +161,8 @@ namespace Rock.Web.Cache.Entities
             IsActive = adaptiveMessageAdaptation.IsActive;
             Order = adaptiveMessageAdaptation.Order;
             AdaptiveMessageId = adaptiveMessageAdaptation.AdaptiveMessageId;
+            StartDate = adaptiveMessageAdaptation.StartDate;
+            EndDate = adaptiveMessageAdaptation.EndDate;
             ViewSaturationCount = adaptiveMessageAdaptation.ViewSaturationCount;
             ViewSaturationInDays = adaptiveMessageAdaptation.ViewSaturationInDays;
             SegmentIds = adaptiveMessageAdaptation.AdaptiveMessageAdaptationSegments.Select( c => c.PersonalizationSegmentId ).ToList();

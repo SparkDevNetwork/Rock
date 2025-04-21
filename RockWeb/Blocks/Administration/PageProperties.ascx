@@ -51,7 +51,7 @@
                                     <div class="col-md-6">
                                         <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" Help="The Site that the page should belong to." AutoPostBack="true" OnSelectedIndexChanged="ddlSite_SelectedIndexChanged" />
                                         <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout" Required="true" />
-                                        <Rock:RockCheckBox ID="cbMenuIcon" runat="server" Label="Show Icon" Text="Yes" />
+                                        <Rock:RockCheckBox ID="cbMenuIcon" runat="server" Label="Show Icon" />
                                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass" Label="Icon CSS Class" />
                                     </div>
                                 </div>
@@ -130,7 +130,7 @@
                                             <Rock:NumberBox runat="server" ID="nbRequestPerPeriod" Label="Max Request Per Period" />
                                         </div>
                                         <div class="col-md-6">
-                                            <Rock:NumberBox runat="server" ID="nbRateLimitPeriod" Label="Rate Limit Period" AppendText="seconds" />
+                                            <Rock:NumberBox runat="server" ID="nbRateLimitPeriodDurationSeconds" Label="Rate Limit Period" AppendText="seconds" />
                                         </div>
                                     </asp:Panel>
                                 </div>
@@ -147,8 +147,8 @@
                     </asp:PlaceHolder>
 
                     <asp:Panel ID="pnlEditModeActions" runat="server" CssClass="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </asp:Panel>
                 </div>
 
@@ -178,7 +178,7 @@
                     </div>
 
                     <asp:Panel ID="pnlReadOnlyModeActions" runat="server" CssClass="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnEdit" runat="server" data-shortcut-key="e" AccessKey="m" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                         <div class="pull-right">

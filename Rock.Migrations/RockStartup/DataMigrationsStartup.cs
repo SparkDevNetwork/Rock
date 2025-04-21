@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Runtime.Serialization.Formatters;
 using System.Threading.Tasks;
 
 using Rock.Model;
@@ -36,9 +37,11 @@ namespace Rock.Migrations.RockStartup
 
         /// <summary>
         /// A GUID list of data migration jobs that run automatically run once after an update and then delete themselves from the ServiceJob table.
+        /// The jobs would be executed in the same order as they are specified in the list.
         /// </summary>
         public static List<Guid> startupRunOnceJobGuids = new List<Guid>
         {
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_CHOP_SHORTENED_LINKS_BLOCK.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATIONRECIPIENT_INDEX.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATION_GET_QUEUED_INDEX.AsGuid(),
@@ -49,7 +52,7 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_125_ADD_COMMUNICATION_SYSTEM_COMMUNICATION_ID_INDEX.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_127_REBUILD_GROUP_SALUTATIONS.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_130_ADD_INTERACTION_INTERACTION_COMPONENT_ID_INDEX.AsGuid(),
-			SystemGuid.ServiceJob.DATA_MIGRATIONS_136_FIX_INCORRECT_ERA_START_DATE.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_136_FIX_INCORRECT_ERA_START_DATE.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_140_ADD_MISSING_MEDIA_ELEMENT_INTERACTIONS.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_140_UPDATE_CURRENT_SESSIONS.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_140_CREATE_FK_INDEXES.AsGuid(),
@@ -64,7 +67,7 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_151_DUPLICATE_MOBILE_INTERACTIONS_CLEANUP.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_150_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_152_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS.AsGuid(),
-			SystemGuid.ServiceJob.DATA_MIGRATIONS_152_IX_VALUE_AS_PERSON_ID.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_152_IX_VALUE_AS_PERSON_ID.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_154_UPDATE_AGE_BRACKET_VALUES.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_160_MOVE_PERSON_PREFERENCES.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_160_UPDATE_INTERACTION_SESSION_SESSION_START_DATE_KEY.AsGuid(),
@@ -83,8 +86,24 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_161_CHOP_BLOCK_GROUP_SCHEDULE_TOOLBOX_V2.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_161_REMOVE_OBSIDIAN_GROUP_SCHEDULE_TOOLBOX_BACK_BUTTONS.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_161_CHOP_ACCOUNTENTRY_AND_LOGIN.AsGuid(),
-            SystemGuid.ServiceJob.DATA_MIGRATIONS_161_CHOP_SECURITY_BLOCKS.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_162_CHOP_EMAIL_PREFERENCE_ENTRY.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_166_UPDATE_ACHIEVEMENTTYPE_TARGETCOUNT_COLUMN.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_166_ADD_INTERACTION_CREATED_DATE_TIME_INDEX.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_166_ADD_COMMUNICATION_RECIPIENT_INDEX.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_166_CHOP_OBSIDIAN_BLOCKS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_167_POPULATE_ENTITY_INTENTS_FROM_ADDITIONAL_SETTINGS_JSON.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_167_CHOP_ACCOUNT_EDIT_BLOCK.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_167_CHOP_PLEDGE_ENTRY_BLOCK.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_REMOVE_COMMUNICATION_RECIPIENT_LIST_BLOCK.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_REMOVE_LEGACY_PREFERENCES.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_REMOVE_DISC_BLOCK.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_CHOP_OBSIDIAN_BLOCKS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_SWAP_OBSIDIAN_BLOCKS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_SWAP_WEBFORMS_BLOCKS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_ADD_AND_UPDATE_PEER_NETWORK_INDEXES.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_UPDATE_PERSON_PRIMARY_PERSON_ALIAS_GUID.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_INTERACTION_INDEX_POST_MIGRATION_JOB.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_168_UPDATE_INDEXES.AsGuid(),
         };
 
 
@@ -94,7 +113,8 @@ namespace Rock.Migrations.RockStartup
         public static List<Guid> scheduledRunOnceJobGuids = new List<Guid>
         {
             SystemGuid.ServiceJob.DATA_MIGRATIONS_122_INTERACTION_PERSONAL_DEVICE_ID.AsGuid(),
-            SystemGuid.ServiceJob.DATA_MIGRATIONS_133_ADD_INTERACTION_SESSION_INTERACTION_SESSION_LOCATION_ID_INDEX.AsGuid()
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_133_ADD_INTERACTION_SESSION_INTERACTION_SESSION_LOCATION_ID_INDEX.AsGuid(),
+            SystemGuid.ServiceJob.POST_170_UPDATE_HISTORY_ENTITYTYPEID_INDEX.AsGuid(),
         };
 
         /// <summary>
@@ -127,31 +147,56 @@ namespace Rock.Migrations.RockStartup
             }
 
             // run any of the above jobs if they still exist (they haven't run and deleted themselves)
-            var runOnceJobIds = new Model.ServiceJobService( new Rock.Data.RockContext() ).Queryable()
-                .Where( a => startupRunOnceJobGuids.Contains( a.Guid ) )
-                .OrderBy( a => a.Id )
-                .Select( a => a.Id )
-                .ToList();
+            var runOnceJobIds = GetRunOnceJobIds();
 
             // start a task that will run any incomplete RunOneJobs (one at a time)
             Task.Run( () =>
              {
-                 var rockContext = new Rock.Data.RockContext();
-                 var jobService = new Rock.Model.ServiceJobService( rockContext );
-                 foreach ( var runOnceJobId in runOnceJobIds )
-                 {
-                     try
-                     {
-                         var job = jobService.Get( runOnceJobId );
-                         jobService.RunNow( job );
-                     }
-                     catch ( Exception ex )
-                     {
-                         // this shouldn't happen since the jobService.RunNow catches and logs errors, but just in case
-                         ExceptionLogService.LogException( ex );
-                     }
-                 }
+                 ExecuteRunOnceJobs( runOnceJobIds );
              } );
+        }
+
+        /// <summary>
+        /// Gets all <see cref="ServiceJob"/> identifiers for data migration
+        /// jobs that still need to be run.
+        /// </summary>
+        /// <returns>A list of <see cref="ServiceJob"/> identifiers.</returns>
+        internal static List<int> GetRunOnceJobIds()
+        {
+            return new Model.ServiceJobService( new Rock.Data.RockContext() ).Queryable()
+                .Where( a => startupRunOnceJobGuids.Contains( a.Guid ) )
+                .Select( a => new
+                {
+                    a.Id,
+                    a.Guid
+                } )
+                .ToList()
+                .OrderBy( j => startupRunOnceJobGuids.IndexOf( j.Guid ) )
+                .Select( j => j.Id )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Executes each of the run once data migration jobs in order.
+        /// </summary>
+        /// <param name="runOnceJobIds">The <see cref="ServiceJob"/> identifiers to be executed.</param>
+        internal static void ExecuteRunOnceJobs( List<int> runOnceJobIds )
+        {
+            var rockContext = new Rock.Data.RockContext();
+            var jobService = new Rock.Model.ServiceJobService( rockContext );
+            foreach ( var runOnceJobId in runOnceJobIds )
+            {
+                try
+                {
+                    var job = jobService.Get( runOnceJobId );
+                    jobService.RunNow( job );
+                }
+                catch ( Exception ex )
+                {
+                    // this shouldn't happen since the jobService.RunNow catches and logs errors, but just in case
+                    ExceptionLogService.LogException( ex );
+                }
+            }
         }
     }
 }

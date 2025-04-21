@@ -47,18 +47,16 @@ namespace Rock.Badge.Component
         /// <inheritdoc/>
         public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            RockContext rockContext = new RockContext();
             var dataViewAttributeGuid = GetAttributeValue( badge, "DataView" ).AsGuid();
-            var dataViewService = new DataViewService( rockContext );
             if ( dataViewAttributeGuid != Guid.Empty )
             {
-                var dataView = dataViewService.Get( dataViewAttributeGuid );
+                var dataView = DataViewCache.Get( dataViewAttributeGuid );
                 if ( dataView != null )
                 {
                     Stopwatch stopwatch = Stopwatch.StartNew();
-                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    var dataViewGetQueryArgs = new Reporting.GetQueryableOptions()
                     {
-                        DatabaseTimeoutSeconds = 30
+                          DatabaseTimeoutSeconds = 30
                     };
 
                     var qry = dataView.GetQuery( dataViewGetQueryArgs );

@@ -230,8 +230,6 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 string connectionOpportunityId = PageParameter( "ConnectionOpportunityId" );
@@ -271,6 +269,8 @@ namespace RockWeb.Blocks.Connection
 
                 ShowOpportunityAttributes();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -826,6 +826,7 @@ namespace RockWeb.Blocks.Connection
                 var inheritedConnectionType = new ConnectionTypeService( rockContext ).Get( inheritedConnectionTypeId.Value );
                 if ( inheritedConnectionType != null )
                 {
+                    var urlTemplate = EntityTypeCache.Get( typeof( ConnectionType ) ).LinkUrlLavaTemplate;
                     string qualifierValue = inheritedConnectionType.Id.ToString();
 
                     foreach ( var attribute in attributeService.GetByEntityTypeId( new ConnectionRequest().TypeId, false ).AsQueryable()
@@ -836,11 +837,16 @@ namespace RockWeb.Blocks.Connection
                         .ThenBy( a => a.Name )
                         .ToList() )
                     {
+                        var url = urlTemplate.ResolveMergeFields( new Dictionary<string, object>
+                        {
+                            { "Entity", inheritedConnectionType }
+                        } );
+
                         ConnectionRequestAttributesInheritedState.Add( new InheritedAttribute(
                             attribute.Name,
                             attribute.Key,
                             attribute.Description,
-                            Page.ResolveUrl( "~/ConnectionType/" + attribute.EntityTypeQualifierValue ),
+                            Page.ResolveUrl( url ),
                             inheritedConnectionType.Name ) );
                     }
                 }
@@ -1325,7 +1331,7 @@ namespace RockWeb.Blocks.Connection
                                 int? personAliasId = person.PrimaryAliasId;
                                 if ( personAliasId.HasValue )
                                 {
-                                    defaultConnector.Options.AddOrIgnore(personAliasId.Value, person.FullName);
+                                    defaultConnector.Options.TryAdd(personAliasId.Value, person.FullName);
                                 }
                             }
 

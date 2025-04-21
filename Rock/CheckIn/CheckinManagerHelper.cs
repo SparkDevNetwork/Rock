@@ -459,19 +459,6 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Filters the by active check-ins.
-        /// </summary>
-        /// <param name="currentDateTime">The current date time.</param>
-        /// <param name="attendanceList">The attendance list.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12.4" )]
-        [Obsolete( "No longer supported. Use FilterByActiveCheckins RosterAttendeeAttendance instead", error: true )]
-        public static List<Attendance> FilterByActiveCheckins( DateTime currentDateTime, List<Attendance> attendanceList )
-        {
-            return null;
-        }
-
-        /// <summary>
         /// If an attendance's GroupType' AllowCheckout is false, remove all Attendees whose schedules are not currently active.
         /// </summary>
         /// <param name="currentDateTime">The current date time.</param>

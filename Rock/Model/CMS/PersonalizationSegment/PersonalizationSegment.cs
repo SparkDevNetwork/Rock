@@ -17,6 +17,8 @@
 using Rock.Data;
 using Rock.Web.Cache;
 
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -32,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "PersonalizationSegment" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "368A3581-C8C4-4960-901A-9587864226F3" )]
     public partial class PersonalizationSegment : Model<PersonalizationSegment>, ICacheable
     {
@@ -94,6 +97,25 @@ namespace Rock.Model
         [DataMember]
         public bool IsDirty { get; set; }
 
+        /// <summary>
+        /// Gets or sets the description of the segment.
+        /// </summary>
+        /// <value>
+        /// The description of the segment.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the duration in milliseconds it takes to update the segment.
+        /// </summary>
+        /// <value>
+        /// The time to update duration in milliseconds.
+        /// </value>
+        [DataMember]
+        public double? TimeToUpdateDurationMilliseconds { get; set; }
+
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -105,7 +127,39 @@ namespace Rock.Model
         [DataMember]
         public virtual DataView FilterDataView { get; set; }
 
+        /// <summary>
+        /// Gets or sets the collection of <see cref="Rock.Model.Category">Categories</see> that this <see cref="PersonalizationSegment"/> is associated with.
+        /// NOTE: Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime if Categories are modified.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.Category">Categories</see> that this <see cref="PersonalizationSegment"/> is associated with.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<Category> Categories
+        {
+            get { return _categories ?? ( _categories = new Collection<Category>() ); }
+            set { _categories = value; }
+        }
+
+        private ICollection<Category> _categories;
+
         #endregion Navigation Properties
+
+        #region Methods
+        
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        #endregion Methods
     }
 
     #region Entity Configuration
@@ -120,7 +174,15 @@ namespace Rock.Model
         /// </summary>
         public SegmentConfiguration()
         {
-            HasOptional( a => a.FilterDataView ).WithMany().HasForeignKey( a => a.FilterDataViewId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.FilterDataView ).WithMany().HasForeignKey( a => a.FilterDataViewId ).WillCascadeOnDelete( false );
+            this.HasMany( a => a.Categories )
+                .WithMany()
+                .Map( a =>
+                {
+                    a.MapLeftKey( "PersonalizationSegmentId" );
+                    a.MapRightKey( "CategoryId" );
+                    a.ToTable( "PersonalizationSegmentCategory" );
+                } );
         }
     }
 

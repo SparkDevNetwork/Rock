@@ -21,6 +21,7 @@ using System.Linq;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Communication.VideoEmbed
@@ -72,6 +73,7 @@ namespace Rock.Communication.VideoEmbed
                     preMadeThumbnail.FileName );
             }
 
+
             image = ScaleImage( image );
             var overlayImg = Image.FromFile( overlay );
 
@@ -103,9 +105,9 @@ namespace Rock.Communication.VideoEmbed
                 rockContext.SaveChanges();
 
                 return string.Format( "{0}/GetImage.ashx/Thumbnail{1}.png?guid={1}&filename={2}",
-                    GlobalAttributesCache.Value( "PublicApplicationRoot" ).Trim( '/' ),
-                    binaryImage.Guid,
-                    binaryImage.FileName );
+                   GlobalAttributesCache.Value( "PublicApplicationRoot" ).Trim( '/' ),
+                   binaryImage.Guid,
+                   binaryImage.FileName );
             }
         }
 

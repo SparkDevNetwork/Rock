@@ -56,6 +56,9 @@ namespace Rock.Client
         public bool IsMappedLocation { get; set; }
 
         /// <summary />
+        public bool IsOverflowLocation { get; set; }
+
+        /// <summary />
         public int LocationId { get; set; }
 
         /// <summary>
@@ -106,6 +109,7 @@ namespace Rock.Client
             this.GroupMemberPersonAliasId = source.GroupMemberPersonAliasId;
             this.IsMailingLocation = source.IsMailingLocation;
             this.IsMappedLocation = source.IsMappedLocation;
+            this.IsOverflowLocation = source.IsOverflowLocation;
             this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Order = source.Order;

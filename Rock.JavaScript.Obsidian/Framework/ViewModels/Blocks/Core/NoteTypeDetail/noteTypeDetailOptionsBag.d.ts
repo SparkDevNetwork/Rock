@@ -22,4 +22,6 @@
 //
 
 export type NoteTypeDetailOptionsBag = {
+    /** Gets or sets a value indicating whether there any active AI providers. */
+    hasActiveAIProviders: boolean;
 };

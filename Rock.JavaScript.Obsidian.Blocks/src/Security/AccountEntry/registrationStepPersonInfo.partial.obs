@@ -3,67 +3,67 @@
     <div>
         <fieldset>
             <legend>Your Information</legend>
+            <FirstNameTextBox
+                              v-model="internalFirstName"
+                              :disabled="disabled"
+                              label="First Name"
+                              :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
             <TextBox
-                v-model="internalFirstName"
-                :disabled="disabled"
-                label="First Name"
-                rules="required" />
-            <TextBox
-                v-model="internalLastName"
-                :disabled="disabled"
-                label="Last Name"
-                rules="required" />
+                     v-model="internalLastName"
+                     :disabled="disabled"
+                     label="Last Name"
+                     :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
             <EmailBox
-                v-if="!isEmailHidden"
-                v-model="internalEmail"
-                :disabled="disabled"
-                label="Email"
-                rules="required" />
-            <GenderDropDownList
-                v-if="isGenderPickerShown"
-                v-model="internalGender"
-                :disabled="disabled" />
+                      v-if="!isEmailHidden"
+                      v-model="internalEmail"
+                      :disabled="disabled"
+                      label="Email"
+                      rules="required" />
+            <GenderPicker
+                          v-if="isGenderPickerShown"
+                          v-model="internalGender"
+                          :rules="isGenderPickerRequired ? genderRules : ''"
+                          :disabled="disabled" />
             <BirthdayPicker
-                v-model="internalBirthday"
-                :disabled="disabled"
-                label="Birthday"
-                rules="required" />
+                            v-if="isBirthDateShown"
+                            v-model="internalBirthday"
+                            :disabled="disabled"
+                            label="Birth Date"
+                            :rules="birthdayRules" />
         </fieldset>
 
         <fieldset v-if="internalArePhoneNumbersShown">
             <legend v-if="internalPhoneNumbers.length > 1">Phone Numbers</legend>
             <template v-for="(value, key) in internalPhoneNumbers">
-                <PhoneNumberDetails
-                    v-if="!value.isHidden"
-                    v-model="internalPhoneNumbers[key]"
-                    :disabled="disabled"
-                    :isMobile="isMobile" />
+                <PhoneNumberDetails v-if="!value.isHidden"
+                                    v-model="internalPhoneNumbers[key]"
+                                    :disabled="disabled"
+                                    :isMobile="isMobile" />
             </template>
         </fieldset>
 
         <fieldset v-if="isAddressShown">
             <legend>Address</legend>
-            <Address
-                v-model="internalAddress"
-                :disabled="disabled"
-                :rules="addressRules"></Address>
+            <Address v-model="internalAddress"
+                     :disabled="disabled"
+                     :rules="addressRules"></Address>
         </fieldset>
 
         <CampusPicker
-            v-if="isCampusPickerShown"
-            :disabled="disabled"
-            :label="campusPickerLabel"
-            @update:modelValue="onCampusChanged"
-            :forceVisible="true"
-            :includeInactive="true"
-            :showBlankItem="true" />
+                      v-if="isCampusPickerShown"
+                      :disabled="disabled"
+                      :label="campusPickerLabel"
+                      @update:modelValue="onCampusChanged"
+                      :campusStatusFilter="campusStatusFilter"
+                      :campusTypeFilter="campusTypeFilter"
+                      :showBlankItem="true"
+                      :rules="campusRules" />
 
-        <AttributeValuesContainer
-            v-if="internalAttributes"
-            v-model="internalAttributeValues"
-            :attributes="internalAttributes"
-            isEditMode
-            :showCategoryLabel="false" />
+        <AttributeValuesContainer v-if="internalAttributes"
+                                  v-model="internalAttributeValues"
+                                  :attributes="internalAttributes"
+                                  isEditMode
+                                  :showCategoryLabel="false" />
     </div>
 </template>
 
@@ -76,16 +76,19 @@
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
-    import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
+    import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
-    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { AccountEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryInitializationBox";
     import { AccountEntryPersonInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPersonInfoBag";
     import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
     import { BirthdayPickerBag } from "@Obsidian/ViewModels/Controls/birthdayPickerBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
+    import { createNotEqualRule, createRuleWithReplacement, createRuleWithSuffix, required } from "./utils.partial";
 
     const props = defineProps({
         modelValue: {
@@ -119,8 +122,13 @@
     const isAddressShown = computed(() => props.config.isAddressShown);
     const isAddressRequired = computed(() => props.config.isAddressRequired);
     const isCampusPickerShown = computed(() => props.config.isCampusPickerShown);
+    const isCampusRequired = computed(() => props.config.isCampusRequired);
     const isEmailHidden = computed(() => props.config.isEmailHidden);
     const isGenderPickerShown = computed(() => props.config.isGenderPickerShown);
+    const isGenderPickerRequired = computed(() => props.config.isGenderPickerRequired);
+    const isBirthDateShown = computed(() => props.config.isBirthDateShown);
+    const campusStatusFilter = computed(() => props.config.campusStatusFilter ?? []);
+    const campusTypeFilter = computed(() => props.config.campusTypeFilter ?? []);
 
     const internalFirstName = computed<string>({
         get() {
@@ -154,7 +162,7 @@
             return (props.modelValue?.gender ?? 0).toString();
         },
         set(newValue: string) {
-            emit("update:modelValue", { ...props.modelValue, gender: toNumberOrNull(newValue) as Gender ?? Gender.Unknown });
+            emit("update:modelValue", { ...props.modelValue, gender: toNumber(newValue) as Gender });
         }
     });
 
@@ -186,6 +194,8 @@
     });
 
     const addressRules = computed<string>(() => isAddressRequired.value ? "required" : "");
+    const campusRules = computed<string>(() => isCampusRequired.value ? "required" : "");
+    const birthdayRules = computed<string>(() => isBirthDateShown.value ? "required" : "");
 
     const internalArePhoneNumbersShown = computed<boolean>(() => arePhoneNumbersShown.value && internalPhoneNumbers.value.some(p => !p.isHidden));
 
@@ -207,6 +217,12 @@
         }
     });
 
+    const genderRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(required, "is required"),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), "is required"),
+        "required"
+    ]);
+
     // #endregion
 
     // #region Event Handlers
@@ -223,7 +239,7 @@
     /**
      * Updates the person's campus guid whenever the campus picker selection changes.
      */
-     function onCampusChanged(value: ListItemBag | ListItemBag[] | null): void {
+    function onCampusChanged(value: ListItemBag | ListItemBag[] | null): void {
         if (isListItemBag(value)) {
             emit("update:modelValue", { ...props.modelValue, campus: value.value });
         }

@@ -27,6 +27,7 @@ using Rock.ViewModels.Utility;
 using Rock.ViewModels.Blocks.Engagement.Steps;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using System.Linq;
 
 namespace Rock.Blocks.Engagement.Steps
 {
@@ -182,12 +183,12 @@ namespace Rock.Blocks.Engagement.Steps
         public BlockActionResult GetData( SlidingDateRangeBag dateRange, int maxLevels, Guid campus )
         {
             List<StepTypeCache> stepTypes = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ).AsInteger() ).StepTypes;
-            var nodeResults = new List<FlowNodeDiagramNodeBag>();
+            var nodeResults = new List<SankeyDiagramNodeBag>();
             int order = 0;
 
             foreach ( StepTypeCache step in stepTypes )
             {
-                nodeResults.Add( new FlowNodeDiagramNodeBag
+                nodeResults.Add( new SankeyDiagramNodeBag
                 {
                     Id = step.Id,
                     Order = ++order,
@@ -198,7 +199,7 @@ namespace Rock.Blocks.Engagement.Steps
 
             var parameters = GetParameters( maxLevels, dateRange, campus );
             var flowEdgeData = new DbService( new RockContext() ).GetDataTableFromSqlCommand( "spSteps_StepFlow", System.Data.CommandType.StoredProcedure, parameters );
-            var flowEdgeResults = new List<FlowNodeDiagramEdgeBag>();
+            var flowEdgeResults = new List<SankeyDiagramEdgeBag>();
 
             foreach ( DataRow flowEdgeRow in flowEdgeData.Rows )
             {
@@ -207,17 +208,17 @@ namespace Rock.Blocks.Engagement.Steps
                 int sourceId = flowEdgeRow["SourceStepTypeId"].ToIntSafe();
                 int targetId = flowEdgeRow["TargetStepTypeId"].ToIntSafe();
 
-                var source = stepTypes.Find( stepType => stepType.Id == sourceId );
-                var target = stepTypes.Find( stepType => stepType.Id == targetId );
+                var source = stepTypes.FirstOrDefault( stepType => stepType.Id == sourceId );
+                var target = stepTypes.FirstOrDefault( stepType => stepType.Id == targetId );
 
-                flowEdgeResults.Add( new FlowNodeDiagramEdgeBag
+                flowEdgeResults.Add( new SankeyDiagramEdgeBag
                 {
                     TargetId = targetId,
                     SourceId = sourceId,
                     Level = level,
                     Units = units,
                     Tooltip = level > 1 ? BuildTooltip( source, target, units, flowEdgeRow["AvgNumberOfDaysBetweenSteps"].ToIntSafe() ) : ""
-                });
+                } );
             }
 
             return ActionOk( new StepFlowGetDataBag
@@ -242,9 +243,10 @@ namespace Rock.Blocks.Engagement.Steps
             var parameters = new Dictionary<string, object>();
 
             // Generate a date range from the SlidingDateRangePicker's value
-            var testRange = new SlidingDateRangePicker {
+            var testRange = new SlidingDateRangePicker
+            {
                 SlidingDateRangeMode = ( SlidingDateRangePicker.SlidingDateRangeType ) ( int ) date.RangeType,
-                TimeUnit = ( SlidingDateRangePicker.TimeUnitType ) (int) (date.TimeUnit ?? 0),
+                TimeUnit = ( SlidingDateRangePicker.TimeUnitType ) ( int ) ( date.TimeUnit ?? 0 ),
                 NumberOfTimeUnits = date.TimeValue ?? 1,
                 DateRangeModeStart = date.LowerDate?.DateTime,
                 DateRangeModeEnd = date.UpperDate?.DateTime
@@ -302,9 +304,11 @@ namespace Rock.Blocks.Engagement.Steps
 
         private string BuildTooltip( StepTypeCache source, StepTypeCache target, int units, int? days )
         {
-            string dayString = days == null ? "Unknown" : $"{ days }";
+            string sourceName = source?.Name ?? "Unknown Source";
+            string targetName = target?.Name ?? "Unknown Target";
+            string dayString = days.HasValue ? days.Value.ToString() : "Unknown";
 
-            return $"<p><strong>{source.Name} > {target.Name}</strong></p>" +
+            return $"<p><strong>{sourceName} > {targetName}</strong></p>" +
                 $"Steps Taken: {units}<br/>" +
                 $"Avg Days Between Steps: {dayString}";
         }

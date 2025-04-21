@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -40,8 +41,18 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.TextFieldType" } )]
     [WorkflowTextOrAttribute( "Expire Date Time", "Attribute Value", "An optional text (date time format) or datetime workflow attribute that contains the text to set the expiration date time. <span class='tip tip-lava'></span>", false, "", "", 4, "ExpireDateTime",
         new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Content", "Attribute Value", "The content or a text/memo attribute that contains the content for the channel item. <span class='tip tip-lava'></span>", true, "", "", 5, "Content",
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
+
+    [WorkflowTextOrAttribute(
+        "Content",
+        "Attribute Value",
+        Description = "The content or a text/memo attribute that contains the content for the channel item. <span class='tip tip-lava'></span>. Alternatively, if a Structured Content field type is selected in the Attribute Value dropdown, this action will automatically convert the Structured Content into the \"Content\" of the Content Channel Item and set its Structured Content property.",
+        IsRequired = true,
+        DefaultValue = "",
+        Category = "",
+        Order = 5,
+        Key = "Content",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType", "Rock.Field.Types.StructureContentEditorFieldType" } )]
+
     [EnumField( "Status", "The  status for the new content channel item.", typeof( ContentChannelItemStatus ), true, "1", "", 6 )]
     [KeyValueListField( "Item Attribute Key", "Used to match the current workflow's attribute keys to the keys of the content channel item. The new content channel item will receive the values from this workflow's attributes.", false, keyPrompt: "Source Attribute", valuePrompt: "Target Attribute", order: 7 )]
     [WorkflowAttribute( "Content Channel Item Attribute", "An optional content channel item attribute to store the item that is created.", false, "", "", 6, null,
@@ -74,7 +85,9 @@ namespace Rock.Workflow.Action
             }
 
             // Get the Content
-            string contentValue = GetAttributeValue( action, "Content", true );
+            string contentValue = GetAttributeValue( action, "Content", false );
+            var isStructureContentProvided = false;
+            string structuredContent = string.Empty;
             string content = string.Empty;
             Guid? contentGuid = contentValue.AsGuidOrNull();
             if ( contentGuid.HasValue )
@@ -89,6 +102,14 @@ namespace Rock.Workflow.Action
                             attribute.FieldType.Class == "Rock.Field.Types.MemoFieldType" )
                         {
                             content = contentAttributeValue;
+                        }
+                        // If the Content Attribute is of type StructuredConentEditor Field Type, the StructuredContent property of the Content Channel needs
+                        // to be set along with the Content property.
+                        if ( attribute.FieldType.Class == "Rock.Field.Types.StructureContentEditorFieldType" )
+                        {
+                            isStructureContentProvided = true;
+                            structuredContent = contentAttributeValue;
+                            content = ( new StructuredContentHelper( contentAttributeValue ) ).Render();
                         }
                     }
                 }
@@ -187,7 +208,16 @@ namespace Rock.Workflow.Action
             contentChannelItem.ContentChannelTypeId = contentChannel.ContentChannelTypeId;
 
             contentChannelItem.Title = GetAttributeValue( action, "Title" ).ResolveMergeFields( mergeFields );
-            contentChannelItem.Content = content.ResolveMergeFields( mergeFields );
+            if ( isStructureContentProvided == true )
+            {
+                contentChannelItem.StructuredContent = structuredContent;
+                contentChannelItem.Content = content;
+            }
+            else
+            {
+                contentChannelItem.Content = content.ResolveMergeFields( mergeFields );
+            }
+
             contentChannelItem.StartDateTime = startDateTime;
             contentChannelItem.ExpireDateTime = expireDateTime;
             contentChannelItem.Status = channelItemStatus;

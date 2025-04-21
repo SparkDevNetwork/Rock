@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -58,11 +59,7 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<AuthAuditLog>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, AuthAuditLog.FriendlyTypeName );
-                return false;
-            }
+            // ignoring AuthAuditLog,GroupId
 
             if ( new Service<Campus>( Context ).Queryable().Any( a => a.TeamGroupId == item.Id ) )
             {
@@ -70,11 +67,7 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<Communication>( Context ).Queryable().Any( a => a.ListGroupId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Communication.FriendlyTypeName );
-                return false;
-            }
+            // ignoring Communication,ListGroupId
 
             if ( new Service<ConnectionRequest>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
             {
@@ -138,6 +131,8 @@ namespace Rock.Model
                 return false;
             }
 
+            // ignoring LearningClass,Id
+
             if ( new Service<Person>( Context ).Queryable().Any( a => a.GivingGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Person.FriendlyTypeName );
@@ -170,6 +165,24 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( Group.GroupQueryableAttributeValue ), nameof( GroupAttributeValues ) )]
+    public partial class Group
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<GroupQueryableAttributeValue> GroupAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class GroupQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -234,6 +247,7 @@ namespace Rock.Model
             target.ArchivedDateTime = source.ArchivedDateTime;
             target.AttendanceRecordRequiredForCheckIn = source.AttendanceRecordRequiredForCheckIn;
             target.CampusId = source.CampusId;
+            target.ChatChannelKey = source.ChatChannelKey;
             target.ConfirmationAdditionalDetails = source.ConfirmationAdditionalDetails;
             target.Description = source.Description;
             target.DisableScheduleToolboxAccess = source.DisableScheduleToolboxAccess;
@@ -250,20 +264,35 @@ namespace Rock.Model
             target.InactiveReasonValueId = source.InactiveReasonValueId;
             target.IsActive = source.IsActive;
             target.IsArchived = source.IsArchived;
+            target.IsChatChannelAlwaysShownOverride = source.IsChatChannelAlwaysShownOverride;
+            target.IsChatChannelPublicOverride = source.IsChatChannelPublicOverride;
+            target.IsChatEnabledOverride = source.IsChatEnabledOverride;
+            target.IsLeavingChatChannelAllowedOverride = source.IsLeavingChatChannelAllowedOverride;
             target.IsPublic = source.IsPublic;
             target.IsSecurityRole = source.IsSecurityRole;
+            target.IsSpecialNeeds = source.IsSpecialNeeds;
             target.IsSystem = source.IsSystem;
+            target.LeaderToLeaderRelationshipMultiplierOverride = source.LeaderToLeaderRelationshipMultiplierOverride;
+            target.LeaderToNonLeaderRelationshipMultiplierOverride = source.LeaderToNonLeaderRelationshipMultiplierOverride;
             target.Name = source.Name;
+            target.NonLeaderToLeaderRelationshipMultiplierOverride = source.NonLeaderToLeaderRelationshipMultiplierOverride;
+            target.NonLeaderToNonLeaderRelationshipMultiplierOverride = source.NonLeaderToNonLeaderRelationshipMultiplierOverride;
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
+            target.RelationshipGrowthEnabledOverride = source.RelationshipGrowthEnabledOverride;
+            target.RelationshipStrengthOverride = source.RelationshipStrengthOverride;
             target.ReminderAdditionalDetails = source.ReminderAdditionalDetails;
             target.ReminderOffsetDays = source.ReminderOffsetDays;
             target.ReminderSystemCommunicationId = source.ReminderSystemCommunicationId;
             target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             target.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
             target.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
+            #pragma warning disable 612, 618
             target.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;
+            #pragma warning restore 612, 618
             target.ScheduleConfirmationLogic = source.ScheduleConfirmationLogic;
+            target.ScheduleCoordinatorNotificationTypes = source.ScheduleCoordinatorNotificationTypes;
+            target.ScheduleCoordinatorPersonAliasId = source.ScheduleCoordinatorPersonAliasId;
             target.ScheduleId = source.ScheduleId;
             target.SchedulingMustMeetRequirements = source.SchedulingMustMeetRequirements;
             target.StatusValueId = source.StatusValueId;

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "EntitySetItem" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [NotAudited]
     [Rock.SystemGuid.EntityTypeGuid( "1F9D13F9-BF55-48BE-BEA9-0939CD6FDA5B")]
     public partial class EntitySetItem : Model<EntitySetItem>, IOrdered

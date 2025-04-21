@@ -434,6 +434,16 @@ namespace Rock.UI {
          * @param plyrOptions The options that will be passed to Plyr.
          */
         private initializePlayer(mediaElement: HTMLMediaElement, plyrOptions: Plyr.Options) {
+            if (this.isYouTubeEmbed(this.options.mediaUrl) || this.isVimeoEmbed(this.options.mediaUrl) || this.isHls(this.options.mediaUrl)) {
+                var control = plyrOptions.controls as string[];
+                let index = control.findIndex(d => d === "download"); //find index in your array
+                if (index !== -1) {
+                    control.splice(index, 1);
+                }
+                
+                plyrOptions.controls = control;
+            }
+
             this.player = new Plyr(mediaElement, plyrOptions);
 
             // This is a hack to get playback events for youtube videos. Plyr has a bug
@@ -575,6 +585,7 @@ namespace Rock.UI {
             // https://www.youtube.com/watch?v=uQpLrumQP0E
             const youTubePattern = /https?:\/\/(?:www\.)youtube\.com\/watch(?:[?&]v=([^&]+))/i;
             const vimeoPattern = /https?:\/\/vimeo\.com\/([0-9]+)/i;
+            const vimeoHLSPattern = /https?:\/\/player\.vimeo\.com\/external\/([0-9]+)\.m3u8(\?.*)?/i;
 
             // Check if this URL looks like a standard YouTube link from the browser.
             let match = youTubePattern.exec(url);
@@ -584,6 +595,12 @@ namespace Rock.UI {
 
             // Check if this URL looks like a standard Vimeo link from the browser.
             match = vimeoPattern.exec(url);
+            if (match !== null) {
+                return `https://player.vimeo.com/video/${match[1]}`;
+            }
+
+            // Check if this URL looks like a standard Vimeo HLS link from the browser.
+            match = vimeoHLSPattern.exec(url);
             if (match !== null) {
                 return `https://player.vimeo.com/video/${match[1]}`;
             }
@@ -666,9 +683,13 @@ namespace Rock.UI {
             }
 
             if (startPosition < this.watchBits.length) {
-                this.player.currentTime = startPosition;
+                // Setting the currentTime sometimes results on the audio of a video not playing (issue with plyr library(https://github.com/sampotts/plyr/issues/1527))
+                // only set the value when absolutely necessary.
+                if (this.player.currentTime !== startPosition) {
+                    this.player.currentTime = startPosition;
+                }
             }
-            else {
+            else if (this.player.currentTime != 0) {
                 this.player.currentTime = 0;
             }
 

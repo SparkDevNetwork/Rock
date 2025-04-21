@@ -173,7 +173,7 @@ of how it works.</p>
 
                 var settings = LavaElementAttributes.NewFromMarkup( _markup, context );
 
-                var lookAheadDays = settings.GetInteger( LOOK_AHEAD_DAYS );
+                var lookAheadDays = settings.GetInteger( LOOK_AHEAD_DAYS, 30 );
                 var scheduleCategoryId = settings.GetIntegerOrNull( SCHEDULE_CATEGORY_ID );
                 var asAtDate = settings.GetDateTime( AS_AT_DATE, RockDateTime.Now );
 
@@ -234,9 +234,11 @@ of how it works.</p>
                     }
                 }
 
-                // Determine when not to show the content
-                if ( ( settings.GetString( SHOW_WHEN ) == "notlive" && isLive )
-                    || ( settings.GetString( SHOW_WHEN ) == "live" && !isLive ) )
+                // Determine if the content should be shown for the current schedule status.
+                // The default behavior is to show content when the schedule is Live.
+                var showWhen = settings.GetString( SHOW_WHEN, "live" );
+                if ( ( showWhen == "notlive" && isLive )
+                    || ( showWhen == "live" && !isLive ) )
                 {
                     return;
                 }

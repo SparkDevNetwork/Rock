@@ -20,6 +20,9 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Web;
+
+using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 using Rock;
 using Rock.Logging;
@@ -58,13 +61,12 @@ internal class SendGridResponseAsync : IAsyncResult
     private readonly Object _state;
     private readonly AsyncCallback _callback;
     private readonly HttpContext _context;
+    private readonly ILogger _logger;
 
     bool IAsyncResult.IsCompleted { get { return _completed; } }
     WaitHandle IAsyncResult.AsyncWaitHandle { get { return null; } }
     Object IAsyncResult.AsyncState { get { return _state; } }
     bool IAsyncResult.CompletedSynchronously { get { return false; } }
-
-    private const bool ENABLE_LOGGING = false;
 
     public SendGridResponseAsync( AsyncCallback callback, HttpContext context, Object state )
     {
@@ -72,6 +74,7 @@ internal class SendGridResponseAsync : IAsyncResult
         _context = context;
         _state = state;
         _completed = false;
+        _logger = RockLogger.LoggerFactory.CreateLogger<TwilioSendGrid>();
     }
 
     public void StartAsyncWork()
@@ -194,7 +197,7 @@ internal class SendGridResponseAsync : IAsyncResult
     /// <param name="rockContext">The rock context.</param>
     private void ProcessForRecipient( Guid? communicationRecipientGuid, Rock.Data.RockContext rockContext, SendGridEvent payload )
     {
-        RockLogger.Log.Debug( RockLogDomains.Communications, "ProcessForRecipient {@payload}", payload );
+        _logger.LogDebug( "ProcessForRecipient {@payload}", payload );
 
         if ( !communicationRecipientGuid.HasValue )
         {
@@ -317,7 +320,7 @@ internal class SendGridResponseAsync : IAsyncResult
 
     private void ProcessForWorkflow( Guid? actionGuid, Rock.Data.RockContext rockContext, SendGridEvent payload )
     {
-        RockLogger.Log.Debug( RockLogDomains.Communications, "ProcessForWorkflow {@payload}", payload );
+        _logger.LogDebug( "ProcessForWorkflow {@payload}", payload );
 
         string status = string.Empty;
         switch ( payload.EventType )

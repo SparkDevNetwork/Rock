@@ -26,12 +26,12 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Security Role group type guid
         /// </summary>
-        public const string GROUPTYPE_SECURITY_ROLE= "AECE949F-704C-483E-A4FB-93D5E4720C4C";
+        public const string GROUPTYPE_SECURITY_ROLE = "AECE949F-704C-483E-A4FB-93D5E4720C4C";
 
         /// <summary>
         /// Family group type guid
         /// </summary>
-        public const string GROUPTYPE_FAMILY= "790E3215-3B10-442B-AF69-616C0DCB998E";
+        public const string GROUPTYPE_FAMILY = "790E3215-3B10-442B-AF69-616C0DCB998E";
 
         /// <summary>
         /// Event Attendees group type guid
@@ -44,8 +44,15 @@ namespace Rock.SystemGuid
         public const string GROUPTYPE_KNOWN_RELATIONSHIPS = "E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF";
 
         /// <summary>
+        /// Learning Management System (LMS) Class group type guid
+        /// </summary>
+        public const string GROUPTYPE_LMS_CLASS = "4BBC41E2-0A37-4289-B7A7-756B9FE8F775";
+
+        /// <summary>
         /// Peer network group type guid
         /// </summary>
+        [RockObsolete( "1.17" )]
+        [Obsolete( "Peer Networks of this Group Type have been replaced with a formal Peer Network feature." )]
         public const string GROUPTYPE_PEER_NETWORK = "8C0E5852-F08F-4327-9AA5-87800A6AB53E";
 
         /// <summary>
@@ -112,5 +119,15 @@ namespace Rock.SystemGuid
         /// Sign-up Group group type guid
         /// </summary>
         public const string GROUPTYPE_SIGNUP_GROUP = "499B1367-06B3-4538-9D56-56D53F55DCB1";
+
+        /// <summary>
+        /// Chat Direct Message group type guid
+        /// </summary>
+        public const string GROUPTYPE_CHAT_DIRECT_MESSAGE = "DFDC14A3-D1DC-4342-A012-5CE9E8994B5E";
+
+        /// <summary>
+        /// Chat Shared Channel group type guid
+        /// </summary>
+        public const string GROUPTYPE_CHAT_SHARED_CHANNEL = "268D4802-24C7-4891-890E-71313BEE17B1";
     }
 }

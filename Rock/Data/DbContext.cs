@@ -18,16 +18,19 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.Data.Entity.Core;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Web;
 
 using Rock.Bus.Message;
 using Rock.Model;
+using Rock.Net;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.UniversalSearch;
@@ -103,6 +106,15 @@ namespace Rock.Data
         /// </remarks>
         /// <value><c>true</c> if RealTime messages should be sent by this context; otherwise, <c>false</c>.</value>
         public bool IsRealTimeEnabled { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether Rock-to-chat synchronization attempts should be made in response to
+        /// calls to one of the SaveChanges methods.
+        /// </summary>
+        /// <remarks>
+        /// <see langword="true"/> by default.
+        /// </remarks>
+        internal bool IsRockToChatSyncEnabled { get; set; } = true;
 
         #endregion
 
@@ -243,23 +255,29 @@ namespace Rock.Data
         /// </summary>
         private void ExecuteAfterCommitActions()
         {
-            // Create a new array for committed actions. This is so that if
-            // some action registers yet another action (not supported) then
-            // it will go into the next save rather than cause an enumeration error.
-            var actions = _commitedActions;
-            _commitedActions = new List<Action>();
-
-            foreach ( var action in actions )
+            // An executed action might not know that it is already in the after
+            // commit state and try to enqueue another ExecuteAfterCommit call.
+            // This will allow us to catch those and execute them.
+            while ( _commitedActions.Any() )
             {
-                try
+                // Create a new array for committed actions. This is so that if
+                // some action registers yet another action then it will go into
+                // the new queue rather than cause an enumeration error.
+                var actions = _commitedActions;
+                _commitedActions = new List<Action>();
+
+                foreach ( var action in actions )
                 {
-                    action();
-                }
-                catch ( Exception ex )
-                {
-                    // Log but do not throw, this ensures all commit
-                    // actions get executed.
-                    ExceptionLogService.LogException( ex );
+                    try
+                    {
+                        action();
+                    }
+                    catch ( Exception ex )
+                    {
+                        // Log but do not throw, this ensures all commit
+                        // actions get executed.
+                        ExceptionLogService.LogException( ex );
+                    }
                 }
             }
         }
@@ -421,6 +439,11 @@ namespace Rock.Data
                 }
             }
 
+            if ( Net.RockRequestContextAccessor.Current != null )
+            {
+                return Net.RockRequestContextAccessor.Current.CurrentPerson?.PrimaryAlias;
+            }
+
             return null;
         }
 
@@ -439,14 +462,21 @@ namespace Rock.Data
                 personAliasId = personAlias.Id;
             }
 
-            var preSavedEntities = new HashSet<Guid>();
+            // This triggers the change detection, so it must be called before
+            // we check for the implied relationship changes.
+            var entries = dbContext.ChangeTracker.Entries().ToList();
+
+            // Check for any many-to-many relationships that were added or
+            // deleted and flag the related entities as modified.
+            DetectImpliedRelationshipChanges( dbContext );
 
             // First loop through all models calling the PreSaveChanges
+            var preSavedEntities = new HashSet<Guid>();
             var updatedItems = new Dictionary<IEntity, ContextItem>();
 
             try
             {
-                foreach ( var entry in dbContext.ChangeTracker.Entries()
+                foreach ( var entry in entries
                     .Where( c =>
                         c.Entity is IEntity &&
                         ( c.State == EntityState.Added || c.State == EntityState.Modified || c.State == EntityState.Deleted ) ) )
@@ -740,6 +770,9 @@ namespace Rock.Data
 
             List<ITransaction> indexTransactions = new List<ITransaction>();
             var deleteContentCollectionIndexingMsgs = new List<BusStartedTaskMessage>();
+            var addInteractionEntityTransactions = new List<AddInteractionEntityTransaction>();
+            var interactionGuid = RockRequestContextAccessor.Current?.RelatedInteractionGuid;
+
             foreach ( var item in updatedItems )
             {
                 // check if this entity should be passed on for indexing
@@ -768,8 +801,9 @@ namespace Rock.Data
                     }
                 }
 
-                // Check if this item should be processed by the content collection.
                 var itemEntityTypeCache = EntityTypeCache.Get( item.Entity.TypeId );
+
+                // Check if this item should be processed by the content collection.
                 if ( itemEntityTypeCache != null && itemEntityTypeCache.IsContentCollectionIndexingEnabled )
                 {
                     // We only handle deleted states here. The detail blocks where
@@ -815,10 +849,20 @@ namespace Rock.Data
                         };
                     }, TaskContinuationOptions.ExecuteSynchronously );
                 }
+
+                // If we are supposed to track this entity and the Interaction
+                // that it's creation is related to then prepare the transaction
+                // that will be queued up later.
+                if ( interactionGuid.HasValue && itemEntityTypeCache?.IsRelatedToInteractionTrackedOnCreate == true && item.PreSaveState == EntityContextState.Added )
+                {
+                    var transaction = new AddInteractionEntityTransaction( itemEntityTypeCache.Id, item.Entity.Id, interactionGuid.Value );
+
+                    addInteractionEntityTransactions.Add( transaction );
+                }
             }
 
             // check if Indexing is enabled in another thread to avoid deadlock when Snapshot Isolation is turned off when the Index components upload/load attributes
-            if ( indexTransactions.Any() )
+            if ( indexTransactions.Any() || deleteContentCollectionIndexingMsgs.Any() )
             {
                 System.Threading.Tasks.Task.Run( () =>
                 {
@@ -828,6 +872,16 @@ namespace Rock.Data
                         indexTransactions.ForEach( t => t.Enqueue() );
                         deleteContentCollectionIndexingMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
                     }
+                } );
+            }
+
+            // If we had any InteractionEntity transactions to process then
+            // queue them up now.
+            if ( addInteractionEntityTransactions.Any() )
+            {
+                ExecuteAfterCommit( () =>
+                {
+                    addInteractionEntityTransactions.ForEach( t => t.Enqueue() );
                 } );
             }
         }
@@ -1447,6 +1501,111 @@ namespace Rock.Data
             // Otherwise, make sure it is a real database field
             return Reflection.IsMappedDatabaseProperty( propertyInfo );
         }
+
+        #region WebForms
+
+#if WEBFORMS
+
+        /// <summary>
+        /// The reflected property that gives access to DbContext.InternalContext.
+        /// </summary>
+        private static PropertyInfo _dbContextInternalContextProperty;
+
+        /// <summary>
+        /// The reflected property that gives access to LazyInternalContext.ObjectContext.
+        /// </summary>
+        private static PropertyInfo _internalContextObjectContextProperty;
+
+        /// <summary>
+        /// <para>
+        /// Detects the implied relationship changes in the context. A many-to-many
+        /// relationship without an associated model is implied. Because there is
+        /// no model, Entity Framework does not report it in the list of changed
+        /// models.
+        /// </para>
+        /// <para>
+        /// This allows us to detect when one of these many-to-many relationships
+        /// is added or removed. When detected it updates the related entity
+        /// entries to mark them as modified. This allows our save hooks and
+        /// related code to properly run when the entity is indirectly modified.
+        /// </para>
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        private static void DetectImpliedRelationshipChanges( DbContext dbContext )
+        {
+            /*
+                 1/30/2024 - DSH
+
+                 This bit of code replaces the following line:
+
+                 var objectContext = ( ( IObjectContextAdapter ) this ).ObjectContext;
+
+                 The above line also eager initializes all the DbSet properties,
+                 which we don't need because we aren't going to access them.
+                 That eager initialization takes 80-100ms. If we later remove
+                 all, or most, of the DbSet properties from RockContext then
+                 we can switch away from reflection and use the standard call.
+
+                 Performance is very good. Assuming the ObjectContext property has
+                 already been accessed once to get the initialization out of the
+                 way:
+                 Direct property access: 0.1212ms
+                 Reflection access: 0.136ms
+
+                 Reason: To avoid 100ms penalty when detecting many-to-many
+                 relationship changes.
+            */
+            if ( _dbContextInternalContextProperty == null )
+            {
+                _dbContextInternalContextProperty = typeof( DbContext ).GetProperty( "InternalContext", BindingFlags.NonPublic | BindingFlags.Instance );
+                _internalContextObjectContextProperty = _dbContextInternalContextProperty.PropertyType.GetProperty( "ObjectContext" );
+            }
+            var internalContext = _dbContextInternalContextProperty.GetValue( dbContext, BindingFlags.Default, null, null, null );
+            var objectContext = ( ObjectContext ) _internalContextObjectContextProperty.GetValue( internalContext, BindingFlags.Default, null, null, null );
+
+            var addedItems = objectContext.ObjectStateManager.GetObjectStateEntries( EntityState.Added )
+                .Where( e => e.IsRelationship );
+
+            foreach ( var addedItem in addedItems )
+            {
+                MarkEntryAsModifiedByKey( dbContext, objectContext, addedItem.CurrentValues[0] );
+                MarkEntryAsModifiedByKey( dbContext, objectContext, addedItem.CurrentValues[1] );
+            }
+
+            var removedItems = objectContext.ObjectStateManager.GetObjectStateEntries( EntityState.Deleted )
+                .Where( e => e.IsRelationship );
+
+            foreach ( var removedItem in removedItems )
+            {
+                MarkEntryAsModifiedByKey( dbContext, objectContext, removedItem.OriginalValues[0] );
+                MarkEntryAsModifiedByKey( dbContext, objectContext, removedItem.OriginalValues[1] );
+            }
+        }
+
+        /// <summary>
+        /// Marks the entry as modified by its DbContext key. This is only meant to be used
+        /// by the <see cref="DetectImpliedRelationshipChanges(DbContext)"/> method.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="objectContext">The object context.</param>
+        /// <param name="key">The key.</param>
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
+        private static void MarkEntryAsModifiedByKey( DbContext dbContext, ObjectContext objectContext, object key )
+        {
+            if ( key is EntityKey entityKey && objectContext.TryGetObjectByKey( entityKey, out var removedEntity ) )
+            {
+                var entry = dbContext.Entry( removedEntity );
+
+                if ( entry.State == EntityState.Unchanged )
+                {
+                    entry.State = EntityState.Modified;
+                }
+            }
+        }
+
+#endif
+
+        #endregion
 
         /// <summary>
         /// State of entity being changed during a context save

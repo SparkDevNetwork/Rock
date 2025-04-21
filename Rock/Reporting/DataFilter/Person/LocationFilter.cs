@@ -47,7 +47,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         ///     Settings for the Data Select Component.
         /// </summary>
-        private class FilterSettings : SettingsStringBase
+        internal class FilterSettings : SettingsStringBase
         {
             public Guid? LocationTypeGuid;
             public string Street1;
@@ -255,9 +255,7 @@ function() {
                 string city = string.IsNullOrWhiteSpace( settings.City ) ? null : settings.City;
                 string state = string.IsNullOrWhiteSpace( settings.State ) ? null : settings.State;
                 string postalCode = string.IsNullOrWhiteSpace( settings.PostalCode ) ? null : settings.PostalCode;
-
-                string countryName = GlobalAttributesCache.Get().GetValue( "SupportInternationalAddresses" ).AsBoolean() &&
-                    !string.IsNullOrWhiteSpace( settings.Country ) ? settings.Country : null;
+                string countryName = string.IsNullOrWhiteSpace( settings.Country ) ? null : settings.Country;
 
                 if ( settings.LocationTypeGuid.HasValue )
                 {
@@ -310,6 +308,10 @@ function() {
             acAddress.ID = parentControl.GetChildControlInstanceName( _CtlLocationAddress );
             acAddress.Label = "Address";
             acAddress.Help = "All or part of an address to which the Person is associated.";
+
+            // Set the control to allow incomplete address data for the filter.
+            acAddress.PartialAddressIsAllowed = true;
+
             acAddress.AddCssClass( "js-addresscontrol" );
             parentControl.Controls.Add( acAddress );
 
@@ -365,11 +367,19 @@ function() {
             }
 
             ddlLocationType.SelectedValue = settings.LocationTypeGuid.ToStringSafe();
-            acAddress.Street1 = settings.Street1;
-            acAddress.City = settings.City;
-            acAddress.State = settings.State;
-            acAddress.PostalCode = settings.PostalCode;
-            acAddress.Country = settings.Country;
+
+            var location = new Location
+            {
+                Street1 = settings.Street1,
+                Street2 = "",
+                City = settings.City,
+                County = "",
+                State = settings.State,
+                PostalCode = settings.PostalCode,
+                Country = settings.Country
+            };
+
+            acAddress.SetValues( location );
         }
 
         /// <summary>

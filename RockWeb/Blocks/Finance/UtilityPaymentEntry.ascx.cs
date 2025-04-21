@@ -37,6 +37,7 @@ using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Constants;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -268,6 +269,13 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.DisableCaptchaSupport,
         DefaultBooleanValue = false,
         Order = 28 )]
+
+    [BooleanField(
+        "Enable End Date",
+        Description = "When enabled, this setting allows an individual to specify an optional end date for their recurring scheduled gifts.",
+        Key = AttributeKey.EnableEndDate,
+        DefaultBooleanValue = false,
+        Order = 29 )]
 
     #endregion Default Category
 
@@ -562,6 +570,7 @@ namespace RockWeb.Blocks.Finance
             public const string AdditionalAccounts = "AdditionalAccounts";
             public const string EnableAccountHierarchy = "EnableAccountHierarchy";
             public const string DisableCaptchaSupport = "DisableCaptchaSupport";
+            public const string EnableEndDate = "EnableEndDate";
 
             // Email Templates Category
             public const string ConfirmAccountTemplate = "ConfirmAccountTemplate";
@@ -654,7 +663,8 @@ mission. We are so grateful for your commitment.</p>
     <dd>
 
     {% if Transaction.TransactionFrequencyValue %}
-        {{ Transaction.TransactionFrequencyValue.Value }} starting on {{ Transaction.NextPaymentDate | Date:'sd' }}
+        {{ Transaction.TransactionFrequencyValue.Value }} //- Updated to include EndDate
+{% if Transaction.EndDate %}starting on {{ Transaction.NextPaymentDate | Date:'sd' }} and ending on {{ Transaction.EndDate | Date:'sd' }}{% else %}starting on {{ Transaction.NextPaymentDate | Date:'sd' }}{% endif %}
     {% else %}
         Today
     {% endif %}
@@ -919,7 +929,7 @@ mission. We are so grateful for your commitment.</p>
         {
             if ( e.IsValid )
             {
-                nbPaymentTokenError.Visible= false;
+                nbPaymentTokenError.Visible = false;
                 nbPaymentTokenError.Text = string.Empty;
 
                 _hostedPaymentInfoControl.Visible = true;
@@ -928,7 +938,7 @@ mission. We are so grateful for your commitment.</p>
                 return;
             }
 
-            nbPaymentTokenError.Visible= true;
+            nbPaymentTokenError.Visible = true;
             nbPaymentTokenError.Text = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
             cpCaptcha.Visible = false;
             btnHostedPaymentInfoNext.Visible = false;
@@ -959,7 +969,7 @@ mission. We are so grateful for your commitment.</p>
                 hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
                 _hostedPaymentInfoControl.Visible = true;
 
-                nbPaymentTokenError.Visible= false;
+                nbPaymentTokenError.Visible = false;
                 nbPaymentTokenError.Text = string.Empty;
             }
 
@@ -1013,8 +1023,6 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // Hide the messages on every postback
             nbMessage.Visible = false;
             nbSelectionMessage.Visible = false;
@@ -1026,6 +1034,7 @@ mission. We are so grateful for your commitment.</p>
 
             if ( !LoadGatewayOptions() )
             {
+                base.OnLoad( e );
                 return;
             }
 
@@ -1089,10 +1098,23 @@ mission. We are so grateful for your commitment.</p>
             // Set the frequency date label based on if 'One Time' is selected or not
             if ( btnFrequency.Items.Count > 0 )
             {
-                dtpStartDate.Label = btnFrequency.Items[0].Selected ? "When" : "First Gift";
+                int oneTimeFrequencyId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
+                bool isOneTime = ( btnFrequency.SelectedValueAsInt() ?? 0 ) == oneTimeFrequencyId;
+
+                dtpStartDate.Label = isOneTime ? "When" : "First Gift";
                 if ( _scheduledTransactionToBeTransferred != null && _scheduledTransactionToBeTransferred.NextPaymentDate.HasValue )
                 {
                     dtpStartDate.Label = "Next Gift";
+                }
+
+                if ( GetAttributeValue( AttributeKey.EnableEndDate ).AsBoolean() && !isOneTime )
+                {
+                    dtpEndDate.Visible = true;
+                }
+                else
+                {
+                    dtpEndDate.Visible = false;
+                    dtpEndDate.SelectedDate = null;
                 }
             }
 
@@ -1100,6 +1122,7 @@ mission. We are so grateful for your commitment.</p>
             divSaveAccount.Style[HtmlTextWriterStyle.Display] = cbSaveAccount.Checked ? "block" : "none";
 
             ResolveHeaderFooterTemplates();
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -1668,14 +1691,24 @@ mission. We are so grateful for your commitment.</p>
         protected void btnFrequency_SelectionChanged( object sender, EventArgs e )
         {
             int oneTimeFrequencyId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
-            bool oneTime = ( btnFrequency.SelectedValueAsInt() ?? 0 ) == oneTimeFrequencyId;
+            bool isOneTime = ( btnFrequency.SelectedValueAsInt() ?? 0 ) == oneTimeFrequencyId;
 
-            dtpStartDate.Label = oneTime ? "When" : "First Gift";
+            dtpStartDate.Label = isOneTime ? "When" : "First Gift";
+
+            if ( GetAttributeValue( AttributeKey.EnableEndDate ).AsBoolean() && !isOneTime )
+            {
+                dtpEndDate.Visible = true;
+            }
+            else
+            {
+                dtpEndDate.Visible = false;
+                dtpEndDate.SelectedDate = null;
+            }
 
             var earliestScheduledStartDate = FinancialGatewayComponent.GetEarliestScheduledStartDate( FinancialGateway );
 
             // if scheduling recurring, it can't start today since the gateway will be taking care of automated giving, it might have already processed today's transaction. So make sure it is no earlier than the gateway's earliest start date.
-            if ( !oneTime && ( !dtpStartDate.SelectedDate.HasValue || dtpStartDate.SelectedDate.Value.Date < earliestScheduledStartDate ) )
+            if ( !isOneTime && ( !dtpStartDate.SelectedDate.HasValue || dtpStartDate.SelectedDate.Value.Date < earliestScheduledStartDate ) )
             {
                 dtpStartDate.SelectedDate = earliestScheduledStartDate;
             }
@@ -2285,7 +2318,7 @@ mission. We are so grateful for your commitment.</p>
             }
             else
             {
-                if ( enableTextToGiveSetup  )
+                if ( enableTextToGiveSetup )
                 {
                     btnSavedAccountPaymentInfoNext.Text = "Give";
                     btnHostedPaymentInfoNext.Text = "Give";
@@ -2311,7 +2344,9 @@ mission. We are so grateful for your commitment.</p>
             bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             bool userLoggedIn = CurrentPerson != null;
 
-            acAddress.Label = givingAsBusiness ? "Business Address" : "Address";
+            var addressTypeGuid = GetAttributeValue( AttributeKey.AddressType ).AsGuid();
+            var addressType = DefinedValueCache.Get( addressTypeGuid );
+            acAddress.Label = givingAsBusiness ? "Business Address" : addressType.Value + " Address";
             pnbPhone.Label = givingAsBusiness ? "Business Phone" : "Phone";
             txtEmail.Label = givingAsBusiness ? "Business Email" : "Email";
 
@@ -2513,7 +2548,7 @@ mission. We are so grateful for your commitment.</p>
                     cbSmsOptIn.Checked = workPhone?.IsMessagingEnabled ?? false;
                 }
             }
-            
+
         }
 
         /// <summary>
@@ -2555,7 +2590,7 @@ mission. We are so grateful for your commitment.</p>
                 if ( person == null )
                 {
                     // Check to see if there's only one person with same email, first name, and last name
-                    if ( !string.IsNullOrWhiteSpace( txtEmail.Text ) && 
+                    if ( !string.IsNullOrWhiteSpace( txtEmail.Text ) &&
                         !string.IsNullOrWhiteSpace( txtFirstName.Text ) &&
                         !string.IsNullOrWhiteSpace( txtLastName.Text ) )
                     {
@@ -2683,7 +2718,7 @@ mission. We are so grateful for your commitment.</p>
                         familyGroup,
                         GetAttributeValue( AttributeKey.AddressType ),
                         acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country,
-                        true);
+                        true );
                 }
             }
 
@@ -3049,6 +3084,11 @@ mission. We are so grateful for your commitment.</p>
                 {
                     errorMessages.Add( $"When scheduling a repeating payment, the minimum start date is {earliestScheduledStartDate.ToShortDateString()}" );
                 }
+
+                if ( schedule.EndDate.HasValue && schedule.EndDate < schedule.StartDate )
+                {
+                    errorMessages.Add( $"When scheduling a repeating payment, the minimum end date is {schedule.StartDate.ToShortDateString()}" );
+                }
             }
             else
             {
@@ -3063,6 +3103,16 @@ mission. We are so grateful for your commitment.</p>
                 if ( string.IsNullOrWhiteSpace( txtFirstName.Text ) || string.IsNullOrWhiteSpace( txtLastName.Text ) )
                 {
                     errorMessages.Add( "Make sure to enter both a first and last name" );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( txtFirstName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) || System.Text.RegularExpressions.Regex.IsMatch( txtLastName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) )
+                {
+                    errorMessages.Add( "Make sure to enter a first and last name that does not contain special characters such as quotes, parentheses, etc." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( txtFirstName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) || System.Text.RegularExpressions.Regex.IsMatch( txtLastName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) )
+                {
+                    errorMessages.Add( "Make sure to enter a first and last name that does not contain emojis or special fonts." );
                 }
 
                 if ( !txtFirstName.IsValid )
@@ -3099,6 +3149,21 @@ mission. We are so grateful for your commitment.</p>
                 if ( string.IsNullOrWhiteSpace( txtBusinessContactFirstName.Text ) || string.IsNullOrWhiteSpace( txtBusinessContactLastName.Text ) )
                 {
                     errorMessages.Add( "Make sure to enter both a first and last name for Business Contact" );
+                }
+
+                if ( !txtBusinessContactFirstName.IsValid )
+                {
+                    errorMessages.Add( txtBusinessContactFirstName.CustomValidator.ErrorMessage );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( txtBusinessContactFirstName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) || System.Text.RegularExpressions.Regex.IsMatch( txtBusinessContactLastName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) )
+                {
+                    errorMessages.Add( "Make sure to enter a first and last name that does not contain special characters such as quotes, parentheses, etc for Business Contact." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( txtBusinessContactFirstName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) || System.Text.RegularExpressions.Regex.IsMatch( txtBusinessContactLastName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) )
+                {
+                    errorMessages.Add( "Make sure to enter a first and last name that does not contain emojis or special fonts for Business Contact." );
                 }
 
                 if ( DisplayPhone && string.IsNullOrWhiteSpace( pnbBusinessContactPhone.Number ) )
@@ -3245,7 +3310,8 @@ mission. We are so grateful for your commitment.</p>
             {
                 // If a one-time gift was selected for today's date, then treat as a onetime immediate transaction (not scheduled)
                 int oneTimeFrequencyId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
-                if ( btnFrequency.SelectedValue == oneTimeFrequencyId.ToString() && dtpStartDate.SelectedDate <= RockDateTime.Today )
+                bool isOneTime = ( btnFrequency.SelectedValueAsInt() ?? 0 ) == oneTimeFrequencyId;
+                if ( isOneTime && dtpStartDate.SelectedDate <= RockDateTime.Today )
                 {
                     // one-time immediate payment
                     return null;
@@ -3260,6 +3326,14 @@ mission. We are so grateful for your commitment.</p>
                 else
                 {
                     schedule.StartDate = DateTime.MinValue;
+                }
+
+                if ( GetAttributeValue( AttributeKey.EnableEndDate ).AsBoolean() && !isOneTime )
+                {
+                    if ( dtpEndDate.SelectedDate.HasValue && dtpEndDate.SelectedDate > RockDateTime.Today )
+                    {
+                        schedule.EndDate = dtpEndDate.SelectedDate.Value;
+                    }
                 }
 
                 return schedule;
@@ -3316,9 +3390,9 @@ mission. We are so grateful for your commitment.</p>
                     return false;
                 }
 
-                Person BusinessOrPerson = GetPersonOrBusiness( person );
+                Person businessOrPerson = GetPersonOrBusiness( person );
 
-                var paymentInfo = GetTxnPaymentInfo( BusinessOrPerson, out errorMessage );
+                var paymentInfo = GetTxnPaymentInfo( businessOrPerson, givingAsBusiness, out errorMessage );
                 if ( paymentInfo == null )
                 {
                     return false;
@@ -3347,7 +3421,7 @@ mission. We are so grateful for your commitment.</p>
                     // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate scheduled transactions impossible
                     scheduledTransaction.Guid = transactionGuid;
 
-                    SaveScheduledTransaction( financialGateway, gateway, BusinessOrPerson, paymentInfo, schedule, scheduledTransaction, rockContext );
+                    SaveScheduledTransaction( financialGateway, gateway, businessOrPerson, paymentInfo, schedule, scheduledTransaction, rockContext );
                     paymentDetail = scheduledTransaction.FinancialPaymentDetail.Clone( false );
                 }
                 else
@@ -3369,7 +3443,7 @@ mission. We are so grateful for your commitment.</p>
                     // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate transactions impossible
                     transaction.Guid = transactionGuid;
 
-                    SaveTransaction( financialGateway, gateway, BusinessOrPerson, paymentInfo, transaction, rockContext );
+                    SaveTransaction( financialGateway, gateway, businessOrPerson, paymentInfo, transaction, rockContext );
                     paymentDetail = transaction.FinancialPaymentDetail.Clone( false );
                 }
 
@@ -3385,7 +3459,7 @@ mission. We are so grateful for your commitment.</p>
             }
         }
 
-        private ReferencePaymentInfo GetTxnPaymentInfo( Person person, out string errorMessage )
+        private ReferencePaymentInfo GetTxnPaymentInfo( Person person, bool givingAsBusiness, out string errorMessage )
         {
             errorMessage = null;
 
@@ -3401,6 +3475,11 @@ mission. We are so grateful for your commitment.</p>
             }
             else
             {
+                if ( givingAsBusiness )
+                {
+                    paymentInfo.BusinessName = person.LastName;
+                }
+
                 paymentInfo.FirstName = person.FirstName;
                 paymentInfo.LastName = person.LastName;
             }
@@ -3434,6 +3513,7 @@ mission. We are so grateful for your commitment.</p>
         {
             scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
             scheduledTransaction.StartDate = schedule.StartDate;
+            scheduledTransaction.EndDate = schedule.EndDate;
             scheduledTransaction.AuthorizedPersonAliasId = person.PrimaryAliasId.Value;
             scheduledTransaction.FinancialGatewayId = financialGateway.Id;
 
@@ -3456,8 +3536,6 @@ mission. We are so grateful for your commitment.</p>
                     scheduledTransaction.SourceTypeValueId = source.Id;
                 }
             }
-
-            var transactionEntity = this.GetTransactionEntity();
 
             PopulateTransactionDetails( scheduledTransaction.ScheduledTransactionDetails );
 
@@ -3909,7 +3987,7 @@ mission. We are so grateful for your commitment.</p>
             pnlConfirmation.Visible = page == EntryStep.ShowConfirmation;
             pnlSuccess.Visible = page == EntryStep.ShowTransactionSummary;
 
-            hfCurrentPage.Value = page.ConvertToString(false);
+            hfCurrentPage.Value = page.ConvertToString( false );
         }
 
         /// <summary>

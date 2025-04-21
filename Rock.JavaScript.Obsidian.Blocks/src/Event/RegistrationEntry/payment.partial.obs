@@ -44,6 +44,8 @@
                 </div>
             </div>
 
+            <Captcha v-if="!disableCaptchaSupport" ref="captchaElement" />
+
             <NotificationBox v-if="submitErrorMessage" alertType="danger">{{ submitErrorMessage }}</NotificationBox>
 
             <div class="actions text-right">
@@ -61,24 +63,29 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import { CurrentRegistrationEntryState, GetPersistSessionArgs, use } from "./utils.partial";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
     import GatewayControl from "@Obsidian/Controls/gatewayControl.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import RockValidation from "@Obsidian/Controls/rockValidation.obs";
-    import { provideSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
+    import { provideSubmitPayment, usePaymentEvents } from "@Obsidian/Core/Controls/financialGateway";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { FormError } from "@Obsidian/Utility/form";
     import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
     import { RegistrationEntrySuccessBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySuccessBag";
     import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
     import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
     import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 
     const submitPayment = provideSubmitPayment();
+    const dispatchPaymentEvent = usePaymentEvents();
     const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
     const invokeBlockAction = useInvokeBlockAction();
     const registrationEntryState = use(CurrentRegistrationEntryState);
+    const disableCaptchaSupport = ref(registrationEntryState.viewModel.disableCaptchaSupport);
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
     const uniqueId = newGuid();
 
     const emit = defineEmits<{
@@ -179,7 +186,7 @@
         loading.value = true;
 
         // If there is a cost, then the gateway will need to be used to pay
-        if (registrationEntryState.amountToPayToday) {
+        if (registrationEntryState.amountToPayToday || registrationEntryState.paymentPlan?.amountPerPayment) {
             if (showGateway.value) {
                 // Otherwise, this is a traditional gateway
                 gatewayErrorMessage.value = "";
@@ -295,15 +302,29 @@
     async function submit(): Promise<boolean> {
         submitErrorMessage.value = "";
 
+        const actionContext: BlockActionContextBag = {};
+
+        if (captchaElement.value) {
+            actionContext.captcha = await captchaElement.value.getToken();
+            captchaElement.value.refreshToken();
+        }
+
+        dispatchPaymentEvent({ type: "submitting" });
+
         const result = await invokeBlockAction<RegistrationEntrySuccessBag>("SubmitRegistration", {
             args: getRegistrationEntryBlockArgs()
-        });
+        }, actionContext);
 
         if (result.isError || !result.data) {
-            submitErrorMessage.value = result.errorMessage || "Unknown error";
+            const errorMessage = result.errorMessage || "Unknown error";
+            submitErrorMessage.value = errorMessage;
+
+            dispatchPaymentEvent({ type: "failure", errorMessage });
         }
         else {
             registrationEntryState.successViewModel = result.data;
+
+            dispatchPaymentEvent({ type: "success" });
         }
 
         return result.isSuccess;

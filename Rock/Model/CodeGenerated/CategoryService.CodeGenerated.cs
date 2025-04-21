@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -94,6 +95,8 @@ namespace Rock.Model
                 return false;
             }
 
+            // ignoring EmailSection,CategoryId
+
             if ( new Service<GroupRequirementType>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, GroupRequirementType.FriendlyTypeName );
@@ -106,9 +109,27 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<LearningCourse>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, LearningCourse.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<LearningProgram>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, LearningProgram.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<PageShortLink>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, PageShortLink.FriendlyTypeName );
                 return false;
             }
 
@@ -174,6 +195,24 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( Category.CategoryQueryableAttributeValue ), nameof( CategoryAttributeValues ) )]
+    public partial class Category
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<CategoryQueryableAttributeValue> CategoryAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class CategoryQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

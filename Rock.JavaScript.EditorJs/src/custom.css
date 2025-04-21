@@ -5,3 +5,14 @@
 .cdx-nested-list--ordered > .cdx-nested-list__item::before {
     content: counter(item) ". ";
 }
+
+/*
+    Adjust the default color of the raw editor to be more Rock like.
+*/
+
+textarea.ce-rawtool__textarea {
+    background-color: #f8f8f8;
+    color: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+}

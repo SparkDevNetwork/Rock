@@ -16,10 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Web.Cache
 {
@@ -70,6 +72,16 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? ParentLocationId { get; private set; }
 
+        /// <summary>
+        /// Gets a collection of child location identifiers. This property
+        /// will only return the immediate descendants of this location.
+        /// </summary>
+        /// <value>
+        /// A collection of location identifiers.
+        /// </value>
+        [DataMember]
+        public List<int> ChildLocationIds { get; private set; }
+
         /// <inheritdoc cref="Rock.Model.Location.IsActive" />
         [DataMember]
         public bool IsActive { get; private set; }
@@ -86,8 +98,23 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? PrinterDeviceId { get; internal set; }
 
+        /// <inheritdoc cref="Rock.Model.Location.GeoPoint "/>
+        public DbGeography GeoPoint { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.Location.GeoFence "/>
+        public DbGeography GeoFence { get; private set; }
+
         /// <inheritdoc cref="Rock.Model.Location.ParentLocation" />
         public NamedLocationCache ParentLocation => this.ParentLocationId.HasValue ? NamedLocationCache.Get( ParentLocationId.Value ) : null;
+
+        /// <summary>
+        /// Gets a collection of cached child locations. This property will
+        /// only return the immediate descendants of this location.
+        /// </summary>
+        /// <value>
+        /// A collection of cached locations.
+        /// </value>
+        public List<NamedLocationCache> ChildLocations => ChildLocationIds.Select( Get ).Where( l => l != null ).ToList();
 
         #endregion Properties
 
@@ -154,6 +181,63 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets all descendant location identifers. This includes direct child
+        /// locations, grand-child locations, etc. It does not include itself.
+        /// </summary>
+        /// <returns>An enumeration of location identifiers.</returns>
+        public IEnumerable<int> GetAllDescendantLocationIds()
+        {
+            var locationIds = new HashSet<int>();
+
+            GetAllDescendantLocationIds( locationIds );
+
+            return locationIds;
+        }
+
+        /// <summary>
+        /// Gets all descendant location identifiers by adding them to the
+        /// HashSet.
+        /// </summary>
+        /// <param name="locationIds">The set of location identifiers.</param>
+        internal void GetAllDescendantLocationIds( HashSet<int> locationIds )
+        {
+            // Don't use ChildLocations property since it returns a List<>
+            // which causes an unnecessary allocation.
+            var childLocations = ChildLocationIds.Select( Get ).Where( l => l != null ).ToList();
+
+            foreach ( var location in childLocations )
+            {
+                // Only descend if we haven't already added this location.
+                if ( locationIds.Add( location.Id ) )
+                {
+                    location.GetAllDescendantLocationIds( locationIds );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets all descendant location identifiers by adding them to the
+        /// HashSet.
+        /// </summary>
+        /// <param name="locationSet">The set of location identifiers.</param>
+        internal void GetAllDescendantLocationIds( Dictionary<int, NamedLocationCache> locationSet )
+        {
+            // Don't use ChildLocations property since it returns a List<>
+            // which causes an unnecessary allocation.
+            var childLocations = ChildLocationIds.Select( Get ).Where( l => l != null ).ToList();
+
+            foreach ( var location in childLocations )
+            {
+                // Only descend if we haven't already added this location.
+                if ( !locationSet.ContainsKey( location.Id ) )
+                {
+                    locationSet.Add( location.Id, location );
+                    location.GetAllDescendantLocationIds( locationSet );
+                }
+            }
+        }
+
+        /// <summary>
         /// The amount of time that this item will live in the cache before expiring. If null, then the
         /// default lifespan is used.
         /// </summary>
@@ -211,6 +295,9 @@ namespace Rock.Web.Cache
             this.FirmRoomThreshold = location.FirmRoomThreshold;
             this.SoftRoomThreshold = location.SoftRoomThreshold;
             this.PrinterDeviceId = location.PrinterDeviceId;
+            this.GeoPoint = location.GeoPoint;
+            this.GeoFence = location.GeoFence;
+            this.ChildLocationIds = location.ChildLocations.Select( l => l.Id ).ToList();
         }
 
         /// <summary>

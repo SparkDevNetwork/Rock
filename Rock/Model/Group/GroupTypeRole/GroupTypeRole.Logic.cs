@@ -16,6 +16,8 @@
 //
 
 using System.Data.Entity;
+
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -30,8 +32,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            // doesn't apply
-            return null;
+            return GroupTypeRoleCache.Get( Id );
         }
 
         /// <summary>
@@ -45,7 +46,16 @@ namespace Rock.Model
             {
                 GroupTypeCache.UpdateCachedEntity( this.GroupTypeId.Value, EntityState.Modified );
             }
+
+            GroupTypeRoleCache.UpdateCachedEntity( Id, entityState );
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => GroupType ?? base.ParentAuthority;
 
         #endregion
     }

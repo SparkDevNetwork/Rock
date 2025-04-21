@@ -95,5 +95,21 @@ namespace Rock.Bus.Transport
         }
 
         #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the destination address used for sending messages to the
+        /// named queue.
+        /// </summary>
+        /// <param name="bus">The bus this transport is handling communication for.</param>
+        /// <param name="queueName">The name of the queue.</param>
+        /// <returns>An instance of <see cref="Uri"/> if the queue was valid; otherwise <c>null</c>.</returns>
+        public virtual Uri GetDestinationAddressForQueue( IBusControl bus, string queueName )
+        {
+            return null;
+        }
+
+        #endregion
     }
 }

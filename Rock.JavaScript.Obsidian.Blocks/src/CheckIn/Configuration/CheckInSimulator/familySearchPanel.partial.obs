@@ -1,0 +1,78 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div class="col-md-4">
+            <TextBox label="Search Term"
+                     v-model="searchTerm"
+                     rules="required">
+                <template #inputGroupPrepend>
+                    <div class="input-group-btn">
+                        <button type="button"
+                                class="btn btn-default dropdown-toggle"
+                                data-toggle="dropdown">
+                            {{ selectedSearchTypeText }} <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li v-for="item in searchTypeItems">
+                                <a href="#"
+                                   @click.prevent="searchType = item.value!">{{ item.text }}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </template>
+            </TextBox>
+        </div>
+
+        <div class="col-md-8">
+            <ol v-if="families">
+                <li v-for="item in families" :key="item.id ?? undefined">
+                    {{ item.name }} ({{ item.members?.map(m => m.person?.nickName).join(", ") }})
+                </li>
+            </ol>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { FamilyBag } from "@Obsidian/ViewModels/CheckIn/familyBag";
+    import { FamilySearchModeDescription } from "@Obsidian/Enums/CheckIn/familySearchMode";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+
+    const props = defineProps({
+        searchTerm: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        searchType: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        families: {
+            type: Array as PropType<FamilyBag[]>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:searchTerm", value: number): void;
+        (event: "update:searchType", value: number): void;
+    }>();
+
+    const searchTerm = useVModelPassthrough(props, "searchTerm", emit);
+    const searchType = useVModelPassthrough(props, "searchType", emit);
+
+    const searchTypeItems = enumToListItemBag(FamilySearchModeDescription);
+
+    if (!searchType.value && searchTypeItems.length > 0 && searchTypeItems[0].value) {
+        searchType.value = searchTypeItems[0].value;
+    }
+
+    const selectedSearchTypeText = computed((): string => {
+        return searchTypeItems.find(item => item.value === searchType.value)?.text ?? "Unknown";
+    });
+</script>

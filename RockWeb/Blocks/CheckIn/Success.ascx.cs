@@ -33,6 +33,8 @@ using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
+using CheckInLabel = Rock.CheckIn.CheckInLabel;
+
 namespace RockWeb.Blocks.CheckIn
 {
     /// <summary>
@@ -119,8 +121,6 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
                 NavigateToHomePage();
@@ -138,11 +138,14 @@ namespace RockWeb.Blocks.CheckIn
                         LogException( ex );
                         if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                         {
+                            base.OnLoad( e );
                             throw;
                         }
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

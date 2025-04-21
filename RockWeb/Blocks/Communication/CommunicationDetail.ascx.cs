@@ -36,6 +36,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -261,8 +262,6 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbTemplateCreated.Visible = false;
 
             if ( Page.IsPostBack )
@@ -341,6 +340,8 @@ namespace RockWeb.Blocks.Communication
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -1962,7 +1963,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( showEmailTab )
             {
-                sb.AppendLine( "<div id='emailTabContent' class='tab-pane h-100 d-flex flex-column active'>" );
+                sb.AppendLine( "<div id='emailTabContent' class='tab-pane h-100 active'>" );
                 sb.AppendLine( "<div class='row'>" );
 
                 AppendStaticControlMediumData( sb, "From",
@@ -1983,8 +1984,8 @@ namespace RockWeb.Blocks.Communication
                     sb.Append( "<div class='row'><div class='col-md-12'><ul>" );
                     foreach ( var binaryFile in emailAttachments.Select( a => a.BinaryFile ).ToList() )
                     {
-                        sb.AppendFormat( "<li><a target='_blank' rel='noopener noreferrer' href='{0}GetFile.ashx?id={1}'>{2}</a></li>",
-                            System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFile.Id, binaryFile.FileName );
+                        sb.AppendFormat( "<li><a target='_blank' rel='noopener noreferrer' href='{0}'>{1}</a></li>",
+                            FileUrlHelper.GetFileUrl( binaryFile.Id ), binaryFile.FileName );
                     }
                     sb.Append( "</ul></div></div>" );
                 }
@@ -2771,7 +2772,7 @@ namespace RockWeb.Blocks.Communication
             {
                 // since we order by ModifiedDateTime this will end up ignoring any order recipient records for the personid
                 // NOTE: We tried to do this in SQL but it caused performance issues, so we'll do it in C# instead.
-                recipients.AddOrIgnore( recipient.PersonId, recipient );
+                recipients.TryAdd( recipient.PersonId, recipient );
             }
 
             builder.FillDataColumnValues( dataTable, recipients );

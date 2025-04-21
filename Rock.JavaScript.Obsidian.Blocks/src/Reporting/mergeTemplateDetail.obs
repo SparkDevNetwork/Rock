@@ -1,22 +1,23 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
-    <DetailBlock v-if="!blockError"
+    <DetailBlock v-if="!blockError && isBlockVisible"
                  v-model:mode="panelMode"
                  :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="MergeTemplate"
-                 :isAuditHidden="false"
+                 entityTypeName="Merge Template"
+                 :isAuditHidden="true"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="false"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -113,7 +114,11 @@
     });
 
     const options = computed((): MergeTemplateDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? {} as MergeTemplateDetailOptionsBag;
+    });
+
+    const isBlockVisible = computed((): boolean => {
+        return config.options?.isBlockVisible === true;
     });
 
     // #endregion

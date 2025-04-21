@@ -19,22 +19,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
 using Rock.AI.Classes.ChatCompletions;
 using Rock.AI.Classes.TextCompletions;
-using Rock.AI.Provider;
 using Rock.Data;
-using Rock.Media;
 using Rock.Model;
-using Rock.Web.UI;
-using Rock.Workflow;
 
 namespace Rock.Lava.Shortcodes
 {
     /// <summary>
-    /// Lava shortcode for displaying scripture links
+    /// Lava shortcode for displaying AI Completions.
     /// </summary>
     [LavaShortcodeMetadata(
         Name = "AI Completion (Experimental)",
@@ -66,6 +60,11 @@ namespace Rock.Lava.Shortcodes
             /// The completion type to use (text or chat).
             /// </summary>
             public const string Type = "type";
+
+            /// <summary>
+            /// The AI Provider to use. If not specified, the first active provider will be used.
+            /// </summary>
+            public const string Provider = "provider";
         }
 
         /// <summary>
@@ -93,6 +92,7 @@ so you can customize this to be exactly what you want.</p>
     <li><strong>model</strong> (default model) - The model you would like to use to generate your response. The default model will be used if a value is not provided.</li>
     <li><strong>temperature</strong> (default) - The level of randomness or creativity in the generated text. See documentation for your provider for valid values.</li>
     <li><strong>type</strong> (chat) - The completion type to use. Valid values are text/chat.</li>
+    <li><strong>provider</strong> (default provider) - The identifier of the AI Provider to use. The first active provider will be used if a value is not specified.</li>
 </ul>
 ";
 
@@ -145,45 +145,85 @@ so you can customize this to be exactly what you want.</p>
         /// <param name="result">The result.</param>
         public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
-            var currentPerson = GetCurrentPerson( context );
-            
-
-            // Get the active AI provider
-            var activeComponent = Rock.AI.Provider.AIProviderContainer.GetActiveComponent();
-            if ( activeComponent != null )
+            // Get parameter values.
+            var parms = new Dictionary<string, string>
             {
-                var parms = ParseMarkup( _markup, context );
+                { ParameterKeys.Model, "" },
+                { ParameterKeys.Temperature, "-1" },
+                { ParameterKeys.Type, "chat" }
+            };
 
-                // Call the appropriate completion type.
-                if ( parms[ParameterKeys.Type] == "text" )
+            LavaHelper.ParseCommandMarkup( _markup, context, parms );
+
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+
+            var providerIdentifier = parms.GetValueOrNull( ParameterKeys.Provider );
+            var provider = GetProvider( providerIdentifier, rockContext );
+
+            if ( provider == null )
+            {
+                if ( providerIdentifier.IsNotNullOrWhiteSpace() )
                 {
-                    ProcessTextCompletion( activeComponent, parms, context, result );
+                    throw new Exception( "The specified AI provider is not available.",
+                        new Exception( $"The provider identifier does not refer to an active provider. [provider=\"{providerIdentifier}\"]" ) );
                 }
                 else
                 {
-                    ProcessChatCompletion( activeComponent, parms, context, result );
+                    throw new Exception( "There is no active AI provider configured." );
                 }
+            }
+
+            // Call the appropriate completion type.
+            if ( parms.GetValueOrNull( ParameterKeys.Type ) == "text" )
+            {
+                ProcessTextCompletion( provider, parms, context, result );
             }
             else
             {
-                result.WriteLine( "There is no active AI provider configured." );
+                ProcessChatCompletion( provider, parms, context, result );
             }
+        }
+
+        private AIProvider GetProvider( string providerComponentId, RockContext rockContext )
+        {
+            AIProvider provider;
+
+            // Get the active AI provider
+            var providerService = new AIProviderService( rockContext );
+
+            if ( providerComponentId.IsNullOrWhiteSpace() )
+            {
+                // Use the first active provider.
+                provider = providerService.GetActiveProvider();
+            }
+            else
+            {
+                // Get the provider by Guid or ID...
+                provider = providerService.Get( providerComponentId, allowIntegerIdentifier: true );
+
+                if ( provider == null )
+                {
+                    // ...or try to match by name.
+                    provider = providerService.Queryable().FirstOrDefault( p => p.Name.Equals( providerComponentId, StringComparison.OrdinalIgnoreCase ) );
+                }
+            }
+
+            return provider;
         }
 
         /// <summary>
         /// Processes a chat completion request.
         /// </summary>
-        /// <param name="component"></param>
+        /// <param name="provider"></param>
         /// <param name="parms"></param>
         /// <param name="context"></param>
         /// <param name="result"></param>
-        private void ProcessChatCompletion( AIProviderComponent component, Dictionary<string,string> parms, ILavaRenderContext context, TextWriter result )
+        private void ProcessChatCompletion( AIProvider provider, Dictionary<string, string> parms, ILavaRenderContext context, TextWriter result )
         {
             // Get contents of the prompt
             using ( TextWriter writer = new StringWriter() )
             {
                 base.OnRender( context, writer );
-                
 
                 var chatCompletionsRequest = new ChatCompletionsRequest();
                 chatCompletionsRequest.Messages.Add( new ChatCompletionsRequestMessage() { Role = Rock.Enums.AI.ChatMessageRole.User, Content = writer.ToString().Trim() } );
@@ -200,7 +240,18 @@ so you can customize this to be exactly what you want.</p>
                 }
 
                 // Make call
-                var chatResponse = Task.Run( () => component.GetChatCompletions( chatCompletionsRequest ) ).Result;
+                var component = provider.GetAIComponent();
+
+                ChatCompletionsResponse chatResponse = null;
+
+                try
+                {
+                    chatResponse = Task.Run( () => component.GetChatCompletions( provider, chatCompletionsRequest ) ).Result;
+                }
+                catch ( Exception ex )
+                {
+                    throw ex.InnerException ?? ex;
+                }
 
                 if ( chatResponse.IsSuccessful )
                 {
@@ -211,7 +262,7 @@ so you can customize this to be exactly what you want.</p>
                 }
                 else
                 {
-                    result.WriteLine( $"Error: {chatResponse.ErrorMessage}" );
+                    throw new Exception( chatResponse.ErrorMessage );
                 }
             }
         }
@@ -219,11 +270,11 @@ so you can customize this to be exactly what you want.</p>
         /// <summary>
         /// Processes a text completion request.
         /// </summary>
-        /// <param name="component"></param>
+        /// <param name="provider"></param>
         /// <param name="parms"></param>
         /// <param name="context"></param>
         /// <param name="result"></param>
-        private void ProcessTextCompletion( AIProviderComponent component, Dictionary<string, string> parms, ILavaRenderContext context, TextWriter result )
+        private void ProcessTextCompletion( AIProvider provider, Dictionary<string, string> parms, ILavaRenderContext context, TextWriter result )
         {
             // Get contents of the prompt
             using ( TextWriter writer = new StringWriter() )
@@ -245,7 +296,8 @@ so you can customize this to be exactly what you want.</p>
                 }
 
                 // Make call
-                var chatResponse = Task.Run( () => component.GetTextCompletions( textCompletionsRequest ) ).Result;
+                var component = provider.GetAIComponent();
+                var chatResponse = Task.Run( () => component.GetTextCompletions( provider, textCompletionsRequest ) ).Result;
 
                 if ( chatResponse.IsSuccessful )
                 {
@@ -259,79 +311,6 @@ so you can customize this to be exactly what you want.</p>
                     result.WriteLine( $"Error: {chatResponse.ErrorMessage}" );
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets the current person.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private static Person GetCurrentPerson( ILavaRenderContext context )
-        {
-            // First check for a person override value included in lava context
-            var currentPerson = context.GetMergeField( "CurrentPerson", null ) as Person;
-
-            if ( currentPerson == null )
-            {
-                var httpContext = HttpContext.Current;
-
-                if ( context != null && httpContext.Items.Contains( "CurrentPerson" ) )
-                {
-                    currentPerson = httpContext.Items["CurrentPerson"] as Person;
-                }
-            }
-
-            return currentPerson;
-        }
-
-        /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
-        {
-            // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
-
-            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
-
-            return ParseResolvedMarkup( resolvedMarkup );
-        }
-
-        /// <summary>
-        /// Parses the resolved markup to get the passed parameters.
-        /// </summary>
-        /// <param name="resolvedMarkup">The resolved markup.</param>
-        /// <returns>A dictionary of all the parameters and values.</returns>
-        internal static Dictionary<string, string> ParseResolvedMarkup( string resolvedMarkup )
-        {
-            // Initialize default parameter values.
-            var parms = new Dictionary<string, string>
-            {
-                { ParameterKeys.Model, "" },
-                { ParameterKeys.Temperature, "-1" },
-                { ParameterKeys.Type, "chat" }
-            };
-
-            // Parse each parameter name and value in the format of name:'value'
-            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            foreach ( var item in markupItems )
-            {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-
-                if ( itemParts.Length > 1 )
-                {
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
-                }
-            }
-
-            return parms;
         }
 
         #endregion

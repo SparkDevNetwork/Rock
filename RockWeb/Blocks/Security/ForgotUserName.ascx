@@ -15,10 +15,11 @@
             <Rock:RockTextBox ID="tbEmail" runat="server" Label="Enter your email address" Required="true" DisplayRequiredIndicator="false"></Rock:RockTextBox>
         </fieldset>
 
-        <Rock:Captcha ID="cpCaptcha" runat="server" />
-
         <div class="actions">
-            <asp:Button ID="btnSend" runat="server" Text="Email me reset instructions" CssClass="btn btn-primary" OnClick="btnSend_Click" />
+            <asp:Button ID="btnSend" runat="server" Text="Email me reset instructions" CssClass="btn btn-primary" OnClick="btnSend_Click" Visible="false" />
+            <div id="pnlCaptcha" runat="server" class="form-group">
+                <Rock:Captcha ID="cpCaptcha" runat="server" OnTokenReceived="cpCaptcha_TokenReceived" />
+            </div>
         </div>
 
     </asp:Panel>

@@ -29,6 +29,9 @@ import { FilterOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollect
  * Content Collection View block.
  */
 export type CustomSettingsBag = {
+    /** Gets or sets a value indicating whether to auto focus on the searchbar. */
+    autoFocus: boolean;
+
     /**
      * Gets or sets a value indicating whether results with matching
      * request segments should be boosted.
@@ -64,6 +67,9 @@ export type CustomSettingsBag = {
      * by source.
      */
     groupResultsBySource: boolean;
+
+    /** Whether or not to include unapproved items in the search results. */
+    includeUnapproved: boolean;
 
     /**
      * Gets or sets the template that will be used to render each individual

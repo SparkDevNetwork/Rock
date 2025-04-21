@@ -321,8 +321,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 return null;
             }
 
-            var dataViewService = new DataViewService( rockContext );
-            var dataview = dataViewService.Get( alertType.DataViewId.Value );
+            var dataview = DataViewCache.Get( alertType.DataViewId.Value );
 
             if ( dataview == null )
             {
@@ -331,7 +330,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             }
 
             // We can use the dataview to get the person query
-            var dataViewGetQueryArgs = new DataViewGetQueryArgs
+            var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
             {
                 DbContext = rockContext
             };

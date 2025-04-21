@@ -65,7 +65,7 @@ import { GridAction } from "@Obsidian/Types/Controls/grid";
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-        /**
+    /**
     * The custom actions supported by this grid.
     */
     const customActions = computed((): GridAction[] => {

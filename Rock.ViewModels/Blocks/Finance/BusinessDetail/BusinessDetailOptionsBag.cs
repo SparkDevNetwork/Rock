@@ -27,14 +27,6 @@ namespace Rock.ViewModels.Blocks.Finance.BusinessDetail
     public class BusinessDetailOptionsBag
     {
         /// <summary>
-        /// Gets or sets the search keys.
-        /// </summary>
-        /// <value>
-        /// The search keys.
-        /// </value>
-        public List<SearchKeyBag> SearchKeys { get; set; }
-
-        /// <summary>
         /// Gets or sets the search types list.
         /// </summary>
         /// <value>
@@ -49,5 +41,13 @@ namespace Rock.ViewModels.Blocks.Finance.BusinessDetail
         /// The tag category unique identifier.
         /// </value>
         public Guid? TagCategoryGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [display tags].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display tags]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayTags { get; set; }
     }
 }

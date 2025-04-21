@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,24 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( Interaction.InteractionQueryableAttributeValue ), nameof( InteractionAttributeValues ) )]
+    public partial class Interaction
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<InteractionQueryableAttributeValue> InteractionAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class InteractionQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -112,6 +131,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.Campaign = source.Campaign;
+            target.CampaignValueId = source.CampaignValueId;
             target.ChannelCustom1 = source.ChannelCustom1;
             target.ChannelCustom2 = source.ChannelCustom2;
             target.ChannelCustomIndexed1 = source.ChannelCustomIndexed1;
@@ -128,12 +148,14 @@ namespace Rock.Model
             target.InteractionSummary = source.InteractionSummary;
             target.InteractionTimeToServe = source.InteractionTimeToServe;
             target.Medium = source.Medium;
+            target.MediumValueId = source.MediumValueId;
             target.Operation = source.Operation;
             target.PersonalDeviceId = source.PersonalDeviceId;
             target.PersonAliasId = source.PersonAliasId;
             target.RelatedEntityId = source.RelatedEntityId;
             target.RelatedEntityTypeId = source.RelatedEntityTypeId;
             target.Source = source.Source;
+            target.SourceValueId = source.SourceValueId;
             target.Term = source.Term;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

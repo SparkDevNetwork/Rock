@@ -95,17 +95,28 @@ namespace Rock.Blocks.Event
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var registrationListLava = new RegistrationListLavaBox();
-            using ( RockContext rockContext = new RockContext() )
+            var registrationListLava = new RegistrationListLavaBox
             {
-                var registrationService = new RegistrationService( rockContext );
-                List<Registration> registrationList = Registrations( registrationService );
+                Html = GetRegistrationHtml()
+            };
 
-                var mergeFields = this.RequestContext.GetCommonMergeFields();
-                mergeFields.Add( "Registrations", registrationList );
-                registrationListLava.Html = $@"<div> {LavaTemplate.ResolveMergeFields( mergeFields )}</div>";
-            }
             return registrationListLava;
+        }
+
+        /// <inheritdoc/>
+        protected override string GetInitialHtmlContent()
+        {
+            return GetRegistrationHtml();
+        }
+
+        private string GetRegistrationHtml()
+        {
+            var registrationService = new RegistrationService( RockContext );
+            List<Registration> registrationList = Registrations( registrationService );
+
+            var mergeFields = this.RequestContext.GetCommonMergeFields();
+            mergeFields.Add( "Registrations", registrationList );
+            return $@"<div> {LavaTemplate.ResolveMergeFields( mergeFields )}</div>";
         }
 
         private List<Registration> Registrations( RegistrationService registrationService )

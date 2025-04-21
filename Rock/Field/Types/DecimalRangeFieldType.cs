@@ -30,6 +30,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a pair of decimal values
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M11.73,8H10.47a1.24,1.24,0,0,1-.9-.39,1.32,1.32,0,0,1-.37-.93V2.73a1.32,1.32,0,0,1,.37-.93,1.24,1.24,0,0,1,.9-.39h1.26a1.24,1.24,0,0,1,.9.39,1.36,1.36,0,0,1,.37.93V6.66a1.36,1.36,0,0,1-.37.93A1.24,1.24,0,0,1,11.73,8ZM10.47,2.73V6.66h1.26V2.73Z""/><rect x=""7.3"" y=""6.66"" width=""1.27"" height=""1.31""/><path d=""M5.4,6.66V1.41H4.14v.66H2.87V3.38H4.14V6.66H2.87V8h3.8V6.66Z""/><path d=""M13.61,11.58a.69.69,0,0,1,0,1l-2.27,2a.68.68,0,0,1-.91-1l1-.86H4.62l1,.86a.68.68,0,0,1-.91,1l-2.27-2a.69.69,0,0,1,0-1l2.27-2a.67.67,0,0,1,1,.05.68.68,0,0,1,0,1l-1,.85h6.76l-1-.85a.68.68,0,0,1,0-1,.67.67,0,0,1,1-.05Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DECIMAL_RANGE )]

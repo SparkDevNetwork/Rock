@@ -1,0 +1,754 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="check-in-page">
+        <PageHeader :hasBack="false"
+                    :hideNavigation="true" />
+
+        <section class="page-body">
+            <div class="configuration-screen">
+                <MainPanel v-if="isManualSetupVisible"
+                           title="Check-in Options"
+                           subtitle="Select the options for your desired check-in experience"
+                           :configuration="null">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DropDownList label="Campus"
+                                          v-model="campusId"
+                                          :items="campusItems"
+                                          showBlankItem />
+                        </div>
+
+                        <div class="col-md-6">
+                            <DropDownList label="Kiosk"
+                                          v-model="kioskId"
+                                          :items="kioskItems"
+                                          showBlankItem />
+                        </div>
+                    </div>
+
+                    <ContentTransition>
+                        <div v-if="isSavedConfigurationsVisible" class="saved-configurations">
+                            <div class="header">
+                                <h4>Saved Kiosk Templates</h4>
+
+                                <RockButton btnType="default"
+                                            btnSize="sm"
+                                            class="custom-configuration-button"
+                                            @click="onCustomKioskTemplate">
+                                    Custom Kiosk Template
+                                </RockButton>
+                            </div>
+
+                            <div v-if="savedConfigurations.length > 0" class="button-list">
+                                <RockButton v-for="cfg in savedConfigurations"
+                                            btnType="primary"
+                                            class="saved-configuration-button illustrated-button"
+                                            @click="onSavedConfigurationClick(cfg, $event)">
+                                    <span class="title">{{ cfg.name }}</span>
+                                    <span class="subtitle">{{ cfg.description }}</span>
+
+                                    <span v-if="blockConfiguration.isEditAllowed"
+                                          class="btn btn-info edit-saved-configuration-button"
+                                          @click="onEditConfigurationClick(cfg)">
+                                        Edit
+                                    </span>
+                                </RockButton>
+                            </div>
+
+                            <div v-else>
+                                No saved templates currently exist.
+                            </div>
+                        </div>
+
+                        <div v-if="isCustomConfigurationVisible" class="custom-configuration">
+                            <div class="header">
+                                <h4>Check-in Setup Options</h4>
+
+                                <RockButton btnType="default"
+                                            class="save-new-configuration-button"
+                                            :disabled="!isCustomConfigurationValid"
+                                            @click="onSaveNewKioskTemplateClick">
+                                    Save New Kiosk Template
+                                </RockButton>
+
+                                <RockButton btnType="default"
+                                            class="saved-configurations-button"
+                                            @click="onSavedKioskTemplates">
+                                    Saved Kiosk Templates
+                                </RockButton>
+                            </div>
+
+                            <ManualSetup v-model="manualOptions"
+                                         :kiosk="selectedKiosk">
+                                <template #additionalOptions>
+                                    <DropDownList v-if="hasCamera"
+                                                  v-model="selectedCamera"
+                                                  label="Select Camera for QR Code Scanning"
+                                                  :items="cameraItems" />
+                                </template>
+                            </ManualSetup>
+                        </div>
+                    </ContentTransition>
+                </MainPanel>
+
+                <div v-if="geoMessage" class="notice">
+                    <NotificationBox alertType="info">
+                        {{ geoMessage }}
+                    </NotificationBox>
+                </div>
+
+                <div v-if="errorMessage" class="notice">
+                    <NotificationBox alertType="danger">
+                        {{ errorMessage }}
+                    </NotificationBox>
+                </div>
+
+                <Modal v-model="isEditConfigurationVisible"
+                       :title="editConfigurationTitle"
+                       saveText="Save"
+                       @save="onEditConfigurationSaveClick">
+                    <TextBox v-model="editConfigurationName"
+                             label="Name"
+                             rules="required" />
+
+                    <TextBox v-model="editConfigurationDescription"
+                             label="Description"
+                             textMode="multiline" />
+
+
+                    <CheckBoxList v-model="editConfigurationCampuses"
+                                  label="Campus"
+                                  help="The campuses this configuration can be used at. If none are specified then all campuses can use the configuration."
+                                  horizontal
+                                  :items="campusItems" />
+
+                    <ManualSetup v-if="editConfigurationOptions"
+                                 v-model="editConfigurationOptions"
+                                 :kiosk="selectedKiosk" />
+
+                    <template #customButtons>
+                        <RockButton v-if="editConfigurationId"
+                                    btnType="danger"
+                                    @click="onEditConfigurationDeleteClick">
+                            Delete
+                        </RockButton>
+                    </template>
+                </Modal>
+            </div>
+        </section>
+
+        <PageFooter title=""
+                    hideConfigure
+                    :actions="customActions" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, toRaw, watch, onMounted } from "vue";
+    import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import MainPanel from "./CheckInKiosk/mainPanel.partial.obs";
+    import ManualSetup from "./CheckInKioskSetup/manualSetup.partial.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
+    import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { getCameraItems, getCurrentPosition, isHtmlCameraAvailable } from "./CheckInKiosk/utils.partial";
+    import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { onConfigurationValuesChanged, setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
+    import { CheckInKioskOptionsBag, KioskButton } from "./CheckInKiosk/types.partial";
+    import { SavedCheckInConfigurationBag } from "@Obsidian/ViewModels/CheckIn/savedCheckInConfigurationBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { SavedCheckInConfigurationSettingsBag } from "@Obsidian/ViewModels/CheckIn/savedCheckInConfigurationSettingsBag";
+    import { SavedKioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/savedKioskConfigurationBag";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+
+    type TemporaryConfig = {
+        timestamp?: number;
+
+        campusId?: string;
+
+        kioskId?: string;
+
+        selectedCamera: string;
+
+        manualOptions?: SavedKioskConfigurationBag;
+    };
+
+    const blockConfiguration = useConfigurationValues<CheckInKioskOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const isManualSetupVisible = ref(false);
+    const errorMessage = ref("");
+    const geoMessage = ref("");
+    const allSavedConfigurations = ref(blockConfiguration.savedConfigurations ?? []);
+
+    const campusId = ref<string>("");
+    const kioskId = ref<string>("");
+
+    const isUsingCustomConfiguration = ref(false);
+    const manualOptions = ref<SavedCheckInConfigurationSettingsBag>();
+
+    const selectedCamera = ref("");
+    const cameraItems = ref<ListItemBag[]>([]);
+
+    const customActions = ref<KioskButton[]>([]);
+
+    let hasGeoError = false;
+
+    const isEditConfigurationVisible = ref(false);
+    const editConfigurationTitle = ref("Save New Configuration");
+    let editConfigurationId = "";
+    const editConfigurationName = ref("");
+    const editConfigurationDescription = ref("");
+    const editConfigurationCampuses = ref<string[]>([]);
+    const editConfigurationOptions = ref<SavedCheckInConfigurationSettingsBag>();
+
+    // #region Computed Values
+
+    /** The list of campuses to show in the campus picker. */
+    const campusItems = computed((): ListItemBag[] => {
+        if (!blockConfiguration.campuses) {
+            return [];
+        }
+
+        return blockConfiguration
+            .campuses
+            .filter(c => !!c.id)
+            .map(c => ({
+                value: c.id,
+                text: c.name,
+            }));
+    });
+
+    /** The list of kiosks to show in the kiosk picker. */
+    const kioskItems = computed((): ListItemBag[] => {
+        const id: string = campusId.value || "";
+
+        if (!blockConfiguration.campuses) {
+            return [];
+        }
+
+        const campus = blockConfiguration.campuses
+            .find(c => c.id === id);
+
+        if (!campus?.kiosks) {
+            return [];
+        }
+
+        return campus.kiosks
+            .map(k => ({
+                value: k.id,
+                text: k.name
+            }));
+    });
+
+    const savedConfigurations = computed((): SavedCheckInConfigurationBag[] => {
+        return allSavedConfigurations.value
+            .filter(cfg => !cfg.campuses
+                || cfg.campuses.length === 0
+                || cfg.campuses.includes(campusId.value));
+    });
+
+    /** True if the saved configurations panel is visible on screen. */
+    const isSavedConfigurationsVisible = computed((): boolean => {
+        return !!kioskId.value && !isUsingCustomConfiguration.value;
+    });
+
+    /** True if the custom configuration panel is visible on screen. */
+    const isCustomConfigurationVisible = computed((): boolean => {
+        return !!kioskId.value && isUsingCustomConfiguration.value;
+    });
+
+    /** True if the custom configuration options are valid and we can proceed. */
+    const isCustomConfigurationValid = computed((): boolean => {
+        return !!kioskId.value
+            && !!manualOptions.value
+            && !!manualOptions.value.themeName
+            && !!manualOptions.value.templateId
+            && !!manualOptions.value.areaIds
+            && manualOptions.value.areaIds.length > 0;
+    });
+
+    /** The currently selected kiosk or undefined. */
+    const selectedKiosk = computed((): WebKioskBag | undefined => {
+        const campus = blockConfiguration.campuses
+            ?.find(c => c.id === campusId.value);
+
+        return campus?.kiosks
+            ?.find(k => k.id === kioskId.value);
+    });
+
+    /** Determines if in-browser HTML5 camera support should be enabled. */
+    const hasCamera = computed((): boolean => {
+        return isHtmlCameraAvailable(selectedKiosk.value);
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Saves the kiosk configuration to local storage and then redirects to
+     * the kiosk page.
+     *
+     * @param configuration The kiosk configuration.
+     */
+    async function configureKiosk(configuration: KioskConfigurationBag, theme: string): Promise<void> {
+        if (!configuration.template?.id || !configuration.kiosk || !configuration.areas) {
+            await alert("Invalid configuraiton options.");
+            return;
+        }
+
+        const savedConfig: SavedKioskConfigurationBag = {
+            campusId: campusId.value,
+            templateId: configuration.template.id,
+            kioskId: configuration.kiosk.id,
+            areaIds: configuration.areas.map(a => a.id as string)
+        };
+
+        localStorage.setItem("Rock.CheckIn.CheckInKiosk.Configuration", JSON.stringify(savedConfig));
+
+        let url = blockConfiguration.kioskPageRoute;
+
+        if (!url) {
+            await alert("Block has not been fully configured.");
+            return;
+        }
+
+        if (blockConfiguration.currentTheme !== theme) {
+            if (url.includes("?")) {
+                url = `${url}&theme=${theme}`;
+            }
+            else {
+                url = `${url}?theme=${theme}`;
+            }
+        }
+
+        window.location.href = url;
+    }
+
+    /**
+     * Updates the actions available on the screen in the footer.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        if (!errorMessage.value && isCustomConfigurationVisible.value) {
+            actions.push({
+                type: "primary",
+                title: "Next",
+                key: "next",
+                class: "next-button",
+                disabled: !isCustomConfigurationValid.value,
+                handler: onNextClick
+            });
+        }
+
+        if (hasGeoError) {
+            actions.push({
+                type: blockConfiguration.isManualSetupAllowed ? "default" : "primary",
+                title: "Retry",
+                key: "retry",
+                class: "retry-button",
+                disabled: false,
+                handler: attemptConfigureByGeoLocation
+            });
+
+            if (blockConfiguration.isManualSetupAllowed) {
+                actions.push({
+                    type: "primary",
+                    title: "Manual Setup",
+                    key: "manual-setup",
+                    class: "manual-setup-button",
+                    disabled: false,
+                    handler: startManualSetup
+                });
+            }
+        }
+
+        customActions.value = actions;
+    }
+
+    /**
+     * Gets the camera items from the browser and updates the list of items.
+     */
+    async function updateCameraItems(): Promise<void> {
+        if (hasCamera.value) {
+            cameraItems.value = await getCameraItems();
+        }
+        else {
+            cameraItems.value = [];
+        }
+    }
+
+    /**
+     * Attempts to configure via Geo-location lookup. If this fails then it will
+     * switch to manual mode if that is enabled.
+     */
+    async function attemptConfigureByGeoLocation(): Promise<void> {
+        let position: GeolocationPosition;
+
+        geoMessage.value = "Identifying kiosk by location.";
+        hasGeoError = false;
+        errorMessage.value = "";
+
+        try {
+            position = await getCurrentPosition();
+
+            const request = {
+                latitude: position.coords.latitude.toFixed(4),
+                longitude: position.coords.longitude.toFixed(4)
+            };
+
+            const result = await invokeBlockAction<KioskConfigurationBag>("GetConfigurationByLocation", request);
+
+            if (!result.isSuccess || !result.data) {
+                throw new Error(result.errorMessage ?? "Unexpected error trying to find kiosk configuraiton.");
+            }
+
+            await configureKiosk(result.data, blockConfiguration.currentTheme ?? "");
+        }
+        catch (error) {
+            errorMessage.value = error instanceof Error
+                ? error.message
+                : "Unexpected error trying to determine location.";
+
+            hasGeoError = true;
+            geoMessage.value = "";
+
+            updateActions();
+        }
+    }
+
+    /**
+     * Starts the manual setup process. This clears any existing error states.
+     */
+    function startManualSetup(): void {
+        hasGeoError = false;
+        geoMessage.value = "";
+        errorMessage.value = "";
+        isManualSetupVisible.value = true;
+
+        updateActions();
+    }
+
+    /**
+     * Redirects to the current URL using a new theme selection. This also
+     * saves any configuration data to local storage so it can be restored when
+     * the block re-loads.
+     *
+     * @param theme The theme to use in the redirect URL.
+     */
+    function redirectForTheme(theme: string): void {
+        const url = new URL(window.location.href);
+        const tempConfig: TemporaryConfig = {
+            timestamp: Date.now(),
+            campusId: campusId.value,
+            kioskId: kioskId.value,
+            selectedCamera: selectedCamera.value,
+            manualOptions: manualOptions.value
+        };
+
+        try {
+            localStorage.setItem("Rock.CheckIn.CheckInKiosk.TemporaryConfiguration", JSON.stringify(tempConfig));
+        }
+        catch {
+            // Intentionally ignored, nothing we can do about it.
+        }
+
+        url.searchParams.set("theme", theme);
+
+        window.location.href = url.toString();
+    }
+
+    /**
+     * Sets the initial UI selection values based on the saved data.
+     */
+    function setInitialValues(): void {
+        try {
+            const json = localStorage.getItem("Rock.CheckIn.CheckInKiosk.Configuration");
+
+            if (!json) {
+                return;
+            }
+
+            const savedConfig = JSON.parse(json) as SavedKioskConfigurationBag;
+
+            if (savedConfig.campusId) {
+                campusId.value = savedConfig.campusId;
+            }
+
+            if (savedConfig.kioskId) {
+                kioskId.value = savedConfig.kioskId;
+            }
+
+            if (savedConfig.theme && blockConfiguration.themes) {
+                if (blockConfiguration.themes.some(t => t.value === savedConfig.theme)) {
+                    manualOptions.value = {
+                        ...manualOptions.value,
+                        themeName: savedConfig.theme
+                    };
+                }
+            }
+
+            manualOptions.value = savedConfig;
+        }
+        catch {
+            // If we can't load the saved config, just move on.
+            return;
+        }
+    }
+
+    /**
+     * Attempts to restore the temporary configuration from a theme selection
+     * redirect. If the temporary configuration was found then the UI state is
+     * restored.
+     */
+    function attemptRestoreOfTemporaryConfiguration(): void {
+        try {
+            const json = localStorage.getItem("Rock.CheckIn.CheckInKiosk.TemporaryConfiguration");
+            localStorage.removeItem("Rock.CheckIn.CheckInKiosk.TemporaryConfiguraiton");
+
+            if (!json) {
+                return;
+            }
+
+            const tempConfig: TemporaryConfig = JSON.parse(json);
+
+            // Configuration is only valid for 5 seconds.
+            if (!tempConfig.timestamp || tempConfig.timestamp + 5000 < Date.now()) {
+                return;
+            }
+
+            campusId.value = tempConfig.campusId ?? "";
+            kioskId.value = tempConfig.kioskId ?? "";
+            selectedCamera.value = tempConfig.selectedCamera ?? "";
+            manualOptions.value = tempConfig.manualOptions;
+
+            isUsingCustomConfiguration.value = true;
+        }
+        catch {
+            return;
+        }
+    }
+
+    /**
+     * Event handler for when the Custom Configuration button is clicked.
+     */
+    function onCustomKioskTemplate(): void {
+        isUsingCustomConfiguration.value = true;
+    }
+
+    /**
+     * Event handler for when the Saved Configurations button is clicked.
+     */
+    function onSavedKioskTemplates(): void {
+        isUsingCustomConfiguration.value = false;
+    }
+
+    /**
+     * Event handler for when the Save Configuration button is clicked.
+     */
+    function onSaveNewKioskTemplateClick(): void {
+        isEditConfigurationVisible.value = true;
+        editConfigurationId = "";
+        editConfigurationTitle.value = "Save New Configuration";
+        editConfigurationName.value = "";
+        editConfigurationDescription.value = "";
+        editConfigurationCampuses.value = [];
+        editConfigurationOptions.value = undefined;
+    }
+
+    /**
+     * Event handler for when the Save Configuration button is clicked.
+     */
+    function onEditConfigurationClick(config: SavedCheckInConfigurationBag): void {
+        isEditConfigurationVisible.value = true;
+        editConfigurationId = config.id ?? "";
+        editConfigurationTitle.value = "Edit Saved Configuration";
+        editConfigurationName.value = config.name ?? "";
+        editConfigurationDescription.value = config.description ?? "";
+        editConfigurationCampuses.value = config.campuses ?? [];
+        editConfigurationOptions.value = config.settings ?? undefined;
+    }
+
+    /**
+     * Event handler for when the Delete button is clicked in the edit
+     * configuration modal. Verify the action and then request that the server
+     * delete the configuration item.
+     */
+    async function onEditConfigurationDeleteClick(): Promise<void> {
+        if (!editConfigurationId) {
+            return;
+        }
+
+        if (!await confirmDelete("saved configuration")) {
+            return;
+        }
+
+        isEditConfigurationVisible.value = false;
+
+        const result = await invokeBlockAction("DeleteConfiguration", {
+            id: editConfigurationId
+        });
+
+        if (!result.isSuccess) {
+            await alert(result.errorMessage || "Unable to delete the saved configuration.");
+        }
+        else {
+            const index = allSavedConfigurations.value
+                .findIndex(c => c.id === editConfigurationId);
+
+            if (index >= 0) {
+                allSavedConfigurations.value.splice(index, 1);
+            }
+
+            isEditConfigurationVisible.value = false;
+        }
+    }
+
+    /**
+     * Handles the Save button inside the Save New Configuration modal.
+     * Construct the box that contains the data and thens end it to the block
+     * action to perform the save.
+     */
+    async function onEditConfigurationSaveClick(): Promise<void> {
+        const box: ValidPropertiesBox<SavedCheckInConfigurationBag> = {};
+        const options = editConfigurationOptions.value ?? manualOptions.value;
+        const settings: SavedCheckInConfigurationSettingsBag = {
+            templateId: options?.templateId,
+            themeName: options?.themeName,
+            areaIds: options?.areaIds
+        };
+
+        setPropertiesBoxValue(box, "id", editConfigurationId);
+        setPropertiesBoxValue(box, "name", editConfigurationName.value);
+        setPropertiesBoxValue(box, "description", editConfigurationDescription.value);
+        setPropertiesBoxValue(box, "campuses", editConfigurationCampuses.value);
+        setPropertiesBoxValue(box, "settings", settings);
+
+        const result = await invokeBlockAction<SavedCheckInConfigurationBag>("SaveConfiguration", { box: box });
+
+        if (result.isSuccess && result.data) {
+            if (!editConfigurationOptions.value) {
+                allSavedConfigurations.value.push(result.data);
+                isEditConfigurationVisible.value = false;
+                isUsingCustomConfiguration.value = false;
+            }
+            else {
+                const newConfigurationBag = result.data;
+                const index = allSavedConfigurations.value
+                    .findIndex(c => c.id === newConfigurationBag.id);
+
+                if (index >= 0) {
+                    allSavedConfigurations.value.splice(index, 1, newConfigurationBag);
+                }
+
+                isEditConfigurationVisible.value = false;
+            }
+        }
+        else {
+            alert(result.errorMessage || "Unable to save the configuration.");
+        }
+    }
+
+    /**
+     * Handles the click event for the list of saved configuration buttons.
+     *
+     * @param config The saved configuration item that was selected.
+     */
+    async function onSavedConfigurationClick(config: SavedCheckInConfigurationBag, event: MouseEvent): Promise<void> {
+        // Check if the user clicked our button or one of the nested buttons.
+        if (!(event.target instanceof HTMLElement) || event.target.closest(".btn") !== event.currentTarget) {
+            return;
+        }
+
+        const kiosk = selectedKiosk.value;
+        const template = blockConfiguration.templates
+            ?.find(a => a.id === config.settings?.templateId);
+        const areas = config.settings?.areaIds?.map(a => ({ id: a })) ?? [];
+        const themeName = config.settings?.themeName;
+
+        // Validate all our configuration, it's possible that the saved
+        // configuration is no longer valid.
+        if (!kiosk || !template || areas.length === 0 || !themeName) {
+            alert("Saved configuration is not valid.");
+            return;
+        }
+
+        const configuration: KioskConfigurationBag = {
+            kiosk: kiosk,
+            template: toRaw(template),
+            areas: areas
+        };
+
+        await configureKiosk(configuration, themeName);
+    }
+
+    /**
+     * Handles the click event for the Next button.
+     */
+    async function onNextClick(): Promise<void> {
+        const kiosk = selectedKiosk.value;
+        const template = blockConfiguration.templates
+            ?.find(a => a.id === manualOptions.value?.templateId);
+        const areas = manualOptions.value?.areaIds?.map(a => ({ id: a })) ?? [];
+        const themeName = manualOptions.value?.themeName;
+
+        // Validate all our configuration. This should never be possible
+        // but it also makes TypeScript happy.
+        if (!kiosk || !template || areas.length === 0 || !themeName) {
+            alert("Invalid configuration selections.");
+            return;
+        }
+
+        const configuration: KioskConfigurationBag = {
+            kiosk: kiosk,
+            template: toRaw(template),
+            areas: areas
+        };
+
+        await configureKiosk(configuration, themeName);
+    }
+
+    // #endregion
+
+    attemptRestoreOfTemporaryConfiguration();
+
+    watch(kioskId, () => {
+        updateCameraItems();
+    });
+
+    watch([isCustomConfigurationValid, isCustomConfigurationVisible, manualOptions], updateActions);
+
+    watch(manualOptions, (value, oldValue) => {
+        if (value?.themeName && value?.themeName !== oldValue?.themeName && value.themeName !== blockConfiguration.currentTheme) {
+            redirectForTheme(value.themeName);
+        }
+    });
+
+    onMounted(() => updateActions());
+
+    setInitialValues();
+
+    if (blockConfiguration.kioskConfiguration) {
+        configureKiosk(blockConfiguration.kioskConfiguration, blockConfiguration.currentTheme ?? "");
+    }
+    else if (blockConfiguration.isConfigureByLocationEnabled) {
+        attemptConfigureByGeoLocation();
+    }
+    else if (blockConfiguration.isManualSetupAllowed) {
+        isManualSetupVisible.value = true;
+    }
+    else {
+        errorMessage.value = "Manual configuration is not currently enabled.";
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -220,12 +221,12 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             SetPageParameters();
             _caseWorkRoleGuid = GetAttributeValue( AttributeKey.CaseWorkerRole ).AsGuidOrNull();
             LoadEditDetails();
             LoadViewDetails();
             ConfigureRaceAndEthnicityControls();
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -403,10 +404,16 @@ namespace RockWeb.Blocks.Finance
 
                     if ( _isNewRecord )
                     {
+                        var personIdParam = PageParameter( PageParameterKey.PersonId );
                         var queryParams = new Dictionary<string, string>
                         {
                             { "BenevolenceRequestId", this._benevolenceRequestId.ToString() }
                         };
+
+                        if ( !string.IsNullOrWhiteSpace( personIdParam ) )
+                        {
+                            queryParams.Add( PageParameterKey.PersonId, personIdParam );
+                        }
 
                         NavigateToCurrentPage( queryParams );
                     }
@@ -498,7 +505,15 @@ namespace RockWeb.Blocks.Finance
         {
             if ( _isNewRecord )
             {
-                NavigateToParentPage();
+                var parameters = new Dictionary<string, string>();
+                var personIdParam = PageParameter( PageParameterKey.PersonId );
+
+                if ( !string.IsNullOrWhiteSpace( personIdParam ) )
+                {
+                    parameters.Add( PageParameterKey.PersonId, personIdParam );
+                }
+
+                NavigateToParentPage( parameters );
             }
             else
             {
@@ -766,7 +781,15 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void lbViewCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            var parameters = new Dictionary<string, string>();
+            var personIdParam = PageParameter( PageParameterKey.PersonId );
+
+            if ( !string.IsNullOrWhiteSpace( personIdParam ) )
+            {
+                parameters.Add( PageParameterKey.PersonId, personIdParam );
+            }
+
+            NavigateToParentPage( parameters );
         }
 
         /// <summary>
@@ -780,7 +803,7 @@ namespace RockWeb.Blocks.Finance
             var benevolenceRequestDocument = e.Item.DataItem as BenevolenceRequestDocument;
             if ( benevolenceRequestDocument?.BinaryFile != null )
             {
-                var getFileUrl = string.Format( "{0}GetFile.ashx?guid={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), benevolenceRequestDocument.BinaryFile.Guid );
+                var getFileUrl = FileUrlHelper.GetFileUrl( benevolenceRequestDocument.BinaryFile.Guid );
 
                 uploadLink.NavigateUrl = getFileUrl;
                 uploadLink.Text = benevolenceRequestDocument.BinaryFile.FileName;
@@ -806,8 +829,9 @@ namespace RockWeb.Blocks.Finance
                 dtbAmount.Value = benevolenceResult.Amount;
                 hfInfoGuid.Value = e.RowKeyValue.ToString();
 
-                phViewResultAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( benevolenceResult, phViewResultAttributes, true, valViewResultsSummary.ValidationGroup, 2 );
+                avcViewResultAttributes.NumberOfColumns = 2;
+                avcViewResultAttributes.ValidationGroup = valViewResultsSummary.ValidationGroup;
+                avcViewResultAttributes.AddEditControls( benevolenceResult );
 
                 mdViewAddResult.SaveButtonText = "Save";
                 mdViewAddResult.Show();
@@ -845,8 +869,9 @@ namespace RockWeb.Blocks.Finance
             dtbAmount.Value = null;
             hfInfoGuid.Value = Guid.NewGuid().ToString();
 
-            phViewResultAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( MockBenevolenceResult, phViewResultAttributes, true, valViewResultsSummary.ValidationGroup, 2 );
+            avcViewResultAttributes.NumberOfColumns = 2;
+            avcViewResultAttributes.ValidationGroup = valViewResultsSummary.ValidationGroup;
+            avcViewResultAttributes.AddEditControls( MockBenevolenceResult );
 
             mdViewAddResult.SaveButtonText = "Save";
             mdViewAddResult.Show();
@@ -875,26 +900,31 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                var benevolenceResultInfo = new BenevolenceResult
+                benevolenceResult = new BenevolenceResult
                 {
-                    // We need the attributes and values so that we can populate them later
-                    Attributes = MockBenevolenceResult.Attributes,
-                    AttributeValues = MockBenevolenceResult.AttributeValues,
-
                     Amount = dtbAmount.Value,
-
                     ResultSummary = dtbResultSummary.Text
                 };
+
                 if ( resultType != null )
                 {
-                    benevolenceResultInfo.ResultTypeValueId = resultType.Value;
+                    benevolenceResult.ResultTypeValueId = resultType.Value;
                 }
 
-                benevolenceResultInfo.Guid = Guid.NewGuid();
-                benevolenceRequest.BenevolenceResults.Add( benevolenceResultInfo );
+                benevolenceResult.Guid = Guid.NewGuid();
+                benevolenceRequest.BenevolenceResults.Add( benevolenceResult );
             }
 
-            rockContext.SaveChanges();
+            benevolenceResult.LoadAttributes();
+            avcViewResultAttributes.GetEditValues( benevolenceResult );
+
+            rockContext.WrapTransaction(() =>
+            {
+                rockContext.SaveChanges();
+                benevolenceResult.SaveAttributeValues( rockContext );
+            } );
+
+
             BindResultsGrid();
 
             mdViewAddResult.Hide();
@@ -1139,6 +1169,8 @@ namespace RockWeb.Blocks.Finance
             var benevolenceTypeList = new BenevolenceTypeService( rockContext )
                 .Queryable()
                 .OrderBy( p => p.Name )
+                .AsEnumerable()
+                .Where( p => p.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 .ToList();
 
             // Load Benevolence Types and set the value from the Benevolence Request

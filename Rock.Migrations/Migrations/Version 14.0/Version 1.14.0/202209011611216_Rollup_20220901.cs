@@ -67,7 +67,9 @@ namespace Rock.Migrations
         /// </summary>
         private void UpdateAppleTvRoute()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.APPLE_TV_APPLICATION_SCREEN_DETAIL, "admin/cms/appletv-applications/{SiteId}/{SitePageId}" );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>

@@ -1,0 +1,20 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="well well-conditional">
+        <slot></slot>
+    </div>
+</template>
+
+<style scoped>
+.well-conditional {
+    border: none;
+    border-left: 2px solid var(--color-info);
+    border-radius: 0;
+    padding: var(--spacing-medium) var(--spacing-large);
+    background-color: var(--color-interface-softer);
+}
+</style>
+
+<script setup lang="ts">
+    // Implement logic here.
+</script>

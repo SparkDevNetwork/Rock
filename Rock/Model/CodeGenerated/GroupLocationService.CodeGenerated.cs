@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,24 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( GroupLocation.GroupLocationQueryableAttributeValue ), nameof( GroupLocationAttributeValues ) )]
+    public partial class GroupLocation
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<GroupLocationQueryableAttributeValue> GroupLocationAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class GroupLocationQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -118,6 +137,7 @@ namespace Rock.Model
             target.GroupMemberPersonAliasId = source.GroupMemberPersonAliasId;
             target.IsMailingLocation = source.IsMailingLocation;
             target.IsMappedLocation = source.IsMappedLocation;
+            target.IsOverflowLocation = source.IsOverflowLocation;
             target.LocationId = source.LocationId;
             target.Order = source.Order;
             target.CreatedDateTime = source.CreatedDateTime;

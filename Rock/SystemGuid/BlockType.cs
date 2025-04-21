@@ -320,6 +320,16 @@ namespace Rock.SystemGuid
         public const string MOBILE_CORE_SMART_SEARCH = "9AA64485-9641-4A06-9450-B5244BC1464A";
 
         /// <summary>
+        /// The mobile Core &gt; <see cref="Rock.Blocks.Types.Mobile.Core.QuickNote"/> block type.
+        /// </summary>
+        public const string MOBILE_CORE_QUICK_NOTE = "B7E187C8-6F74-4FBD-8853-5BAC48F5822C";
+
+        /// <summary>
+        /// The mobile Core &gt; <see cref="Rock.Blocks.Types.Mobile.Core.MyNotes"/> block type.
+        /// </summary>
+        public const string MOBILE_CORE_MY_NOTES = "9BDE231C-B6A7-4753-BBB8-1531F6362387";
+
+        /// <summary>
         /// The mobile Groups &gt; <see cref="Rock.Blocks.Types.Mobile.Groups.GroupRegistration">Group Registration</see> block type.
         /// </summary>
         public const string MOBILE_GROUPS_GROUP_REGISTRATION = "8A42E4FA-9FE1-493C-B6D8-7A766D96E912";
@@ -384,9 +394,28 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string MOBILE_CRM_GROUP_MEMBERS  = "1F1E7598-8D51-4750-8D61-E5791A226FDB";
 
+        /// <summary>
+        /// The mobile scheduled transaction list &gt; <see cref="Rock.Blocks.Types.Mobile.Finance.ScheduledTransactionList">Scheduled Transaction</see> block type.
+        /// </summary>
+        public const string MOBILE_FINANCE_SCHEDULED_TRANSACTION_LIST = "CAFF9FD9-A5DD-472B-B303-A53D94183568";
+
+        /// <summary>
+        /// The mobile transaction detail &gt; <see cref="Rock.Blocks.Types.Mobile.Finance.TransactionDetail">Transaction Detail</see> block type.
+        /// </summary>
+        public const string MOBILE_FINANCE_TRANSACTION_DETAIL = "01A68151-30CC-4FBC-9FE5-2F20A2C1BB4F";
+
+        /// <summary>
+        /// The mobile transaction list &gt; <see cref="Rock.Blocks.Types.Mobile.Finance.TransactionList">Transaction List</see> block type.
+        /// </summary>
+        public const string MOBILE_FINANCE_TRANSACTION_LIST = "D29C24EA-A52B-4470-A8D9-D7082FFF19DE";
         #endregion
 
         #region Obsidian Block Types
+
+        /// <summary>
+        /// The obsidian category detail block type.
+        /// </summary>
+        public const string OBSIDIAN_CATEGORY_DETAIL = "515dc5c2-4fbd-4eea-9d8e-a807409defde";
 
         /// <summary>
         /// The obsidian event registration entry

@@ -99,6 +99,13 @@ namespace RockWeb.Blocks.Finance
         Category = AttributeCategory.None,
         Order = 7 )]
 
+    [BooleanField(
+        "Enable End Date",
+        Description = "When enabled, this setting allows an individual to specify an optional end date for their recurring scheduled gifts.",
+        Key = AttributeKey.EnableEndDate,
+        DefaultBooleanValue = false,
+        Order = 8 )]
+
     #region Text Options
 
     [TextField(
@@ -200,7 +207,8 @@ mission. We are so grateful for your commitment.</p>
     <dd>
 
     {% if Transaction.TransactionFrequencyValue %}
-        {{ Transaction.TransactionFrequencyValue.Value }} starting on {{ Transaction.NextPaymentDate | Date:'sd' }}
+        {{ Transaction.TransactionFrequencyValue.Value }} //- Updated to include EndDate
+{% if Transaction.EndDate %}starting on {{ Transaction.NextPaymentDate | Date:'sd' }} and ending on {{ Transaction.EndDate | Date:'sd' }}{% else %}starting on {{ Transaction.NextPaymentDate | Date:'sd' }}{% endif %}
     {% else %}
         Today
     {% endif %}
@@ -305,6 +313,19 @@ mission. We are so grateful for your commitment.</p>
             }
         }
 
+        protected DateTime? EndDate
+        {
+            get
+            {
+                return ViewState["EndDate"] as DateTime?;
+            }
+
+            set
+            {
+                ViewState["EndDate"] = value;
+            }
+        }
+
         #endregion Properties
 
         #region Attribute Keys
@@ -326,6 +347,7 @@ mission. We are so grateful for your commitment.</p>
             public const string AskForCampusIfKnown = "AskForCampusIfKnown";
             public const string EnableMultiAccount = "EnableMultiAccount";
             public const string FinishLavaTemplate = "FinishLavaTemplate";
+            public const string EnableEndDate = "EnableEndDate";
         }
 
         #endregion Attribute Keys
@@ -382,6 +404,13 @@ mission. We are so grateful for your commitment.</p>
                 pnlPromptForChanges.Visible = false;
                 return;
             }
+            else if ( IsEventRegistrationTransactionType( scheduledTransaction ) )
+            {
+                // NOTE: Also verified in ShowDetails()
+                ShowConfigurationMessage( NotificationBoxType.Warning, "Warning", "Event Registration Scheduled Transactions cannot be updated." );
+                pnlPromptForChanges.Visible = false;
+                return;
+            }
 
             hfFinancialGatewayId.Value = scheduledTransaction.FinancialGatewayId.ToString();
             var financialGateway = this.FinancialGateway;
@@ -419,12 +448,12 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetails();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -532,6 +561,12 @@ mission. We are so grateful for your commitment.</p>
             {
                 // Note: Also verified in OnInit
                 ShowConfigurationMessage( NotificationBoxType.Warning, "Warning", "Scheduled Transaction not found." );
+                return;
+            }            
+            else if ( IsEventRegistrationTransactionType( scheduledTransaction ) )
+            {
+                // NOTE: Also verified in ShowDetails()
+                ShowConfigurationMessage( NotificationBoxType.Warning, "Warning", "Event Registration Scheduled Transactions cannot be updated." );
                 return;
             }
 
@@ -716,6 +751,16 @@ mission. We are so grateful for your commitment.</p>
                 dtpStartDate.SelectedDate = earliestScheduledStartDate;
             }
 
+            EndDate = scheduledTransaction.EndDate;
+            dtpEndDate.SelectedDate = scheduledTransaction.EndDate;
+            int selectedScheduleFrequencyId = ddlFrequency.SelectedValue.AsInteger();
+            bool isOneTime = selectedScheduleFrequencyId == oneTimeFrequencyId;
+
+            if ( !GetAttributeValue( AttributeKey.EnableEndDate ).AsBoolean() || isOneTime )
+            {
+                dtpEndDate.Visible = false;
+            }
+
             var person = scheduledTransaction.AuthorizedPersonAlias.Person;
 
             Location billingLocation = null;
@@ -762,6 +807,18 @@ mission. We are so grateful for your commitment.</p>
             nbConfigurationNotification.Text = message;
 
             nbConfigurationNotification.Visible = true;
+        }
+
+        /// <summary>
+        /// Determines if the financial scheduled transaction is an event registration.
+        /// </summary>
+        /// <param name="financialScheduledTransaction">The financial scheduled transaction.</param>
+        private bool IsEventRegistrationTransactionType( FinancialScheduledTransaction financialScheduledTransaction )
+        {
+            var eventRegistrationTransactionTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION.AsGuid() );
+
+            return eventRegistrationTransactionTypeValueId.HasValue
+                && eventRegistrationTransactionTypeValueId == financialScheduledTransaction?.TransactionTypeValueId;
         }
 
         /// <summary>
@@ -888,6 +945,13 @@ mission. We are so grateful for your commitment.</p>
                 return;
             }
 
+            if ( dtpEndDate.SelectedDate < dtpStartDate.SelectedDate )
+            {
+                nbUpdateScheduledPaymentWarning.Visible = true;
+                nbUpdateScheduledPaymentWarning.Text = string.Format( "When scheduling a {0}, make sure the end date is after the start date", giftTerm.ToLower() );
+                return;
+            }
+
             var rockContext = new RockContext();
 
             var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
@@ -895,8 +959,25 @@ mission. We are so grateful for your commitment.</p>
             Guid scheduledTransactionGuid = hfScheduledTransactionGuid.Value.AsGuid();
             var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionGuid );
 
+            if ( IsEventRegistrationTransactionType( financialScheduledTransaction ) )
+            {
+                // Prevent updating Event Registration scheduled transactions.
+                nbUpdateScheduledPaymentWarning.Visible = true;
+                nbUpdateScheduledPaymentWarning.Text = "Event Registration Scheduled Transactions cannot be updated.";
+                return;
+            }
+
             financialScheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
             financialScheduledTransaction.TransactionFrequencyValueId = ddlFrequency.SelectedValue.AsInteger();
+
+            if (dtpEndDate.SelectedDate.HasValue)
+            {
+                financialScheduledTransaction.EndDate = dtpEndDate.SelectedDate.Value;
+            }
+            else
+            {
+                financialScheduledTransaction.EndDate = null;
+            }
 
             ReferencePaymentInfo referencePaymentInfo;
 
@@ -1139,6 +1220,33 @@ mission. We are so grateful for your commitment.</p>
             }
 
             BindAddAccountButton();
+        }
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the ddlFrequency control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
+        protected void ddlFrequency_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            int oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() ) ?? 0;
+            int selectedScheduleFrequencyId = ddlFrequency.SelectedValue.AsInteger();
+            bool isOneTime = selectedScheduleFrequencyId == oneTimeFrequencyId;
+
+            if ( isOneTime )
+            {
+                EndDate = dtpEndDate.SelectedDate;
+                dtpEndDate.SelectedDate = null;
+                dtpEndDate.Visible = false;
+            }
+            else if ( GetAttributeValue( AttributeKey.EnableEndDate ).AsBoolean() )
+            {
+                if ( !dtpEndDate.SelectedDate.HasValue )
+                {
+                    dtpEndDate.SelectedDate = EndDate;
+                }
+                dtpEndDate.Visible = true;
+            }
         }
     }
 

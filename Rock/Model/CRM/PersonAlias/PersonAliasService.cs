@@ -16,9 +16,12 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Communication.Chat;
+using Rock.Communication.Chat.DTO;
 using Rock.Data;
 
 namespace Rock.Model
@@ -216,6 +219,7 @@ namespace Rock.Model
             var personAliasService = this;
             var visitorPersonAlias = new PersonAlias();
             visitorPersonAlias.PersonId = ghostPersonId.Value;
+            visitorPersonAlias.LastVisitDateTime = RockDateTime.Now;
 
             // For an Anonymous Visitor alias, leave AliasPersonId and AliasPersonGuid null
             // Since it isn't aliasing a real person, plus all GhostPersonAliases will have
@@ -355,12 +359,58 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a Queryable of Primary Person Aliases
+        /// Gets a Queryable of Primary <see cref="PersonAlias"/>es.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A Queryable of Primary <see cref="PersonAlias"/>es.</returns>
         public IQueryable<PersonAlias> GetPrimaryAliasQuery()
         {
             return this.Queryable().Where( a => a.PersonId == a.AliasPersonId && a.AliasPersonId.HasValue );
+        }
+
+        /// <summary>
+        /// Gets a Queryable of chat-specific <see cref="PersonAlias"/>es.
+        /// </summary>
+        /// <returns>A Queryable of chat-specific <see cref="PersonAlias"/>es.</returns>
+        internal IQueryable<PersonAlias> GetChatPersonAliasesQuery()
+        {
+            return this.Queryable().Where( a => a.Name == ChatHelper.ChatPersonAliasName );
+        }
+
+        /// <summary>
+        /// Gets a Queryable of all <see cref="ChatUser.Key"/>s in Rock, including those for deceased individuals.
+        /// </summary>
+        /// <returns>A Queryable of all <see cref="ChatUser.Key"/>s in Rock.</returns>
+        internal IQueryable<string> GetAllChatUserKeysQuery()
+        {
+            return GetChatPersonAliasesQuery().Select( pa => pa.ForeignKey );
+        }
+
+        /// <summary>
+        /// Gets the mapping between all <see cref="ChatUser.Key"/>s and each respective chat-specific
+        /// <see cref="PersonAlias"/> identifier.
+        /// </summary>
+        /// <param name="includeDeceased">Whether to include deceased individuals in the results.</param>
+        /// <returns>
+        /// A <see cref="Dictionary{TKey, TValue}"/> where the key is the <see cref="ChatUser.Key"/> and the value is
+        /// the <see cref="PersonAlias"/> identifier.
+        /// </returns>
+        /// <remarks>
+        /// A given <see cref="Person"/> might be represented more than once in the returned dictionary if they have
+        /// more than one chat-specific <see cref="PersonAlias"/>.
+        /// </remarks>
+        internal Dictionary<string, int> GetChatPersonAliasIdByChatUserKeys( bool includeDeceased = false )
+        {
+            var chatAliasQry = GetChatPersonAliasesQuery();
+            if ( !includeDeceased )
+            {
+                chatAliasQry = chatAliasQry.Where( pa => !pa.Person.IsDeceased );
+            }
+
+            return chatAliasQry
+                .ToDictionary(
+                    pa => pa.ForeignKey,
+                    pa => pa.Id
+                );
         }
     }
 }

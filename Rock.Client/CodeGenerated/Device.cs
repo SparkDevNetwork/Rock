@@ -81,6 +81,9 @@ namespace Rock.Client
         /// <summary />
         public Rock.Client.Enums.PrintTo PrintToOverride { get; set; }
 
+        /// <summary />
+        public int? ProxyDeviceId { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -129,6 +132,7 @@ namespace Rock.Client
             this.PrinterDeviceId = source.PrinterDeviceId;
             this.PrintFrom = source.PrintFrom;
             this.PrintToOverride = source.PrintToOverride;
+            this.ProxyDeviceId = source.ProxyDeviceId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

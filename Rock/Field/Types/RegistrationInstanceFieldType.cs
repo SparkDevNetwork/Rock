@@ -24,6 +24,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -32,7 +33,8 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a single (or null) registration instance filtered by a selected registration template
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REGISTRATION_INSTANCE )]
     public class RegistrationInstanceFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
@@ -70,6 +72,94 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc />
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( guid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var registrationTemplate = new RegistrationInstanceService( rockContext ).GetSelect( guid.Value, r => new ListItemBag()
+                    {
+                        Text = r.Name,
+                        Value = r.Guid.ToString()
+                    } );
+
+                    return registrationTemplate.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return base.GetPublicEditValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var jsonValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+            if ( jsonValue != null )
+            {
+                return jsonValue.Value;
+            }
+
+            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( usage != ConfigurationValueUsage.View && configurationValues.ContainsKey( REGISTRATION_TEMPLATE_KEY ) )
+            {
+                var id = configurationValues[REGISTRATION_TEMPLATE_KEY].AsIntegerOrNull();
+                if ( id.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var registrationTemplate = new RegistrationTemplateService( rockContext ).GetSelect( id.Value, r => new ListItemBag()
+                        {
+                            Text = r.Name,
+                            Value = r.Guid.ToString()
+                        } );
+
+                        configurationValues[REGISTRATION_TEMPLATE_KEY] = registrationTemplate.ToCamelCaseJson( false, true );
+                    }
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( configurationValues.ContainsKey( REGISTRATION_TEMPLATE_KEY ) )
+            {
+                var jsonValue = configurationValues[REGISTRATION_TEMPLATE_KEY].FromJsonOrNull<ListItemBag>();
+                if ( jsonValue != null && Guid.TryParse( jsonValue.Value, out Guid guid ) )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var registrationTemplate = new RegistrationTemplateService( rockContext ).GetId( guid );
+                        configurationValues[REGISTRATION_TEMPLATE_KEY] = registrationTemplate.ToString();
+                    }
+                }
+            }
+
+            return configurationValues;
+        }
 
         #endregion
 

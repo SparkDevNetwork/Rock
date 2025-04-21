@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Model;
+
 namespace Rock.ViewModels.Reporting
 {
     /// <summary>
@@ -33,7 +35,7 @@ namespace Rock.ViewModels.Reporting
         /// <summary>
         /// The logic operator to use when joining all rules and child-groups in this group.
         /// </summary>
-        public int ExpressionType { get; set; }
+        public FilterExpressionType ExpressionType { get; set; }
 
         /// <summary>
         /// The collection of rules/expression that make up this group.

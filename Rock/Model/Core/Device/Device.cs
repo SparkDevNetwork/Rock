@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Device" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "C06EE1FE-AF12-410A-A364-7A366CD72414")]
     public partial class Device : Model<Device>, ICacheable
     {
@@ -69,6 +70,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.DEVICE_TYPE )]
+        [EnableAttributeQualification]
         public int DeviceTypeValueId { get; set; }
 
         /// <summary>
@@ -99,6 +101,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? PrinterDeviceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the device that will handle proxying commands
+        /// to this device. Currently this means a printer proxy.
+        /// </summary>
+        /// <value>
+        /// A <see cref="int"/> representing the DeviceId.
+        /// </value>
+        [DataMember]
+        public int? ProxyDeviceId { get; set; }
 
         /// <summary>
         /// Gets or sets where print jobs for this device originates from.
@@ -200,6 +212,15 @@ namespace Rock.Model
         public virtual Device PrinterDevice { get; set; }
 
         /// <summary>
+        /// Gets or sets the proxy that is associated with this device. 
+        /// </summary>
+        /// <value>
+        /// The proxy that is associated with the device.
+        /// </value>
+        [LavaVisible]
+        public virtual Device ProxyDevice { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> that represents the type of the device.
         /// </summary>
         /// <value>
@@ -241,6 +262,7 @@ namespace Rock.Model
             this.HasOptional( d => d.Location ).WithMany().HasForeignKey( d => d.LocationId ).WillCascadeOnDelete( false );
             this.HasMany( d => d.Locations ).WithMany().Map( d => { d.MapLeftKey( "DeviceId" ); d.MapRightKey( "LocationId" ); d.ToTable( "DeviceLocation" ); } );
             this.HasOptional( d => d.PrinterDevice ).WithMany().HasForeignKey( d => d.PrinterDeviceId ).WillCascadeOnDelete( false );
+            this.HasOptional( d => d.ProxyDevice ).WithMany().HasForeignKey( d => d.ProxyDeviceId ).WillCascadeOnDelete( false );
             this.HasRequired( d => d.DeviceType ).WithMany().HasForeignKey( d => d.DeviceTypeValueId ).WillCascadeOnDelete( false );
         }
     }

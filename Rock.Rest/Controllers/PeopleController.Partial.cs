@@ -880,7 +880,7 @@ namespace Rock.Rest.Controllers
             string phone = null,
             string email = null )
         {
-            // Enable Proxy Creation so that LazyLoading will work. 
+            // Enable Proxy Creation so that LazyLoading will work.
             SetProxyCreation( true );
             return SearchForPeople( Service.Context as RockContext, name, address, phone, email, includeDetails, includeBusinesses, includeDeceased, true );
         }
@@ -958,6 +958,7 @@ namespace Rock.Rest.Controllers
                     return new PersonSearchResult
                     {
                         Id = a.Id,
+                        IdKey = a.IdKey,
                         Name = sortbyFullNameReversed
                             ? Person.FormatFullNameReversed( a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId )
                             : Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId ),
@@ -1034,6 +1035,7 @@ namespace Rock.Rest.Controllers
             {
                 PersonSearchResult personSearchResult = new PersonSearchResult();
                 personSearchResult.Id = person.Id;
+                personSearchResult.IdKey = person.IdKey;
                 personSearchResult.Guid = person.Guid;
                 personSearchResult.PrimaryAliasGuid = person.PrimaryAlias.Guid;
                 personSearchResult.Name = showFullNameReversed ? person.FullNameReversed : person.FullName;
@@ -1177,7 +1179,7 @@ namespace Rock.Rest.Controllers
                 {
                     var fullStreetAddress = primaryLocation.GetFullStreetAddress();
                     string addressHtml = $"<dl class='address'><dt>Address</dt><dd>{fullStreetAddress.ConvertCrLfToHtmlBr()}</dd></dl>";
-                    personSearchResult.Address = fullStreetAddress;
+                    personSearchResult.Address = fullStreetAddress.ConvertCrLfToHtmlBr();
                     personInfoHtmlBuilder.Append( addressHtml );
                 }
             }
@@ -1511,6 +1513,12 @@ namespace Rock.Rest.Controllers
         /// The id.
         /// </value>
         public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id key of the person.
+        /// </summary>
+        /// <value>The id key</value>
+        public string IdKey { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier of the person.

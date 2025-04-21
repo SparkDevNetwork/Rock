@@ -157,13 +157,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindFilter();
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -578,7 +578,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 if ( groupLocation.ParentGroupId.HasValue )
                 {
-                    groupInfoByParentGroups.ParentGroupNames.AddOrIgnore( groupLocation.ParentGroupId.Value, groupLocation.ParentGroupName );
+                    groupInfoByParentGroups.ParentGroupNames.TryAdd( groupLocation.ParentGroupId.Value, groupLocation.ParentGroupName );
                 }
             }
             else

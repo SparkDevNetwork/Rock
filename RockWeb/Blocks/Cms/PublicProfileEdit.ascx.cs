@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -38,7 +39,7 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Public block for users to manage their accounts" )]
 
-    #region "Block Attributes"
+    #region Block Attributes
     [DefinedValueField(
         "Default Connection Status",
         Key = AttributeKey.DefaultConnectionStatus,
@@ -238,6 +239,24 @@ namespace RockWeb.Blocks.Cms
         DefaultValue = "Campus",
         Order = 25 )]
 
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.CampusTypes,
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 26 )]
+
+    [DefinedValueField(
+        "Campus Statuses",
+        Key = AttributeKey.CampusStatuses,
+        Description = "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        Order = 27 )]
+
     [CustomDropdownListField(
         "Gender",
         Key = AttributeKey.Gender,
@@ -245,7 +264,7 @@ namespace RockWeb.Blocks.Cms
         ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
         IsRequired = false,
         DefaultValue = "Required",
-        Order = 26 )]
+        Order = 28 )]
 
     [CustomDropdownListField(
         "Race",
@@ -254,7 +273,7 @@ namespace RockWeb.Blocks.Cms
         ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
         IsRequired = false,
         DefaultValue = "Hide",
-        Order = 28 )]
+        Order = 29 )]
 
     [CustomDropdownListField(
         "Ethnicity",
@@ -263,7 +282,7 @@ namespace RockWeb.Blocks.Cms
         ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
         IsRequired = false,
         DefaultValue = "Hide",
-        Order = 29 )]
+        Order = 30 )]
 
     [CodeEditorField( "View Template",
         Key = AttributeKey.ViewTemplate,
@@ -273,7 +292,7 @@ namespace RockWeb.Blocks.Cms
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = "{% include '~/Assets/Lava/PublicProfile.lava' %}",
-        Order = 30 )]
+        Order = 31 )]
 
     #endregion
 
@@ -307,6 +326,8 @@ namespace RockWeb.Blocks.Cms
             public const string PersonAttributesChildren = "PersonAttributes(children)";
             public const string ShowCampusSelector = "ShowCampusSelector";
             public const string CampusSelectorLabel = "CampusSelectorLabel";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
             public const string ViewTemplate = "ViewTemplate";
             public const string RaceOption = "RaceOption";
             public const string EthnicityOption = "EthnicityOption";
@@ -514,7 +535,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             if ( CurrentPerson == null )
             {
                 pnlView.Visible = false;
@@ -539,6 +559,8 @@ namespace RockWeb.Blocks.Cms
             {
                 var handled = HandleLavaPostback( this.Request.Params["__EVENTTARGET"], this.Request.Params["__EVENTARGUMENT"] );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -1115,6 +1137,16 @@ namespace RockWeb.Blocks.Cms
 
                         var phoneNumberService = new PhoneNumberService( rockContext );
 
+                        // Remove any empty numbers
+                        foreach ( var phoneNumber in person.PhoneNumbers
+                                        .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value )
+                                            && selectedPhoneTypeGuids.Contains( n.NumberTypeValue.Guid ) )
+                                        .ToList() )
+                        {
+                            person.PhoneNumbers.Remove( phoneNumber );
+                            phoneNumberService.Delete( phoneNumber );
+                        }
+
                         // Remove any duplicate numbers
                         var hasDuplicate = person.PhoneNumbers.GroupBy( pn => pn.Number ).Where( g => g.Count() > 1 ).Any();
 
@@ -1546,10 +1578,38 @@ namespace RockWeb.Blocks.Cms
 
                 // show/hide campus selector
                 bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
+                divFamilyInfo.Visible = showCampus;
                 cpCampus.Visible = showCampus;
+
                 if ( showCampus )
                 {
                     cpCampus.Campuses = CampusCache.All( false );
+
+                    var selectedCampusTypeIds = GetAttributeValue( AttributeKey.CampusTypes )
+                        .SplitDelimitedValues( true )
+                        .AsGuidList()
+                        .Select( a => DefinedValueCache.Get( a ) )
+                        .Where( a => a != null )
+                        .Select( a => a.Id )
+                        .ToList();
+
+                    if ( selectedCampusTypeIds.Any() )
+                    {
+                        cpCampus.CampusTypesFilter = selectedCampusTypeIds;
+                    }
+
+                    var selectedCampusStatusIds = GetAttributeValue( AttributeKey.CampusStatuses )
+                        .SplitDelimitedValues( true )
+                        .AsGuidList()
+                        .Select( a => DefinedValueCache.Get( a ) )
+                        .Where( a => a != null )
+                        .Select( a => a.Id )
+                        .ToList();
+
+                    if ( selectedCampusStatusIds.Any() )
+                    {
+                        cpCampus.CampusStatusFilter = selectedCampusStatusIds;
+                    }
 
                     // Use the current person's campus if this a new person
                     if ( personGuid == Guid.Empty )
@@ -1667,8 +1727,45 @@ namespace RockWeb.Blocks.Cms
 
             BindPhoneNumbers( person );
 
+            if ( person.Id != CurrentPerson.Id && ( person.AccountProtectionProfile == AccountProtectionProfile.High || person.AccountProtectionProfile == AccountProtectionProfile.Extreme ) )
+            {
+                var accountProtectionWarningMessage = "Only the account owner can update the email.";
+
+                if ( GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean() )
+                {
+                    accountProtectionWarningMessage = "Only the account owner can update the email and phone number.";
+
+                    foreach ( RepeaterItem item in rContactInfo.Items )
+                    {
+                        PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
+                        CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
+                        HtmlGenericControl phoneNumberContainer = ( HtmlGenericControl ) item.FindControl( "divPhoneNumberContainer" );
+
+                        pnbPhone.Enabled = false;
+                        pnbPhone.Required = false;
+                        cbSms.Enabled = false;
+                        phoneNumberContainer.RemoveCssClass( "required" );
+                    }
+                }
+
+                tbEmail.Enabled = false;
+                tbEmail.Required = false;
+                nbAccountProtectionWarning.Visible = true;
+                nbAccountProtectionWarning.NotificationBoxType = NotificationBoxType.Warning;
+                nbAccountProtectionWarning.Text = accountProtectionWarningMessage;
+
+            }
+            else
+            {
+                tbEmail.Enabled = true;
+                nbAccountProtectionWarning.Visible = false;
+            }
+
             pnlView.Visible = false;
             pnlEdit.Visible = true;
+
+            // Show the family information section only when the campus picker is visible.
+            divFamilyInfo.Visible = cpCampus.Visible;
         }
 
         /// <summary>

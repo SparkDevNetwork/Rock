@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -29,9 +27,19 @@ namespace Rock.SystemGuid
         public const string ACHIEVEMENT_TYPE = "593132CF-BA5D-462F-97F6-94DCC0BFFE6F";
 
         /// <summary>
+        /// Adaptive Message field type
+        /// </summary>
+        public const string ADAPTIVE_MESSAGE = "55CC533A-99D2-418F-B93E-73EA098ABDAE";
+
+        /// <summary>
         /// Address field type
         /// </summary>
         public const string ADDRESS = "0A495222-23B7-41D3-82C8-D484CDB75D17";
+
+        /// <summary>
+        /// AI provider field type.
+        /// </summary>
+        public const string AI_PROVIDER = "2BAA190B-3EF7-47CE-AF70-C7613ED344AB";
 
         /// <summary>
         /// Assessment field type
@@ -41,12 +49,22 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Asset field type
         /// </summary>
-        public const string ASSET = "FC27D395-8F57-467E-91FF-E648F807110E";
+        public const string ASSET = "4E4E8692-23B4-49EA-88B4-2AB07899E0EE";
+
+        /// <summary>
+        /// Asset storage provider field type
+        /// </summary>
+        public const string ASSET_STORAGE_PROVIDER = "1596F562-E8D0-4C5F-9A00-23B5594F17E2";
 
         /// <summary>
         /// Asset Storage System field type
         /// </summary>
         public const string ASSET_STORAGE_SYSTEM = "A57109EE-35A2-45D0-A575-02DBBDFBC0D0";
+
+        /// <summary>
+        /// Attribute field type
+        /// </summary>
+        public const string ATTENDANCE = "45F2BE0A-43C2-40D6-9888-68A2E72ACD06";
 
         /// <summary>
         /// Attribute field type
@@ -69,9 +87,19 @@ namespace Rock.SystemGuid
         public const string BACKGROUNDCHECK = "D05B3808-803A-4531-9680-DD4AAB8ADF1A";
 
         /// <summary>
+        /// Badges field type
+        /// </summary>
+        public const string BADGES = "602F273B-7EC2-42E6-9AA7-A36A268192A3";
+
+        /// <summary>
         /// Benevolence Request field type
         /// </summary>
         public const string BENEVOLENCE_REQUEST = "44EEC881-3C07-4A58-ACC4-0F21D873DBE0";
+
+        /// <summary>
+        /// Benevolence Type field type
+        /// </summary>
+        public const string BENEVOLENCE_TYPE = "7BD3C3A3-DF4A-41EB-BF13-29EDB166078B";
 
         /// <summary>
         /// Binary File field type
@@ -87,6 +115,11 @@ namespace Rock.SystemGuid
         /// Binary File Types field type
         /// </summary>
         public const string BINARY_FILE_TYPES = "A5365133-FF87-48B3-BCA3-AF6D871F8895";
+
+        /// <summary>
+        /// Block Template field type
+        /// </summary>
+        public const string BLOCK_TEMPLATE = "CCD73456-C83B-4D6E-BD69-8133D2EB996D";
 
         /// <summary>
         /// Boolean field type
@@ -122,6 +155,11 @@ namespace Rock.SystemGuid
         /// Check List field type
         /// </summary>
         public const string CHECK_LIST = "31532E03-CF25-4A9F-855C-BA16C4075679";
+
+        /// <summary>
+        /// Check-In Configuration Type
+        /// </summary>
+        public const string CHECK_IN_CONFIGURATION_TYPE = "7522975C-C224-489A-985D-B44580DFC5BD";
 
         /// <summary>
         /// Code Editor field type
@@ -164,6 +202,11 @@ namespace Rock.SystemGuid
         public const string COMPONENTS = "039E2E97-3682-4B29-8748-7132287A2059";
 
         /// <summary>
+        /// Conditional Scale Field Type
+        /// </summary>
+        public const string CONDITIONAL_SCALE = "E73B9F41-8325-4229-8EA5-75180066680C";
+
+        /// <summary>
         /// Connection Activity Type field type
         /// </summary>
         public const string CONNECTION_ACTIVITY_TYPE = "39356C8F-B69E-4744-906C-0A182671B9F8";
@@ -177,6 +220,11 @@ namespace Rock.SystemGuid
         /// Connection Request field type
         /// </summary>
         public const string CONNECTION_REQUEST = "73A4B6C6-502B-4E5B-BAA0-A85B7CCEC544";
+
+        /// <summary>
+        /// Connection Request Activity field type
+        /// </summary>
+        public const string CONNECTION_REQUEST_ACTIVITY = "10842787-7C17-413A-A562-9CA19E6FCE52";
 
         /// <summary>
         /// Connection State field type
@@ -202,6 +250,11 @@ namespace Rock.SystemGuid
         /// Content Channel field type
         /// </summary>
         public const string CONTENT_CHANNEL = "D835A0EC-C8DB-483A-A37C-E8FB6E956C3D";
+
+        /// <summary>
+        /// Content Channels field type
+        /// </summary>
+        public const string CONTENT_CHANNELS = "0E2B924A-C1AC-4A7C-AD77-A036581552D4";
 
         /// <summary>
         /// Content Channel Item field type
@@ -294,6 +347,11 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE_RANGE = "B5C07B16-844D-4620-82E3-4CCA8F5FC350";
 
         /// <summary>
+        /// Document Type field type
+        /// </summary>
+        public const string DOCUMENT_TYPE = "1FD31CDC-E5E2-431B-8D53-72FC0430044D";
+
+        /// <summary>
         /// Email field type
         /// </summary>
         public const string EMAIL = "3D045CAE-EA72-4A04-B7BE-7FD1D6214217";
@@ -354,6 +412,11 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_GATEWAY = "7B34F9D8-6BBA-423E-B50E-525ABB3A1013";
 
         /// <summary>
+        /// Financial Statement Template field type
+        /// </summary>
+        public const string FINANCIAL_STATEMENT_TEMPLATE = "9E0CD807-D69F-4888-A9BE-BCD11DD083FE";
+
+        /// <summary>
         /// Gender field type
         /// </summary>
         public const string GENDER = "2E28779B-4C76-4142-AE8D-49EA31DDB503";
@@ -377,6 +440,11 @@ namespace Rock.SystemGuid
         /// Group Member field type
         /// </summary>
         public const string GROUP_MEMBER = "D092B5BB-A7F4-45B7-AB01-72CC4FC589A9";
+
+        /// <summary>
+        /// Group Member Requirement field type
+        /// </summary>
+        public const string GROUP_MEMBER_REQUIREMENT = "C0797A18-B489-46C7-8C30-F5E4F8246E23";
 
         /// <summary>
         /// Group Role field type
@@ -422,6 +490,11 @@ namespace Rock.SystemGuid
         /// Interaction Channel field type
         /// </summary>
         public const string INTERACTION_CHANNEL = "5EE5D193-60B6-4808-9BE9-C5FFDDF444E4";
+
+        /// <summary>
+        /// Interaction Channel Interaction Component field type
+        /// </summary>
+        public const string INTERACTION_CHANNEL_INTERACTION_COMPONENT = "299F8444-BB47-4B6C-B523-235156BF96DC";
 
         /// <summary>
         /// Interaction Channels field type
@@ -514,6 +587,11 @@ namespace Rock.SystemGuid
         public const string MEDIA_SELECTOR = "243E40FC-04D0-48AD-B379-25A400CB0CAC";
 
         /// <summary>
+        /// Mobile Navigation Action field type
+        /// </summary>
+        public const string MOBILE_NAVIGATION_ACTION = "8AF3E49F-4FF1-47D8-BCD2-150201B7F1B8";
+
+        /// <summary>
         /// Month Day field type
         /// </summary>
         public const string MONTH_DAY = "8BED8DD8-8167-4052-B807-A1E72C133611";
@@ -534,9 +612,19 @@ namespace Rock.SystemGuid
         public const string NOTE_TYPES = "276CCA63-5670-48CA-8B5A-2AAC97E8EE5E";
 
         /// <summary>
+        /// Open AI Provider field type
+        /// </summary>
+        public const string OPEN_AI_PROVIDER = "A0243B67-1F55-4C94-93D4-E21E8DA785C2";
+
+        /// <summary>
         /// Page Reference field type
         /// </summary>
         public const string PAGE_REFERENCE = "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108";
+
+        /// <summary>
+        /// Persisted Dataset field type
+        /// </summary>
+        public const string PERSISTED_DATASET = "392865C4-F17B-4832-AB59-20F72BB1C9F6";
 
         /// <summary>
         /// Person field type
@@ -579,6 +667,11 @@ namespace Rock.SystemGuid
         public const string REGISTRATION_TEMPLATE = "E1EBAEE8-AF7E-426D-9A1B-02CBD785E620";
 
         /// <summary>
+        /// Registration Templates field type
+        /// </summary>
+        public const string REGISTRATION_TEMPLATES = "F56DED5E-C135-42B2-A529-878CB30436B5";
+
+        /// <summary>
         /// Registration Entry field type
         /// </summary>
         public const string REGISTRY_ENTRY = "D98E1D88-2240-4248-B93B-0512BD3BB61A";
@@ -614,6 +707,11 @@ namespace Rock.SystemGuid
         public const string SCHEDULES = "EC6A5CAF-F6A2-47A4-9CBA-6E1C53D7E59B";
 
         /// <summary>
+        /// Secondary auths field type
+        /// </summary>
+        public const string SECONDARY_AUTHS = "98F57599-2DC3-4022-BE33-14A22C3043E1";
+
+        /// <summary>
         /// Security Role field type
         /// </summary>
         public const string SECURITY_ROLE = "7BD25DC9-F34A-478D-BEF9-0C787F5D39B8";
@@ -642,6 +740,26 @@ namespace Rock.SystemGuid
         /// Social Security Number
         /// </summary>
         public const string SSN = "4722C99A-C078-464A-968F-13AB5E8E318F";
+
+        /// <summary>
+        /// Step field type.
+        /// </summary>
+        public const string STEP = "829803DB-7CA3-44F6-B1CB-669D61ED6E92";
+
+        /// <summary>
+        /// Step program field type.
+        /// </summary>
+        public const string STEP_PROGRAM = "33875369-7D2B-4CD7-BB89-ABC29906CCAE";
+
+        /// <summary>
+        /// Step propgram step status field type.
+        /// </summary>
+        public const string STEP_PROGRAM_STEP_STATUS = "F8E85355-2780-4772-9B21-30B84741E6D1";
+
+        /// <summary>
+        /// Step program step type field type.
+        /// </summary>
+        public const string STEP_PROGRAM_STEP_TYPE = "B00149C7-08D6-448C-AF21-948BF453DF7E";
 
         /// <summary>
         /// Streak Type field type
@@ -692,6 +810,11 @@ namespace Rock.SystemGuid
         /// Value List field type
         /// </summary>
         public const string VALUE_LIST = "7BDAE237-6E49-47AC-9961-A45AFB69E240";
+
+        /// <summary>
+        /// Value Filter field type
+        /// </summary>
+        public const string VALUE_FILTER = "80ED0575-8FAE-4BC4-A51F-CAC211DD104F";
 
         /// <summary>
         /// Video File field type

@@ -27,6 +27,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION = "C88A187F-0343-4E7C-AF3F-79A8989DFA65";
 
         /// <summary>
+        /// Interaction Channel GUID for an SMS Pipeline.
+        /// </summary>
+        public const string SMS_PIPELINE = "282694BE-3062-4857-AC4E-83269F075351";
+
+        /// <summary>
         /// Internal Website
         /// </summary>
         public const string ROCK_RMS = "C9CEF6C4-E1EA-4E1F-B8D7-0172236A3F09";
@@ -70,5 +75,10 @@ namespace Rock.SystemGuid
         /// Interaction Channel GUID for adaptive messages.
         /// </summary>
         public const string ADAPTIVE_MESSAGES = "6F467CB2-586B-4963-B73B-9ACC42916549";
+
+        /// <summary>
+        /// Interaction Channel GUID for chat.
+        /// </summary>
+        public const string CHAT = "09E11442-C3F6-482B-8F7D-2454B1C43206";
     }
 }

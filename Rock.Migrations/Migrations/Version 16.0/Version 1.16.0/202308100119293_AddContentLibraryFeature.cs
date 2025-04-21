@@ -45,10 +45,12 @@ namespace Rock.Migrations
             // Set 'Display in Nav When' to [Never=2]
             Sql( $"UPDATE [Page] SET [DisplayInNavWhen] = 2 WHERE [Guid] = '{SystemGuid.Page.LIBRARY_VIEWER}'" );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route
             //   Page:Library Viewer
             //   Route:admin/cms/library-viewer
             RockMigrationHelper.AddPageRoute( SystemGuid.Page.LIBRARY_VIEWER, "admin/cms/content-library", SystemGuid.PageRoute.LIBRARY_VIEWER );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Add/Update Obsidian Block Entity Type
             //   EntityType:Rock.Blocks.Cms.LibraryViewer

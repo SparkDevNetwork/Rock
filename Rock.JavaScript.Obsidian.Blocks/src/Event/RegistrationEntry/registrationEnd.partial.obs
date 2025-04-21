@@ -6,7 +6,7 @@
 
             <div class="actions row">
                 <div class="col-xs-6">
-                    <RockButton v-if="showPrevious" btnType="default" @click="onPrevious">
+                    <RockButton btnType="default" @click="onPrevious">
                         Previous
                     </RockButton>
                 </div>
@@ -47,10 +47,6 @@
     // #endregion
 
     // #region Computed Values
-
-    const showPrevious = computed((): boolean => {
-        return registrationEntryState.firstStep === registrationEntryState.steps.intro;
-    });
 
     const attributes = computed((): Record<string, PublicAttributeBag> => {
         const attrs: Record<string, PublicAttributeBag> = {};

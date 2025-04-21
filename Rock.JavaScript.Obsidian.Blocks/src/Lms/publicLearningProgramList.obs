@@ -1,0 +1,15 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-content="content"></div>
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock, useStaticContent } from "@Obsidian/Utility/block";
+    import { PublicLearningProgramListBlockBox } from "@Obsidian/ViewModels/Blocks/Lms/PublicLearningProgramList/publicLearningProgramListBlockBox";
+
+    useConfigurationValues<PublicLearningProgramListBlockBox>();
+
+    const content = useStaticContent();
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

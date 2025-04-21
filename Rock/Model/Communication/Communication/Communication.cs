@@ -35,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "Communication" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "C4CCBD91-1264-48BF-BC33-92751C8948B5")]
     public partial class Communication : Model<Communication>, ICommunicationDetails
     {
@@ -77,6 +78,7 @@ namespace Rock.Model
         /// The list group identifier.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int? ListGroupId { get; set; }
 
         /// <summary>
@@ -87,6 +89,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Segments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the personalization segments that list is being filtered to.
+        /// </summary>
+        /// <value>
+        /// The comma-delimited list of <see cref="PersonalizationSegment"/> ids.
+        /// </value>
+        [DataMember]
+        public string PersonalizationSegments { get; set; }
 
         /// <summary>
         /// Gets or sets if communication is targeted to people in all selected segments or any selected segments.
@@ -289,6 +300,12 @@ namespace Rock.Model
         [DataMember]
         public string MessageMetaData { get; set; }
 
+        /// <summary>
+        /// Gets or sets the communication topic defined value.
+        /// </summary>
+        [DataMember]
+        public int? CommunicationTopicValueId { get; set; }
+
         #endregion
 
         #region SMS Properties
@@ -383,6 +400,15 @@ namespace Rock.Model
         public string PushOpenMessage { get; set; }
 
         /// <summary>
+        /// Gets or sets the push open message structured content JSON.
+        /// </summary>
+        /// <value>
+        /// The push open message structured content JSON.
+        /// </value>
+        [DataMember]
+        public string PushOpenMessageJson { get; set; }
+
+        /// <summary>
         /// Gets or sets the push data.
         /// </summary>
         /// <value>
@@ -430,6 +456,24 @@ namespace Rock.Model
             {
             }
         }
+        
+        /// <summary>
+        /// Gets or sets the number of days to wait after the communication is sent to send the email metrics reminder communication.
+        /// </summary>
+        /// <value>
+        /// The number of days to wait after the communication is sent to send the email metrics reminder communication.
+        /// </value>
+        [DataMember]
+        public int? EmailMetricsReminderOffsetDays { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the datetime that the email metrics reminder communication was sent.
+        /// </summary>
+        /// <value>
+        /// The email metrics reminder communication send date time.
+        /// </value>
+        [DataMember]
+        public DateTime? EmailMetricsReminderSentDateTime { get; set; }
 
         #endregion
 
@@ -572,6 +616,12 @@ namespace Rock.Model
         /// <inheritdoc cref="SystemCommunicationId"/>
         [DataMember]
         public virtual SystemCommunication SystemCommunication { get; set;  }
+        
+        /// <summary>
+        /// Gets or sets the communication topic defined value.
+        /// </summary>
+        [DataMember]
+        public virtual DefinedValue CommunicationTopicValue { get; set; }
 
         #endregion
     }

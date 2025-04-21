@@ -1,0 +1,239 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :title="panelTitle" :class="containerClasses" v-if="screenToShow !== ComponentScreen.Completion">
+        <div v-if="screenToShow === ComponentScreen.Configuration" class="configuration-container">
+            <div class="instructions-section">
+                <StructuredContentEditor label="Instructions" v-model="instructions" :disabled="disabled" />
+            </div>
+            <div class="rubric-section">
+                <StructuredContentEditor label="Grading Rubric" v-model="rubric" :disabled="disabled" />
+            </div>
+            <div class="row">
+                <div class="show-rubric-on-upload-section col-md-6">
+                    <CheckBox v-model="showRubricOnUpload" label="Show Rubric on Upload" :disabled="disabled" />
+                </div>
+                <div class="show-rubric-on-scoring-section col-md-6">
+                    <CheckBox v-model="showRubricOnScoring" label="Show Rubric on Scoring" :disabled="disabled" />
+                </div>
+            </div>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Scoring">
+            <fieldset>
+                <div class="instructions-section">
+                    <div v-if="instructions" v-html="instructions" />
+                </div>
+                <div class="rubric-section" v-if="showRubricOnScoring">
+                    <div v-if="rubric" v-html="rubric" />
+                </div>
+
+                <div class="grading-section">
+                    <div class="file-section d-flex flex-column">
+                        <RockLabel>File</RockLabel>
+                        <a v-if="fileUrl" :href="fileUrl" target="_blank">{{ binaryFile?.text }}</a>
+                    </div>
+
+                    <NumberBox v-model="pointsEarned"
+                               label="Score"
+                               :min="0"
+                               :minimumValue="0"
+                               :max="pointsPossible"
+                               :rules="'lte:' + pointsPossible"
+                               inputGroupClasses="input-width-lg">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">out of {{ pointsPossible }}</span>
+                        </template>
+                    </NumberBox>
+                </div>
+            </fieldset>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Summary">
+            <NotificationBox v-if="binaryFile" alertType="success">
+                {{ assignee?.name ?? defaultAssigneeDescription }} uploaded the following file:
+                <a v-if="fileUrl" :href="fileUrl" target="_blank">{{ binaryFile.text }}</a>.
+            </NotificationBox>
+
+            <NotificationBox v-if="!binaryFile" alertType="warning">
+                {{ assignee?.name ?? defaultAssigneeDescription }} has not uploaded a file.
+            </NotificationBox>
+        </div>
+    </Panel>
+
+    <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
+        <div class="instructions-section">
+            <div v-if="instructions" v-html="instructions" />
+        </div>
+
+        <div class="rubric-section" v-if="showRubricOnUpload">
+            <div v-if="rubric" v-html="rubric" />
+        </div>
+
+        <div class="file-upload-section">
+            <FileUploader v-model="binaryFile"
+                          label="Upload File"
+                          rules="required"
+                          :binaryFileTypeGuid="BinaryFiletype.LearningManagementSystem"
+                          uploadButtonText="Upload"
+                          :disabled="hasBeenGraded"
+                          :showDeleteButton="!hasBeenGraded" />
+        </div>
+
+        <div v-if="showStudentComment" class="optional-comments-container">
+            <TextBox v-model="studentComment" label="Optional Comments" textMode="multiline" :rows="4" />
+        </div>
+
+        <div class="footer-button-section">
+            <RockButton :btnType="BtnType.Primary"
+                        :disabled="!binaryFile || completeClicked"
+                        :autoDisable="true"
+                        @click="onCompletedAndClosed">
+                {{ completeButtonText }}
+            </RockButton>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch, } from "vue";
+    import { debounce } from "@Obsidian/Utility/util";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { LearningClassActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityCompletionDetail/learningClassActivityCompletionBag";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
+    import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const enum SettingKey {
+        Instructions = "instructions",
+        Rubric = "rubric",
+        ShowRubricOnScoring = "showRubricOnScoring",
+        ShowRubricOnUpload = "showRubricOnUpload"
+    }
+
+    const enum CompletionKey {
+        BinaryFile = "binaryFile",
+        PointsAvailableAtCompletion = "pointsAvailableAtCompletion"
+    }
+
+    // Get the required props and emits for learning activity components.
+    const props = defineProps({ ...learningActivityProps });
+    const emits = defineEmits({ ...learningActivityEmits });
+
+    const disabled = ref(props.disabled ?? false);
+    const completeClicked = ref(false);
+
+    // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
+    const activityBag = computed(() => props.activityBag);
+    const completionBag = computed(() => props.completionBag ?? {} as LearningClassActivityCompletionBag);
+    const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
+    const showStudentComment = ref(activityBag.value?.isStudentCommentingEnabled);
+    const studentComment = ref(completionBag.value.studentComment ?? "");
+
+    /** Initialize the base component and destructure the refs we need for use in this component. */
+    const {
+        assignee,
+        binaryFile,
+        containerClasses,
+        defaultAssigneeDescription,
+        fileUrl,
+        hasBeenGraded,
+        isCompleted,
+        panelTitle,
+    } = useLearningComponent(activityBag, completionBag, screenToShow);
+
+    const instructions = ref("");
+    const rubric = ref("");
+    const showRubricOnScoring = ref(false);
+    const showRubricOnUpload = ref(false);
+    const pointsPossibleAtCompletion = ref<number>();
+
+    const pointsEarned = ref(completionBag.value.pointsEarned);
+    const pointsPossible = computed(() => Number(pointsPossibleAtCompletion?.value ?? activityBag.value.points));
+
+    const originalBinaryFileGuid = binaryFile.value?.value ?? "";
+
+    function onCompletedAndClosed(): void {
+        if (isCompleted.value === false || binaryFileHasChanged.value === true) {
+            emits("completed", true);
+            completeClicked.value = true;
+        }
+
+        emits("closed");
+    }
+
+    const binaryFileHasChanged = computed(() => originalBinaryFileGuid != currentBinaryFileGuid.value);
+    const currentBinaryFileGuid = computed(() => binaryFile.value?.value ?? "");
+    const completeButtonText = computed(() => isCompleted.value === true ? "Continue" : "Complete");
+
+    function updateLocalValues(): void {
+        if (props.screenToShow === ComponentScreen.Configuration) {
+            instructions.value = props.activityBag.componentSettings?.[SettingKey.Instructions] ?? "";
+            rubric.value = props.activityBag.componentSettings?.[SettingKey.Rubric] ?? "";
+            showRubricOnScoring.value = asBooleanOrNull(props.activityBag.componentSettings?.[SettingKey.ShowRubricOnScoring]) ?? false;
+            showRubricOnUpload.value = asBooleanOrNull(props.activityBag.componentSettings?.[SettingKey.ShowRubricOnUpload]) ?? false;
+        }
+        else {
+            instructions.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.Instructions] ?? "";
+            rubric.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.Rubric] ?? "";
+            showRubricOnScoring.value = asBooleanOrNull(props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.ShowRubricOnScoring]) ?? false;
+            showRubricOnUpload.value = asBooleanOrNull(props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.ShowRubricOnUpload]) ?? false;
+
+            pointsPossibleAtCompletion.value = toNumberOrNull(props.completionBag?.completionValues?.[CompletionKey.PointsAvailableAtCompletion]) ?? undefined;
+
+            studentComment.value = props.completionBag?.studentComment ?? "";
+        }
+    }
+
+    /** Watch for modified component settings. */
+    const debouncedActivityBagEmits = debounce(() => {
+        const newValues = {
+            ...props.activityBag.componentSettings
+        };
+
+        newValues[SettingKey.Instructions] = instructions.value;
+        newValues[SettingKey.Rubric] = rubric.value;
+        newValues[SettingKey.ShowRubricOnScoring] = asTrueOrFalseString(showRubricOnScoring.value);
+        newValues[SettingKey.ShowRubricOnUpload] = asTrueOrFalseString(showRubricOnUpload.value);
+
+        emits("activitySettingsChanged", newValues);
+    });
+    watch([instructions, rubric, showRubricOnScoring, showRubricOnUpload], () => {
+        debouncedActivityBagEmits();
+    }, { deep: true });
+
+    watch([binaryFile, pointsPossible, pointsEarned], () => {
+        const newValues = {
+            ...props.completionBag?.completionValues
+        };
+
+        newValues[CompletionKey.BinaryFile] = JSON.stringify(binaryFile.value);
+        newValues[CompletionKey.PointsAvailableAtCompletion] = pointsPossible.value > 0
+            ? pointsPossible.value.toString()
+            : "";
+
+        emits("completionValuesChanged", newValues, {
+            pointsEarned: pointsEarned.value ?? undefined,
+            binaryFile: binaryFile.value ?? undefined
+        });
+    }, { deep: true });
+
+    watch(studentComment, () => {
+        emits("commentChanged", studentComment.value);
+    });
+
+    watch(() => [props.activityBag, props.completionBag], () => {
+        updateLocalValues();
+    });
+
+    updateLocalValues();
+</script>

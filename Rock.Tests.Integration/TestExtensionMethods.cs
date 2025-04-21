@@ -18,10 +18,90 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+
 using Rock.Data;
 
 namespace Rock.Tests.Integration
 {
+    /// <summary>
+    /// Provides lookup services to easily locate entities in a test environment. 
+    /// </summary>
+    public static class EntityLookup
+    {
+        /// <summary>
+        /// Get an Entity from a repository by matching the specified identifier, either an ID, a Guid value or a Name.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="service"></param>
+        /// <param name="identifier"></param>
+        /// <returns></returns>
+        public static T GetByIdentifier<T>( object identifier, RockContext rockContext = null )
+            where T : Rock.Data.Entity<T>, new()
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            var service = Reflection.GetServiceForEntityType( typeof( T ), rockContext ) as Service<T>; 
+
+            var entity = service.Queryable().GetByIdentifier( identifier );
+            return entity;
+        }
+
+        /// <summary>
+        /// Get an Entity from a repository by matching the specified identifier, either an ID, a Guid value or a Name.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="service"></param>
+        /// <param name="identifier"></param>
+        /// <returns></returns>
+        public static T GetByIdentifierOrThrow<T>( object identifier, RockContext rockContext = null )
+            where T : Rock.Data.Entity<T>, new()
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            var service = Reflection.GetServiceForEntityType( typeof( T ), rockContext ) as Service<T>;
+
+            var entity = service.Queryable().GetByIdentifierOrThrow( identifier );
+            return entity;
+        }
+
+        /// <summary>
+        /// Get an Entity from a repository by matching the specified Name.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="service"></param>
+        /// <param name="identifier"></param>
+        /// <returns></returns>
+        public static T GetByName<T>( object identifier, string nameProperty = "Name", RockContext rockContext = null )
+            where T : Rock.Data.Entity<T>, new()
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            var service = Reflection.GetServiceForEntityType( typeof( T ), rockContext ) as Service<T>;
+
+            var entity = service.Queryable().GetByName( identifier, nameProperty );
+            return entity;
+        }
+
+        /// <summary>
+        /// Get an Entity from a repository by matching the specified Name.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="service"></param>
+        /// <param name="identifier"></param>
+        /// <returns></returns>
+        public static T GetByNameOrThrow<T>( object identifier, string nameProperty = "Name", RockContext rockContext = null )
+            where T : Rock.Data.Entity<T>, new()
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            var service = Reflection.GetServiceForEntityType( typeof( T ), rockContext ) as Service<T>;
+
+            var entity = service.Queryable().GetByNameOrThrow( identifier, nameProperty );
+            return entity;
+        }
+
+    }
+
     /// <summary>
     /// A set of extension methods intended to simplify the process of locating records for testing purposes.
     /// </summary>
@@ -34,10 +114,10 @@ namespace Rock.Tests.Integration
         /// <param name="service"></param>
         /// <param name="identifier"></param>
         /// <returns></returns>
-        public static T GetByIdentifier<T>( this Service<T> service, object identifier )
+        public static T GetByIdentifier<T>( this Service<T> service, object identifier, string nameProperty = "Name" )
             where T : Rock.Data.Entity<T>, new()
         {
-            var entity = service.Queryable().GetByIdentifier(identifier);
+            var entity = service.Queryable().GetByIdentifier( identifier, nameProperty );
             return entity;
         }
 
@@ -48,26 +128,24 @@ namespace Rock.Tests.Integration
         /// <param name="service"></param>
         /// <param name="identifier"></param>
         /// <returns></returns>
-        public static T GetByIdentifierOrThrow<T>( this Service<T> service, object identifier )
+        public static T GetByIdentifierOrThrow<T>( this Service<T> service, object identifier, string nameProperty = "Name" )
             where T : Rock.Data.Entity<T>, new()
         {
-            var entity = service.Queryable().GetByIdentifierOrThrow( identifier );
+            var entity = service.Queryable().GetByIdentifierOrThrow( identifier, nameProperty );
             return entity;
         }
 
-        public static T GetByIdentifierOrThrow<T>( this IService service, object identifier )
+        public static T GetByIdentifierOrThrow<T>( this IService service, object identifier, string nameProperty = "Name" )
             where T : Rock.Data.Entity<T>, new()
         {
-            //var rockContext = service.Context;
-
-            var entityService = service as Service<T>; // Reflection.GetServiceForEntityType( typeof( T ), rockContext );
+            var entityService = service as Service<T>;
 
             var serviceType = entityService.GetType();
             var queryableMethodInfo = serviceType.GetMethod( "Queryable" );
 
             var queryable = queryableMethodInfo.Invoke( entityService, new object[] { } ) as IQueryable<T>;
 
-            var entity = queryable.GetByIdentifierOrThrow( identifier );
+            var entity = queryable.GetByIdentifierOrThrow( identifier, nameProperty );
             return entity;
         }
 
@@ -78,7 +156,7 @@ namespace Rock.Tests.Integration
         /// <param name="entities"></param>
         /// <param name="identifier"></param>
         /// <returns></returns>
-        public static T GetByIdentifier<T>( this IQueryable<T> entities, object identifier )
+        public static T GetByIdentifier<T>( this IQueryable<T> entities, object identifier, string nameProperty = "Name" )
         where T : IEntity
         {
             T result = default( T );
@@ -109,23 +187,23 @@ namespace Rock.Tests.Integration
                 return result;
             }
 
-            result = GetByName( entities, key );
+            result = GetByName( entities, key, nameProperty );
 
             return result;
         }
 
         /// <inheritdoc cref="TestExtensionMethods.GetByIdentifier{T}(IQueryable{T}, object)" />
-        public static T GetByIdentifier<T>( this IEnumerable<T> entities, object identifier )
+        public static T GetByIdentifier<T>( this IEnumerable<T> entities, object identifier, string nameProperty = "Name" )
             where T : IEntity
         {
-            return GetByIdentifier( entities.AsQueryable(), identifier );
+            return GetByIdentifier( entities.AsQueryable(), identifier, nameProperty );
         }
 
         /// <inheritdoc cref="TestExtensionMethods.GetByIdentifier{T}(IQueryable{T}, object)" />
-        public static T GetByIdentifierOrThrow<T>( this IQueryable<T> entities, object identifier )
+        public static T GetByIdentifierOrThrow<T>( this IQueryable<T> entities, object identifier, string nameProperty = "Name" )
             where T : IEntity
         {
-            var result = GetByIdentifier( entities, identifier );
+            var result = GetByIdentifier( entities, identifier, nameProperty );
             if ( result == null )
             {
                 throw new Exception( $"Invalid Entity Reference. [EntityType={typeof( T ).Name}, Identifier={identifier}]" );
@@ -135,10 +213,10 @@ namespace Rock.Tests.Integration
         }
 
         /// <inheritdoc cref="TestExtensionMethods.GetByIdentifier{T}(IQueryable{T}, object)" />
-        public static T GetByIdentifierOrThrow<T>( this IEnumerable<T> entities, object identifier )
+        public static T GetByIdentifierOrThrow<T>( this IEnumerable<T> entities, object identifier, string nameProperty = "Name" )
             where T : IEntity
         {
-            return GetByIdentifierOrThrow( entities.AsQueryable(), identifier );
+            return GetByIdentifierOrThrow( entities.AsQueryable(), identifier, nameProperty );
         }
 
         /// <summary>
@@ -199,10 +277,23 @@ namespace Rock.Tests.Integration
             // Construct a predicate expression for a match with the specified name field, and return the first match.
             var parameter = Expression.Parameter( entityType, "entity" );
             var expEquals = Expression.Equal( Expression.Property( parameter, nameProperty ), Expression.Constant( name.ToStringSafe() ) );
-            var expLambda = Expression.Lambda( expEquals, parameter ); 
+            var expLambda = Expression.Lambda( expEquals, parameter );
 
             var predicate = expLambda.Compile() as System.Func<T, bool>;
             result = entities.FirstOrDefault( predicate );
+
+            return result;
+        }
+
+        /// <inheritdoc cref="TestExtensionMethods.GetByName{T}(IQueryable{T}, object, string)" />
+        public static T GetByNameOrThrow<T>( this IQueryable<T> entities, object identifier, string nameProperty = "Name" )
+            where T : IEntity
+        {
+            var result = GetByName( entities, identifier, nameProperty );
+            if ( result == null )
+            {
+                throw new Exception( $"Invalid Entity Name. [EntityType={typeof( T ).Name}, Name={identifier}, Property={nameProperty}]" );
+            }
 
             return result;
         }

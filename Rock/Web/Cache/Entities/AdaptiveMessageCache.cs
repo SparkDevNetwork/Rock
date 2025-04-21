@@ -20,8 +20,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Achievement;
-using Rock.Achievement.Component;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache.Entities;
@@ -74,6 +72,33 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool IsActive { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets the optional start date of the <see cref="Rock.Model.AdaptiveMessage"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing start date of the <see cref="Rock.Model.AdaptiveMessage"/>.
+        /// </value>
+        [DataMember]
+        public DateTime? StartDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end date of the <see cref="Rock.Model.AdaptiveMessage"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing end date of the <see cref="Rock.Model.AdaptiveMessage"/>.
+        /// </value>
+        [DataMember]
+        public DateTime? EndDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the category ids.
+        /// </summary>
+        /// <value>
+        /// The category ids.
+        /// </value>
+        [DataMember]
+        public List<int> CategoryIds { get; private set; }
+
         #endregion Entity Properties
 
         #region Related Cache Objects
@@ -86,6 +111,32 @@ namespace Rock.Web.Cache
         /// </value>
         public List<AdaptiveMessageAdaptationCache> Adaptations
             => AdaptiveMessageAdaptationCache.All().Where( amc => amc.AdaptiveMessageId == Id ).ToList();
+
+        /// <summary>
+        /// Gets the categories.
+        /// </summary>
+        /// <value>
+        /// The categories.
+        /// </value>
+        public List<CategoryCache> Categories
+        {
+            get
+            {
+                var categories = new List<CategoryCache>();
+
+                if ( CategoryIds == null )
+                {
+                    return categories;
+                }
+
+                foreach ( var id in CategoryIds.ToList() )
+                {
+                    categories.Add( CategoryCache.Get( id ) );
+                }
+
+                return categories;
+            }
+        }
 
         #endregion Related Cache Objects
 
@@ -109,6 +160,9 @@ namespace Rock.Web.Cache
             Description = adaptiveMessage.Description;
             IsActive = adaptiveMessage.IsActive;
             Key = adaptiveMessage.Key;
+            StartDate = adaptiveMessage.StartDate;
+            EndDate = adaptiveMessage.EndDate;
+            CategoryIds = adaptiveMessage.AdaptiveMessageCategories.Select( c => c.CategoryId ).ToList();
         }
 
         /// <summary>

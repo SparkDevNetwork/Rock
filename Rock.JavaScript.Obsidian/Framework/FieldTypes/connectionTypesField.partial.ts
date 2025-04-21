@@ -20,7 +20,9 @@ import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const enum ConfigurationValueKey {
-    Values = "values"
+    Values = "values",
+    EnhancedForLongLists = "enhancedselection",
+    RepeatColumns = "repeatColumns"
 }
 
 // The edit component can be quite large, so load it only as needed.

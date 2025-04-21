@@ -35,11 +35,17 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Security Role (Group)
     /// Stored as Group.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SECURITY_ROLE )]
     public class SecurityRoleFieldType : FieldType, IEntityReferenceFieldType
     {
+        #region Configuration
+
         private const string VALUES_PUBLIC_KEY = "values";
+
+        #endregion
+
         #region Formatting
 
         /// <inheritdoc/>

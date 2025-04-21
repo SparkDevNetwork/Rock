@@ -29,9 +29,18 @@ export type RegistrationEntrySuccessBag = {
     /** Gets or sets the message HTML. */
     messageHtml?: string | null;
 
+    /** Gets or sets the number of registered registrants in this registration. */
+    registeredCount: number;
+
+    /** Gets or sets the number of remaining spots for the registration instance. */
+    spotsRemaining?: number | null;
+
     /** Gets or sets the title HTML. */
     titleHtml?: string | null;
 
     /** Gets or sets the transaction code. */
     transactionCode?: string | null;
+
+    /** Gets or sets the number of wait-listed registrants in this registration. */
+    waitListedCount: number;
 };

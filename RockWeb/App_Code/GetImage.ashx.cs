@@ -28,6 +28,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace RockWeb
@@ -83,7 +84,6 @@ namespace RockWeb
         /// <param name="context">The context.</param>
         private void ProcessContentFileRequest( HttpContext context )
         {
-
             // Don't trust query strings
             string untrustedFilePath = context.Request.QueryString["fileName"];
             string encryptedRootFolder = context.Request.QueryString["rootFolder"];
@@ -141,6 +141,14 @@ namespace RockWeb
                     if ( fileContents != null )
                     {
                         string mimeType = MimeMapping.GetMimeMapping( trustedPhysicalFilePath );
+
+                        // If the requested file is not an image respond with not found.
+                        if ( !mimeType.StartsWith( "image/" ) )
+                        {
+                            SendNotFound( context );
+                            return;
+                        }
+
                         context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", Path.GetFileName( trustedPhysicalFilePath ) ) );
                         context.Response.ContentType = mimeType;
 
@@ -203,23 +211,53 @@ namespace RockWeb
         /// <param name="context">The context.</param>
         private void ProcessBinaryFileRequest( HttpContext context, RockContext rockContext )
         {
-            int fileId = context.Request.QueryString["id"].AsInteger();
-            Guid fileGuid = context.Request.QueryString["guid"].AsGuid();
+            var securitySettings = new SecuritySettingsService().SecuritySettings;
+            var disablePredictableIds = securitySettings.DisablePredictableIds;
 
-            if ( fileId == 0 && fileGuid == Guid.Empty )
+            int? fileId = null;
+            Guid? fileGuid = null;
+
+            if ( disablePredictableIds )
             {
-                SendBadRequest( context, "File id key must be a guid or an int." );
+                var fileIdKey = context.Request.QueryString["fileIdKey"];
+                var fileGuidString = context.Request.QueryString["guid"];
+
+                if ( !string.IsNullOrEmpty( fileIdKey ) )
+                {
+                    fileId = IdHasher.Instance.GetId( fileIdKey );
+                }
+
+                if ( !string.IsNullOrEmpty( fileGuidString ) )
+                {
+                    fileGuid = new Guid( fileGuidString );
+                }
+            }
+            else
+            {
+                fileId = context.Request.QueryString["id"].AsIntegerOrNull(); 
+                fileGuid = context.Request.QueryString["guid"].AsGuidOrNull();
+            }
+
+            if ( !fileId.HasValue && !fileGuid.HasValue )
+            {
+                SendBadRequest( context, "File ID or GUID must be provided." );
+                return;
+            }
+
+            if ((fileId.HasValue && fileId.Value == 0) || (fileGuid.HasValue && fileGuid.Value == Guid.Empty))
+            {
+                SendBadRequest( context, "Invalid File ID or GUID provided." );
                 return;
             }
 
             var binaryFileQuery = new BinaryFileService( rockContext ).Queryable();
-            if ( fileGuid != Guid.Empty )
+            if ( fileGuid.HasValue )
             {
-                binaryFileQuery = binaryFileQuery.Where( a => a.Guid == fileGuid );
+                binaryFileQuery = binaryFileQuery.Where( a => a.Guid == fileGuid.Value );
             }
             else
             {
-                binaryFileQuery = binaryFileQuery.Where( a => a.Id == fileId );
+                binaryFileQuery = binaryFileQuery.Where( a => a.Id == fileId.Value );
             }
 
             //// get just the binaryFileMetaData (not the file content) just in case we can get the filecontent faster from the cache
@@ -255,7 +293,9 @@ namespace RockWeb
             // Use BinaryFileType.RequiresViewSecurity because checking security for every file is slow (~40ms+ per request)
             if ( parentEntityAllowsView == null && binaryFileMetaData.BinaryFileType_RequiresViewSecurity )
             {
-                if ( !binaryFileAuth.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                var securityGrant = SecurityGrant.FromToken( context.Request.QueryString["securityGrant"] );
+
+                if ( !binaryFileAuth.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) && securityGrant?.IsAccessGranted( binaryFileAuth, Rock.Security.Authorization.VIEW ) != true )
                 {
                     SendNotAuthorized( context );
                     return;
@@ -441,6 +481,7 @@ namespace RockWeb
             cleanedQueryString.Remove( "isBinaryFile" );
             cleanedQueryString.Remove( "rootFolder" );
             cleanedQueryString.Remove( "fileName" );
+            cleanedQueryString.Remove( "securityGrant" );
 
             string fileName = string.Empty;
             foreach ( var key in cleanedQueryString.Keys )
@@ -551,6 +592,11 @@ namespace RockWeb
         /// <param name="physFilePath">The physical file path.</param>
         private void Cache( Stream fileContent, string physFilePath )
         {
+            // If the fileContent happens to be empty, do not cache it.
+            if (fileContent == null || fileContent.Length == 0)
+            {
+                return;
+            }
             try
             {
                 // ensure that the Cache folder exists

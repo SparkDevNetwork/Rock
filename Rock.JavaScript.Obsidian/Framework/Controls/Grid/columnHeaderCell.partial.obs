@@ -4,7 +4,7 @@
         <component v-if="column.headerComponent" :is="column.headerComponent" :column="column" :grid="grid" />
         <span v-else-if="column.title" :class="titleClass" @click.prevent="onSortClick">{{ column.title }}</span>
 
-        <span v-if="isSorted" class="grid-sort-direction" :class="additionalSortClass">
+        <span v-if="isSorted" class="grid-sort-direction" :class="additionalSortClass" @click.prevent="onSortClick">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 21">
                 <path fill="var(--color-info)" d="M9.95 9.36H3.1a.53.53 0 0 1-.37-.9l3.42-3.43c.2-.2.55-.2.75 0l3.43 3.43c.33.33.1.9-.38.9Z" />
                 <path fill="currentColor" style="opacity:.4;" d="M3.1 12.49h6.85c.47 0 .7.57.37.9L6.9 16.82c-.2.2-.54.2-.75 0l-3.42-3.43a.53.53 0 0 1 .37-.9Z" />
@@ -22,23 +22,31 @@
             </svg>
         </button>
 
-        <div v-if="isFilterOpen" ref="filterElement" class="grid-filter-popup">
-            <div class="grid-filter-popup-content">
-                <component v-if="column.filterPrependComponent" :is="column.filterPrependComponent" :column="column" :grid="grid" />
-                <component :is="column.filter!.component" v-model="internalFilterValue" :column="column" :grid="grid" />
-            </div>
+        <Teleport v-if="isFilterOpen"
+                  :to="popupTarget"
+                  :disabled="!popupTarget">
+            <div class="grid-filter-popup-container"
+                 ref="popup"
+                 :style="popupContainerStyle">
+                <div ref="filterElement" class="grid-filter-popup">
+                    <div class="grid-filter-popup-content">
+                        <component v-if="column.filterPrependComponent" :is="column.filterPrependComponent" :column="column" :grid="grid" />
+                        <component :is="column.filter!.component" v-model="internalFilterValue" :column="column" :grid="grid" />
+                    </div>
 
-            <div class="actions">
-                <button class="btn btn-primary btn-xs" @click.prevent="onFilterApplyClick">Apply</button>
-                <button class="btn btn-link btn-xs" @click.prevent="onFilterClearClick">Clear</button>
+                    <div class="actions">
+                        <button class="btn btn-primary btn-xs" @click.prevent="onFilterApplyClick">Apply</button>
+                        <button class="btn btn-link btn-xs" @click.prevent="onFilterClearClick">Clear</button>
+                    </div>
+                </div>
             </div>
-        </div>
+        </Teleport>
     </div>
 </template>
 
 <script setup lang="ts">
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
     import { getColumnStyles } from "@Obsidian/Core/Controls/grid";
 
@@ -87,6 +95,12 @@
     const filterElement = ref<HTMLElement | null>(null);
     const filterButtonElement = ref<HTMLElement | null>(null);
     const columnHeaderElement = ref<HTMLElement | null>(null);
+    const popupTarget = ref<Element>();
+    const popup = ref<HTMLElement>();
+    const popupContainerStyle = ref({});
+    const isIntersecting = ref(false);
+    let columnResizeObserver: ResizeObserver | undefined = window.ResizeObserver ? new ResizeObserver(onColumnResized) : undefined;
+    let popupIntersectObserver: IntersectionObserver | undefined = window.IntersectionObserver ? new IntersectionObserver(onPopupIntersect, { root: null, threshold: 1.0, rootMargin: "-80px 0px 0px 0px" }) : undefined;
 
     // #endregion
 
@@ -94,13 +108,13 @@
 
     /** Will be `true` if we have a filter and it should be visible. */
     const isFilterVisible = computed((): boolean => {
-        return !props.light && props.column.filter !== undefined;
+        return !props.light && props.column.filter != null;
     });
 
     /** Will be `true` if sorting is enabled on the grid. */
     const isSortingEnabled = computed((): boolean => {
-        // Sorting is not supported if this is not a data column.
-        return !props.light && !props.column.name.startsWith("__");
+        // Sorting is not supported if this is not a data column or if sorting is disabled.
+        return !props.light && !props.column.name.startsWith("__") && !props.column.disableSort;
     });
 
     /** The CSS classes to apply to the filter button */
@@ -169,12 +183,46 @@
     const titleClass = computed((): string => {
         let classValue = "grid-column-title";
 
-        if (isSortingEnabled.value) {
-            classValue += " stretched-link";
-        }
-
         return classValue;
     });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Updates the position of the popup based on the current scroll position
+     * of the sticky header.
+     */
+    function updatePopupPosition(): void {
+        const gridElement = columnHeaderElement.value?.closest(".grid-obsidian") as HTMLElement | null;
+
+        if (columnHeaderElement.value && popup.value && gridElement) {
+            const columnRect = columnHeaderElement.value.getBoundingClientRect();
+
+            if (isIntersecting.value) {
+                popupContainerStyle.value = {
+                    left: columnRect.left + "px",
+                    width: columnRect.width + "px",
+                    top: (columnRect.top - popup.value.clientHeight) + "px"
+                };
+            }
+            else {
+                popupContainerStyle.value = {
+                    left: columnRect.left + "px",
+                    width: columnRect.width + "px",
+                    top: (columnRect.top + 55) + "px"
+                };
+            }
+        }
+
+        // Check if there is enough space to flip down.
+        const viewPortHeight = window.innerHeight;
+        const popupClientRect = popup.value?.getBoundingClientRect();
+        if (popupClientRect && ((popupClientRect.bottom + popupClientRect.height + 55) < viewPortHeight)) {
+            isIntersecting.value = false;
+        }
+    }
 
     // #endregion
 
@@ -206,7 +254,17 @@
      * Called when the filter icon in the cell header is clicked.
      */
     const onFilterClick = (): void => {
-        isFilterOpen.value = !isFilterOpen.value;
+        // If we are already open, close the popup.
+        if (isFilterOpen.value) {
+            isFilterOpen.value = false;
+            return;
+        }
+
+        updatePopupPosition();
+
+        popupTarget.value = document.fullscreenElement || document.body;
+        isFilterOpen.value = true;
+        isIntersecting.value = false;
     };
 
     /**
@@ -247,22 +305,82 @@
         }
     };
 
+    function onPopupIntersect(entries: IntersectionObserverEntry[]): void {
+        entries.forEach(entry => {
+            // If the entry is intersecting with the ViewPort border. I know, it's weird — the naming is might cause confusion.
+            // I think when they say "entry.isIntersecting," it means the element is in the viewport or intersecting with it.
+            if (!entry.isIntersecting) {
+                isIntersecting.value = true;
+            }
+        });
+    }
+
+    /**
+     * Called when the column or grid has been resized.
+     */
+    function onColumnResized(): void {
+        updatePopupPosition();
+    }
+
+    /**
+     * Called when the document has scrolled, update the position of the popup.
+     */
+    function onDocumentScroll(): void {
+        updatePopupPosition();
+    }
+
     // #endregion
 
-    // Whenever the filter is open, register our mouse down event listener
-    // on the whole document. When the filter closes, remove the listener.
+    watch(isIntersecting, updatePopupPosition);
+    // Whenever the filter is open, register out event listeners on the
+    // whole document. When the filter closes, remove the listeners.
     watch(isFilterOpen, () => {
         if (isFilterOpen.value) {
+            if (columnHeaderElement.value && columnResizeObserver) {
+                const gridElement = columnHeaderElement.value?.closest(".grid-obsidian");
+
+                columnResizeObserver.observe(columnHeaderElement.value);
+
+                if (gridElement) {
+                    columnResizeObserver.observe(gridElement);
+                }
+            }
+
             document.addEventListener("mousedown", onMouseDownEvent);
+            document.addEventListener("scroll", onDocumentScroll);
 
             nextTick(() => {
                 // TODO: Make filter components do default focus.
                 // Hack until this is handled by a filter component.
                 filterElement.value?.querySelector("input")?.focus();
+
+                if (popup.value && popupIntersectObserver) {
+                    popupIntersectObserver?.observe(popup.value);
+                }
             });
         }
         else {
+            document.removeEventListener("scroll", onDocumentScroll);
+            document.removeEventListener("mousedown", onMouseDownEvent);
+
+            if (columnHeaderElement.value && columnResizeObserver) {
+                const gridElement = columnHeaderElement.value?.closest(".grid-obsidian");
+
+                columnResizeObserver.unobserve(columnHeaderElement.value);
+
+                if (gridElement) {
+                    columnResizeObserver.unobserve(gridElement);
+                }
+            }
+        }
+    });
+
+    // Remove the event listeners if we get removed from the DOM.
+    onBeforeUnmount(() => {
+        document.removeEventListener("scroll", onDocumentScroll);
         document.removeEventListener("mousedown", onMouseDownEvent);
-    }
-});
+
+        columnResizeObserver?.disconnect();
+        popupIntersectObserver?.disconnect();
+    });
 </script>

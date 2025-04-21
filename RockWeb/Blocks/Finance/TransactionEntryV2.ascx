@@ -56,10 +56,15 @@
                                 <Rock:RockDropDownList ID="ddlPersonSavedAccount" runat="server" Label="Giving Method" AutoPostBack="true" OnSelectedIndexChanged="ddlPersonSavedAccount_SelectedIndexChanged" />
                             </asp:Panel>
 
-                            <asp:Panel ID="pnlScheduledTransactionStartDate" runat="server">
-                                <Rock:DatePicker ID="dtpStartDate" runat="server" AllowPastDateSelection="false" Label="Start Date" />
-                            </asp:Panel>
+                            <div class="d-flex gap-3 flex-wrap">
+                                <asp:Panel ID="pnlScheduledTransactionStartDate" runat="server">
+                                    <Rock:DatePicker ID="dtpStartDate" runat="server" AllowPastDateSelection="false" Label="Start Date" />
+                                </asp:Panel>
 
+                                <asp:Panel ID="pnlScheduledTransactionEndDate" runat="server">
+                                    <Rock:DatePicker ID="dtpEndDate" runat="server" AllowPastDateSelection="false" Label="End Date" />
+                                </asp:Panel>
+                            </div>
                             <Rock:RockTextBox ID="tbCommentEntry" runat="server" Required="true" Label="Comment" />
 
                             <Rock:NotificationBox ID="nbPromptForAmountsWarning" runat="server" NotificationBoxType="Validation" Visible="false" />
@@ -134,10 +139,10 @@
                                 </asp:Panel>
                                 <asp:Panel ID="pnlNotLoggedInNameEntry" runat="server">
                                     <div class="form-group">
-                                        <Rock:FirstNameTextBox ID="tbFirstName" runat="server" Placeholder="First Name" CssClass="margin-b-sm" ValidationGroup="vgFirstName" Required="true" />
+                                        <Rock:FirstNameTextBox ID="tbFirstName" runat="server" Placeholder="First Name" CssClass="margin-b-sm" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" DisplayInlineValidationError="true" />
                                     </div>
                                     <div class="form-group">
-                                        <Rock:RockTextBox ID="tbLastName" runat="server" Placeholder="Last Name" CssClass="margin-b-sm" Required="true" />
+                                        <Rock:RockTextBox ID="tbLastName" runat="server" Placeholder="Last Name" CssClass="margin-b-sm" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                     </div>
                                 </asp:Panel>
 
@@ -169,10 +174,10 @@
                                     <hr />
                                     <h4>Business Contact</h4>
                                     <div class="form-group">
-                                        <Rock:RockTextBox ID="tbBusinessContactFirstName" runat="server" Placeholder="First Name" CssClass="margin-b-sm" Required="true" />
+                                        <Rock:FirstNameTextBox ID="tbBusinessContactFirstName" runat="server" Placeholder="First Name" CssClass="margin-b-sm" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                     </div>
                                     <div class="form-group">
-                                        <Rock:RockTextBox ID="tbBusinessContactLastName" runat="server" Placeholder="Last Name" CssClass="margin-b-sm" Required="true" />
+                                        <Rock:RockTextBox ID="tbBusinessContactLastName" runat="server" Placeholder="Last Name" CssClass="margin-b-sm" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                     </div>
                                     <Rock:PhoneNumberBox ID="pnbBusinessContactPhone" runat="server" Placeholder="Phone" CssClass="margin-b-sm" />
                                     <div class="form-group">

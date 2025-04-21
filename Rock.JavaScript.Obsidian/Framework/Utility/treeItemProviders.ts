@@ -18,6 +18,7 @@
 import { Guid } from "@Obsidian/Types";
 import { emptyGuid, toGuidOrNull } from "./guid";
 import { post } from "./http";
+import { SiteType } from "@Obsidian/Enums/Cms/siteType";
 import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
 import { CategoryPickerChildTreeItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/categoryPickerChildTreeItemsOptionsBag";
 import { LocationItemPickerGetActiveChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationItemPickerGetActiveChildrenOptionsBag";
@@ -36,6 +37,9 @@ import { ReportPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Con
 import { SchedulePickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/schedulePickerGetChildrenOptionsBag";
 import { WorkflowActionTypePickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/workflowActionTypePickerGetChildrenOptionsBag";
 import { MergeFieldPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mergeFieldPickerGetChildrenOptionsBag";
+import { AssetManagerGetRootFoldersOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerGetRootFoldersOptionsBag";
+import { AssetManagerBaseOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerBaseOptionsBag";
+import { UniversalItemTreePickerOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/UniversalItemTreePickerOptionsBag";
 import { flatten } from "./arrayUtils";
 import { toNumberOrNull } from "./numberUtils";
 
@@ -130,7 +134,7 @@ export class CategoryTreeItemProvider implements ITreeItemProvider {
             securityGrantToken: this.securityGrantToken,
 
             getCategorizedItems: false,
-            includeCategoriesWithoutChildren: false,
+            includeCategoriesWithoutChildren: true,
             includeInactiveItems: false,
             includeUnnamedEntityItems: false,
         };
@@ -364,6 +368,11 @@ export class PageTreeItemProvider implements ITreeItemProvider {
     public selectedPageGuids?: Guid[] | null;
 
     /**
+     * The site type to limit the results.
+     */
+    public siteType?: SiteType | null;
+
+    /**
      * Gets the child items of the given parent (or root if no parent given) from the server.
      *
      * @param parentGuid The parent item whose children are retrieved.
@@ -377,7 +386,8 @@ export class PageTreeItemProvider implements ITreeItemProvider {
             guid: toGuidOrNull(parentGuid) ?? emptyGuid,
             rootPageGuid: null,
             hidePageGuids: this.hidePageGuids ?? [],
-            securityGrantToken: this.securityGrantToken
+            securityGrantToken: this.securityGrantToken,
+            siteType: this.siteType
         };
         const url = "/api/v2/Controls/PagePickerGetChildren";
         const response = await post<TreeItemBag[]>(url, undefined, options);
@@ -852,6 +862,9 @@ export class ScheduleTreeItemProvider implements ITreeItemProvider {
     /** Whether to include inactive schedules in the results. */
     public includeInactive: boolean = false;
 
+    /** Whether to exclude private schedules in the results. */
+    public includePublicOnly: boolean = false;
+
     /**
      * Gets the child items from the server.
      *
@@ -863,7 +876,8 @@ export class ScheduleTreeItemProvider implements ITreeItemProvider {
         const options: SchedulePickerGetChildrenOptionsBag = {
             parentGuid,
             includeInactiveItems: this.includeInactive,
-            securityGrantToken: this.securityGrantToken
+            includePublicItemsOnly: this.includePublicOnly,
+            securityGrantToken: this.securityGrantToken,
         };
         const url = "/api/v2/Controls/SchedulePickerGetChildren";
         const response = await post<TreeItemBag[]>(url, undefined, options);
@@ -1070,6 +1084,119 @@ export class MergeFieldTreeItemProvider implements ITreeItemProvider {
         return parentIds;
     }
 
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+
+/**
+ * Tree Item Provider for Asset Storage Provider folders from the server and displaying
+ * them inside a tree list.
+ */
+export class AssetManagerTreeItemProvider implements ITreeItemProvider {
+
+    /** List of folders that are currently expanded in the tree list. */
+    public openFolders: Set<string> = new Set();
+    public selectedFolder: string | null = "";
+    public enableAssetManager = false;
+    public enableFileManager = false;
+    public encryptedRootFolder = "";
+    public securityGrantToken = "";
+    public userSpecificRoot = false;
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        const options: AssetManagerGetRootFoldersOptionsBag = {
+            expandedFolders: this.openFolders.size > 0 ? Array.from(this.openFolders) : null,
+            selectedFolder: this.selectedFolder,
+            enableAssetManager: this.enableAssetManager,
+            enableFileManager: this.enableFileManager,
+            rootFolder: this.encryptedRootFolder,
+            securityGrantToken: this.securityGrantToken,
+            userSpecificRoot: this.userSpecificRoot
+        };
+        const url = "/api/v2/Controls/AssetManagerGetRootFolders";
+        const response = await post<{ tree: TreeItemBag[], updatedExpandedFolders: string[] }>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            this.openFolders = new Set(response.data.updatedExpandedFolders);
+            return response.data.tree;
+        }
+        else {
+            console.error("Error Fetching Root Asset Manager Items", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        const options: AssetManagerBaseOptionsBag = {
+            assetFolderId: item.value,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/AssetManagerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.error("Error Fetching Asset Manager Children", response.errorMessage);
+            return [];
+        }
+    }
+}
+
+/**
+ * Tree Item Provider for retrieving adaptive messages from the server and displaying
+ * them inside a tree list.
+ */
+export class AdaptiveMessageTreeItemProvider implements ITreeItemProvider {
+    /**
+     * The security grant token that will be used to request additional access
+     * to the category list.
+     */
+    public securityGrantToken?: string | null;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
+        const options: UniversalItemTreePickerOptionsBag = {
+            parentValue: parentGuid,
+            securityGrantToken: this.securityGrantToken,
+        };
+
+        const response = await post<TreeItemBag[]>("/api/v2/Controls/AdaptiveMessagePickerGetAdaptiveMessages", {}, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
 
     /**
      * @inheritdoc

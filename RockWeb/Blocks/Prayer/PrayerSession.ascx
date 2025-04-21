@@ -61,8 +61,8 @@
                     <asp:HiddenField ID="hfPrayerIndex" runat="server" />
                     <div class="row margin-b-md">
                         <div class="col-md-12">
-                            <asp:LinkButton ID="lbBack" runat="server" CssClass="btn btn-default" OnClick="lbBack_Click" CausesValidation="false"><i class="fa fa-chevron-left"></i> Back</asp:LinkButton>
-                            <asp:LinkButton ID="lbNext" TabIndex="1" AccessKey="n" ToolTip="Alt+n" runat="server" CssClass="btn btn-default pull-right" OnClick="lbNext_Click" CausesValidation="false">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                            <asp:LinkButton ID="lbBack" runat="server" data-shortcut-key="arrowleft" ToolTip="Alt+🡄" CssClass="btn btn-default" OnClick="lbBack_Click" CausesValidation="false"><i class="fa fa-chevron-left"></i> Back</asp:LinkButton>
+                            <asp:LinkButton ID="lbNext" TabIndex="1" data-shortcut-key="arrowright" ToolTip="Alt+🡆" runat="server" CssClass="btn btn-default pull-right" OnClick="lbNext_Click" CausesValidation="false">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
 
                         </div>
                     </div>
@@ -74,6 +74,11 @@
                             <div class="col-md-12">
                                 <asp:LinkButton ID="lbFlag" runat="server" Text="<i class='fa fa-flag'></i> Flag" CssClass="btn btn-warning" ToolTip="Flag as inappropriate so that an administrator can review the content." CausesValidation="false" OnClick="lbFlag_Click" />
                                 <asp:LinkButton ID="lbStop" runat="server" Text="End Session" CssClass="btn btn-link" CausesValidation="false" OnClick="lbStop_Click" />
+                            </div>
+                            <div class="col-md-12">
+                                <small>
+                                    <Rock:RockLiteral runat="server" ID="lAIDisclaimer"></Rock:RockLiteral>
+                                </small>
                             </div>
                         </div>
                     </div>

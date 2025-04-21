@@ -1,5 +1,15 @@
 const { pathsToModuleNameMapper } = require("ts-jest");
-const { compilerOptions } = require("./tsconfig.json");
+const { compilerOptions } = require("./tsconfig.base.json");
+
+const paths = { ...compilerOptions.paths };
+
+for (const key of Object.keys(paths)) {
+    const values = paths[key];
+
+    paths[key] = values.map(v => {
+        return v.replace("/dist/", "/");
+    });
+}
 
 /** @type {import('ts-jest/dist/types').TsJestCompileOptions} */
 module.exports = {
@@ -25,9 +35,9 @@ module.exports = {
             }
         ]
     },
-    moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node", "d.ts"],
+    moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node", "d.ts", "obs"],
     moduleNameMapper: {
         "^vue$": __dirname + "/node_modules/vue/index",
-        ...pathsToModuleNameMapper(compilerOptions.paths, { prefix: __dirname })
+        ...pathsToModuleNameMapper(paths, { prefix: __dirname })
     }
 };

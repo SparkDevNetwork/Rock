@@ -151,7 +151,7 @@ export const ConfigurationComponent = defineComponent({
 
     template: `
 <div>
-    <EntityTypePicker label="Entity Type" v-model="entityType" help="The type of entity to display categories for." />
+    <EntityTypePicker label="Entity Type" v-model="entityType" help="The type of entity to display categories for." showBlankItem />
     <TextBox v-model="qualifierColumn" label="Qualifier Column" help="Entity column qualifier."/>
     <TextBox v-model="qualifierValue" label="Qualifier Value" text="Yes" help="Entity column value." />
 </div>

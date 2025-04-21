@@ -246,8 +246,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             Guid personGuid = GetPersonGuid();
 
             if ( !Page.IsPostBack )
@@ -268,6 +266,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     BindAttribute( person );
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

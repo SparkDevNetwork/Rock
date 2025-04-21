@@ -25,6 +25,10 @@ using System.Net;
 using System.Net.Http;
 using System.Web;
 using System.Web.Http;
+
+using Microsoft.Extensions.Logging;
+
+using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -118,61 +122,6 @@ namespace Rock.Rest.Controllers
             }
         }
 
-        #endregion
-
-        #region Action: RegisterPageInteraction
-
-        /// <summary>
-        /// Describes a processing request to register a page interaction.
-        /// </summary>
-        public class RegisterPageInteractionActionInfo
-        {
-            /// <summary>
-            /// The unique identifier of the page.
-            /// </summary>
-            public int PageId { get; set; }
-
-            /// <summary>
-            /// The name of the action being registered.
-            /// </summary>
-            public string ActionName { get; set; } = "View";
-
-            /// <summary>
-            /// The unique identifier for the browser session.
-            /// </summary>
-            public Guid BrowserSessionGuid { get; set; }
-
-            /// <summary>
-            /// The server date and time on which the page was requested.
-            /// </summary>
-            public DateTime PageRequestDateTime { get; set; }
-
-            /// <summary>
-            /// The time in seconds required to serve the initial page request.
-            /// </summary>
-            public double? PageRequestTimeToServe { get; set; }
-
-            /// <summary>
-            /// Gets the raw user agent string of the client browser.
-            /// </summary>
-            public string UserAgent { get; set; }
-
-            /// <summary>
-            /// Gets the IP host address of the remote client.
-            /// </summary>
-            public string UserHostAddress { get; set; }
-
-            /// <summary>
-            /// Gets the DNS host name or IP address of the client's previous request that linked to the current URL.
-            /// </summary>
-            public string UrlReferrerHostAddress { get; set; }
-
-            /// <summary>
-            /// Gets the query search terms of the client's previous request that linked to the current URL.
-            /// </summary>
-            public string UrlReferrerSearchTerms { get; set; }
-        }
-
         /// <summary>
         /// Registers a page interaction.
         /// </summary>
@@ -196,7 +145,7 @@ namespace Rock.Rest.Controllers
                 }
                 if ( string.IsNullOrWhiteSpace( interactionInfo.UserHostAddress ) )
                 {
-                    interactionInfo.UserHostAddress = request.UserHostAddress;
+                    interactionInfo.UserHostAddress = WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( request ) );
                 }
             }
 
@@ -227,20 +176,40 @@ namespace Rock.Rest.Controllers
                 }
             }
 
-            var interactionService = new InteractionService( rockContext );
+            // Update the cookie with fields from the Url.
+            var interaction = new Interaction();
+            interaction.SetUTMFieldsFromURL( request?.Url?.OriginalString );
+
+            var utmUrlData = new UtmCookieData
+            {
+                Source = interaction.GetUtmSourceName(),
+                Medium = interaction.GetUtmMediumName(),
+                Campaign = interaction.GetUtmCampaignName(),
+                Content = interaction.Content,
+                Term = interaction.Term
+            };
+
+            UtmHelper.SetUtmCookieDataForRequest( new HttpContextWrapper( httpContext ), utmUrlData );
+
+            var actionInfo = RegisterPageInteractionActionInfo.FromPageInteraction( interactionInfo );
+            var utmInfo = UtmHelper.GetUtmCookieDataFromRequest( request );
+
+            UtmHelper.AddUtmInfoToRegisterPageInteractionAction( actionInfo, utmInfo );
+
             try
             {
-                interactionService.RegisterPageInteraction( interactionInfo, immediate );
+                InteractionService.RegisterPageInteraction( actionInfo, immediate );
             }
             catch ( Exception ex )
             {
+                var logger = RockLogger.LoggerFactory.CreateLogger<InteractionsController>();
                 // If there is a problem creating the interaction, record it but do not generate an error for the caller.
-                RockLogger.Log.Error( RockLogDomains.Interaction, ex );
+                logger.LogError( ex.Message, ex );
             }
 
             return Ok();
         }
 
-        #endregion 
+        #endregion
     }
 }

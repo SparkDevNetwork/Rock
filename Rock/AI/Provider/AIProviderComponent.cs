@@ -15,11 +15,15 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Rock.AI.Classes.TextCompletions;
-using Rock.AI.Classes.Moderations;
-using Rock.Extension;
+
 using Rock.AI.Classes.ChatCompletions;
+using Rock.AI.Classes.Moderations;
+using Rock.AI.Classes.TextCompletions;
+using Rock.Extension;
+using Rock.Model;
 
 namespace Rock.AI.Provider
 {
@@ -36,26 +40,121 @@ namespace Rock.AI.Provider
     /// </summary>
     public abstract class AIProviderComponent : Component
     {
+        /// <summary>
+        /// Initializes a new instance.
+        /// </summary>
+        public AIProviderComponent() : base( false )
+        {
+            // Override default constructor to prevent loading of Component Attributes.
+            // Attributes are managed for each individual AIProvider instance.
+        }
+
+        /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public override Dictionary<string, string> AttributeValueDefaults
+        {
+            get
+            {
+                var defaults = new Dictionary<string, string>()
+                {
+                    { "Active", "True" },
+                    { "Order", "0" }
+                };
+                return defaults;
+            }
+        }
+
+        /// <summary>
+        /// Loads the attributes for an instance of an AI Provider.
+        /// </summary>
+        /// <param name="provider">The AI provider.</param>
+        public void LoadAttributes( AIProvider provider )
+        {
+            provider.LoadAttributes();
+        }
+
+        /// <summary>
+        /// Use GetAttributeValue( AIProvider provider, string key) instead. AI provider component attribute values are 
+        /// specific to the AI provider instance (rather than global).  This method will throw an exception
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">AI provider Component attributes are saved specific to the AI provider, which requires that the current AI provider is included in order to load or retrieve values. Use the GetAttributeValue( AIProvider provider, string key ) method instead.</exception>
+        public override string GetAttributeValue( string key )
+        {
+            throw new Exception( "Component attributes are managed for specific AIProvider instances. Use the GetAttributeValue( AIProvider, string ) method instead." );
+        }
+
+        /// <summary>
+        /// Gets the attribute value for the AI provider 
+        /// </summary>
+        /// <param name="provider">The AI provider.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public string GetAttributeValue( AIProvider provider, string key )
+        {
+            if ( provider.AttributeValues == null )
+            {
+                provider.LoadAttributes();
+            }
+
+            return provider.GetAttributeValue( key );
+        }
+
+        /// <summary>
+        /// Always returns 0.  
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public override int Order
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Always returns true. 
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsActive
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         /// <summary>
         /// Gets the contents of the text completions.
         /// </summary>
+        /// <param name="provider"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public abstract Task<TextCompletionsResponse> GetTextCompletions( TextCompletionsRequest request );
+        public abstract Task<TextCompletionsResponse> GetTextCompletions( AIProvider provider, TextCompletionsRequest request );
 
         /// <summary>
         /// Gets the contents of the chat completions.
         /// </summary>
+        /// <param name="provider"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public abstract Task<ChatCompletionsResponse> GetChatCompletions( ChatCompletionsRequest request );
+        public abstract Task<ChatCompletionsResponse> GetChatCompletions( AIProvider provider, ChatCompletionsRequest request );
 
         /// <summary>
-        /// Get's the moderation information for the given request.
+        /// Gets the moderation information for the given request.
         /// </summary>
+        /// <param name="provider"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public abstract Task<ModerationsResponse> GetModerations( ModerationsRequest request );
+        public abstract Task<ModerationsResponse> GetModerations( AIProvider provider, ModerationsRequest request );
     }
 }

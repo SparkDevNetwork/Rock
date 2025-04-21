@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -11,12 +11,13 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="AppleTVApp"
-                 :isAuditHidden="false"
+                 :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="true"
                  :isDeleteVisible="false"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -71,8 +72,7 @@
         "description",
         "isActive",
         "loginPage",
-        "enablePageViews",
-        "enablePageViewGeoTracking"
+        "enablePageViews"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(appleTvAppEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -80,6 +80,10 @@
     // #endregion
 
     // #region Computed Values
+
+    const isAuditHidden = computed((): boolean => {
+        return panelMode.value != DetailPanelMode.View;
+    });
 
     /**
      * The entity name to display in the block panel.
@@ -105,6 +109,21 @@
             return undefined;
         }
 
+        if (appleTvAppViewBag.value?.isActive === true) {
+            labels.push({
+                iconCssClass: "fa fa-lightbulb",
+                title: "Active",
+                type: "success"
+            });
+        }
+        else {
+            labels.push({
+                iconCssClass: "far fa-lightbulb",
+                title: "Inactive",
+                type: "danger"
+            });
+        }
+
         return labels;
     });
 
@@ -115,10 +134,6 @@
     const options = computed((): AppleTvAppDetailOptionsBag => {
         return config.options ?? {};
     });
-
-    // #endregion
-
-    // #region Functions
 
     // #endregion
 

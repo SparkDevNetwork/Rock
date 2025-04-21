@@ -29,6 +29,10 @@ export const Group = {
     GroupBenevolence: "02FA0881-3552-42B8-A519-D021139B800F",
     /** The Calendar Administrators Group guid */
     GroupCalendarAdministrators: "FDA9D63F-B0B1-43E8-8B82-0255E5D99F26",
+    /** The Chat Administrators group guid */
+    GroupChatAdministrators: "B06096FC-5E98-4DC9-A1EA-7FED844B65C5",
+    /** The group used to identify people who are globally banned from chat */
+    GroupChatBanList: "C9E3A59F-3B5E-43B1-9D97-191EF82D73C4",
     /** The Communication Administrators Group guid */
     GroupCommunicationAdministrators: "B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B",
     /** The group of communication approvers */
@@ -59,6 +63,6 @@ export const Group = {
     GroupStaffLikeMembers: "300BA2C8-49A3-44BA-A82A-82E3FD8C3745",
     /** Gets the staff member group guid (Staff Users) */
     GroupStaffMembers: "2C112948-FF4C-46E7-981A-0257681EADF4",
-    /** WEB - Admistration */
+    /** WEB - Administration */
     GroupWebAdministrators: "1918E74F-C00D-4DDD-94C4-2E7209CE12C3",
 };

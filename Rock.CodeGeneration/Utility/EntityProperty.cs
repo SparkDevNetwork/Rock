@@ -160,10 +160,10 @@ namespace Rock.CodeGeneration.Utility
                 // If the id property is not nullable, get the required integer value.
                 if ( idProperty != null && idProperty.PropertyType == typeof( int ) )
                 {
-                    return $"{Name}.GetEntityId<{PropertyType.GetFriendlyName()}>( rockContext ).Value";
+                    return $"{Name}.GetEntityId<{PropertyType.GetFriendlyName()}>( RockContext ).Value";
                 }
 
-                return $"{Name}.GetEntityId<{PropertyType.GetFriendlyName()}>( rockContext )";
+                return $"{Name}.GetEntityId<{PropertyType.GetFriendlyName()}>( RockContext )";
             }
 
             // We don't know how to handle it, so either throw an error or put

@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+
 namespace Rock.Model
 {
     /// <summary>
@@ -68,5 +70,10 @@ namespace Rock.Model
         /// The default payment.
         /// </value>
         public decimal? DefaultPayment { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="RegistrationRegistrant"/> unique identifier if this cost is associated with a registrant.
+        /// </summary>
+        public Guid? RegistrationRegistrantGuid { get; set; }
     }
 }

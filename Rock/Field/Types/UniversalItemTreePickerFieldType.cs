@@ -30,6 +30,7 @@ namespace Rock.Field.Types
     /// General purpose picker field type that allows one or more items to
     /// be picked by the person in a tree list.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [UniversalFieldTypeGuid( "c7485f3f-0c10-4db6-9574-c10b195617e4" )]
     public abstract class UniversalItemTreePickerFieldType : UniversalItemFieldType
@@ -92,7 +93,10 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
         /// <returns>A string that represents the icon class.</returns>
-        protected abstract string GetItemIconCssClass( Dictionary<string, string> privateConfigurationValues );
+        protected virtual string GetItemIconCssClass( Dictionary<string, string> privateConfigurationValues )
+        {
+            return "fa fa-folder-open";
+        }
 
         /// <summary>
         /// Specifies the tree item types that are selectable. If <c>null</c>
@@ -109,7 +113,9 @@ namespace Rock.Field.Types
         /// <summary>
         /// Gets the context string to include with all API requests. This can
         /// be information you might need in handling the API request so that
-        /// you can return the correct data.
+        /// you can return the correct data. We also recommend you encode any
+        /// context data as a JSON string to future proof yourself from changes
+        /// you might need to make.
         /// </summary>
         /// <param name="privateConfigurationValues">The private configuration values.</param>
         /// <returns>A custom string.</returns>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActionType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.WORKFLOW_ACTION_TYPE )]
     public partial class WorkflowActionType : Model<WorkflowActionType>, IOrdered, ICacheable
     {
@@ -73,6 +74,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that the action is operating against.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int EntityTypeId { get; set; }
 
         /// <summary>
@@ -129,6 +131,15 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember]
         public string CriteriaValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean value that determines if an action should be completed if criteria is unmet.
+        /// </summary>
+        /// <value>
+        /// The boolean value determining if an action should be completed if criteria is unmet.
+        /// </value>
+        [DataMember]
+        public bool IsActionCompletedIfCriteriaUnmet { get; set; }
 
         #endregion Entity Properties
 

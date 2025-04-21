@@ -1,0 +1,32 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode">
+
+        <ContentChannelItemPicker label="Choose A Content Channel Item" v-model="value" :rules="required ? 'required' : ''" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Required" v-model="required" />
+                </div>
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ContentChannelItemPicker from "@Obsidian/Controls/contentChannelItemPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref({
+        "value": "d6d4a292-f794-4d0c-bd29-420631a858b3",
+        "text": "Miracles in Luke",
+        "category": null
+    });
+    const required = ref(false);
+    const importCode = getSfcControlImportPath("contentChannelItemPicker");
+    const exampleCode = `<ContentChannelItemPicker label="Content Channel Item" v-model="value" />`;
+</script>

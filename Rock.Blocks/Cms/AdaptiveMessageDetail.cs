@@ -30,6 +30,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.AdaptiveMessageDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
@@ -54,7 +55,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "d88ce6cf-c175-4c8f-bff1-d90c590abb3e" )]
     [Rock.SystemGuid.BlockTypeGuid( "a81fe4e0-df9f-4978-83a7-eb5459f37938" )]
-    public class AdaptiveMessageDetail : RockDetailBlockType
+    public class AdaptiveMessageDetail : RockEntityDetailBlockType<AdaptiveMessage, AdaptiveMessageBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -66,12 +67,18 @@ namespace Rock.Blocks.Cms
         private static class PageParameterKey
         {
             public const string AdaptiveMessageId = "AdaptiveMessageId";
+            public const string AdaptiveMessageCategoryId = "AdaptiveMessageCategoryId";
+            public const string ExpandedIds = "ExpandedIds";
+            public const string ParentCategoryId = "ParentCategoryId";
+            public const string CategoryId = "CategoryId";
+            public const string AutoEdit = "AutoEdit";
         }
 
         private static class NavigationUrlKey
         {
-            public const string ParentPage = "ParentPage";
+            public const string CurrentPage = "CurrentPage";
             public const string AdaptationDetailPage = "AdaptationDetailPage";
+            public const string CurrentPageWithoutMessageId = "CurrentPageWithoutMessageId";
         }
 
         #endregion Keys
@@ -81,18 +88,23 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            if ( PageParameter( PageParameterKey.AdaptiveMessageId ).IsNullOrWhiteSpace() && PageParameter( PageParameterKey.AdaptiveMessageCategoryId ).IsNullOrWhiteSpace() )
             {
-                var box = new DetailBlockBox<AdaptiveMessageBag, AdaptiveMessageDetailOptionsBag>();
+                return new DetailBlockBox<AdaptiveMessageBag, AdaptiveMessageDetailOptionsBag>();
+            }
 
-                SetBoxInitialEntityState( box, rockContext );
+            var box = new DetailBlockBox<AdaptiveMessageBag, AdaptiveMessageDetailOptionsBag>();
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<AdaptiveMessage>();
-
+            SetBoxInitialEntityState( box );
+            if ( box.Entity == null )
+            {
                 return box;
             }
+
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable, box.Entity );
+
+            return box;
         }
 
         /// <summary>
@@ -100,11 +112,21 @@ namespace Rock.Blocks.Cms
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
+        /// <param name="entity">The entity.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private AdaptiveMessageDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private AdaptiveMessageDetailOptionsBag GetBoxOptions( bool isEditable, AdaptiveMessageBag entity )
         {
             var options = new AdaptiveMessageDetailOptionsBag();
+
+            var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
+            if ( parentCategoryId.HasValue )
+            {
+                var parentCategory = new CategoryService( RockContext ).Get( parentCategoryId.Value );
+                if ( parentCategory != null && parentCategory.EntityType.Guid == Rock.SystemGuid.EntityType.ADAPTIVE_MESSAGE_CATEGORY.AsGuid() )
+                {
+                    options.ParentCategory = parentCategory.ToListItemBag();
+                }
+            }
 
             return options;
         }
@@ -114,10 +136,9 @@ namespace Rock.Blocks.Cms
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="adaptiveMessage">The AdaptiveMessage to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the AdaptiveMessage is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateAdaptiveMessage( AdaptiveMessage adaptiveMessage, RockContext rockContext, out string errorMessage )
+        private bool ValidateAdaptiveMessage( AdaptiveMessage adaptiveMessage, out string errorMessage )
         {
             errorMessage = null;
 
@@ -129,10 +150,9 @@ namespace Rock.Blocks.Cms
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<AdaptiveMessageBag, AdaptiveMessageDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<AdaptiveMessageBag, AdaptiveMessageDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -143,7 +163,7 @@ namespace Rock.Blocks.Cms
             var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -151,7 +171,6 @@ namespace Rock.Blocks.Cms
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -163,17 +182,15 @@ namespace Rock.Blocks.Cms
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity, rockContext );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                    var reservedKeyNames = box.Entity.AdaptationSharedAttributes.Select( a => a.Key ).ToList();
-                    reservedKeyNames.AddRange( box.Entity.AdaptationAttributes.Select( a => a.Key ).ToList() );
-                    box.Options.ReservedKeyNames = reservedKeyNames;
+                    box.Entity = GetEntityBagForEdit( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( AdaptiveMessage.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -195,16 +212,14 @@ namespace Rock.Blocks.Cms
                 IsActive = entity.IsActive,
                 Key = entity.Key,
                 Name = entity.Name,
-                Categories = entity.Categories.ToListItemBagList(),
+                StartDate = entity.StartDate,
+                EndDate = entity.EndDate,
+                Categories = entity.AdaptiveMessageCategories.Select( a => a.Category ).ToListItemBagList(),
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="AdaptiveMessageBag"/> that represents the entity.</returns>
-        private AdaptiveMessageBag GetEntityBagForView( AdaptiveMessage entity )
+        /// <inheritdoc/>
+        protected override AdaptiveMessageBag GetEntityBagForView( AdaptiveMessage entity )
         {
             if ( entity == null )
             {
@@ -213,7 +228,7 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
             var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.ADAPTIVE_MESSAGES.AsGuid() );
-            var interactionQry = new InteractionService( new RockContext() ).Queryable().Where( a => a.InteractionComponent.InteractionChannelId == interactionChannelId );
+            var interactionQry = new InteractionService( RockContext ).Queryable().Where( a => a.InteractionComponent.InteractionChannelId == interactionChannelId );
             var adaptations = entity.AdaptiveMessageAdaptations.Select( b => new AdaptiveMessageAdaptationData
             {
                 AdaptiveMessageAdaptation = b,
@@ -221,7 +236,7 @@ namespace Rock.Blocks.Cms
             } ).OrderBy( a => a.AdaptiveMessageAdaptation.Order ).ThenBy( a => a.AdaptiveMessageAdaptation.Name );
             bag.AdaptationsGridData = GetAdaptationsGridBuilder().Build( adaptations );
             bag.AdaptationsGridDefinition = GetAdaptationsGridBuilder().BuildDefinition();
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -252,7 +267,7 @@ namespace Rock.Blocks.Cms
             string saturation;
 
             // If this is a Person, use the Person properties.
-            if ( !adaptation.ViewSaturationInDays.HasValue || adaptation.ViewSaturationInDays == default(int))
+            if ( !adaptation.ViewSaturationInDays.HasValue || adaptation.ViewSaturationInDays == default( int ) )
             {
                 saturation = "None";
             }
@@ -264,12 +279,8 @@ namespace Rock.Blocks.Cms
             return saturation;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="AdaptiveMessageBag"/> that represents the entity.</returns>
-        private AdaptiveMessageBag GetEntityBagForEdit( AdaptiveMessage entity, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override AdaptiveMessageBag GetEntityBagForEdit( AdaptiveMessage entity )
         {
             if ( entity == null )
             {
@@ -277,16 +288,23 @@ namespace Rock.Blocks.Cms
             }
 
             var bag = GetCommonEntityBag( entity );
-            var inheritedAttributes = GetAdaptationAttributes( rockContext, null, null );
-            var attributes = GetAdaptationAttributes( rockContext, "AdaptiveMessageId", entity.Id.ToString() );
+
+            var inheritedAttributes = GetAdaptationAttributes( RockContext, null, null );
+            var attributes = GetAdaptationAttributes( RockContext, "AdaptiveMessageId", entity.Id.ToString() );
 
             bag.AdaptationSharedAttributes = new List<PublicEditableAttributeBag>();
-            bag.AdaptationSharedAttributes.AddRange( inheritedAttributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ) ) );
+            bag.AdaptationSharedAttributes.AddRange( inheritedAttributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttribute( attribute ) ) );
 
             bag.AdaptationAttributes = new List<PublicEditableAttributeBag>();
-            bag.AdaptationAttributes.AddRange( attributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ) ) );
+            bag.AdaptationAttributes.AddRange( attributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttribute( attribute ) ) );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            var messageQry = new AdaptiveMessageService( RockContext ).Queryable().AsNoTracking();
+            var reservedKeyNames = bag.AdaptationSharedAttributes.Select( a => a.Key ).ToList();
+            reservedKeyNames.AddRange( bag.AdaptationAttributes.Select( a => a.Key ).ToList() );
+            bag.ReservedKeyNames = reservedKeyNames;
+            bag.MessageReservedKeyNames = messageQry.Where( a => a.Id != entity.Id ).Select( a => a.Key ).ToList();
+
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -319,55 +337,65 @@ namespace Rock.Blocks.Cms
                 .ToList();
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( AdaptiveMessage entity, DetailBlockBox<AdaptiveMessageBag, AdaptiveMessageDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( AdaptiveMessage entity, ValidPropertiesBox<AdaptiveMessageBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.Key ),
-                () => entity.Key = box.Entity.Key );
+            box.IfValidProperty( nameof( box.Bag.Key ),
+                () => entity.Key = box.Bag.Key );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.Categories ),
-                () => UpdateCategories( rockContext, entity, box.Entity ) );
+            box.IfValidProperty( nameof( box.Bag.Categories ),
+                () => UpdateCategories( entity, box.Bag ) );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.StartDate ),
+                () => entity.StartDate = box.Bag.StartDate );
+
+            box.IfValidProperty( nameof( box.Bag.EndDate ),
+                () => entity.EndDate = box.Bag.EndDate );
+
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="AdaptiveMessage"/> to be viewed or edited on the page.</returns>
-        private AdaptiveMessage GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override AdaptiveMessage GetInitialEntity()
         {
-            return GetInitialEntity<AdaptiveMessage, AdaptiveMessageService>( rockContext, PageParameterKey.AdaptiveMessageId );
+            var entity = GetInitialEntity<AdaptiveMessage, AdaptiveMessageService>( RockContext, PageParameterKey.AdaptiveMessageId );
+
+            if ( PageParameter( PageParameterKey.AdaptiveMessageCategoryId ).IsNotNullOrWhiteSpace() )
+            {
+                var adaptiveMessageCategoryId = PageParameter( PageParameterKey.AdaptiveMessageCategoryId ).AsIntegerOrNull();
+                if ( adaptiveMessageCategoryId.HasValue )
+                {
+                    var adaptiveMessageCategory = new AdaptiveMessageCategoryService( RockContext ).Get( adaptiveMessageCategoryId.Value );
+                    if ( adaptiveMessageCategory != null )
+                    {
+                        entity = adaptiveMessageCategory.AdaptiveMessage;
+                    }
+                }
+            }
+
+            return entity;
         }
 
         /// <summary>
@@ -378,52 +406,16 @@ namespace Rock.Blocks.Cms
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
-                [NavigationUrlKey.AdaptationDetailPage] = this.GetLinkedPageUrl( AttributeKey.AdaptationDetailPage, "AdaptiveMessageAdaptationId", "((Key))" )
+                [NavigationUrlKey.CurrentPage] = this.GetCurrentPageUrl(),
+                [NavigationUrlKey.AdaptationDetailPage] = this.GetLinkedPageUrl( AttributeKey.AdaptationDetailPage, "AdaptiveMessageAdaptationId", "((Key))" ),
+                [NavigationUrlKey.CurrentPageWithoutMessageId] = GetPageLinkWithoutMessageId()
             };
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out AdaptiveMessage entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( AdaptiveMessage entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out AdaptiveMessage entity, out BlockActionResult error, Func<IQueryable<AdaptiveMessage>, IQueryable<AdaptiveMessage>> qryAdditions = null )
-        {
-            var entityService = new AdaptiveMessageService( rockContext );
+            var entityService = new AdaptiveMessageService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -458,23 +450,91 @@ namespace Rock.Blocks.Cms
         /// <summary>
         /// Updates the categories.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="entity">The entity.</param>
         /// <param name="bag">The bag.</param>
-        private void UpdateCategories( RockContext rockContext, AdaptiveMessage entity, AdaptiveMessageBag bag )
+        private void UpdateCategories( AdaptiveMessage entity, AdaptiveMessageBag bag )
         {
-            entity.Categories.Clear();
+            var categoryService = new CategoryService( RockContext );
+            var adaptiveMessageCategoryService = new AdaptiveMessageCategoryService( RockContext );
+            var adaptiveMessageCategories = entity.AdaptiveMessageCategories.ToList();
+            foreach ( var adaptiveMessageCategory in adaptiveMessageCategories )
+            {
+                var category = categoryService.Get( adaptiveMessageCategory.CategoryId );
 
-            var categoryService = new CategoryService( rockContext );
+                if ( category != null )
+                {
+                    if ( !bag.Categories.Any( a => a.Value == category.Guid.ToString() ) )
+                    {
+                        entity.AdaptiveMessageCategories.Remove( adaptiveMessageCategory );
+                        adaptiveMessageCategoryService.Delete( adaptiveMessageCategory );
+                    };
+                }
+            }
+
             foreach ( var categoryGuid in bag.Categories.Select( c => c.Value.AsGuid() ) )
             {
                 var category = categoryService.Get( categoryGuid );
 
                 if ( category != null )
                 {
-                    entity.Categories.Add( category );
+                    if ( !entity.AdaptiveMessageCategories.Any( a => a.CategoryId == category.Id ) )
+                    {
+                        entity.AdaptiveMessageCategories.Add( new AdaptiveMessageCategory { CategoryId = category.Id } );
+                    };
                 }
             }
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            // Exclude the auto edit and return URL parameters from the page reference parameters (if any).
+            var excludedParamKeys = new[] { PageParameterKey.AutoEdit.ToLower() };
+            var paramsToInclude = pageReference.Parameters
+                .Where( kv => !excludedParamKeys.Contains( kv.Key.ToLower() ) )
+                .ToDictionary( kv => kv.Key, kv => kv.Value );
+
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, paramsToInclude );
+            var adaptiveMessageIdParam = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageId );
+            var adaptiveMessageCategoryIdParam = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageCategoryId );
+            var adaptiveMessageId = Rock.Utility.IdHasher.Instance.GetId( adaptiveMessageIdParam ) ?? adaptiveMessageIdParam.AsIntegerOrNull();
+            var adaptiveMessageCategoryId = Rock.Utility.IdHasher.Instance.GetId( adaptiveMessageCategoryIdParam ) ?? adaptiveMessageCategoryIdParam.AsIntegerOrNull();
+
+            if ( adaptiveMessageCategoryId == 0 )
+            {
+                adaptiveMessageId = 0;
+            }
+            else if ( !adaptiveMessageId.HasValue )
+            {
+                adaptiveMessageId = new AdaptiveMessageCategoryService( RockContext )
+                    .Queryable()
+                    .Where( a => a.Id == adaptiveMessageCategoryId )
+                    .Select( a => a.AdaptiveMessageId)
+                    .FirstOrDefault();
+
+                if ( adaptiveMessageId == 0 )
+                {
+                    return new BreadCrumbResult
+                    {
+                        BreadCrumbs = new List<IBreadCrumb>()
+                    };
+                }
+            }
+
+            var title = new AdaptiveMessageService( RockContext )
+                .Queryable()
+                .Where( a => a.Id == adaptiveMessageId )
+                .Select( a => a.Name )
+                .FirstOrDefault() ?? "New Adaptive Message";
+            var breadCrumb = new BreadCrumbLink( title, breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb>
+                {
+                    breadCrumb
+                }
+            };
         }
 
         #endregion
@@ -490,26 +550,20 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<AdaptiveMessageBag, AdaptiveMessageDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                var reservedKeyNames = box.Entity.AdaptationSharedAttributes.Select( a => a.Key ).ToList();
-                reservedKeyNames.AddRange( box.Entity.AdaptationAttributes.Select( a => a.Key ).ToList() );
-                box.Options.ReservedKeyNames = reservedKeyNames;
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<AdaptiveMessageBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -518,57 +572,60 @@ namespace Rock.Blocks.Cms
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<AdaptiveMessageBag, AdaptiveMessageDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<AdaptiveMessageBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new AdaptiveMessageService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new AdaptiveMessageService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateAdaptiveMessage( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-
-                    if ( box.Entity.AdaptationAttributes.Count > 0 )
-                    {
-                        SaveAttributes( new AdaptiveMessageAdaptation().TypeId, "AdaptiveMessageId", entity.Id.ToString(), box.Entity.AdaptationAttributes, rockContext );
-                    }
-
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.AdaptiveMessageId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateAdaptiveMessage( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+
+                if ( box.Bag.AdaptationAttributes.Count > 0 )
+                {
+                    SaveAttributes( new AdaptiveMessageAdaptation().TypeId, "AdaptiveMessageId", entity.Id.ToString(), box.Bag.AdaptationAttributes );
+                }
+
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.AdaptiveMessageId] = entity.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForView( entity );
+
+            return ActionOk( new ValidPropertiesBox<AdaptiveMessageBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -579,25 +636,36 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new AdaptiveMessageService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new AdaptiveMessageService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            var adaptiveMessageCategoryId = PageParameter( PageParameterKey.AdaptiveMessageCategoryId ).AsIntegerOrNull();
+            // reload page, selecting the deleted data view's parent
+            var qryParams = new Dictionary<string, string>();
+            if ( adaptiveMessageCategoryId.HasValue )
+            {
+                var adaptiveMessageCategory = entity.AdaptiveMessageCategories.FirstOrDefault( a => a.Id == adaptiveMessageCategoryId.Value );
+                if ( adaptiveMessageCategory != null )
+                {
+                    qryParams["CategoryId"] = adaptiveMessageCategory.CategoryId.ToString();
+                }
+            }
+
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( ( new Rock.Web.PageReference( this.PageCache.Guid.ToString(), qryParams ) ).BuildUrl() );
         }
 
         /// <summary>
@@ -610,30 +678,27 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult ReorderAdaptation( string key, Guid guid, Guid? beforeGuid )
         {
-            using ( var rockContext = new RockContext() )
+            var adaptiveMessageService = new AdaptiveMessageService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var collection, out var actionError ) )
             {
-                var adaptiveMessageService = new AdaptiveMessageService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var collection, out var actionError, qry => qry.Include( l => l.AdaptiveMessageAdaptations ) ) )
-                {
-                    return actionError;
-                }
-
-                // Put them in a properly ordered list.
-                var sources = collection.AdaptiveMessageAdaptations
-                    .OrderBy( s => s.Order )
-                    .ThenBy( s => s.Id )
-                    .ToList();
-
-                if ( !sources.ReorderEntity( guid.ToString(), beforeGuid?.ToString() ) )
-                {
-                    return ActionBadRequest( "Invalid reorder attempt." );
-                }
-
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return actionError;
             }
+
+            // Put them in a properly ordered list.
+            var sources = collection.AdaptiveMessageAdaptations
+                .OrderBy( s => s.Order )
+                .ThenBy( s => s.Id )
+                .ToList();
+
+            if ( !sources.ReorderEntity( guid.ToString(), beforeGuid?.ToString() ) )
+            {
+                return ActionBadRequest( "Invalid reorder attempt." );
+            }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         /// <summary>
@@ -644,95 +709,37 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult DeleteAdaptation( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new AdaptiveMessageAdaptationService( RockContext );
+            AdaptiveMessageAdaptation entity = null;
+
+            // Determine if we are editing an existing entity or creating a new one.
+            if ( key.IsNotNullOrWhiteSpace() )
             {
-                var entityService = new AdaptiveMessageAdaptationService( rockContext );
-                AdaptiveMessageAdaptation entity = null;
-
-                // Determine if we are editing an existing entity or creating a new one.
-                if ( key.IsNotNullOrWhiteSpace() )
-                {
-                    // If editing an existing entity then load it and make sure it
-                    // was found and can still be edited.
-                    entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-                }
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{AdaptiveMessageAdaptation.FriendlyTypeName} not found." );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to edit ${AdaptiveMessageAdaptation.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                // If editing an existing entity then load it and make sure it
+                // was found and can still be edited.
+                entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<AdaptiveMessageBag, AdaptiveMessageDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( entity == null )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<AdaptiveMessageBag, AdaptiveMessageDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( $"{AdaptiveMessageAdaptation.FriendlyTypeName} not found." );
             }
-        }
 
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit ${AdaptiveMessageAdaptation.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
+        }
 
         /// <summary>
         /// Save attributes associated with this message.
@@ -741,11 +748,10 @@ namespace Rock.Blocks.Cms
         /// <param name="qualifierColumn"></param>
         /// <param name="qualifierValue"></param>
         /// <param name="viewStateAttributes"></param>
-        /// <param name="rockContext"></param>
-        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<PublicEditableAttributeBag> viewStateAttributes, RockContext rockContext )
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<PublicEditableAttributeBag> viewStateAttributes )
         {
             // Get the existing attributes for this entity type and qualifier value
-            var attributeService = new AttributeService( rockContext );
+            var attributeService = new AttributeService( RockContext );
             var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
 
             // Delete any of those attributes that were removed in the UI
@@ -753,18 +759,33 @@ namespace Rock.Blocks.Cms
             foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
                 attributeService.Delete( attr );
-                rockContext.SaveChanges();
+                RockContext.SaveChanges();
             }
 
             // Update the Attributes that were assigned in the UI
             foreach ( var attributeState in viewStateAttributes )
             {
-                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
             }
+        }
+
+        private string GetPageLinkWithoutMessageId()
+        {
+            var qryParams = new Dictionary<string, string>();
+            var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
+            if ( parentCategoryId.HasValue )
+            {
+                qryParams[PageParameterKey.CategoryId] = parentCategoryId.ToString();
+            }
+
+            qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+            var currentPageRef = new Rock.Web.PageReference( this.PageCache.Guid.ToString(), qryParams );
+            return currentPageRef.BuildUrl();
         }
 
 
         #endregion
+
         #region Support Classes
 
         /// <summary>

@@ -7,7 +7,9 @@
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <div class="form-control-static">
-                    {{ props.modelValue }}
+                    <slot name="default" v-bind="{ uniqueId, field, value: modelValue }">
+                        {{ modelValue }}
+                    </slot>
                 </div>
             </div>
         </template>
@@ -17,7 +19,7 @@
 <script setup lang="ts">
     import RockFormField from "./rockFormField.obs";
 
-    const props = defineProps({
+    defineProps({
         modelValue: {
             type: String,
             required: true

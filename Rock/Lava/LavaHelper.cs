@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -26,6 +27,8 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -47,6 +50,15 @@ namespace Rock.Lava
         /// itself but can be used by filters and such.
         /// </summary>
         internal static readonly string InternalMergeFieldPrefix = "$_";
+
+        /// <summary>
+        /// This is used by <see cref="IsLavaProperty(PropertyInfo)"/> method
+        /// to cache information calculated about a property. Since there is really
+        /// no sane way for an existing type to have it's attributes modified
+        /// at runtime, it is safe to cache this data and provides a 90% boost
+        /// to the performance of accessing entity properties.
+        /// </summary>
+        private static readonly ConcurrentDictionary<PropertyInfo, bool> _isLavaPropertyCache = new ConcurrentDictionary<PropertyInfo, bool>();
 
         #region Constructors
 
@@ -87,6 +99,12 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Dictionary<string, object> GetCommonMergeFields( RockPage rockPage, Person currentPerson = null, CommonMergeFieldsOptions options = null )
         {
+            /*
+                6/10/2024 - DSH
+
+                If you make any changes here to add or remove common merge fields,
+                you need to make the same changes in RockRequestContext.
+            */
             var mergeFields = new Dictionary<string, object>();
 
             if ( rockPage == null && HttpContext.Current != null )
@@ -97,6 +115,15 @@ namespace Rock.Lava
             if ( options == null )
             {
                 options = new CommonMergeFieldsOptions();
+            }
+
+            if ( rockPage == null )
+            {
+                var rockRequestContext = RockRequestContextAccessor.Current;
+                if ( rockRequestContext != null )
+                {
+                    return rockRequestContext.GetCommonMergeFields( currentPerson, options );
+                }
             }
 
             if ( currentPerson == null )
@@ -180,6 +207,12 @@ namespace Rock.Lava
                 mergeFields.Add( "Campuses", CampusCache.All() );
             }
 
+            // Add client information 
+            if ( rockPage != null )
+            {
+                mergeFields.Add( "Geolocation", rockPage.RequestContext?.ClientInformation?.Geolocation );
+            }
+
             return mergeFields;
         }
 
@@ -240,37 +273,40 @@ namespace Rock.Lava
         /// </returns>
         public static bool IsLavaProperty( PropertyInfo propInfo )
         {
-            // If property has a [LavaHidden] attribute return false
-            if ( propInfo.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Count() > 0 )
+            return _isLavaPropertyCache.GetOrAdd( propInfo, pi =>
             {
-                return false;
-            }
+                // If property has a [LavaHidden] attribute return false
+                if ( pi.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Count() > 0 )
+                {
+                    return false;
+                }
 
-            // If property has a [LavaVisible] attribute return true
-            if ( propInfo.GetCustomAttributes( typeof( LavaVisibleAttribute ) ).Count() > 0 )
-            {
-                return true;
-            }
+                // If property has a [LavaVisible] attribute return true
+                if ( pi.GetCustomAttributes( typeof( LavaVisibleAttribute ) ).Count() > 0 )
+                {
+                    return true;
+                }
 
-            // If property has a [DataMember] attribute return true
-            if ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
-            {
-                return true;
-            }
+                // If property has a [DataMember] attribute return true
+                if ( pi.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+                {
+                    return true;
+                }
 
 #pragma warning disable CS0618 // Type or member is obsolete
-            if ( propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Count() > 0 )
-            {
-                return false;
-            }
-            if ( propInfo.GetCustomAttributes( typeof( LavaIncludeAttribute ) ).Count() > 0 )
-            {
-                return true;
-            }
+                if ( pi.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Count() > 0 )
+                {
+                    return false;
+                }
+                if ( pi.GetCustomAttributes( typeof( LavaIncludeAttribute ) ).Count() > 0 )
+                {
+                    return true;
+                }
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            // otherwise return false
-            return false;
+                // otherwise return false
+                return false;
+            } );
         }
 
         /// <summary>
@@ -380,6 +416,8 @@ namespace Rock.Lava
         /// <param name="input"></param>
         /// <param name="rockContext"></param>
         /// <returns></returns>
+        [RockObsolete("1.17")]
+        [Obsolete( "Use GetDataViewDefinitionFromInputParameter( object ) instead." )]
         public static DataView GetDataViewFromInputParameter( object input, RockContext rockContext )
         {
             DataView dataView = null;
@@ -413,6 +451,55 @@ namespace Rock.Lava
                         var inputAsString = s.ToStringSafe().Trim();
                         dataView = dataViewService.Queryable()
                             .FirstOrDefault( d => d.Name != null && d.Name.Equals( inputAsString ) );
+                    }
+                }
+            }
+            return dataView;
+        }
+
+        /// <summary>
+        /// Gets a DataView object from a Lava input parameter containing a Data View reference.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        public static IDataViewDefinition GetDataViewDefinitionFromInputParameter( object input, RockContext rockContext )
+        {
+            IDataViewDefinition dataView = null;
+
+            // Parse the input object for a dataView.
+            if ( input is IDataViewDefinition dv )
+            {
+                dataView = dv;
+            }
+            else if ( input is string s )
+            {
+                var inputAsGuid = s.AsGuidOrNull();
+                if ( inputAsGuid != null )
+                {
+                    // If the input is a Guid, retrieve the corresponding DataView.
+                    dataView = DataViewCache.Get( inputAsGuid.Value );
+                }
+                else
+                {
+                    var inputAsInt = s.AsIntegerOrNull();
+                    if ( inputAsInt != null )
+                    {
+                        // If the input is an integer, retrieve the corresponding dataView.
+                        dataView = DataViewCache.Get( inputAsInt.Value );
+                    }
+                    else
+                    {
+                        // If the input is a string, retrieve by name.
+                        var dataViewService = new DataViewService( rockContext );
+
+                        var inputAsString = s.ToStringSafe().Trim();
+                        var dataViewId = dataViewService.Queryable()
+                            .Where( d => d.Name != null && d.Name.Equals( inputAsString ) )
+                            .Select( d => d.Id )
+                            .FirstOrDefault();
+
+                        dataView = DataViewCache.Get( dataViewId );
                     }
                 }
             }
@@ -791,7 +878,7 @@ namespace Rock.Lava
         ///  http://stackoverflow.com/a/16538131/1755417
         ///  http://stackoverflow.com/a/25776530/1755417
         /// </summary>
-        private static Regex _hasLavaTags = new Regex( @"(?<=\{).+(?<=\})", RegexOptions.Compiled );
+        private static Regex _hasLavaTags = new Regex( @"(?<=\{)[\S\s]+(?<=\})", RegexOptions.Compiled );
 
         /// <summary>
         /// Determines whether a string potentially contains Lava tags.

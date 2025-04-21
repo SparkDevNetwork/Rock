@@ -3,26 +3,24 @@
     <RockFormField :modelValue="internalValue"
                    formGroupClasses="rock-code-editor"
                    name="codeeditor">
-        <template #default="{ uniqueId, field }">
-            <div class="control-wrapper">
-                <div v-if="hasMergeFields" class="codeeditor-header margin-b-md clearfix">
-                </div>
-
-                <div :class="codeEditorClass"
-                     :style="codeEditorStyle">
-                    <pre v-once
-                         :id="codeEditorId"
-                         class="position-absolute inset-0 m-0 ace_editor">{{ internalValue }}</pre>
-                </div>
+        <div class="control-wrapper">
+            <div v-if="hasMergeFields" class="codeeditor-header margin-b-md clearfix">
             </div>
-        </template>
+
+            <div v-if="props.editor == 'ace'" :class="codeEditorClass" :style="codeEditorStyle">
+                <pre v-once :id="codeEditorId" class="position-absolute inset-0 m-0 ace_editor">{{ internalValue }}</pre>
+            </div>
+            <div v-else-if="props.editor == 'monaco'" ref="editorWrapper" :class="codeEditorClass + ' border border-panel'" :style="codeEditorStyle"></div>
+        </div>
     </RockFormField>
 </template>
 
 <script lang="ts">
     declare global {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-var
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         var ace: any | undefined;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        var monaco: any | undefined;
     }
 </script>
 
@@ -33,59 +31,69 @@
     import { newGuid } from "@Obsidian/Utility/guid";
     import { isFullscreen, enterFullscreen, exitFullscreen } from "@Obsidian/Utility/fullscreen";
     import { updateRefValue } from "@Obsidian/Utility/component";
-    import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+
+    const aceThemes = {
+        0: "rock",
+        1: "chrome",
+        2: "crimson_editor",
+        3: "dawn",
+        4: "dreamweaver",
+        5: "eclipse",
+        6: "solarized_light",
+        7: "textmate",
+        8: "tomorrow",
+        9: "xcode",
+        10: "github",
+        11: "ambiance",
+        12: "chaos",
+        13: "clouds_midnight",
+        14: "cobalt",
+        15: "idle_fingers",
+        16: "kr_theme",
+        17: "merbivore",
+        18: "merbivore_soft",
+        19: "mono_industrial",
+        20: "monokai",
+        21: "pastel_on_dark",
+        22: "solarized_dark",
+        23: "terminal",
+        24: "tomorrow_night",
+        25: "tomorrow_night_blue",
+        26: "tomorrow_night_bright",
+        27: "tomorrow_night_eighties",
+        28: "twilight",
+        29: "vibrant_ink",
+    } as const;
+
+    const monacoThemes = {
+        0: "vs",
+        1: "vs-dark",
+        2: "hc-light",
+        3: "hc-black"
+    } as const;
 
     // The valid theme types for intellisense.
-    type ThemeTypes = "rock"
-        | "chrome" | "crimson_editor" | "dawn" | "dreamweaver"
-        | "eclipse" | "solarized_light" | "textmate" | "tomorrow"
-        | "xcode" | "github" | "ambiance" | "chaos"
-        | "clouds_midnight" | "cobalt" | "idle_fingers" | "kr_theme"
-        | "merbivore" | "merbivore_soft" | "mono_industrial" | "monokai"
-        | "pastel_on_dark" | "solarized_dark" | "terminal" | "tomorrow_night"
-        | "tomorrow_night_blue" | "tomorrow_night_bright" | "tomorrow_night_eighties"
-        | "twilight" | "vibrant_ink";
+    type AceThemeTypes = keyof typeof aceThemes | typeof aceThemes[keyof typeof aceThemes];
+    type MonacoThemeTypes = keyof typeof monacoThemes | typeof monacoThemes[keyof typeof monacoThemes];
+    type ThemeTypes = AceThemeTypes | MonacoThemeTypes;
+
+    const modes = {
+        0: "text",
+        1: "css",
+        2: "html",
+        3: "lava",
+        4: "javascript",
+        5: "less",
+        6: "powershell",
+        7: "sql",
+        8: "typescript",
+        9: "csharp",
+        10: "markdown",
+        11: "xml"
+    } as const;
 
     // The valid mode types for intellisense.
-    type ModeTypes = "text" | "css" | "html" | "lava"
-        | "javascript" | "less" | "powershell" | "sql"
-        | "typescript" | "csharp" | "markdown" | "xml";
-
-    // Start loading the signature pad script so that it is available for us
-    // to use later when the control becomes visible.
-    const aceScriptPromise = loadJavaScriptAsync("/Scripts/ace/ace.js", () => !!window.ace);
-
-    /**
-     * Gets the name of the theme to use with the ACE editor. This handles any
-     * name mapping and capitalization issues.
-     *
-     * @param theme The name of the theme being requested.
-     *
-     * @returns The name of the actual theme to use with the ACE editor.
-     */
-    function getAceTheme(theme?: string): string {
-        if (!theme || theme.toLowerCase() === "rock") {
-            return "github";
-        }
-
-        return theme.toLowerCase();
-    }
-
-    /**
-     * Gets the name of the syntax mode to use with the ACE editor. This handles any
-     * name mapping and capitalization issues.
-     *
-     * @param mode The name of the mode being requested.
-     *
-     * @returns The name of the actual mode to use with the ACE editor.
-     */
-    function getAceMode(mode?: string): string {
-        if (!mode) {
-            return "text";
-        }
-
-        return mode.toLowerCase();
-    }
+    type ModeTypes = keyof typeof modes | typeof modes[keyof typeof modes];
 
     const props = defineProps({
         /** The text value of the code editor. */
@@ -94,15 +102,21 @@
             default: ""
         },
 
+        /** The editor library to use for handling the code editor functionality. */
+        editor: {
+            type: String as PropType<"ace" | "monaco">,
+            default: "ace"
+        },
+
         /** The name of the theme to use when styling the editor. */
         theme: {
-            type: String as PropType<LiteralUnion<ThemeTypes>>,
+            type: [String, Number] as PropType<ThemeTypes>,
             default: "rock"
         },
 
         /** The name of the syntax mode that represents the expected language. */
         mode: {
-            type: String as PropType<LiteralUnion<ModeTypes>>,
+            type: [String, Number] as PropType<ModeTypes>,
             default: "text"
         },
 
@@ -135,10 +149,17 @@
         (e: "update:modelValue", value: string): void;
     }>();
 
+    let aceScriptLoaded: Promise<boolean> | undefined;
+    let monacoScriptLoaded: Promise<boolean> | undefined;
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let editor: any | unknown;
+
+    let observer: ResizeObserver | undefined;
+
     const internalValue = ref(props.modelValue);
     const uniqueId = newGuid();
+    const editorWrapper = ref<HTMLDivElement>();
 
     // #region Computed Values
 
@@ -171,62 +192,187 @@
         return height;
     });
 
+    // Since themes can be passed in as the number or string, we need to convert it to the string version
+    const themeName = computed<string>(() => {
+        if (props.theme === 0 && props.editor === "ace") {
+            return "github";
+        }
+
+        if (typeof props.theme === "number" && props.editor === "ace") {
+            return aceThemes[props.theme];
+        }
+
+        if (typeof props.theme === "number" && props.editor === "monaco") {
+            return monacoThemes[props.theme];
+        }
+
+        return (props.theme as string)?.toLowerCase() ?? "github";
+    });
+
+    // Since modes can be passed in as the number or string, we need to convert it to the string version
+    const modeName = computed<string>(() => {
+        let theMode: string;
+
+        if (typeof props.mode == "number") {
+            theMode = modes[props.mode];
+        }
+        else {
+            theMode = props.mode?.toLowerCase() || "text";
+        }
+
+        if (theMode === "lava" && props.editor === "monaco") {
+            theMode = "liquid";
+        }
+
+        return theMode;
+    });
+
     // #endregion
 
-    // Watch for changes in the ACE configuration.
-    watch(() => [props.theme, props.mode, props.noLineWrap, props.disabled], () => {
-        if (editor) {
-            editor.setTheme(`ace/theme/${getAceTheme(props.theme)}`);
-            editor.getSession().setMode(`ace/mode/${getAceMode(props.mode)}`);
+    // Watch for changes in the configuration.
+    watch(() => [themeName.value, modeName.value, props.noLineWrap, props.disabled], async (...args) => {
+        // Also check for the existence of the function before calling it because `editor` can be an old version if
+        // config changed before the new editor was initialized.
+        if (editor && props.editor == "ace" && typeof editor.setTheme === "function") {
+            editor.setTheme(`ace/theme/${themeName.value}`);
+            editor.getSession().setMode(`ace/mode/${modeName.value}`);
             editor.getSession().setUseWrapMode(!props.noLineWrap);
             editor.setReadOnly(props.disabled);
+        }
+        else if (editor && props.editor == "monaco" && typeof editor.updateOptions === "function") {
+            editor.updateOptions({
+                theme: themeName.value,
+                wordWrap: props.noLineWrap ? "off" : "on",
+                readOnly: props.disabled,
+            });
+            window.monaco.editor.setModelLanguage(editor.getModel(), modeName.value);
         }
     });
 
     watch(() => props.modelValue, () => {
         updateRefValue(internalValue, props.modelValue);
+
+        if (editor && editor.getValue() !== internalValue.value) {
+            editor.setValue(internalValue.value, 1);
+        }
     });
+
+    watch(() => props.editor, initialize);
 
     watch(internalValue, () => {
         emit("update:modelValue", internalValue.value);
     });
 
-    onMounted(async (): Promise<void> => {
-        await aceScriptPromise;
-        editor = window.ace.edit(codeEditorId.value);
-        editor.setTheme(`ace/theme/${getAceTheme(props.theme)}`);
-        editor.getSession().setMode(`ace/mode/${getAceMode(props.mode)}`);
-        editor.getSession().setUseWrapMode(!props.noLineWrap);
-        editor.setShowPrintMargin(false);
-        editor.setReadOnly(props.disabled);
+    /**
+     * Loads the Monaco editor library. Will prevent loading the library more than once.
+     */
+    async function loadMonaco(): Promise<boolean> {
+        if (monacoScriptLoaded) {
+            return monacoScriptLoaded;
+        }
 
-        // Disable warning about block scrolling.
-        editor.$blockScrolling = Infinity;
+        monacoScriptLoaded = loadJavaScriptAsync("/Scripts/Rock/Monaco/monaco.js", () => !!window.monaco);
+        return monacoScriptLoaded;
+    }
 
-        // Add custom command to toggle fullscreen mode.
-        editor.commands.addCommand({
-            name: "Toggle Fullscreen",
-            bindKey: "F11",
-            exec: async () => {
-                if (isFullscreen()) {
-                    exitFullscreen();
-                }
-                else {
-                    enterFullscreen(editor.container, () => editor.resize());
-                }
+    /**
+     * Loads the ACE editor library. Will prevent loading the library more than once.
+     */
+    async function loadAce(): Promise<boolean> {
+        if (aceScriptLoaded) {
+            return aceScriptLoaded;
+        }
 
-                editor.resize();
+        aceScriptLoaded = loadJavaScriptAsync("/Scripts/ace/ace.js", () => !!window.ace);
+        return aceScriptLoaded;
+    }
+
+    /**
+     * Initialize the correct editor with the given configuration
+     */
+    async function initialize(): Promise<void> {
+        if (editor) {
+            if ("dispose" in editor && typeof editor.dispose === "function") {
+                // Dispose Monaco editor.
+                await editor.dispose();
+                observer?.disconnect();
             }
-        });
+            else if ("destroy" in editor && typeof editor.destroy === "function") {
+                // Dispose Ace editor.
+                await editor.destroy();
+            }
+        }
 
-        // Whenever the content of the editor changes, update our value.
-        editor.getSession().on("change", () => {
-            updateRefValue(internalValue, editor.getValue());
-        });
+        if (editorWrapper.value) {
+            editorWrapper.value.innerHTML = "";
+        }
 
-        // Fix issue when code editor is inside a modal.
-        nextTick(() => {
-            editor.resize();
-        });
-    });
+        if (props.editor == "ace") {
+            await loadAce();
+            editor = window.ace.edit(codeEditorId.value);
+            editor.setTheme(`ace/theme/${themeName.value}`);
+            editor.getSession().setMode(`ace/mode/${modeName.value}`);
+            editor.getSession().setUseWrapMode(!props.noLineWrap);
+            editor.getSession().setValue(internalValue.value);
+            editor.setShowPrintMargin(false);
+            editor.setReadOnly(props.disabled);
+
+            // Disable warning about block scrolling.
+            editor.$blockScrolling = Infinity;
+
+            // Add custom command to toggle fullscreen mode.
+            editor.commands.addCommand({
+                name: "Toggle Fullscreen",
+                bindKey: "F11",
+                exec: async () => {
+                    if (isFullscreen()) {
+                        exitFullscreen();
+                    }
+                    else {
+                        enterFullscreen(editor.container, () => editor.resize());
+                    }
+
+                    editor.resize();
+                }
+            });
+
+            // Whenever the content of the editor changes, update our value.
+            editor.getSession().on("change", () => {
+                updateRefValue(internalValue, editor.getValue());
+            });
+
+            // Fix issue when code editor is inside a modal.
+            nextTick(() => {
+                editor.resize();
+            });
+        }
+        else if (props.editor == "monaco") {
+            await loadMonaco();
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            editor = window.monaco.editor.create(editorWrapper.value, {
+                value: internalValue.value,
+                language: modeName.value,
+                theme: themeName.value,
+                wordWrap: props.noLineWrap ? "off" : "on",
+                readOnly: props.disabled,
+                minimap: {
+                    enabled: false
+                }
+            });
+
+            editor.onEndUpdate(() => {
+                updateRefValue(internalValue, editor.getValue());
+            });
+
+            observer = new ResizeObserver(() => {
+                editor.layout();
+            });
+
+            observer.observe(editorWrapper.value!);
+        }
+    }
+
+    onMounted(initialize);
+
 </script>

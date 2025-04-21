@@ -1,0 +1,90 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div class="col-md-4">
+            <NumberUpDown label="Family Number"
+                          v-model="familyNumber"
+                          :min="1" />
+        </div>
+
+        <div v-if="family" class="col-md-8">
+            <div v-if="family.people">
+                <div>People:</div>
+
+                <ol>
+                    <li v-for="item in family.people" :key="item.person!.id!">
+                        {{ item.person?.fullName }}
+                        <ul v-if="item.selectedOpportunities && item.selectedOpportunities.length > 0">
+                            <li v-for="option in item.selectedOpportunities">
+                                {{ getSelectedOptions(option) }}
+                            </li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <div v-if="family.currentlyCheckedInAttendances && family.currentlyCheckedInAttendances.length > 0">
+                <div>Already checked in:</div>
+
+                <ol>
+                    <li v-for="item in family.currentlyCheckedInAttendances" :key="item.id!">
+                        {{ item.person?.fullName }} (Group="{{ item.group!.name }}"; Location="{{ item.location!.name }}"; Schedule="{{ item.schedule!.name }}")
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { FamilyMembersResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/familyMembersResponseBag";
+    import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
+
+    const props = defineProps({
+        familyNumber: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        family: {
+            type: Object as PropType<FamilyMembersResponseBag>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:familyNumber", value: number): void;
+        (event: "update:searchType", value: number): void;
+    }>();
+
+    const familyNumber = useVModelPassthrough(props, "familyNumber", emit);
+
+    function getSelectedOptions(item: OpportunitySelectionBag): string {
+        const options: string[] = [];
+
+        if (item.area) {
+            options.push(`Area="${item.area.name}"`);
+        }
+
+        if (item.group) {
+            options.push(`Group="${item.group.name}"`);
+        }
+
+        if (item.location) {
+            options.push(`Location="${item.location.name}"`);
+        }
+
+        if (item.schedule) {
+            options.push(`Schedule="${item.schedule.name}"`);
+        }
+
+        if (options.length === 0) {
+            return "";
+        }
+
+        return `Default: ${options.join("; ")}`;
+    }
+</script>

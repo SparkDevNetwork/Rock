@@ -1,0 +1,77 @@
+<template>
+    <div ref="dragElement" class="icon-button" draggable="true">
+        <i class="icon" :class="props.icon"></i>
+        <span class="title text-sm">{{ props.title }}</span>
+    </div>
+</template>
+
+<style scoped>
+.icon-button {
+    width: 100px;
+    height: 100px;
+    border: 2px solid var(--theme-light);
+    color: var(--theme-dark);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 8px;
+    cursor: grab;
+}
+
+.icon-button:hover {
+    background-color: var(--theme-lightest);
+}
+
+.icon-button .icon {
+    font-size: 28px;
+}
+
+.icon-button .title {
+    text-align: center;
+    line-height: 1.1;
+}
+</style>
+
+<script setup lang="ts">
+    import { onMounted, PropType, ref } from "vue";
+    import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
+
+    const props = defineProps({
+        icon: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        type: {
+            type: Number as PropType<LabelFieldType>,
+            required: true
+        },
+
+        subtype: {
+            type: Number as PropType<number>,
+            required: false
+        }
+    });
+
+    const dragElement = ref<HTMLElement>();
+
+    onMounted(() => {
+        if (!dragElement.value) {
+            return;
+        }
+
+        dragElement.value.addEventListener("dragstart", e => {
+            e.dataTransfer?.setData("element-type", JSON.stringify({
+                type: props.type,
+                subtype: props.subtype ?? 0
+            }));
+        });
+    });
+</script>

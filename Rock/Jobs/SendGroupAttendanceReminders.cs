@@ -21,11 +21,14 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -45,8 +48,16 @@ namespace Rock.Jobs
         DefaultValue = "1",
         Order = 1 )]
 
+    [DataViewField( "Excluded Groups Data View",
+        Key = AttributeKey.ExcludedGroupsDataView,
+        Description = "An optional Data View of groups to exclude from receiving group attendance reminders.",
+        EntityType = typeof( Rock.Model.Group ),
+        IsRequired = false,
+        Order = 2 )]
+
     #endregion Job Attributes
 
+    [RockLoggingCategory]
     public class SendGroupAttendanceReminders : RockJob
     {
         #region Attribute Keys
@@ -60,6 +71,11 @@ namespace Rock.Jobs
             /// The method to use when determining how the notice should be sent.
             /// </summary>
             public const string SendUsing = "SendUsing";
+
+            /// <summary>
+            /// The method to use when determining what groups are excluded from receiving reminders.
+            /// </summary>
+            public const string ExcludedGroupsDataView = "ExcludedGroupsDataView";
         }
 
         #endregion Attribute Keys
@@ -88,7 +104,7 @@ namespace Rock.Jobs
 
                     if ( jobPreferredCommunicationType == CommunicationType.SMS )
                     {
-                        Log( RockLogLevel.Error, message );
+                        Logger.LogError( message );
 
                         // Halt job execution until the system is correctly configured.
                         throw new Exception( message );
@@ -96,7 +112,7 @@ namespace Rock.Jobs
                     else
                     {
                         _jobWarnings.Add( message );
-                        Log( RockLogLevel.Warning, message );
+                        Logger.LogWarning( message );
 
                         // Force the job to use email, since SMS is not available.
                         jobPreferredCommunicationType = CommunicationType.Email;
@@ -191,12 +207,13 @@ namespace Rock.Jobs
         {
             var rockContext = new RockContext();
             var isGroupTypeValid = groupType.AttendanceReminderSystemCommunicationId.HasValue;
+            var excludedGroupsDataViewGuid = GetAttributeValue( AttributeKey.ExcludedGroupsDataView ).AsGuidOrNull();
 
             if ( !isGroupTypeValid )
             {
                 var error = $"Cannot send attendance reminders for group type {groupType.Name}.  The group type does not have an attendance reminder system communication.";
                 _jobErrors.Add( error );
-                Log( RockLogLevel.Error, error );
+                Logger.LogError( error );
                 return;
             }
 
@@ -207,12 +224,21 @@ namespace Rock.Jobs
                     + $"was found in system communication {systemCommunication.Title}.  Reminders for "
                     + $"group type {groupType.Name} will be sent by email.";
                 _jobWarnings.Add( warning );
-                Log( RockLogLevel.Warning, warning );
+                Logger.LogWarning( warning );
                 jobPreferredCommunicationType = CommunicationType.Email;
             }
 
             var occurrences = GetOccurenceDates( groupType, rockContext );
             var groupIds = occurrences.Where( o => o.Value.Any() ).Select( o => o.Key ).ToList();
+
+            if ( excludedGroupsDataViewGuid.HasValue )
+            {
+                var excludedGroupsDataViewCache = DataViewCache.Get( excludedGroupsDataViewGuid.Value );
+                var excludedGroupIds = excludedGroupsDataViewCache.GetEntityIds();
+
+                groupIds = groupIds.Except( excludedGroupIds ).ToList();
+            }
+
             var leaders = GetGroupLeaders( groupIds, rockContext );
             var attendanceRemindersResults = SendAttendanceReminders( leaders, occurrences, systemCommunication, jobPreferredCommunicationType );
 
@@ -221,13 +247,13 @@ namespace Rock.Jobs
             attendanceRemindersResults.Errors.ForEach( error => {
                 var warningText = $"Error sending reminders for group type {groupType.Name}: " + error;
                 _jobWarnings.Add( warningText );
-                Log( RockLogLevel.Warning, warningText );
+                Logger.LogWarning( warningText );
             } );
 
             attendanceRemindersResults.Warnings.ForEach( warning => {
                 var warningText = $"Warning sending reminders for group type {groupType.Name}: " + warning;
                 _jobWarnings.Add( warningText );
-                Log( RockLogLevel.Warning, warningText );
+                Logger.LogWarning( warningText );
             } );
 
             var reminderCount = attendanceRemindersResults.MessagesSent;

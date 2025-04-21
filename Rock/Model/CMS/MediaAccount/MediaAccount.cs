@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "MediaAccount" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "CD35F034-AC18-40D5-B703-6BF16D79C51C")]
     public partial class MediaAccount : Model<MediaAccount>, IHasActiveFlag
     {
@@ -72,6 +73,7 @@ namespace Rock.Model
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int ComponentEntityTypeId { get; set; }
 
         /// <summary>

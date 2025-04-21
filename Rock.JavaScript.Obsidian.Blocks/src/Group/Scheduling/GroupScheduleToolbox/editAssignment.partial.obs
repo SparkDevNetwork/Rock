@@ -59,8 +59,8 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:isVisible"): void,
-        (e: "updatedAssignments", assignments: SchedulePreferenceAssignmentBag[]): void
+        (e: "update:isVisible"): void;
+        (e: "updatedAssignments", assignments: SchedulePreferenceAssignmentBag[]): void;
     }>();
 
     // #region Values

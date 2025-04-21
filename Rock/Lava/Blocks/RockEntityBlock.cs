@@ -25,7 +25,9 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.WebControls;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -33,6 +35,7 @@ using Rock.Reporting.DataFilter;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Utility.Settings;
+using Rock.ViewModels.Core;
 using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
@@ -120,7 +123,16 @@ namespace Rock.Lava.Blocks
             if ( entityTypeCache != null )
             {
                 Type entityType = entityTypeCache.GetEntityType();
-                if ( entityType != null )
+
+                // Parse markup
+                var settings = GetAttributesFromMarkup( _markup, context, this.EntityName );
+                var parms = settings.Attributes;
+
+                if ( entityType != null && parms.Any( p => p.Key == "entitysearch" ) )
+                {
+                    SetMergeFieldsFromEntitySearch( entityTypeCache, parms, context );
+                }
+                else if ( entityType != null )
                 {
                     // Get the appropriate database context for this entity type.
                     // Note that this may be different from the standard RockContext if the entity is sourced from a plug-in.
@@ -141,17 +153,27 @@ namespace Rock.Lava.Blocks
                     ParameterExpression paramExpression = Expression.Parameter( entityType, "x" );
                     Expression queryExpression = null; // the base expression we'll use to build our query from
 
-                    // Parse markup
-                    var settings = GetAttributesFromMarkup( _markup, context, this.EntityName );
-                    var parms = settings.Attributes;
-
                     if ( parms.Any( p => p.Key == "id" ) )
                     {
                         string propertyName = "Id";
 
                         List<string> selectionParms = new List<string>();
                         selectionParms.Add( PropertyComparisonConversion( "==" ).ToString() );
-                        selectionParms.Add( parms["id"].AsInteger().ToString() ); // Ensure this is an integer: https://github.com/SparkDevNetwork/Rock/issues/5230
+                        if ( parms["id"].AsIntegerOrNull() != null )
+                        {
+                            selectionParms.Add( parms["id"].AsInteger().ToString() ); // Ensure this is an integer: https://github.com/SparkDevNetwork/Rock/issues/5230
+                        }
+                        else if ( parms["id"].AsGuidOrNull() != null )
+                        {
+                            propertyName = "Guid";
+                            selectionParms.Add( parms["id"].AsGuid().ToString() );
+                        }
+                        else
+                        {
+                            IdHasher.Instance.TryGetId( parms["id"], out var idAsInt );
+                            selectionParms.Add( idAsInt.ToString() );
+                        }
+
                         selectionParms.Add( propertyName );
 
                         var entityProperty = entityType.GetProperty( propertyName );
@@ -376,167 +398,181 @@ namespace Rock.Lava.Blocks
                             }
                         }
 
-                        if ( parms.GetValueOrNull( "count" ).AsBoolean() )
+                        // Run security check on each result if enabled and entity is not a person (we do not check security on people)
+                        if ( parms["securityenabled"].AsBoolean() && EntityName != "person" )
                         {
-                            int countResult = queryResult.Count();
-                            context.SetMergeField( "count", countResult );
+                            var items = queryResult.ToList();
+                            var itemsSecured = new List<IEntity>();
+
+                            Person person = GetCurrentPerson( context );
+
+                            foreach ( IEntity item in items )
+                            {
+                                ISecured itemSecured = item as ISecured;
+                                if ( itemSecured == null || itemSecured.IsAuthorized( Authorization.VIEW, person ) )
+                                {
+                                    itemsSecured.Add( item );
+
+                                    /*
+	                                    8/13/2020 - JME 
+	                                    It might seem logical to break out of the loop if there is limit parameter provided once the
+                                        limit is reached. This though has two issues.
+
+                                        FIRST
+                                        Depending how it was implemented it can have the effect of breaking when an offset is
+                                        provided. 
+	                                        {% contentchannelitem where:'ContentChannelId == 1' limit:'3' %}
+                                                {% for item in contentchannelitemItems %}
+                                                    {{ item.Id }} - {{ item.Title }}<br>
+                                                {% endfor %}
+                                            {% endcontentchannelitem %}
+                                        Returns 3 items (correct)
+
+                                            {% contentchannelitem where:'ContentChannelId == 1' limit:'3' offset:'1' %}
+                                                {% for item in contentchannelitemItems %}
+                                                    {{ item.Id }} - {{ item.Title }}<br>
+                                                {% endfor %}
+                                            {% endcontentchannelitem %}
+                                        Returns only 2 items (incorrect) - because of the offset
+
+                                        SECOND
+                                        If the limit is moved before the security check it's possible that the security checks
+                                        will remove items and will therefore not give you the amount of items that you asked for.
+
+                                        Unfortunately this has to be an inefficent process to ensure pagination works. I will also
+                                        add a detailed note to the documentation to encourage people to disable security checks,
+                                        especially when used with pagination, in the Lava docs.
+                                    */
+                                }
+                            }
+
+                            queryResult = itemsSecured.AsQueryable();
+                        }
+
+                        // offset
+                        if ( parms.Any( p => p.Key == "offset" ) )
+                        {
+                            queryResult = queryResult.Skip( parms["offset"].AsInteger() );
+                        }
+
+                        // limit, default to 1000
+                        if ( parms.Any( p => p.Key == "limit" ) )
+                        {
+                            queryResult = queryResult.Take( parms["limit"].AsInteger() );
                         }
                         else
                         {
-                            // Run security check on each result if enabled and entity is not a person (we do not check security on people)
-                            if ( parms["securityenabled"].AsBoolean() && EntityName != "person" )
+                            queryResult = queryResult.Take( 1000 );
+                        }
+
+                        // Process logic to be able to return an anonymous types and group bys. We have to abstract the return types as
+                        // the select returns a type of List<dynamic> while the normal entity command returns List<IEntity>.
+                        // Using a type of List<object> for both did not work (that would have eliminated the need for the
+                        // firstItem and returnCount.
+                        object returnValues = null;
+                        object firstItem = null;
+                        int returnCount = 0;
+
+                        if ( parms.ContainsKey( "groupby" ) || parms.ContainsKey( "select" ) || parms.ContainsKey( "selectmany" ) )
+                        {
+                            /* 
+                                3/1/2021 - JME
+                                Ensure that lazy loading is enabled. If this is false it throws a null reference exception.
+                                I confirmed that the anonymous type is getting it's data from the single source SQL (no lazy loading).
+                                Not sure why this exception is happening. It looks to be within the ZZZ Project System.Linq.Dynamic.Core
+                                package. The important part is that the data is coming back in a single query.
+                            */
+                            dbContext.Configuration.LazyLoadingEnabled = true;
+
+                            IQueryable resultsQry;
+
+                            // Logic here is a groupby has to have a select, but a select doesn't need a groupby.
+                            if ( parms.ContainsKey( "groupby" ) && parms.ContainsKey( "select" ) )
                             {
-                                var items = queryResult.ToList();
-                                var itemsSecured = new List<IEntity>();
-
-                                Person person = GetCurrentPerson( context );
-
-                                foreach ( IEntity item in items )
-                                {
-                                    ISecured itemSecured = item as ISecured;
-                                    if ( itemSecured == null || itemSecured.IsAuthorized( Authorization.VIEW, person ) )
-                                    {
-                                        itemsSecured.Add( item );
-
-                                        /*
-	                                        8/13/2020 - JME 
-	                                        It might seem logical to break out of the loop if there is limit parameter provided once the
-                                            limit is reached. This though has two issues.
-
-                                            FIRST
-                                            Depending how it was implemented it can have the effect of breaking when an offset is
-                                            provided. 
-	                                            {% contentchannelitem where:'ContentChannelId == 1' limit:'3' %}
-                                                    {% for item in contentchannelitemItems %}
-                                                        {{ item.Id }} - {{ item.Title }}<br>
-                                                    {% endfor %}
-                                                {% endcontentchannelitem %}
-                                            Returns 3 items (correct)
-
-                                                {% contentchannelitem where:'ContentChannelId == 1' limit:'3' offset:'1' %}
-                                                    {% for item in contentchannelitemItems %}
-                                                        {{ item.Id }} - {{ item.Title }}<br>
-                                                    {% endfor %}
-                                                {% endcontentchannelitem %}
-                                            Returns only 2 items (incorrect) - because of the offset
-
-                                            SECOND
-                                            If the limit is moved before the security check it's possible that the security checks
-                                            will remove items and will therefore not give you the amount of items that you asked for.
-
-                                            Unfortunately this has to be an inefficent process to ensure pagination works. I will also
-                                            add a detailed note to the documentation to encourage people to disable security checks,
-                                            especially when used with pagination, in the Lava docs.
-                                        */
-                                    }
-                                }
-
-                                queryResult = itemsSecured.AsQueryable();
-                            }
-
-                            // offset
-                            if ( parms.Any( p => p.Key == "offset" ) )
-                            {
-                                queryResult = queryResult.Skip( parms["offset"].AsInteger() );
-                            }
-
-                            // limit, default to 1000
-                            if ( parms.Any( p => p.Key == "limit" ) )
-                            {
-                                queryResult = queryResult.Take( parms["limit"].AsInteger() );
+                                resultsQry = queryResult.Cast( entityType )
+                                                .GroupBy( parms["groupby"] )
+                                                .Select( parms["select"] );
                             }
                             else
                             {
-                                queryResult = queryResult.Take( 1000 );
+                                if ( parms.ContainsKey( "select" ) )
+                                {
+                                    resultsQry = queryResult.Cast( entityType )
+                                                    .Select( parms["select"] );
+                                }
+                                else  // selectmany
+                                {
+                                    resultsQry = queryResult.Cast( entityType )
+                                                    .SelectMany( parms["selectmany"] );
+                                }
                             }
 
-                            // Process logic to be able to return an anonymous types and group bys. We have to abstract the return types as
-                            // the select returns a type of List<dynamic> while the normal entity command returns List<IEntity>.
-                            // Using a type of List<object> for both did not work (that would have eliminated the need for the
-                            // firstItem and returnCount.
-                            object returnValues = null;
-                            object firstItem = null;
-                            int returnCount = 0;
-
-                            if ( parms.ContainsKey( "groupby" ) || parms.ContainsKey( "select" ) || parms.ContainsKey( "selectmany" ) )
+                            if ( parms.GetValueOrNull( "count" ).AsBoolean() )
                             {
-                                /* 
-                                   3/1/2021 - JME
-                                   Ensure that lazy loading is enabled. If this is false it throws a null reference exception.
-                                   I confirmed that the anonymous type is getting it's data from the single source SQL (no lazy loading).
-                                   Not sure why this exception is happening. It looks to be within the ZZZ Project System.Linq.Dynamic.Core
-                                   package. The important part is that the data is coming back in a single query.
-                                */
-                                dbContext.Configuration.LazyLoadingEnabled = true;
+                                int countResult = resultsQry.Count();
+                                context.SetMergeField( "count", countResult );
 
+                                base.OnRender( context, result );
 
-                                List<dynamic> results = null;
+                                return;
+                            }
 
-                                // Logic here is a groupby has to have a select, but a select doesn't need a groupby.
-                                if ( parms.ContainsKey( "groupby" ) && parms.ContainsKey( "select" ) )
+                            var results = resultsQry.ToDynamicList();
+                            returnValues = results;
+                            firstItem = results.FirstOrDefault();
+                            returnCount = results.Count();
+                        }
+                        else
+                        {
+                            if ( parms.GetValueOrNull( "count" ).AsBoolean() )
+                            {
+                                int countResult = queryResult.Count();
+                                context.SetMergeField( "count", countResult );
+
+                                base.OnRender( context, result );
+
+                                return;
+                            }
+
+                            var results = queryResult.ToList();
+
+                            // Pre-load attributes
+                            var disableattributeprefetch = parms.GetValueOrDefault("disableattributeprefetch", "false").AsBoolean();
+                            var attributeKeys = parms.GetValueOrDefault("prefetchattributes", string.Empty)
+                                                    .Split( new string[] { "," }, StringSplitOptions.RemoveEmptyEntries )
+                                                    .ToList();
+
+                            // Determine if we should prefetch attributes. By default we will unless they specifically say not to.
+                            if ( !disableattributeprefetch )
+                            {
+                                // If a filtered list of attributes keys are not provided load all attributes otherwise just load the ones for the keys provided.
+                                if ( attributeKeys.Count() == 0 )
                                 {
-                                    results = queryResult.Cast( entityType )
-                                                    .GroupBy( parms["groupby"] )
-                                                    .Select( parms["select"] )
-                                                    .ToDynamicList();
+                                    results.Select( r => r as IHasAttributes ).Where( r => r != null ).ToList().LoadAttributes();
                                 }
                                 else
                                 {
-                                    if ( parms.ContainsKey( "select" ) )
-                                    {
-                                        results = queryResult.Cast( entityType )
-                                                        .Select( parms["select"] )
-                                                        .ToDynamicList();
-                                    }
-                                    else  // selectmany
-                                    {
-                                        results = queryResult.Cast( entityType )
-                                                        .SelectMany( parms["selectmany"] )
-                                                        .ToDynamicList();
-                                    }
+                                    results.Select( r => r as IHasAttributes ).Where( r => r != null ).ToList().LoadFilteredAttributes( (RockContext)dbContext, a => attributeKeys.Contains( a.Key ) );
                                 }
-
-                                returnValues = results;
-                                firstItem = results.FirstOrDefault();
-                                returnCount = results.Count();
                             }
-                            else
-                            {
-                                var results = queryResult.ToList();
-
-                                // Pre-load attributes
-                                var disableattributeprefetch = parms.GetValueOrDefault("disableattributeprefetch", "false").AsBoolean();
-                                var attributeKeys = parms.GetValueOrDefault("prefetchattributes", string.Empty)
-                                                        .Split( new string[] { "," }, StringSplitOptions.RemoveEmptyEntries )
-                                                        .ToList();
-
-                                // Determine if we should prefetch attributes. By default we will unless they specifically say not to.
-                                if ( !disableattributeprefetch )
-                                {
-                                    // If a filtered list of attributes keys are not provided load all attributes otherwise just load the ones for the keys provided.
-                                    if ( attributeKeys.Count() == 0 )
-                                    {
-                                        results.Select( r => r as IHasAttributes ).Where( r => r != null ).ToList().LoadAttributes();
-                                    }
-                                    else
-                                    {
-                                        results.Select( r => r as IHasAttributes ).Where( r => r != null ).ToList().LoadFilteredAttributes( (RockContext)dbContext, a => attributeKeys.Contains( a.Key ) );
-                                    }
-                                }
                                 
-                                returnValues = results;
-                                firstItem = results.FirstOrDefault();
-                                returnCount = results.Count();
-                            }
+                            returnValues = results;
+                            firstItem = results.FirstOrDefault();
+                            returnCount = results.Count();
+                        }
 
-                            // Add the result to the current context.
-                            context.SetMergeField( parms["iterator"], returnValues );
+                        // Add the result to the current context.
+                        context.SetMergeField( parms["iterator"], returnValues );
 
-                            if ( returnCount == 1 )
-                            {
-                                // If there is only one item, set a singleton variable in addition to the result list.
-                                context.SetMergeField( EntityName, firstItem, LavaContextRelativeScopeSpecifier.Current );
-                            }
+                        if ( returnCount == 1 )
+                        {
+                            // If there is only one item, set a singleton variable in addition to the result list.
+                            context.SetMergeField( EntityName, firstItem );
+                        }
+                        else
+                        {
+                            // There is more than one so blank out the variable in case it was already set in the Lava context. (Issue #6205)
+                            context.SetMergeField( EntityName, firstItem );
                         }
                     }
                 }
@@ -613,7 +649,7 @@ namespace Rock.Lava.Blocks
         {
             // If the database is not connected, we do not have access to entity definitions.
             // This can occur when the Lava engine is started without an attached database.
-            if ( !RockInstanceConfig.DatabaseIsAvailable )
+            if ( !RockApp.Current.IsDatabaseAvailable() )
             {
                 return;
             }
@@ -768,6 +804,53 @@ namespace Rock.Lava.Blocks
             }
 
             return settings;
+        }
+
+        /// <summary>
+        /// Sets the merge fields for the child content block from an entity search.
+        /// </summary>
+        /// <param name="entityTypeCache">The entity type cache.</param>
+        /// <param name="parms">The parms to the rock entity command.</param>
+        /// <param name="context">The lava context.</param>
+        private void SetMergeFieldsFromEntitySearch( EntityTypeCache entityTypeCache, Dictionary<string, string> parms, ILavaRenderContext context )
+        {
+            var searchKey = parms["entitysearch"];
+            var entitySearchCache = EntitySearchCache.GetByEntityTypeAndKey( entityTypeCache, searchKey );
+            var userQuery = new EntitySearchQueryBag
+            {
+                Where = parms.GetValueOrNull( "expression" )
+            };
+
+            if ( parms.GetValueOrNull( "count" ).AsBoolean() )
+            {
+                userQuery.IsCountOnly = true;
+
+                var countResults = EntitySearchService.GetSearchResults( entitySearchCache, userQuery, GetCurrentPerson( context ) );
+
+                context.SetMergeField( "count", countResults.Count, LavaContextRelativeScopeSpecifier.Default );
+
+                return;
+            }
+
+            userQuery.GroupBy = parms.GetValueOrNull( "groupby" );
+            userQuery.Select = parms.GetValueOrNull( "select" );
+            userQuery.SelectMany = parms.GetValueOrNull( "selectmany" );
+            userQuery.Sort = parms.GetValueOrNull( "sort" );
+            userQuery.Offset = parms.GetValueOrNull( "offset" ).AsIntegerOrNull();
+            userQuery.Limit = parms.GetValueOrNull( "limit" ).AsIntegerOrNull() ?? 1_000;
+
+            // TODO: "selectmany" ??
+
+            var results = EntitySearchService.GetSearchResults( entitySearchCache, userQuery, GetCurrentPerson( context ) );
+
+            // Add the result to the current context.
+            context.SetMergeField( parms["iterator"], results.Items, LavaContextRelativeScopeSpecifier.Default );
+
+            if ( results.Items.Count == 1 )
+            {
+                // If there is only one item, set a singleton variable in addition to the result list.
+                context.SetMergeField( EntityName, results.Items[0], LavaContextRelativeScopeSpecifier.Default );
+            }
         }
 
         /// <summary>

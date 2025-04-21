@@ -17,7 +17,6 @@
 import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
-import { formatPhoneNumber } from "@Obsidian/Utility/phone";
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
@@ -34,7 +33,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  */
 export class PhoneNumberFieldType extends FieldTypeBase {
     public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
-        return formatPhoneNumber(value || "");
+        return value;
     }
 
     public override getEditComponent(): Component {

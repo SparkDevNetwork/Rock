@@ -25,7 +25,7 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { AppleTvPageBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageDetail/appleTvPageBag";
     import { AppleTvPageDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageDetail/appleTvPageDetailOptionsBag";
@@ -33,10 +33,13 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.obs";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+    import { RockCacheabilityBag } from "@Obsidian/ViewModels/Controls/rockCacheabilityBag";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<AppleTvPageBag>,
+            type: Object as PropType<ValidPropertiesBox<AppleTvPageBag>>,
             required: true
         },
 
@@ -47,19 +50,19 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: AppleTvPageBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<AppleTvPageBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const name = propertyRef(props.modelValue.name ?? "", "InternalName");
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const showInMenu = ref(props.modelValue.showInMenu);
-    const pageTVML = ref(props.modelValue.pageTVML ?? "");
-    const cacheability = ref(props.modelValue.rockCacheability ?? null);
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "InternalName");
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const showInMenu = ref(props.modelValue?.bag?.showInMenu ?? false);
+    const pageTVML = ref(props.modelValue?.bag?.pageTVML ?? "");
+    const cacheability = ref(props.modelValue?.bag?.rockCacheability ?? defaultValue());
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -67,40 +70,42 @@
 
     // #endregion
 
-    // #region Computed Values
-
-    // #endregion
-
     // #region Functions
 
-    // #endregion
-
-    // #region Event Handlers
+    function defaultValue(): RockCacheabilityBag {
+        return {
+            rockCacheabilityType: 0,
+            maxAge: { unit: TimeIntervalUnit.Minutes, value: null },
+            sharedMaxAge: { unit: TimeIntervalUnit.Minutes, value: null }
+        };
+    }
 
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(showInMenu, props.modelValue.showInMenu);
-        updateRefValue(pageTVML, props.modelValue.pageTVML ?? "");
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(showInMenu, props.modelValue?.bag?.showInMenu ?? false);
+        updateRefValue(pageTVML, props.modelValue?.bag?.pageTVML ?? "");
+        updateRefValue(cacheability, props.modelValue?.bag?.rockCacheability ?? defaultValue());
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, showInMenu, pageTVML, cacheability, ...propRefs], () => {
-        const newValue: AppleTvPageBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            name: name.value,
-            description: description.value,
-            showInMenu: showInMenu.value,
-            pageTVML: pageTVML.value,
-            rockCacheability: cacheability.value
+        const newValue: ValidPropertiesBox<AppleTvPageBag> = {
+            bag: { ...props.modelValue.bag } as AppleTvPageBag
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "showInMenu", showInMenu.value);
+        setPropertiesBoxValue(newValue, "pageTVML", pageTVML.value);
+        setPropertiesBoxValue(newValue, "rockCacheability", cacheability.value);
 
         emit("update:modelValue", newValue);
     }, { deep: true });

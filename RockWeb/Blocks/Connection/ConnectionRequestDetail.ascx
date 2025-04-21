@@ -211,7 +211,7 @@
                                 <Rock:RockDropDownList ID="ddlPlacementGroupStatus" runat="server" Label="Group Member Status" Visible="false" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" AutoPostBack="true" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />
+                                <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" IncludeInactive="false" AutoPostBack="true" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />
                             </div>
                         </div>
 
@@ -227,8 +227,8 @@
                         <Rock:NotificationBox ID="nbRequirementsWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
 
                         <div class="actions">
-                            <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
-                            <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
+                            <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
+                            <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
                         </div>
 
                     </div>
@@ -286,8 +286,8 @@
                         <Rock:RockTextBox ID="tbTransferNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />
 
                         <div class="actions">
-                            <asp:LinkButton ID="btnTransferSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Transfer" CssClass="btn btn-primary" OnClick="btnTransferSave_Click"></asp:LinkButton>
-                            <asp:LinkButton ID="btnTransferCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
+                            <asp:LinkButton ID="btnTransferSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Transfer" CssClass="btn btn-primary" OnClick="btnTransferSave_Click"></asp:LinkButton>
+                            <asp:LinkButton ID="btnTransferCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
                         </div>
 
                     </div>
@@ -320,7 +320,7 @@
                             <tfoot>
                                 <tr title="">
                                     <td class="grid-actions" colspan="6">
-                                        <asp:LinkButton ID="lbActivityAdd" runat="server" AccessKey="n" ToolTip="Alt+N" CssClass="btn btn-grid-action btn-add btn-default btn-sm" OnClick="lbActivityAdd_Click">
+                                        <asp:LinkButton ID="lbActivityAdd" runat="server" data-shortcut-key="n" ToolTip="Alt+N" CssClass="btn btn-grid-action btn-add btn-default btn-sm" OnClick="lbActivityAdd_Click">
                                             <i class="fa fa-plus-circle fa-fw"></i>
                                         </asp:LinkButton>
                                     </td>

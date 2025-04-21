@@ -10,9 +10,6 @@
           stickyHeader
           liveUpdates
           :showLaunchWorkflow="false"
-          gridSettings
-          :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
@@ -21,31 +18,57 @@
                     field="name"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="30%" />
+                    width="22%" />
 
-        <DateTimeColumn name="lastSuccessfulRun"
-                        title="Last Successful Run"
-                        field="lastSuccessfulRun"
-                        :filter="dateValueFilter"
-                        visiblePriority="md" />
+        <Column name="lastSuccessfulRun"
+                title="Last Successful Run"
+                field="lastSuccessfulRun"
+                width="9%"
+                :filter="dateValueFilter"
+                :filterValue="getlastSuccessfulRunFilterValue"
+                :quickFilterValue="getlastSuccessfulRunFilterValue"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div>
+                    <p>{{ row.lastSuccessfulRunDate }}</p>
+                    <p>{{ row.lastSuccessfulRunTime }}</p>
+                </div>
+            </template>
+        </Column>
 
-        <DateTimeColumn name="lastRunDateTime"
-                        title="Last Run Date"
-                        field="lastRunDateTime"
-                        :filter="dateValueFilter"
-                        visiblePriority="md" />
+        <Column name="lastRunDateTime"
+                title="Last Run Date"
+                field="lastRunDateTime"
+                width="9%"
+                :filter="dateValueFilter"
+                :filterValue="getlastRunDateFilterValue"
+                :quickFilterValue="getlastRunDateFilterValue"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div>
+                    <p>{{ row.lastRunDate }}</p>
+                    <p>{{ row.lastRunTime }}</p>
+                </div>
+            </template>
+        </Column>
 
         <TextColumn name="lastRunDurationSeconds"
                     title="Last Run Duration"
                     field="lastRunDurationSeconds"
+                    width="9%"
                     :filter="textValueFilter"
-                    visiblePriority="md" />
+                    visiblePriority="md"
+                    headerClass="title-center"
+                    itemClass="justify-content-center text-center" />
 
         <Column name="lastStatus"
                 title="Last Status"
+                field="lastStatus"
                 visiblePriority="md"
-                :filter="textValueFilter"
-                :filterValue="getlastStatusFilterValue">
+                :filter="pickExistingValueFilter"
+                :filterValue="getlastStatusFilterValue"
+                :quickFilterValue="getlastStatusFilterValue"
+                width="7%">
             <template #format="{ row }">
                 <span :class='getStatusClass(row)'>{{ row.lastStatus === "Exception" ? "Failed" : row.lastStatus }}</span>
             </template>
@@ -55,11 +78,13 @@
             </template>
         </Column>
 
-        <Column name="lastStatusMessage"
+        <Column name="lastStatusMessageAsHtml"
                 title="Last Status Message"
-                width="20%"
+                field="lastStatusMessageAsHtml"
+                width="35%"
                 :filter="textValueFilter"
                 :filterValue="getlastStatusMessageFilterValue"
+                :quickFilterValue="getlastStatusMessageFilterValue"
                 visiblePriority="md">
             <template #format="{ row }">
                 <div v-html="row.lastStatusMessageAsHtml">
@@ -70,19 +95,27 @@
         <BooleanColumn name="isSystem"
                        title="System"
                        field="isSystem"
+                       :filter="booleanValueFilter"
                        visiblePriority="md"
-                       width="5%" />
+                       width="90"
+                       headerClass="title-center"
+                       itemClass="justify-content-center text-center" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
+                       :filter="booleanValueFilter"
                        visiblePriority="md"
-                       width="5%" />
+                       width="90"
+                       headerClass="title-center"
+                       itemClass="justify-content-center text-center" />
 
         <Column name="history"
-                width="52px"
+                width="80"
                 title="History"
-                itemClass="grid-columncommand">
+                itemClass="transparent-content justify-content-center text-center"
+                disableSort
+                headerClass="title-center">
             <template #format="{ row }">
                 <button v-if="row.guid !== ServiceJob.JobPulse"
                         @click.prevent="onShowHistory(row, $event)"
@@ -94,13 +127,14 @@
         </Column>
 
         <Column name="runJob"
-                width="52px"
+                width="70"
                 title="Run Now"
-                itemClass="grid-columncommand">
+                itemClass="transparent-content justify-content-center text-center"
+                disableSort>
             <template #format="{ row }">
                 <button v-if="row.guid !== ServiceJob.JobPulse"
                         @click.prevent="onRunNowClick(row, $event)"
-                        class="btn btn-sm"
+                        class="btn btn-default btn-sm"
                         title="Run Now">
                     <i class="fa fa-play"></i>
                 </button>
@@ -109,48 +143,53 @@
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
-
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible" />
 </template>
 
+<style>
+.no-x-padding {
+    padding: var(--table-cell-padding-y) 0 !important;
+}
+
+.title-right .grid-column-title {
+    text-align: right;
+}
+
+.title-center .grid-column-title {
+    text-align: center;
+}
+
+.transparent-content .btn {
+    opacity: .4;
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.transparent-content .btn:hover {
+    opacity: 1;
+    background-color: #e6e6e6;
+}
+</style>
+
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { ServiceJob } from "@Obsidian/SystemGuids/serviceJob";
-    import Grid, { BooleanColumn, dateValueFilter, TextColumn, textValueFilter, DeleteColumn, DateTimeColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, dateValueFilter, TextColumn, textValueFilter, pickExistingValueFilter, booleanValueFilter, DeleteColumn, DateTimeColumn, Column } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ScheduledJobListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduledJobList/scheduledJobListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./ScheduledJobList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
-    import GridSettingsModal from "./ScheduledJobList/gridSettingsModal.partial.obs";
+    import { NavigationUrlKey } from "./ScheduledJobList/types.partial";
+    import { reactive, ref } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<ScheduledJobListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
-
-    const isGridSettingsVisible = ref(false);
-    const gridSettings = ref<GridSettingsOptions>({
-        name: preferences.getValue(PreferenceKey.FilterName),
-        isActive: preferences.getValue(PreferenceKey.FilterIsActive),
-    });
-
-    // #endregion
-
-    // #region Computed Values
-
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.name
-            || !!gridSettings.value.isActive;
-    });
 
     // #endregion
 
@@ -198,17 +237,36 @@
      *
      * @param row The row to be filtered.
      */
-     function getlastStatusMessageFilterValue(row: Record<string, unknown>): string {
+    function getlastStatusMessageFilterValue(row: Record<string, unknown>): string {
         return row.lastStatusMessage as string;
     }
 
-        /**
-     * Gets the filter value text to use for the status column.
+    /**
+    * Gets the filter value text to use for the status column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getlastStatusFilterValue(row: Record<string, unknown>): string {
+        const status = row.lastStatus as string ?? "";
+        return status === "Exception" ? "Failed" : status;
+    }
+
+    /**
+     * Gets the filter value text to use for the last successful run column.
      *
      * @param row The row to be filtered.
      */
-     function getlastStatusFilterValue(row: Record<string, unknown>): string {
-        return row.lastStatus as string;
+    function getlastSuccessfulRunFilterValue(row: Record<string, unknown>): string {
+        return row.lastSuccessfulRun as string;
+    }
+
+    /**
+ * Gets the filter value text to use for the last run date column.
+ *
+ * @param row The row to be filtered.
+ */
+    function getlastRunDateFilterValue(row: Record<string, unknown>): string {
+        return row.lastRunDateTime as string;
     }
 
     // #endregion
@@ -294,24 +352,6 @@
             }
         }
     }
-
-    /**
-    * Called when the grid setting icon is clicked, displays the block filters.
-    */
-    function onGridSettingsClick(): void {
-        isGridSettingsVisible.value = true;
-    }
-
-    // #endregion
-
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterName, gridSettings.value.name ?? "");
-        preferences.setValue(PreferenceKey.FilterIsActive, gridSettings.value.isActive ?? "");
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
 
     gridDataSource.value = loadGridData();
 </script>

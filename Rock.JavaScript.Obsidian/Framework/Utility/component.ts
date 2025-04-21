@@ -14,12 +14,13 @@
 // limitations under the License.
 // </copyright>
 
-import { AsyncComponentLoader, Component, ComponentPublicInstance, defineAsyncComponent as vueDefineAsyncComponent, ExtractPropTypes, PropType, reactive, ref, Ref, VNode, watch, WatchOptions, render, isVNode, createVNode } from "vue";
+import { AsyncComponentLoader, Component, ComponentPublicInstance, defineAsyncComponent as vueDefineAsyncComponent, ExtractPropTypes, PropType, reactive, ref, Ref, VNode, watch, WatchOptions, render, createVNode } from "vue";
 import { deepEqual } from "./util";
 import { useSuspense } from "./suspense";
 import { newGuid } from "./guid";
 import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
 import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+import { FilterMode } from "@Obsidian/Enums/Reporting/filterMode";
 import { ExtendedRef, ExtendedRefContext } from "@Obsidian/Types/Utility/component";
 import type { RulesPropType, ValidationRule } from "@Obsidian/Types/validationRules";
 import { toNumberOrNull } from "./numberUtils";
@@ -132,6 +133,11 @@ type StandardRockFormFieldProps = {
         default: ""
     },
 
+    disableLabel: {
+        type: PropType<boolean>,
+        default: false
+    },
+
     help: {
         type: PropType<string>,
         default: ""
@@ -160,6 +166,11 @@ export const standardRockFormFieldProps: StandardRockFormFieldProps = {
     label: {
         type: String as PropType<string>,
         default: ""
+    },
+
+    disableLabel: {
+        type: Boolean,
+        default: false
     },
 
     help: {
@@ -215,6 +226,7 @@ function copyStandardRockFormFieldProps(source: ExtractPropTypes<StandardRockFor
 export function useStandardRockFormFieldProps(props: ExtractPropTypes<StandardRockFormFieldProps>): ExtractPropTypes<StandardRockFormFieldProps> {
     const propValues = reactive<ExtractPropTypes<StandardRockFormFieldProps>>({
         label: props.label,
+        disableLabel: props.disableLabel,
         help: props.help,
         rules: props.rules,
         formGroupClasses: props.formGroupClasses,
@@ -377,6 +389,63 @@ export function useStandardAsyncPickerProps(props: ExtractPropTypes<StandardAsyn
 
 // #endregion
 
+// #region Data View Filters
+
+type DataViewFilterProps = {
+    /**
+     * The component data value from the C# component class.
+     */
+    modelValue: {
+        type: PropType<Record<string, string | undefined | null>>,
+        required: true
+    },
+
+    /**
+     * The mode this filter is operating in.
+     */
+    filterMode: {
+        type: PropType<FilterMode>,
+        required: true
+    }
+};
+
+/** The standard component props that will be passed to DataView Filter components. */
+export const dataViewFilterProps: DataViewFilterProps = {
+    modelValue: {
+        type: Object as PropType<Record<string, string | undefined | null>>,
+        required: true
+    },
+
+    filterMode: {
+        type: Number as PropType<FilterMode>,
+        required: true
+    }
+};
+
+// #endregion
+
+// #region Data View Selects
+
+type DataViewSelectProps = {
+    /**
+     * The component data value from the C# component class.
+     */
+    modelValue: {
+        type: PropType<Record<string, string | undefined | null>>,
+        required: true
+    }
+};
+
+/** The standard component props that will be passed to DataView Select components. */
+export const dataViewSelectProps: DataViewSelectProps = {
+    modelValue: {
+        type: Object as PropType<Record<string, string | undefined | null>>,
+        required: true
+    }
+};
+
+// #endregion
+
 // #region Extended References
 
 /**
@@ -415,7 +484,7 @@ export function propertyRef<T>(value: T, propertyName: string): ExtendedRef<T> {
 // #region VNode Helpers
 
 /**
- * Retrieves a single prop value from a VNode object. If the prop is explicitely
+ * Retrieves a single prop value from a VNode object. If the prop is explicitly
  * specified in the DOM then it will be returned. Otherwise the component's
  * prop default values are checked. If there is a default value it will be
  * returned.

@@ -27,8 +27,8 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.{{ DomainNamespace }}.{{ EntityName }}Detail;
-using Rock.ViewModels.Utility;{% if UseAttributeValues == true %}
-using Rock.Web.Cache;{% endif %}
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.{{ DomainNamespace }}
 {
@@ -40,7 +40,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
     [Category( "{{ Domain }}" )]
     [Description( "Displays the details of a particular {{ EntityName | SplitCase | Downcase }}." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -122,9 +122,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
             }
 
             var isViewable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );{% if UseAttributeValues == true %}
-
-            entity.LoadAttributes( RockContext );{% endif %}
+            box.IsEditable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             if ( entity.Id != 0 )
             {
@@ -183,7 +181,12 @@ namespace Rock.Blocks.{{ DomainNamespace }}
 
             var bag = GetCommonEntityBag( entity );{% if UseAttributeValues == true %}
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );{% endif %}
+            if ( entity.Attributes == null )
+            {
+                entity.LoadAttributes( RockContext );
+            }
+
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: {% if UseEntitySecurity %}true{% else %}false{% endif %} );{% endif %}
 
             return bag;
         }
@@ -198,7 +201,12 @@ namespace Rock.Blocks.{{ DomainNamespace }}
 
             var bag = GetCommonEntityBag( entity );{% if UseAttributeValues == true %}
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );{% endif %}
+            if ( entity.Attributes == null )
+            {
+                entity.LoadAttributes( RockContext );
+            }
+
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: {% if UseEntitySecurity %}true{% else %}false{% endif %} );{% endif %}
 
             return bag;
         }
@@ -219,7 +227,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: {% if UseEntitySecurity %}true{% else %}false{% endif %} );
                 } );
 
             {% endif %}return true;

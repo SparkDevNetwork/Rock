@@ -22,7 +22,7 @@
                         <TextBox v-model="internalValue.locality" :placeholder="county.label" :validationTitle="county.label" :rules="rules.locality" :disabled="disabled" :autocomplete="county.autocomplete" />
                     </div>
                     <div class="form-group col-sm-3" v-if="state.isVisible">
-                        <DropDownList v-if="hasStateList" :showBlankItem="state.rules != RequirementLevel.Required || disableFrontEndValidation" v-model="internalValue.state" :items="stateOptions" :validationTitle="state.label" :rules="rules.state" :disabled="disabled" :autocomplete="state.autocomplete" />
+                        <DropDownList v-if="hasStateList" :showBlankItem="state.rules != RequirementLevel.Required || disableFrontEndValidation || omitDefaultValues" v-model="internalValue.state" :items="stateOptions" :validationTitle="state.label" :rules="rules.state" :disabled="disabled" :autocomplete="state.autocomplete" />
                         <TextBox v-else v-model="internalValue.state" :placeholder="state.label" :validationTitle="state.label" :rules="rules.state" :disabled="disabled" :autocomplete="state.autocomplete" />
                     </div>
                     <div class="form-group col-sm-3" v-if="zip.isVisible">
@@ -269,11 +269,11 @@
             address1.rules = data.addressLine1Requirement;
 
             // Address Line 2 is only shown if it's required or it's requested by the prop; Label is static
-            address2.isVisible = data.addressLine2Requirement == RequirementLevel.Required || (props.showAddressLine2 && data.addressLine2Requirement != RequirementLevel.Unavailable);
+            address2.isVisible = !(data.addressLine2Requirement == RequirementLevel.Unavailable || (!props.disableFrontEndValidation && !props.showAddressLine2 && data.addressLine2Requirement == RequirementLevel.Optional));
             address2.rules = data.addressLine2Requirement;
 
             // County / Locality is only shown if it's required or it's requested by the prop
-            county.isVisible = data.localityRequirement == RequirementLevel.Required || (props.showCounty && data.localityRequirement != RequirementLevel.Unavailable);
+            county.isVisible = !(data.localityRequirement == RequirementLevel.Unavailable || (!props.disableFrontEndValidation && props.showCounty && data.localityRequirement == RequirementLevel.Optional));
             county.rules = data.localityRequirement;
             county.label = data.localityLabel ?? county.label;
 

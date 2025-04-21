@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-
-using Rock.CodeGeneration.Utility;
+using System.Text.RegularExpressions;
 
 using Rock;
+using Rock.CodeGeneration.Utility;
 using Rock.CodeGeneration.XmlDoc;
-using System.ComponentModel;
+using Rock.ViewModels.Utility;
 
 namespace Rock.CodeGeneration.FileGenerators
 {
@@ -37,7 +38,7 @@ namespace Rock.CodeGeneration.FileGenerators
         {
             var typeComment = _xmlDoc.GetTypeComments( type )?.Summary?.PlainText;
 
-            return GenerateTypeViewModel( GetClassNameForType( type ), typeComment, type.GetProperties().ToList() );
+            return GenerateTypeViewModel( GetClassNameForType( type ), typeComment, type.GetProperties().ToList(), type );
         }
 
         /// <summary>
@@ -46,15 +47,16 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="typeName">Name of the type.</param>
         /// <param name="typeComment">The type comment.</param>
         /// <param name="properties">The properties.</param>
+        /// <param name="type">The type being generated.</param>
         /// <param name="isAutoGen">if set to <c>true</c> [is automatic gen].</param>
         /// <returns>System.String.</returns>
-        public string GenerateTypeViewModel( string typeName, string typeComment, IList<PropertyInfo> properties, bool isAutoGen = true )
+        public string GenerateTypeViewModel( string typeName, string typeComment, IList<PropertyInfo> properties, Type type, bool isAutoGen = true )
         {
             var imports = new List<TypeScriptImport>();
 
             var sb = new StringBuilder();
 
-            AppendCommentBlock( sb, typeComment, 0 );
+            AppendCommentBlock( sb, typeComment, 0, type );
             sb.AppendLine( $"export type {typeName} = {{" );
 
             var sortedProperties = properties.OrderBy( p => p.Name ).ToList();
@@ -72,7 +74,7 @@ namespace Rock.CodeGeneration.FileGenerators
 
                 AppendCommentBlock( sb, property, 4 );
 
-                sb.Append( $"    {property.Name.CamelCase()}" );
+                sb.Append( $"    {property.Name.ToCamelCase()}" );
 
                 // If its nullable that means it could also be undefined.
                 if ( isNullable )
@@ -111,8 +113,9 @@ namespace Rock.CodeGeneration.FileGenerators
             sb.AppendLine();
             sb.Append( GenerateViewModelForEnum( type, true ) );
             sb.AppendLine();
+            sb.Append( GenerateOrderForEnumIfRequired( type ) );
 
-            AppendCommentBlock( sb, typeComment, 0 );
+            AppendCommentBlock( sb, typeComment, 0, type );
 
             if ( !isFlagType )
             {
@@ -139,7 +142,7 @@ namespace Rock.CodeGeneration.FileGenerators
 
             var sb = new StringBuilder();
 
-            AppendCommentBlock( sb, typeComment, 0 );
+            AppendCommentBlock( sb, typeComment, 0, type );
 
             if ( type.GetCustomAttribute<ObsoleteAttribute>() is ObsoleteAttribute obsoleteTypeAttribute )
             {
@@ -155,13 +158,26 @@ namespace Rock.CodeGeneration.FileGenerators
                 sb.AppendLine( $"export const {typeName}Description: Record<number, string> = {{" );
             }
 
-            //var sortedFields = fields.OrderBy( f => f.GetRawConstantValue() ).ToList();
-            var sortedFields = fields.ToList();
-
             // Loop through each sorted field and emit the declaration.
-            for ( int i = 0; i < sortedFields.Count; i++ )
+            for ( int i = 0; i < fields.Count; i++ )
             {
                 var field = fields[i];
+                var obsoleteFieldAttribute = field.GetCustomAttribute<ObsoleteAttribute>();
+
+                if ( isDescription && obsoleteFieldAttribute != null )
+                {
+                    // If this enum value is obsolete and there is another
+                    // enum that is not obsolete with the same integer
+                    // value then skip this one.
+                    var hasOtherField = fields
+                        .Any( f => ( int ) f.GetRawConstantValue() == ( int ) field.GetRawConstantValue()
+                            && f.GetCustomAttribute<ObsoleteAttribute>() == null );
+
+                    if ( hasOtherField )
+                    {
+                        continue;
+                    }
+                }
 
                 if ( i > 0 )
                 {
@@ -173,6 +189,20 @@ namespace Rock.CodeGeneration.FileGenerators
                 if ( !isDescription )
                 {
                     AppendCommentBlock( sb, field, 4 );
+
+                    if ( obsoleteFieldAttribute != null )
+                    {
+                        sb.AppendLine( $"    /** @deprecated {obsoleteFieldAttribute.Message ?? string.Empty} */" );
+                    }
+
+                    if ( type.GetCustomAttribute<FlagsAttribute>() != null )
+                    {
+                        sb.Append( $"    {fieldName}: 0x{( int ) field.GetRawConstantValue():X4}" );
+                    }
+                    else
+                    {
+                        sb.Append( $"    {fieldName}: {field.GetRawConstantValue()}" );
+                    }
                 }
                 else
                 {
@@ -182,22 +212,10 @@ namespace Rock.CodeGeneration.FileGenerators
                     {
                         fieldName = $"[{fieldName}]";
                     }
-                }
 
-                if ( field.GetCustomAttribute<ObsoleteAttribute>() is ObsoleteAttribute obsoleteFieldAttribute )
-                {
-                    sb.AppendLine( $"    /** @deprecated {obsoleteFieldAttribute.Message ?? string.Empty} */" );
-                }
-
-                if ( !isDescription )
-                {
-                    sb.Append( $"    {fieldName}: {field.GetRawConstantValue()}" );
-                }
-                else
-                {
                     if ( field.GetCustomAttribute<DescriptionAttribute>() is DescriptionAttribute fieldDescriptionAttribute )
                     {
-                        sb.Append( $"    {fieldName}: \"{fieldDescriptionAttribute.Description}\"");
+                        sb.Append( $"    {fieldName}: \"{fieldDescriptionAttribute.Description}\"" );
                     }
                     else
                     {
@@ -205,7 +223,7 @@ namespace Rock.CodeGeneration.FileGenerators
                     }
                 }
 
-                if ( i + 1 < sortedFields.Count )
+                if ( i + 1 < fields.Count )
                 {
                     sb.AppendLine( "," );
                 }
@@ -223,6 +241,40 @@ namespace Rock.CodeGeneration.FileGenerators
             {
                 sb.AppendLine( "} as const;" );
             }
+
+            return sb.ToString();
+        }
+
+        private string GenerateOrderForEnumIfRequired( Type type )
+        {
+            var typeName = GetClassNameForType( type );
+            var fields = type.GetFields( BindingFlags.Static | BindingFlags.Public )
+                .Where( f => f.GetCustomAttribute<ObsoleteAttribute>() == null )
+                .Select( f => new
+                {
+                    f.GetCustomAttribute<Rock.Enums.EnumOrderAttribute>()?.Order,
+                    Value = f.GetRawConstantValue()
+                } )
+                .ToList();
+
+            // If no fields have an EnumOrderAttribute, then we don't need to
+            // generate anything.
+            if ( !fields.Any( f => f.Order.HasValue ) )
+            {
+                return string.Empty;
+            }
+
+            var sb = new StringBuilder();
+            var orderedValues = fields.OrderBy( f => f.Order ?? 0 )
+                .ThenBy( f => f.Value )
+                .Select( f => f.Value )
+                .Distinct();
+
+            sb.AppendLine( "// Add the __order property hidden so it doesn't get enumerated." );
+            sb.AppendLine( $"Object.defineProperty({typeName}Description, \"__order\", {{" );
+            sb.AppendLine( $"    value: [{string.Join( ", ", orderedValues )}]," );
+            sb.AppendLine( "});" );
+            sb.AppendLine();
 
             return sb.ToString();
         }
@@ -248,7 +300,7 @@ namespace Rock.CodeGeneration.FileGenerators
 
             var sb = new StringBuilder();
 
-            AppendCommentBlock( sb, typeComment, 0 );
+            AppendCommentBlock( sb, typeComment, 0, type );
             sb.AppendLine( $"export const {type.Name} = {{" );
 
             // Loop through each value and emit the declaration.
@@ -378,7 +430,7 @@ namespace Rock.CodeGeneration.FileGenerators
         {
             var xdoc = _xmlDoc.GetMemberComments( memberInfo )?.Summary?.PlainText;
 
-            AppendCommentBlock( sb, xdoc, indentationSize );
+            AppendCommentBlock( sb, xdoc, indentationSize, memberInfo.DeclaringType );
         }
 
         /// <summary>
@@ -387,16 +439,58 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="sb">The StringBuilder to append the comment to.</param>
         /// <param name="comment">The comment to append.</param>
         /// <param name="indentationSize">Size of the indentation for the comment block.</param>
-        private void AppendCommentBlock( StringBuilder sb, string comment, int indentationSize )
+        /// /// <param name="sourceType">The source type that this comment is related to, if a method this would be the type that contains the method.</param>
+        private void AppendCommentBlock( StringBuilder sb, string comment, int indentationSize, Type sourceType )
         {
             if ( comment.IsNullOrWhiteSpace() )
             {
                 return;
             }
 
+            // Replace any XML code with backticks.
+            comment = comment.Replace( "<c>", "`" ).Replace( "</c>", "`" );
+
+            // Replace any self closing see tags.
+            comment = Regex.Replace( comment, "<see\\s+cref=\"([^\"]+)\"\\s*\\/>", m =>
+            {
+                if ( m.Groups[1].Value.Length < 2 || m.Groups[1].Value[1] != ':' )
+                {
+                    return m.Groups[1].Value;
+                }
+
+                var segments = m.Groups[1].Value.Substring( 2 ).Split( '.' );
+
+                if ( segments.Length < 2 )
+                {
+                    return m.Groups[1].Value;
+                }
+
+                if ( m.Groups[1].Value[0] == 'F' )
+                {
+                    // This should be an enum, so don't change case.
+                    return $"{{@link {segments.TakeLast( 2 ).JoinStrings( "." )}}}";
+                }
+                else
+                {
+                    var refTypeName = segments[segments.Length - 2];
+                    var refName = segments[segments.Length - 1];
+
+                    return $"{{@link {refTypeName}.{refName.ToCamelCase()}}}";
+                }
+            } );
+
+            // Replace any non self closing see tags.
+            comment = Regex.Replace( comment, "<see\\s+cref=\"[^\"]+\"\\s*>([^<]*)<\\/see>", m =>
+            {
+                return m.Groups[1].Value;
+            } );
+
             // If it contains newline information then insert it as a block.
             if ( comment.Contains( "\r\n" ) )
             {
+                // Paragraph breaks come in as 3 newline pairs, make it just 2.
+                comment = comment.Replace( "\r\n\r\n\r\n", "\r\n\r\n" );
+
                 comment = comment.Replace( "\r\n", $"\r\n{new string( ' ', indentationSize )} * " );
 
                 sb.AppendLine( $"{new string( ' ', indentationSize )}/**" );
@@ -514,10 +608,23 @@ namespace Rock.CodeGeneration.FileGenerators
                     imports.AddRange( itemImports );
                     isNullable = isNullable || !isRequired;
                 }
+                else if ( genericTypeDefinition == typeof( ValidPropertiesBox<> ) )
+                {
+                    var (valueType, valueImports) = GetTypeScriptType( type.GetGenericArguments()[0], true );
+
+                    tsType = $"ValidPropertiesBox<{valueType}>";
+                    imports.AddRange( valueImports );
+                    imports.Add( new TypeScriptImport
+                    {
+                        SourcePath = "@Obsidian/ViewModels/Utility/validPropertiesBox",
+                        NamedImport = "ValidPropertiesBox"
+                    } );
+                    isNullable = isNullable || !isRequired;
+                }
             }
             else if ( type.Namespace.StartsWith( "Rock.ViewModels" ) && ( type.Name.EndsWith( "Bag" ) || type.Name.EndsWith( "Box" ) ) )
             {
-                var path = $"{type.Namespace.Substring( 15 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.CamelCase()}";
+                var path = $"{type.Namespace.Substring( 15 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.ToCamelCase()}";
                 tsType = type.Name;
                 imports.Add( new TypeScriptImport
                 {
@@ -526,23 +633,30 @@ namespace Rock.CodeGeneration.FileGenerators
                 } );
                 isNullable = isNullable || !isRequired;
             }
+            else if ( type.IsEnum && type.Namespace.StartsWith( "Rock.Enums" ) )
+            {
+                var path = $"{type.Namespace.Substring( 10 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.ToCamelCase()}";
+                tsType = type.Name;
+                imports.Add( new TypeScriptImport
+                {
+                    SourcePath = $"@Obsidian/Enums/{path}",
+                    NamedImport = type.Name
+                } );
+            }
+            else if ( type.IsEnum && type.GetCustomAttribute<Rock.Enums.EnumDomainAttribute>() != null )
+            {
+                var domain = type.GetCustomAttribute<Rock.Enums.EnumDomainAttribute>().Domain;
+                var path = $"{SupportTools.GetDomainFolderName( domain )}/{type.Name.ToCamelCase()}";
+                tsType = type.Name;
+                imports.Add( new TypeScriptImport
+                {
+                    SourcePath = $"@Obsidian/Enums/{path}",
+                    NamedImport = type.Name
+                } );
+            }
             else if ( type.IsEnum )
             {
-                var importPath = GetImportPathForEnumType( type );
-
-                if ( importPath.IsNotNullOrWhiteSpace() )
-                {
-                    tsType = type.Name;
-                    imports.Add( new TypeScriptImport
-                    {
-                        SourcePath = importPath,
-                        NamedImport = type.Name
-                    } );
-                }
-                else
-                {
-                    tsType = "number";
-                }
+                tsType = "number";
             }
 
             if ( isNullable )
@@ -551,39 +665,6 @@ namespace Rock.CodeGeneration.FileGenerators
             }
 
             return (tsType, imports);
-        }
-
-        /// <summary>
-        /// Gets the path to use for where the enum file should be written.
-        /// </summary>
-        /// <param name="type">The type that will be written to a file.</param>
-        /// <returns>A string that represents the directory that will contain the enum file.</returns>
-        /// <exception cref="Exception">Attempt to export an enum with an invalid namespace, this shouldn't happen.</exception>
-        private static string GetImportPathForEnumType( Type type )
-        {
-            if ( type.Namespace.StartsWith( "Rock.Enums" ) )
-            {
-                return $"@Obsidian/Enums/{type.Namespace.Substring( 10 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.CamelCase()}";
-            }
-            else
-            {
-                // If the type isn't in the Rock.Enums namespace then use the
-                // EnumDomain attribute to determine the actual domain it's in.
-                var domainAttribute = type.GetCustomAttributes()
-                    .FirstOrDefault( a => a.GetType().FullName == "Rock.Enums.EnumDomainAttribute" );
-
-                if ( domainAttribute != null )
-                {
-                    var domain = ( string ) domainAttribute.GetType().GetProperty( "Domain" ).GetValue( domainAttribute );
-                    domain = SupportTools.GetDomainFolderName( domain );
-
-                    return $"@Obsidian/Enums/{domain}/{type.Name.CamelCase()}";
-                }
-                else
-                {
-                    return null;
-                }
-            }
         }
 
         /// <summary>

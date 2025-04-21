@@ -16,6 +16,7 @@
 //
 
 using System.Data.Entity;
+
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -34,7 +35,21 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
         {
-            Rock.CheckIn.KioskDevice.FlushItem( this.Id );
+            if ( entityState == EntityState.Added )
+            {
+                // Most other cache classes just always call this, but since we're specifically
+                // doing other things for updated devices, we'll just call this
+                // when EntityState.Added
+                DeviceCache.UpdateCachedEntity( this.Id, entityState );
+            }
+            else
+            {
+                // There was a need in v1 Check-in to flush this item from the *special* KioskDevice cache too,
+                // but this can likely be removed once Check-in v1 is no longer needed.
+                // ( See b6c03d573eea6c3fbf14d23c40d08e8ae7d42a5b )
+                Rock.CheckIn.KioskDevice.FlushItem( this.Id );
+                DeviceCache.FlushItem( Id );
+            }
         }
 
         /// <summary>
@@ -43,8 +58,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            // doesn't apply
-            return null;
+            return DeviceCache.Get( Id );
         }
 
         #endregion ICacheable

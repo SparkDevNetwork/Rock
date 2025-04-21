@@ -19,8 +19,8 @@
 
 import { InjectionKey, Ref } from "vue";
 import { ResourceListSourceType } from "@Obsidian/Enums/Blocks/Group/Scheduling/resourceListSourceType";
-import { GroupSchedulerUnassignedResourceCountBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerUnassignedResourceCountBag";
 import { Guid } from "@Obsidian/Types";
+import { GroupSchedulerUnassignedResourceCountBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerUnassignedResourceCountBag";
 
 /**
  * Information about a scheduler resource assignment for the group scheduler.
@@ -261,6 +261,12 @@ export const OccurrenceDateTitle: InjectionKey<Ref<string>> = Symbol("occurrence
  * * An injection key to provide a schedule identifier.
  */
 export const ScheduleId: InjectionKey<Ref<number>> = Symbol("schedule-id");
+
+/**
+ * An injection key to provide a function that will add the provided attendance occurrence identifier
+ * to the schedule occurrence matching the provided unique identifier.
+ */
+export const AddAttendanceOccurrenceId: InjectionKey<(scheduleOccurrenceGuid: Guid, attendanceOccurrenceId: number) => void> = Symbol("add-attendance-occurrence-id");
 
 /**
  * An injection key to instruct all schedule occurrences to reload themselves.

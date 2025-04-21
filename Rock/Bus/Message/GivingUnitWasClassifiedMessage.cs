@@ -16,16 +16,19 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus.Queue;
+using Rock.Configuration;
 using Rock.Logging;
 using Rock.Model;
-using Rock.Utility.Settings;
 
 namespace Rock.Bus.Message
 {
     /// <summary>
     /// Cache Update Message
     /// </summary>
+    [RockLoggingCategory]
     public class GivingUnitWasClassifiedMessage : IEventMessage<GivingEventQueue>
     {
         /// <summary>
@@ -50,6 +53,7 @@ namespace Rock.Bus.Message
         /// <param name="personIds">The person ids.</param>
         public static void Publish( IEnumerable<int> personIds )
         {
+            var logger = RockLogger.LoggerFactory.CreateLogger<GivingUnitWasClassifiedMessage>();
             var list = personIds?.ToList();
 
             if ( list?.Any() != true )
@@ -63,16 +67,16 @@ namespace Rock.Bus.Message
                 // Don't publish events until Rock is all the way started
                 var logMessage = $"'Giving Unit Was Classified' message was not published because Rock is not fully started yet.";
 
-                var elapsedSinceProcessStarted = RockDateTime.Now - RockInstanceConfig.ApplicationStartedDateTime;
+                var elapsedSinceProcessStarted = RockDateTime.Now - RockApp.Current.HostingSettings.ApplicationStartDateTime;
 
                 if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Bus, logMessage );
+                    logger.LogError( logMessage );
                     ExceptionLogService.LogException( new BusException( logMessage ) );
                 }
                 else
                 {
-                    RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
+                    logger.LogDebug( logMessage );
                 }
 
                 return;
@@ -85,7 +89,7 @@ namespace Rock.Bus.Message
 
             _ = RockMessageBus.PublishAsync<GivingEventQueue, GivingUnitWasClassifiedMessage>( message );
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, $"Published 'Giving Unit Was Classified' message." );
+            logger.LogDebug( "Published 'Giving Unit Was Classified' message." );
         }
     }
 }

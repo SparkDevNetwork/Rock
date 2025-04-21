@@ -213,7 +213,7 @@ namespace Rock.Communication.Transport
             {
                 foreach ( var mergeField in mergeFields )
                 {
-                    recipient.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
+                    recipient.MergeFields.TryAdd( mergeField.Key, mergeField.Value );
                 }
 
                 CommunicationRecipient communicationRecipient = null;

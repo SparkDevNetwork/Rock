@@ -16,6 +16,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -67,5 +68,12 @@ namespace Rock.Model
         }
 
         #endregion Overrides
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => AchievementType ?? base.ParentAuthority;
+
+        #endregion
     }
 }

@@ -68,15 +68,14 @@ namespace RockWeb.Blocks.Utility
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             RockPage.EnableViewStateInspection = true;
             RockPage.ViewStatePersisted += RockPage_ViewStatePersisted;
-
 
             if ( !Page.IsPostBack )
             {
             }
+
+            base.OnLoad( e );
         }
 
         private void RockPage_ViewStatePersisted( object sender, EventArgs e )

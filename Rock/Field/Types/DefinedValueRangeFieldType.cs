@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -36,7 +37,8 @@ namespace Rock.Field.Types
     /// Stored as a comma-delimited pair of DefinedValue.Guids: lowerGuid,upperGuid
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DEFINED_VALUE_RANGE )]
     public class DefinedValueRangeFieldType : FieldType, IEntityReferenceFieldType
     {
@@ -45,6 +47,87 @@ namespace Rock.Field.Types
         private const string DEFINED_TYPE_KEY = "definedtype";
         private const string DISPLAY_DESCRIPTION = "displaydescription";
         private const string PUBLIC_VALUES = "values";
+        private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            var configurationProperties = new Dictionary<string, string>();
+
+            // Determine if we need to display the description instead of the
+            // value name.
+            var displayDescription = privateConfigurationValues.GetValueOrDefault( DISPLAY_DESCRIPTION, "False" ).AsBoolean();
+
+            // Get the defined types that are available to be selected.
+            var definedTypes = DefinedTypeCache.All()
+                .OrderBy( t => t.Name )
+                .Select( t => new ListItemBag
+                {
+                    Value = t.Guid.ToString(),
+                    Text = t.Name
+                } )
+                .ToList();
+
+            configurationProperties[DEFINED_TYPES_PROPERTY_KEY] = definedTypes.ToCamelCaseJson( false, true );
+
+            return configurationProperties;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+            var definedTypeGuid = publicConfigurationValues.ContainsKey( DEFINED_TYPE_KEY ) ? publicConfigurationValues[DEFINED_TYPE_KEY].AsGuidOrNull() : null;
+
+            if ( definedTypeGuid.HasValue )
+            {
+                var definedType = DefinedTypeCache.Get( definedTypeGuid.Value );
+
+                publicConfigurationValues[PUBLIC_VALUES] = definedType.DefinedValues
+                    .OrderBy( v => v.Order )
+                    .Select( v => new
+                    {
+                        Value = v.Guid,
+                        Text = v.Value,
+                        v.Description
+                    } )
+                    .ToCamelCaseJson( false, true );
+            }
+            else
+            {
+                publicConfigurationValues[PUBLIC_VALUES] = "[]";
+            }
+
+            if ( usage != ConfigurationValueUsage.Configure )
+            {
+                publicConfigurationValues.Remove( DEFINED_TYPE_KEY );
+            }
+
+            return publicConfigurationValues;
+        }
+
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            // Convert the defined type value from a guid to an integer.
+            var definedTypeGuid = privateConfigurationValues.GetValueOrDefault( DEFINED_TYPE_KEY, string.Empty ).AsGuidOrNull();
+            privateConfigurationValues.Remove( DEFINED_TYPE_KEY );
+
+            if ( definedTypeGuid.HasValue )
+            {
+                var definedTypeCache = DefinedTypeCache.Get( definedTypeGuid.Value );
+
+                if ( definedTypeCache != null )
+                {
+                    privateConfigurationValues[DEFINED_TYPE_KEY] = definedTypeCache.Guid.ToString();
+                }
+            }
+
+            return privateConfigurationValues;
+        }
 
         #endregion
 
@@ -231,39 +314,6 @@ namespace Rock.Field.Types
             return configKeys;
         }
 
-        /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
-        {
-            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
-            var definedTypeGuid = publicConfigurationValues.ContainsKey( DEFINED_TYPE_KEY ) ? publicConfigurationValues[DEFINED_TYPE_KEY].AsGuidOrNull() : null;
-
-            if ( definedTypeGuid.HasValue )
-            {
-                var definedType = DefinedTypeCache.Get( definedTypeGuid.Value );
-
-                publicConfigurationValues[PUBLIC_VALUES] = definedType.DefinedValues
-                    .OrderBy( v => v.Order )
-                    .Select( v => new
-                    {
-                        Value = v.Guid,
-                        Text = v.Value,
-                        v.Description
-                    } )
-                    .ToCamelCaseJson( false, true );
-            }
-            else
-            {
-                publicConfigurationValues[PUBLIC_VALUES] = "[]";
-            }
-
-            if ( usage != ConfigurationValueUsage.Configure )
-            {
-                publicConfigurationValues.Remove( DEFINED_TYPE_KEY );
-            }
-
-            return publicConfigurationValues;
-        }
-
         /// <summary>
         /// Creates the HTML controls required to configure this type of field
         /// </summary>
@@ -278,6 +328,7 @@ namespace Rock.Field.Types
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.Required = true;
             ddl.Label = "Defined Type";
             ddl.Help = "The Defined Type to select values from.";
 
@@ -294,7 +345,6 @@ namespace Rock.Field.Types
             cbDescription.AutoPostBack = true;
             cbDescription.CheckedChanged += OnQualifierUpdated;
             cbDescription.Label = "Display Descriptions";
-            cbDescription.Text = "Yes";
             cbDescription.Help = "When set, the defined value descriptions will be displayed instead of the values.";
             return controls;
         }

@@ -97,11 +97,11 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             if ( !Page.IsPostBack )
             {
                 BindPageList();
             }
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -120,7 +120,9 @@ namespace RockWeb.Blocks.Event
             var showWaitListTab = this.RegistrationInstance.RegistrationTemplate.WaitListEnabled;
 
             var rockContext = new RockContext();
-            var pageList = this.PageCache.ParentPage.GetPages( rockContext ).OrderBy( a => a.Order ).ToList();
+            var pageList = this.PageCache.ParentPage.GetPages( rockContext )
+                .Where( page => page.DisplayInNav( CurrentPerson ) )
+                .OrderBy( a => a.Order ).ToList();
 
             if ( !showWaitListTab && waitListPageGuid.HasValue )
             {

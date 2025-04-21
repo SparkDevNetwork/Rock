@@ -37,10 +37,12 @@ namespace Rock.Migrations
             //  Site: Rock RMS
             RockMigrationHelper.AddPage( true, "C831428A-6ACD-4D49-9B2D-046D399E3123", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "AI Providers", "", "54E421B1-B89C-4C3B-BECA-16349D750691", "fa fa-brain" );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route
             //   Page:AI Providers
             //   Route:admin/system/ai
             RockMigrationHelper.AddPageRoute( "54E421B1-B89C-4C3B-BECA-16349D750691", "admin/system/ai", "4F95EC18-BD5D-4560-A2EC-7576C536E6A8" );
+#pragma warning restore CS0618 // Type or member is obsolete
                         
             // Add Block 
             //  Block Name: AI

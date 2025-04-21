@@ -165,20 +165,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Obsolete: Use ShowInactiveTags instead.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [Show Inactive Tags]; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "Use ShowInactiveTags instead.", true )]
-        public bool ShowInActiveTags
-        {
-            get { return ShowInactiveTags; }
-            set { ShowInactiveTags = value; }
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether Inactive tags should be displayed
         /// </summary>
         /// <value>

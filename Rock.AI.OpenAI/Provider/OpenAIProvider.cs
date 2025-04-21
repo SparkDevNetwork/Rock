@@ -15,20 +15,21 @@
 // </copyright>
 //
 
-using Rock.AI.Classes.TextCompletions;
-using Rock.AI.Provider;
-using Rock.Attribute;
-using Rock.AI.OpenAI.OpenAIApiClient;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using Rock.Crm.ConnectionStatusChangeReport;
-using Rock.AI.OpenAI.OpenAIApiClient.Classes;
-using Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions;
 using System.Threading.Tasks;
-using Rock.AI.Classes.Moderations;
-using Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations;
+
 using Rock.AI.Classes.ChatCompletions;
+using Rock.AI.Classes.Moderations;
+using Rock.AI.Classes.TextCompletions;
+using Rock.AI.OpenAI.OpenAIApiClient;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions;
+using Rock.AI.Provider;
+using Rock.Attribute;
+using Rock.Model;
 
 namespace Rock.AI.OpenAI.Provider
 {
@@ -47,11 +48,16 @@ namespace Rock.AI.OpenAI.Provider
         IsRequired = true,
         Order = 0 )]
     [TextField(
-        "OpenAI Organization",
+        "OpenAI Organization Id",
         Key = AttributeKey.Organization,
-        Description = "The OpenAI Organization.",
+        Description = "The OpenAI organization id (e.g. org-FJsnwh1iFFq6xxxxxxxxxxxx).",
         IsRequired = true,
-        Order = 0 )]
+        Order = 1 )]
+    [OpenAIModelPickerField( "Default Model",
+        Description = "The default AI model to use if none is specified.",
+        IsRequired = true,
+        Key = AttributeKey.DefaultModel,
+        Order = 2 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "8D3F25B1-4891-31AA-4FA6-365F5C808563" )]
     internal class OpenAIProvider : AIProviderComponent
@@ -60,18 +66,30 @@ namespace Rock.AI.OpenAI.Provider
         {
             public const string SecretKey = "SecretKey";
             public const string Organization = "Organization";
+            public const string DefaultModel = "DefaultModel";
         }
 
-        /// <summary>
-        /// Gets the contents of the text completions.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public override async Task<TextCompletionsResponse> GetTextCompletions( TextCompletionsRequest request )
+        /// <inheritdoc/>
+        public override async Task<TextCompletionsResponse> GetTextCompletions( AIProvider provider, TextCompletionsRequest request )
         {
-            var openAIApi = GetOpenAIApi();
+            var openAIApi = GetOpenAIApi( provider );
+
+            if ( request.Model.IsNullOrWhiteSpace() )
+            {
+                request.Model = GetAttributeValue( provider, AttributeKey.DefaultModel );
+            }
 
             var response = await openAIApi.GetTextCompletions( new OpenAITextCompletionsRequest( request ) );
+
+            // If there's an error message throw an Exception (to include the StackTrace) in the log.
+            if ( response.ErrorMessage.IsNotNullOrWhiteSpace() || !response.IsSuccessful )
+            {
+                var message =
+                    response.ErrorMessage.IsNotNullOrWhiteSpace() ?
+                    response.ErrorMessage :
+                    "OpenAI Text Completion API call was unsuccessful.";
+                throw new Exception( message );
+            }
 
             if ( response == null )
             {
@@ -81,16 +99,27 @@ namespace Rock.AI.OpenAI.Provider
             return response.AsTextCompletionsResponse();
         }
 
-        /// <summary>
-        /// Gets the contents of the chat completions.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public override async Task<ChatCompletionsResponse> GetChatCompletions( ChatCompletionsRequest request )
+        /// <inheritdoc/>
+        public override async Task<ChatCompletionsResponse> GetChatCompletions( AIProvider provider, ChatCompletionsRequest request )
         {
-            var openAIApi = GetOpenAIApi();
+            var openAIApi = GetOpenAIApi( provider );
+
+            if ( request.Model.IsNullOrWhiteSpace() )
+            {
+                request.Model = GetAttributeValue( provider, AttributeKey.DefaultModel );
+            }
 
             var response = await openAIApi.GetChatCompletions( new OpenAIChatCompletionsRequest( request ) );
+
+            // If there's an error message throw an Exception (to include the StackTrace) in the log.
+            if ( response.ErrorMessage.IsNotNullOrWhiteSpace() || !response.IsSuccessful )
+            {
+                var message =
+                   response.ErrorMessage.IsNotNullOrWhiteSpace() ?
+                   response.ErrorMessage :
+                   "OpenAI Chat Completion API call was unsuccessful.";
+                throw new Exception( message );
+            }
 
             if ( response == null )
             {
@@ -100,19 +129,24 @@ namespace Rock.AI.OpenAI.Provider
             return response.AsChatCompletionsResponse();
         }
 
-        /// <summary>
-        /// Processes a moderation request for the text provided.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public override async Task<ModerationsResponse> GetModerations( ModerationsRequest request )
+        /// <inheritdoc/>
+        public override async Task<ModerationsResponse> GetModerations( AIProvider provider, ModerationsRequest request )
         {
-            var openAIApi = GetOpenAIApi();
+            var openAIApi = GetOpenAIApi( provider );
 
             var response = await openAIApi.GetModerations( new OpenAIModerationsRequest( request ) );
 
-            if (response == null )
+            // If there's an error message throw an Exception (to include the StackTrace) in the log.
+            if ( response.ErrorMessage.IsNotNullOrWhiteSpace() || !response.IsSuccessful )
+            {
+                var message =
+                    response.ErrorMessage.IsNotNullOrWhiteSpace() ?
+                    response.ErrorMessage :
+                    "OpenAI Moderation API call was unsuccessful.";
+                throw new Exception( message );
+            }
+
+            if ( response == null )
             {
                 return null;
             }
@@ -124,9 +158,13 @@ namespace Rock.AI.OpenAI.Provider
         /// Method to return an OpenAIApi object providing the connection information.
         /// </summary>
         /// <returns></returns>
-        private OpenAIApi GetOpenAIApi()
+        private OpenAIApi GetOpenAIApi( AIProvider provider )
         {
-            return new OpenAIApi( GetAttributeValue( AttributeKey.SecretKey ), GetAttributeValue( AttributeKey.Organization ) );
+            var key = GetAttributeValue( provider, AttributeKey.SecretKey );
+            var organization = GetAttributeValue( provider, AttributeKey.Organization );
+
+            var api = new OpenAIApi( key, organization );
+            return api;
         }
     }
 }

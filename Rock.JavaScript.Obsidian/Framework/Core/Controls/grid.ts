@@ -20,13 +20,14 @@ import { NumberFilterMethod } from "@Obsidian/Enums/Core/Grid/numberFilterMethod
 import { DateFilterMethod } from "@Obsidian/Enums/Core/Grid/dateFilterMethod";
 import { PickExistingFilterMethod } from "@Obsidian/Enums/Core/Grid/pickExistingFilterMethod";
 import { TextFilterMethod } from "@Obsidian/Enums/Core/Grid/textFilterMethod";
-import { ColumnFilter, ColumnDefinition, IGridState, StandardFilterProps, StandardCellProps, IGridCache, IGridRowCache, ColumnSort, SortValueFunction, FilterValueFunction, QuickFilterValueFunction, StandardColumnProps, StandardHeaderCellProps, EntitySetOptions, ExportValueFunction, StandardSkeletonCellProps, GridLength, BooleanSearchBag } from "@Obsidian/Types/Controls/grid";
+import { ColumnFilter, ColumnDefinition, IGridState, StandardFilterProps, StandardCellProps, IGridCache, IGridRowCache, ColumnSort, SortValueFunction, FilterValueFunction, QuickFilterValueFunction, StandardColumnProps, StandardHeaderCellProps, EntitySetOptions, ExportValueFunction, StandardSkeletonCellProps, GridLength, BooleanSearchBag, FilterValuesFunction } from "@Obsidian/Types/Controls/grid";
 import { ICancellationToken } from "@Obsidian/Utility/cancellation";
 import { extractText, getVNodeProp, getVNodeProps } from "@Obsidian/Utility/component";
 import { DayOfWeek, RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { resolveMergeFields } from "@Obsidian/Utility/lava";
 import { deepEqual } from "@Obsidian/Utility/util";
 import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
+import { DynamicFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/dynamicFieldDefinitionBag";
 import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
 import { GridEntitySetBag } from "@Obsidian/ViewModels/Core/Grid/gridEntitySetBag";
 import { GridEntitySetItemBag } from "@Obsidian/ViewModels/Core/Grid/gridEntitySetItemBag";
@@ -35,6 +36,7 @@ import mitt, { Emitter } from "mitt";
 import { CustomColumnDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/customColumnDefinitionBag";
 import { ColumnPositionAnchor } from "@Obsidian/Enums/Core/Grid/columnPositionAnchor";
 import { BooleanFilterMethod } from "@Obsidian/Enums/Core/Grid/booleanFilterMethod";
+import { getValueFromPath } from "@Obsidian/Utility/objectUtils";
 
 // #region Internal Types
 
@@ -139,8 +141,18 @@ export const standardColumnProps: StandardColumnProps = {
         required: false
     },
 
+    filterValues: {
+        type: Object as PropType<FilterValuesFunction>,
+        required: false
+    },
+
     exportValue: {
         type: Function as PropType<ExportValueFunction>,
+        required: false
+    },
+
+    columnType: {
+        type: String as PropType<string>,
         required: false
     },
 
@@ -187,7 +199,17 @@ export const standardColumnProps: StandardColumnProps = {
     width: {
         type: String as PropType<string>,
         required: false
-    }
+    },
+
+    wrapped: {
+        type: Boolean as PropType<boolean>,
+        default: false
+    },
+
+    disableSort: {
+        type: Boolean as PropType<boolean>,
+        default: false
+    },
 };
 
 /** The standard properties available on header cells. */
@@ -281,8 +303,8 @@ export function textFilterMatches(needle: unknown, haystack: unknown): boolean {
         return false;
     }
 
-    const haystackValue = haystack?.toLowerCase() ?? "";
-    const needleValue = needle["value"].toLowerCase();
+    const haystackValue = haystack?.toLowerCase()?.trim() ?? "";
+    const needleValue = needle["value"].toLowerCase()?.trim();
 
     if (needle["method"] === TextFilterMethod.Equals) {
         return haystackValue === needleValue;
@@ -326,6 +348,10 @@ export function booleanFilterMatches(needle: unknown, haystack: unknown): boolea
     const needleBag = needle as BooleanSearchBag;
 
     if (needleBag.method === BooleanFilterMethod.Yes && haystack === true) {
+        return true;
+    }
+
+    if (needleBag.method === BooleanFilterMethod.No && haystack === false) {
         return true;
     }
 
@@ -474,9 +500,10 @@ export function dateFilterMatches(needle: unknown, haystack: unknown): boolean {
         return false;
     }
 
-    const needleFirstDate = RockDateTime.parseISO(needle["value"] ?? "")?.date.toMilliseconds() ?? 0;
-    const needleSecondDate = RockDateTime.parseISO(needle["secondValue"] ?? "")?.date.toMilliseconds() ?? 0;
-    const haystackDate = RockDateTime.parseISO(haystack ?? "")?.date.toMilliseconds() ?? 0;
+    const needleFirstDate = RockDateTime.parseISO(needle["value"] ?? "")?.rawDate.toMilliseconds() ?? 0;
+    const needleSecondDate = RockDateTime.parseISO(needle["secondValue"] ?? "")?.rawDate.toMilliseconds() ?? 0;
+    const haystackDate = RockDateTime.parseISO(haystack ?? "")?.rawDate.toMilliseconds() ?? 0;
+
     const today = RockDateTime.now().date;
 
     if (needle["method"] === DateFilterMethod.Equals) {
@@ -581,7 +608,7 @@ export function dateFilterMatches(needle: unknown, haystack: unknown): boolean {
 // #region Entity Sets
 
 /**
- * Gets the entity set bag that can be send to the server to create an entity
+ * Gets the entity set bag that can be sent to the server to create an entity
  * set representing the selected items in the grid.
  *
  * @param grid The grid state that will be used as the source data.
@@ -619,7 +646,7 @@ export async function getEntitySetBag(grid: IGridState, keyFields: string[], opt
         // Search each of the key fields we were told to check and look
         // for any entity keys.
         for (const key of keyFields) {
-            const keyValue = row[key];
+            const keyValue = getValueFromPath(row, key);
 
             if (typeof keyValue === "number" && keyValue !== 0) {
                 entityKeyValues.push(keyValue.toString());
@@ -723,7 +750,7 @@ export async function getEntitySetBag(grid: IGridState, keyFields: string[], opt
 
     // Because we might be dealing with large data sets and might be pulling
     // formatted data from components, use a worker so the UI doesn't freeze.
-    const worker = new BackgroundItemsFunctionWorker(grid.getSortedRows(), processRow);
+    const worker = new BackgroundItemsFunctionWorker(grid.sortedRows, processRow);
 
     await worker.run();
 
@@ -841,7 +868,16 @@ function getOrAddRowCacheValue<T>(row: Record<string, unknown>, column: ColumnDe
 function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
     const attributes = getVNodeProp<AttributeFieldDefinitionBag[]>(node, "attributes");
     const filter = getVNodeProp<ColumnFilter>(node, "filter");
-    const skeletonComponent = getVNodeProp<Component>(node, "skeletonComponent");
+    const skeletonComponent = getVNodeProp<Component>(node, "skeletonComponent") ?? defaultCell;
+    const formatComponent = getVNodeProp<Component>(node, "formatComponent") ?? defaultCell;
+    const exportValue = getVNodeProp<ExportValueFunction>(node, "exportValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
+    const sortValue = getVNodeProp<SortValueFunction>(node, "sortValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
+    const quickFilterValue = getVNodeProp<QuickFilterValueFunction>(node, "quickFilterValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
+    const filterValue = getVNodeProp<FilterValueFunction>(node, "filterValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
 
     if (!attributes) {
         return;
@@ -856,13 +892,13 @@ function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
             name: attribute.name,
             title: attribute.title ?? undefined,
             field: attribute.name,
-            sortValue: (r, c) => c.field ? String(r[c.field]) : undefined,
-            quickFilterValue: (r, c, g) => getOrAddRowCacheValue(r, c, "quickFilterValue", g, () => c.field ? String(r[c.field]) : undefined),
+            sortValue,
+            quickFilterValue: (r, c, g) => getOrAddRowCacheValue(r, c, "quickFilterValue", g, () => quickFilterValue(r, c, g)),
             filter,
-            filterValue: (r, c) => c.field ? String(r[c.field]) : undefined,
-            exportValue: (r, c) => c.field ? String(r[c.field]) : undefined,
-            formatComponent: defaultCell,
-            condensedComponent: defaultCell,
+            filterValue,
+            exportValue,
+            formatComponent: formatComponent,
+            condensedComponent: formatComponent,
             skeletonComponent,
             hideOnScreen: false,
             excludeFromExport: false,
@@ -871,9 +907,63 @@ function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
                 value: 10,
                 unitType: "%"
             },
+            wrapped: false,
+            disableSort: false,
             props: {},
+            slots: {},
             data: {}
         });
+    }
+}
+
+/**
+ * Builds the column definitions for the dynamic columns defined on the node.
+ *
+ * @param columns The array of columns that the new dynamic columns will be appended to.
+ * @param node The node that defines the dynamic fields.
+ */
+function buildDynamicColumns(columns: ColumnDefinition[], node: VNode): void {
+    const dynamicFields = getVNodeProp<(DynamicFieldDefinitionBag & { filter?: ColumnFilter, filterValue?: FilterValueFunction | string })[]>(node, "dynamicFields");
+    if (!dynamicFields) {
+        return;
+    }
+
+    const columnComponents = getVNodeProp<Record<string, Component>>(node, "columnComponents") ?? {};
+    const defaultColumnComponent = getVNodeProp<Component>(node, "defaultColumnComponent");
+    if (!defaultColumnComponent) {
+        return;
+    }
+
+    for (const dynamicField of dynamicFields) {
+        if (!dynamicField.name) {
+            continue;
+        }
+
+        const columnComponent = columnComponents?.[dynamicField.columnType ?? ""]
+            ?? defaultColumnComponent;
+
+        const vNode = createElementVNode(columnComponent, {
+            name: dynamicField.name,
+            title: dynamicField.title,
+            field: dynamicField.name,
+            width: dynamicField.width,
+            filter: dynamicField.filter,
+            filterValue: dynamicField.filterValue ?? columnComponent["filterValue"],
+            hideOnScreen: dynamicField.hideOnScreen,
+            excludeFromExport: dynamicField.excludeFromExport,
+            visiblePriority: dynamicField.visiblePriority
+        });
+
+        if (dynamicField.fieldProperties) {
+            Object.entries(dynamicField.fieldProperties).forEach(([key, value]) => {
+                if (value && vNode.props) {
+                    vNode.props[key] = value;
+                }
+            });
+        }
+
+        const columnDefinition = buildColumn(dynamicField.name, vNode);
+        columns.push(columnDefinition);
     }
 }
 
@@ -902,6 +992,7 @@ function insertCustomColumns(columns: ColumnDefinition[], customColumns: CustomC
             exportValue: (r, c) => c.field ? String(r[c.field]) : undefined,
             formatComponent: htmlCell,
             condensedComponent: htmlCell,
+            columnType: "",
             headerClass: customColumn.headerClass ?? undefined,
             itemClass: customColumn.itemClass ?? undefined,
             hideOnScreen: false,
@@ -911,7 +1002,10 @@ function insertCustomColumns(columns: ColumnDefinition[], customColumns: CustomC
                 value: 10,
                 unitType: "%"
             },
+            wrapped: false,
+            disableSort: false,
             props: {},
+            slots: {},
             data: {}
         };
 
@@ -949,12 +1043,16 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
     const skeletonComponent = skeletonTemplate ?? getVNodeProp<Component>(node, "skeletonComponent");
     const exportTemplate = node.children?.["export"] as Component | undefined;
     const filter = getVNodeProp<ColumnFilter>(node, "filter");
+    const filterValues = getVNodeProp<FilterValuesFunction>(node, "filterValues");
     const headerClass = getVNodeProp<string>(node, "headerClass");
     const itemClass = getVNodeProp<string>(node, "itemClass");
+    const columnType = getVNodeProp<string>(node, "columnType");
     const hideOnScreen = getVNodeProp<boolean>(node, "hideOnScreen") === true || getVNodeProp<string>(node, "hideOnScreen") === "";
     const excludeFromExport = getVNodeProp<boolean>(node, "excludeFromExport") === true || getVNodeProp<string>(node, "excludeFromExport") === "";
     const visiblePriority = getVNodeProp<"xs" | "sm" | "md" | "lg" | "xl">(node, "visiblePriority") || "xs";
     const width = getVNodeProp<string>(node, "width");
+    const wrapped = getVNodeProp<boolean>(node, "wrapped") || false;
+    const disableSort = getVNodeProp<boolean>(node, "disableSort") || false;
     const filterPrependComponent = node.children?.["filterPrepend"] as Component | undefined;
 
     // Get the function that will provide the sort value.
@@ -966,6 +1064,11 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
         if (sortField) {
             sortValue = (r) => {
                 const v = r[sortField];
+
+                // Explicitly handle null and undefined values
+                if (v === null || v === undefined) {
+                    return undefined;
+                }
 
                 if (typeof v === "string" || typeof v === "number") {
                     return v;
@@ -1094,16 +1197,21 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
         filterPrependComponent,
         filter,
         sortValue,
+        disableSort,
         filterValue,
+        filterValues,
         quickFilterValue,
         exportValue,
         hideOnScreen,
         excludeFromExport,
         visiblePriority,
         width: parseGridLength(width),
+        columnType,
         headerClass,
         itemClass,
+        wrapped,
         props: getVNodeProps(node),
+        slots: node.children as Record<string, Component> ?? {},
         data: {}
     };
 
@@ -1124,13 +1232,21 @@ export function getColumnDefinitions(columnNodes: VNode[]): ColumnDefinition[] {
     for (const node of columnNodes) {
         const name = getVNodeProp<string>(node, "name");
 
-        // Check if this node is the special AttributeColumns node.
+        // Check if this node is the special AttributeColumns, DynamicColumns or
+        // has a list of child nodes.
         if (!name) {
-            if (getVNodeProp<boolean>(node, "__attributeColumns") !== true) {
-                continue;
+            if (getVNodeProp<boolean>(node, "__attributeColumns") === true) {
+                buildAttributeColumns(columns, node);
             }
-
-            buildAttributeColumns(columns, node);
+            else if (getVNodeProp<boolean>(node, "__dynamicColumns") === true) {
+                buildDynamicColumns(columns, node);
+            }
+            else if (node?.children?.length) {
+                // V-For was used, so it's just a blank VNode with children that
+                // we need to loop through.
+                const newColumns = getColumnDefinitions(node.children as VNode[]);
+                columns.push(...newColumns);
+            }
 
             continue;
         }
@@ -1156,7 +1272,7 @@ export function getRowKey(row: Record<string, unknown>, itemIdKey?: string): str
         return undefined;
     }
 
-    const rowKey = row[itemIdKey];
+    const rowKey = getValueFromPath(row, itemIdKey);
 
     if (typeof rowKey === "string") {
         return rowKey;
@@ -1213,6 +1329,7 @@ export function getColumnStyles(column: ColumnDefinition): Record<string, string
 
     if (column.width.unitType === "px") {
         styles.flex = `0 0 ${column.width.value}px`;
+        styles.minWidth = `unset`;
     }
     else {
         styles.flex = `1 1 ${column.width.value}%`;
@@ -1544,7 +1661,7 @@ class BackgroundItemsFunctionWorker<T> extends BackgroundWorker {
     private workerFunction: (item: T) => void;
 
     /** The array of items to be processed. */
-    private items: T[];
+    private items: readonly T[];
 
     /** The index of the next item to be processed. */
     private itemIndex: number = 0;
@@ -1556,7 +1673,7 @@ class BackgroundItemsFunctionWorker<T> extends BackgroundWorker {
      * @param items The array of items to be processed.
      * @param workerFunction The function to be called for each item in the array.
      */
-    constructor(items: T[], workerFunction: ((item: T) => void)) {
+    constructor(items: readonly T[], workerFunction: ((item: T) => void)) {
         super();
 
         this.workerFunction = workerFunction;
@@ -1744,7 +1861,7 @@ export class GridState implements IGridState {
         return this.internalSelectedKeys;
     }
 
-    private set selectedKeys(value: string[]) {
+    public set selectedKeys(value: string[]) {
         this.internalSelectedKeys = value;
         this.emitter.emit("selectedKeysChanged", this);
     }
@@ -1870,6 +1987,7 @@ export class GridState implements IGridState {
     private updateFilteredRows(): void {
         if (this.visibleColumns.length === 0) {
             this.filteredRows = [];
+            this.selectedKeys = [];
             this.updateSortedRows();
 
             return;
@@ -1877,6 +1995,7 @@ export class GridState implements IGridState {
 
         const columns = this.visibleColumns;
         const quickFilterRawValue = this.quickFilter.toLowerCase();
+        const oldFilteredKeys = this.filteredRows.map(r => this.getRowKey(r));
 
         const result = toRaw(this.rows).filter(row => {
             // Check if the row matches the quick filter.
@@ -1897,7 +2016,9 @@ export class GridState implements IGridState {
 
             // Check if the row matches the column specific filters.
             return columns.every(column => {
-                if (!column.filter) {
+                const filter = column.filter;
+
+                if (!filter) {
                     return true;
                 }
 
@@ -1907,13 +2028,27 @@ export class GridState implements IGridState {
                     return true;
                 }
 
-                const value: unknown = column.filterValue(row, column, this);
+                if (column.filterValues) {
+                    const values = column.filterValues(row, column, this);
 
-                return column.filter.matches(columnFilterValue, value, column, this);
+                    return values.some(v =>
+                        filter.matches(columnFilterValue, v.value, column, this));
+                }
+                else {
+                    const value = column.filterValue(row, column, this);
+
+                    return filter.matches(columnFilterValue, value, column, this);
+                }
             });
         });
 
         this.filteredRows = result;
+
+        // If anything actually changed, clear the selection.
+        const newFilteredKeys = this.filteredRows.map(r => this.getRowKey(r));
+        if (!deepEqual(oldFilteredKeys, newFilteredKeys, true)) {
+            this.selectedKeys = [];
+        }
 
         this.updateSortedRows();
     }

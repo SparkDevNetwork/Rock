@@ -16,6 +16,8 @@
 //
 
 using Rock.ViewModels.Utility;
+using System;
+using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Cms.SiteDetail
 {
@@ -91,11 +93,6 @@ namespace Rock.ViewModels.Blocks.Cms.SiteDetail
         /// Gets or sets a value indicating whether [enable mobile redirect].
         /// </summary>
         public bool EnableMobileRedirect { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether geo-location lookups should be performed on interactions.
-        /// </summary>
-        public bool EnablePageViewGeoTracking { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to log Page Views into the Interaction tables for pages in this site
@@ -232,5 +229,34 @@ namespace Rock.ViewModels.Blocks.Cms.SiteDetail
         /// Gets or sets the name of the Theme that is used on the Site.
         /// </summary>
         public string Theme { get; set; }
+
+        /// <summary>
+        /// The site Attributes
+        /// </summary>
+        public List<PublicEditableAttributeBag> SiteAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the site URL.
+        /// </summary>
+        /// <value>
+        /// The site URL.
+        /// </value>
+        public string SiteUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the site's theme allows compiling.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allows compile]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowsCompile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the binary file type identifier.
+        /// </summary>
+        /// <value>
+        /// The binary file type identifier.
+        /// </value>
+        public Guid BinaryFileTypeGuid { get; set; }
     }
 }

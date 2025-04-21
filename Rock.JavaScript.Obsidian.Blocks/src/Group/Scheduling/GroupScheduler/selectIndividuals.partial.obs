@@ -86,7 +86,10 @@
             </div>
 
             <Loading :isLoading="isBusy">
-                <NotificationBox v-if="unsuccessfulAssignmentPersonIds.length" :alertType="AlertType.Warning">
+                <NotificationBox v-if="getOrAddAttendanceOccurrenceErrorMessage" :alertType="AlertType.Warning">
+                    {{ getOrAddAttendanceOccurrenceErrorMessage }}
+                </NotificationBox>
+                <NotificationBox v-else-if="unsuccessfulAssignmentPersonIds.length" :alertType="AlertType.Warning">
                     <template v-if="!unsuccessfulAssignmentMessages.length">
                         Some assignments were unsuccessful.
                     </template>
@@ -103,7 +106,6 @@
                 <NotificationBox v-if="loadResourcesErrorMessage" :alertType="AlertType.Warning">
                     {{ loadResourcesErrorMessage }}
                 </NotificationBox>
-
                 <NotificationBox v-else-if="noResourcesMessage" :alertType="AlertType.Info">
                     {{ noResourcesMessage }}
                 </NotificationBox>
@@ -122,7 +124,13 @@
     import { computed, inject, nextTick, PropType, ref, watch } from "vue";
     import AvailableResources from "./availableResources.partial.obs";
     import ResourceFilterByName from "./resourceFilterByName.partial.obs";
-    import { IRemainingResourceSpots, ISchedulerResource, ISchedulerResourceParameters, OccurrenceDateTitle } from "./types.partial";
+    import {
+        AddAttendanceOccurrenceId,
+        IRemainingResourceSpots,
+        ISchedulerResource,
+        ISchedulerResourceParameters,
+        OccurrenceDateTitle
+    } from "./types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -200,6 +208,7 @@
     const loadResourcesErrorMessage = ref("");
 
     const isAssigningResources = ref(false);
+    const getOrAddAttendanceOccurrenceErrorMessage = ref("");
     const unsuccessfulAssignmentPersonIds = ref<number[]>([]);
     const unsuccessfulAssignmentMessages = ref<string[]>([]);
 
@@ -214,6 +223,8 @@
     const selectedPersonIds = ref<number[]>([]);
 
     const resourceNameFilter = ref("");
+
+    const addAttendanceOccurrenceId = inject(AddAttendanceOccurrenceId);
 
     // #endregion
 
@@ -620,10 +631,28 @@
         }
 
         isAssigningResources.value = true;
+        getOrAddAttendanceOccurrenceErrorMessage.value = "";
         unsuccessfulAssignmentPersonIds.value = [];
         unsuccessfulAssignmentMessages.value = [];
 
-        const attendanceOccurrenceId = props.occurrence?.attendanceOccurrenceId ?? 0;
+        let attendanceOccurrenceId = props.occurrence?.attendanceOccurrenceId;
+        if (!attendanceOccurrenceId) {
+            // This attendance occurrence record might not exist yet; ensure it exists before attempting to schedule individuals.
+            const data = { bag: props.occurrence };
+            const result = await invokeBlockAction<number | null | undefined>("GetOrAddAttendanceOccurrence", data);
+            if (!result.isSuccess || !result.data) {
+                getOrAddAttendanceOccurrenceErrorMessage.value = result.errorMessage || "Unknown error while trying to load attendance occurrence.";
+                return;
+            }
+
+            attendanceOccurrenceId = result.data;
+
+            // Share the attendance occurrence identifier with all other group scheduler components.
+            if (addAttendanceOccurrenceId) {
+                addAttendanceOccurrenceId(props.occurrence.guid!, attendanceOccurrenceId!);
+            }
+        }
+
         let resourcesWereAssigned = false;
 
         await Promise.all(selectedPersonIds.value.map(async (personId: number) => {

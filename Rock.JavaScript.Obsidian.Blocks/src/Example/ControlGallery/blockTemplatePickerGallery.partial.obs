@@ -1,0 +1,36 @@
+<template>
+    <GalleryAndResult :value="{ value, templateKey }"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      hasMultipleValues
+                      enableReflection>
+
+        <BlockTemplatePicker label="Select a Template"
+                             v-model="value"
+                             v-model:templateKey="templateKey"
+                             :templateBlockValueGuid="templateBlockGuid?.value" />
+
+        <template #settings>
+            <div class="row">
+                <DefinedValuePicker label="Template Block" formGroupClasses="col-md-4" v-model="templateBlockGuid" :definedTypeGuid="definedTypeGuid" showBlankItem />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import BlockTemplatePicker from "@Obsidian/Controls/blockTemplatePicker.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const value = ref("");
+    const templateKey = ref(null);
+    const definedTypeGuid = DefinedType.TemplateBlock;
+    const templateBlockGuid = ref<ListItemBag>();
+    const importCode = getSfcControlImportPath("blockTemplatePicker");
+    const exampleCode = `<BlockTemplatePicker label="Select a Template" v-model="value" :templateBlockValueGuid="templateBlockValueGuid" />`;
+</script>

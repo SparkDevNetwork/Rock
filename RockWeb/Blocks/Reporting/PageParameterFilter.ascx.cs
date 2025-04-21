@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Reporting
     #endregion
 
     [Rock.SystemGuid.BlockTypeGuid( "6F8D3F32-ED4C-46A9-A8AD-8740BC3495D7" )]
-    public partial class PageParameterFilter : RockBlockCustomSettings, IDynamicAttributesBlock
+    public partial class PageParameterFilter : RockBlockCustomSettings
     {
         #region Enums
         private enum SelectionAction
@@ -384,10 +384,10 @@ namespace RockWeb.Blocks.Reporting
                 LoadFilters();
             }
 
-            base.OnLoad( e );
-
             btnFilter.Visible = GetAttributeValue( AttributeKey.ShowFilterButton ).AsBoolean();
             btnResetFilters.Visible = GetAttributeValue( AttributeKey.ShowResetFiltersButton ).AsBoolean();
+
+            base.OnLoad( e );
         }
 
         protected override object SaveViewState()

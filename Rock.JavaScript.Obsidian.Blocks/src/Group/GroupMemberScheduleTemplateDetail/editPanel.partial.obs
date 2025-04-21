@@ -1,0 +1,79 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required"
+                         :disabled="!isEditable" />
+            </div>
+            <div class="col-md-6">
+                <ScheduleBuilder label="Schedule"
+                                 v-model="calendarContent"
+                                 :hideStartDateTime="true"
+                                 :hideDuration="true" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, watch } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { GroupMemberScheduleTemplateBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberScheduleTemplateDetail/groupMemberScheduleTemplateBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<GroupMemberScheduleTemplateBag>>,
+            required: true
+        },
+
+        isEditable: {
+            type: Object as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<GroupMemberScheduleTemplateBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const calendarContent = propertyRef(props.modelValue?.bag?.calendarContent ?? "", "ScheduleId");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [name, calendarContent];
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(calendarContent, props.modelValue?.bag?.calendarContent ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: ValidPropertiesBox<GroupMemberScheduleTemplateBag> = {
+            bag: { ...props.modelValue.bag } as GroupMemberScheduleTemplateBag
+        };
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "calendarContent", calendarContent.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

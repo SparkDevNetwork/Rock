@@ -49,6 +49,30 @@
 					"!**/node_modules/**",
 					"!**/scripts/**"
 				]
+			},
+			{
+				"name": "Debug Reporting",
+				"request": "launch",
+				"port": 9222,
+				"type": "chrome",
+				"url": "http://localhost:6229",
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Reporting}/dist/",
+				"resolveSourceMapLocations": [
+					"!**/node_modules/**",
+					"!**/scripts/**"
+				]
+			},
+			{
+				"name": "Debug Reporting (Attach to existing Chrome)",
+				"request": "attach",
+				"port": 9222,
+				"type": "chrome",
+				"urlFilter": "http://localhost:6229*",
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Reporting}/dist/",
+				"resolveSourceMapLocations": [
+					"!**/node_modules/**",
+					"!**/scripts/**"
+				]
 			}
 		]
 	},
@@ -65,6 +89,9 @@
 		},
 		{
 			"path": "Rock.JavaScript.Obsidian.Blocks"
+		},
+		{
+			"path": "Rock.JavaScript.Obsidian.Reporting"
 		}
 	],
 	"settings": {
@@ -88,6 +115,7 @@
 		"files.trimTrailingWhitespace": true,
 		"html.format.wrapAttributes": "preserve-aligned",
 		"html.format.wrapLineLength": 0,
+		"vue.format.wrapAttributes": "preserve-aligned",
 		"editor.codeActionsOnSave": {
 			"source.fixAll.eslint": "explicit"
 		},
@@ -99,7 +127,11 @@
 			"vue"
 		],
 		"[vue]": {
-			"editor.defaultFormatter": "Vue.volar"
+			"editor.defaultFormatter": "Vue.volar",
+			"editor.formatOnSave": true
+		},
+		"[typescript]": {
+			"editor.formatOnSave": true
 		},
 		"css.format.spaceAroundSelectorSeparator": true,
 		"typescript.tsdk": "node_modules/typescript/lib",
@@ -107,7 +139,10 @@
 		"workbench.settings.openDefaultKeybindings": false,
 		"css.lint.duplicateProperties": "warning",
 		"css.lint.zeroUnits": "warning",
-		"css.lint.propertyIgnoredDueToDisplay": "warning"
+		"css.lint.propertyIgnoredDueToDisplay": "warning",
+		"jest.disabledWorkspaceFolders": [
+			"Rock.JavaScript.Obsidian.Reporting"
+		]
 	},
 	"tasks": {
 		"version": "2.0.0",
@@ -148,6 +183,23 @@
 				}
 			},
 			{
+				"label": "Build Obsidian Reporting",
+				"type": "shell",
+				"command": "npm run build-fast",
+				"presentation": {
+					"showReuseMessage": false,
+					"clear": true,
+					"group": "build"
+				},
+				"group": {
+					"kind": "build",
+					"isDefault": false
+				},
+				"options": {
+					"cwd": "../Rock.JavaScript.Obsidian.Reporting"
+				}
+			},
+			{
 				"label": "Build All Obsidian",
 				"group": {
 					"kind": "build",
@@ -156,7 +208,8 @@
 				"dependsOrder": "sequence",
 				"dependsOn": [
 					"Build Obsidian Components",
-					"Build Obsidian Blocks"
+					"Build Obsidian Blocks",
+					"Build Obsidian Reporting"
 				]
 			},
 			{
@@ -204,13 +257,36 @@
 				}
 			},
 			{
+				"label": "Watch Obsidian Reporting",
+				"type": "shell",
+				"command": "npm run --silent watch",
+				"presentation": {
+					"showReuseMessage": false,
+					"clear": true,
+					"echo": false,
+					"panel": "dedicated"
+				},
+				"options": {
+					"cwd": "${workspaceFolder:Rock.JavaScript.Obsidian.Reporting}"
+				},
+				"isBackground": true,
+				"problemMatcher": {
+					"base": "$vite",
+					"background": {
+						"beginsPattern": "^rollup v",
+						"endsPattern": "waiting for changes\\.\\.\\.$"
+					}
+				}
+			},
+			{
 				"label": "Watch All Obsidian",
 				"dependsOn": [
 					"Watch Obsidian Components",
-					"Watch Obsidian Blocks"
+					"Watch Obsidian Blocks",
+					"Watch Obsidian Reporting"
 				],
 				"isBackground": true,
-				"detail": "Build both Obsidian projects, watch file system for changes and rebuild.",
+				"detail": "Build all Obsidian projects, watch file system for changes and rebuild.",
 				"problemMatcher": []
 			}
 		]

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "Report" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "F1F22D3E-FEFA-4C84-9FFA-9E8ACE60FCE7")]
     public partial class Report : Model<Report>, ICategorized
     {
@@ -75,6 +76,7 @@ namespace Rock.Model
         /// a <see cref="Rock.Model.Category"/> this value will be null.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? CategoryId { get; set; }
 
         /// <summary>
@@ -84,6 +86,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that is being reported on.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? EntityTypeId { get; set; }
 
         /// <summary>
@@ -93,6 +96,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the DataViewId of the root <see cref="Rock.Model.DataView"/> that this Report is based on.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? DataViewId { get; set; }
 
         /// <summary>

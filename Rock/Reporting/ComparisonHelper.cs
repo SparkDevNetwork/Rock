@@ -40,17 +40,30 @@ namespace Rock.Reporting
         /// <returns></returns>
         public static Expression ComparisonExpression( ComparisonType comparisonType, MemberExpression property, Expression value, Expression value2 = null )
         {
-            MemberExpression valueExpression;
+            return ValueComparisonExpression( comparisonType, property, value, value2 );
+        }
+
+        /// <summary>
+        /// Gets the comparison expression.
+        /// </summary>
+        /// <param name="comparisonType">Type of the comparison.</param>
+        /// <param name="sourceValue">The property.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="value2">If doing ComparisonType.Between, value2 is the upper value between expression</param>
+        /// <returns></returns>
+        internal static Expression ValueComparisonExpression( ComparisonType comparisonType, Expression sourceValue, Expression value, Expression value2 = null )
+        {
+            Expression valueExpression;
             Expression comparisonExpression = null;
-            bool isNullableType = property.Type.IsGenericType && property.Type.GetGenericTypeDefinition() == typeof( Nullable<> );
+            bool isNullableType = sourceValue.Type.IsGenericType && sourceValue.Type.GetGenericTypeDefinition() == typeof( Nullable<> );
             if ( isNullableType )
             {
                 // if Nullable Type compare on the .Value of the property (if it HasValue)
-                valueExpression = Expression.Property( property, "Value" );
+                valueExpression = Expression.Property( sourceValue, "Value" );
             }
             else
             {
-                valueExpression = property;
+                valueExpression = sourceValue;
             }
 
             if ( comparisonType == ComparisonType.Contains )
@@ -143,7 +156,7 @@ namespace Rock.Reporting
                 {
                     if ( isNullableType )
                     {
-                        comparisonExpression = Expression.Equal( Expression.Property( property, "HasValue" ), Expression.Constant( false ) );
+                        comparisonExpression = Expression.Equal( Expression.Property( sourceValue, "HasValue" ), Expression.Constant( false ) );
                     }
                     else
                     {
@@ -164,7 +177,7 @@ namespace Rock.Reporting
                 {
                     if ( isNullableType )
                     {
-                        comparisonExpression = Expression.Property( property, "HasValue" );
+                        comparisonExpression = Expression.Property( sourceValue, "HasValue" );
                     }
                     else
                     {
@@ -188,7 +201,7 @@ namespace Rock.Reporting
                 if ( comparisonExpression != null && isNullableType )
                 {
                     // if Nullable Type we are comparing on the .Value of the property, so also make sure it HasValue
-                    MemberExpression hasValue = Expression.Property( property, "HasValue" );
+                    MemberExpression hasValue = Expression.Property( sourceValue, "HasValue" );
                     return Expression.AndAlso( hasValue, comparisonExpression );
                 }
             }

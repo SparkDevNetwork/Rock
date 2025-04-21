@@ -20,12 +20,11 @@ import { PhoneNumberBoxGetConfigurationResultsBag } from "@Obsidian/ViewModels/R
 import { PhoneNumberCountryCodeRulesConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/phoneNumberCountryCodeRulesConfigurationBag";
 import { PhoneNumberBoxGetConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/phoneNumberBoxGetConfigurationOptionsBag";
 
-const http = useHttp();
-
 /**
  * Fetch the configuration for phone numbers and their possible formats for different countries
  */
 async function fetchPhoneNumberConfiguration(): Promise<PhoneNumberBoxGetConfigurationResultsBag> {
+    const http = useHttp();
     const result = await http.post<PhoneNumberBoxGetConfigurationResultsBag>("/api/v2/Controls/PhoneNumberBoxGetConfiguration", undefined, null);
 
     if (result.isSuccess && result.data) {
@@ -39,6 +38,7 @@ async function fetchPhoneNumberConfiguration(): Promise<PhoneNumberBoxGetConfigu
  * Fetch the configuration for phone numbers, SMS option, and possible phone number formats for different countries
  */
 async function fetchPhoneNumberAndSmsConfiguration(): Promise<PhoneNumberBoxGetConfigurationResultsBag> {
+    const http = useHttp();
     const options: PhoneNumberBoxGetConfigurationOptionsBag = {
         showSmsOptIn: true
     };

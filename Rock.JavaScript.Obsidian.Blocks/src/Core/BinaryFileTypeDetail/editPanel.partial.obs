@@ -1,0 +1,347 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <NotificationBox alertType="info" v-if="editModeMessage" v-html="editModeMessage" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         :disabled="restrictedEdit"
+                         rules="required" />
+
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline" />
+
+                <TextBox v-model="iconCssClass"
+                         label="Icon CSS Class" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="requiresViewSecurity"
+                                  label="Requires View Security"
+                                  help="Enable this to always do a security check before displaying images of this type. Leave disabled for files that can be viewed by any user." />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBox v-model="allowAnonymous"
+                                  label="Allow Anonymous"
+                                  help="Enable this to allow anyone to upload files of this type without checking Edit permissions." />
+                    </div>
+                </div>
+
+                <ComponentPicker v-model="storageEntityType"
+                                 containerType="Rock.Storage.ProviderContainer, Rock"
+                                 label="Storage Type"
+                                 rules="required" />
+                <div class="attributes">
+                    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h5>Attributes</h5>
+                <p>
+                    Attributes allow for providing different values for each binary file of this type.
+                </p>
+                <div>
+                    <div class="grid">
+                        <Grid :data="attributesGridData" keyField="key" itemTerm=" Attribute" liveUpdates light @addItem="onAddAttribute">>
+                            <TextColumn name="name" field="name" />
+                            <EditColumn @click="onEditAttribute" />
+                            <DeleteColumn @click="onDeleteAttribute" />
+                        </Grid>
+                    </div>
+                    <Modal v-model="isAttributeModalOpen" title="Binary File Type Attributes">
+
+                        <RockForm v-model:submit="saveAttribute" @submit="onSaveAttribute">
+                            <AttributeEditor v-model="binaryFileTypeAttribute" :reservedKeyNames="reservedKeyNames" />
+                        </RockForm>
+
+                        <template #customButtons>
+                            <RockButton :btnSize="BtnSize.Default"
+                                        :btnType="BtnType.Primary"
+                                        @click="onStartSaveAttribute">Save</RockButton>
+                        </template>
+
+                    </Modal>
+                </div>
+
+                <h5>Cache Settings</h5>
+                <CheckBox v-model="cacheToServerFileSystem"
+                          label="Cache To Server File System"
+                          help="Should the file be cached from the storage provider to the server's file system.  This is not recommended for files that need heightened security. " />
+
+                <h5>Cache Control Header Settings</h5>
+                <CacheabilityPicker v-model="cacheControlHeaderSettings" Label="" />
+            </div>
+        </div>
+
+        <h3>Preferred File Settings</h3>
+        <div class="row">
+
+            <div class="col-md-6">
+                <NumberBox v-model="maxFileSizeBytes"
+                           label="Max File Size"
+                           help="The max size allowed for the files in bytes. Leaving this blank will allow any size, 0 is not allowed."
+                           :minimumValue="1">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">Bytes</span>
+                    </template>
+                </NumberBox>
+                <NumberBox v-model="maxWidth"
+                           label="Maximum Width"
+                           :minimumValue="0"
+                           help="Sets the maximum width for images in pixels. Leave this field blank for no limit." />
+                <NumberBox v-model="maxHeight"
+                           label="Maximum Height"
+                           help="Sets the maximum height in pixels. Leave this field blank for no limit."
+                           :minimumValue="0" />
+                <CheckBox v-model="preferredRequired"
+                          label="Preferred Settings Required"
+                          help="Should the preferred settings for this file type be the required settings?" />
+            </div>
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, reactive, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import Grid, { EditColumn, TextColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.obs";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { BinaryFileTypeBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileTypeDetail/binaryFileTypeBag";
+    import { BinaryFileTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileTypeDetail/binaryFileTypeDetailOptionsBag";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<BinaryFileTypeBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<BinaryFileTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<BinaryFileTypeBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const iconCssClass = propertyRef(props.modelValue?.bag?.iconCssClass ?? "", "IconCssClass");
+    const requiresViewSecurity = propertyRef(props.modelValue?.bag?.requiresViewSecurity ?? false, "RequiresViewSecurity");
+    const allowAnonymous = propertyRef(props.modelValue?.bag?.allowAnonymous ?? false, "AllowAnonymous");
+    const storageEntityType = propertyRef(props.modelValue?.bag?.storageEntityType ?? {}, "StorageEntityTypeId");
+    const maxFileSizeBytes = propertyRef(props.modelValue?.bag?.maxFileSizeBytes, "MaxFileSizeBytes");
+    const maxWidth = propertyRef(props.modelValue?.bag?.maxWidth, "MaxWidth");
+    const maxHeight = propertyRef(props.modelValue?.bag?.maxHeight, "MaxHeight");
+    const preferredRequired = propertyRef(props.modelValue?.bag?.preferredRequired ?? false, "PreferredRequired");
+    const cacheToServerFileSystem = propertyRef(props.modelValue?.bag?.cacheToServerFileSystem ?? false, "CacheToServerFileSystem");
+    const cacheControlHeaderSettings = propertyRef(props.modelValue?.bag?.cacheControlHeaderSettings ?? null, "CacheControlHeaderSettings");
+
+    const editModeMessage = ref(props.modelValue?.bag?.editModeMessage ?? "");
+    const restrictedEdit = ref(props.modelValue?.bag?.restrictedEdit ?? "");
+
+    const binaryFileTypeAttributes = ref(props.modelValue?.bag?.binaryFileTypeAttributes ?? []);
+    const isAttributeModalOpen = ref(false);
+    const saveAttribute = ref(false);
+    const binaryFileTypeAttribute = ref<PublicEditableAttributeBag | null>(null);
+    const reservedKeyNames = ref<string[]>([]);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, name, iconCssClass, requiresViewSecurity, allowAnonymous, storageEntityType, maxFileSizeBytes, maxWidth, maxHeight, preferredRequired, cacheToServerFileSystem, cacheControlHeaderSettings];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const attributesGridData: GridDataBag = reactive<GridDataBag>({
+        rows: binaryFileTypeAttributes.value.map(x => convertToAttributeGridRowItem(x))
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function convertToAttributeGridRowItem(attribute: PublicEditableAttributeBag): Record<string, unknown> {
+
+        if (attribute.key && !reservedKeyNames.value.includes(attribute.key)) {
+            reservedKeyNames.value.push(attribute.key);
+        }
+
+        return {
+            key: attribute.guid,
+            name: attribute.name,
+            description: attribute.description,
+            isRequired: attribute.isRequired
+        };
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onAddAttribute(): void {
+        binaryFileTypeAttribute.value = {
+            fieldTypeGuid: FieldType.Text
+        } as PublicEditableAttributeBag;
+        isAttributeModalOpen.value = true;
+    }
+
+    function onEditAttribute(key: string): void {
+        const selectedBinaryFileTypeAttribute = binaryFileTypeAttributes.value.find(x => x.guid === key);
+        // If attribute exists set it as current attribute for editing.
+        if (selectedBinaryFileTypeAttribute) {
+            binaryFileTypeAttribute.value = selectedBinaryFileTypeAttribute;
+            isAttributeModalOpen.value = true;
+        }
+        else {
+            onAddAttribute();
+        }
+    }
+
+    function onDeleteAttribute(key: string): void {
+        // Close modal and remove deleted attribute from the current collection of attributes.
+        isAttributeModalOpen.value = false;
+        binaryFileTypeAttributes.value = binaryFileTypeAttributes.value.filter(s => s.guid !== key);
+        reservedKeyNames.value = binaryFileTypeAttributes.value.map(k => k.key!);
+
+        // Update the grid.
+        if (attributesGridData.rows) {
+            const index = attributesGridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                attributesGridData.rows?.splice(index, 1);
+            }
+        }
+    }
+
+    function onSaveAttribute(): void {
+
+        if (binaryFileTypeAttribute.value) {
+            const index = binaryFileTypeAttributes.value.findIndex(a => a.guid === binaryFileTypeAttribute.value?.guid);
+            if (index !== -1) {
+                // Get the updated attribute and rowItem.
+                let editedAttribute = binaryFileTypeAttributes.value.find(a => a.guid == binaryFileTypeAttribute.value?.guid);
+                let rowItem = attributesGridData.rows?.find(x => x.key == binaryFileTypeAttribute.value?.guid);
+
+                if (editedAttribute) {
+                    // Replace old attribute with updated attribute.
+                    editedAttribute = binaryFileTypeAttribute.value;
+                    binaryFileTypeAttributes.value.splice(index, 1, editedAttribute);
+                }
+
+                if (rowItem && attributesGridData.rows && editedAttribute) {
+                    // Update GridRowItem so changes are reflected in the UI.
+                    const rowIndex = attributesGridData.rows.findIndex(r => r.key === binaryFileTypeAttribute.value?.guid);
+                    rowItem = convertToAttributeGridRowItem(editedAttribute);
+                    attributesGridData.rows?.splice(rowIndex, 1, rowItem);
+                }
+            }
+            else {
+                binaryFileTypeAttribute.value.guid = newGuid();
+                binaryFileTypeAttributes.value.push(binaryFileTypeAttribute.value);
+
+                // Add new RowItem to the grid to represent the newly added attribute.
+                const newRowItem = convertToAttributeGridRowItem(binaryFileTypeAttribute.value);
+                attributesGridData.rows?.push(newRowItem);
+            }
+
+            isAttributeModalOpen.value = false;
+        }
+    }
+
+    const onStartSaveAttribute = (): void => {
+        saveAttribute.value = true;
+    };
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(iconCssClass, props.modelValue?.bag?.iconCssClass ?? "");
+        updateRefValue(requiresViewSecurity, props.modelValue?.bag?.requiresViewSecurity ?? false);
+        updateRefValue(allowAnonymous, props.modelValue?.bag?.allowAnonymous ?? false);
+        updateRefValue(storageEntityType, props.modelValue?.bag?.storageEntityType ?? {});
+        updateRefValue(maxFileSizeBytes, props.modelValue?.bag?.maxFileSizeBytes);
+        updateRefValue(maxWidth, props.modelValue?.bag?.maxWidth);
+        updateRefValue(maxHeight, props.modelValue?.bag?.maxHeight);
+        updateRefValue(preferredRequired, props.modelValue?.bag?.preferredRequired ?? false);
+        updateRefValue(cacheToServerFileSystem, props.modelValue?.bag?.cacheToServerFileSystem ?? false);
+        updateRefValue(cacheControlHeaderSettings, props.modelValue?.bag?.cacheControlHeaderSettings ?? null);
+        updateRefValue(binaryFileTypeAttributes, props.modelValue?.bag?.binaryFileTypeAttributes ?? []);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, binaryFileTypeAttributes, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<BinaryFileTypeBag> = {
+            bag: { ...props.modelValue.bag } as BinaryFileTypeBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "requiresViewSecurity", requiresViewSecurity.value);
+        setPropertiesBoxValue(newValue, "allowAnonymous", allowAnonymous.value);
+        setPropertiesBoxValue(newValue, "storageEntityType", storageEntityType.value);
+        setPropertiesBoxValue(newValue, "maxFileSizeBytes", toNumberOrNull(maxFileSizeBytes.value));
+        setPropertiesBoxValue(newValue, "maxWidth", toNumberOrNull(maxWidth.value));
+        setPropertiesBoxValue(newValue, "maxHeight", toNumberOrNull(maxHeight.value));
+        setPropertiesBoxValue(newValue, "preferredRequired", preferredRequired.value);
+        setPropertiesBoxValue(newValue, "cacheToServerFileSystem", cacheToServerFileSystem.value);
+        setPropertiesBoxValue(newValue, "cacheControlHeaderSettings", cacheControlHeaderSettings.value);
+        setPropertiesBoxValue(newValue, "binaryFileTypeAttributes", binaryFileTypeAttributes.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    watch(isAttributeModalOpen, () => {
+        if (isAttributeModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== binaryFileTypeAttribute.value?.key);
+        }
+        else {
+            if (binaryFileTypeAttribute.value?.key && !reservedKeyNames.value.some(k => k === binaryFileTypeAttribute.value?.key)) {
+                reservedKeyNames.value.push(binaryFileTypeAttribute.value.key);
+            }
+        }
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

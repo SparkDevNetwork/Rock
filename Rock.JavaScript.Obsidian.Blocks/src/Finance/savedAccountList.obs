@@ -19,7 +19,7 @@
                     title="Account Number"
                     field="accountNumber"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <TextColumn name="accountType"
                     title="Account Type"

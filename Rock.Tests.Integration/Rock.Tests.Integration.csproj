@@ -48,14 +48,14 @@
     <Reference Include="AWSSDK.S3, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
       <HintPath>..\packages\AWSSDK.S3.3.3.21.1\lib\net45\AWSSDK.S3.dll</HintPath>
     </Reference>
-    <Reference Include="BouncyCastle.Crypto, Version=1.8.5.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
-      <HintPath>..\packages\BouncyCastle.1.8.5\lib\BouncyCastle.Crypto.dll</HintPath>
-    </Reference>
     <Reference Include="BouncyCastle.Cryptography, Version=2.0.0.0, Culture=neutral, PublicKeyToken=072edcf4a5328938, processorArchitecture=MSIL">
-      <HintPath>..\packages\BouncyCastle.Cryptography.2.2.1\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
+      <HintPath>..\packages\BouncyCastle.Cryptography.2.4.0\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
     </Reference>
     <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
       <HintPath>..\packages\Castle.Core.4.4.0\lib\net45\Castle.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="CsvHelper, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
+      <HintPath>..\packages\CsvHelper.2.16.3.0\lib\net45\CsvHelper.dll</HintPath>
     </Reference>
     <Reference Include="Docker.DotNet, Version=3.125.0.0, Culture=neutral, PublicKeyToken=e628c633e2cf4146, processorArchitecture=MSIL">
       <HintPath>..\packages\Docker.DotNet.3.125.15\lib\netstandard2.0\Docker.DotNet.dll</HintPath>
@@ -81,24 +81,27 @@
     <Reference Include="IdentityModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\IdentityModel.3.0.0\lib\net461\IdentityModel.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.6.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.4, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.6.0.4\lib\net461\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Primitives, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.Primitives.3.1.0\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.JsonWebTokens.5.5.0\lib\net461\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.Primitives, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Primitives.8.0.0\lib\net462\Microsoft.Extensions.Primitives.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Logging, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Logging.5.5.0\lib\net461\Microsoft.IdentityModel.Logging.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.JsonWebTokens.5.7.0\lib\net461\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Logging, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Logging.5.7.0\lib\net461\Microsoft.IdentityModel.Logging.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.IdentityModel.Protocols, Version=5.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Protocols.5.2.1\lib\net451\Microsoft.IdentityModel.Protocols.dll</HintPath>
@@ -106,8 +109,8 @@
     <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect, Version=5.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Protocols.OpenIdConnect.5.2.1\lib\net451\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.5.0\lib\net461\Microsoft.IdentityModel.Tokens.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.7.0\lib\net461\Microsoft.IdentityModel.Tokens.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\MSTest.TestFramework.2.1.2\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.dll</HintPath>
@@ -141,6 +144,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
     </Reference>
+    <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.3.1.1\lib\net471\Serilog.dll</HintPath>
+    </Reference>
     <Reference Include="SmtpServer, Version=5.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SmtpServer.5.3.0\lib\net45\SmtpServer.dll</HintPath>
     </Reference>
@@ -148,12 +154,16 @@
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
     </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
-    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.5.0\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+    <Reference Include="System.Diagnostics.DiagnosticSource, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.8.0.0\lib\net462\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.7.0\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
     </Reference>
     <Reference Include="System.IO.Compression, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <Private>False</Private>
@@ -161,7 +171,7 @@
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.IO.Compression.ZipFile, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.Compression.ZipFile.4.3.0\lib\net46\System.IO.Compression.ZipFile.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
@@ -177,7 +187,7 @@
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
       <Private>True</Private>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
@@ -213,167 +223,195 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Issues\AccentedNameSearchTests.cs" />
+    <Compile Include="Issues\Issue1808.cs" />
     <Compile Include="Issues\Issues_v16.cs" />
     <Compile Include="Issues\Issues_v15.cs" />
-    <Compile Include="Modules\Core\AttributeMatrixTests.cs" />
-    <Compile Include="Modules\Core\Lava\Commands\WorkflowActivateTests.cs" />
-    <Compile Include="Modules\Core\Lava\Engine\TypeConversionTests.cs" />
-    <Compile Include="Modules\Core\MergeTemplateTests.cs" />
-    <Compile Include="Modules\Core\Jobs\ProcessBiAnalyticsJobTests.cs" />
-    <Compile Include="Modules\Core\Lava\Commands\CacheTests.cs" />
-    <Compile Include="Modules\Security\RockSigningCredentialsTests.cs" />
-    <Compile Include="Modules\Crm\Following\FollowingTests.cs" />
-    <Compile Include="Modules\Crm\Groups\GroupRequirementsTests.cs" />
-    <Compile Include="Modules\Crm\PersonBulkUpdateProcessorTests.cs" />
-    <Compile Include="Modules\Engagement\Achievement\GivingToAccountAchievementTest.cs" />
-    <Compile Include="Modules\Engagement\Achievement\StepProgramAchievementTests.cs" />
-    <Compile Include="Modules\Engagement\Achievement\InteractionAchievementTests.cs" />
-    <Compile Include="Modules\Engagement\Achievement\AccumulativeAchievementTests.cs" />
-    <Compile Include="Modules\Engagement\Achievement\AchievementTests.cs" />
-    <Compile Include="Modules\Crm\Attendances\AttendanceCodeTests.cs" />
-    <Compile Include="Modules\Crm\Prayer\SendPrayerCommentsJobTests.cs" />
-    <Compile Include="Modules\Communications\EmailTransportComponentTests.cs" />
-    <Compile Include="Modules\Communications\SystemCommunicationTests.cs" />
-    <Compile Include="Modules\Communications\Transport\MailgunTests.cs" />
-    <Compile Include="Modules\Communications\Transport\MockSmtpTransport.cs" />
-    <Compile Include="Modules\Communications\Transport\SMTPTests.cs" />
-    <Compile Include="Modules\Engagement\Connections\ConnectionOpportunityTests.cs" />
-    <Compile Include="Modules\Core\AttributeTests.cs" />
-    <Compile Include="Modules\Core\FieldTypesListing.cs" />
-    <Compile Include="Modules\Crm\CrmModuleTestHelper.cs" />
-    <Compile Include="Modules\Crm\PersonAddressTests.cs" />
-    <Compile Include="Modules\Engagement\Interactions\TestDataHelper.Interactions.cs" />
-    <Compile Include="Modules\Reporting\DataFilter\DataViewTests.cs" />
-    <Compile Include="Modules\Reporting\DataFilter\NumericDataFilterFactoryBase.cs" />
-    <Compile Include="Modules\Web\Controls\AddressControlTests.cs" />
-    <Compile Include="TestData\Communications\TestDataHelper.Communications.cs" />
-    <Compile Include="TestData\Core\TestDataHelper.Organization.cs" />
-    <Compile Include="TestData\Core\TestDataHelper.Core.cs" />
+    <Compile Include="Core\AI\AICompletionsUtility.cs" />
+    <Compile Include="Core\Field\Types\PhoneNumberFieldTypeTests.cs" />
+    <Compile Include="CheckIn\v2\FamilyRegistrationTests.cs" />
+    <Compile Include="CheckIn\v2\OpportunityCollectionTests.cs" />
+    <Compile Include="Core\AttributeMatrixTests.cs" />
+    <Compile Include="Core\Lava\Commands\WorkflowActivateTests.cs" />
+    <Compile Include="Core\Lava\Engine\TypeConversionTests.cs" />
+    <Compile Include="Core\Lava\Documentation\IfTagExamples.cs" />
+    <Compile Include="Core\Lava\Filters\PersonalizationFilterTests.cs" />
+    <Compile Include="Core\Lava\Shortcodes\ScheduledContentTests.cs" />
+    <Compile Include="Core\Lava\Shortcodes\KpiShortcodeTests.cs" />
+    <Compile Include="Core\Lava\Shortcodes\GoogleMapShortcodeTests.cs" />
+    <Compile Include="Core\MergeTemplateTests.cs" />
+    <Compile Include="Core\Jobs\ProcessBiAnalyticsJobTests.cs" />
+    <Compile Include="Core\Lava\Commands\CacheTests.cs" />
+    <Compile Include="Core\Model\PageShortLinkTests.cs" />
+    <Compile Include="Core\AI\AIProviderTests.cs" />
+    <Compile Include="Core\Workflow\Action\BackgroundCheckRequestTests.cs" />
+    <Compile Include="Core\Model\DataModelEmailFieldValidationTests.cs" />
+    <Compile Include="Reporting\ExpressionHelperTests.cs" />
+    <Compile Include="Crm\Notes\SendNoteUpdateNotificationsJobTests.cs" />
+    <Compile Include="Security\RockSigningCredentialsTests.cs" />
+    <Compile Include="Security\SecurityRoleTests.cs" />
+    <Compile Include="Crm\Following\FollowingTests.cs" />
+    <Compile Include="Crm\HistoryLogTests.cs" />
+    <Compile Include="Crm\Groups\GroupRequirementsTests.cs" />
+    <Compile Include="Crm\PersonBulkUpdateProcessorTests.cs" />
+    <Compile Include="Engagement\Achievements\GivingToAccountAchievementTest.cs" />
+    <Compile Include="Engagement\Achievements\StepProgramAchievementTests.cs" />
+    <Compile Include="Engagement\Achievements\InteractionAchievementTests.cs" />
+    <Compile Include="Engagement\Achievements\AccumulativeAchievementTests.cs" />
+    <Compile Include="Engagement\Achievements\AchievementTests.cs" />
+    <Compile Include="Crm\Attendances\AttendanceCodeTests.cs" />
+    <Compile Include="Crm\Prayer\SendPrayerCommentsJobTests.cs" />
+    <Compile Include="Communications\EmailTransportComponentTests.cs" />
+    <Compile Include="Communications\SystemCommunicationTests.cs" />
+    <Compile Include="Communications\Transport\MailgunTests.cs" />
+    <Compile Include="Communications\Transport\MockSmtpTransport.cs" />
+    <Compile Include="Communications\Transport\SMTPTests.cs" />
+    <Compile Include="Engagement\Connections\ConnectionOpportunityTests.cs" />
+    <Compile Include="Core\AttributeTests.cs" />
+    <Compile Include="Core\FieldTypesListing.cs" />
+    <Compile Include="Crm\CrmModuleTestHelper.cs" />
+    <Compile Include="Crm\PersonAddressTests.cs" />
+    <Compile Include="Engagement\Interactions\InteractionsDataManager.cs" />
+    <Compile Include="Reporting\DataFilter\DataViewTests.cs" />
+    <Compile Include="Reporting\DataFilter\NumericDataFilterFactoryBase.cs" />
+    <Compile Include="Reporting\DataFilter\Person\LocationDataFilterTests.cs" />
+    <Compile Include="Web\Controls\AddressControlTests.cs" />
+    <Compile Include="Web\Utilities\SystemConfigurationTests.cs" />
+    <Compile Include="TestData\CampusDataManager.cs" />
+    <Compile Include="TestData\Cms\PersonalizationDataManager.cs" />
+    <Compile Include="TestData\Cms\WebsiteDataManager.cs" />
+    <Compile Include="TestData\Communications\CommunicationsDataManager.cs" />
+    <Compile Include="TestData\Cms\Shortcodes\ShortcodeDataManager.cs" />
+    <Compile Include="TestData\AI\AIDataManager.cs" />
+    <Compile Include="TestData\TestDataHelper.Communications.cs" />
+    <Compile Include="TestData\Core\PersistedDatasetDataManager.cs" />
+    <Compile Include="TestData\Core\SecurityDataManager.cs" />
+    <Compile Include="TestData\Core\EntityAttributeDataManager.cs" />
+    <Compile Include="TestData\LocationDataManager.cs" />
+    <Compile Include="TestData\TestDataHelper.Core.cs" />
     <Compile Include="TestData\Core\CoreModuleDataFactory.cs" />
+    <Compile Include="TestData\CreateEntityActionArgsBase.cs" />
     <Compile Include="TestData\Crm\HistoryDataFactory.cs" />
-    <Compile Include="TestData\Crm\TestDataHelper.Crm.SampleData.cs" />
+    <Compile Include="TestData\Crm\NoteDataManager.cs" />
+    <Compile Include="TestData\Crm\PersonDataManager.cs" />
+    <Compile Include="TestData\TestDataHelper.Crm.SampleData.cs" />
     <Compile Include="TestData\Engagement\PrayerFeatureDataHelper.cs" />
     <Compile Include="TestData\Core\RandomizedDataHelper.cs" />
     <Compile Include="TestData\Engagement\StepsFeatureDataHelper.cs" />
-    <Compile Include="Modules\Core\Field.Types\AddressFieldTypeTests.cs" />
-    <Compile Include="Modules\Core\Field.Types\ContentChannelItemFieldTypeTests.cs" />
-    <Compile Include="Modules\Core\Field.Types\EventCalendarFieldTypeTests.cs" />
-    <Compile Include="Modules\Core\Field.Types\MediaWatchFieldTypeTests.cs" />
-    <Compile Include="Modules\Core\Field.Types\MergeTemplateFieldTypeTests.cs" />
-    <Compile Include="Modules\Core\Field.Types\MetricCategoriesFieldTypeTests.cs" />
-    <Compile Include="Modules\Core\Field.Types\UrlLinkFieldTypeTests.cs" />
-    <Compile Include="Modules\Engagement\Interactions\PopulateInteractionSessionTests.cs" />
+    <Compile Include="Core\Field\Types\AddressFieldTypeTests.cs" />
+    <Compile Include="Core\Field\Types\ContentChannelItemFieldTypeTests.cs" />
+    <Compile Include="Core\Field\Types\EventCalendarFieldTypeTests.cs" />
+    <Compile Include="Core\Field\Types\MediaWatchFieldTypeTests.cs" />
+    <Compile Include="Core\Field\Types\MergeTemplateFieldTypeTests.cs" />
+    <Compile Include="Core\Field\Types\MetricCategoriesFieldTypeTests.cs" />
+    <Compile Include="Core\Field\Types\UrlLinkFieldTypeTests.cs" />
     <Compile Include="Issues\Issues_v14.cs" />
-    <Compile Include="Modules\Core\Jobs\GivingAutomationClassificationTests.cs" />
-    <Compile Include="Modules\Core\Jobs\GivingJourneyHelperTests.cs" />
-    <Compile Include="Modules\Core\Jobs\RockJobListenerTestJob.cs" />
-    <Compile Include="Modules\Core\Jobs\SendFollowingEventNotificationTests.cs" />
-    <Compile Include="Modules\Core\Jobs\RockJobListenerTests.cs" />
-    <Compile Include="Modules\Core\Jobs\RockCleanupJobTests.cs" />
-    <Compile Include="Modules\Core\Lava\Blocks\KioskTests.cs" />
-    <Compile Include="Modules\Core\Lava\Blocks\PersonalizationTests.cs" />
-    <Compile Include="Modules\Core\Lava\Commands\RockEntityTests.cs" />
-    <Compile Include="Modules\Core\Lava\DotLiquid\RockLiquidTests.cs" />
-    <Compile Include="Modules\Core\Lava\Engine\EntityPropertyAccessTests.cs" />
-    <Compile Include="Modules\Core\Lava\Engine\ConfigurationTests.cs" />
-    <Compile Include="Modules\Core\Lava\Engine\InMemoryTemplateCacheService.cs" />
-    <Compile Include="Modules\Core\Lava\Engine\PerformanceTests.cs" />
-    <Compile Include="Modules\Core\Lava\Engine\ParsingTests.cs" />
-    <Compile Include="Modules\Core\Lava\Engine\ExceptionHandlingTests.cs" />
-    <Compile Include="Modules\Core\Lava\Engine\ScopeTests.cs" />
-    <Compile Include="Modules\Core\Lava\Engine\ParallelExecutionTests.cs" />
-    <Compile Include="Modules\Core\Lava\Filters\EncodingFilterTests.cs" />
-    <Compile Include="Modules\Core\Lava\Filters\AttributeFilterTests.cs" />
-    <Compile Include="Modules\Core\Lava\Filters\EntityFilterTests.cs" />
-    <Compile Include="Modules\Core\Lava\Filters\PersonFilterTests.cs" />
-    <Compile Include="Modules\Core\Lava\Filters\WebFilterTests.cs" />
-    <Compile Include="Modules\Core\Lava\Filters\MiscellaneousFilterTests.cs" />
-    <Compile Include="Modules\Core\Lava\EventScheduledInstanceCommandTests.cs" />
-    <Compile Include="Modules\Core\Lava\CalendarEventsCommandTests.cs" />
-    <Compile Include="Modules\Core\Lava\Engine\LavaCommentsTests.cs" />
-    <Compile Include="Modules\Core\Lava\Filters\DateFilterTests.cs" />
-    <Compile Include="Modules\Core\Lava\Filters\NumericFilterTests.cs" />
-    <Compile Include="Modules\Core\Lava\FileSystem\LavaFileSystemTests.cs" />
-    <Compile Include="Modules\Core\Lava\LavaIntegrationTestBase.cs" />
-    <Compile Include="Modules\Core\Lava\Commands\ShortcodeCodeTests.cs" />
-    <Compile Include="Modules\Core\Lava\Commands\CommandTests.cs" />
-    <Compile Include="Modules\Core\Lava\Commands\ShortcodeTemplateTests.cs" />
-    <Compile Include="Modules\Core\Lava\Commands\SqlTests.cs" />
-    <Compile Include="Modules\Core\Jobs\StepsAutomationJobTests.cs" />
-    <Compile Include="Modules\Core\Jobs\TestJobDetail.cs" />
-    <Compile Include="Modules\Core\Jobs\TestJobContext.cs" />
-    <Compile Include="Modules\Core\Lava\Engine\NullTemplateCacheService.cs" />
-    <Compile Include="Modules\Core\Model\EventTests.cs" />
-    <Compile Include="Modules\Core\Model\BinaryFileTests.cs" />
-    <Compile Include="Modules\Core\Model\IdKeyTests.cs" />
-    <Compile Include="Modules\Core\Model\LocationTests.cs" />
-    <Compile Include="Modules\Core\Model\IdentityVerificationCodeTests.cs" />
-    <Compile Include="Modules\Core\Model\IdentityVerificationTests.cs" />
-    <Compile Include="Modules\Core\Model\ConnectionRequestServiceTests.cs" />
-    <Compile Include="Modules\Core\Model\CommunicationServiceTests.cs" />
-    <Compile Include="Modules\Core\Model\PersonTokenServiceTests.cs" />
-    <Compile Include="Modules\Core\Model\PersonServiceTests.cs" />
-    <Compile Include="Modules\Core\Model\StepProgramServiceTests.cs" />
-    <Compile Include="Modules\Core\Model\GroupMemberTests.cs" />
-    <Compile Include="Modules\Core\Model\UserLoginTests.cs" />
-    <Compile Include="Modules\Reporting\DataFilter\Person\PersonalDevicesDataFilterTests.cs" />
-    <Compile Include="Modules\Rest\ControllersTests\FollowingControllerTests.cs" />
-    <Compile Include="Modules\Rest\ControllersTests\AuthControllerTests.cs" />
-    <Compile Include="Modules\Rest\SecuredAttributeTests.cs" />
-    <Compile Include="Modules\Core\Logging\RockLoggingHelpers.cs" />
-    <Compile Include="Modules\Security\OidcClientTests.cs" />
-    <Compile Include="Modules\Core\StorageTests\AmazonS3ComponentTests.cs" />
-    <Compile Include="Modules\Core\StorageTests\AzureCloudComponentTests.cs" />
-    <Compile Include="Modules\Core\StorageTests\BaseStorageComponentTests.cs" />
-    <Compile Include="Modules\Core\StorageTests\GoogleCloudComponentTests.cs" />
-    <Compile Include="TestData\CreateEntityActionArgsBase.cs" />
+    <Compile Include="Core\Jobs\GivingAutomationClassificationTests.cs" />
+    <Compile Include="Core\Jobs\GivingJourneyHelperTests.cs" />
+    <Compile Include="Core\Jobs\RockJobListenerTestJob.cs" />
+    <Compile Include="Core\Jobs\SendFollowingEventNotificationTests.cs" />
+    <Compile Include="Core\Jobs\RockJobListenerTests.cs" />
+    <Compile Include="Core\Jobs\RockCleanupJobTests.cs" />
+    <Compile Include="Core\Lava\Blocks\KioskTests.cs" />
+    <Compile Include="Core\Lava\Blocks\PersonalizationTests.cs" />
+    <Compile Include="Core\Lava\Commands\RockEntityTests.cs" />
+    <Compile Include="Core\Lava\Engine\EntityPropertyAccessTests.cs" />
+    <Compile Include="Core\Lava\Engine\ConfigurationTests.cs" />
+    <Compile Include="Core\Lava\Engine\InMemoryTemplateCacheService.cs" />
+    <Compile Include="Core\Lava\Engine\PerformanceTests.cs" />
+    <Compile Include="Core\Lava\Engine\ParsingTests.cs" />
+    <Compile Include="Core\Lava\Engine\ExceptionHandlingTests.cs" />
+    <Compile Include="Core\Lava\Engine\ScopeTests.cs" />
+    <Compile Include="Core\Lava\Engine\ParallelExecutionTests.cs" />
+    <Compile Include="Core\Lava\Filters\EncodingFilterTests.cs" />
+    <Compile Include="Core\Lava\Filters\AttributeFilterTests.cs" />
+    <Compile Include="Core\Lava\Filters\EntityFilterTests.cs" />
+    <Compile Include="Core\Lava\Filters\PersonFilterTests.cs" />
+    <Compile Include="Core\Lava\Filters\WebFilterTests.cs" />
+    <Compile Include="Core\Lava\Filters\MiscellaneousFilterTests.cs" />
+    <Compile Include="Core\Lava\EventScheduledInstanceCommandTests.cs" />
+    <Compile Include="Core\Lava\CalendarEventsCommandTests.cs" />
+    <Compile Include="Core\Lava\Engine\LavaCommentsTests.cs" />
+    <Compile Include="Core\Lava\Filters\DateFilterTests.cs" />
+    <Compile Include="Core\Lava\Filters\NumericFilterTests.cs" />
+    <Compile Include="Core\Lava\FileSystem\LavaFileSystemTests.cs" />
+    <Compile Include="Core\Lava\LavaIntegrationTestBase.cs" />
+    <Compile Include="Core\Lava\Shortcodes\ShortcodeCodeTests.cs" />
+    <Compile Include="Core\Lava\Commands\CommandTests.cs" />
+    <Compile Include="Core\Lava\Shortcodes\ShortcodeTemplateTests.cs" />
+    <Compile Include="Core\Lava\Commands\SqlTests.cs" />
+    <Compile Include="Core\Jobs\StepsAutomationJobTests.cs" />
+    <Compile Include="Core\Jobs\TestJobDetail.cs" />
+    <Compile Include="Core\Jobs\TestJobContext.cs" />
+    <Compile Include="Core\Lava\Engine\NullTemplateCacheService.cs" />
+    <Compile Include="Core\Model\EventTests.cs" />
+    <Compile Include="Core\Model\BinaryFileTests.cs" />
+    <Compile Include="Core\Model\IdKeyTests.cs" />
+    <Compile Include="Core\Model\LocationTests.cs" />
+    <Compile Include="Core\Model\IdentityVerificationCodeTests.cs" />
+    <Compile Include="Core\Model\IdentityVerificationTests.cs" />
+    <Compile Include="Core\Model\ConnectionRequestServiceTests.cs" />
+    <Compile Include="Core\Model\CommunicationServiceTests.cs" />
+    <Compile Include="Core\Model\PersonTokenServiceTests.cs" />
+    <Compile Include="Core\Model\PersonServiceTests.cs" />
+    <Compile Include="Core\Model\StepProgramServiceTests.cs" />
+    <Compile Include="Core\Model\GroupMemberTests.cs" />
+    <Compile Include="Core\Model\UserLoginTests.cs" />
+    <Compile Include="Reporting\DataFilter\Person\PersonalDevicesDataFilterTests.cs" />
+    <Compile Include="Rest\ControllersTests\FollowingControllerTests.cs" />
+    <Compile Include="Rest\ControllersTests\AuthControllerTests.cs" />
+    <Compile Include="Rest\SecuredAttributeTests.cs" />
+    <Compile Include="Core\Logging\RockLoggingHelpers.cs" />
+    <Compile Include="Security\OidcClientTests.cs" />
+    <Compile Include="Core\Storage\AmazonS3ComponentTests.cs" />
+    <Compile Include="Core\Storage\AzureCloudComponentTests.cs" />
+    <Compile Include="Core\Storage\BaseStorageComponentTests.cs" />
+    <Compile Include="Core\Storage\GoogleCloudComponentTests.cs" />
     <Compile Include="TestData\EventTestDataHelper.cs" />
-    <Compile Include="TestData\Crm\TestDataHelper.Crm.cs" />
-    <Compile Include="TestData\Core\TestDataHelper.Web.cs" />
+    <Compile Include="TestData\TestDataHelper.Crm.cs" />
+    <Compile Include="TestData\TestDataHelper.Web.cs" />
     <Compile Include="TestData\Core\SampleDataHelper.cs" />
     <Compile Include="TestData\Reporting\ReportingDataManager.cs" />
     <Compile Include="TestData\Metrics\MetricsDataManager.cs" />
-    <Compile Include="TestData\Reporting\TestDataHelper.Reporting.cs" />
-    <Compile Include="Modules\Core\Model\AttendanceOccurrenceTests.cs" />
-    <Compile Include="Modules\Core\Model\BenevolenceRequestTests.cs" />
-    <Compile Include="Modules\Core\Model\CommunicationsTests.cs" />
-    <Compile Include="Modules\Core\Model\ConnectionRequestTests.cs" />
-    <Compile Include="Modules\Core\Model\FinancialPledgeTest.cs" />
-    <Compile Include="Modules\Core\Model\FinancialTransactionTests.cs" />
-    <Compile Include="Modules\Core\Model\InteractionTests.cs" />
-    <Compile Include="Modules\Core\Model\MetricValueTests.cs" />
-    <Compile Include="Modules\Core\Model\RegistrationTests.cs" />
-    <Compile Include="Modules\Core\Model\StepTests.cs" />
-    <Compile Include="Modules\Core\Model\DeviceTests.cs" />
-    <Compile Include="TestData\Tests\SampleDataTests.cs" />
+    <Compile Include="TestData\TestDataHelper.Reporting.cs" />
+    <Compile Include="Core\Model\AttendanceOccurrenceTests.cs" />
+    <Compile Include="Core\Model\BenevolenceRequestTests.cs" />
+    <Compile Include="Core\Model\CommunicationsTests.cs" />
+    <Compile Include="Core\Model\ConnectionRequestTests.cs" />
+    <Compile Include="Core\Model\FinancialPledgeTest.cs" />
+    <Compile Include="Core\Model\FinancialTransactionTests.cs" />
+    <Compile Include="Core\Model\InteractionTests.cs" />
+    <Compile Include="Core\Model\MetricValueTests.cs" />
+    <Compile Include="Core\Model\RegistrationTests.cs" />
+    <Compile Include="Core\Model\StepTests.cs" />
+    <Compile Include="Core\Model\DeviceTests.cs" />
+    <Compile Include="TestData\Tests\LocalDbTestActions.cs" />
+    <Compile Include="TestData\Tests\UtilityTestActionsBase.cs" />
     <Compile Include="TestExtensionMethods.cs" />
-    <Compile Include="Modules\Core\Logging\RockLogConfigurationTest.cs" />
-    <Compile Include="Modules\Core\Logging\RockLoggerTests.cs" />
-    <Compile Include="Modules\Core\Logging\RockSerilogReaderTests.cs" />
-    <Compile Include="Modules\Core\Logging\RockLoggerSerilogTests.cs" />
-    <Compile Include="Modules\Rest\ControllersTests\AttendanceControllerTests.cs" />
-    <Compile Include="Modules\Crm\Attendances\AttendanceBulkImportTest.cs" />
-    <Compile Include="Modules\Communications\SmsTests.cs" />
-    <Compile Include="Modules\Core\CoreModuleTestHelper.cs" />
-    <Compile Include="Modules\Core\SundayDateTest.cs" />
-    <Compile Include="Modules\Core\Model\StreakTypeServiceTests.cs" />
+    <Compile Include="Core\Logging\RockSerilogReaderTests.cs" />
+    <Compile Include="Rest\ControllersTests\AttendanceControllerTests.cs" />
+    <Compile Include="Crm\Attendances\AttendanceBulkImportTest.cs" />
+    <Compile Include="Communications\SmsTests.cs" />
+    <Compile Include="Core\CoreDataManager.cs" />
+    <Compile Include="Core\SundayDateTest.cs" />
+    <Compile Include="Core\Model\StreakTypeServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Modules\Core\Model\PersonTests.cs" />
-    <Compile Include="Modules\Reporting\DataFilter\TextPropertyFilterSettings.cs" />
-    <Compile Include="Modules\Reporting\DataFilter\DataFilterTestBase.cs" />
-    <Compile Include="Modules\Reporting\DataFilter\Group\LocationDataViewDataFilterTests.cs" />
-    <Compile Include="Modules\Reporting\DataFilter\Person\StepDataViewDataFilterTests.cs" />
-    <Compile Include="Modules\Reporting\DataFilter\Person\StepsTakenDataFilterTests.cs" />
-    <Compile Include="Modules\Reporting\ReportBuilder\ReportBuilderTests.cs" />
+    <Compile Include="Core\Model\PersonTests.cs" />
+    <Compile Include="Reporting\DataFilter\TextPropertyFilterSettings.cs" />
+    <Compile Include="Reporting\DataFilter\DataFilterTestBase.cs" />
+    <Compile Include="Reporting\DataFilter\Group\LocationDataViewDataFilterTests.cs" />
+    <Compile Include="Reporting\DataFilter\Person\StepDataViewDataFilterTests.cs" />
+    <Compile Include="Reporting\DataFilter\Person\StepsTakenDataFilterTests.cs" />
+    <Compile Include="Reporting\ReportBuilder\ReportBuilderTests.cs" />
     <Compile Include="TestFramework\IntegrationTestInitializer.cs" />
-    <Compile Include="Modules\Core\StorageTests\FileSystemComponentTests.cs" />
-    <Compile Include="Modules\Crm\ConnectionStatusChangeReportTests.cs" />
+    <Compile Include="Core\Storage\FileSystemComponentTests.cs" />
+    <Compile Include="Crm\ConnectionStatusChangeReportTests.cs" />
     <Compile Include="TestData\TestDataHelper.cs" />
-    <Compile Include="Modules\Core\UniversalSearch\IndexModels\GroupIndexTests.cs" />
+    <Compile Include="Core\UniversalSearch\IndexModels\GroupIndexTests.cs" />
     <Compile Include="TestFramework\PersonLookup.cs" />
-    <Compile Include="Modules\Web\Cache\RateLimiterCacheTests.cs" />
-    <Compile Include="Modules\Web\Utilities\RockUpdateHelperTests.cs" />
-    <Compile Include="Modules\Core\Workflow\Action\BackgroundCheckRequestTests.cs" />
+    <Compile Include="Web\Cache\RateLimiterCacheTests.cs" />
+    <Compile Include="Web\Utilities\RockUpdateHelperTests.cs" />
+    <Compile Include="Core\Workflow\Action\WorkflowActionReminderAddTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -393,6 +431,10 @@
       <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.AI.OpenAI\Rock.AI.OpenAI.csproj">
+      <Project>{bab8bf5e-6457-4668-adf1-b917100ba7cd}</Project>
+      <Name>Rock.AI.OpenAI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
       <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
       <Name>Rock.Common</Name>
@@ -400,10 +442,6 @@
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
       <Project>{61dece2b-0434-435e-8d65-49a4fdf98365}</Project>
       <Name>Rock.Enums</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj">
-      <Project>{79AA470A-DC63-4CB4-B0B6-77285F60C69B}</Project>
-      <Name>Rock.Lava.DotLiquid</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj">
       <Project>{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}</Project>
@@ -437,6 +475,10 @@
       <Project>{d8de32c9-25da-4897-a750-7dd8755b3d45}</Project>
       <Name>Rock.Tests.Shared</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj">
+      <Project>{05baaf85-9c53-4ccd-a535-036427b0df72}</Project>
+      <Name>Rock.ViewModels</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock.WebStartup\Rock.WebStartup.csproj">
       <Project>{515e22e4-4b9b-4886-8477-e5b312b75eb4}</Project>
       <Name>Rock.WebStartup</Name>
@@ -454,7 +496,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="TestData\test.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="TestData\BinaryFileWidthTests\test_mH.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -469,7 +511,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="TestData\TextDoc.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup />

@@ -30,6 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -171,8 +172,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbValidation.Visible = false;
             int eventItemId = PageParameter( "EventItemId" ).AsInteger();
 
@@ -191,6 +190,8 @@ namespace RockWeb.Blocks.Event
 
                 ShowDialog();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -570,7 +571,7 @@ namespace RockWeb.Blocks.Event
             if ( definedType != null )
             {
                 ddlAudience.DataSource = definedType.DefinedValues
-                    .Where( v => !AudiencesState.Contains( v.Id ) )
+                    .Where( v => v.IsActive && !AudiencesState.Contains( v.Id ) )
                     .ToList();
                 ddlAudience.DataBind();
             }
@@ -808,7 +809,7 @@ namespace RockWeb.Blocks.Event
             string imgTag = GetImageTag( eventItem.PhotoId, 300, 300, false, true );
             if ( eventItem.PhotoId.HasValue )
             {
-                string imageUrl = ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}", eventItem.PhotoId.Value ) );
+                string imageUrl = FileUrlHelper.GetImageUrl( eventItem.PhotoId.Value );
                 lImage.Text = string.Format( "<a href='{0}'>{1}</a>", imageUrl, imgTag );
                 divImage.Visible = true;
             }

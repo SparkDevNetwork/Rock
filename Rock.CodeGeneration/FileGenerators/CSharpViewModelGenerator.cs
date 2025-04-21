@@ -30,10 +30,14 @@ namespace Rock.CodeGeneration.FileGenerators
         /// </summary>
         /// <param name="bagName">Name of the bag.</param>
         /// <param name="bagNamespace">The namespace the bag will be placed in.</param>
+        /// <param name="xmlDoc">The XML documentation text for the class.</param>
         /// <returns>A string that contains the contents of the file.</returns>
-        public string GenerateOptionsBag( string bagName, string bagNamespace )
+        public string GenerateOptionsBag( string bagName, string bagNamespace, string xmlDoc )
         {
             var sb = new StringBuilder();
+            sb.AppendLine( "    /// <summary>" );
+            sb.AppendLine( $"    /// {xmlDoc}" );
+            sb.AppendLine( "    /// </summary>" );
             sb.AppendLine( $"    public class {bagName}" );
             sb.AppendLine( "    {" );
             sb.AppendLine( "    }" );
@@ -47,8 +51,9 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="entityName">Name of the entity.</param>
         /// <param name="bagNamespace">The namespace the bag will be placed in.</param>
         /// <param name="properties">The properties that will be contained in the bag.</param>
+        /// <param name="xmlDoc">The XML documentation text for the class.</param>
         /// <returns>A string that contains the contents of the file.</returns>
-        public string GenerateEntityBag( string entityName, string bagNamespace, List<EntityProperty> properties )
+        public string GenerateEntityBag( string entityName, string bagNamespace, List<EntityProperty> properties, string xmlDoc )
         {
             var usings = new List<string>
             {
@@ -56,6 +61,9 @@ namespace Rock.CodeGeneration.FileGenerators
             };
 
             var sb = new StringBuilder();
+            sb.AppendLine( "    /// <summary>" );
+            sb.AppendLine( $"    /// {xmlDoc}" );
+            sb.AppendLine( "    /// </summary>" );
             sb.AppendLine( $"    public class {entityName}Bag : EntityBagBase" );
             sb.AppendLine( "    {" );
 

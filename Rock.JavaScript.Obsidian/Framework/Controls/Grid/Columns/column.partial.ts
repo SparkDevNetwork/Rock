@@ -16,10 +16,15 @@
 //
 
 import { standardColumnProps } from "@Obsidian/Core/Controls/grid";
-import { defineComponent } from "vue";
+import { defineComponent, PropType } from "vue";
 
 export default defineComponent({
     props: {
-        ...standardColumnProps
+        ...standardColumnProps,
+
+        columnType: {
+            type: String as PropType<string>,
+            default: "custom"
+        }
     }
 });

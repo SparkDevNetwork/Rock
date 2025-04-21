@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning" v-text="blockError" />
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError" />
 
-    <NotificationBox v-if="errorMessage" alertType="danger" v-text="errorMessage" />
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -17,6 +17,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="false"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -70,7 +71,8 @@
         "isActive",
         "minimumDaysToRetake",
         "requiresRequest",
-        "title"
+        "title",
+        "validDuration"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(assessmentTypeEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -121,10 +123,6 @@
     const options = computed((): AssessmentTypeDetailOptionsBag => {
         return config.options ?? {};
     });
-
-    // #endregion
-
-    // #region Functions
 
     // #endregion
 

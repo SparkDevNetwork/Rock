@@ -23,8 +23,10 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -95,7 +97,11 @@ namespace RockWeb.Blocks.Groups
 
             _rockContext = new RockContext();
 
-            int groupId = PageParameter( "GroupId" ).AsInteger();
+            var allowPredictableIds = !this.PageCache.Layout.Site.DisablePredictableIds;
+            var groupKey = PageParameter( "GroupId" );
+
+            int groupId = groupKey.AsInteger() > 0 && allowPredictableIds ? groupKey.ToIntSafe() : IdHasher.Instance.GetId( groupKey ).ToIntSafe();
+
             _group = new GroupService( _rockContext )
                 .Queryable( "GroupLocations" ).AsNoTracking()
                 .FirstOrDefault( g => g.Id == groupId );
@@ -145,8 +151,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             pnlContent.Visible = _canView;
 
             if ( !Page.IsPostBack && _canView )
@@ -164,6 +168,8 @@ namespace RockWeb.Blocks.Groups
                 BindFilter();
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -284,37 +290,38 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gOccurrences_Edit( object sender, RowEventArgs e )
         {
-            var qryParams = new Dictionary<string, string> {
-                { "GroupId", _group.Id.ToString() }
-            };
+            var qryParams = PageParameters()?.AsEnumerable()
+                .ToDictionary( ( kv ) => kv.Key, ( kv ) => kv.Value.ToStringSafe() );
+            qryParams.AddOrReplace( "GroupId", _group.Id.ToString() );
+            qryParams.AddOrReplace( "ReturnUrl", Request.RawUrl );
 
             int? id = e.RowKeyValues["Id"].ToString().AsIntegerOrNull();
             if ( id.HasValue )
             {
-                qryParams.Add( "OccurrenceId", id.Value.ToString() );
+                qryParams.AddOrReplace( "OccurrenceId", id.Value.ToString() );
             }
 
             if ( !id.HasValue || id.Value == 0 )
             {
                 string occurrenceDate = ( ( DateTime ) e.RowKeyValues["OccurrenceDate"] ).ToString( "yyyy-MM-ddTHH:mm:ss" );
-                qryParams.Add( "Date", occurrenceDate );
+                qryParams.AddOrReplace( "Date", occurrenceDate );
 
                 var locationId = e.RowKeyValues["LocationId"] as int?;
                 if ( locationId.HasValue )
                 {
-                    qryParams.Add( "LocationId", locationId.Value.ToString() );
+                    qryParams.AddOrReplace( "LocationId", locationId.Value.ToString() );
                 }
 
                 var scheduleId = e.RowKeyValues["ScheduleId"] as int?;
                 if ( scheduleId.HasValue )
                 {
-                    qryParams.Add( "ScheduleId", scheduleId.Value.ToString() );
+                    qryParams.AddOrReplace( "ScheduleId", scheduleId.Value.ToString() );
                 }
 
                 var groupTypeIds = PageParameter( "GroupTypeIds" );
                 if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
                 {
-                    qryParams.Add( "GroupTypeIds", groupTypeIds );
+                    qryParams.AddOrReplace( "GroupTypeIds", groupTypeIds );
                 }
             }
 
@@ -329,13 +336,14 @@ namespace RockWeb.Blocks.Groups
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gOccurrences_Add( object sender, EventArgs e )
         {
-            var qryParams = new Dictionary<string, string> {
-                { "GroupId", _group.Id.ToString() }
-            };
+            var qryParams = PageParameters()?.AsEnumerable()
+                .ToDictionary( ( kv ) => kv.Key, ( kv ) => kv.Value.ToStringSafe() );
+            qryParams.AddOrReplace( "GroupId", _group.Id.ToString() );
+            qryParams.AddOrReplace( "ReturnUrl", Request.RawUrl );
 
             if ( ddlSchedule.Visible && ddlSchedule.SelectedValue != "0" )
             {
-                qryParams.Add( "ScheduleId", ddlSchedule.SelectedValue );
+                qryParams.AddOrReplace( "ScheduleId", ddlSchedule.SelectedValue );
             }
 
             if ( ddlLocation.Visible )
@@ -343,14 +351,14 @@ namespace RockWeb.Blocks.Groups
                 int? locId = ddlLocation.SelectedValueAsInt();
                 if ( locId.HasValue && locId.Value != 0 )
                 {
-                    qryParams.Add( "LocationId", locId.Value.ToString() );
+                    qryParams.AddOrReplace( "LocationId", locId.Value.ToString() );
                 }
             }
 
             var groupTypeIds = PageParameter( "GroupTypeIds" );
             if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
             {
-                qryParams.Add( "GroupTypeIds", groupTypeIds );
+                qryParams.AddOrReplace( "GroupTypeIds", groupTypeIds );
             }
 
             NavigateToLinkedPage( AttributeKey.DetailPage, qryParams );
@@ -483,7 +491,7 @@ namespace RockWeb.Blocks.Groups
 
                 var schedules = new Dictionary<int, string> { { 0, string.Empty } };
                 grouplocations.SelectMany( l => l.Schedules ).OrderBy( s => s.Name ).ToList()
-                    .ForEach( s => schedules.AddOrIgnore( s.Id, s.Name ) );
+                    .ForEach( s => schedules.TryAdd( s.Id, s.Name ) );
                 var locationField = gOccurrences.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.HeaderText == "Location" );
                 if ( schedules.Any() )
                 {
@@ -565,14 +573,14 @@ namespace RockWeb.Blocks.Groups
                 int? campusId = bddlCampus.SelectedValueAsInt();
                 if ( campusId.HasValue )
                 {
-                    // If campus filter is selected, load all the descendent locations for each campus into a dictionary
+                    // If campus filter is selected, load all the descendant locations for each campus into a dictionary
                     var locCampus = new Dictionary<int, int>();
                     foreach ( var campus in CampusCache.All().Where( c => c.LocationId.HasValue ) )
                     {
-                        locCampus.AddOrIgnore( campus.LocationId.Value, campus.Id );
+                        locCampus.TryAdd( campus.LocationId.Value, campus.Id );
                         foreach ( var locId in locationService.GetAllDescendentIds( campus.LocationId.Value ) )
                         {
-                            locCampus.AddOrIgnore( locId, campus.Id );
+                            locCampus.TryAdd( locId, campus.Id );
                         }
                     }
 
@@ -658,7 +666,7 @@ namespace RockWeb.Blocks.Groups
         #endregion
     }
 
-    public class AttendanceListOccurrence
+    public class AttendanceListOccurrence : LavaDataObject
     {
         public int Id { get; set; }
         public DateTime OccurrenceDate { get; set; }

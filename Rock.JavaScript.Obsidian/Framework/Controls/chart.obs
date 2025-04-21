@@ -1,0 +1,78 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <canvas ref="chartEl"></canvas>
+</template>
+
+<script setup lang="ts" generic="T extends ChartType">
+    import { computed, onUnmounted, PropType, ref, watch } from "vue";
+    import { Chart, ChartType, ChartData, ChartOptions, ChartConfiguration, Plugin } from "@Obsidian/Libs/chart";
+
+    const props = defineProps({
+        type: {
+            type: String as unknown as PropType<T>,
+            required: true,
+        },
+
+        data: {
+            type: Object as PropType<ChartData<T>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<ChartOptions<T>>,
+            required: true
+        },
+
+        plugins: {
+            type: Array as PropType<Plugin<T>[]>,
+            default: null
+        }
+    });
+
+    const chartEl = ref<HTMLCanvasElement | null>(null);
+    let chart;
+    let previousType = props.type as T;
+
+    const config = computed<ChartConfiguration<T>>(() => {
+        return {
+            type: props.type,
+            data: props.data,
+            // ChartJS likes to make changes to the options behind the scenes; cloning prevents it
+            // from causing endless updates and pointless watch/computed triggers.
+            options: { ...props.options as ChartOptions<T> },
+            plugins: props.plugins
+        } as ChartConfiguration<T>;
+    });
+
+    watch(chartEl, () => {
+        if (chartEl.value) {
+            chart = new Chart(chartEl.value, config.value);
+        }
+    });
+
+    watch(config, () => {
+        if (!chartEl.value || !chart) {
+            return;
+        }
+
+        // If the type changes, we need to recreate the chart. We can't just update it.
+        if (config.value.type != previousType) {
+            previousType = config.value.type;
+            chart.destroy();
+            chart = new Chart(chartEl.value, config.value);
+            return;
+        }
+
+        // All other changes just need an update
+        chart.data = config.value.data;
+        chart.options = config.value.options;
+        chart.update();
+    }, { deep: true });
+
+    onUnmounted(() => {
+        if (chart) {
+            chart.destroy();
+            chart = undefined;
+        }
+    });
+</script>

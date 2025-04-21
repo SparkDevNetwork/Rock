@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField
-                   :modelValue="internalValues"
+    <RockFormField :modelValue="internalValues"
                    name="key-value-list"
                    v-bind="fieldProps"
                    :formGroupClasses="'key-value-list ' + formGroupClasses"
@@ -114,8 +113,8 @@
     const keyInputClasses = computed((): string => {
         let classes = "key-value-key form-control";
 
-        if (!props.fullWidth) {
-            classes += " input-width-md";
+        if (props.fullWidth) {
+            classes += " full-width";
         }
 
         return classes;
@@ -124,8 +123,8 @@
     const valueInputClasses = computed((): string => {
         let classes = "key-value-value form-control";
 
-        if (!props.fullWidth) {
-            classes += hasValues.value ? " input-width-lg" : " input-width-md";
+        if (props.fullWidth) {
+            classes += " full-width";
         }
 
         return classes;
@@ -148,11 +147,19 @@
             defaultValue = options.value[0].value ?? "";
         }
 
-        internalValues.value.push({ key: "", value: defaultValue });
+        internalValues.value = [
+            ...internalValues.value,
+            {
+                key: "",
+                value: defaultValue
+            }
+        ];
     }
 
     function onRemoveClick(index: number): void {
-        internalValues.value.splice(index, 1);
+        const newValues = [...internalValues.value];
+        newValues.splice(index, 1);
+        internalValues.value = newValues;
     }
 
     const augmentedRules = computed((): ValidationRule[] => {

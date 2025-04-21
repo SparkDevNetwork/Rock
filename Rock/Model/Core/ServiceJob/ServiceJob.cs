@@ -35,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "ServiceJob" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SERVICE_JOB )]
     public partial class ServiceJob : Model<ServiceJob>
     {
@@ -109,6 +110,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public string Class { get; set; }
 
         /// <summary>

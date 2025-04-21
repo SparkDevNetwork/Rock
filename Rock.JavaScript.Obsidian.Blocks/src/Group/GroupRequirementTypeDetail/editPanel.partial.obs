@@ -1,0 +1,354 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="iconCssClass" label="Icon CSS Class" />
+            </div>
+            <div class="col-md-6">
+                <CategoryPicker v-model="category" label="Category" :entityTypeGuid="EntityType.GroupRequirementType" />
+            </div>
+            <div class="col-md-6">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="summary" label="Summary" textMode="multiline" :rows="4" help="A short description of the requirement to display with the name." />
+            </div>
+        </div>
+
+        <h4 class="margin-t-md">Requirement Criteria</h4>
+        <span class="text-muted">The configuration below determines the how we'll know if an individual meets the requirement or not.</span>
+        <hr class="margin-t-sm">
+        <ButtonGroup v-model="requirementCheckType"
+                     :selectedBtnType="BtnType.Tool"
+                     :btnSize="BtnSize.Default"
+                     :btnType="BtnType.Default"
+                     :items="requirementCheckTypes" />
+        <div class="row margin-t-md">
+            <div class="col-md-12">
+                <div v-if="requirementCheckType === 'Dataview'">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DataViewPicker v-model="dataView"
+                                            label="Meets Criteria Data View"
+                                            help="Although the field is optional, if it is not set then this 'Requirement Type' will not prevent a person from being added to the group." />
+                        </div>
+                        <div class="col-md-6">
+                            <DataViewPicker v-model="warningDataView"
+                                            label="Warning Criteria Data View"
+                                            help="Optional data view that will return a list of people that should be marked as in a warning status." />
+                        </div>
+                    </div>
+                </div>
+                <div v-if="requirementCheckType === 'Sql'">
+                    <div class="col-md-12">
+                        <RockLabel>SQL Syntax</RockLabel>
+                        <a class="help" href="javascriot:void(0);"><i class="fa fa-question-circle" :onClick="onSqlInfoClick"></i></a>
+                        <TransitionVerticalCollapse>
+                            <div v-if="showSqlHelpHTML" class="alert alert-info js-sourcesql-help" v-html="sqlHelpHTML"></div>
+                        </TransitionVerticalCollapse>
+                    </div>
+                    <div class="col-md-6">
+                        <CodeEditor v-model="sqlExpression"
+                                    label="Meets SQL Expression"
+                                    help="A SQL expression that returns a list of Person Ids that meet the criteria."
+                                    editorMode="sql" />
+                    </div>
+                    <div class="col-md-6">
+                        <CodeEditor v-model="warningSqlExpression"
+                                    label="Warning SQL Expression"
+                                    help="Optional SQL expression that returns a list of Person Ids that should be marked as in a warning status."
+                                    editorMode="sql" />
+                    </div>
+                </div>
+                <div v-if="requirementCheckType === 'Manual'">
+                    <TextBox v-model="checkboxLabel"
+                             label="Checkbox Label"
+                             help="The label that is used for the checkbox when the requirement is manually set." />
+                </div>
+            </div>
+        </div>
+        <h4 class="margin-t-md">Descriptive Labels</h4>
+        <span class="text-muted">The options below help better to describe the state of a requirement for an individual.</span>
+        <hr class="margin-t-sm">
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="positiveLabel"
+                         label="Meets Requirement Label"
+                         help="The text that is displayed when the requirement is met." />
+            </div>
+            <div class="col-md-6">
+                <TextBox v-model="negativeLabel"
+                         label="Does Not Meet Requirement Label"
+                         help="The text that is displayed when the requirement is not met." />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="warningLabel"
+                         label="Warning Label"
+                         help="The text that is displayed when the requirement in a warning state." />
+            </div>
+        </div>
+
+        <h4 class="margin-t-md">Workflows</h4>
+        <span class="text-muted">Workflows can be set up to help an individual complete a requirement. These workflows can be configured to be started manually, or when the requirement is triggered.</span>
+        <hr class="margin-t-sm">
+        <div class="row">
+            <div class="col-md-4">
+                <WorkflowTypePicker v-model="doesNotMeetWorkflowType"
+                                    label="Does Not Meet Requirement Workflow"
+                                    help="The workflow type to configure for requirements that are not met. These workflows can help an individual complete requirements." />
+            </div>
+            <div class="col-md-2">
+                <CheckBox v-model="shouldAutoInitiateDoesNotMeetWorkflow"
+                          label="Auto initiate"
+                          help="Determines if the workflow should be automatically launched at the time of not being met, or if the workflow should be manually launched by the individual." />
+            </div>
+            <div class="col-md-6">
+                <TextBox v-model="doesNotMeetWorkflowLinkText"
+                         label="Link Text"
+                         help="The text to use for the link to initiate the 'Does Not Meet Requirement' Workflow." />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <WorkflowTypePicker v-model="warningWorkflowType"
+                                    label="Warning Requirement Workflow"
+                                    help="The workflow type to configure for requirements that are in a warning state. These workflows can help an individual complete requirements." />
+            </div>
+            <div class="col-md-2">
+                <CheckBox v-model="shouldAutoInitiateWarningWorkflow"
+                          label="Auto initiate"
+                          help="Determines if the workflow should be automatically launched at the time of warning, or if the workflow should be manually launched by the individual." />
+            </div>
+            <div class="col-md-6">
+                <TextBox v-model="warningWorkflowLinkText"
+                         label="Link Text"
+                         help="The text to use for the link to initiate the 'Warning' Workflow." />
+            </div>
+        </div>
+        <h4 class="margin-t-md">Additional Settings</h4>
+        <span class="text-muted">The settings below allow additional controls to be configured for requirements.</span>
+        <hr class="margin-t-sm">
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBox v-model="canExpire"
+                          label="Can Expire"
+                          :disabled="requirementCheckType === 'Manual'"
+                          help="Determines if a requirement should expire after a configured period of time." />
+
+                <div class="col-md-3" style="padding-left: 0%;">
+                    <NumberBox v-if="canExpire"
+                               v-model="expireInDays"
+                               label="Expire Duration"
+                               :minimumValue="0"
+                               help="The number of days after the requirement is met before it expires (If CanExpire is true). Leave blank if it never expires.">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">days</span>
+                        </template>
+                    </NumberBox>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <RadioButtonList v-model="dueDateType"
+                                 label="Due Date"
+                                 help="Determines if a requirement has a period of time to be met."
+                                 :items="dueDateOptions" />
+
+                <div class="col-md-3" style="padding-left: 0%;">
+                    <NumberBox v-if="dueDateType === 'DaysAfterJoining' || dueDateType === 'GroupAttribute'"
+                               size="small"
+                               v-model="dueDateOffsetInDays"
+                               :minimumValue="0"
+                               label="Due Date Offset"
+                               help="The number of days before/after the configured date setting to determine the due date period.">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">days</span>
+                        </template>
+                    </NumberBox>
+                </div>
+
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { GroupRequirementTypeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupRequirementTypeDetail/groupRequirementTypeBag";
+    import { GroupRequirementTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupRequirementTypeDetail/groupRequirementTypeDetailOptionsBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<GroupRequirementTypeBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<GroupRequirementTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<GroupRequirementTypeBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const iconCssClass = propertyRef(props.modelValue?.bag?.iconCssClass ?? "", "IconCssClass");
+    const category = propertyRef(props.modelValue?.bag?.category ?? {}, "CategoryId");
+    const summary = propertyRef(props.modelValue?.bag?.summary ?? "", "Summary");
+    const sqlExpression = propertyRef(props.modelValue?.bag?.sqlExpression ?? "", "SqlExpression");
+    const warningSqlExpression = propertyRef(props.modelValue?.bag?.warningSqlExpression ?? "", "WarningSqlExpression");
+    const dataView = propertyRef(props.modelValue?.bag?.dataView ?? {}, "DataViewId");
+    const warningDataView = propertyRef(props.modelValue?.bag?.warningDataView ?? {}, "WarningDataViewId");
+    const positiveLabel = propertyRef(props.modelValue?.bag?.positiveLabel ?? "", "PositiveLabel");
+    const negativeLabel = propertyRef(props.modelValue?.bag?.negativeLabel ?? "", "NegativeLabel");
+    const warningLabel = propertyRef(props.modelValue?.bag?.warningLabel ?? "", "WarningLabel");
+    const doesNotMeetWorkflowType = propertyRef(props.modelValue?.bag?.doesNotMeetWorkflowType ?? {}, "DoesNotMeetWorkflowTypeId");
+    const warningWorkflowType = propertyRef(props.modelValue?.bag?.warningWorkflowType ?? {}, "WarningWorkflowTypeId");
+    const shouldAutoInitiateDoesNotMeetWorkflow = propertyRef(props.modelValue?.bag?.shouldAutoInitiateDoesNotMeetWorkflow ?? false, "ShouldAutoInitiateDoesNotMeetWorkflow");
+    const shouldAutoInitiateWarningWorkflow = propertyRef(props.modelValue?.bag?.shouldAutoInitiateWarningWorkflow ?? false, "ShouldAutoInitiateWarningWorkflow");
+    const doesNotMeetWorkflowLinkText = propertyRef(props.modelValue?.bag?.doesNotMeetWorkflowLinkText ?? "", "DoesNotMeetWorkflowLinkText");
+    const warningWorkflowLinkText = propertyRef(props.modelValue?.bag?.warningWorkflowLinkText ?? "", "WarningWorkflowLinkText");
+    const canExpire = propertyRef(props.modelValue?.bag?.canExpire ?? false, "CanExpire");
+    const expireInDays = propertyRef(props.modelValue?.bag?.expireInDays, "ExpireInDays");
+    const dueDateOffsetInDays = propertyRef(props.modelValue?.bag?.dueDateOffsetInDays, "DueDateOffsetInDays");
+    const dueDateType = propertyRef(props.modelValue?.bag?.dueDateType ?? "", "dueDateType");
+    const requirementCheckType = propertyRef(props.modelValue?.bag?.requirementCheckType ?? "Manual", "RequirementCheckType");
+    const checkboxLabel = propertyRef(props.modelValue?.bag?.checkboxLabel ?? "", "CheckboxLabel");
+    const dueDateOptions = ref(props.options.dueDateOptions ?? []);
+    const requirementCheckTypes = ref(props.options.requirementTypeOptions?.map(x => ({
+        text: x.text ?? "",
+        value: x.value ?? ""
+    })));
+    const sqlHelpHTML = props.modelValue?.bag?.sqlHelpHTML;
+    const showSqlHelpHTML = ref(false);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, name, iconCssClass, category, summary, sqlExpression, warningSqlExpression, dataView, warningDataView, positiveLabel, negativeLabel,
+        warningLabel, doesNotMeetWorkflowType, warningWorkflowType, shouldAutoInitiateDoesNotMeetWorkflow, shouldAutoInitiateWarningWorkflow, doesNotMeetWorkflowLinkText,
+        warningWorkflowLinkText, canExpire, expireInDays, dueDateType, requirementCheckType, checkboxLabel, dueDateOffsetInDays];
+
+    // #endregion
+
+    // #region Event Handlers
+
+    const onSqlInfoClick = (): void => {
+        showSqlHelpHTML.value = !showSqlHelpHTML.value;
+    };
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(iconCssClass, props.modelValue?.bag?.iconCssClass ?? "");
+        updateRefValue(category, props.modelValue?.bag?.category ?? {});
+        updateRefValue(summary, props.modelValue?.bag?.summary ?? "");
+        updateRefValue(sqlExpression, props.modelValue?.bag?.sqlExpression ?? "");
+        updateRefValue(warningSqlExpression, props.modelValue?.bag?.warningSqlExpression ?? "");
+        updateRefValue(dataView, props.modelValue?.bag?.dataView ?? {});
+        updateRefValue(warningDataView, props.modelValue?.bag?.warningDataView ?? {});
+        updateRefValue(positiveLabel, props.modelValue?.bag?.positiveLabel ?? "");
+        updateRefValue(negativeLabel, props.modelValue?.bag?.negativeLabel ?? "");
+        updateRefValue(warningLabel, props.modelValue?.bag?.warningLabel ?? "");
+        updateRefValue(doesNotMeetWorkflowType, props.modelValue?.bag?.doesNotMeetWorkflowType ?? {});
+        updateRefValue(warningWorkflowType, props.modelValue?.bag?.warningWorkflowType ?? {});
+        updateRefValue(shouldAutoInitiateDoesNotMeetWorkflow, props.modelValue?.bag?.shouldAutoInitiateDoesNotMeetWorkflow ?? false);
+        updateRefValue(shouldAutoInitiateWarningWorkflow, props.modelValue?.bag?.shouldAutoInitiateWarningWorkflow ?? false);
+        updateRefValue(doesNotMeetWorkflowLinkText, props.modelValue?.bag?.doesNotMeetWorkflowLinkText ?? "");
+        updateRefValue(warningWorkflowLinkText, props.modelValue?.bag?.warningWorkflowLinkText ?? "");
+        updateRefValue(canExpire, props.modelValue?.bag?.canExpire ?? false);
+        updateRefValue(expireInDays, props.modelValue?.bag?.expireInDays);
+        updateRefValue(dueDateType, props.modelValue?.bag?.dueDateType ?? "");
+        updateRefValue(requirementCheckType, props.modelValue?.bag?.requirementCheckType ?? "");
+        updateRefValue(checkboxLabel, props.modelValue?.bag?.checkboxLabel ?? "");
+        updateRefValue(dueDateOffsetInDays, props.modelValue?.bag?.dueDateOffsetInDays);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<GroupRequirementTypeBag> = {
+            bag: { ...props.modelValue.bag } as GroupRequirementTypeBag
+        };
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "category", category.value);
+        setPropertiesBoxValue(newValue, "summary", summary.value);
+        setPropertiesBoxValue(newValue, "sqlExpression", sqlExpression.value);
+        setPropertiesBoxValue(newValue, "warningSqlExpression", warningSqlExpression.value);
+        setPropertiesBoxValue(newValue, "dataView", dataView.value);
+        setPropertiesBoxValue(newValue, "warningDataView", warningDataView.value);
+        setPropertiesBoxValue(newValue, "positiveLabel", positiveLabel.value);
+        setPropertiesBoxValue(newValue, "negativeLabel", negativeLabel.value);
+        setPropertiesBoxValue(newValue, "warningLabel", warningLabel.value);
+        setPropertiesBoxValue(newValue, "doesNotMeetWorkflowType", doesNotMeetWorkflowType.value);
+        setPropertiesBoxValue(newValue, "warningWorkflowType", warningWorkflowType.value);
+        setPropertiesBoxValue(newValue, "shouldAutoInitiateDoesNotMeetWorkflow", shouldAutoInitiateDoesNotMeetWorkflow.value);
+        setPropertiesBoxValue(newValue, "shouldAutoInitiateWarningWorkflow", shouldAutoInitiateWarningWorkflow.value,);
+        setPropertiesBoxValue(newValue, "doesNotMeetWorkflowLinkText", doesNotMeetWorkflowLinkText.value);
+        setPropertiesBoxValue(newValue, "warningWorkflowLinkText", warningWorkflowLinkText.value);
+        setPropertiesBoxValue(newValue, "canExpire", canExpire.value);
+        setPropertiesBoxValue(newValue, "expireInDays", expireInDays.value);
+        setPropertiesBoxValue(newValue, "dueDateType", dueDateType.value);
+        setPropertiesBoxValue(newValue, "requirementCheckType", requirementCheckType.value);
+        setPropertiesBoxValue(newValue, "checkboxLabel", checkboxLabel.value);
+        setPropertiesBoxValue(newValue, "dueDateOffsetInDays", dueDateOffsetInDays.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

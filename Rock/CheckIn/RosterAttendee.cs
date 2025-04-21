@@ -167,7 +167,7 @@ namespace Rock.CheckIn
                 }
 
                 // If this Person's birthday is today, simply return "Today".
-                int daysToBirthday = _person.DaysToBirthday;
+                var daysToBirthday = _person.DaysToBirthdayOrNull;
                 if ( daysToBirthday == 0 )
                 {
                     return "Today";
@@ -187,7 +187,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                return _person.DaysToBirthday < 7;
+                return _person.DaysToBirthdayOrNull < 7;
             }
         }
 
@@ -708,7 +708,12 @@ namespace Rock.CheckIn
 
             this.ScheduleIds = this.Attendances.Select( a => a.ScheduleId ?? 0 ).Distinct().ToArray();
 
-            this.RoomName = NamedLocationCache.Get( latestAttendance.LocationId ?? 0 )?.Name;
+            this.RoomName = this.Attendances
+                .OrderByDescending( a => a.StartDateTime )
+                .Select( a => NamedLocationCache.Get( a.LocationId ?? 0 )?.Name )
+                .Where( a => a.IsNotNullOrWhiteSpace() )
+                .Distinct()
+                .JoinStrings( ", " );
         }
 
         /// <summary>

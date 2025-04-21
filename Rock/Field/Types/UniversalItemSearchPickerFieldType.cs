@@ -29,6 +29,7 @@ namespace Rock.Field.Types
     /// General purpose picker field type that allows one or more items to
     /// be picked by the person.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [UniversalFieldTypeGuid( "c5b32713-fb46-41c0-8bbc-9bd4142f841a" )]
     public abstract class UniversalItemSearchPickerFieldType : UniversalItemFieldType
@@ -57,6 +58,7 @@ namespace Rock.Field.Types
                 return new Dictionary<string, string>
                 {
                     ["areDetailsAlwaysVisible"] = AreDetailsAlwaysVisible( privateConfigurationValues ) ? "true" : "false",
+                    ["iconCssClass"] = GetItemIconCssClass( privateConfigurationValues ),
                     ["isIncludeInactiveVisible"] = IsIncludeInactiveVisible( privateConfigurationValues ) ? "true" : "false",
                     ["searchUrl"] = GetSearchUrl( privateConfigurationValues )
                 };
@@ -87,6 +89,16 @@ namespace Rock.Field.Types
         protected virtual bool IsIncludeInactiveVisible( Dictionary<string, string> privateConfigurationValues )
         {
             return false;
+        }
+
+        /// <summary>
+        /// Gets the CSS icon class to use on the picker when it is clsoed.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
+        /// <returns>A string that represents the icon class.</returns>
+        protected virtual string GetItemIconCssClass( Dictionary<string, string> privateConfigurationValues )
+        {
+            return "fa fa-folder-open";
         }
 
         /// <summary>
@@ -148,6 +160,7 @@ namespace Rock.Field.Types
             {
                 ID = id,
                 AreDetailsAlwaysVisible = AreDetailsAlwaysVisible( privateConfigurationValues ),
+                IconCssClass = GetItemIconCssClass( privateConfigurationValues ),
                 IsIncludeInactiveVisible = IsIncludeInactiveVisible( privateConfigurationValues ),
                 SearchUrl = GetSearchUrl( privateConfigurationValues )
             };

@@ -96,6 +96,7 @@ namespace Rock.RealTime.AspNet
                 // Register some logic to handle adding a claim for the anonymous
                 // person identifier if we have one.
                 subApp.Use( RegisterSignalRClaims );
+                subApp.Use( FixNegotiateConnectionData );
 
                 if ( azureEndpoint.IsNullOrWhiteSpace() || azureAccessKey.IsNullOrWhiteSpace() )
                 {
@@ -148,6 +149,53 @@ namespace Rock.RealTime.AspNet
                 var identity = new ClaimsIdentity( new Claim[] { new Claim( "rock:visitor", visitorKeyCookie ) } );
 
                 claimsPrincipal.AddIdentity( identity );
+            }
+
+            return nextHandler();
+        }
+
+        /// <summary>
+        /// Fixes the endpoint connectionData query string parameter on
+        /// requests to SignalR.
+        /// </summary>
+        /// <param name="context">The context that identifies the request.</param>
+        /// <param name="nextHandler">The next handler to be called after this one.</param>
+        /// <returns>A Task that indicates when this process has completed.</returns>
+        private static Task FixNegotiateConnectionData( IOwinContext context, Func<Task> nextHandler )
+        {
+            var connectionData = context.Request.Query["connectionData"];
+
+            // It seems like this is an issue on iOS and MAUI. We are seeing
+            // it on both simulator and physical devices. Data was intercepted
+            // with a MiTM proxy to inspect the request. The connectionData is
+            // URL encoded twice when coming from these devices. The above line
+            // to get the connectionData will automatically URL decode it once.
+            // However, this leaves us with a second URL encoding. So far this
+            // has always shown up as starting with "[%7B" (which is "[{"). So
+            // we check for that string and then decode it again so that SignalR
+            // can actually understand the data.
+            if ( connectionData != null && connectionData.StartsWith( "[%7B" ) )
+            {
+                var sb = new System.Text.StringBuilder();
+
+                foreach ( var kvp in context.Request.Query )
+                {
+                    if ( sb.Length > 0 )
+                    {
+                        sb.Append( "&" );
+                    }
+
+                    if ( kvp.Key == "connectionData" )
+                    {
+                        sb.Append( $"connectionData={connectionData.GetFullyUrlDecodedValue()}" );
+                    }
+                    else
+                    {
+                        sb.Append( $"{kvp.Key}={context.Request.Query[kvp.Key]}" );
+                    }
+                }
+
+                context.Request.QueryString = new QueryString( sb.ToString() );
             }
 
             return nextHandler();

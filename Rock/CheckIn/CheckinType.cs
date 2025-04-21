@@ -123,16 +123,6 @@ namespace Rock.CheckIn
         public bool ReuseSameCode => GetSetting( "core_checkin_ReuseSameCode" ).AsBoolean( false );
 
         /// <summary>
-        /// Gets a value indicating whether [allow checkout].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [allow checkout]; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use CheckinState.AllowCheckout instead" )]
-        public bool AllowCheckout => AllowCheckoutDefault;
-
-        /// <summary>
         /// Returns the AllowCheckout setting for this Checkout Type
         /// Note: Use <see cref="CheckInState.AllowCheckout"/> to see if Checkout is allowed in the current state
         /// </summary>
@@ -262,7 +252,21 @@ namespace Rock.CheckIn
         /// <value>
         /// The ability level determination.
         /// </value>
-        public AbilityLevelDeterminationOptions AbilityLevelDetermination => ( AbilityLevelDeterminationOptions ) GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION ).AsInteger();
+        public AbilityLevelDeterminationOptions AbilityLevelDetermination
+        {
+            get
+            {
+                var value = ( AbilityLevelDeterminationOptions ) GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION ).AsInteger();
+
+                // Ensure the next-gen only value isn't used by v1 check-in.
+                if ( value != AbilityLevelDeterminationOptions.DoNotAsk && value != AbilityLevelDeterminationOptions.DoNotAskIfThereIsNoAbilityLevel )
+                {
+                    value = AbilityLevelDeterminationOptions.Ask;
+                }
+
+                return value;
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether [display location count].

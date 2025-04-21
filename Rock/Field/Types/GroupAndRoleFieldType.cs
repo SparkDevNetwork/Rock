@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// Field Type to select a group and role filtered by a selected group type
     /// Stored as "GroupType.Guid|Group.Guid|GroupTypeRole.Guid"
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_AND_ROLE )]
     public class GroupAndRoleFieldType : FieldType, IEntityReferenceFieldType
@@ -121,26 +122,11 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            var groupTypeRoles = new List<ListItemBag>();
-            if ( groupTypeGuid.HasValue && groupTypeRoleGuid.HasValue )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    groupTypeRoles = new GroupTypeRoleService( rockContext ).Queryable()
-                        .Where( r =>
-                            r.GroupType.Guid == groupTypeGuid )
-                        .OrderBy( r => r.Name )
-                        .Select( r => new ListItemBag { Text = r.Name, Value = r.Guid.ToString() } )
-                        .ToList();
-                }
-            }
-
             return new GroupAndRoleValue
             {
-                Group = groupGuid.HasValue ? new ListItemBag() { Value = groupGuid.ToString() } : null,
-                GroupType = groupTypeGuid.HasValue ? new ListItemBag() { Value = groupTypeGuid.ToString() } : null,
-                GroupRole = groupTypeRoleGuid.HasValue ? new ListItemBag() { Value = groupTypeRoleGuid.ToString() } : null,
-                GroupTypeRoles = groupTypeRoles
+                Group = groupGuid.HasValue ? GroupCache.Get( groupGuid.Value ).ToListItemBag() : null,
+                GroupType = groupTypeGuid.HasValue ? GroupTypeCache.Get( groupTypeGuid.Value ).ToListItemBag() : null,
+                GroupRole = groupTypeRoleGuid.HasValue ? GroupTypeRoleCache.Get( groupTypeRoleGuid.Value ).ToListItemBag() : null,
             }.ToCamelCaseJson( false, true );
         }
 
@@ -457,7 +443,6 @@ namespace Rock.Field.Types
             public ListItemBag GroupType { get; set; }
             public ListItemBag Group { get; set; }
             public ListItemBag GroupRole { get; set; }
-            public List<ListItemBag> GroupTypeRoles { get; set; }
         }
     }
 }

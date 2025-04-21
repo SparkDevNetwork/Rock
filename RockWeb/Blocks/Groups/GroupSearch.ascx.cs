@@ -56,8 +56,8 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             BindGrid();
+            base.OnLoad( e );
         }
 
         #endregion
@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Groups
             var groupService = new GroupService( new RockContext() );
             var groups = new List<Group>();
 
-            if ( !string.IsNullOrWhiteSpace( type ) && !string.IsNullOrWhiteSpace( term ) )
+            if ( !string.IsNullOrWhiteSpace( type ) && !string.IsNullOrWhiteSpace( term ) && !term.IsSingleSpecialCharacter() )
             {
                 switch ( type.ToLower() )
                 {

@@ -42,6 +42,7 @@ namespace Rock.Web.UI.Controls
         private RockDropDownList _ddlCriteriaAttribute;
         private RockDropDownList _ddlCriteriaComparisonType;
         private RockTextOrDropDownList _tbddlCriteriaValue;
+        private RockCheckBox _cbIsActionCompletedIfCriteriaUnmet;
 
         private RockTextBox _tbActionTypeName;
         private WorkflowActionTypePicker _wfatpEntityType;
@@ -257,6 +258,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             result.CriteriaAttributeGuid = _ddlCriteriaAttribute.SelectedValueAsGuid();
             result.CriteriaComparisonType = _ddlCriteriaComparisonType.SelectedValueAsEnum<ComparisonType>();
             result.CriteriaValue = _tbddlCriteriaValue.SelectedValue;
+            result.IsActionCompletedIfCriteriaUnmet = _cbIsActionCompletedIfCriteriaUnmet.Checked;
 
             result.Name = _tbActionTypeName.Text;
             result.EntityTypeId = _wfatpEntityType.SelectedValueAsInt() ?? 0;
@@ -340,6 +342,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
 
             _ddlCriteriaComparisonType.SetValue( value.CriteriaComparisonType.ConvertToInt() );
             _tbddlCriteriaValue.SelectedValue = value.CriteriaValue;
+            _cbIsActionCompletedIfCriteriaUnmet.Checked = value.IsActionCompletedIfCriteriaUnmet;
 
             _tbActionTypeName.Text = value.Name;
             _wfatpEntityType.SetValue( EntityTypeCache.Get( value.EntityTypeId ) );
@@ -420,6 +423,12 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _ddlCriteriaComparisonType.BindToEnum<ComparisonType>( ignoreTypes: new ComparisonType[1] { ComparisonType.Between } );
             _ddlCriteriaComparisonType.Label = "&nbsp;";
 
+            _cbIsActionCompletedIfCriteriaUnmet = new RockCheckBox();
+            Controls.Add( _cbIsActionCompletedIfCriteriaUnmet );
+            _cbIsActionCompletedIfCriteriaUnmet.ID = this.ID + "_cbIsActionCompletedIfCriteriaUnmet";
+            _cbIsActionCompletedIfCriteriaUnmet.Text = "Complete Action If Criteria Unmet";
+            _cbIsActionCompletedIfCriteriaUnmet.EnableViewState = false;
+
             _tbddlCriteriaValue = new RockTextOrDropDownList();
             Controls.Add( _tbddlCriteriaValue );
             _tbddlCriteriaValue.ID = this.ID + "_tbddlCriteriaValue";
@@ -439,6 +448,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             Controls.Add( _wfatpEntityType );
             _wfatpEntityType.ID = this.ID + "_wfatpEntityType";
             _wfatpEntityType.Label = "Action Type";
+            _wfatpEntityType.Required = true;
 
             _rlEntityTypeOverview = new RockLiteral();
             Controls.Add( _rlEntityTypeOverview );
@@ -561,6 +571,11 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-5" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _ddlCriteriaComparisonType.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-12" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _cbIsActionCompletedIfCriteriaUnmet.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row

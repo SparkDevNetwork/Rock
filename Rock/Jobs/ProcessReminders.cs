@@ -19,8 +19,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+
 using DotLiquid;
+
+using Microsoft.Extensions.Logging;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -84,6 +89,7 @@ namespace Rock.Jobs
     #endregion Job Attributes
 
     [DisallowConcurrentExecution]
+    [RockLoggingCategory]
     public class ProcessReminders : RockJob
     {
         /// <summary>
@@ -603,7 +609,7 @@ namespace Rock.Jobs
         /// <param name="elapsedMs">The optional elapsed time (in milliseconds) for the process described by this message.</param>
         private void WriteLog( string logMessage, DateTime? start = null, long? elapsedMs = null )
         {
-            Log( RockLogLevel.Debug, logMessage, start, elapsedMs );
+            Log( LogLevel.Debug, logMessage, start, elapsedMs );
         }
 
         /// <summary>

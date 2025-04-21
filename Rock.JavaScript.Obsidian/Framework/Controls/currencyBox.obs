@@ -6,8 +6,18 @@
                :maximumValue="maximumValue"
                :decimalCount="decimalPlaces"
                rules="decimal">
-        <template v-slot:inputGroupPrepend>
+        <template v-if="$slots.prepend" #prepend="slotProps">
+            <slot name="prepend" v-bind="slotProps"><!-- Pass the "prepend" slot to the NumberBox.--></slot>
+        </template>
+        <template #inputGroupPrepend="slotProps">
+            <slot name="inputGroupPrepend" v-bind="slotProps"></slot>
             <span class="input-group-addon">{{ symbol }}</span>
+        </template>
+        <template v-if="$slots.inputGroupAppend" #inputGroupAppend="slotProps">
+            <slot name="inputGroupAppend" v-bind="slotProps"><!-- Pass the "inputGroupAppend" slot to the NumberBox.--></slot>
+        </template>
+        <template v-if="$slots.append" #append="slotProps">
+            <slot name="append" v-bind="slotProps"><!-- Pass the "append" slot to the NumberBox.--></slot>
         </template>
     </NumberBox>
 </template>
@@ -40,6 +50,11 @@
 
         currencyCodeDefinedValueGuid: {
             type: String as PropType<Guid | null | undefined>,
+        },
+
+        disablePlaceholder: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -53,11 +68,16 @@
 
     const http = useHttp();
 
-    const placeholder = computed(() => {
-        return (0).toLocaleString("en-US", {
-            minimumFractionDigits: decimalPlaces.value,
-            maximumFractionDigits: decimalPlaces.value
-        });
+    const placeholder = computed<string>(() => {
+        if (!props.disablePlaceholder) {
+            return (0).toLocaleString("en-US", {
+                minimumFractionDigits: decimalPlaces.value,
+                maximumFractionDigits: decimalPlaces.value
+            });
+        }
+        else {
+            return "";
+        }
     });
 
     // #region Functions

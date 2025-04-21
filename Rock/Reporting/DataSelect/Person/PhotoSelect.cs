@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,8 @@ using System.Web;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -36,7 +38,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the Photo of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Photo" )]
-    [Rock.SystemGuid.EntityTypeGuid( "C2EE52FA-044F-47DE-A398-18F8E3D9311D")]
+    [Rock.SystemGuid.EntityTypeGuid( "C2EE52FA-044F-47DE-A398-18F8E3D9311D" )]
     public class PhotoSelect : DataSelectComponent
     {
         #region Properties
@@ -91,7 +93,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             BoundField result = new BoundField();
             result.HtmlEncode = false;
-            
+
             return result;
         }
 
@@ -138,39 +140,42 @@ namespace Rock.Reporting.DataSelect.Person
             string[] selectionValues = selection.Split( '|' );
             int? width = 50;
             int? height = 50;
-            if (selectionValues.Count() == 2)
+            if ( selectionValues.Length == 2 )
             {
                 width = selectionValues[0].AsIntegerOrNull() ?? width;
                 height = selectionValues[1].AsIntegerOrNull() ?? height;
             }
 
+            // Construct the widthHeightHtmlParams strings
             string baseUrl = VirtualPathUtility.ToAbsolute( "~/" );
-            
-            // have SQL server do similar to what Person.GetPhotoUrl does
-            string widthHeightUrlParams = string.Format("&width={0}&height={1}", width, height);
+            string widthHeightUrlParams = string.Format( "&width={0}&height={1}", width, height );
             string widthHeightHtmlParams = string.Format( " width='{0}' height='{1}' ", width, height );
-            string nophotoAdultFemaleHtml = "<image src='" + baseUrl + "Assets/Images/person-no-photo-female.svg'" + widthHeightHtmlParams + " />";
-            string nophotoAdultMaleHtml = "<image src='" + baseUrl + "Assets/Images/person-no-photo-male.svg'" + widthHeightHtmlParams + " />";
-            string nophotoChildFemaleHtml = "<image src='" + baseUrl + "Assets/Images/person-no-photo-child-female.svg'" + widthHeightHtmlParams + " />";
-            string nophotoChildMaleHtml = "<image src='" + baseUrl + "Assets/Images/person-no-photo-child-male.svg'" + widthHeightHtmlParams + " />";
-            
-            // identify child as people less than 18 years old
+            string nophotoAdultFemaleHtml = "<img src='" + baseUrl + "Assets/Images/person-no-photo-female.svg'" + widthHeightHtmlParams + " />";
+            string nophotoAdultMaleHtml = "<img src='" + baseUrl + "Assets/Images/person-no-photo-male.svg'" + widthHeightHtmlParams + " />";
+            string nophotoChildFemaleHtml = "<img src='" + baseUrl + "Assets/Images/person-no-photo-child-female.svg'" + widthHeightHtmlParams + " />";
+            string nophotoChildMaleHtml = "<img src='" + baseUrl + "Assets/Images/person-no-photo-child-male.svg'" + widthHeightHtmlParams + " />";
+
             DateTime childBirthdateCutoff = RockDateTime.Now.Date.AddYears( -18 );
-            
-            //// Logic is
-            //// if the Person has a photoId, show the photo, otherwise show a default Female or Male picture based on Person.Gender
+
+            var securitySettings = new SecuritySettingsService().SecuritySettings;
+            var disablePredictableIds = securitySettings.DisablePredictableIds;
+
             var personPhotoQuery = new PersonService( context ).Queryable()
-                .Select( p => p.PhotoId != null 
-                    ? "<image src='" + baseUrl + "GetImage.ashx?id=" + SqlFunctions.StringConvert( (double?)p.PhotoId ) + widthHeightUrlParams + "' " + widthHeightHtmlParams + " />" 
-                    : p.BirthDate.HasValue && p.BirthDate > childBirthdateCutoff ? 
-                        p.Gender == Gender.Female ? nophotoChildFemaleHtml : nophotoChildMaleHtml 
-                        : p.Gender == Gender.Female ? nophotoAdultFemaleHtml : nophotoAdultMaleHtml );
+                .Select( p => p.Photo != null
+                    ? "<img src='" + baseUrl + "GetImage.ashx?" +
+                      ( disablePredictableIds
+                          ? "guid=" + p.Photo.Guid.ToString()
+                          : "id=" + SqlFunctions.StringConvert( ( double? ) p.PhotoId ) ) +
+                      widthHeightUrlParams + "' " + widthHeightHtmlParams + " />"
+                    : ( p.BirthDate.HasValue && p.BirthDate > childBirthdateCutoff )
+                        ? ( p.Gender == Gender.Female ? nophotoChildFemaleHtml : nophotoChildMaleHtml )
+                        : ( p.Gender == Gender.Female ? nophotoAdultFemaleHtml : nophotoAdultMaleHtml ) );
 
             var selectPhotoExpression = SelectExpressionExtractor.Extract( personPhotoQuery, entityIdProperty, "p" );
 
             return selectPhotoExpression;
         }
-
+        
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -193,10 +198,10 @@ namespace Rock.Reporting.DataSelect.Person
             heightBox.Label = "Image Height";
             heightBox.ID = parentControl.ID + "_heightBox";
             parentControl.Controls.Add( heightBox );
-            
+
             return new System.Web.UI.Control[] { widthBox, heightBox };
         }
-        
+
         /// <summary>
         /// Renders the controls.
         /// </summary>

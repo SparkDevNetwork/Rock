@@ -448,8 +448,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbNotice.Visible = false;
 
             if ( Request["PersonGuid"] != null )
@@ -484,6 +482,8 @@ namespace RockWeb.Blocks.Groups
                     ShowView();
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -1550,7 +1550,7 @@ namespace RockWeb.Blocks.Groups
                         {
                             // Resolve info window lava template
                             var linkedPageParams = new Dictionary<string, string> { { "GroupId", group.Id.ToString() } };
-                            var mergeFields = new Dictionary<string, object>();
+                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
                             mergeFields.Add( "Group", gl.Group );
                             mergeFields.Add( "Location", gl.Location );
 
@@ -1646,7 +1646,7 @@ namespace RockWeb.Blocks.Groups
             {
                 string template = GetAttributeValue( AttributeKey.LavaOutput );
 
-                var mergeFields = new Dictionary<string, object>();
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
                 if ( fences != null )
                 {
                     mergeFields.Add( "Fences", fences.Select( f => f.Group ).ToList() );
@@ -1841,11 +1841,17 @@ namespace RockWeb.Blocks.Groups
             // add styling to map
             string styleCode = "null";
             var markerColors = new List<string>();
+            string mapId = string.Empty;
 
             DefinedValueCache dvcMapStyle = DefinedValueCache.Get( GetAttributeValue( AttributeKey.MapStyle ).AsInteger() );
             if ( dvcMapStyle != null )
             {
-                styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                var dynamicMapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                if ( dynamicMapStyle.IsNotNullOrWhiteSpace() )
+                {
+                    styleCode = dynamicMapStyle;
+                }
+                mapId = dvcMapStyle.GetAttributeValue( "core_GoogleMapId" );
 
                 var colorsSetting = dvcMapStyle.GetAttributeValue( "Colors" ) ?? string.Empty;
                 markerColors = colorsSetting
@@ -1916,8 +1922,11 @@ namespace RockWeb.Blocks.Groups
         var map;
         var bounds = new google.maps.LatLngBounds();
         var infoWindow = new google.maps.InfoWindow();
+        var parser = new DOMParser();
 
         var mapStyle = {3};
+        var mapId = '{15}';
+        var isMapIdEmpty = !mapId;
 
         var polygonColorIndex = 0;
         var polygonColors = [{5}];
@@ -1932,16 +1941,21 @@ namespace RockWeb.Blocks.Groups
             // Set default map options
             var mapOptions = {{
                  mapTypeId: 'roadmap'
-                ,styles: mapStyle
                 ,center: new google.maps.LatLng({7}, {8})
                 ,maxZoom: {11}
                 ,minZoom: {12}
                 ,zoom: {9}
             }};
 
+            if (!isMapIdEmpty) {{
+                mapOptions.mapId = mapId;
+            }} else {{
+                mapOptions.styles = mapStyle;
+            }}
+
             // Display a map on the page
             map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
-            google.maps.event.addDomListener(map, 'zoom_changed', function() {{
+            google.maps.event.addListener(map, 'zoom_changed', function() {{
                 var zoomThreshold = {13};
                 var zoomAmount = {14};
 
@@ -1967,53 +1981,90 @@ namespace RockWeb.Blocks.Groups
                 var updatedMarkers = [];
                 for (var i = 0; i < markerCount; i++) {{
                     var marker = allMarkers[i];
+                    var updatedMarker;
 
-                    var pinImage = {{
-                        path: marker.icon.path,
-                        fillColor: marker.icon.fillColor,
-                        fillOpacity: marker.icon.fillOpacity,
-                        strokeColor: marker.icon.strokeColor,
-                        strokeWeight: marker.icon.strokeWeight,
-                        scale: scale,
-                        labelOrigin: marker.icon.labelOrigin,
-                        anchor: marker.icon.anchor,
-                    }};
+                    if (isMapIdEmpty) {{
+                        var pinImage = {{
+                            path: marker.icon.path,
+                            fillColor: marker.icon.fillColor,
+                            fillOpacity: marker.icon.fillOpacity,
+                            strokeColor: marker.icon.strokeColor,
+                            strokeWeight: marker.icon.strokeWeight,
+                            scale: scale,
+                            labelOrigin: marker.icon.labelOrigin,
+                            anchor: marker.icon.anchor,
+                        }};
 
-                    // Remove marker
-  			        marker.setMap(null);
+                        // Remove marker
+  			            marker.setMap(null);
 
-				    // Add marker back
-                    var updatedMarker = new google.maps.Marker({{
-                        position: marker.position,
-                        icon: pinImage,
-                        map: map,
-                        id: marker.id,
-                        title: marker.title,
-                        info_window: marker.info_window,
-                    }});
+				        // Add marker back
+                        updatedMarker = new google.maps.Marker({{
+                            position: marker.position,
+                            icon: pinImage,
+                            map: map,
+                            id: marker.id,
+                            title: marker.title,
+                            info_window: marker.info_window,
+                        }});
+                    }}
+                    else {{
+                        const pinSvg = parser.parseFromString(""{10}"",""image/svg+xml"").documentElement;
+                        pinSvg.style.fill = marker.icon_color;
 
-                if ( updatedMarker.info_window != null ) {{ 
-                    google.maps.event.addListener(updatedMarker, 'click', (function (marker) {{
-                        return function () {{
-                            openInfoWindow(marker);
-                        }}
-                    }})(updatedMarker));
-                }}
+                        // Remove marker
+  			            marker.marker_element.map = null;
 
-                if ( updatedMarker.id && updatedMarker.id > 0 ) {{ 
-                    google.maps.event.addListener(updatedMarker, 'mouseover', (function (marker) {{
-                        return function () {{
-                            $(""tr[datakey='"" + marker.id + ""']"").addClass('row-highlight');
-                        }}
-                    }})(updatedMarker));
+				        // Add marker back
+                        updatedMarker = {{
+                            id: marker.id,
+                            position: marker.position,
+                            map: map,
+                            title: marker.title,
+                            info_window: marker.info_window,
+                            icon_color: marker.icon_color,
+                            marker_element: new google.maps.marker.AdvancedMarkerElement({{
+                                id: marker.id,
+                                position: marker.position,
+                                map: map,
+                                title: marker.title,
+                                content: pinSvg,
+                            }}),
+                            setMap: function(map) {{
+                                this.map = map;
+                                this.marker_element.map = map;
+                            }},
+                            getPosition: function() {{
+                                return this.position;
+                            }},
+                            setPosition: function(position) {{
+                                this.position = position;
+                                this.marker_element.position = position;
+                            }}
+                        }};
+                    }}
 
-                    google.maps.event.addListener(updatedMarker, 'mouseout', (function (marker) {{
-                        return function () {{
-                            $(""tr[datakey='"" + marker.id + ""']"").removeClass('row-highlight');
-                        }}
-                    }})(updatedMarker));
+                    if ( updatedMarker.info_window != null ) {{ 
+                        google.maps.event.addListener(updatedMarker.marker_element || marker, 'click', (function (marker) {{
+                            return function () {{
+                                openInfoWindow(marker);
+                            }}
+                        }})(updatedMarker));
+                    }}
 
-                }}
+                    if ( updatedMarker.id && updatedMarker.id > 0 ) {{ 
+                        google.maps.event.addListener(updatedMarker.marker_element || marker, 'mouseover', (function (marker) {{
+                            return function () {{
+                                $(""tr[datakey='"" + marker.id + ""']"").addClass('row-highlight');
+                            }}
+                        }})(updatedMarker));
+
+                        google.maps.event.addListener(updatedMarker.marker_element || marker, 'mouseout', (function (marker) {{
+                            return function () {{
+                                $(""tr[datakey='"" + marker.id + ""']"").removeClass('row-highlight');
+                            }}
+                        }})(updatedMarker));
+                    }}
 
                     updatedMarkers.push(updatedMarker);
                 }}
@@ -2062,14 +2113,22 @@ namespace RockWeb.Blocks.Groups
 
         }}
 
-        function openInfoWindowById(id) {{
+        function openInfoWindowById(id) {{ 
             marker = $.grep(allMarkers, function(m) {{ return m.id == id }})[0];
             openInfoWindow(marker);
         }}
 
         function openInfoWindow(marker) {{
             infoWindow.setContent( $('<div/>').html(marker.info_window).text() );
-            infoWindow.open(map, marker);
+            if (isMapIdEmpty) {{
+                infoWindow.open(map, marker);
+            }}
+            else {{
+                infoWindow.open({{
+                    anchor: marker.marker_element,
+                    map
+                }});
+            }}
         }}
 
         function addMapItem( i, mapItem, color ) {{
@@ -2090,31 +2149,61 @@ namespace RockWeb.Blocks.Groups
                     color = '#' + color;
                 }}
 
-                var pinImage = {{
-                    path: '{10}',
-                    fillColor: color,
-                    fillOpacity: 1,
-                    strokeColor: '#000',
-                    strokeWeight: 0,
-                    scale: markerScale,
-                    labelOrigin: new google.maps.Point(0, 0),
-                    anchor: new google.maps.Point(0, 0),
-                }};
+                if (isMapIdEmpty) {{
+                    var pinImage = {{
+                        path: ""{10}"",
+                        fillColor: color,
+                        fillOpacity: 1,
+                        strokeColor: '#000',
+                        strokeWeight: 0,
+                        scale: markerScale,
+                        labelOrigin: new google.maps.Point(0, 0),
+                        anchor: new google.maps.Point(0, 0),
+                    }};
+                    marker = new google.maps.Marker({{
+                        id: mapItem.EntityId,
+                        position: position,
+                        map: map,
+                        title: htmlDecode(mapItem.Name),
+                        icon: pinImage,
+                        info_window: mapItem.InfoWindow,
+                    }});
+                }}
+                else {{
+                    const pinSvg = parser.parseFromString(""{10}"",""image/svg+xml"").documentElement;
+                    pinSvg.style.fill = color;
 
-                marker = new google.maps.Marker({{
-                    id: mapItem.EntityId,
-                    position: position,
-                    map: map,
-                    title: htmlDecode(mapItem.Name),
-                    icon: pinImage,
-                    info_window: mapItem.InfoWindow,
-                }});
-    
+                    marker = {{
+                        id: mapItem.EntityId,
+                        position: position,
+                        map: map,
+                        title: htmlDecode(mapItem.Name),
+                        info_window: mapItem.InfoWindow,
+                        icon_color: color,
+                        marker_element: new google.maps.marker.AdvancedMarkerElement({{
+                            id: mapItem.EntityId,
+                            position: position,
+                            map: map,
+                            title: htmlDecode(mapItem.Name),
+                            content: pinSvg
+                        }}),
+                        setMap: function(map) {{
+                            this.map = map;
+                        }},
+                        getPosition: function() {{
+                            return this.position;
+                        }},
+                        setPosition: function(position) {{
+                            this.position = position;
+                        }}
+                    }}
+                }}
+
                 items.push(marker);
                 allMarkers.push(marker);
 
-                if ( mapItem.InfoWindow != null ) {{ 
-                    google.maps.event.addListener(marker, 'click', (function (marker, i) {{
+                if ( mapItem.InfoWindow != null ) {{
+                    google.maps.event.addListener(marker.marker_element || marker, 'click', (function (marker, i) {{
                         return function () {{
                             openInfoWindow(marker);
                         }}
@@ -2122,13 +2211,13 @@ namespace RockWeb.Blocks.Groups
                 }}
 
                 if ( mapItem.EntityId && mapItem.EntityId > 0 ) {{ 
-                    google.maps.event.addListener(marker, 'mouseover', (function (marker, i) {{
+                    google.maps.event.addListener(marker.marker_element || marker, 'mouseover', (function (marker, i) {{
                         return function () {{
                             $(""tr[datakey='"" + mapItem.EntityId + ""']"").addClass('row-highlight');
                         }}
                     }})(marker, i));
 
-                    google.maps.event.addListener(marker, 'mouseout', (function (marker, i) {{
+                    google.maps.event.addListener(marker.marker_element || marker, 'mouseout', (function (marker, i) {{
                         return function () {{
                             $(""tr[datakey='"" + mapItem.EntityId + ""']"").removeClass('row-highlight');
                         }}
@@ -2243,6 +2332,12 @@ namespace RockWeb.Blocks.Groups
                 marker = DefinedValueCache.Get( markerDefinedValueId.Value ).Description;
             }
 
+            if (mapId != "DEFAULT_MAP_ID" )
+            {
+                var markerFormat = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"-10 -40 30 55\"><path d=\"{0}\"/></svg>";
+                marker = string.Format( markerFormat, marker ).Replace( "\"", "'" );
+            }
+
             string mapScript = string.Format(
                 mapScriptFormat,
                 locationJson,       // 0
@@ -2259,7 +2354,8 @@ namespace RockWeb.Blocks.Groups
                 maxZoomLevel,       // 11
                 minZoomLevel,       // 12
                 zoomThreshold,      // 13
-                zoomAmount );       // 14
+                zoomAmount,         // 14
+                mapId );            // 15
 
             ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-finder-map-script", mapScript, true );
         }

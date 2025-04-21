@@ -350,7 +350,7 @@ function(tooltipModel) {
         {
             var alpha = this.AreaFillOpacity;
 
-            if ( alpha < 0.1 )
+            if ( alpha < 0.1 && alpha > 0.0 )
             {
                 // Make sure that the specified transparency is above the threshold of visibility.
                 alpha = 0.1;

@@ -35,6 +35,32 @@ namespace Rock.Rest.Filters
     public class SecuredAttribute : ActionFilterAttribute
     {
         /// <summary>
+        /// The security action that will be checked when authorizing the request.
+        /// If this is null or an empty string then it will be automatically
+        /// determined by the HTTP verb.
+        /// </summary>
+        public string SecurityAction { get; }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="SecuredAttribute"/> that
+        /// automatically detects the security action based on the HTTP verb
+        /// of the request.
+        /// </summary>
+        public SecuredAttribute()
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="SecuredAttribute"/> that
+        /// uses the specified security action when authorizing the request.
+        /// </summary>
+        /// <param name="securityAction">The security action such as VIEW or EDIT.</param>
+        public SecuredAttribute( string securityAction )
+        {
+            SecurityAction = securityAction;
+        }
+
+        /// <summary>
         /// Occurs before the action method is invoked.
         /// </summary>
         /// <param name="actionContext">The action context.</param>
@@ -97,7 +123,9 @@ namespace Rock.Rest.Filters
             }
             else
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 item = RestActionCache.Get( apiId );
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             if ( item == null )
@@ -130,8 +158,13 @@ namespace Rock.Rest.Filters
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
             }
 
-            string action = actionMethod.Equals( "GET", StringComparison.OrdinalIgnoreCase ) ?
-                Security.Authorization.VIEW : Security.Authorization.EDIT;
+            string action = SecurityAction;
+
+            if ( action.IsNullOrWhiteSpace() )
+            {
+                action = actionMethod.Equals( "GET", StringComparison.OrdinalIgnoreCase ) ?
+                    Security.Authorization.VIEW : Security.Authorization.EDIT;
+            }
 
             bool authorized = false;
 

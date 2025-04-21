@@ -29,6 +29,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a social security number
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M13.83,2.56H2.17A1.16,1.16,0,0,0,1,3.72v8.56a1.16,1.16,0,0,0,1.17,1.16H13.83A1.16,1.16,0,0,0,15,12.28V3.72A1.16,1.16,0,0,0,13.83,2.56Zm0,9.72H8.37c0-.11,0,.09,0-.55a1.53,1.53,0,0,0-1.63-1.4,6,6,0,0,1-1.09.2,5.44,5.44,0,0,1-1.09-.2,1.54,1.54,0,0,0-1.64,1.4c0,.64,0,.44,0,.55H2.17v-7H13.83ZM9.75,10.33h2.72a.19.19,0,0,0,.2-.19V9.75a.19.19,0,0,0-.2-.19H9.75a.18.18,0,0,0-.19.19v.39A.18.18,0,0,0,9.75,10.33Zm0-1.55h2.72a.2.2,0,0,0,.2-.2V8.19a.2.2,0,0,0-.2-.19H9.75a.19.19,0,0,0-.19.19v.39A.19.19,0,0,0,9.75,8.78Zm0-1.56h2.72a.2.2,0,0,0,.2-.19V6.64a.2.2,0,0,0-.2-.2H9.75a.19.19,0,0,0-.19.2V7A.19.19,0,0,0,9.75,7.22ZM5.67,9.56A1.56,1.56,0,1,0,4.11,8,1.56,1.56,0,0,0,5.67,9.56Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SSN )]

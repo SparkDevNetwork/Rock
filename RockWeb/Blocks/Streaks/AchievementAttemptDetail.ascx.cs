@@ -111,12 +111,12 @@ namespace RockWeb.Blocks.Streaks
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 RenderState();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Streaks
         /// </summary>
         private void InitializeActionButtons()
         {
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'Are you sure?');", AchievementAttempt.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", AchievementAttempt.FriendlyTypeName );
         }
 
         /// <summary>

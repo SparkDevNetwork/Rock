@@ -27,14 +27,18 @@ using System.Text;
 
 using Humanizer;
 
+using Microsoft.Extensions.Logging;
+
+using PuppeteerSharp.BrowserData;
 using Rock.Attribute;
 using Rock.Core;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net.Geolocation;
 using Rock.Observability;
+using Rock.Pdf;
 using Rock.Web.Cache;
-using WebGrease.Css.Extensions;
 
 namespace Rock.Jobs
 {
@@ -137,6 +141,7 @@ namespace Rock.Jobs
         Order = 9,
         Key = AttributeKey.StaleAnonymousVisitorRecordRetentionPeriodInDays )]
 
+    [RockLoggingCategory]
     public class RockCleanup : RockJob
     {
         /// <summary>
@@ -158,6 +163,17 @@ namespace Rock.Jobs
         }
 
         /// <summary>
+        /// Keys to identify specific RockCleanupJob Tasks.
+        /// </summary>
+        public static class JobTaskKey
+        {
+            /// <summary>
+            /// Remove interaction sessions that do not have any associated interactions.
+            /// </summary>
+            public const string InteractionSessionCleanup = "InteractionSessionCleanup";
+        }
+
+        /// <summary>
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -173,13 +189,36 @@ namespace Rock.Jobs
         private int commandTimeout;
         private int batchAmount;
         private DateTime lastRunDateTime;
+        private List<string> _enabledTaskKeys = null;
+
+        /// <summary>
+        /// This is used to disable certain features that don't play well with
+        /// running from inside a unit test. This includes things like network
+        /// operations or steps which modify on-disk content.
+        /// </summary>
+        static internal bool IsRunningFromUnitTest { get; set; }
 
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
         {
-            batchAmount = GetAttributeValue( AttributeKey.BatchCleanupAmount ).AsIntegerOrNull() ?? 1000;
-            commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
-            lastRunDateTime = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME ).AsDateTime() ?? RockDateTime.Now.AddDays( -1 );
+            // Read the job configuration from the data store.
+            var args = new RockCleanupActionArgs
+            {
+                DefaultBatchSize = GetAttributeValue( AttributeKey.BatchCleanupAmount ).AsIntegerOrNull(),
+                DefaultCommandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull(),
+                LastExecutionDateTime = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME ).AsDateTime()
+            };
+            Execute( args );
+        }
+
+        internal void Execute( RockCleanupActionArgs args )
+        {
+            // Set global variables.
+            batchAmount = args.DefaultBatchSize ?? 1000;
+            commandTimeout = args.DefaultCommandTimeout ?? 900;
+            lastRunDateTime = args.LastExecutionDateTime ?? RockDateTime.Now.AddDays( -1 );
+            _enabledTaskKeys = args.EnabledTaskKeys;
+
             /* 
                 IMPORTANT!! MDP 2020-05-05
 
@@ -202,7 +241,7 @@ namespace Rock.Jobs
 
             RunCleanupTask( "old interaction", () => CleanupOldInteractions() );
 
-            RunCleanupTask( "unused interaction session", () => CleanupUnusedInteractionSessions() );
+            RunCleanupTask( "unused interaction session", () => CleanupUnusedInteractionSessions(), JobTaskKey.InteractionSessionCleanup );
 
             RunCleanupTask( "audit log", () => PurgeAuditLog() );
 
@@ -217,6 +256,10 @@ namespace Rock.Jobs
 
             RunCleanupTask( "family salutation", () => GroupSalutationCleanup() );
 
+            RunCleanupTask( "group archive or inactive date", () => GroupArchiveOrInactiveDateCleanup() );
+
+            RunCleanupTask( "group member archive or inactive date", () => GroupMemberArchiveOrInactiveDateCleanup() );
+
             RunCleanupTask( "anonymous giver login", () => RemoveAnonymousGiverUserLogins() );
 
             RunCleanupTask( "anonymous visitor login", () => RemoveAnonymousVisitorUserLogins() );
@@ -230,7 +273,7 @@ namespace Rock.Jobs
             // Note run Workflow Log Cleanup before Workflow Cleanup to avoid timing out if a Workflow has lots of workflow logs (there is a cascade delete)
             RunCleanupTask( "workflow", () => CleanUpWorkflows() );
 
-            RunCleanupTask( "unused attribute value", () => CleanupOrphanedAttributes() );
+            RunCleanupTask( "unused attribute value", CleanupUnusedAttributeValues );
 
             RunCleanupTask( "transient communication", () => CleanupTransientCommunications() );
 
@@ -243,6 +286,9 @@ namespace Rock.Jobs
 
             // Search for and delete group memberships duplicates (same person, group, and role)
             RunCleanupTask( "group membership", () => GroupMembershipCleanup() );
+
+            // Search for and delete previous family location if it's the same as their current home address.
+            RunCleanupTask( "family location", () => DeleteDuplicatePreviousFamilyLocations() );
 
             RunCleanupTask( "primary family", () => UpdateMissingPrimaryFamily() );
 
@@ -279,7 +325,7 @@ namespace Rock.Jobs
 
             RunCleanupTask( "upcoming event date", () => UpdateEventNextOccurrenceDates() );
 
-            RunCleanupTask( "older chrome engines", () => RemoveOlderChromeEngines() );
+            RunCleanupTask( "non-default chrome engines", () => RemoveNonDefaultChromeEngines() );
 
             RunCleanupTask( "legacy sms phone numbers", () => SynchronizeLegacySmsPhoneNumbers() );
 
@@ -294,6 +340,8 @@ namespace Rock.Jobs
             RunCleanupTask( "data view persisted values", () => RemoveUnneededDataViewPersistedValues() );
 
             RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
+
+            RunCleanupTask( "update campus tithe metric", () => UpdateCampusTitheMetric() );
 
             /*
              * 21-APR-2022 DMV
@@ -431,8 +479,19 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="cleanupTitle">The cleanup title.</param>
         /// <param name="cleanupMethod">The cleanup method.</param>
-        private void RunCleanupTask( string cleanupTitle, Func<int> cleanupMethod )
+        /// <param name="taskKey"></param>
+        private void RunCleanupTask( string cleanupTitle, Func<int> cleanupMethod, string taskKey = null )
         {
+            // If an enabled action filter exists, check if this action is included in the filter.
+            if ( _enabledTaskKeys != null
+                 && _enabledTaskKeys.Any() )
+            {
+                if ( taskKey == null || !_enabledTaskKeys.Contains( taskKey ) )
+                {
+                    return;
+                }
+            }
+
             // Start observability task
             using ( var activity = ObservabilityHelper.StartActivity( $"Task: {cleanupTitle.Pluralize().ApplyCase( LetterCasing.Title )}" ) )
             {
@@ -567,6 +626,110 @@ namespace Rock.Jobs
         }
 
         /// <summary>
+        /// Updates <see cref="Group.ArchivedDateTime" /> OR <see cref="Group.InactiveDateTime" />
+        /// </summary>
+        /// <returns></returns>
+        private int GroupArchiveOrInactiveDateCleanup()
+        {
+            int recordsUpdated = 0;
+            var rockContext = CreateRockContext();
+
+            // just in case when groups has missing InactiveDateTime
+            var inactiveGroups = new GroupService( rockContext )
+                .Queryable()
+                .Where( a => !a.IsActive && !a.InactiveDateTime.HasValue );
+
+            if ( inactiveGroups.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( inactiveGroups, g => new Group { InactiveDateTime = RockDateTime.Now } );
+            }
+
+            // just in case when groups has missing archive date time
+            var archivedGroups = new GroupService( rockContext )
+                .Queryable()
+                .Where( a => a.IsArchived && !a.ArchivedDateTime.HasValue );
+
+            if ( archivedGroups.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( archivedGroups, g => new Group { ArchivedDateTime = RockDateTime.Now } );
+            }
+
+            // Clear InactiveDateTime If the Group record is Not Inactive
+            var activeGroups = new GroupService( rockContext )
+                .Queryable()
+                .Where( a => a.IsActive && a.InactiveDateTime.HasValue );
+
+            if ( archivedGroups.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( activeGroups, g => new Group { InactiveDateTime = null } );
+            }
+
+            // Remove ArchiveDateTime if the Group record is not Archived
+            var inarchivedGroups = new GroupService( rockContext )
+                .Queryable()
+                .Where( a => !a.IsArchived && a.ArchivedDateTime.HasValue );
+
+            if ( archivedGroups.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( archivedGroups, g => new Group { ArchivedDateTime = null } );
+            }
+
+            return recordsUpdated;
+        }
+
+        /// <summary>
+        /// Updates <see cref="GroupMember.ArchivedDateTime" /> OR <see cref="GroupMember.InactiveDateTime" />
+        /// </summary>
+        /// <returns></returns>
+        private int GroupMemberArchiveOrInactiveDateCleanup()
+        {
+            int recordsUpdated = 0;
+            var rockContext = CreateRockContext();
+
+            // just in case when group members has missing InactiveDateTime
+            var inactiveGroupMembers = new GroupMemberService( rockContext )
+                .Queryable()
+                .Where( a => a.GroupMemberStatus == GroupMemberStatus.Inactive && !a.InactiveDateTime.HasValue );
+
+            if ( inactiveGroupMembers.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( inactiveGroupMembers, g => new GroupMember { InactiveDateTime = RockDateTime.Now } );
+            }
+
+            // just in case when group members has missing archive date time
+            var archivedGroupMembers = new GroupMemberService( rockContext )
+                .Queryable()
+                .Where( a => a.IsArchived && !a.ArchivedDateTime.HasValue );
+
+            if ( archivedGroupMembers.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( archivedGroupMembers, g => new GroupMember { ArchivedDateTime = RockDateTime.Now } );
+            }
+
+            // Clear InactiveDateTime If the Group members record is Not Inactive
+            var activeGroupMembers = new GroupMemberService( rockContext )
+                .Queryable()
+                .Where( a => a.GroupMemberStatus != GroupMemberStatus.Inactive && a.InactiveDateTime.HasValue );
+
+            if ( activeGroupMembers.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( activeGroupMembers, g => new GroupMember { InactiveDateTime = null } );
+            }
+
+            // Remove ArchiveDateTime if the Group members record is not Archived
+            var inarchivedGroupMembers = new GroupMemberService( rockContext )
+                .Queryable()
+                .Where( a => !a.IsArchived && a.ArchivedDateTime.HasValue );
+
+            if ( inarchivedGroupMembers.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( inarchivedGroupMembers, g => new GroupMember { ArchivedDateTime = null } );
+            }
+
+            return recordsUpdated;
+        }
+
+        /// <summary>
         /// Does cleanup of Person Aliases and Metaphones
         /// </summary>
         internal int PersonCleanup()
@@ -688,9 +851,6 @@ namespace Rock.Jobs
             // Known Relationship Group
             resultCount += AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid(), commandTimeout );
 
-            // Implied Relationship Group
-            resultCount += AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK ), Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid(), commandTimeout );
-
             // Find family groups that have no members or that have only 'inactive' people (record status) and mark the groups inactive.
             using ( var familyRockContext = CreateRockContext() )
             {
@@ -708,17 +868,18 @@ namespace Rock.Jobs
 
             // Update people who have names with extra spaces between words (Issue #2990). See notes in Asana on query performance. Note
             // that values with more than two spaces could take multiple runs to correct.
-            using( var nameCleanupRockContext = CreateRockContext() )
+            using ( var nameCleanupRockContext = CreateRockContext() )
             {
                 var peopleWithExtraSpaceNames = new PersonService( nameCleanupRockContext ).Queryable()
                     .Where( p => p.NickName.Contains( "  " ) || p.LastName.Contains( "  " ) || p.FirstName.Contains( "  " ) || p.MiddleName.Contains( "  " ) );
 
-                nameCleanupRockContext.BulkUpdate( peopleWithExtraSpaceNames, x => new Person {
-                                                                NickName = x.NickName.Replace( "  ", " " ),
-                                                                LastName = x.LastName.Replace( "  ", " " ),
-                                                                FirstName = x.FirstName.Replace( "  ", " " ),
-                                                                MiddleName = x.MiddleName.Replace( "  ", " " )
-                                                            } );
+                nameCleanupRockContext.BulkUpdate( peopleWithExtraSpaceNames, x => new Person
+                {
+                    NickName = x.NickName.Replace( "  ", " " ),
+                    LastName = x.LastName.Replace( "  ", " " ),
+                    FirstName = x.FirstName.Replace( "  ", " " ),
+                    MiddleName = x.MiddleName.Replace( "  ", " " )
+                } );
             }
 
             return resultCount;
@@ -803,12 +964,13 @@ namespace Rock.Jobs
                 // Update Person records that have an empty or placeholder PrimaryAlias reference.
                 var people = personService.Queryable( personSearchOptions )
                     .Include( p => p.Aliases )
-                    .Where( p => p.PrimaryAliasId == null || p.PrimaryAliasId == 0 )
+                    .Where( p => p.PrimaryAliasId == null || p.PrimaryAliasId == 0 || p.PrimaryAliasGuid == null )
                     .Take( 300 );
 
                 foreach ( var person in people )
                 {
                     person.PrimaryAliasId = person.PrimaryAlias?.Id;
+                    person.PrimaryAliasGuid = person.PrimaryAlias?.Guid;
                     resultCount++;
                 }
 
@@ -1066,6 +1228,7 @@ namespace Rock.Jobs
             var workflowContext = CreateRockContext();
 
             var workflowService = new WorkflowService( workflowContext );
+            var connectionRequestWorkflowService = new ConnectionRequestWorkflowService( workflowContext );
 
             var completedWorkflows = workflowService.Queryable().AsNoTracking()
                 .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && w.CompletedDateTime.HasValue
@@ -1080,7 +1243,7 @@ namespace Rock.Jobs
             {
                 // Verify that the workflow is not being used by something important by letting CanDelete tell
                 // us if it's OK to delete.
-                if ( workflowService.CanDelete( workflow, out _ ) )
+                if ( workflowService.IsEligibleForDelete( workflow, out _ ) )
                 {
                     workflowIdsSafeToDelete.Add( workflow.Id );
                 }
@@ -1088,6 +1251,7 @@ namespace Rock.Jobs
                 // to prevent a SQL complexity exception, do a bulk delete anytime the workflowIdsSafeToDelete gets too big
                 if ( workflowIdsSafeToDelete.Count >= batchAmount )
                 {
+                    BulkDeleteInChunks( connectionRequestWorkflowService.Queryable().Where( c => workflowIdsSafeToDelete.Contains( c.WorkflowId ) ), batchAmount, commandTimeout );
                     totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => workflowIdsSafeToDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
                     workflowIdsSafeToDelete = new List<int>();
                 }
@@ -1095,6 +1259,7 @@ namespace Rock.Jobs
 
             if ( workflowIdsSafeToDelete.Any() )
             {
+                BulkDeleteInChunks( connectionRequestWorkflowService.Queryable().Where( c => workflowIdsSafeToDelete.Contains( c.WorkflowId ) ), batchAmount, commandTimeout );
                 totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => workflowIdsSafeToDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
             }
 
@@ -1166,7 +1331,7 @@ namespace Rock.Jobs
                 }
             }
 
-            validationMessages.Add( $"Path \"{ directoryPath }\" does not match the required pattern \"*\\App_Data\\*\\Cache\\*\"." );
+            validationMessages.Add( $"Path \"{directoryPath}\" does not match the required pattern \"*\\App_Data\\*\\Cache\\*\"." );
             return false;
         }
 
@@ -1204,7 +1369,7 @@ namespace Rock.Jobs
             var avatarCachePath = args.AvatarCachePath;
             var validationMessages = new List<string>();
 
-            if ( System.Web.Hosting.HostingEnvironment.IsHosted || args.HostName == "RockSchedulerIIS" )
+            if ( ( System.Web.Hosting.HostingEnvironment.IsHosted || args.HostName == "RockSchedulerIIS" ) && !args.IsUnitTest )
             {
                 if ( !string.IsNullOrEmpty( cacheDirectoryPath ) )
                 {
@@ -1442,14 +1607,6 @@ namespace Rock.Jobs
         private int CleanupUnusedInteractionSessions()
         {
             int totalRowsDeleted = 0;
-            var currentDateTime = RockDateTime.Now;
-
-            // If there are no channels with a retention policy then don't bother looking for orphans.
-            var interactionChannelsWithRentionDurations = InteractionChannelCache.All().Where( ic => ic.RetentionDuration.HasValue );
-            if ( !interactionChannelsWithRentionDurations.Any() )
-            {
-                return 0;
-            }
 
             // delete any InteractionSession records that are no longer used.
             using ( var interactionSessionRockContext = CreateRockContext() )
@@ -1569,6 +1726,19 @@ namespace Rock.Jobs
         }
 
         /// <summary>
+        /// Cleans up any attribute values that are no longer needed.
+        /// </summary>
+        /// <returns>The number of records deleted.</returns>
+        private int CleanupUnusedAttributeValues()
+        {
+            var recordsDeleted = CleanupOrphanedAttributes();
+
+            recordsDeleted += CleanupEmptyAttributeValues();
+
+            return recordsDeleted;
+        }
+
+        /// <summary>
         /// Cleanups the orphaned attributes.
         /// </summary>
         /// <returns></returns>
@@ -1640,6 +1810,28 @@ namespace Rock.Jobs
                 var entityIdsQuery = new Service<T>( rockContext ).AsNoFilter().Select( a => a.Id );
                 var orphanedAttributeValuesQuery = attributeValueService.Queryable().Where( a => a.EntityId.HasValue && a.Attribute.EntityTypeId == entityTypeId.Value && !entityIdsQuery.Contains( a.EntityId.Value ) );
                 recordsDeleted += BulkDeleteInChunks( orphanedAttributeValuesQuery, batchAmount, commandTimeout );
+            }
+
+            return recordsDeleted;
+        }
+
+        /// <summary>
+        /// Cleans up empty attribute values that no longer need to exist in the database.
+        /// </summary>
+        /// <returns>The number of records deleted.</returns>
+        private int CleanupEmptyAttributeValues()
+        {
+            int recordsDeleted = 0;
+
+            using ( var rockContext = CreateRockContext() )
+            {
+                var attributeValueService = new AttributeValueService( rockContext );
+
+                var emptyValuesQuery = attributeValueService.Queryable()
+                    .Where( av => av.Value == null || av.Value == "" )
+                    .WithQueryableAttributeValues();
+
+                recordsDeleted += BulkDeleteInChunks( emptyValuesQuery, batchAmount, commandTimeout );
             }
 
             return recordsDeleted;
@@ -1740,6 +1932,12 @@ namespace Rock.Jobs
                 if ( resultCount >= fileLimitCount )
                 {
                     return resultCount;
+                }
+
+                // Skip .gitignore files
+                if ( Path.GetFileName( filePath ).Equals( ".gitignore", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    continue;
                 }
 
                 DateTime fileActivityDate;
@@ -2006,6 +2204,39 @@ namespace Rock.Jobs
 
             // Return the count of memberships deleted
             return groupMemberIds.Count();
+        }
+
+        private int DeleteDuplicatePreviousFamilyLocations()
+        {
+            var rockContext = CreateRockContext();
+
+            var groupLocationService = new GroupLocationService( rockContext );
+            var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+            var previousLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS ).Id;
+            var homeLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ).Id;
+
+            var duplicateFamilyLocations = groupLocationService.Queryable()
+                .Where( gl => gl.Group.GroupTypeId == familyGroupTypeId )
+                .GroupBy( gl => new { gl.GroupId, gl.LocationId } )
+                .Where( g => g.Count() > 1 )
+                .ToList();
+            var recordsToDelete = new List<GroupLocation>();
+
+            foreach ( var duplicateFamilyLocation in duplicateFamilyLocations )
+            {
+                var previousLocation = duplicateFamilyLocation.FirstOrDefault( x => x.GroupLocationTypeValueId == previousLocationTypeId );
+                var isOtherDuplicateHomeLocation = duplicateFamilyLocation.Any( gl => gl.GroupLocationTypeValueId == homeLocationTypeId );
+
+                if ( previousLocation != null && isOtherDuplicateHomeLocation )
+                {
+                    recordsToDelete.Add( previousLocation );
+                }
+            }
+
+            groupLocationService.DeleteRange( recordsToDelete );
+            rockContext.SaveChanges();
+
+            return recordsToDelete.Count;
         }
 
         /// <summary>
@@ -2576,7 +2807,7 @@ SELECT @@ROWCOUNT
                                     innerEx = innerEx.InnerException;
                                 }
 
-                                Log( RockLogLevel.Warning, $"Error occurred deleting stale anonymous visitor record ID {personAliasId}: {innerEx.Message}" );
+                                Logger.LogWarning( $"Error occurred deleting stale anonymous visitor record ID {personAliasId}: {innerEx.Message}" );
 
                                 // The context we used to attempt the deletion is no
                                 // good to use now since it is in a bad state. Create
@@ -2596,30 +2827,83 @@ SELECT @@ROWCOUNT
                 }
             }
 
+            // Manually update the CreatedByPersonAliasId and ModifiedByPersonAliasId
+            // columns to be null for any aliases that do not exist anymore.
+            // This needs to be done since we removed the foreign keys in Rock v17.0.
+            using ( var rockContext = CreateRockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( @"UPDATE [Interaction]
+SET [CreatedByPersonAliasId] = NULL
+WHERE [CreatedByPersonAliasId] IS NOT NULL
+  AND [CreatedByPersonAliasId] NOT IN (SELECT [Id] FROM [PersonAlias])" );
+
+                rockContext.Database.ExecuteSqlCommand( @"UPDATE [Interaction]
+SET [ModifiedByPersonAliasId] = NULL
+WHERE [ModifiedByPersonAliasId] IS NOT NULL
+  AND [ModifiedByPersonAliasId] NOT IN (SELECT [Id] FROM [PersonAlias])" );
+            }
+
+            // Fix any anonymous PersonAlias records that have a NULL LastVisitDate.
+            // These could happen because older versions of Rock created the
+            // PersonAlias initially with a NULL value. It was only the second page
+            // load for that same visitor that would set the LastVisitDate value.
+            // This was fixed in 1.16.7, which means this code can probably be
+            // safely removed in Rock v18.
+            var stopProcessingAfter = RockDateTime.Now.AddMinutes( 2 );
+
+            while ( RockDateTime.Now < stopProcessingAfter )
+            {
+                using ( var rockContext = CreateRockContext() )
+                {
+                    var anonymousVisitorId = new PersonService( rockContext ).GetId( Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid() );
+                    var personAliasService = new PersonAliasService( rockContext );
+                    var now = RockDateTime.Now;
+
+                    var aliasesToUpdate = personAliasService
+                        .Queryable()
+                        .Where( a => a.PersonId == anonymousVisitorId
+                            && !a.LastVisitDateTime.HasValue )
+                        .Take( 500 )
+                        .ToList();
+
+                    // If no aliases need to be updated, then we are done.
+                    if ( !aliasesToUpdate.Any() )
+                    {
+                        break;
+                    }
+
+                    aliasesToUpdate.ForEach( a => a.LastVisitDateTime = now );
+
+                    rockContext.SaveChanges( disablePrePostProcessing: true );
+                }
+            }
+
             return deleteCount;
         }
 
         /// <summary>
-        /// Removes older unused versions of the chrome engine
+        /// Removes all installed versions of Chrome that do not match the default browser version, ensuring only the required version remains.
         /// </summary>
         /// <returns></returns>
-        private int RemoveOlderChromeEngines()
+        private int RemoveNonDefaultChromeEngines()
         {
             var options = new PuppeteerSharp.BrowserFetcherOptions()
             {
-                Product = PuppeteerSharp.Product.Chrome,
+                Browser = PuppeteerSharp.SupportedBrowser.Chrome,
                 Path = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/ChromeEngine" )
             };
 
             var browserFetcher = new PuppeteerSharp.BrowserFetcher( options );
-            var olderVersions = browserFetcher.LocalRevisions().Where( r => r != PuppeteerSharp.BrowserFetcher.DefaultChromiumRevision );
+            var olderVersions = browserFetcher.GetInstalledBrowsers().Where( r => r.BuildId != PdfGenerator.BrowserVersion && r.Browser == options.Browser );
+            int totalRemoved = 0;
 
             foreach ( var version in olderVersions )
             {
-                browserFetcher.Remove( version );
+                browserFetcher.Uninstall( version.BuildId );
+                totalRemoved++;
             }
 
-            return olderVersions.Count();
+            return totalRemoved;
         }
 
         /// <summary>
@@ -2636,7 +2920,7 @@ SELECT @@ROWCOUNT
         private int SynchronizeLegacySmsPhoneNumbers()
         {
             List<int> systemPhoneNumberIds;
-                
+
             using ( var rockContext = CreateRockContext() )
             {
                 systemPhoneNumberIds = new SystemPhoneNumberService( rockContext )
@@ -3103,7 +3387,7 @@ END
         DELETE TOP (1500) FROM DataViewPersistedValue WHERE DataViewId IN (SELECT id from @dataViewIds)
     END
 ";
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = CreateRockContext() )
             {
                 rockContext.Database.CommandTimeout = commandTimeout;
                 int result = rockContext.Database.ExecuteSqlCommand( removePersistedDataViewValueSql );
@@ -3116,8 +3400,8 @@ END
         /// </summary>
         /// <returns></returns>
         private int UpdateMissingPrimaryFamily()
-       {
-            using ( var rockContext = new RockContext() )
+        {
+            using ( var rockContext = CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
@@ -3161,6 +3445,111 @@ END
                 }
 
                 return persons.Count;
+            }
+        }
+
+        /// <summary>
+        /// Sets each campus's tithe metric by by dividing the cumulative value if each campus's
+        /// FamiliesMedianIncome, based on their postal code by the number of individuals who have
+        /// given multiplied by 10%.
+        /// </summary>
+        private int UpdateCampusTitheMetric()
+        {
+            using ( var rockContext = CreateRockContext() )
+            {
+                var outputParam = new System.Data.SqlClient.SqlParameter( "@UpdatedCampusCount", System.Data.SqlDbType.Int )
+                {
+                    Direction = System.Data.ParameterDirection.Output
+                };
+
+                var updateQuery = @"
+DECLARE @StartDate int = FORMAT(DATEADD( d, -365, dbo.RockGetDate()), 'yyyyMMdd')
+DECLARE @EndDate int = FORMAT(dbo.RockGetDate(), 'yyyyMMdd')
+
+-- Only Include Person Type Records
+DECLARE @PersonRecordTypeId INT = ( SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '36CF10D6-C695-413D-8E7C-4546EFEF385E' )
+
+IF OBJECT_ID('tempdb..#GivingFamilies') IS NOT NULL
+BEGIN
+ DROP TABLE #GivingFamilies
+END
+
+-- Temporary table for the families who have given and their postal codes.
+CREATE TABLE #GivingFamilies (
+    PrimaryFamilyId INT,
+    PrimaryCampusId INT,
+    FamiliesMedianTithe INT,
+    GivingAmount INT,
+);
+
+;WITH CTE AS (
+    SELECT [PrimaryCampusId]
+    , [PrimaryFamilyId]
+    , SUM(ftd.[Amount]) AS [GivingAmount]
+    , (SELECT TOP 1 
+            LEFT([PostalCode], 5)
+        FROM [dbo].[Location] l
+        INNER JOIN [dbo].[GroupLocation] gl ON gl.[LocationId] = l.[Id] AND gl.[GroupId] = [PrimaryFamilyId] AND gl.[IsMappedLocation] = 1
+      ) AS [PostalCode]
+    , (SELECT [FamiliesMedianIncome] FROM [dbo].[AnalyticsSourcePostalCode] WHERE [PostalCode] = (SELECT TOP 1 LEFT([PostalCode], 5) FROM [dbo].[Location] l INNER JOIN [dbo].[GroupLocation] gl ON gl.[LocationId] = l.[Id] AND gl.[GroupId] = [PrimaryFamilyId] AND gl.[IsMappedLocation] = 1) ) AS [FamiliesMedianTithe]
+ FROM
+  [Person] p
+  INNER JOIN [dbo].[PersonAlias] pa ON pa.[PersonId] = p.[Id]
+  INNER JOIN [dbo].[FinancialTransaction] ft ON ft.[AuthorizedPersonAliasId] = pa.[Id]
+  INNER JOIN [dbo].[FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
+  INNER JOIN [dbo].[FinancialAccount] fa ON fa.[Id] = ftd.[AccountId] 
+  INNER JOIN [dbo].[AnalyticsSourceDate] asd ON asd.[DateKey] = ft.[TransactionDateKey]
+ WHERE
+  fa.[IsTaxDeductible] = 1
+  AND asd.[DateKey] > = @StartDate AND asd.[DateKey] <= @EndDate
+  AND p.[RecordTypeValueId] = @PersonRecordTypeId
+ GROUP BY [PrimaryCampusId], [PrimaryFamilyId]
+)
+
+INSERT INTO #GivingFamilies ([PrimaryFamilyId], [PrimaryCampusId], [FamiliesMedianTithe], [GivingAmount])
+SELECT PrimaryFamilyId, PrimaryCampusId, FamiliesMedianTithe, GivingAmount
+FROM CTE 
+-- Only include families that have a postal code and/or we have a [FamiliesMedianIncome] value
+WHERE ( PostalCode IS NOT NULL AND PostalCode != '') and [FamiliesMedianTithe] is NOT NULL and [FamiliesMedianTithe] > 0
+
+DECLARE @campusId INT;
+DECLARE @hasGivenCount INT;
+DECLARE @totalMedianIncome INT;
+
+DECLARE campus_cursor CURSOR FOR
+SELECT DISTINCT PrimaryCampusId FROM #GivingFamilies WHERE PrimaryCampusId IS NOT NULL;
+DECLARE @CampusCount INT = (SELECT COUNT(DISTINCT PrimaryCampusId) FROM #GivingFamilies WHERE PrimaryCampusId IS NOT NULL);
+
+OPEN campus_cursor;
+FETCH NEXT FROM campus_cursor INTO @campusId;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    SELECT @hasGivenCount = SUM(CASE WHEN [GivingAmount] >= 0 THEN 1 ELSE 0 END)
+    FROM #GivingFamilies
+    WHERE PrimaryCampusId = @campusId;
+
+    SELECT @totalMedianIncome = SUM(FamiliesMedianTithe)
+    FROM #GivingFamilies
+    WHERE PrimaryCampusId = @campusId;
+
+ UPDATE CAMPUS 
+    SET TitheMetric = (@totalMedianIncome / @hasGivenCount)* 0.1
+ WHERE Id = @campusId
+
+    FETCH NEXT FROM campus_cursor INTO @campusId;
+END
+
+CLOSE campus_cursor;
+DEALLOCATE campus_cursor;
+
+DROP TABLE #GivingFamilies;
+
+SET @UpdatedCampusCount = @CampusCount;
+";
+                rockContext.Database.ExecuteSqlCommand( updateQuery, outputParam );
+
+                return ( int ) outputParam.Value;
             }
         }
 
@@ -3221,6 +3610,27 @@ END
         internal class RockCleanupActionArgs
         {
             /// <summary>
+            /// The number of records to process for each iteration of a batch operation.
+            /// </summary>
+            public int? DefaultBatchSize;
+
+            /// <summary>
+            /// The default timeout (in seconds) for database operations.
+            /// </summary>
+            public int? DefaultCommandTimeout;
+
+            /// <summary>
+            /// The last time this job was executed.
+            /// </summary>
+            public DateTime? LastExecutionDateTime;
+
+            /// <summary>
+            /// A set of task identifiers indicating the tasks that will be performed for this job execution.
+            /// If not specified, all tasks will be performed.
+            /// </summary>
+            public List<string> EnabledTaskKeys = new List<string>();
+
+            /// <summary>
             /// The path to the image cache.
             /// </summary>
             public string ImageCachePath;
@@ -3245,7 +3655,13 @@ END
             /// If set to null, all expired files are removed.
             /// </summary>
             public int? CacheMaximumFilesToRemove;
-        }
 
+            /// <summary>
+            /// <c>true</c> if the action is being executed from a unit test. This
+            /// disables a few features that are only valid under a full running
+            /// Rock instance (such as mapping IIS paths).
+            /// </summary>
+            public bool IsUnitTest { get; set; }
+        }
     }
 }

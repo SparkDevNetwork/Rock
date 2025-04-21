@@ -11,8 +11,7 @@
                   :showBlankItem="showBlankItem"
                   :blankValue="blankValue"
                   :enhanceForLongLists="enhanceForLongLists"
-                  :lazyMode="lazyMode"
-                  displayStyle="auto"
+                  :maxTagCount="maxTagCount"
                   @open="onOpen">
 
         <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
@@ -27,10 +26,19 @@
         <template #append="{ isInputGroupSupported }" v-if="$slots.append">
             <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
         </template>
+        <template #suffixIcon="slotProps" v-if="$slots.suffixIcon">
+            <slot name="suffixIcon" v-bind="slotProps"></slot>
+        </template>
+        <template #tagRender="slotProps" v-if="$slots.tagRender">
+            <slot name="tagRender" v-bind="slotProps"></slot>
+        </template>
+        <template #maxTagPlaceholder="slotProps" v-if="$slots.maxTagPlaceholder">
+            <slot name="maxTagPlaceholder" v-bind="slotProps"></slot>
+        </template>
 
     </DropDownList>
 
-    <CheckBoxList v-if="isCheckBoxListStyle"
+    <CheckBoxList v-else-if="isCheckBoxListStyle"
                   v-model="(internalValue as string[])"
                   v-bind="standardProps"
                   :disabled="disabled"
@@ -47,7 +55,7 @@
 
     </CheckBoxList>
 
-    <RadioButtonList v-if="isRadioButtonListStyle"
+    <RadioButtonList v-else
                      v-model="(internalValue as string)"
                      v-bind="standardProps"
                      :disabled="disabled"
@@ -135,6 +143,12 @@
         items: {
             type: Object as PropType<ListItemBag[] | Promise<ListItemBag[]> | (() => ListItemBag[] | Promise<ListItemBag[]>) | null>,
             required: false
+        },
+
+        maxTagCount: {
+            type: Object as PropType<number | "responsive" | undefined>,
+            required: false,
+            default: undefined
         },
 
         ...standardAsyncPickerProps

@@ -54,6 +54,12 @@ namespace Rock.ViewModels.Blocks.Cms.ContentCollectionView
         public bool ShowSort { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to auto focus on the searchbar.
+        /// </summary>
+        /// <value><c>true</c> auto focus on the searchbar on page loads; otherwise, <c>false</c>.</value>
+        public bool AutoFocus { get; set; }
+
+        /// <summary>
         /// Gets or sets the number of results to return per source. If grouping
         /// is not enabled then this controls the total number of results.
         /// </summary>
@@ -161,5 +167,10 @@ namespace Rock.ViewModels.Blocks.Cms.ContentCollectionView
         /// Gets or sets the site type for the block.
         /// </summary>
         public string SiteType { get; set; }
+
+        /// <summary>
+        /// Whether or not to include unapproved items in the search results.
+        /// </summary>
+        public bool IncludeUnapproved { get; set; }
     }
 }

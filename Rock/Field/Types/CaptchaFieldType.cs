@@ -24,6 +24,9 @@ using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web;
+using Rock.ViewModels.Utility;
+using System;
+using Rock.Data;
 
 namespace Rock.Field.Types
 {
@@ -31,11 +34,39 @@ namespace Rock.Field.Types
     /// Field Type used to show a captcha and validate the user is not a robot.
     /// Stores value of "1" if user is verified as not a robot.
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CAPTCHA )]
     public class CaptchaFieldType : FieldType
     {
         #region Configuration
+
+        private const string NOTIFICATION_WARNING_PROPERTY_KEY = "notificationWarning";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+            if ( usage == ConfigurationValueUsage.Configure )
+            {
+                var siteKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY );
+                var secretKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SECRET_KEY );
+
+                if ( siteKey.IsNullOrWhiteSpace() || secretKey.IsNullOrWhiteSpace() )
+                {
+                    publicConfigurationValues[NOTIFICATION_WARNING_PROPERTY_KEY] = "Captcha site key or secret key have not been configured yet. Captcha will not work until both keys are set.";
+                }
+            }
+
+            return publicConfigurationValues;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            return new Dictionary<string, string>();
+        }
 
         #endregion
 
@@ -65,6 +96,12 @@ namespace Rock.Field.Types
         ///   <c>true</c> if this instance has default control; otherwise, <c>false</c>.
         /// </value>
         public override bool HasDefaultControl => false;
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
 
         #endregion
 
@@ -105,7 +142,7 @@ namespace Rock.Field.Types
                 var nokeysBox = new NotificationBox
                 {
                     NotificationBoxType = NotificationBoxType.Warning,
-                    Text = "Google ReCaptcha site key or secret key have not been configured yet. Captcha will not work until those are set."
+                    Text = "Captcha site key or secret key have not been configured yet. Captcha will not work until both keys are set."
                 };
                 controls.Add( nokeysBox );
             }

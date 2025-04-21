@@ -21,13 +21,14 @@
 // </copyright>
 //
 
+import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
 import { Guid } from "@Obsidian/Types";
 import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
 
 /** A group of filter rules/expressions that make up a logical comparison group. */
 export type FieldFilterGroupBag = {
     /** The logic operator to use when joining all rules and child-groups in this group. */
-    expressionType: number;
+    expressionType: FilterExpressionType;
 
     /** The collection of child groups that make up any nested expressions in this group. */
     groups?: FieldFilterGroupBag[] | null;

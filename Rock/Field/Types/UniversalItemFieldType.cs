@@ -36,6 +36,7 @@ namespace Rock.Field.Types
     /// Base logic provider for field types that have shared UI comonents
     /// on the client to handle working with the field values.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     public abstract class UniversalItemFieldType : FieldType
     {
         #region Properties
@@ -443,13 +444,12 @@ namespace Rock.Field.Types
                     continue;
                 }
 
-                var clientFieldTypeGuidAttribute = fieldTypeCache.Field.GetType().GetCustomAttribute<UniversalFieldTypeGuidAttribute>();
                 var configurationValues = fieldTypeAttribute.FieldConfigurationValues
                     .ToDictionary( k => k.Key, k => k.Value.Value );
 
                 var bag = new PublicAttributeBag
                 {
-                    FieldTypeGuid = clientFieldTypeGuidAttribute?.Guid ?? fieldTypeCache.Guid,
+                    FieldTypeGuid = fieldTypeCache.ControlFieldTypeGuid,
                     AttributeGuid = Guid.NewGuid(),
                     Name = fieldTypeAttribute.Name,
                     Order = order++,
@@ -548,7 +548,7 @@ namespace Rock.Field.Types
                 if ( field != null && controls.Count > i )
                 {
                     var value = field.GetEditValue( controls[i], fieldTypeAttribute.FieldConfigurationValues );
-                    configurationValues.AddOrIgnore( fieldTypeAttribute.Key, new ConfigurationValue( value ) );
+                    configurationValues.TryAdd( fieldTypeAttribute.Key, new ConfigurationValue( value ) );
                 }
             }
 

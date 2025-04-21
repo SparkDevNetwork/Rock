@@ -28,7 +28,6 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.ConnectionTypeList;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Engagement
 {
@@ -213,7 +212,7 @@ namespace Rock.Blocks.Engagement
 
                 if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${ConnectionType.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {ConnectionType.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

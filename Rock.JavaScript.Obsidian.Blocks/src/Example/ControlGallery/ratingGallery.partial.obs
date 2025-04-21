@@ -1,0 +1,26 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <Rating label="How Would You Rate God?" v-model="value" :maxRating="maximumValue || 5" />
+
+        <template #settings>
+            <NumberBox label="Maximum Rating" v-model="maximumValue" />
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Rating from "@Obsidian/Controls/rating.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref(3);
+    const maximumValue = ref(5);
+    const importCode = getSfcControlImportPath("rating");
+    const exampleCode = `<Rating label="Rating" v-model="value" :maxRating="5" />`;
+</script>

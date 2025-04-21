@@ -15,9 +15,16 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+using Rock.Communication.Chat;
+using Rock.Communication.Chat.Sync;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -48,6 +55,11 @@ namespace Rock.Model
                 {
                     case EntityContextState.Added:
                         {
+                            if ( this.Entity.GroupTypeId == GroupTypeCache.GetFamilyGroupType().Id )
+                            {
+                                this.Entity.Name = this.Entity.Name != null ? Regex.Replace( this.Entity.Name, RegexPatterns.EmojiAndSpecialFontRemovalPattern, string.Empty ) : null;
+                            }
+
                             HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Group" ).SetNewValue( Entity.Name );
 
                             History.EvaluateChange( HistoryChangeList, "Name", string.Empty, Entity.Name );
@@ -202,6 +214,24 @@ namespace Rock.Model
                 if ( _FamilyCampusIsChanged )
                 {
                     PersonService.UpdatePrimaryFamilyByGroup( Entity.Id, rockContext );
+                }
+
+                if ( RockContext.IsRockToChatSyncEnabled && ChatHelper.IsChatEnabled )
+                {
+                    Task.Run( async () =>
+                    {
+                        using ( var chatHelper = new ChatHelper() )
+                        {
+                            var syncCommand = new SyncGroupToChatCommand
+                            {
+                                GroupTypeId = Entity.GroupTypeId,
+                                GroupId = Entity.Id,
+                                ChatChannelKey = Entity.ChatChannelKey
+                            };
+
+                            await chatHelper.SyncGroupsToChatProviderAsync( new List<SyncGroupToChatCommand> { syncCommand } );
+                        }
+                    } );
                 }
 
                 base.PostSave();

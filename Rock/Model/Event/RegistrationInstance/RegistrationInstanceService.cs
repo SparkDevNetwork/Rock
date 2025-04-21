@@ -196,7 +196,8 @@ namespace Rock.Model
                 var costSummary = new RegistrationCostSummaryInfo
                 {
                     Type = RegistrationCostSummaryType.Cost,
-                    Description = string.Format( "{0} {1}", firstName, lastName )
+                    Description = string.Format( "{0} {1}", firstName, lastName ),
+                    RegistrationRegistrantGuid = registrant.Guid
                 };
 
                 // If the registrant is on the waitlist then set costs to 0 and add a waitlist indicator to the name for the payment summary grid
@@ -266,13 +267,14 @@ namespace Rock.Model
                     var templateFeeItem = templateFeeItems.First( f => f.Guid == feeItemGuid );
                     var templateFee = templateFeeItem.RegistrationTemplateFee;
 
-                    decimal cost = templateFeeItem.Cost;
+                    var cost = templateFeeItem.Cost;
                     var desc = GetFeeLineItemDescription( templateFee, templateFeeItem, quantity );
 
                     var feeCostSummary = new RegistrationCostSummaryInfo
                     {
                         Type = RegistrationCostSummaryType.Fee,
                         Description = desc,
+                        RegistrationRegistrantGuid = registrant.Guid,
                         Cost = quantity * cost,
 
                         // Default the DiscountedCost to be the same as the Cost
@@ -291,7 +293,7 @@ namespace Rock.Model
                             // If the DiscountAmount is greater than the cost then set the DiscountedCost to 0 and store the remaining amount to be applied to eligable fees later.
                             if ( discountAmountRemaining > feeCostSummary.Cost )
                             {
-                                discountAmountRemaining -= feeCostSummary.DiscountedCost;
+                                discountAmountRemaining -= feeCostSummary.Cost;
                                 feeCostSummary.DiscountedCost = 0.0m;
                             }
                             else

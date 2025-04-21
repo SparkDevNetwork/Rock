@@ -18,9 +18,17 @@
 namespace Rock.ViewModels.Blocks.Core.RestActionList
 {
     /// <summary>
-    /// 
+    /// The options bag for the RestActionList block.
     /// </summary>
     public class RestActionListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the controller name.
+        /// </summary>
+        public string ControllerName { get; set; }
+        /// <summary>
+        /// Gets or sets the obsolete warning.
+        /// </summary>
+        public string ObsoleteWarning { get; set; }
     }
 }

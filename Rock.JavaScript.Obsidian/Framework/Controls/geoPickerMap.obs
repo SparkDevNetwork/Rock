@@ -19,6 +19,8 @@
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
     import Loading from "@Obsidian/Controls/loading.obs";
     import { confirm } from "@Obsidian/Utility/dialogs";
+    import { GeoPickerGoogleMapSettingsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerGoogleMapSettingsBag";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
 
     /**
      * The types of shapes Google Maps uses internally
@@ -109,6 +111,7 @@
     let styles: google.maps.MapTypeStyle[] = [];
     let shape: Shape | null = null;
     let marker: google.maps.Symbol | null = null;
+    let mapId: string | null = null;
 
     // #endregion
 
@@ -172,6 +175,9 @@
         // as well as the name to be displayed on the map type control.
         var styledMap = new google.maps.StyledMapType(styles, { name: "Styled Map" });
 
+        // Check if the mapId has a value.
+        let isMapIdEmpty = isNullOrWhiteSpace(mapId);
+
         // WARNING: I though about removing the "center:" from the options here but then the
         // map's controls were different and then our delete button was out of alignment.
         var mapOptions = {
@@ -181,7 +187,8 @@
             fullscreenControl: false,
             mapTypeControlOptions: {
                 mapTypeIds: [google.maps.MapTypeId.ROADMAP, "map_style"],
-            }
+            },
+            ...(!isMapIdEmpty && { mapId: mapId })
         };
 
         map = new google.maps.Map(mapContainer.value as HTMLElement, mapOptions);
@@ -226,12 +233,39 @@
                 });
             }
             else {
-                shape = new google.maps.Marker({
-                    position: new google.maps.LatLng(...internalValue.value[0]),
-                    map: map,
-                    clickable: true,
-                    icon: marker
-                });
+                if (isMapIdEmpty) {
+                    shape = new google.maps.Marker({
+                        position: new google.maps.LatLng(...internalValue.value[0]),
+                        map: map,
+                        clickable: true,
+                        icon: marker
+                    });
+                }
+                else {
+                    const position = new google.maps.LatLng(...internalValue.value[0]);
+                    shape = {
+                        position: position,
+                        map: map,
+                        marker_element: new google.maps.marker.AdvancedMarkerElement({
+                            position: position,
+                            map: map
+                        }),
+                        getPosition: function () {
+                            return this.position;
+                        },
+                        getPath: function () {
+                            return this.position.toUrlValue();
+                        },
+                        setPosition: function (position) {
+                            this.position = position;
+                            this.marker_element.position = position;
+                        },
+                        setMap: function (newMap) {
+                            this.map = newMap;
+                            this.marker_element.map = newMap;
+                        }
+                    };
+                }
             }
 
             setCurrentShape(shape);
@@ -446,15 +480,20 @@
      * Takes a Google Polygon path and converts it into a Coordinate array
      */
     function pathToCoordinates(path: google.maps.MVCArray<google.maps.LatLng>): Coordinate[] {
-        const coordinates: Coordinate[] = [];
+        const coordinates: string[] = [];
 
         // Iterate over the vertices of the shape's path
         for (let i = 0; i < path.getLength(); i++) {
             const xy = path.getAt(i);
-            coordinates[i] = toCoordinate(xy);
+            coordinates[i] = xy.toUrlValue();
         }
 
-        return coordinates;
+        // if the last vertex is not already the first, then add the first vertex to the end of the path.
+        if (path.getAt(0).toUrlValue() != coordinates[coordinates.length - 1]) {
+            coordinates.push(path.getAt(0).toUrlValue());
+        }
+
+        return coordinates.map(coord => toCoordinate(coord, false));
     }
 
     // #endregion
@@ -469,6 +508,11 @@
 
         centerLatitude = centerLatitude ?? googleMapSettings.centerLatitude ?? 33.590795;
         centerLongitude = centerLongitude ?? googleMapSettings.centerLongitude ?? -112.126459;
+        let geoPickerGoogleMapSettingsBag = googleMapSettings as GeoPickerGoogleMapSettingsBag;
+
+        if (geoPickerGoogleMapSettingsBag) {
+            mapId = geoPickerGoogleMapSettingsBag.googleMapId ?? "";
+        }
 
         try {
             styles = JSON.parse(googleMapSettings.mapStyle ?? "");
@@ -485,7 +529,7 @@
         isMounted.value = true;
     });
 
-        // #endregion
+    // #endregion
 </script>
 
 <style>

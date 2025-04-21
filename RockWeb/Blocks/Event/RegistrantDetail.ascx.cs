@@ -150,8 +150,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 LoadState();
@@ -163,6 +161,8 @@ namespace RockWeb.Blocks.Event
             }
 
             RegisterClientScript();
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -221,6 +221,7 @@ namespace RockWeb.Blocks.Event
                     newRegistrant = true;
                     registrant = new RegistrationRegistrant();
                     registrant.RegistrationId = RegistrantState.RegistrationId;
+                    registrant.RegistrationTemplateId = new RegistrationService( rockContext ).Get( registrant.RegistrationId ).RegistrationTemplateId ?? 0;
                     registrantService.Add( registrant );
                     registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Registrant" );
                 }

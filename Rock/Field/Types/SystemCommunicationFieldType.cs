@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a system communication. Stored as SystemCommunication.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SYSTEM_COMMUNICATION )]
     public class SystemCommunicationFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
@@ -221,7 +222,6 @@ namespace Rock.Field.Types
             cbIncludeInactive.AutoPostBack = true;
             cbIncludeInactive.CheckedChanged += OnQualifierUpdated;
             cbIncludeInactive.Label = "Include Inactive";
-            cbIncludeInactive.Text = "Yes";
             cbIncludeInactive.Help = "When set, inactive items will be included in the list.";
 
             var controls = base.ConfigurationControls();
@@ -343,8 +343,30 @@ namespace Rock.Field.Types
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             var editControl = control as ListControl;
+            
             if ( editControl != null )
             {
+                if ( configurationValues != null )
+                {
+                    var includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
+                    if ( !includeInactive )
+                    {
+                        var listItem = editControl.Items.FindByValue( value );
+                        if ( listItem == null )
+                        {
+                            var valueGuid = value.AsGuid();
+                            var systemCommunication = new SystemCommunicationService( new RockContext() )
+                               .Queryable().AsNoTracking()
+                               .Where( o => o.Guid == valueGuid )
+                               .FirstOrDefault();
+                            if ( systemCommunication != null )
+                            {
+                                editControl.Items.Add( new ListItem( systemCommunication.Title, systemCommunication.Guid.ToString() ) );
+                            }
+                        }
+                    }
+                }
+
                 editControl.SetValue( value );
             }
         }

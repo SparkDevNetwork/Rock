@@ -126,7 +126,7 @@ namespace Rock.Jobs
                         personEventTypes.AddRange( requiredEventTypes );
                         if ( personEventTypes.Any() )
                         {
-                            personSubscriptions.AddOrIgnore(
+                            personSubscriptions.TryAdd(
                                 personId,
                                 personEventTypes.OrderBy( e => e.Order ).ThenBy( e => e.Name ).Select( e => e.Id ).Distinct().ToList() );
                         }
@@ -149,7 +149,7 @@ namespace Rock.Jobs
                         } )
                         .Distinct() )
                     {
-                        followedEntityIds.AddOrIgnore( followedEntity.EntityTypeId, new List<int>() );
+                        followedEntityIds.TryAdd( followedEntity.EntityTypeId, new List<int>() );
                         followedEntityIds[followedEntity.EntityTypeId].Add( followedEntity.EntityId );
                     }
 
@@ -201,7 +201,7 @@ namespace Rock.Jobs
                                         // Check if there are any followed entities of this type 
                                         if ( entityList == null || !entityList.Any() )
                                         {
-                                            return;
+                                            continue;
                                         }
 
                                         // Get the active event types for this entity type
@@ -238,7 +238,7 @@ namespace Rock.Jobs
                                                                 if ( eventComponentAdditionalMergeFields.HasEventHappened( eventType, entity, lastNotification, out followedEventList ) )
                                                                 {
                                                                     // Store the event type id and the entity for later processing of notifications
-                                                                    eventsThatHappened.AddOrIgnore( eventType.Id, new Dictionary<int, string>() );
+                                                                    eventsThatHappened.TryAdd( eventType.Id, new Dictionary<int, string>() );
 
                                                                     eventsThatHappened[eventType.Id].Add(
                                                                         entity.Id,
@@ -250,7 +250,7 @@ namespace Rock.Jobs
                                                                 if ( eventComponent.HasEventHappened( eventType, entity, lastNotification ) )
                                                                 {
                                                                     // Store the event type id and the entity for later processing of notifications
-                                                                    eventsThatHappened.AddOrIgnore( eventType.Id, new Dictionary<int, string>() );
+                                                                    eventsThatHappened.TryAdd( eventType.Id, new Dictionary<int, string>() );
 
                                                                     eventsThatHappened[eventType.Id].Add(
                                                                         entity.Id,
