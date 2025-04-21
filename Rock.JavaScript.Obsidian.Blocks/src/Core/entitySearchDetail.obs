@@ -18,16 +18,17 @@
                  :isFollowVisible="false"
                  :isSecurityHidden="false"
                  :footerSecondaryActions="footerSecondaryActions"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
                  @save="onSave">
         <template #view>
-            <ViewPanel :modelValue="entitySearchViewBag" :options="options" />
+            <ViewPanel :modelValue="entitySearchBag" :options="options" />
         </template>
 
         <template #edit>
-            <EditPanel v-model="entitySearchEditBag" :options="options" />
+            <EditPanel v-model="entitySearchBag" :options="options" />
         </template>
 
         <template v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add" #helpContent>
@@ -65,13 +66,23 @@
     const blockError = ref("");
     const errorMessage = ref("");
 
-    const entitySearchViewBag = ref(config.entity);
-    const entitySearchEditBag = ref<EntitySearchBag>({} as EntitySearchBag);
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
+    const previewComponent = shallowRef<InstanceType<typeof Preview>>();
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified entity search could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        panelMode.value = DetailPanelMode.Add;
+    }
+
+    const entitySearchBag = ref<EntitySearchBag>(config.entity!);
 
     const entityTypeGuid = EntityType.EntitySearch;
-
-    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
-    const previewComponent = shallowRef<InstanceType<typeof Preview>>();
 
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.
@@ -100,14 +111,14 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return entitySearchViewBag.value?.name ?? "";
+        return entitySearchBag.value?.name ?? "";
     });
 
     /**
      * The identifier key value for this entity.
      */
     const entityKey = computed((): string => {
-        return entitySearchViewBag.value?.idKey ?? "";
+        return entitySearchBag.value?.idKey ?? "";
     });
 
     /**
@@ -120,7 +131,7 @@
             return undefined;
         }
 
-        if (entitySearchViewBag.value?.isActive === true) {
+        if (entitySearchBag.value?.isActive === true) {
             labels.push({
                 iconCssClass: "fa fa-lightbulb",
                 title: "Active",
@@ -149,26 +160,26 @@
     const footerSecondaryActions = computed((): PanelAction[] => {
         const actions: PanelAction[] = [];
 
+        if (entitySearchBag.value) {
+            actions.push({
+                type: "default",
+                title: "Preview",
+                iconCssClass: "fa fa-search",
+                handler: onShowPreview,
+                disabled: !entitySearchBag.value.whereExpression
+                    && !entitySearchBag.value.groupByExpression
+                    && !entitySearchBag.value.selectExpression
+                    && !entitySearchBag.value.selectManyExpression
+                    && !entitySearchBag.value.sortExpression
+            });
+        }
+
         if (panelMode.value === DetailPanelMode.View) {
             actions.push({
                 type: "default",
                 title: "Copy API link",
                 iconCssClass: "fa fa-copy",
                 handler: onCopyLink
-            });
-        }
-
-        if (panelMode.value !== DetailPanelMode.View && entitySearchEditBag.value) {
-            actions.push({
-                type: "default",
-                title: "Preview",
-                iconCssClass: "fa fa-search",
-                handler: onShowPreview,
-                disabled: !entitySearchEditBag.value.whereExpression
-                    && !entitySearchEditBag.value.groupByExpression
-                    && !entitySearchEditBag.value.selectExpression
-                    && !entitySearchEditBag.value.selectManyExpression
-                    && !entitySearchEditBag.value.sortExpression
             });
         }
 
@@ -229,15 +240,11 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!entitySearchEditBag.value?.idKey) {
-            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                return config.navigationUrls[NavigationUrlKey.ParentPage];
-            }
-
-            return false;
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
         }
 
-        return true;
+        return false;
     }
 
     /**
@@ -250,7 +257,7 @@
         errorMessage.value = "";
 
         const result = await invokeBlockAction<string>("Delete", {
-            key: entitySearchViewBag.value?.idKey
+            key: entitySearchBag.value?.idKey
         });
 
         if (result.isSuccess && result.data) {
@@ -271,11 +278,11 @@
      */
     async function onEdit(): Promise<boolean> {
         const result = await invokeBlockAction<DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag>>("Edit", {
-            key: entitySearchViewBag.value?.idKey
+            key: entitySearchBag.value?.idKey
         });
 
         if (result.isSuccess && result.data && result.data.entity) {
-            entitySearchEditBag.value = result.data.entity;
+            entitySearchBag.value = result.data.entity;
 
             return true;
         }
@@ -294,7 +301,7 @@
         errorMessage.value = "";
 
         // Remove our custom properties from the bag before sending it.
-        const entityBag = getCleanEditBag(entitySearchEditBag.value);
+        const entityBag = getCleanEditBag(entitySearchBag.value!);
 
         const data: DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag> = {
             entity: entityBag,
@@ -306,9 +313,13 @@
             box: data
         });
 
-        if (result.isSuccess && result.data) {
+
+        if (result.isSuccess && config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
+        }
+        else if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                entitySearchViewBag.value = result.data;
+                entitySearchBag.value = result.data;
 
                 return true;
             }
@@ -326,11 +337,11 @@
      * Copies the link to the API for this request to the clipboard.
      */
     function onCopyLink(): void {
-        let entityTypeName = entitySearchViewBag.value?.entityType?.text ?? "unknown";
+        let entityTypeName = entitySearchBag.value?.entityType?.text ?? "unknown";
 
         entityTypeName = entityTypeName.toLowerCase().replace(/ /g, "");
 
-        navigator.clipboard.writeText(`${window.location.origin}/api/v2/models/${pluralize(entityTypeName)}/search/${entitySearchViewBag.value?.key}`);
+        navigator.clipboard.writeText(`${window.location.origin}/api/v2/models/${pluralize(entityTypeName)}/search/${entitySearchBag.value?.key}`);
     }
 
     /**
@@ -338,7 +349,7 @@
      */
     async function onShowPreview(): Promise<void> {
         // Remove our custom properties from the bag before sending it.
-        const entityBag = getCleanEditBag(entitySearchEditBag.value);
+        const entityBag = getCleanEditBag(entitySearchBag.value!);
 
         const data: DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag> = {
             entity: entityBag,
@@ -361,7 +372,6 @@
         blockError.value = "The specified entity search could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        entitySearchEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }
 </script>
