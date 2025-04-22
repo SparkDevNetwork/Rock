@@ -1,7 +1,7 @@
 <template>
     <div class="row">
         <div class="col-sm-6">
-            <GroupPicker v-model="group" label="Group" inputClasses="input-size-sm" />
+            <GroupPicker v-model="group" label="Group" />
         </div>
     </div>
 </template>
