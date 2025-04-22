@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import ChatComponent from "./chatComponent";
+import ChatComponent from "./ChatComponent";
 import "./chatComponent.css";
-import type { ChatComponentProps } from "./chatComponentConfig";
+import type { ChatComponentProps } from "./ChatComponentConfig";
 
 const mount = (elementId: string, config: ChatComponentProps) => {
     const rootElement = document.getElementById(elementId);

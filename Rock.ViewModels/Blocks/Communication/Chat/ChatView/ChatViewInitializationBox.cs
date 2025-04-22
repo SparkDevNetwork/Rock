@@ -17,18 +17,13 @@
 namespace Rock.ViewModels.Blocks.Communication.Chat.ChatView
 {
     /// <summary>
-    /// A bag of settings for a chat person.
+    /// The box that contains all the initialization information for the chat view block.
     /// </summary>
-    public class ChatPersonSettingsBag
+    public class ChatViewInitializationBox : BlockBox
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the chat is open direct message allowed.
+        /// The configuration bag for the chat view block.
         /// </summary>
-        public bool IsChatOpenDirectMessageAllowed { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the chat profile is public.
-        /// </summary>
-        public bool IsChatProfilePublic { get; set; }
+        public ChatViewConfigurationBag ChatViewConfigurationBag { get; set; }
     }
 }
