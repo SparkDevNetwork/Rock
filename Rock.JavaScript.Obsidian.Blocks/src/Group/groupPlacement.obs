@@ -86,8 +86,9 @@
                                 </i>
                             </span>
                         </div>
-                        <div v-drag-source="personDragSourceOptions" class="d-flex flex-column gap-2 mt-2">
+                        <div v-drag-source="personDragSourceOptions" v-drag-target="groupMemberDragSourceOptions.id" class="people-to-place-wrapper">
                             <PersonCard v-for="(person, index) in peopleToPlace"
+                                        v-if="peopleToPlace.length > 0"
                                         :key="index"
                                         :data-person-id="person.personId"
                                         :isCardExpanded="arePersonCardsExpanded"
@@ -97,6 +98,9 @@
                                         :isInstanceDisplayed="placementConfigurationSettings.showRegistrationInstanceName"
                                         @toggleCardExpansion="toggleCardExpansion"
                                         @toggleSelection="toggleSelection(person.personId)" />
+                            <div v-else>
+                                <span v-if="!isNoPeopleLabelHidden" class="no-people-label">No People Available</span>
+                            </div>
                         </div>
                     </div>
 
@@ -137,14 +141,17 @@
                             Apply Filter
                         </RockButton>
                     </template>
-                    <div class="p-3">
+                    <div class="p-3 h-100 group-container">
                         <DestinationGroup v-for="(group, index) in placementGroups"
                                           :key="index"
                                           :destinationGroup="group"
                                           :arePersonCardsExpanded="arePersonCardsExpanded"
                                           :isGroupExpanded="areGroupsExpanded"
                                           :groupTypeRoles="box.placementGroupTypeRoles ?? []"
-                                          :dragTargetId="personDragSourceOptions.id" />
+                                          :dragTargetId="personDragSourceOptions.id"
+                                          :groupMemberDragOptions="groupMemberDragSourceOptions"
+                                          :getGroupRoleError="getGroupRoleError"
+                                          :clearGroupRoleError="clearGroupRoleError" />
                     </div>
 
                 </Panel>
@@ -162,6 +169,10 @@
 </template>
 
 <style scoped>
+.no-people-label {
+    color: var(--color-interface-medium);
+}
+
 .gu-mirror.multi-drag-preview {
     border: 1px solid var(--color-primary) !important;
     background-color: var(--interface-softest);
@@ -189,6 +200,7 @@
     align-items: center;
     pointer-events: none;
     z-index: 2;
+    min-height: 50px;
 }
 
 /* .multi-card-preview i {
@@ -205,8 +217,8 @@
 .preview-stack-clone {
     border: 1px solid var(--color-primary) !important;
     position: absolute !important;
-    top: -15px !important;
-    left: -8px !important;
+    top: -6px !important;
+    left: -6px !important;
     z-index: 0 !important;
     opacity: 0.6 !important;
 }
@@ -220,7 +232,26 @@
     flex-direction: column;
     align-items: center;
     height: 100%;
-    background-color: rgba(245, 245, 245, 0.4);
+    /* background-color: rgba(245, 245, 245, 0.4); */
+    background-color: var(--color-interface-softer);
+}
+
+.people-to-place-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    width: 100%;
+    height: 100%;
+}
+
+.group-container {
+    background-color: var(--color-interface-softer);
+}
+
+:deep(.highlight) {
+    background-color: var(--color-interface-soft) !important;
 }
 
 /* from webforms css */
@@ -608,7 +639,7 @@
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, usePersonPreferences, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GroupPlacementInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementInitializationBox";
     import { PlacementConfigurationSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingsBag";
     import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
@@ -630,9 +661,11 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
 
     // #region Values
     const box = useConfigurationValues<GroupPlacementInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
     const exampleBox = ref<string>("");
 
@@ -652,9 +685,13 @@
     const groupMemberAttributesForFilter = ref(box.attributeFilters?.groupMemberAttributesForFilters ?? {});
     const groupMemberAttributeValuesForFilter = ref(box.attributeFilters?.groupMemberAttributeValuesForFilters ?? {});
 
+    const isNoPeopleLabelHidden = ref(false);
+
+    const groupRoleErrors = ref<Record<number, Record<number, string>>>({});
 
 
     const personDragSourceOptions = getPersonDragSourceOptions();
+    const groupMemberDragSourceOptions = getGroupMemberDragSourceOptions();
 
     const placementConfigurationSettings = ref<PlacementConfigurationSettingsBag>(preferences.getValue(getPlacementConfigurationSettingsKey()) ? JSON.parse(preferences.getValue(getPlacementConfigurationSettingsKey())) : {} as PlacementConfigurationSettingsBag);
 
@@ -685,6 +722,31 @@
     // #endregion
 
     // #region Functions
+
+    function setGroupRoleError(groupId: number, roleId: number, message: string): void {
+        if (!groupRoleErrors.value[groupId]) {
+            groupRoleErrors.value[groupId] = {};
+        }
+
+        groupRoleErrors.value[groupId][roleId] = message;
+    }
+
+    function clearGroupRoleError(groupId: number, roleId: number): void {
+        const roleMap = groupRoleErrors.value[groupId];
+
+        if (roleMap) {
+            delete roleMap[roleId];
+
+            // Clean up empty role maps
+            if (Object.keys(roleMap).length === 0) {
+                delete groupRoleErrors.value[groupId];
+            }
+        }
+    }
+
+    function getGroupRoleError(groupId: number, roleId: number): string | null {
+        return groupRoleErrors.value[groupId]?.[roleId] ?? null;
+    }
 
     function getPersonDragSourceOptions(): IDragSourceOptions {
         return {
@@ -743,54 +805,128 @@
                         `;
                     });
                 }
+                if (operation.targetContainer && operation.targetContainer instanceof HTMLElement) {
+                    operation.targetContainer.closest(".group-role-wrapper")?.classList.add("highlight");
+                }
             },
-            dragDrop(operation) {
+            dragOut(operation) {
+                if (operation.targetContainer && operation.targetContainer instanceof HTMLElement) {
+                    operation.targetContainer.closest(".group-role-wrapper")?.classList.remove("highlight");
+                }
+            },
+            async dragDrop(operation) {
                 operation.element.remove();
 
                 var rawGroupSectionId = (operation.targetContainer as HTMLElement)?.dataset.groupSectionId;
                 const [groupId, groupRoleId] = (rawGroupSectionId ?? "").split(":").map(toNumberOrNull);
+                if (!groupId) {
+                    return;
+                }
                 const placementGroup = placementGroups.value.find(g => g.groupId === groupId);
+                if (!placementGroup) {
+                    return;
+                }
+                var pendingGroupMembers: GroupMemberBag[] = [];
 
                 if (selectedPersonIds.value.size > 1) {
                     const selectedPeopleToPlace = peopleToPlace.value.filter(p => selectedPersonIds.value.has(p.personId));
 
-                    if (placementGroup && selectedPeopleToPlace && groupRoleId && operation.targetIndex !== undefined) {
-                        if (!placementGroup.groupMembers) {
-                            placementGroup.groupMembers = [];
-                        }
-
-                        selectedPeopleToPlace.forEach((person, i) => {
-                            placementGroup.groupMembers!.splice(operation.targetIndex! + i, 0, {
+                    if (selectedPeopleToPlace && groupRoleId && operation.targetIndex !== undefined) {
+                        selectedPeopleToPlace.forEach((person) => {
+                            pendingGroupMembers.push({
                                 groupRoleId: groupRoleId,
                                 person: person,
                                 groupMemberId: null
                             });
                         });
-
-                        peopleToPlace.value = peopleToPlace.value.filter(
-                            p => !selectedPersonIds.value.has(p.personId)
-                        );
-
-                        selectedPersonIds.value.clear();
                     }
                 }
                 else {
                     const personId = toNumberOrNull((operation.element as HTMLElement).dataset.personId);
                     const person = peopleToPlace.value.find(p => p.personId === personId);
 
-                    if (placementGroup && person && groupRoleId && operation.targetIndex !== undefined) {
-                        if (!placementGroup.groupMembers) {
-                            placementGroup.groupMembers = [];
-                        }
-
-                        //TODO - the current display of group members results in incosistency with there array index
-
-                        placementGroup.groupMembers.splice(operation.targetIndex, 0, {
+                    if (person && groupRoleId && operation.targetIndex !== undefined) {
+                        pendingGroupMembers.push({
                             groupRoleId: groupRoleId,
                             person: person,
                             groupMemberId: null
                         });
-                        peopleToPlace.value = peopleToPlace.value.filter(p => p.personId !== personId);
+
+                        //TODO - the current display of group members results in incosistency with there array index
+                    }
+                }
+
+                if (!placementGroup.groupMembers) {
+                    placementGroup.groupMembers = [];
+                }
+
+                // TODO - what happens on error?
+                var newGroupMembers = await addGroupMembersToGroup(pendingGroupMembers, groupId);
+                newGroupMembers.forEach((groupMember, i) => {
+                    placementGroup.groupMembers!.splice(operation.targetIndex! + i, 0, {
+                        groupRoleId: groupMember.groupRoleId,
+                        person: groupMember.person,
+                        groupMemberId: groupMember.groupMemberId
+                    });
+
+                    peopleToPlace.value = peopleToPlace.value.filter(
+                        p => groupMember.person?.personId !== p.personId
+                    );
+                });
+
+                selectedPersonIds.value.clear();
+            }
+        };
+    }
+
+    function getGroupMemberDragSourceOptions(): IDragSourceOptions {
+        return {
+            id: newGuid(),
+            copyElement: true,
+            dragOver(operation) {
+                if (peopleToPlace.value.length === 0) {
+                    isNoPeopleLabelHidden.value = true;
+                }
+                if (operation.targetContainer && operation.targetContainer instanceof HTMLElement) {
+                    // TODO - ask UI team if they want this.
+                    operation.targetContainer.closest(".people-to-place-wrapper")?.classList.add("highlight");
+                }
+            },
+            dragOut(operation) {
+                if (operation.targetContainer && operation.targetContainer instanceof HTMLElement) {
+                    operation.targetContainer.closest(".people-to-place-wrapper")?.classList.remove("highlight");
+                }
+            },
+            dragCancel(operation) {
+                isNoPeopleLabelHidden.value = false;
+            },
+            async dragDrop(operation) {
+                operation.element.remove();
+                isNoPeopleLabelHidden.value = false;
+
+                const groupId = toNumberOrNull((operation.element as HTMLElement).dataset.groupId);
+                const groupMemberId = toNumberOrNull((operation.element as HTMLElement).dataset.groupMemberId);
+                var placementGroup = placementGroups.value.find(g => g.groupId === groupId);
+
+                if (!placementGroup?.groupMembers || !groupMemberId) {
+                    return;
+                }
+
+                const groupMember = placementGroup.groupMembers.find(gm => gm.groupMemberId === groupMemberId);
+
+                if (placementGroup && groupMember && groupMember.person && operation.targetIndex !== undefined) {
+                    if (!peopleToPlace.value) {
+                        peopleToPlace.value = [];
+                    }
+
+                    var isRemoveSuccess = await removeGroupMemberFromGroup(groupMemberId, placementGroup.groupId);
+
+                    if (isRemoveSuccess) {
+                        peopleToPlace.value.splice(operation.targetIndex, 0, {
+                            ...groupMember.person,
+                        });
+
+                        placementGroup.groupMembers = placementGroup.groupMembers.filter(gm => gm.groupMemberId !== groupMemberId);
                     }
                 }
             }
@@ -894,6 +1030,42 @@
         await preferences.save();
         // placementConfigurationSettings.value = bag;
         isPlacementConfigModalVisible.value = false;
+    }
+
+    // #endregion
+
+    // #region Block Actions
+
+    async function addGroupMembersToGroup(pendingGroupMembers: GroupMemberBag[], groupId: number): Promise<GroupMemberBag[]> {
+        const result = await invokeBlockAction<GroupMemberBag[]>("AddGroupMembersToGroup", {
+            pendingGroupMembers: pendingGroupMembers,
+            registrationTemplatePlacementId: box.registrationTemplatePlacementId ?? "",
+            groupId: groupId
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            setGroupRoleError(groupId, pendingGroupMembers[0].groupRoleId, result.errorMessage ?? "Unknown error while trying to add a group member.");
+        }
+        return [];
+    }
+
+    async function removeGroupMemberFromGroup(groupMemberId: number, groupId: number): Promise<boolean> {
+        const result = await invokeBlockAction<GroupMemberBag[]>("RemoveGroupMemberFromGroup", {
+            groupMemberId: groupMemberId,
+            groupId: groupId
+        });
+
+        if (result.isSuccess) {
+            console.log("Remove group member success.");
+            return true;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while trying to remove a group member.");
+        }
+        return false;
     }
 
     // #endregion

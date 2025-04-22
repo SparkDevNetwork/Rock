@@ -22,7 +22,6 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Linq.Expressions;
 
 using Rock.Attribute;
 using Rock.Blocks.Types.Mobile.Crm;
@@ -146,9 +145,9 @@ namespace Rock.Blocks.Group
             public int? GroupCapacity { get; set; }
             public int GroupTypeId { get; set; }
             public int GroupOrder { get; set; }
-            public int PersonId { get; set; }
-            public int GroupRoleId { get; set; }
-            public int GroupMemberId { get; set; }
+            public int? PersonId { get; set; }
+            public int? GroupRoleId { get; set; }
+            public int? GroupMemberId { get; set; }
         }
 
         #endregion
@@ -417,7 +416,7 @@ namespace Rock.Blocks.Group
                     Attributes = GroupCache.Get( group.GroupId ).GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => groupAttributeIds.Contains( a.Id ) ),
                     AttributeValues = GroupCache.Get( group.GroupId ).GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => groupAttributeIds.Contains( a.Id ) ),
                     GroupMembers = group.GroupMembers
-                        .Where( gm => personLookup.ContainsKey( gm.Person.PersonId ) )
+                        .Where( gm => gm.Person.PersonId != null && personLookup.ContainsKey( gm.Person.PersonId ) )
                         .Select( gm =>
                         {
                             var person = personLookup[gm.Person.PersonId];
@@ -426,8 +425,8 @@ namespace Rock.Blocks.Group
                             {
                                 GroupMemberId = gm.GroupMemberId,
                                 GroupRoleId = gm.GroupRoleId,
-                                Attributes = GetGroupMemberAttributes( gm.GroupMemberId, groupMemberAttributeIds, groupMemberService ),
-                                AttributeValues = GetGroupMemberAttributeValues( gm.GroupMemberId, groupMemberAttributeIds, groupMemberService ),
+                                Attributes = GetGroupMemberAttributes( gm.GroupMemberId.Value, groupMemberAttributeIds, groupMemberService ), // TODO - double check null issues
+                                AttributeValues = GetGroupMemberAttributeValues( gm.GroupMemberId.Value, groupMemberAttributeIds, groupMemberService ),
                                 Person = new PersonBag
                                 {
                                     PersonId = person.PersonId,
@@ -1052,6 +1051,74 @@ namespace Rock.Blocks.Group
 
         private PlacementConfigurationSettingsBag _placementConfiguration = null;
 
+        private bool CanPlacePeople( List<int?> personIds, int registrationTemplatePlacementId, int groupId, out string errorMessage )
+        {
+            RegistrationTemplatePlacementService registrationTemplatePlacementService = new RegistrationTemplatePlacementService( RockContext );
+
+            var registrationTemplatePlacement = registrationTemplatePlacementService.Get( registrationTemplatePlacementId );
+
+            if ( registrationTemplatePlacement == null )
+            {
+                errorMessage = "Specified RegistrationTemplatePlacement not found.";
+                return false;
+            }
+
+            var group = new GroupService( RockContext ).Get( groupId );
+
+            if ( group == null )
+            {
+                errorMessage = "Specified Group not found.";
+                return false;
+            }
+
+            var peopleInfo = new PersonService( RockContext )
+                .Queryable()
+                .Where( p => personIds.Contains( p.Id ) )
+                .Select( p => new
+                {
+                    p.Id,
+                } )
+                .ToList();
+
+            if ( !peopleInfo.Any() )
+            {
+                errorMessage = "No valid people to place found.";
+                return false;
+            }
+
+            if ( registrationTemplatePlacement.GroupTypeId != group.GroupTypeId )
+            {
+                errorMessage = "Specified group's group type does not match the group type of the registration placement.";
+                return false;
+            }
+
+            // TODO - Logic to check if allow multiple conditions are met.
+
+            errorMessage = string.Empty;
+            return true;
+        }
+
+        private bool IsGroupRoleCapacityAvailable( int roleId, int groupId, int pendingGroupMemberCount, out string errorMessage )
+        {
+            var group = new GroupService( RockContext ).Get( groupId );
+            var role = GroupTypeCache.Get( group.GroupTypeId )?.Roles.FirstOrDefault( r => r.Id == roleId );
+
+            if ( role?.MaxCount is int maxCount )
+            {
+                var currentCount = new GroupMemberService( RockContext )
+                    .Queryable()
+                    .Count( gm => gm.GroupId == groupId && gm.GroupRoleId == roleId );
+
+                if ( currentCount + pendingGroupMemberCount > maxCount )
+                {
+                    errorMessage = $"The number of {role.Name.Pluralize().ToLower()} for this group is above its maximum allowed limit of {maxCount} active members.";
+                    return false;
+                }
+            }
+            errorMessage = string.Empty;
+            return true;
+        }
+
         #endregion Methods
 
         #region Helper Methods
@@ -1071,7 +1138,89 @@ namespace Rock.Blocks.Group
 
         #region Block Actions
 
+        [BlockAction]
+        public BlockActionResult AddGroupMembersToGroup( List<GroupMemberBag> pendingGroupMembers, int registrationTemplatePlacementId, int groupId )
+        {
+            var personIds = pendingGroupMembers
+                .Where( gm => gm?.Person != null )
+                .Select( gm => gm.Person.PersonId )
+                .ToList();
+            string errorMessage = string.Empty;
 
+            var canPlacePeople = CanPlacePeople( personIds, registrationTemplatePlacementId, groupId, out errorMessage );
+
+            if ( !canPlacePeople )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            var groupMemberService = new GroupMemberService( RockContext );
+            var memberPairs = new List<(GroupMemberBag Bag, GroupMember Entity)>();
+
+            // Handle edge case where adding multiple group members could exceed the max count and throw an exception
+            if (
+                pendingGroupMembers.Count > 1 &&
+                pendingGroupMembers[0].GroupRoleId.HasValue &&
+                !IsGroupRoleCapacityAvailable( pendingGroupMembers[0].GroupRoleId.Value, groupId, pendingGroupMembers.Count, out errorMessage )
+            )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            foreach ( var bag in pendingGroupMembers )
+            {
+                if ( !bag.Person.PersonId.HasValue && !bag.GroupRoleId.HasValue )
+                {
+                    continue;
+                }
+
+                var groupMember = new GroupMember
+                {
+                    GroupId = groupId,
+                    GroupRoleId = bag.GroupRoleId.Value,
+                    PersonId = bag.Person.PersonId.Value,
+                    GroupMemberStatus = GroupMemberStatus.Active,
+                };
+
+                // TODO - may need to populate attributes here
+
+                if ( !groupMember.IsValid )
+                {
+                    errorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                    return ActionBadRequest( errorMessage );
+                }
+
+
+                groupMemberService.Add( groupMember );
+
+                memberPairs.Add( (bag, groupMember) );
+            }
+
+            RockContext.SaveChanges();
+
+            foreach ( var (bag, entity) in memberPairs )
+            {
+                bag.GroupMemberId = entity.Id;
+            }
+
+            return ActionOk( pendingGroupMembers );
+        }
+
+        [BlockAction]
+        public BlockActionResult RemoveGroupMemberFromGroup( int groupMemberId, int groupId )
+        {
+            var groupMemberService = new GroupMemberService( RockContext );
+            var groupMember = groupMemberService.Get( groupMemberId );
+
+            if ( groupMember == null || groupMember.GroupId != groupId )
+            {
+                return ActionBadRequest( "The specified Group Member was not found." );
+            }
+
+            groupMemberService.Delete( groupMember );
+            RockContext.SaveChanges();
+            return ActionOk();
+        }
 
         #endregion Block Actions
     }

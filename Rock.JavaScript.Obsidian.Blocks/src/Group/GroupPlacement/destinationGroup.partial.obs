@@ -31,14 +31,26 @@
                     {{ getRoleSubHeaderText(role.id) }}
                 </span>
             </div>
-            <div class="group-wrapper" v-drag-target="dragTargetId" :data-group-section-id="`${destinationGroup.groupId}:${role.id}`">
+            <NotificationBox v-if="getGroupRoleError(destinationGroup.groupId, role.id)"
+                             alertType="danger"
+                             class="m-3"
+                             :dismissible="true"
+                             @dismiss="clearGroupRoleError(destinationGroup.groupId, role.id)">
+                {{ getGroupRoleError(destinationGroup.groupId, role.id) }}
+            </NotificationBox>
+            <div class="group-role-wrapper"
+                 v-drag-target="dragTargetId"
+                 :data-group-section-id="`${destinationGroup.groupId}:${role.id}`"
+                 v-drag-source="groupMemberDragOptions">
                 <template v-for="(groupMember, index) in getGroupMembersFilteredByRole(role.id)">
                     <PersonCard v-if="groupMember.person"
                                 :key="index"
                                 :isCardExpanded="arePersonCardsExpanded"
                                 :person="groupMember.person"
                                 :index="index"
-                                :isDetailHoverDisabled="true" />
+                                :isDetailHoverDisabled="true"
+                                :data-group-id="destinationGroup.groupId"
+                                :data-group-member-id="groupMember.groupMemberId" />
                 </template>
             </div>
         </div>
@@ -119,7 +131,7 @@
     background-color: #16c98d !important;
 }
 
-.group-wrapper {
+.group-role-wrapper {
     display: grid;
     gap: 1rem;
     grid-template-columns: repeat(auto-fit, 300px);
@@ -127,25 +139,25 @@
 }
 
 /* @media (min-width: 1024px) {
-    .group-wrapper {
+    .group-role-wrapper {
         grid-template-columns: repeat(2, 300px);
     }
 }
 
 @media (min-width: 1440px) {
-    .group-wrapper {
+    .group-role-wrapper {
         grid-template-columns: repeat(3, 300px);
     }
 }
 
 @media (min-width: 1800px) {
-    .group-wrapper {
+    .group-role-wrapper {
         grid-template-columns: repeat(4, 300px);
     }
 }
 
 @media (min-width: 2000px) {
-    .group-wrapper {
+    .group-role-wrapper {
         grid-template-columns: repeat(5, 300px);
     }
 } */
@@ -166,7 +178,8 @@
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
     import { Guid } from "@Obsidian/Types";
-    import { DragTarget as vDragTarget } from "@Obsidian/Directives/dragDrop";
+    import { DragSource as vDragSource, IDragSourceOptions, DragTarget as vDragTarget } from "@Obsidian/Directives/dragDrop";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 
     const props = defineProps({
         destinationGroup: {
@@ -188,6 +201,18 @@
             type: String as PropType<Guid>,
             required: true
         },
+        groupMemberDragOptions: {
+            type: Object as PropType<IDragSourceOptions>,
+            required: true
+        },
+        getGroupRoleError: {
+            type: Function as PropType<(groupId: number, roleId: number) => string | null>,
+            required: true
+        },
+        clearGroupRoleError: {
+            type: Function as PropType<(groupId: number, roleId: number) => void>,
+            required: true
+        }
     });
 
     const emit = defineEmits<{

@@ -24,7 +24,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
     public class PersonBag
     {
-        public int PersonId { get; set; }
+        public int? PersonId { get; set; }
 
         public string FirstName { get; set; }
 
