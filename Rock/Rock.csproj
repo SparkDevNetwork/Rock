@@ -1761,6 +1761,7 @@
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
     <Compile Include="Plugin\HotFixes\226_UpdateIndexesForV16_8.cs" />
+    <Compile Include="Plugin\HotFixes\241_ChatBackendSyncAdditions.cs" />
     <Compile Include="Plugin\HotFixes\239_AddLoginHistoryPageAndBlocks.cs" />
     <Compile Include="Plugin\HotFixes\238_ChatSharedChannelDefaultGroupRole.cs" />
     <Compile Include="Plugin\HotFixes\237_ChatAdminImprovements.cs" />
