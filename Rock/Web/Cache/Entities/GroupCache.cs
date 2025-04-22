@@ -211,30 +211,35 @@ namespace Rock.Web.Cache
 
         /// <inheritdoc cref="Group.IsChatEnabledOverride"/>
         [DataMember]
-        public bool? IsChatEnabledOverride { get; set; }
+        public bool? IsChatEnabledOverride { get; private set; }
 
         /// <inheritdoc cref="Group.IsLeavingChatChannelAllowedOverride"/>
         [DataMember]
-        public bool? IsLeavingChatChannelAllowedOverride { get; set; }
+        public bool? IsLeavingChatChannelAllowedOverride { get; private set; }
 
         /// <inheritdoc cref="Group.IsChatChannelPublicOverride"/>
         [DataMember]
-        public bool? IsChatChannelPublicOverride { get; set; }
+        public bool? IsChatChannelPublicOverride { get; private set; }
 
         /// <inheritdoc cref="Group.IsChatChannelAlwaysShownOverride"/>
         [DataMember]
-        public bool? IsChatChannelAlwaysShownOverride { get; set; }
+        public bool? IsChatChannelAlwaysShownOverride { get; private set; }
 
         /// <inheritdoc cref="Group.ChatChannelKey"/>
         [MaxLength( 100 )]
         [DataMember]
-        public string ChatChannelKey { get; set; }
+        public string ChatChannelKey { get; private set; }
 
-        /// <inheritdoc cref="Group.GetIsChatEnabled"/>
+        /// <summary>
+        /// Gets whether chat is enabled for this group. <see cref="GroupTypeCache.IsChatAllowed"/> will be checked
+        /// first; if <see langword="false"/>, chat cannot be enabled for this group. <see cref="IsChatEnabledOverride"/>
+        /// will be checked next; if <see langword="null"/>, then the value from
+        /// <see cref="GroupTypeCache.IsChatEnabledForAllGroups"/> will be used.
+        /// </summary>
+        /// <returns>Whether chat is enabled for this group.</returns>
         internal bool GetIsChatEnabled()
         {
-            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
-            if ( groupTypeCache?.IsChatAllowed != true )
+            if ( this.GroupType?.IsChatAllowed != true )
             {
                 return false;
             }
@@ -244,10 +249,15 @@ namespace Rock.Web.Cache
                 return this.IsChatEnabledOverride.Value;
             }
 
-            return groupTypeCache.IsChatEnabledForAllGroups;
+            return this.GroupType?.IsChatEnabledForAllGroups ?? false;
         }
 
-        /// <inheritdoc cref="Group.GetIsLeavingChatChannelAllowed"/>
+        /// <summary>
+        /// Gets whether individuals are allowed to leave this chat channel. Otherwise, they will only be allowed to
+        /// mute the channel. If <see cref="IsLeavingChatChannelAllowedOverride"/> is set to <see langword="null"/>,
+        /// then the value of <see cref="GroupTypeCache.IsLeavingChatChannelAllowed"/> will be used.
+        /// </summary>
+        /// <returns>Whether individuals are allowed to leave this chat channel.</returns>
         internal bool GetIsLeavingChatChannelAllowed()
         {
             if ( this.IsLeavingChatChannelAllowedOverride.HasValue )
@@ -255,10 +265,16 @@ namespace Rock.Web.Cache
                 return this.IsLeavingChatChannelAllowedOverride.Value;
             }
 
-            return GroupTypeCache.Get( this.GroupTypeId )?.IsLeavingChatChannelAllowed ?? false;
+            return this.GroupType?.IsLeavingChatChannelAllowed ?? false;
         }
 
-        /// <inheritdoc cref="Group.GetIsChatChannelPublic"/>
+        /// <summary>
+        /// Gets whether this chat channel is public and visible to everyone when performing a search. This also implies
+        /// that the channel may be joined by any person via the chat application. If
+        /// <see cref="IsChatChannelPublicOverride"/> is set to <see langword="null"/>, then the value of
+        /// <see cref="GroupTypeCache.IsChatChannelPublic"/> will be used.
+        /// </summary>
+        /// <returns>Whether this chat channel is public, and may be joined by any person.</returns>
         internal bool GetIsChatChannelPublic()
         {
             if ( this.IsChatChannelPublicOverride.HasValue )
@@ -266,10 +282,16 @@ namespace Rock.Web.Cache
                 return this.IsChatChannelPublicOverride.Value;
             }
 
-            return GroupTypeCache.Get( this.GroupTypeId )?.IsChatChannelPublic ?? false;
+            return this.GroupType?.IsChatChannelPublic ?? false;
         }
 
-        /// <inheritdoc cref="Group.GetIsChatChannelAlwaysShown"/>
+        /// <summary>
+        /// Gets whether this chat channel is always shown in the channel list even if the person has not joined
+        /// the channel. This also implies that the channel may be joined by any person via the chat application. If
+        /// <see cref="IsChatChannelAlwaysShownOverride"/> is set to <see langword="null"/>, then the value of
+        /// <see cref="GroupTypeCache.IsChatChannelAlwaysShown"/> will be used.
+        /// </summary>
+        /// <returns>Whether this chat channel is always shown in the channel list, and may be joined by any person.</returns>
         internal bool GetIsChatChannelAlwaysShown()
         {
             if ( this.IsChatChannelAlwaysShownOverride.HasValue )
@@ -277,10 +299,16 @@ namespace Rock.Web.Cache
                 return this.IsChatChannelAlwaysShownOverride.Value;
             }
 
-            return GroupTypeCache.Get( this.GroupTypeId )?.IsChatChannelAlwaysShown ?? false;
+            return this.GroupType?.IsChatChannelAlwaysShown ?? false;
         }
 
-        /// <inheritdoc cref="Group.GetIsChatChannelActive"/>
+        /// <summary>
+        /// Gets whether this chat channel is active.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if <see cref="GetIsChatEnabled"/>, <see cref="IsActive"/> and NOT <see cref="IsArchived"/>;
+        /// otherwise, <see langword="false"/>.
+        /// </returns>
         internal bool GetIsChatChannelActive()
         {
             return this.GetIsChatEnabled() && this.IsActive && !this.IsArchived;
