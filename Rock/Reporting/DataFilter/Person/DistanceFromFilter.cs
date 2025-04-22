@@ -82,7 +82,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             if ( selectionValues.Length >= 2 )
             {
-                var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsGuid() );
+                var selectedLocation = new LocationService( rockContext ).Get( selectionValues[0].AsGuid() );
 
                 if ( selectedLocation != null )
                 {

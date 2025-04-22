@@ -92,7 +92,7 @@ namespace Rock.Reporting.DataFilter.Group
                 data.AddOrReplace( "locationTypes", locationTypeBags.ToCamelCaseJson( false, true ) );
                 data.AddOrReplace( "locationTypeGuid", selectionValues[0] );
 
-                var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[1].AsGuid() );
+                var selectedLocation = new LocationService( rockContext ).Get( selectionValues[1].AsGuid() );
 
                 if ( selectedLocation != null )
                 {
