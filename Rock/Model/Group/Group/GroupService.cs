@@ -185,11 +185,21 @@ namespace Rock.Model
         /// <remarks>This will include archived, chat-specific <see cref="Group"/>s.</remarks>
         internal List<RockChatGroup> GetRockChatGroups()
         {
-            return GetChatChannelGroupsQuery()
-                .AsEnumerable() // Materialize the query.
+            // Get chat groups along with their chat-specific attributes.
+            var groups = GetChatChannelGroupsQuery().ToList();
+            groups.LoadFilteredAttributes( a => a.Key == ChatHelper.GroupAttributeKey.AvatarImage );
+
+            return groups
                 .Select( g =>
                 {
                     var chatChannelKey = ChatHelper.GetChatChannelKey( g.Id, g.ChatChannelKey );
+
+                    var avatarImageUrl = string.Empty;
+                    var avatarImageGuid = g.GetAttributeValue( ChatHelper.GroupAttributeKey.AvatarImage ).AsGuidOrNull();
+                    if ( avatarImageGuid.HasValue )
+                    {
+                        avatarImageUrl = ChatHelper.GetChatChannelAvatarImageUrl( avatarImageGuid.Value );
+                    }
 
                     return new RockChatGroup
                     {
@@ -199,6 +209,7 @@ namespace Rock.Model
                         ChatChannelKey = chatChannelKey,
                         ShouldSaveChatChannelKeyInRock = g.ChatChannelKey != chatChannelKey,
                         Name = g.Name,
+                        AvatarImageUrl = avatarImageUrl,
                         CampusId = g.CampusId,
                         IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
                         IsPublic = g.GetIsChatChannelPublic(),

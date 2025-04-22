@@ -50,6 +50,18 @@ namespace Rock.Communication.Chat
     [RockInternal( "17.1", true )]
     public class ChatHelper : IDisposable
     {
+        #region Keys
+
+        /// <summary>
+        /// Attribute keys for Rock groups.
+        /// </summary>
+        internal static class GroupAttributeKey
+        {
+            public const string AvatarImage = "AvatarImage";
+        }
+
+        #endregion Keys
+
         #region Fields
 
         /// <summary>
@@ -238,16 +250,14 @@ namespace Rock.Communication.Chat
         internal static string ChatDirectMessageGroupName => "Chat Direct Message";
 
         /// <summary>
+        /// Gets the public application root URL.
+        /// </summary>
+        private static string PublicApplicationRootUrl => GlobalAttributesCache.Value( "PublicApplicationRoot" );
+
+        /// <summary>
         /// Gets the URL to which the external chat provider should send webhook requests.
         /// </summary>
-        internal static string WebhookUrl
-        {
-            get
-            {
-                var publicApplicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
-                return $"{publicApplicationRoot}api/v2/chat/Webhook";
-            }
-        }
+        internal static string WebhookUrl => $"{PublicApplicationRootUrl}api/v2/chat/Webhook";
 
         /// <summary>
         /// Gets the Rock-to-Chat sync configuration for this chat helper.
@@ -363,6 +373,16 @@ namespace Rock.Communication.Chat
             {
                 Rock.Web.SystemSettings.SetValue( SystemSetting.CHAT_CONFIGURATION, chatConfiguration.ToJson() );
             }
+        }
+
+        /// <summary>
+        /// Gets the Rock mobile push service account JSON string from the transport component.
+        /// </summary>
+        /// <returns>The Rock mobile push service account JSON string.</returns>
+        internal static string GetRockMobilePushServiceAccountJson()
+        {
+            return TransportContainer.GetComponent( typeof( Transport.RockMobilePush ).FullName )
+                ?.GetAttributeValue( "ServiceAccountJson" );
         }
 
         /// <summary>
@@ -739,6 +759,13 @@ namespace Rock.Communication.Chat
                     return result;
                 }
 
+                var pushNotificationSettingsResult = await ChatProvider.UpdatePushNotificationSettingsAsync();
+                if ( pushNotificationSettingsResult?.IsSetUp != true || pushNotificationSettingsResult.HasException )
+                {
+                    LogFailure( pushNotificationSettingsResult?.Exception, nameof( ChatProvider.UpdatePushNotificationSettingsAsync ) );
+                    return result;
+                }
+
                 var appRolesResult = await ChatProvider.EnsureAppRolesExistAsync();
                 if ( appRolesResult?.IsSetUp != true || appRolesResult.HasException )
                 {
@@ -1076,6 +1103,16 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
+        /// Gets the URL to use for <see cref="ChatChannel.AvatarImageUrl"/>.
+        /// </summary>
+        /// <param name="imageGuid">The unique identifier of the image.</param>
+        /// <returns>The URL to use for <see cref="ChatChannel.AvatarImageUrl"/>.</returns>
+        internal static string GetChatChannelAvatarImageUrl( Guid imageGuid )
+        {
+            return $"{PublicApplicationRootUrl}GetImage.ashx?guid={imageGuid}&maxwidth=120&maxheight=120";
+        }
+
+        /// <summary>
         /// Synchronizes <see cref="Group"/>s from Rock to <see cref="ChatChannel"/>s in the external chat system.
         /// </summary>
         /// <param name="syncCommands">The list of commands for <see cref="Group"/>s to sync.</param>
@@ -1208,6 +1245,7 @@ namespace Rock.Communication.Chat
                 bool HasChannelChanged( ChatChannel lastSyncedChannel, ChatChannel currentChannel )
                 {
                     return lastSyncedChannel.Name != currentChannel.Name
+                        || lastSyncedChannel.AvatarImageUrl != currentChannel.AvatarImageUrl
                         || lastSyncedChannel.IsLeavingAllowed != currentChannel.IsLeavingAllowed
                         || lastSyncedChannel.IsPublic != currentChannel.IsPublic
                         || lastSyncedChannel.IsAlwaysShown != currentChannel.IsAlwaysShown
@@ -3231,12 +3269,21 @@ namespace Rock.Communication.Chat
             var groupIds = syncCommands.Select( c => c.GroupId ).Distinct().ToList();
             var groupQry = GetGroupQuery( groupIds );
 
-            // Get all groups matching the provided commands.
-            var dbRockChatGroups = groupQry
-                .AsEnumerable() // Materialize the query.
+            // Get all groups matching the provided commands, along with their chat-specific attributes.
+            var groups = groupQry.ToList();
+            groups.LoadFilteredAttributes( a => a.Key == GroupAttributeKey.AvatarImage );
+
+            var dbRockChatGroups = groups
                 .Select( g =>
                 {
                     var chatChannelKey = GetChatChannelKey( g.Id, g.ChatChannelKey );
+
+                    var avatarImageUrl = string.Empty;
+                    var avatarImageGuid = g.GetAttributeValue( GroupAttributeKey.AvatarImage ).AsGuidOrNull();
+                    if ( avatarImageGuid.HasValue )
+                    {
+                        avatarImageUrl = GetChatChannelAvatarImageUrl( avatarImageGuid.Value );
+                    }
 
                     return new RockChatGroup
                     {
@@ -3246,6 +3293,7 @@ namespace Rock.Communication.Chat
                         ChatChannelKey = chatChannelKey,
                         ShouldSaveChatChannelKeyInRock = g.ChatChannelKey != chatChannelKey,
                         Name = g.Name,
+                        AvatarImageUrl = avatarImageUrl,
                         CampusId = g.CampusId,
                         IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
                         IsPublic = g.GetIsChatChannelPublic(),
@@ -3288,6 +3336,7 @@ namespace Rock.Communication.Chat
                 rockChatGroup.ChatChannelKey = dbRockChatGroup.ChatChannelKey;
                 rockChatGroup.ShouldSaveChatChannelKeyInRock = dbRockChatGroup.ShouldSaveChatChannelKeyInRock;
                 rockChatGroup.Name = dbRockChatGroup.Name;
+                rockChatGroup.AvatarImageUrl = dbRockChatGroup.AvatarImageUrl;
                 rockChatGroup.CampusId = dbRockChatGroup.CampusId;
                 rockChatGroup.IsLeavingAllowed = dbRockChatGroup.IsLeavingAllowed;
                 rockChatGroup.IsPublic = dbRockChatGroup.IsPublic;
@@ -3601,6 +3650,7 @@ namespace Rock.Communication.Chat
                 ChatChannelTypeKey = GetChatChannelTypeKey( rockChatGroup.GroupTypeId ),
                 QueryableKey = ChatProvider.GetQueryableChatChannelKey( rockChatGroup ),
                 Name = name,
+                AvatarImageUrl = rockChatGroup.AvatarImageUrl,
                 CampusId = rockChatGroup.CampusId,
                 IsLeavingAllowed = rockChatGroup.IsLeavingAllowed,
                 IsPublic = rockChatGroup.IsPublic,
@@ -3672,8 +3722,7 @@ namespace Rock.Communication.Chat
                 AgeClassification = rockChatUserPerson.AgeClassification
             };
 
-            var publicApplicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
-            var photoUrl = $"{publicApplicationRoot}{Person.GetPersonPhotoUrl( photoUrlPerson ).TrimStart( '~', '/' )}";
+            var photoUrl = $"{PublicApplicationRootUrl}{Person.GetPersonPhotoUrl( photoUrlPerson ).TrimStart( '~', '/' )}";
 
             var isProfileVisible = rockChatUserPerson.IsChatProfilePublic.HasValue
                 ? rockChatUserPerson.IsChatProfilePublic.Value
