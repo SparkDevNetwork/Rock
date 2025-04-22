@@ -243,6 +243,8 @@ namespace Rock.Reporting.DataFilter.Person
             return result;
         }
 
+#if WEBFORMS
+
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -347,6 +349,8 @@ namespace Rock.Reporting.DataFilter.Person
                 slidingDateRange.DelimitedValues = selectionConfig.DelimitedValues;
             }
         }
+
+#endif
 
         /// <summary>
         /// Gets the expression.
