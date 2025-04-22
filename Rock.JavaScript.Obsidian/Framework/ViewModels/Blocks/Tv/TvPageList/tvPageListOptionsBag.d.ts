@@ -25,4 +25,7 @@
 export type TvPageListOptionsBag = {
     /** Gets or sets the site id key. */
     siteId?: string | null;
+
+    /** Gets or sets the default page identifier key of the current application. */
+    defaultPageIdKey?: string | null;
 };
