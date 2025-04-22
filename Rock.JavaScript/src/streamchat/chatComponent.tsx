@@ -1,61 +1,139 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import {
     Chat,
     ChannelList,
-    Channel,
     ChannelHeader,
     MessageList,
-    MessageInput,
     Thread,
-    Window
+    Window,
+    DialogManagerProvider,
 } from "stream-chat-react";
-import { ChannelSort, StreamChat } from "stream-chat";
+import { ChannelSort, ChannelFilters } from "stream-chat";
+import { useCreateChatClient } from "stream-chat-react";
 import "stream-chat-react/dist/css/v2/index.css";
-import type { ChatComponentProps } from "./chatComponentConfig";
+import "./chatComponent.css";
 
-const ChatComponent: React.FC<ChatComponentProps> = (props) => {
-    const chatClient = StreamChat.getInstance(props.apiKey);
-    const filters = { members: { $in: [props.userId] } }; // Filter to get channels where the user is a member
+import type { ChatComponentProps } from "./ChatComponentConfig";
+import { RockChannelPreview } from "./ChannelPreview/RockChannelPreview";
+import { WrappedChannel } from "./MessageAction/RockMessageActionList";
+import { ChatConfigContext } from "./Chat/ChatConfigContext";
+import { SafeMessageInput } from "./MessageInput/SafeMessageInput";
+import ChannelListHeader from "./ChannelListHeader/ChannelListHeader";
+import CreateChannelModal from "./CreateChannel/CreateChannelModal";
+import { RockChannelHeader } from "./ChannelHeader/RockChannelHeader";
+
+/**
+ * The ChatComponent sets up and renders the Stream Chat UI
+ * including channel filtering, sorting, and context provisioning.
+ */
+const ChatComponent: React.FC<ChatComponentProps> = ({
+    apiKey,
+    userId,
+    userToken,
+    currentCampusId,
+    filterSharedChannelByCampus,
+    sharedChannelTypeKey,
+    directMessageChannelTypeKey,
+}) => {
+
+    const [showModal, setShowModal] = useState(false);
+    const handleNewMessage = () => setShowModal(true);
+    const handleCloseModal = () => setShowModal(false);
+    const handleCreateChannel = async (userIds: string[]) => {
+
+    };
+
+    const chatClient = useCreateChatClient({
+        apiKey: apiKey,
+        tokenOrProvider: userToken,
+        userData: { id: userId },
+    });
+
+    if (!chatClient) {
+        return null;
+    }
+
+    // Define base filters
+    const userFilter: ChannelFilters = { members: { $in: [userId] } };
+    const alwaysShownFilter: ChannelFilters = { rock_always_shown: true };
+    const notDisabledFilter: ChannelFilters = { disabled: false };
+
+    let finalFilter: ChannelFilters = {
+        $or: [userFilter, alwaysShownFilter],
+        ...notDisabledFilter,
+    };
+
+    // Optionally add campus filter if required
+    if (filterSharedChannelByCampus) {
+        if (currentCampusId !== null) {
+            const campusIdAsNumber = Number(currentCampusId);
+
+            const campusFilter: ChannelFilters = {
+                $or: [
+                    { rock_campus_id: { $eq: campusIdAsNumber } },
+                    { rock_campus_id: { $lte: 0 } }, // shared/global channels
+                ],
+            };
+
+            finalFilter = {
+                $and: [
+                    notDisabledFilter,
+                    { $or: [userFilter, alwaysShownFilter] },
+                    campusFilter,
+                ],
+            };
+        } else {
+            console.warn(
+                "[ChatComponent] Campus filtering is enabled but no campus ID was provided. Proceeding without campus filter."
+            );
+        }
+    }
+
     const sort: ChannelSort = { last_message_at: -1 };
     const options = { limit: 20, messages_limit: 30 };
 
-    useEffect(() => {
-        chatClient.connectUser(
-            {
-                id: props.userId,
-            },
-            props.userToken
-        );
-
-        return () => {
-            chatClient.disconnectUser();
-        };
-    }, [chatClient, props.userId, props.userToken]);
-
-    const themeStyles = {
-        '--str-chat-primary-color': props.primaryColor,
-        '--str-chat-active-primary-color': props.activePrimaryColor,
-        '--str-chat-surface-color': props.surfaceColor,
-        '--str-chat-secondary-surface-color': props.secondarySurfaceColor,
-        '--str-chat-primary-surface-color': props.primarySurfaceColor,
-        '--str-chat-primary-surface-color-low-emphasis': props.primarySurfaceColorLowEmphasis,
-        '--str-chat-border-radius-circle': props.borderRadiusCircle,
-    } as React.CSSProperties;
+    const chatContentStyle: React.CSSProperties = {
+        display: "flex",
+        width: "100%",
+        height: "100%",
+    };
 
     return (
-        <div style={themeStyles}>
-            <Chat client={chatClient} theme="str-chat__theme-custom">
-                <ChannelList filters={filters} sort={sort} options={options} />
-                <Channel>
-                    <Window>
-                        <ChannelHeader />
-                        <MessageList />
-                        <MessageInput />
-                    </Window>
-                    <Thread />
-                </Channel>
-            </Chat>
-        </div>
+        <Chat client={chatClient}>
+            <ChatConfigContext.Provider
+                value={{
+                    sharedChannelTypeKey,
+                    directMessageChannelTypeKey,
+                }}>
+                <div style={chatContentStyle}>
+                    <div className="rock__channel-list-container">
+                        <ChannelListHeader onNewMessage={handleNewMessage} />
+                        <ChannelList
+                            filters={finalFilter}
+                            sort={sort}
+                            options={options}
+                            Preview={RockChannelPreview}
+                        />
+                    </div>
+
+                    <WrappedChannel>
+                        <Window>
+                            <RockChannelHeader />
+                            <MessageList noGroupByUser />
+                            <SafeMessageInput />
+                        </Window>
+                        <Thread />
+                    </WrappedChannel>
+
+                    {/* Create DM modal */}
+                    {showModal && (
+                        <CreateChannelModal
+                            onClose={handleCloseModal}
+                        />
+                    )}
+                </div>
+            </ChatConfigContext.Provider>
+        </Chat>
     );
 };
 

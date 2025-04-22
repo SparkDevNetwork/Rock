@@ -17,18 +17,28 @@
 namespace Rock.ViewModels.Blocks.Communication.Chat.ChatView
 {
     /// <summary>
-    /// A bag of settings for a chat person.
+    /// A bag of settings for the chat view block.
     /// </summary>
-    public class ChatPersonSettingsBag
+    public class ChatViewConfigurationBag
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the chat is open direct message allowed.
+        /// Gets or sets the public API key for the chat service.
         /// </summary>
-        public bool IsChatOpenDirectMessageAllowed { get; set; }
+        public string PublicApiKey { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the chat profile is public.
+        /// Whether or not to filter shared channels by campus.
         /// </summary>
-        public bool IsChatProfilePublic { get; set; }
+        public bool FilterSharedChannelsByCampus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the key for the shared channel type.
+        /// </summary>
+        public string SharedChannelTypeKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the key for the direct message channel type.
+        /// </summary>
+        public string DirectMessageChannelTypeKey { get; set; }
     }
 }

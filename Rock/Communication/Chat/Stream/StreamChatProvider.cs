@@ -319,6 +319,10 @@ namespace Rock.Communication.Chat
                                 ChatRole.User.GetDescription(),
                                 new List<string>
                                 {
+                                    // We allow channels to be displayed that a person may not be a member of.
+                                    // These channels are automatically joined when a user sends a message to them.
+                                    "add-own-channel-membership",
+
                                     // The following were taken from the default "messaging (Channel Type scope)" > "channel_member" grants.
                                     "add-links",
                                     "cast-vote",
@@ -377,6 +381,10 @@ namespace Rock.Communication.Chat
                                 ChatRole.Moderator.GetDescription(),
                                 new List<string>
                                 {
+                                    // We allow channels to be displayed that a person may not be a member of.
+                                    // These channels are automatically joined when a user sends a message to them.
+                                    "add-own-channel-membership",
+
                                     // The following were taken from the default "messaging (Channel Type scope)" > "moderator" grants.
                                     "add-links",
                                     "ban-channel-member",
@@ -426,6 +434,10 @@ namespace Rock.Communication.Chat
                                 ChatRole.Administrator.GetDescription(),
                                 new List<string>
                                 {
+                                    // We allow channels to be displayed that a person may not be a member of.
+                                    // These channels are automatically joined when a user sends a message to them.
+                                    "add-own-channel-membership",
+
                                     // The following were taken from the default "messaging (Channel Type scope)" > "admin" grants.
                                     "add-links",
                                     "ban-channel-member",

@@ -1,21 +1,5 @@
 @layer base, theme;
-@import "stream-chat-react/dist/css/v2/index.css" layer(base);
-
-@layer theme {
-    .str-chat__theme-custom {
-        --str-chat__primary-color: #009688;
-        --str-chat__active-primary-color: #004d40;
-        --str-chat__surface-color: #f5f5f5;
-        --str-chat__secondary-surface-color: #fafafa;
-        --str-chat__primary-surface-color: #e0f2f1;
-        --str-chat__primary-surface-color-low-emphasis: #edf7f7;
-        --str-chat__border-radius-circle: 6px;
-    }
-}
-
-.str-chat__channel-list {
-    width: 30%;
-}
+@import "stream-chat-react/dist/css/v2/index.css";
 
 .str-chat__channel {
     width: 100%;
@@ -27,4 +11,337 @@
 
 .str-chat__file-input-container {
     width: auto;
+}
+
+.str-chat__file-input {
+    display: none !important;
+}
+
+.str-chat {
+    --str-chat__primary-color: var(--color-primary);
+    --str-chat__active-primary-color: var(--color-primary);
+    --str-chat-primary-color: var(--color-primary);
+    --str-chat-icon-color: var(--color-primary);
+    --str-chat__message-send-color: var(--color-primary);
+
+    --str-chat__background-color: var(--color-interface-softest);
+    --str-chat__text-color: var(--color-interface-stronger);
+    --str-chat__spacing-0_5: 0rem;
+    --str-chat__text-low-emphasis-color: var(--color-interface-medium);
+}
+
+.str-chat__li--top .str-chat__message--other .str-chat__message-bubble,
+.str-chat__li--single .str-chat__message--other .str-chat__message-bubble {
+    border-start-start-radius: calc(var(--str-chat__message-bubble-border-radius) / 6);
+    border-end-start-radius: var(--str-chat__message-bubble-border-radius);
+    /* Restore bottom-left */
+}
+
+.str-chat__file-input-label {
+    margin-bottom: 0px;
+}
+
+.rock-message-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.rock-message-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.3rem;
+    padding-left: calc(var(--str-chat__avatar-size) + 0.5rem);
+}
+
+.rock-message-header .rock-message-author {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--str-chat__message-color);
+}
+
+.rock-avatar-container {
+    transform: translateY(-0.85rem);
+}
+
+.rock-message-badges {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.rock-channel-preview-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 0.5rem;
+}
+
+.str-chat__channel-preview-end-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.str-chat__channel-preview-text {
+    display: flex;
+    flex-direction: column;
+    row-gap: var(--str-chat__spacing-0_5);
+    flex: 1;
+    min-width: 0;
+}
+
+.channel-preview-action-buttons-inline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.5rem;
+}
+
+.str-chat__channel-preview-container .str-chat__channel-preview__action-buttons {
+    right: auto;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1px;
+}
+
+.str-chat .str-chat__avatar--channel-preview,
+.str-chat .stream-chat__avatar--channel-preview {
+    --str-chat__avatar-size: calc(var(--str-chat__spacing-px) * 40)
+}
+
+.str-chat__channel-preview-messenger--last-message {
+    color: var(--color-interface-strong);
+}
+
+.str-chat__channel-header .str-chat__channel-header-end {
+    row-gap: var(--str-chat__spacing-1);
+}
+
+/* Wrap both header + list in a vertical flex container */
+.rock__channel-list-container {
+    display: flex;
+    flex-direction: column;
+    width: 30%;
+    /* same as .str-chat__channel-list */
+    border-right: 1px solid var(--str-chat__border-color, #e2e2e2);
+    background: var(--str-chat__background-color);
+}
+
+/* Header bar styling */
+.rock__channel-list-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    /* vertical | horizontal */
+    border-bottom: 1px solid var(--str-chat__border-color, #e2e2e2);
+    background: var(--str-chat__surface-color, #fff);
+}
+
+/* Icon button reset + hover state */
+.rock__channel-list-header>button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    height: 24px;
+    width: 24px;
+}
+
+.rock__channel-list-header__new-message-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--color-interface-strong);
+}
+
+/* Make sure your ChannelList sits immediately below the header */
+.rock__channel-list-container .str-chat__channel-list {
+    flex: 1;
+    /* fill remaining height */
+    overflow-y: auto;
+    /* scroll if too tall */
+}
+
+.create-channel-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.create-channel-modal-content {
+    background: var(--color-interface-softest, #fff);
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    color: var(--color-interface-stronger, #000);
+    display: flex;
+    flex-direction: column;
+}
+
+.create-channel-modal-header,
+.create-channel-modal-footer {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.create-channel-modal-body {
+    padding: 1rem;
+    flex: 1;
+    position: relative;
+}
+
+.create-channel-modal-header-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-interface-stronger, #000);
+    margin: 0;
+}
+
+.create-channel-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: inherit;
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.create-channel-modal-close-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--color-interface-strong);
+}
+
+.create-channel-modal-footer button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.create-channel-modal-create {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.create-channel-modal-create:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.create-channel-modal-create:disabled:hover {
+    opacity: 0.5;
+}
+
+.create-channel-modal-footer button:hover {
+    opacity: 0.9;
+}
+
+.create-channel-modal-input-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 0.5rem;
+    padding: 4px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: var(--color-interface-softest, #fff);
+}
+
+.create-channel-modal-input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.create-channel-modal-chip {
+    display: flex;
+    align-items: center;
+    background: var(--color-primary, #006eff);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.create-channel-modal-chip-text {
+    margin-right: 4px;
+}
+
+.create-channel-modal-chip-remove {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+}
+
+.create-channel-modal-input {
+    flex: 1;
+    min-width: 120px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-interface-stronger, #000);
+    padding: 4px;
+}
+
+.create-channel-modal-search-results {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background: var(--color-interface-softest, #f9f9f9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    z-index: 1001;
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0;
+}
+
+.create-channel-modal-search-results li {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
+
+.create-channel-modal-search-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.5rem 1rem;
+    color: var(--color-interface-stronger);
+}
+
+.create-channel-modal-search-avatar {
+    border-radius: 50%;
+}
+
+.create-channel-modal-search-results li:hover {
+    background: rgba(0, 0, 0, 0.05);
 }
