@@ -13,7 +13,7 @@ import { useCreateChatClient } from "stream-chat-react";
 import "stream-chat-react/dist/css/v2/index.css";
 import "./chatComponent.css";
 
-import type { ChatComponentProps } from "./ChatComponentConfig";
+import type { ChatComponentProps } from "./ChatComponentProps";
 import { RockChannelPreview } from "./ChannelPreview/RockChannelPreview";
 import { WrappedChannel } from "./MessageAction/RockMessageActionList";
 import { ChatConfigContext } from "./Chat/ChatConfigContext";
@@ -39,9 +39,6 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
     const [showModal, setShowModal] = useState(false);
     const handleNewMessage = () => setShowModal(true);
     const handleCloseModal = () => setShowModal(false);
-    const handleCreateChannel = async (userIds: string[]) => {
-
-    };
 
     const chatClient = useCreateChatClient({
         apiKey: apiKey,
