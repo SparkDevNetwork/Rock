@@ -3,11 +3,11 @@
                                 label="Registration Template"
                                 enhanceForLongLists />
 
-    <RegistrationInstanceBasePicker v-model="instance"
-                                    :registrationTemplateGuid="template?.value"
+    <RegistrationInstanceBasePicker v-if="template?.value"
+                                    v-model="instance"
                                     label="Registration Instance"
-                                    blankLabel="- Any -"
-                                    hideWhenEmpty
+                                    :registrationTemplateGuid="template?.value"
+                                    showBlankItem
                                     enhanceForLongLists />
 
     <RadioButtonList v-model="person"

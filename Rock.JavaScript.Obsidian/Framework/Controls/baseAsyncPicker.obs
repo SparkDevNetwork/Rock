@@ -308,7 +308,7 @@
             emit("update:modelValue", newValue);
         }
         else {
-            const selectedValue = internalValue.value ?? "";
+            const selectedValue = internalValue.value;
             const newValue = actualItems.value.filter(o => selectedValue === o.value);
 
             emit("update:modelValue", newValue.length > 0 ? newValue[0] : null);

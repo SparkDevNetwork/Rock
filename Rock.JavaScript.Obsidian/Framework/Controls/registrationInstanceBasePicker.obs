@@ -1,13 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div v-show="isPickerVisible">
-        <BaseAsyncPicker v-model="internalValue"
-                         v-bind="standardProps"
-                         :showBlankItem="showBlankItem && !blankLabel"
-                         :blankValue="blankLabel ? '' : blankValue"
-                         :lazyMode="hideWhenEmpty ? ControlLazyMode.Eager : lazyMode"
-                         :items="actualItems" />
-    </div>
+    <BaseAsyncPicker v-model="internalValue"
+                     v-bind="standardProps"
+                     :items="actualItems" />
 </template>
 
 <script setup lang="ts">
@@ -20,7 +15,6 @@
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { Guid } from "@Obsidian/Types";
     import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
-    import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
 
     const props = defineProps({
         /** The currently selected campus value(s). */
@@ -33,24 +27,6 @@
         registrationTemplateGuid: {
             type: String as PropType<Guid | null>,
             default: null
-        },
-
-        /**
-         * If true, when there are no items for the given registration template, this control will
-         * hide itself. If false, it will always be visible. This is not reactive.
-         */
-        hideWhenEmpty: {
-            type: Boolean,
-            default: false
-        },
-
-        /**
-         * If provided, intead of an X to clear selection, an option will be added to the dropdown
-         * with this as the label and `blankValue` as the value. This is not reactive.
-         */
-        blankLabel: {
-            type: String,
-            default: ""
         },
 
         ...standardAsyncPickerProps
@@ -81,15 +57,6 @@
         return loadedItems.value || loadOptions;
     });
 
-    /** Whether or not the control should be visible */
-    const isPickerVisible = computed((): boolean => {
-        if (props.hideWhenEmpty) {
-            return !!props.registrationTemplateGuid && loadedItems.value !== null && loadedItems.value.length > 0;
-        }
-
-        return true;
-    });
-
     // #endregion
 
     // #region Functions
@@ -113,15 +80,7 @@
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/RegistrationInstancePickerGetRegistrationInstances", null, options);
 
         if (result.isSuccess && result.data) {
-            if (result.data.length > 0 && props.blankLabel && !props.multiple) {
-                loadedItems.value = [
-                    { text: props.blankLabel, value: props.blankValue },
-                    ...result.data
-                ];
-            }
-            else {
-                loadedItems.value = result.data;
-            }
+            loadedItems.value = result.data;
             return loadedItems.value ?? [];
         }
         else {
