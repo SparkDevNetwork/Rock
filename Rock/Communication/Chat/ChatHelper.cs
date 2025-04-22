@@ -34,6 +34,7 @@ using Rock.Data;
 using Rock.Enums.Communication.Chat;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Observability;
 using Rock.Security;
 using Rock.SystemKey;
 using Rock.Transactions;
@@ -741,62 +742,65 @@ namespace Rock.Communication.Chat
                 return result;
             }
 
-            var logMessagePrefix = $"{LogMessagePrefix} {nameof( EnsureChatProviderAppIsSetUpAsync ).SplitCase()} failed";
-
-            try
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Ensure Chat Provider App Is Set Up" ) )
             {
-                // Each setup step is dependent on the previous steps, so we'll run them in order and return early if any fail.
-                void LogFailure( Exception ex, string stepName )
+                var logMessagePrefix = $"{LogMessagePrefix} {nameof( EnsureChatProviderAppIsSetUpAsync ).SplitCase()} failed";
+
+                try
+                {
+                    // Each setup step is dependent on the previous steps, so we'll run them in order and return early if any fail.
+                    void LogFailure( Exception ex, string stepName )
+                    {
+                        result.Exception = ex;
+                        Logger.LogError( ex, $"{logMessagePrefix} on step '{stepName.SplitCase()}'." );
+                    }
+
+                    var appSettingsResult = await ChatProvider.UpdateAppSettingsAsync();
+                    if ( appSettingsResult?.IsSetUp != true || appSettingsResult.HasException )
+                    {
+                        LogFailure( appSettingsResult?.Exception, nameof( ChatProvider.UpdateAppSettingsAsync ) );
+                        return result;
+                    }
+
+                    var pushNotificationSettingsResult = await ChatProvider.UpdatePushNotificationSettingsAsync();
+                    if ( pushNotificationSettingsResult?.IsSetUp != true || pushNotificationSettingsResult.HasException )
+                    {
+                        LogFailure( pushNotificationSettingsResult?.Exception, nameof( ChatProvider.UpdatePushNotificationSettingsAsync ) );
+                        return result;
+                    }
+
+                    var appRolesResult = await ChatProvider.EnsureAppRolesExistAsync();
+                    if ( appRolesResult?.IsSetUp != true || appRolesResult.HasException )
+                    {
+                        LogFailure( appRolesResult?.Exception, nameof( ChatProvider.EnsureAppRolesExistAsync ) );
+                        return result;
+                    }
+
+                    var appGrantsResult = await ChatProvider.EnsureAppGrantsExistAsync( RockToChatSyncConfig );
+                    if ( appGrantsResult?.IsSetUp != true || appGrantsResult.HasException )
+                    {
+                        LogFailure( appGrantsResult?.Exception, nameof( ChatProvider.EnsureAppGrantsExistAsync ) );
+                        return result;
+                    }
+
+                    var systemUserResult = await ChatProvider.EnsureSystemUserExistsAsync();
+                    if ( systemUserResult?.IsSetUp != true || systemUserResult.HasException )
+                    {
+                        LogFailure( systemUserResult?.Exception, nameof( ChatProvider.EnsureSystemUserExistsAsync ) );
+                        return result;
+                    }
+
+                    // If we made it this far, setup was successful.
+                    result.IsSetUp = true;
+                }
+                catch ( Exception ex )
                 {
                     result.Exception = ex;
-                    Logger.LogError( ex, $"{logMessagePrefix} on step '{stepName.SplitCase()}'." );
+                    Logger.LogError( ex, $"{logMessagePrefix}." );
                 }
 
-                var appSettingsResult = await ChatProvider.UpdateAppSettingsAsync();
-                if ( appSettingsResult?.IsSetUp != true || appSettingsResult.HasException )
-                {
-                    LogFailure( appSettingsResult?.Exception, nameof( ChatProvider.UpdateAppSettingsAsync ) );
-                    return result;
-                }
-
-                var pushNotificationSettingsResult = await ChatProvider.UpdatePushNotificationSettingsAsync();
-                if ( pushNotificationSettingsResult?.IsSetUp != true || pushNotificationSettingsResult.HasException )
-                {
-                    LogFailure( pushNotificationSettingsResult?.Exception, nameof( ChatProvider.UpdatePushNotificationSettingsAsync ) );
-                    return result;
-                }
-
-                var appRolesResult = await ChatProvider.EnsureAppRolesExistAsync();
-                if ( appRolesResult?.IsSetUp != true || appRolesResult.HasException )
-                {
-                    LogFailure( appRolesResult?.Exception, nameof( ChatProvider.EnsureAppRolesExistAsync ) );
-                    return result;
-                }
-
-                var appGrantsResult = await ChatProvider.EnsureAppGrantsExistAsync( RockToChatSyncConfig );
-                if ( appGrantsResult?.IsSetUp != true || appGrantsResult.HasException )
-                {
-                    LogFailure( appGrantsResult?.Exception, nameof( ChatProvider.EnsureAppGrantsExistAsync ) );
-                    return result;
-                }
-
-                var systemUserResult = await ChatProvider.EnsureSystemUserExistsAsync();
-                if ( systemUserResult?.IsSetUp != true || systemUserResult.HasException )
-                {
-                    LogFailure( systemUserResult?.Exception, nameof( ChatProvider.EnsureSystemUserExistsAsync ) );
-                    return result;
-                }
-
-                // If we made it this far, setup was successful.
-                result.IsSetUp = true;
+                return result;
             }
-            catch ( Exception ex )
-            {
-                result.Exception = ex;
-                Logger.LogError( ex, $"{logMessagePrefix}." );
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -826,280 +830,283 @@ namespace Rock.Communication.Chat
                 return result;
             }
 
-            var structuredLog = "GroupTypeIds: {@GroupTypeIds}";
-            var groupTypeIds = groupTypes.Select( gt => gt.Id ).ToList();
-
-            var logMessagePrefix = $"{LogMessagePrefix} {nameof( SyncGroupTypesToChatProviderAsync ).SplitCase()} failed for {structuredLog}";
-
-            try
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Sync Group Types To Chat Provider" ) )
             {
-                // Get all of the existing channel types.
-                var getChatChannelTypesResult = await ChatProvider.GetAllChatChannelTypesAsync();
-                if ( getChatChannelTypesResult == null || getChatChannelTypesResult.HasException )
+                var structuredLog = "GroupTypeIds: {@GroupTypeIds}";
+                var groupTypeIds = groupTypes.Select( gt => gt.Id ).ToList();
+
+                var logMessagePrefix = $"{LogMessagePrefix} {nameof( SyncGroupTypesToChatProviderAsync ).SplitCase()} failed for {structuredLog}";
+
+                try
                 {
-                    result.Exception = getChatChannelTypesResult?.Exception;
-                    Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.GetAllChatChannelTypesAsync ).SplitCase()}'.", groupTypeIds );
-
-                    return result;
-                }
-
-                var channelTypesToCreate = new List<ChatChannelType>();
-                var channelTypesToUpdate = new List<ChatChannelType>();
-                var channelTypesToDelete = new List<string>();
-
-                var groupService = new GroupService( RockContext );
-
-                // A mapping dictionary and local function to add a group type to the outgoing results collection only
-                // AFTER we know it's been successfully synced with the external chat system.
-                var groupTypeIdByChannelTypeKeys = new Dictionary<string, int>();
-                void AddGroupTypeToResult( string channelTypeKey, ChatSyncType chatSyncType )
-                {
-                    if ( groupTypeIdByChannelTypeKeys.TryGetValue( channelTypeKey, out var groupTypeId ) )
+                    // Get all of the existing channel types.
+                    var getChatChannelTypesResult = await ChatProvider.GetAllChatChannelTypesAsync();
+                    if ( getChatChannelTypesResult == null || getChatChannelTypesResult.HasException )
                     {
-                        var groupTypeIdString = groupTypeId.ToString();
-                        switch ( chatSyncType )
+                        result.Exception = getChatChannelTypesResult?.Exception;
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.GetAllChatChannelTypesAsync ).SplitCase()}'.", groupTypeIds );
+
+                        return result;
+                    }
+
+                    var channelTypesToCreate = new List<ChatChannelType>();
+                    var channelTypesToUpdate = new List<ChatChannelType>();
+                    var channelTypesToDelete = new List<string>();
+
+                    var groupService = new GroupService( RockContext );
+
+                    // A mapping dictionary and local function to add a group type to the outgoing results collection only
+                    // AFTER we know it's been successfully synced with the external chat system.
+                    var groupTypeIdByChannelTypeKeys = new Dictionary<string, int>();
+                    void AddGroupTypeToResult( string channelTypeKey, ChatSyncType chatSyncType )
+                    {
+                        if ( groupTypeIdByChannelTypeKeys.TryGetValue( channelTypeKey, out var groupTypeId ) )
                         {
-                            case ChatSyncType.Skip:
-                                result.Skipped.Add( groupTypeIdString );
-                                break;
-                            case ChatSyncType.Create:
-                                result.Created.Add( groupTypeIdString );
-                                break;
-                            case ChatSyncType.Update:
-                                result.Updated.Add( groupTypeIdString );
-                                break;
-                            case ChatSyncType.Delete:
-                                result.Deleted.Add( groupTypeIdString );
-                                break;
+                            var groupTypeIdString = groupTypeId.ToString();
+                            switch ( chatSyncType )
+                            {
+                                case ChatSyncType.Skip:
+                                    result.Skipped.Add( groupTypeIdString );
+                                    break;
+                                case ChatSyncType.Create:
+                                    result.Created.Add( groupTypeIdString );
+                                    break;
+                                case ChatSyncType.Update:
+                                    result.Updated.Add( groupTypeIdString );
+                                    break;
+                                case ChatSyncType.Delete:
+                                    result.Deleted.Add( groupTypeIdString );
+                                    break;
+                            }
                         }
                     }
-                }
 
-                foreach ( var groupType in groupTypes )
-                {
-                    var channelType = TryConvertToChatChannelType( groupType );
-                    if ( channelType == null )
+                    foreach ( var groupType in groupTypes )
                     {
-                        continue;
-                    }
-
-                    groupTypeIdByChannelTypeKeys.Add( channelType.Key, groupType.Id );
-
-                    // Does it already exist in the external chat system?
-                    var existingChannelType = getChatChannelTypesResult
-                        .ChatChannelTypes
-                        .FirstOrDefault( ct => ct.Key == channelType.Key );
-
-                    // For each chat-enabled group type, add or update the channel type in the external chat system.
-                    if ( groupType.IsChatAllowed )
-                    {
-                        if ( existingChannelType != null )
+                        var channelType = TryConvertToChatChannelType( groupType );
+                        if ( channelType == null )
                         {
-                            /*
-                                1/29/2025: JPH
+                            continue;
+                        }
 
-                                When a channel type already exists in the external chat system, the only reason we would
-                                currently want to "update" it is if one or more of the following are true:
+                        groupTypeIdByChannelTypeKeys.Add( channelType.Key, groupType.Id );
 
-                                    1. We want to enforce default permission grants per role (in which case we'll always
-                                       overwrite whatever grants might already be in place).
-                                    2. We detect that ANY of the roles don't already have at least one grant defined. If
-                                       ALL roles already have at least one grant defined, this means [A] we've already
-                                       synced this channel type at least once, and [B] the external chat system is now
-                                       the system of truth for permission grants (as admins may fine-tune grants on that
-                                       side).
-                                    3. We want to enforce default settings/property values (excluding grants), in which
-                                       case we'll always overwrite whatever property values might already be in place.
+                        // Does it already exist in the external chat system?
+                        var existingChannelType = getChatChannelTypesResult
+                            .ChatChannelTypes
+                            .FirstOrDefault( ct => ct.Key == channelType.Key );
 
-                                Reason: Avoid calling chat provider APIs when not needed & avoid overwriting existing
-                                        channel type settings/permission grants.
-                            */
-
-                            if ( RockToChatSyncConfig.ShouldEnforceDefaultGrantsPerRole && RockToChatSyncConfig.ShouldEnforceDefaultSettings )
+                        // For each chat-enabled group type, add or update the channel type in the external chat system.
+                        if ( groupType.IsChatAllowed )
+                        {
+                            if ( existingChannelType != null )
                             {
-                                // This is the simplest update scenario, as we're going to overwrite the entire channel
-                                // type in the external chat system. The `IChatProvider` will already know to enforce
-                                // these defaults because of the `SetChatProviderDefaultValueEnforcers()` call above.
-                                channelTypesToUpdate.Add( channelType );
-                                continue;
-                            }
+                                /*
+                                    1/29/2025: JPH
 
-                            // The next update scenario is a bit more complex; if any (#'s 1-3 in the engineering note
-                            // above) are true, update the channel type in the external chat system, but be sure to
-                            // retain any existing grants when needed (as an admin might have already fine-tuned them)!
+                                    When a channel type already exists in the external chat system, the only reason we would
+                                    currently want to "update" it is if one or more of the following are true:
 
-                            var anyGrantsToAdd = false;
-                            Dictionary<string, List<string>> updatedGrants = null;
-                            if ( !RockToChatSyncConfig.ShouldEnforceDefaultGrantsPerRole )
-                            {
-                                updatedGrants = new Dictionary<string, List<string>>();
+                                        1. We want to enforce default permission grants per role (in which case we'll always
+                                           overwrite whatever grants might already be in place).
+                                        2. We detect that ANY of the roles don't already have at least one grant defined. If
+                                           ALL roles already have at least one grant defined, this means [A] we've already
+                                           synced this channel type at least once, and [B] the external chat system is now
+                                           the system of truth for permission grants (as admins may fine-tune grants on that
+                                           side).
+                                        3. We want to enforce default settings/property values (excluding grants), in which
+                                           case we'll always overwrite whatever property values might already be in place.
 
-                                // Check if this channel type already has at least one grant defined for each of the
-                                // required roles.
-                                foreach ( var role in RequiredAppRoles )
+                                    Reason: Avoid calling chat provider APIs when not needed & avoid overwriting existing
+                                            channel type settings/permission grants.
+                                */
+
+                                if ( RockToChatSyncConfig.ShouldEnforceDefaultGrantsPerRole && RockToChatSyncConfig.ShouldEnforceDefaultSettings )
                                 {
-                                    List<string> existingRoleGrants = null;
-                                    existingChannelType.GrantsByRole?.TryGetValue( role, out existingRoleGrants );
+                                    // This is the simplest update scenario, as we're going to overwrite the entire channel
+                                    // type in the external chat system. The `IChatProvider` will already know to enforce
+                                    // these defaults because of the `SetChatProviderDefaultValueEnforcers()` call above.
+                                    channelTypesToUpdate.Add( channelType );
+                                    continue;
+                                }
 
-                                    if ( existingRoleGrants?.Any() == true )
+                                // The next update scenario is a bit more complex; if any (#'s 1-3 in the engineering note
+                                // above) are true, update the channel type in the external chat system, but be sure to
+                                // retain any existing grants when needed (as an admin might have already fine-tuned them)!
+
+                                var anyGrantsToAdd = false;
+                                Dictionary<string, List<string>> updatedGrants = null;
+                                if ( !RockToChatSyncConfig.ShouldEnforceDefaultGrantsPerRole )
+                                {
+                                    updatedGrants = new Dictionary<string, List<string>>();
+
+                                    // Check if this channel type already has at least one grant defined for each of the
+                                    // required roles.
+                                    foreach ( var role in RequiredAppRoles )
                                     {
-                                        // Re-add these same grants so they're retained in the external chat system.
-                                        updatedGrants.AddOrReplace( role, existingRoleGrants );
-                                        continue;
-                                    }
+                                        List<string> existingRoleGrants = null;
+                                        existingChannelType.GrantsByRole?.TryGetValue( role, out existingRoleGrants );
 
-                                    List<string> defaultRoleGrants = null;
-                                    ChatProvider.GetDefaultChannelTypeGrantsByRole()?.TryGetValue( role, out defaultRoleGrants );
+                                        if ( existingRoleGrants?.Any() == true )
+                                        {
+                                            // Re-add these same grants so they're retained in the external chat system.
+                                            updatedGrants.AddOrReplace( role, existingRoleGrants );
+                                            continue;
+                                        }
 
-                                    if ( defaultRoleGrants?.Any() == true )
-                                    {
-                                        // Add the default grants for this role.
-                                        updatedGrants.AddOrReplace( role, defaultRoleGrants );
-                                        anyGrantsToAdd = true;
+                                        List<string> defaultRoleGrants = null;
+                                        ChatProvider.GetDefaultChannelTypeGrantsByRole()?.TryGetValue( role, out defaultRoleGrants );
+
+                                        if ( defaultRoleGrants?.Any() == true )
+                                        {
+                                            // Add the default grants for this role.
+                                            updatedGrants.AddOrReplace( role, defaultRoleGrants );
+                                            anyGrantsToAdd = true;
+                                        }
                                     }
                                 }
-                            }
 
-                            if ( RockToChatSyncConfig.ShouldEnforceDefaultGrantsPerRole
-                                || RockToChatSyncConfig.ShouldEnforceDefaultSettings
-                                || anyGrantsToAdd )
-                            {
-                                // If enforcing default permission grants or settings, the `IChatProvider` will already
-                                // know to do so because of the `SetChatProviderDefaultValueEnforcers()` call above.
-                                channelType.GrantsByRole = updatedGrants;
-                                channelTypesToUpdate.Add( channelType );
+                                if ( RockToChatSyncConfig.ShouldEnforceDefaultGrantsPerRole
+                                    || RockToChatSyncConfig.ShouldEnforceDefaultSettings
+                                    || anyGrantsToAdd )
+                                {
+                                    // If enforcing default permission grants or settings, the `IChatProvider` will already
+                                    // know to do so because of the `SetChatProviderDefaultValueEnforcers()` call above.
+                                    channelType.GrantsByRole = updatedGrants;
+                                    channelTypesToUpdate.Add( channelType );
+                                }
+                                else
+                                {
+                                    // Add it to the results as an already-up-to-date group type.
+                                    AddGroupTypeToResult( channelType.Key, ChatSyncType.Skip );
+                                }
                             }
                             else
                             {
-                                // Add it to the results as an already-up-to-date group type.
-                                AddGroupTypeToResult( channelType.Key, ChatSyncType.Skip );
+                                // The channel type doesn't yet exist in the external chat system; create it.
+                                channelTypesToCreate.Add( channelType );
                             }
                         }
-                        else
+                        else if ( existingChannelType != null )
                         {
-                            // The channel type doesn't yet exist in the external chat system; create it.
-                            channelTypesToCreate.Add( channelType );
-                        }
-                    }
-                    else if ( existingChannelType != null )
-                    {
-                        // If this channel type has [or has ever had] any channels [that are currently chat-enabled or
-                        // not], we'll simply deactivate those channels in the external chat system and NOT delete the
-                        // channel type.
-                        var groups = groupService.GetChatChannelGroupsQuery( groupType.Id ).ToList();
-                        if ( groups?.Any() == true )
-                        {
-                            var groupSyncCommands = groups
-                                .Select( g =>
-                                    new SyncGroupToChatCommand
-                                    {
-                                        GroupTypeId = groupType.Id,
-                                        GroupId = g.Id,
-                                        ChatChannelKey = g.ChatChannelKey
-                                    }
-                                )
-                                .ToList();
-
-                            /*
-                                3/18/2025 - JPH
-
-                                Regarding De/Reactivating chat channels:
-
-                                While the majority of this `ChatHelper` code is external chat provider-agnostic, the topic of
-                                deactivating/reactivating channels (or disabling/re-enabling, as Stream calls it) should be
-                                carefully considered if we move away from Stream.
-
-                                With Stream, it's as simple as setting a `disabled` property on the channel and running it through
-                                the standard update call. With other providers, it might not be this simple, and might require
-                                additional API calls, at which point, we should enhance the `IChatProvider` contract accordingly.
-
-                                Reason: Call out risk of switching to a different external chat provider.
-                            */
-
-                            var syncGroupsResult = await SyncGroupsToChatProviderAsync( groupSyncCommands );
-                            if ( syncGroupsResult != null )
+                            // If this channel type has [or has ever had] any channels [that are currently chat-enabled or
+                            // not], we'll simply deactivate those channels in the external chat system and NOT delete the
+                            // channel type.
+                            var groups = groupService.GetChatChannelGroupsQuery( groupType.Id ).ToList();
+                            if ( groups?.Any() == true )
                             {
-                                // Add the channel sync results to the outgoing result (for chat sync job logging).
-                                result.InnerResults.Add( syncGroupsResult );
+                                var groupSyncCommands = groups
+                                    .Select( g =>
+                                        new SyncGroupToChatCommand
+                                        {
+                                            GroupTypeId = groupType.Id,
+                                            GroupId = g.Id,
+                                            ChatChannelKey = g.ChatChannelKey
+                                        }
+                                    )
+                                    .ToList();
+
+                                /*
+                                    3/18/2025 - JPH
+
+                                    Regarding De/Reactivating chat channels:
+
+                                    While the majority of this `ChatHelper` code is external chat provider-agnostic, the topic of
+                                    deactivating/reactivating channels (or disabling/re-enabling, as Stream calls it) should be
+                                    carefully considered if we move away from Stream.
+
+                                    With Stream, it's as simple as setting a `disabled` property on the channel and running it through
+                                    the standard update call. With other providers, it might not be this simple, and might require
+                                    additional API calls, at which point, we should enhance the `IChatProvider` contract accordingly.
+
+                                    Reason: Call out risk of switching to a different external chat provider.
+                                */
+
+                                var syncGroupsResult = await SyncGroupsToChatProviderAsync( groupSyncCommands );
+                                if ( syncGroupsResult != null )
+                                {
+                                    // Add the channel sync results to the outgoing result (for chat sync job logging).
+                                    result.InnerResults.Add( syncGroupsResult );
+                                }
+                            }
+                            else
+                            {
+                                /*
+                                    3/24/2025 - JPH
+
+                                    We've decided - for now - to never programmatically delete channel types in the external
+                                    chat system. This will need to be done manually, through the external chat system's UI.
+
+                                    Reason: Never programmatically delete channel types in the external chat system.
+                                */
+
+                                // Delete any corresponding channel type in the external chat system.
+                                //channelTypesToDelete.Add( channelType.Key );
                             }
                         }
-                        else
+                    }
+
+                    // Don't let individual CRUD failures cause all to fail.
+                    var crudExceptions = new List<Exception>();
+
+                    if ( channelTypesToDelete.Any() )
+                    {
+                        var deletedResult = await ChatProvider.DeleteChatChannelTypesAsync( channelTypesToDelete );
+                        deletedResult?.Deleted.ToList().ForEach( key => AddGroupTypeToResult( key, ChatSyncType.Delete ) );
+
+                        if ( deletedResult?.HasException == true )
                         {
-                            /*
-                                3/24/2025 - JPH
+                            crudExceptions.Add( deletedResult.Exception );
+                        }
 
-                                We've decided - for now - to never programmatically delete channel types in the external
-                                chat system. This will need to be done manually, through the external chat system's UI.
-
-                                Reason: Never programmatically delete channel types in the external chat system.
-                            */
-
-                            // Delete any corresponding channel type in the external chat system.
-                            //channelTypesToDelete.Add( channelType.Key );
+                        // It's possible for channels to have been deleted as a part of this channel type deletion.
+                        if ( deletedResult?.InnerResults?.Any() == true )
+                        {
+                            // Add the channel delete results to the outgoing result (for chat sync job logging).
+                            result.InnerResults.AddRange( deletedResult.InnerResults );
                         }
                     }
-                }
 
-                // Don't let individual CRUD failures cause all to fail.
-                var crudExceptions = new List<Exception>();
-
-                if ( channelTypesToDelete.Any() )
-                {
-                    var deletedResult = await ChatProvider.DeleteChatChannelTypesAsync( channelTypesToDelete );
-                    deletedResult?.Deleted.ToList().ForEach( key => AddGroupTypeToResult( key, ChatSyncType.Delete ) );
-
-                    if ( deletedResult?.HasException == true )
+                    if ( channelTypesToCreate.Any() )
                     {
-                        crudExceptions.Add( deletedResult.Exception );
+                        var createdResult = await ChatProvider.CreateChatChannelTypesAsync( channelTypesToCreate );
+                        createdResult?.Created.ToList().ForEach( key => AddGroupTypeToResult( key, ChatSyncType.Create ) );
+
+                        if ( createdResult?.HasException == true )
+                        {
+                            crudExceptions.Add( createdResult.Exception );
+                        }
                     }
 
-                    // It's possible for channels to have been deleted as a part of this channel type deletion.
-                    if ( deletedResult?.InnerResults?.Any() == true )
+                    if ( channelTypesToUpdate.Any() )
                     {
-                        // Add the channel delete results to the outgoing result (for chat sync job logging).
-                        result.InnerResults.AddRange( deletedResult.InnerResults );
+                        var updatedResult = await ChatProvider.UpdateChatChannelTypesAsync(
+                            channelTypesToUpdate,
+                            RockToChatSyncConfig
+                        );
+
+                        updatedResult?.Updated.ToList().ForEach( key => AddGroupTypeToResult( key, ChatSyncType.Update ) );
+
+                        if ( updatedResult?.HasException == true )
+                        {
+                            crudExceptions.Add( updatedResult.Exception );
+                        }
+                    }
+
+                    if ( crudExceptions.Any() )
+                    {
+                        result.Exception = GetFirstOrAggregateException( crudExceptions );
+                        Logger.LogError( result.Exception, $"{logMessagePrefix}.", groupTypeIds );
                     }
                 }
-
-                if ( channelTypesToCreate.Any() )
+                catch ( Exception ex )
                 {
-                    var createdResult = await ChatProvider.CreateChatChannelTypesAsync( channelTypesToCreate );
-                    createdResult?.Created.ToList().ForEach( key => AddGroupTypeToResult( key, ChatSyncType.Create ) );
-
-                    if ( createdResult?.HasException == true )
-                    {
-                        crudExceptions.Add( createdResult.Exception );
-                    }
+                    result.Exception = ex;
+                    Logger.LogError( ex, $"{logMessagePrefix}.", groupTypeIds );
                 }
 
-                if ( channelTypesToUpdate.Any() )
-                {
-                    var updatedResult = await ChatProvider.UpdateChatChannelTypesAsync(
-                        channelTypesToUpdate,
-                        RockToChatSyncConfig
-                    );
-
-                    updatedResult?.Updated.ToList().ForEach( key => AddGroupTypeToResult( key, ChatSyncType.Update ) );
-
-                    if ( updatedResult?.HasException == true )
-                    {
-                        crudExceptions.Add( updatedResult.Exception );
-                    }
-                }
-
-                if ( crudExceptions.Any() )
-                {
-                    result.Exception = GetFirstOrAggregateException( crudExceptions );
-                    Logger.LogError( result.Exception, $"{logMessagePrefix}.", groupTypeIds );
-                }
+                return result;
             }
-            catch ( Exception ex )
-            {
-                result.Exception = ex;
-                Logger.LogError( ex, $"{logMessagePrefix}.", groupTypeIds );
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -1152,312 +1159,315 @@ namespace Rock.Communication.Chat
                 return result;
             }
 
-            if ( syncConfig == null )
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Sync Groups To Chat Provider" ) )
             {
-                syncConfig = new RockToChatGroupSyncConfig();
-            }
-
-            var structuredLog = "SyncCommands: {@SyncCommands} (SyncConfig: {@SyncConfig})";
-            var logMessagePrefix = $"{LogMessagePrefix} {nameof( SyncGroupsToChatProviderAsync ).SplitCase()} failed";
-
-            try
-            {
-                // Get the Rock group data needed to create, update or delete channel members in the external chat system.
-                var rockChatGroups = GetRockChatGroups( syncCommands );
-
-                // Get the existing chat channels.
-                var queryableKeys = rockChatGroups
-                    .Select( g => ChatProvider.GetQueryableChatChannelKey( g ) )
-                    .Where( k => k.IsNotNullOrWhiteSpace() )
-                    .ToList();
-
-                if ( !queryableKeys.Any() )
+                if ( syncConfig == null )
                 {
-                    // This will probably never happen, but if we have no queryable keys, exit early.
-                    Logger.LogWarning( $"{logMessagePrefix} because no queryable Chat Channel keys were found. {structuredLog}", syncCommands, syncConfig );
-
-                    return result;
+                    syncConfig = new RockToChatGroupSyncConfig();
                 }
 
-                var getChatChannelsResult = await ChatProvider.GetChatChannelsAsync( queryableKeys );
-                if ( getChatChannelsResult == null || getChatChannelsResult.HasException )
+                var structuredLog = "SyncCommands: {@SyncCommands} (SyncConfig: {@SyncConfig})";
+                var logMessagePrefix = $"{LogMessagePrefix} {nameof( SyncGroupsToChatProviderAsync ).SplitCase()} failed";
+
+                try
                 {
-                    result.Exception = getChatChannelsResult?.Exception;
-                    Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.GetChatChannelsAsync ).SplitCase()}'. {structuredLog}", syncCommands, syncConfig );
+                    // Get the Rock group data needed to create, update or delete channel members in the external chat system.
+                    var rockChatGroups = GetRockChatGroups( syncCommands );
 
-                    return result;
-                }
+                    // Get the existing chat channels.
+                    var queryableKeys = rockChatGroups
+                        .Select( g => ChatProvider.GetQueryableChatChannelKey( g ) )
+                        .Where( k => k.IsNotNullOrWhiteSpace() )
+                        .ToList();
 
-                var channelsToCreate = new List<ChatChannel>();
-                var channelsToUpdate = new List<ChatChannel>();
-                var channelsToDelete = new List<string>();
-
-                // Keep track of the groups that need channel keys saved in the Rock database.
-                var saveChatChannelKeyByGroupIds = new Dictionary<int, string>();
-
-                // Keep track of the channels that should and should NOT trigger a group member sync.
-                var channelsToTriggerGroupMemberSync = new List<ChatChannel>();
-                var queryableKeysToAvoidGroupMemberSync = new HashSet<string>();
-
-                // A mapping dictionary and local function to add a group to the outgoing results collection only AFTER
-                // we know it's been successfully synced with the external chat system.
-                var groupIdByQueryableKeys = new Dictionary<string, int>();
-                void AddGroupToResult( string queryableKey, ChatSyncType chatSyncType )
-                {
-                    if ( groupIdByQueryableKeys.TryGetValue( queryableKey, out var groupId ) )
+                    if ( !queryableKeys.Any() )
                     {
-                        var groupIdString = groupId.ToString();
-                        switch ( chatSyncType )
+                        // This will probably never happen, but if we have no queryable keys, exit early.
+                        Logger.LogWarning( $"{logMessagePrefix} because no queryable Chat Channel keys were found. {structuredLog}", syncCommands, syncConfig );
+
+                        return result;
+                    }
+
+                    var getChatChannelsResult = await ChatProvider.GetChatChannelsAsync( queryableKeys );
+                    if ( getChatChannelsResult == null || getChatChannelsResult.HasException )
+                    {
+                        result.Exception = getChatChannelsResult?.Exception;
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.GetChatChannelsAsync ).SplitCase()}'. {structuredLog}", syncCommands, syncConfig );
+
+                        return result;
+                    }
+
+                    var channelsToCreate = new List<ChatChannel>();
+                    var channelsToUpdate = new List<ChatChannel>();
+                    var channelsToDelete = new List<string>();
+
+                    // Keep track of the groups that need channel keys saved in the Rock database.
+                    var saveChatChannelKeyByGroupIds = new Dictionary<int, string>();
+
+                    // Keep track of the channels that should and should NOT trigger a group member sync.
+                    var channelsToTriggerGroupMemberSync = new List<ChatChannel>();
+                    var queryableKeysToAvoidGroupMemberSync = new HashSet<string>();
+
+                    // A mapping dictionary and local function to add a group to the outgoing results collection only AFTER
+                    // we know it's been successfully synced with the external chat system.
+                    var groupIdByQueryableKeys = new Dictionary<string, int>();
+                    void AddGroupToResult( string queryableKey, ChatSyncType chatSyncType )
+                    {
+                        if ( groupIdByQueryableKeys.TryGetValue( queryableKey, out var groupId ) )
                         {
-                            case ChatSyncType.Skip:
-                                result.Skipped.Add( groupIdString );
-                                break;
-                            case ChatSyncType.Create:
-                                result.Created.Add( groupIdString );
-                                break;
-                            case ChatSyncType.Update:
-                                result.Updated.Add( groupIdString );
-                                break;
-                            case ChatSyncType.Delete:
-                                result.Deleted.Add( groupIdString );
-                                break;
+                            var groupIdString = groupId.ToString();
+                            switch ( chatSyncType )
+                            {
+                                case ChatSyncType.Skip:
+                                    result.Skipped.Add( groupIdString );
+                                    break;
+                                case ChatSyncType.Create:
+                                    result.Created.Add( groupIdString );
+                                    break;
+                                case ChatSyncType.Update:
+                                    result.Updated.Add( groupIdString );
+                                    break;
+                                case ChatSyncType.Delete:
+                                    result.Deleted.Add( groupIdString );
+                                    break;
+                            }
                         }
                     }
-                }
 
-                /*
-                    3/18/2025 - JPH
+                    /*
+                        3/18/2025 - JPH
 
-                    Regarding De/Reactivating chat channels:
+                        Regarding De/Reactivating chat channels:
 
-                    While the majority of this `ChatHelper` code is external chat provider-agnostic, the topic of
-                    deactivating/reactivating channels (or disabling/re-enabling, as Stream calls it) should be
-                    carefully considered if we move away from Stream.
+                        While the majority of this `ChatHelper` code is external chat provider-agnostic, the topic of
+                        deactivating/reactivating channels (or disabling/re-enabling, as Stream calls it) should be
+                        carefully considered if we move away from Stream.
 
-                    With Stream, it's as simple as setting a `disabled` property on the channel and running it through
-                    the standard update call. With other providers, it might not be this simple, and might require
-                    additional API calls, at which point, we should enhance the `IChatProvider` contract accordingly.
+                        With Stream, it's as simple as setting a `disabled` property on the channel and running it through
+                        the standard update call. With other providers, it might not be this simple, and might require
+                        additional API calls, at which point, we should enhance the `IChatProvider` contract accordingly.
 
-                    Reason: Call out risk of switching to a different external chat provider.
-                 */
+                        Reason: Call out risk of switching to a different external chat provider.
+                    */
 
-                // A local function to determine if a channel has changed since last synced.
-                bool HasChannelChanged( ChatChannel lastSyncedChannel, ChatChannel currentChannel )
-                {
-                    return lastSyncedChannel.Name != currentChannel.Name
-                        || lastSyncedChannel.AvatarImageUrl != currentChannel.AvatarImageUrl
-                        || lastSyncedChannel.IsLeavingAllowed != currentChannel.IsLeavingAllowed
-                        || lastSyncedChannel.IsPublic != currentChannel.IsPublic
-                        || lastSyncedChannel.IsAlwaysShown != currentChannel.IsAlwaysShown
-                        || lastSyncedChannel.IsActive != currentChannel.IsActive
-                        || lastSyncedChannel.CampusId != currentChannel.CampusId;
-                }
-
-                foreach ( var rockChatGroup in rockChatGroups )
-                {
-                    var channel = TryConvertToChatChannel( rockChatGroup );
-                    if ( channel == null )
+                    // A local function to determine if a channel has changed since last synced.
+                    bool HasChannelChanged( ChatChannel lastSyncedChannel, ChatChannel currentChannel )
                     {
-                        continue;
+                        return lastSyncedChannel.Name != currentChannel.Name
+                            || lastSyncedChannel.AvatarImageUrl != currentChannel.AvatarImageUrl
+                            || lastSyncedChannel.IsLeavingAllowed != currentChannel.IsLeavingAllowed
+                            || lastSyncedChannel.IsPublic != currentChannel.IsPublic
+                            || lastSyncedChannel.IsAlwaysShown != currentChannel.IsAlwaysShown
+                            || lastSyncedChannel.IsActive != currentChannel.IsActive
+                            || lastSyncedChannel.CampusId != currentChannel.CampusId;
                     }
 
-                    groupIdByQueryableKeys.Add( channel.QueryableKey, rockChatGroup.GroupId );
-
-                    // Does it already exist in the external chat system?
-                    var existingChannel = getChatChannelsResult
-                        .ChatChannels
-                        .FirstOrDefault( c => c.QueryableKey == channel.QueryableKey );
-
-                    // Start by deleting any channels that no longer have a corresponding Rock group.
-                    if ( rockChatGroup.ShouldDelete && existingChannel != null )
+                    foreach ( var rockChatGroup in rockChatGroups )
                     {
-                        channelsToDelete.Add( channel.QueryableKey );
-                        continue;
-                    }
-
-                    // Take note of inactive channels that should never trigger group member syncs.
-                    if ( !channel.IsActive )
-                    {
-                        queryableKeysToAvoidGroupMemberSync.Add( channel.QueryableKey );
-                    }
-
-                    // For each chat-enabled group, add or update the channel in the external chat system.
-                    // Note that a channel can be simultaneously chat-enabled AND inactive.
-                    if ( rockChatGroup.IsChatEnabled )
-                    {
-                        if ( existingChannel != null )
+                        var channel = TryConvertToChatChannel( rockChatGroup );
+                        if ( channel == null )
                         {
+                            continue;
+                        }
+
+                        groupIdByQueryableKeys.Add( channel.QueryableKey, rockChatGroup.GroupId );
+
+                        // Does it already exist in the external chat system?
+                        var existingChannel = getChatChannelsResult
+                            .ChatChannels
+                            .FirstOrDefault( c => c.QueryableKey == channel.QueryableKey );
+
+                        // Start by deleting any channels that no longer have a corresponding Rock group.
+                        if ( rockChatGroup.ShouldDelete && existingChannel != null )
+                        {
+                            channelsToDelete.Add( channel.QueryableKey );
+                            continue;
+                        }
+
+                        // Take note of inactive channels that should never trigger group member syncs.
+                        if ( !channel.IsActive )
+                        {
+                            queryableKeysToAvoidGroupMemberSync.Add( channel.QueryableKey );
+                        }
+
+                        // For each chat-enabled group, add or update the channel in the external chat system.
+                        // Note that a channel can be simultaneously chat-enabled AND inactive.
+                        if ( rockChatGroup.IsChatEnabled )
+                        {
+                            if ( existingChannel != null )
+                            {
+                                if ( HasChannelChanged( existingChannel, channel ) )
+                                {
+                                    channelsToUpdate.Add( channel );
+
+                                    // If this channel was previously inactive and is now being reactivated, trigger a group member sync.
+                                    if ( !existingChannel.IsActive && channel.IsActive )
+                                    {
+                                        channelsToTriggerGroupMemberSync.Add( channel );
+                                    }
+                                }
+                                else
+                                {
+                                    // Add it to the results as an already-up-to-date group.
+                                    AddGroupToResult( channel.QueryableKey, ChatSyncType.Skip );
+
+                                    if ( syncConfig.ShouldSyncAllGroupMembers )
+                                    {
+                                        channelsToTriggerGroupMemberSync.Add( channel );
+                                    }
+                                }
+                            }
+                            else if ( channel.IsActive && DidChatChannelOriginateInRock( channel.Key ) )
+                            {
+                                // This active channel doesn't exist yet in the external chat system; create it.
+                                channelsToCreate.Add( channel );
+                            }
+                        }
+                        else if ( existingChannel != null )
+                        {
+                            // Handle non-chat-enabled groups that already exist in the external chat system.
+                            // We'll inactivate these channels, so they can potentially be reactivated later.
                             if ( HasChannelChanged( existingChannel, channel ) )
                             {
                                 channelsToUpdate.Add( channel );
-
-                                // If this channel was previously inactive and is now being reactivated, trigger a group member sync.
-                                if ( !existingChannel.IsActive && channel.IsActive )
-                                {
-                                    channelsToTriggerGroupMemberSync.Add( channel );
-                                }
                             }
                             else
                             {
                                 // Add it to the results as an already-up-to-date group.
                                 AddGroupToResult( channel.QueryableKey, ChatSyncType.Skip );
-
-                                if ( syncConfig.ShouldSyncAllGroupMembers )
-                                {
-                                    channelsToTriggerGroupMemberSync.Add( channel );
-                                }
                             }
-                        }
-                        else if ( channel.IsActive && DidChatChannelOriginateInRock( channel.Key ) )
-                        {
-                            // This active channel doesn't exist yet in the external chat system; create it.
-                            channelsToCreate.Add( channel );
-                        }
-                    }
-                    else if ( existingChannel != null )
-                    {
-                        // Handle non-chat-enabled groups that already exist in the external chat system.
-                        // We'll inactivate these channels, so they can potentially be reactivated later.
-                        if ( HasChannelChanged( existingChannel, channel ) )
-                        {
-                            channelsToUpdate.Add( channel );
                         }
                         else
                         {
-                            // Add it to the results as an already-up-to-date group.
-                            AddGroupToResult( channel.QueryableKey, ChatSyncType.Skip );
+                            // If we got here, this group did not already have a corresponding chat channel and is not chat-enabled.
+                            // Since it wasn't added to one of the CRUD collections, it will be filtered out from the sync operations below.
+                            continue;
+                        }
+
+                        if ( rockChatGroup.ShouldSaveChatChannelKeyInRock )
+                        {
+                            saveChatChannelKeyByGroupIds.TryAdd( rockChatGroup.GroupId, rockChatGroup.ChatChannelKey );
                         }
                     }
-                    else
+
+                    // Don't let individual CRUD failures cause all to fail.
+                    var crudExceptions = new List<Exception>();
+
+                    if ( channelsToDelete.Any() )
                     {
-                        // If we got here, this group did not already have a corresponding chat channel and is not chat-enabled.
-                        // Since it wasn't added to one of the CRUD collections, it will be filtered out from the sync operations below.
-                        continue;
-                    }
+                        var deletedResult = await ChatProvider.DeleteChatChannelsAsync( channelsToDelete );
+                        deletedResult?.Deleted.ToList().ForEach( key => AddGroupToResult( key, ChatSyncType.Delete ) );
 
-                    if ( rockChatGroup.ShouldSaveChatChannelKeyInRock )
-                    {
-                        saveChatChannelKeyByGroupIds.TryAdd( rockChatGroup.GroupId, rockChatGroup.ChatChannelKey );
-                    }
-                }
-
-                // Don't let individual CRUD failures cause all to fail.
-                var crudExceptions = new List<Exception>();
-
-                if ( channelsToDelete.Any() )
-                {
-                    var deletedResult = await ChatProvider.DeleteChatChannelsAsync( channelsToDelete );
-                    deletedResult?.Deleted.ToList().ForEach( key => AddGroupToResult( key, ChatSyncType.Delete ) );
-
-                    if ( deletedResult?.HasException == true )
-                    {
-                        crudExceptions.Add( deletedResult.Exception );
-                    }
-                }
-
-                if ( channelsToCreate.Any() )
-                {
-                    var createdResult = await ChatProvider.CreateChatChannelsAsync( channelsToCreate );
-
-                    var createdKeys = createdResult?.Created.ToList();
-                    if ( createdKeys?.Any() == true )
-                    {
-                        createdKeys.ForEach( key => AddGroupToResult( key, ChatSyncType.Create ) );
-                        channelsToTriggerGroupMemberSync.AddRange(
-                            channelsToCreate.Where( c => createdKeys.Contains( c.QueryableKey ) )
-                        );
-                    }
-
-                    if ( createdResult?.HasException == true )
-                    {
-                        crudExceptions.Add( createdResult.Exception );
-                    }
-                }
-
-                if ( channelsToUpdate.Any() )
-                {
-                    var updatedResult = await ChatProvider.UpdateChatChannelsAsync( channelsToUpdate );
-
-                    var updatedKeys = updatedResult?.Updated.ToList();
-                    if ( updatedKeys?.Any() == true )
-                    {
-                        updatedKeys.ForEach( key => AddGroupToResult( key, ChatSyncType.Update ) );
-
-                        if ( syncConfig.ShouldSyncAllGroupMembers )
+                        if ( deletedResult?.HasException == true )
                         {
+                            crudExceptions.Add( deletedResult.Exception );
+                        }
+                    }
+
+                    if ( channelsToCreate.Any() )
+                    {
+                        var createdResult = await ChatProvider.CreateChatChannelsAsync( channelsToCreate );
+
+                        var createdKeys = createdResult?.Created.ToList();
+                        if ( createdKeys?.Any() == true )
+                        {
+                            createdKeys.ForEach( key => AddGroupToResult( key, ChatSyncType.Create ) );
                             channelsToTriggerGroupMemberSync.AddRange(
-                                channelsToUpdate.Where( c =>
-                                    !queryableKeysToAvoidGroupMemberSync.Contains( c.QueryableKey )
-                                    && !channelsToTriggerGroupMemberSync.Contains( c )
-                                    && updatedKeys.Contains( c.QueryableKey )
-                                )
+                                channelsToCreate.Where( c => createdKeys.Contains( c.QueryableKey ) )
                             );
                         }
-                    }
 
-                    if ( updatedResult?.HasException == true )
-                    {
-                        crudExceptions.Add( updatedResult.Exception );
-                    }
-                }
-
-                if ( crudExceptions.Any() )
-                {
-                    result.Exception = GetFirstOrAggregateException( crudExceptions );
-                    Logger.LogError( result.Exception, $"{logMessagePrefix}. {structuredLog}", syncCommands, syncConfig );
-                }
-
-                // Do we have any groups that need channel keys saved in the Rock database?
-                if ( saveChatChannelKeyByGroupIds.Any() )
-                {
-                    var updateGroupIds = saveChatChannelKeyByGroupIds.Keys.ToList();
-                    var updateGroups = GetGroupQuery( updateGroupIds ).ToList();
-                    var shouldSaveUpdates = false;
-
-                    foreach ( var updateGroup in updateGroups )
-                    {
-                        if ( saveChatChannelKeyByGroupIds.TryGetValue( updateGroup.Id, out var chatChannelKey ) )
+                        if ( createdResult?.HasException == true )
                         {
-                            if ( updateGroup.ChatChannelKey == chatChannelKey )
+                            crudExceptions.Add( createdResult.Exception );
+                        }
+                    }
+
+                    if ( channelsToUpdate.Any() )
+                    {
+                        var updatedResult = await ChatProvider.UpdateChatChannelsAsync( channelsToUpdate );
+
+                        var updatedKeys = updatedResult?.Updated.ToList();
+                        if ( updatedKeys?.Any() == true )
+                        {
+                            updatedKeys.ForEach( key => AddGroupToResult( key, ChatSyncType.Update ) );
+
+                            if ( syncConfig.ShouldSyncAllGroupMembers )
                             {
-                                continue;
+                                channelsToTriggerGroupMemberSync.AddRange(
+                                    channelsToUpdate.Where( c =>
+                                        !queryableKeysToAvoidGroupMemberSync.Contains( c.QueryableKey )
+                                        && !channelsToTriggerGroupMemberSync.Contains( c )
+                                        && updatedKeys.Contains( c.QueryableKey )
+                                    )
+                                );
                             }
-
-                            updateGroup.ChatChannelKey = chatChannelKey;
-                            shouldSaveUpdates = true;
                         }
-                    }
 
-                    if ( shouldSaveUpdates )
-                    {
-                        RockContext.SaveChanges();
-                    }
-                }
-
-                // Do we have any groups whose group members should be synced to channel members?
-                foreach ( var channel in channelsToTriggerGroupMemberSync )
-                {
-                    // Try to sync the group members.
-                    if ( groupIdByQueryableKeys.TryGetValue( channel.QueryableKey, out var groupId ) )
-                    {
-                        var membersResult = await SyncGroupMembersToChatProviderAsync( groupId, syncConfig );
-
-                        // If `SyncGroupMembersToChatProviderAsync` failed, a detailed error will have already been logged.
-                        if ( membersResult != null )
+                        if ( updatedResult?.HasException == true )
                         {
-                            // Add the group member sync results to the outgoing result (for chat sync job logging).
-                            result.InnerResults.Add( membersResult );
+                            crudExceptions.Add( updatedResult.Exception );
+                        }
+                    }
+
+                    if ( crudExceptions.Any() )
+                    {
+                        result.Exception = GetFirstOrAggregateException( crudExceptions );
+                        Logger.LogError( result.Exception, $"{logMessagePrefix}. {structuredLog}", syncCommands, syncConfig );
+                    }
+
+                    // Do we have any groups that need channel keys saved in the Rock database?
+                    if ( saveChatChannelKeyByGroupIds.Any() )
+                    {
+                        var updateGroupIds = saveChatChannelKeyByGroupIds.Keys.ToList();
+                        var updateGroups = GetGroupQuery( updateGroupIds ).ToList();
+                        var shouldSaveUpdates = false;
+
+                        foreach ( var updateGroup in updateGroups )
+                        {
+                            if ( saveChatChannelKeyByGroupIds.TryGetValue( updateGroup.Id, out var chatChannelKey ) )
+                            {
+                                if ( updateGroup.ChatChannelKey == chatChannelKey )
+                                {
+                                    continue;
+                                }
+
+                                updateGroup.ChatChannelKey = chatChannelKey;
+                                shouldSaveUpdates = true;
+                            }
+                        }
+
+                        if ( shouldSaveUpdates )
+                        {
+                            RockContext.SaveChanges();
+                        }
+                    }
+
+                    // Do we have any groups whose group members should be synced to channel members?
+                    foreach ( var channel in channelsToTriggerGroupMemberSync )
+                    {
+                        // Try to sync the group members.
+                        if ( groupIdByQueryableKeys.TryGetValue( channel.QueryableKey, out var groupId ) )
+                        {
+                            var membersResult = await SyncGroupMembersToChatProviderAsync( groupId, syncConfig );
+
+                            // If `SyncGroupMembersToChatProviderAsync` failed, a detailed error will have already been logged.
+                            if ( membersResult != null )
+                            {
+                                // Add the group member sync results to the outgoing result (for chat sync job logging).
+                                result.InnerResults.Add( membersResult );
+                            }
                         }
                     }
                 }
-            }
-            catch ( Exception ex )
-            {
-                result.Exception = ex;
-                Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", syncCommands, syncConfig );
-            }
+                catch ( Exception ex )
+                {
+                    result.Exception = ex;
+                    Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", syncCommands, syncConfig );
+                }
 
-            return result;
+                return result;
+            }
         }
 
         /// <inheritdoc cref="IChatProvider.DeleteChatChannelsAsync(List{string})"/>
@@ -1470,27 +1480,30 @@ namespace Rock.Communication.Chat
                 return result;
             }
 
-            var structuredLog = "ChatChannelQueryableKeys: {@ChatChannelQueryableKeys}";
-            var logMessagePrefix = $"{LogMessagePrefix} {nameof( DeleteChatChannelsAsync ).SplitCase()} failed";
-
-            try
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Delete Chat Channels" ) )
             {
-                var deleteResult = await ChatProvider.DeleteChatChannelsAsync( chatChannelQueryableKeys );
-                if ( deleteResult == null || deleteResult.HasException )
+                var structuredLog = "ChatChannelQueryableKeys: {@ChatChannelQueryableKeys}";
+                var logMessagePrefix = $"{LogMessagePrefix} {nameof( DeleteChatChannelsAsync ).SplitCase()} failed";
+
+                try
                 {
-                    result.Exception = deleteResult?.Exception;
-                    Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.DeleteChatChannelsAsync )}'. {structuredLog}", chatChannelQueryableKeys );
+                    var deleteResult = await ChatProvider.DeleteChatChannelsAsync( chatChannelQueryableKeys );
+                    if ( deleteResult == null || deleteResult.HasException )
+                    {
+                        result.Exception = deleteResult?.Exception;
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.DeleteChatChannelsAsync )}'. {structuredLog}", chatChannelQueryableKeys );
 
-                    return result;
+                        return result;
+                    }
                 }
-            }
-            catch ( Exception ex )
-            {
-                result.Exception = ex;
-                Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", chatChannelQueryableKeys );
-            }
+                catch ( Exception ex )
+                {
+                    result.Exception = ex;
+                    Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", chatChannelQueryableKeys );
+                }
 
-            return result;
+                return result;
+            }
         }
 
         /// <summary>
@@ -1583,471 +1596,392 @@ namespace Rock.Communication.Chat
                 return result;
             }
 
-            if ( groupSyncConfig == null )
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Sync Group Members To Chat Provider" ) )
             {
-                groupSyncConfig = new RockToChatGroupSyncConfig();
-            }
-
-            var structuredLog = "SyncCommands: {@SyncCommands} (GroupSyncConfig: {@GroupSyncConfig})";
-            var logMessagePrefix = $"{LogMessagePrefix} {nameof( SyncGroupMembersToChatProviderAsync ).SplitCase()}";
-
-            try
-            {
-                #region Chat Ban List
-
-                // First, we'll handle any members being added to or removed from the "Chat Ban List" Rock group.
-                // They should be globally banned or unbanned in the external chat system.
-
-                var chatBanListGroup = GroupCache.Get( ChatBanListGroupId );
-                if ( chatBanListGroup != null )
+                if ( groupSyncConfig == null )
                 {
-                    // Transfer these commands from the provided collection into a new one, so we don't process them again below.
-                    var chatBanListCommands = new List<SyncGroupMemberToChatCommand>();
-                    for ( var i = syncCommands.Count - 1; i >= 0; i-- )
+                    groupSyncConfig = new RockToChatGroupSyncConfig();
+                }
+
+                var structuredLog = "SyncCommands: {@SyncCommands} (GroupSyncConfig: {@GroupSyncConfig})";
+                var logMessagePrefix = $"{LogMessagePrefix} {nameof( SyncGroupMembersToChatProviderAsync ).SplitCase()}";
+
+                try
+                {
+                    #region Chat Ban List
+
+                    // First, we'll handle any members being added to or removed from the "Chat Ban List" Rock group.
+                    // They should be globally banned or unbanned in the external chat system.
+
+                    var chatBanListGroup = GroupCache.Get( ChatBanListGroupId );
+                    if ( chatBanListGroup != null )
                     {
-                        var syncCommand = syncCommands[i];
-                        if ( syncCommand.GroupId == chatBanListGroup.Id )
+                        // Transfer these commands from the provided collection into a new one, so we don't process them again below.
+                        var chatBanListCommands = new List<SyncGroupMemberToChatCommand>();
+                        for ( var i = syncCommands.Count - 1; i >= 0; i-- )
                         {
-                            chatBanListCommands.Add( syncCommand );
-                            syncCommands.RemoveAt( i );
+                            var syncCommand = syncCommands[i];
+                            if ( syncCommand.GroupId == chatBanListGroup.Id )
+                            {
+                                chatBanListCommands.Add( syncCommand );
+                                syncCommands.RemoveAt( i );
+                            }
+                        }
+
+                        if ( chatBanListCommands.Any() )
+                        {
+                            var syncPersonToChatCommands = chatBanListCommands
+                                .GroupBy( c => c.PersonId )
+                                .Select( g => g.Key )
+                                .Distinct()
+                                .Select( personId =>
+                                    new SyncPersonToChatCommand
+                                    {
+                                        PersonId = personId,
+                                        ShouldEnsureChatAliasExists = true
+                                    }
+                                )
+                                .ToList();
+
+                            // The next method call does the following:
+                            //  1) Ensures this person has a chat-specific person alias in Rock;
+                            //  2) Ensures this person has a chat user in the external chat system.
+                            var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
+
+                            // If `createOrUpdateChatUsersResult` failed, a detailed error will have already been logged.
+                            if ( createOrUpdateChatUsersResult != null )
+                            {
+                                // Add the created or updated chat users to the result (for chat sync job logging).
+                                result.InnerResults.Add( createOrUpdateChatUsersResult );
+
+                                // Determine which commands represent "bans" and which represent "unbans", by checking if
+                                // each person represented by the sync commands currently exists in the group. We'll exclude
+                                // deceased individuals altogether from these sync commands, as allowing them to be banned
+                                // would be disrespectful. The sync job will ensure they're properly removed them from the
+                                // external chat system the next time it runs.
+                                var chatBanListMembers = GetRockChatGroupMembers( chatBanListCommands )
+                                    .Where( m => !m.IsDeceased )
+                                    .ToList();
+
+                                // Get the chat user keys for those who should be banned.
+                                var banChatUserKeys = createOrUpdateChatUsersResult
+                                    .UserResults
+                                    .Where( r =>
+                                        chatBanListMembers.Any( m =>
+                                            m.PersonId == r.PersonId
+                                            && !m.ShouldDelete // This means they're in the "Chat Ban List" group.
+                                        )
+                                    )
+                                    .Select( r => r.ChatUserKey )
+                                    .ToList();
+
+                                if ( banChatUserKeys.Any() )
+                                {
+                                    var bannedResult = await ChatProvider.BanChatUsersAsync( banChatUserKeys );
+                                    if ( bannedResult != null )
+                                    {
+                                        // Add the banned users to the result (for chat sync job logging).
+                                        result.InnerResults.Add( bannedResult );
+                                    }
+                                }
+
+                                // Get the chat user keys for those who should be unbanned.
+                                var unbanChatUserKeys = createOrUpdateChatUsersResult
+                                    .UserResults
+                                    .Where( r =>
+                                        chatBanListMembers.Any( m =>
+                                            m.PersonId == r.PersonId
+                                            && m.ShouldDelete // This means they were removed from the "Chat Ban List" group.
+                                        )
+                                    )
+                                    .Select( r => r.ChatUserKey )
+                                    .ToList();
+
+                                if ( unbanChatUserKeys.Any() )
+                                {
+                                    var unbannedResult = await ChatProvider.UnbanChatUsersAsync( unbanChatUserKeys );
+                                    if ( unbannedResult != null )
+                                    {
+                                        // Add the unbanned users to the result (for chat sync job logging).
+                                        result.InnerResults.Add( unbannedResult );
+                                    }
+                                }
+                            }
+
+                            // Do we have any more sync commands to process?
+                            if ( !syncCommands.Any() )
+                            {
+                                return result;
+                            }
                         }
                     }
 
-                    if ( chatBanListCommands.Any() )
+                    #endregion Chat Ban List
+
+                    #region APP - Chat Administrators
+
+                    // Next, we'll handle any members being added to or removed from the "APP - Chat Administrators" Rock
+                    // security role group. These members usually don't need to be added to a chat channel, but instead only
+                    // need to have their chat user records created or updated accordingly, within the external chat system.
+                    var chatAminsGroup = GroupCache.Get( ChatAdministratorsGroupId );
+
+                    // However.. someone COULD enable chat for the "Security Role" group type, in which case we'll bypass this
+                    // code block, and instead  perform a full (chat channel, down) sync of these members, which will effectively
+                    // add or remove them to/from the global `rock_admin` role in the external chat system.
+                    if ( chatAminsGroup?.GetIsChatEnabled() == false )
                     {
-                        var syncPersonToChatCommands = chatBanListCommands
-                            .GroupBy( c => c.PersonId )
-                            .Select( g => g.Key )
-                            .Distinct()
-                            .Select( personId =>
-                                new SyncPersonToChatCommand
-                                {
-                                    PersonId = personId,
-                                    ShouldEnsureChatAliasExists = true
-                                }
-                            )
-                            .ToList();
-
-                        // The next method call does the following:
-                        //  1) Ensures this person has a chat-specific person alias in Rock;
-                        //  2) Ensures this person has a chat user in the external chat system.
-                        var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
-
-                        // If `createOrUpdateChatUsersResult` failed, a detailed error will have already been logged.
-                        if ( createOrUpdateChatUsersResult != null )
+                        // Transfer these commands from the provided collection into a new one, so we don't process them again below.
+                        var chatAdminsCommands = new List<SyncGroupMemberToChatCommand>();
+                        for ( var i = syncCommands.Count - 1; i >= 0; i-- )
                         {
-                            // Add the created or updated chat users to the result (for chat sync job logging).
-                            result.InnerResults.Add( createOrUpdateChatUsersResult );
-
-                            // Determine which commands represent "bans" and which represent "unbans", by checking if
-                            // each person represented by the sync commands currently exists in the group. We'll exclude
-                            // deceased individuals altogether from these sync commands, as allowing them to be banned
-                            // would be disrespectful. The sync job will ensure they're properly removed them from the
-                            // external chat system the next time it runs.
-                            var chatBanListMembers = GetRockChatGroupMembers( chatBanListCommands )
-                                .Where( m => !m.IsDeceased )
-                                .ToList();
-
-                            // Get the chat user keys for those who should be banned.
-                            var banChatUserKeys = createOrUpdateChatUsersResult
-                                .UserResults
-                                .Where( r =>
-                                    chatBanListMembers.Any( m =>
-                                        m.PersonId == r.PersonId
-                                        && !m.ShouldDelete // This means they're in the "Chat Ban List" group.
-                                    )
-                                )
-                                .Select( r => r.ChatUserKey )
-                                .ToList();
-
-                            if ( banChatUserKeys.Any() )
+                            var syncCommand = syncCommands[i];
+                            if ( syncCommand.GroupId == chatAminsGroup.Id )
                             {
-                                var bannedResult = await ChatProvider.BanChatUsersAsync( banChatUserKeys );
-                                if ( bannedResult != null )
-                                {
-                                    // Add the banned users to the result (for chat sync job logging).
-                                    result.InnerResults.Add( bannedResult );
-                                }
-                            }
-
-                            // Get the chat user keys for those who should be unbanned.
-                            var unbanChatUserKeys = createOrUpdateChatUsersResult
-                                .UserResults
-                                .Where( r =>
-                                    chatBanListMembers.Any( m =>
-                                        m.PersonId == r.PersonId
-                                        && m.ShouldDelete // This means they were removed from the "Chat Ban List" group.
-                                    )
-                                )
-                                .Select( r => r.ChatUserKey )
-                                .ToList();
-
-                            if ( unbanChatUserKeys.Any() )
-                            {
-                                var unbannedResult = await ChatProvider.UnbanChatUsersAsync( unbanChatUserKeys );
-                                if ( unbannedResult != null )
-                                {
-                                    // Add the unbanned users to the result (for chat sync job logging).
-                                    result.InnerResults.Add( unbannedResult );
-                                }
+                                chatAdminsCommands.Add( syncCommand );
+                                syncCommands.RemoveAt( i );
                             }
                         }
 
-                        // Do we have any more sync commands to process?
-                        if ( !syncCommands.Any() )
+                        if ( chatAdminsCommands.Any() )
+                        {
+                            var syncPersonToChatCommands = chatAdminsCommands
+                                .GroupBy( c => c.PersonId )
+                                .Select( g => g.Key )
+                                .Distinct()
+                                .Select( personId =>
+                                    new SyncPersonToChatCommand
+                                    {
+                                        PersonId = personId,
+                                        ShouldEnsureChatAliasExists = true
+                                    }
+                                )
+                                .ToList();
+
+                            // The next method call does the following:
+                            //  1) Ensures this person has a chat-specific person alias in Rock;
+                            //  2) Ensures this person has a chat user in the external chat system.
+                            var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
+
+                            // If `createOrUpdateChatUsersResult` failed, a detailed error will have already been logged.
+                            if ( createOrUpdateChatUsersResult != null )
+                            {
+                                // Add the created or updated chat users to the result (for chat sync job logging).
+                                result.InnerResults.Add( createOrUpdateChatUsersResult );
+                            }
+
+                            // Do we have any more sync commands to process?
+                            if ( !syncCommands.Any() )
+                            {
+                                return result;
+                            }
+                        }
+                    }
+
+                    #endregion APP - Chat Administrators
+
+                    // We'll aggregate the individual group member commands into per-channel commands, so we can interact
+                    // with the external chat provider in bulk, one channel at a time.
+                    var perChannelCommands = new List<SyncChannelMembersToChatCommand>();
+
+                    // A local function get or add a sync command for a given channel.
+                    SyncChannelMembersToChatCommand GetOrAddCommandForChannel( int groupId )
+                    {
+                        var groupCache = GroupCache.Get( groupId );
+                        if ( groupCache == null )
+                        {
+                            return null;
+                        }
+
+                        var chatChannelKey = GetChatChannelKey( groupCache.Id, groupCache.ChatChannelKey );
+
+                        var command = perChannelCommands.FirstOrDefault( c => c.ChatChannelKey == chatChannelKey );
+                        if ( command == null )
+                        {
+                            command = new SyncChannelMembersToChatCommand
+                            {
+                                ChatChannelKey = chatChannelKey,
+                                ChatChannelTypeKey = GetChatChannelTypeKey( groupCache.GroupTypeId )
+                            };
+
+                            perChannelCommands.Add( command );
+                        }
+
+                        return command;
+                    }
+
+                    // A mapping dictionary and local functions to add a rock chat channel member to the outgoing results
+                    // collection only AFTER we know they've been successfully synced with the external chat system.
+                    var memberByChannelMemberKeys = new Dictionary<string, RockChatGroupMember>();
+
+                    void MapMemberToChannelMemberKey( string channelMemberKey, RockChatGroupMember member )
+                    {
+                        if ( !memberByChannelMemberKeys.ContainsKey( channelMemberKey ) )
+                        {
+                            memberByChannelMemberKeys.Add( channelMemberKey, member );
+                        }
+                    }
+
+                    void AddMemberToResult( string channelMemberKey, ChatSyncType chatSyncType )
+                    {
+                        if ( memberByChannelMemberKeys.TryGetValue( channelMemberKey, out var member ) )
+                        {
+                            var memberId = $"{member.GroupId}|{member.PersonId}";
+                            switch ( chatSyncType )
+                            {
+                                case ChatSyncType.Skip:
+                                    result.Skipped.Add( memberId );
+                                    break;
+                                case ChatSyncType.Create:
+                                    result.Created.Add( memberId );
+                                    break;
+                                case ChatSyncType.Update:
+                                    result.Updated.Add( memberId );
+                                    break;
+                                case ChatSyncType.Delete:
+                                    result.Deleted.Add( memberId );
+                                    break;
+                            }
+                        }
+                    }
+
+                    // Get the Rock group member data needed to create, update or delete channel members in the external chat system.
+                    var rockChatGroupMembers = GetRockChatGroupMembers( syncCommands );
+
+                    #region Deceased Individuals to Delete
+
+                    PersonService personService = null;
+                    PersonAliasService personAliasService = null;
+
+                    // Take this opportunity to delete any deceased members who are being synced.
+                    var deceasedMembers = rockChatGroupMembers.Where( m => m.IsDeceased ).ToList();
+                    if ( deceasedMembers.Any() )
+                    {
+                        await _deleteDeceasedIndividualsSemaphore.WaitAsync();
+                        try
+                        {
+                            foreach ( var deceasedMember in deceasedMembers )
+                            {
+                                if ( personService == null )
+                                {
+                                    personService = new PersonService( RockContext );
+                                    personAliasService = new PersonAliasService( RockContext );
+                                }
+
+                                // Remove this member from the outer collection so they aren't processed below.
+                                rockChatGroupMembers.Remove( deceasedMember );
+
+                                // Get this member's chat user key(s).
+                                var keysToDelete = personService
+                                    .GetAllRockChatUserKeysQuery( deceasedMember.PersonId )
+                                    .AsEnumerable() // Materialize the query.
+                                    .Where( k =>
+                                        k.ChatPersonAliasId.HasValue
+                                        && k.ChatUserKey.IsNotNullOrWhiteSpace()
+                                    )
+                                    .ToList();
+
+                                if ( keysToDelete?.Any() != true )
+                                {
+                                    // It's possible we've already deleted this individual.
+                                    continue;
+                                }
+
+                                // This first call will remove the person from all chat-related groups in Rock.
+                                // (We only need to use one of their keys - if they have multiple - to accomplish this).
+                                var deleteCommands = new List<DeleteChatPersonInRockCommand> {
+                                    new DeleteChatPersonInRockCommand { ChatPersonKey = keysToDelete.First().ChatUserKey }
+                                };
+
+                                var config = new DeleteChatUsersInRockConfig
+                                {
+                                    ShouldUnban = true,
+                                    ShouldClearChatPersonAliasForeignKey = false
+                                };
+
+                                DeleteChatUsersInRock( deleteCommands, config );
+
+                                // This second call will delete the person's chat user(s) from the external chat system and
+                                // clear the corresponding chat person alias names and foreign keys.
+                                var deleteResult = await DeleteChatUsersAsync( personAliasService, keysToDelete );
+
+                                // If `DeleteChatUsersAsync` failed, a detailed error will have already been logged.
+                                if ( deleteResult != null )
+                                {
+                                    // Add the deleted chat users to the result (for chat sync job logging).
+                                    result.InnerResults.Add( deleteResult );
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            _deleteDeceasedIndividualsSemaphore.Release();
+                        }
+
+                        // Do we have any more members to process?
+                        if ( !rockChatGroupMembers.Any() )
                         {
                             return result;
                         }
                     }
-                }
 
-                #endregion Chat Ban List
+                    #endregion Deceased Individuals to Delete
 
-                #region APP - Chat Administrators
+                    // Before moving on, let's remove any members who should be ignored (if their group is inactive or archived).
+                    rockChatGroupMembers = rockChatGroupMembers.Where( m => !m.ShouldIgnore ).ToList();
 
-                // Next, we'll handle any members being added to or removed from the "APP - Chat Administrators" Rock
-                // security role group. These members usually don't need to be added to a chat channel, but instead only
-                // need to have their chat user records created or updated accordingly, within the external chat system.
-                var chatAminsGroup = GroupCache.Get( ChatAdministratorsGroupId );
-
-                // However.. someone COULD enable chat for the "Security Role" group type, in which case we'll bypass this
-                // code block, and instead  perform a full (chat channel, down) sync of these members, which will effectively
-                // add or remove them to/from the global `rock_admin` role in the external chat system.
-                if ( chatAminsGroup?.GetIsChatEnabled() == false )
-                {
-                    // Transfer these commands from the provided collection into a new one, so we don't process them again below.
-                    var chatAdminsCommands = new List<SyncGroupMemberToChatCommand>();
-                    for ( var i = syncCommands.Count - 1; i >= 0; i-- )
-                    {
-                        var syncCommand = syncCommands[i];
-                        if ( syncCommand.GroupId == chatAminsGroup.Id )
-                        {
-                            chatAdminsCommands.Add( syncCommand );
-                            syncCommands.RemoveAt( i );
-                        }
-                    }
-
-                    if ( chatAdminsCommands.Any() )
-                    {
-                        var syncPersonToChatCommands = chatAdminsCommands
-                            .GroupBy( c => c.PersonId )
-                            .Select( g => g.Key )
-                            .Distinct()
-                            .Select( personId =>
-                                new SyncPersonToChatCommand
-                                {
-                                    PersonId = personId,
-                                    ShouldEnsureChatAliasExists = true
-                                }
-                            )
-                            .ToList();
-
-                        // The next method call does the following:
-                        //  1) Ensures this person has a chat-specific person alias in Rock;
-                        //  2) Ensures this person has a chat user in the external chat system.
-                        var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
-
-                        // If `createOrUpdateChatUsersResult` failed, a detailed error will have already been logged.
-                        if ( createOrUpdateChatUsersResult != null )
-                        {
-                            // Add the created or updated chat users to the result (for chat sync job logging).
-                            result.InnerResults.Add( createOrUpdateChatUsersResult );
-                        }
-
-                        // Do we have any more sync commands to process?
-                        if ( !syncCommands.Any() )
-                        {
-                            return result;
-                        }
-                    }
-                }
-
-                #endregion APP - Chat Administrators
-
-                // We'll aggregate the individual group member commands into per-channel commands, so we can interact
-                // with the external chat provider in bulk, one channel at a time.
-                var perChannelCommands = new List<SyncChannelMembersToChatCommand>();
-
-                // A local function get or add a sync command for a given channel.
-                SyncChannelMembersToChatCommand GetOrAddCommandForChannel( int groupId )
-                {
-                    var groupCache = GroupCache.Get( groupId );
-                    if ( groupCache == null )
-                    {
-                        return null;
-                    }
-
-                    var chatChannelKey = GetChatChannelKey( groupCache.Id, groupCache.ChatChannelKey );
-
-                    var command = perChannelCommands.FirstOrDefault( c => c.ChatChannelKey == chatChannelKey );
-                    if ( command == null )
-                    {
-                        command = new SyncChannelMembersToChatCommand
-                        {
-                            ChatChannelKey = chatChannelKey,
-                            ChatChannelTypeKey = GetChatChannelTypeKey( groupCache.GroupTypeId )
-                        };
-
-                        perChannelCommands.Add( command );
-                    }
-
-                    return command;
-                }
-
-                // A mapping dictionary and local functions to add a rock chat channel member to the outgoing results
-                // collection only AFTER we know they've been successfully synced with the external chat system.
-                var memberByChannelMemberKeys = new Dictionary<string, RockChatGroupMember>();
-
-                void MapMemberToChannelMemberKey( string channelMemberKey, RockChatGroupMember member )
-                {
-                    if ( !memberByChannelMemberKeys.ContainsKey( channelMemberKey ) )
-                    {
-                        memberByChannelMemberKeys.Add( channelMemberKey, member );
-                    }
-                }
-
-                void AddMemberToResult( string channelMemberKey, ChatSyncType chatSyncType )
-                {
-                    if ( memberByChannelMemberKeys.TryGetValue( channelMemberKey, out var member ) )
-                    {
-                        var memberId = $"{member.GroupId}|{member.PersonId}";
-                        switch ( chatSyncType )
-                        {
-                            case ChatSyncType.Skip:
-                                result.Skipped.Add( memberId );
-                                break;
-                            case ChatSyncType.Create:
-                                result.Created.Add( memberId );
-                                break;
-                            case ChatSyncType.Update:
-                                result.Updated.Add( memberId );
-                                break;
-                            case ChatSyncType.Delete:
-                                result.Deleted.Add( memberId );
-                                break;
-                        }
-                    }
-                }
-
-                // Get the Rock group member data needed to create, update or delete channel members in the external chat system.
-                var rockChatGroupMembers = GetRockChatGroupMembers( syncCommands );
-
-                #region Deceased Individuals to Delete
-
-                PersonService personService = null;
-                PersonAliasService personAliasService = null;
-
-                // Take this opportunity to delete any deceased members who are being synced.
-                var deceasedMembers = rockChatGroupMembers.Where( m => m.IsDeceased ).ToList();
-                if ( deceasedMembers.Any() )
-                {
-                    await _deleteDeceasedIndividualsSemaphore.WaitAsync();
-                    try
-                    {
-                        foreach ( var deceasedMember in deceasedMembers )
-                        {
-                            if ( personService == null )
-                            {
-                                personService = new PersonService( RockContext );
-                                personAliasService = new PersonAliasService( RockContext );
-                            }
-
-                            // Remove this member from the outer collection so they aren't processed below.
-                            rockChatGroupMembers.Remove( deceasedMember );
-
-                            // Get this member's chat user key(s).
-                            var keysToDelete = personService
-                                .GetAllRockChatUserKeysQuery( deceasedMember.PersonId )
-                                .AsEnumerable() // Materialize the query.
-                                .Where( k =>
-                                    k.ChatPersonAliasId.HasValue
-                                    && k.ChatUserKey.IsNotNullOrWhiteSpace()
-                                )
-                                .ToList();
-
-                            if ( keysToDelete?.Any() != true )
-                            {
-                                // It's possible we've already deleted this individual.
-                                continue;
-                            }
-
-                            // This first call will remove the person from all chat-related groups in Rock.
-                            // (We only need to use one of their keys - if they have multiple - to accomplish this).
-                            var deleteCommands = new List<DeleteChatPersonInRockCommand> {
-                                new DeleteChatPersonInRockCommand { ChatPersonKey = keysToDelete.First().ChatUserKey }
-                            };
-
-                            var config = new DeleteChatUsersInRockConfig
-                            {
-                                ShouldUnban = true,
-                                ShouldClearChatPersonAliasForeignKey = false
-                            };
-
-                            DeleteChatUsersInRock( deleteCommands, config );
-
-                            // This second call will delete the person's chat user(s) from the external chat system and
-                            // clear the corresponding chat person alias names and foreign keys.
-                            var deleteResult = await DeleteChatUsersAsync( personAliasService, keysToDelete );
-
-                            // If `DeleteChatUsersAsync` failed, a detailed error will have already been logged.
-                            if ( deleteResult != null )
-                            {
-                                // Add the deleted chat users to the result (for chat sync job logging).
-                                result.InnerResults.Add( deleteResult );
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        _deleteDeceasedIndividualsSemaphore.Release();
-                    }
-
-                    // Do we have any more members to process?
+                    // Do we have any members left to sync?
                     if ( !rockChatGroupMembers.Any() )
                     {
                         return result;
                     }
-                }
 
-                #endregion Deceased Individuals to Delete
+                    #region Channel Members to Delete
 
-                // Before moving on, let's remove any members who should be ignored (if their group is inactive or archived).
-                rockChatGroupMembers = rockChatGroupMembers.Where( m => !m.ShouldIgnore ).ToList();
-
-                // Do we have any members left to sync?
-                if ( !rockChatGroupMembers.Any() )
-                {
-                    return result;
-                }
-
-                #region Channel Members to Delete
-
-                // Handle commands to delete group members.
-                var deleteMembers = rockChatGroupMembers
-                    .Where( c =>
-                        c.ShouldDelete
-                        // Ensure the parent group currently has chat enabled. If the group doesn't have chat enabled,
-                        // existing channel members should have already been deleted by other processes, or worst case:
-                        // will get deleted by the chat sync job.
-                        && GroupCache.Get( c.GroupId )?.GetIsChatEnabled() == true
-                    )
-                    .ToList();
-
-                if ( deleteMembers.Any() )
-                {
-                    // For members we plan to delete, try to find their existing chat user key in Rock.
-                    var deletePersonIds = deleteMembers
-                        .GroupBy( c => c.PersonId )
-                        .Select( g => g.Key )
-                        .Distinct()
-                        .ToList();
-
-                    var rockChatUserKeys = ( personService ?? new PersonService( RockContext ) )
-                        .GetActiveRockChatUserKeys( deletePersonIds );
-
-                    // Just in case any people don't have a chat user key, let's at least log them.
-                    // Subbing "user" for "person" here, as this can get logged in the UI.
-                    var membersWithoutChatPersonKeys = deleteMembers
-                        .Where( c => !rockChatUserKeys.Any( r => r.PersonId == c.PersonId ) )
-                        .ToList();
-
-                    if ( membersWithoutChatPersonKeys.Any() )
-                    {
-                        var deleteMembersStructuredLog = "{@MembersWithoutChatPersonKeys}";
-                        Logger.LogWarning( $"{logMessagePrefix}: Unable to delete chat channel members in the external chat system, as matching chat person keys could not be found in Rock. {structuredLog} {deleteMembersStructuredLog}", syncCommands, groupSyncConfig, membersWithoutChatPersonKeys );
-                    }
-
-                    // Filter down to members that we're sure have keys.
-                    deleteMembers = deleteMembers
-                        .Except( membersWithoutChatPersonKeys )
-                        .ToList();
-
-                    // Organize members by channel.
-                    foreach ( var member in deleteMembers )
-                    {
-                        var chatUserKey = rockChatUserKeys
-                            .First( k => k.PersonId == member.PersonId )
-                            .ChatUserKey;
-
-                        var syncChannelCommand = GetOrAddCommandForChannel( member.GroupId );
-                        if ( syncChannelCommand == null )
-                        {
-                            // Could happen if the Rock group or group type were deleted since this command was issued.
-                            continue;
-                        }
-
-                        if ( !syncChannelCommand.UserKeysToDelete.Contains( chatUserKey ) )
-                        {
-                            syncChannelCommand.UserKeysToDelete.Add( chatUserKey );
-                            MapMemberToChannelMemberKey( GetChatChannelMemberKey( syncChannelCommand.ChatChannelKey, chatUserKey ), member );
-                        }
-                    }
-                }
-
-                #endregion Channel Members to Delete
-
-                #region Channel Members to Create or Update
-
-                // Handle commands to create new or update existing group members. The chat sync job will ensure deceased
-                // members are properly removed from the external chat system, so don't include them here.
-                var createOrUpdateMembers = rockChatGroupMembers
-                    .Where( c =>
-                        !c.ShouldDelete
-                        && GroupCache.Get( c.GroupId )?.GetIsChatEnabled() == true
-                    )
-                    .ToList();
-
-                if ( createOrUpdateMembers.Any() )
-                {
-                    // Chat channel members require chat users. We'll start by ensuring a user exists in the external
-                    // chat system for each member.
-                    var syncPersonToChatCommands = createOrUpdateMembers
-                        .GroupBy( c => c.PersonId )
-                        .Select( g => g.Key )
-                        .Distinct()
-                        .Select( personId =>
-                            new SyncPersonToChatCommand
-                            {
-                                PersonId = personId,
-                                ShouldEnsureChatAliasExists = true
-                            }
+                    // Handle commands to delete group members.
+                    var deleteMembers = rockChatGroupMembers
+                        .Where( c =>
+                            c.ShouldDelete
+                            // Ensure the parent group currently has chat enabled. If the group doesn't have chat enabled,
+                            // existing channel members should have already been deleted by other processes, or worst case:
+                            // will get deleted by the chat sync job.
+                            && GroupCache.Get( c.GroupId )?.GetIsChatEnabled() == true
                         )
                         .ToList();
 
-                    // The next method call does the following:
-                    //  1) Ensures this person has a chat-specific person alias in Rock;
-                    //  2) Ensures this person has a chat user in the external chat system.
-                    var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
-
-                    // If `createOrUpdateChatUsersResult` failed, a detailed error will have already been logged.
-                    if ( createOrUpdateChatUsersResult != null )
+                    if ( deleteMembers.Any() )
                     {
-                        // Add the created or updated chat users to the result (for chat sync job logging).
-                        result.InnerResults.Add( createOrUpdateChatUsersResult );
+                        // For members we plan to delete, try to find their existing chat user key in Rock.
+                        var deletePersonIds = deleteMembers
+                            .GroupBy( c => c.PersonId )
+                            .Select( g => g.Key )
+                            .Distinct()
+                            .ToList();
 
-                        // Just in case any people still don't have a chat user key, let's at least log them. This will
-                        // probably never happen. Subbing "user" for "person" here, as this can get logged in the UI.
-                        var membersWithoutChatPersonKeys = createOrUpdateMembers
-                            .Where( c => !createOrUpdateChatUsersResult.UserResults.Any( r => r.PersonId == c.PersonId ) )
+                        var rockChatUserKeys = ( personService ?? new PersonService( RockContext ) )
+                            .GetActiveRockChatUserKeys( deletePersonIds );
+
+                        // Just in case any people don't have a chat user key, let's at least log them.
+                        // Subbing "user" for "person" here, as this can get logged in the UI.
+                        var membersWithoutChatPersonKeys = deleteMembers
+                            .Where( c => !rockChatUserKeys.Any( r => r.PersonId == c.PersonId ) )
                             .ToList();
 
                         if ( membersWithoutChatPersonKeys.Any() )
                         {
-                            var createOrUpdateMembersStructuredLog = "{@MembersWithoutChatPersonKeys}";
-                            Logger.LogWarning( $"{logMessagePrefix}: Unable to create or update chat channel members in the external chat system, as matching chat person keys could not be found in Rock. {structuredLog} {createOrUpdateMembersStructuredLog}", syncCommands, groupSyncConfig, membersWithoutChatPersonKeys );
+                            var deleteMembersStructuredLog = "{@MembersWithoutChatPersonKeys}";
+                            Logger.LogWarning( $"{logMessagePrefix}: Unable to delete chat channel members in the external chat system, as matching chat person keys could not be found in Rock. {structuredLog} {deleteMembersStructuredLog}", syncCommands, groupSyncConfig, membersWithoutChatPersonKeys );
                         }
 
-                        // Filter down to members that we're sure have chat user keys.
-                        createOrUpdateMembers = createOrUpdateMembers
+                        // Filter down to members that we're sure have keys.
+                        deleteMembers = deleteMembers
                             .Except( membersWithoutChatPersonKeys )
                             .ToList();
 
                         // Organize members by channel.
-                        foreach ( var member in createOrUpdateMembers )
+                        foreach ( var member in deleteMembers )
                         {
-                            var chatUserKey = createOrUpdateChatUsersResult
-                                .UserResults
-                                .First( r => r.PersonId == member.PersonId )
+                            var chatUserKey = rockChatUserKeys
+                                .First( k => k.PersonId == member.PersonId )
                                 .ChatUserKey;
 
                             var syncChannelCommand = GetOrAddCommandForChannel( member.GroupId );
@@ -2057,233 +1991,315 @@ namespace Rock.Communication.Chat
                                 continue;
                             }
 
-                            if ( !syncChannelCommand.MembersToCreateOrUpdate.Any( m => m.ChatUserKey == chatUserKey ) )
+                            if ( !syncChannelCommand.UserKeysToDelete.Contains( chatUserKey ) )
                             {
-                                var chatChannelMember = TryConvertToChatChannelMember(
-                                    member,
-                                    syncChannelCommand.ChatChannelTypeKey,
-                                    syncChannelCommand.ChatChannelKey,
-                                    chatUserKey
-                                );
+                                syncChannelCommand.UserKeysToDelete.Add( chatUserKey );
+                                MapMemberToChannelMemberKey( GetChatChannelMemberKey( syncChannelCommand.ChatChannelKey, chatUserKey ), member );
+                            }
+                        }
+                    }
 
-                                if ( chatChannelMember == null )
+                    #endregion Channel Members to Delete
+
+                    #region Channel Members to Create or Update
+
+                    // Handle commands to create new or update existing group members. The chat sync job will ensure deceased
+                    // members are properly removed from the external chat system, so don't include them here.
+                    var createOrUpdateMembers = rockChatGroupMembers
+                        .Where( c =>
+                            !c.ShouldDelete
+                            && GroupCache.Get( c.GroupId )?.GetIsChatEnabled() == true
+                        )
+                        .ToList();
+
+                    if ( createOrUpdateMembers.Any() )
+                    {
+                        // Chat channel members require chat users. We'll start by ensuring a user exists in the external
+                        // chat system for each member.
+                        var syncPersonToChatCommands = createOrUpdateMembers
+                            .GroupBy( c => c.PersonId )
+                            .Select( g => g.Key )
+                            .Distinct()
+                            .Select( personId =>
+                                new SyncPersonToChatCommand
                                 {
+                                    PersonId = personId,
+                                    ShouldEnsureChatAliasExists = true
+                                }
+                            )
+                            .ToList();
+
+                        // The next method call does the following:
+                        //  1) Ensures this person has a chat-specific person alias in Rock;
+                        //  2) Ensures this person has a chat user in the external chat system.
+                        var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
+
+                        // If `createOrUpdateChatUsersResult` failed, a detailed error will have already been logged.
+                        if ( createOrUpdateChatUsersResult != null )
+                        {
+                            // Add the created or updated chat users to the result (for chat sync job logging).
+                            result.InnerResults.Add( createOrUpdateChatUsersResult );
+
+                            // Just in case any people still don't have a chat user key, let's at least log them. This will
+                            // probably never happen. Subbing "user" for "person" here, as this can get logged in the UI.
+                            var membersWithoutChatPersonKeys = createOrUpdateMembers
+                                .Where( c => !createOrUpdateChatUsersResult.UserResults.Any( r => r.PersonId == c.PersonId ) )
+                                .ToList();
+
+                            if ( membersWithoutChatPersonKeys.Any() )
+                            {
+                                var createOrUpdateMembersStructuredLog = "{@MembersWithoutChatPersonKeys}";
+                                Logger.LogWarning( $"{logMessagePrefix}: Unable to create or update chat channel members in the external chat system, as matching chat person keys could not be found in Rock. {structuredLog} {createOrUpdateMembersStructuredLog}", syncCommands, groupSyncConfig, membersWithoutChatPersonKeys );
+                            }
+
+                            // Filter down to members that we're sure have chat user keys.
+                            createOrUpdateMembers = createOrUpdateMembers
+                                .Except( membersWithoutChatPersonKeys )
+                                .ToList();
+
+                            // Organize members by channel.
+                            foreach ( var member in createOrUpdateMembers )
+                            {
+                                var chatUserKey = createOrUpdateChatUsersResult
+                                    .UserResults
+                                    .First( r => r.PersonId == member.PersonId )
+                                    .ChatUserKey;
+
+                                var syncChannelCommand = GetOrAddCommandForChannel( member.GroupId );
+                                if ( syncChannelCommand == null )
+                                {
+                                    // Could happen if the Rock group or group type were deleted since this command was issued.
                                     continue;
                                 }
 
-                                syncChannelCommand.MembersToCreateOrUpdate.Add( chatChannelMember );
-                                MapMemberToChannelMemberKey( chatChannelMember.Key, member );
-                            }
-                        }
-                    }
-                }
-
-                #endregion Channel Members to Create or Update
-
-                // Don't let individual channel failures cause all to fail.
-                var perChannelExceptions = new List<Exception>();
-
-                foreach ( var command in perChannelCommands )
-                {
-                    // Get the existing members.
-                    var getChatChannelMembersResult = await ChatProvider.GetChatChannelMembersAsync(
-                        command.ChatChannelTypeKey,
-                        command.ChatChannelKey,
-                        command.DistinctChatUserKeys
-                    );
-
-                    if ( getChatChannelMembersResult?.Exception is MemberChatChannelNotFoundException memberChatChannelNotFoundException )
-                    {
-                        // If this failure was due to the channel not existing in the external chat system, we'll try to
-                        // create it and then re-attempt to sync all of its members.
-
-                        // Note that we only want to handle this exception if the channel was originally created
-                        // within Rock; we don't want to accidentally recreate a Stream channel that's been deleted.
-                        // Looking up the group ID using this method will accomplish this, as it will only return
-                        // the ID if it's embedded within the chat channel key.
-                        var groupId = GetGroupId( memberChatChannelNotFoundException.ChatChannelKey );
-
-                        // We'll manage a hash set of group IDs we've already tried to sync using this approach, to
-                        // prevent a recursive loop that could lead to a stack overflow exception.
-                        var shouldSyncGroup = groupId.GetValueOrDefault() > 0
-                            && (
-                                groupSyncConfig.AlreadySyncedGroupIds == null
-                                || groupSyncConfig.AlreadySyncedGroupIds.Add( groupId.Value )
-                            );
-
-                        GroupCache groupCache = null;
-                        if ( shouldSyncGroup )
-                        {
-                            groupCache = GroupCache.Get( groupId.Value );
-                        }
-
-                        if ( groupCache != null )
-                        {
-                            if ( groupSyncConfig.AlreadySyncedGroupIds == null )
-                            {
-                                groupSyncConfig.AlreadySyncedGroupIds = new HashSet<int> { groupCache.Id };
-                            }
-
-                            var groupSyncCommands = new List<SyncGroupToChatCommand>
-                            {
-                                new SyncGroupToChatCommand
+                                if ( !syncChannelCommand.MembersToCreateOrUpdate.Any( m => m.ChatUserKey == chatUserKey ) )
                                 {
-                                    GroupTypeId = groupCache.GroupTypeId,
-                                    GroupId = groupCache.Id,
-                                    ChatChannelKey = groupCache.ChatChannelKey
-                                }
-                            };
+                                    var chatChannelMember = TryConvertToChatChannelMember(
+                                        member,
+                                        syncChannelCommand.ChatChannelTypeKey,
+                                        syncChannelCommand.ChatChannelKey,
+                                        chatUserKey
+                                    );
 
-                            // Enable syncing of group members for skipped & updated groups, just in case another
-                            // process beats this one to creating the missing channel.
-                            groupSyncConfig.ShouldSyncAllGroupMembers = true;
+                                    if ( chatChannelMember == null )
+                                    {
+                                        continue;
+                                    }
 
-                            var innerGroupSyncResult = await SyncGroupsToChatProviderAsync(
-                                groupSyncCommands,
-                                groupSyncConfig
-                            );
-
-                            if ( innerGroupSyncResult != null )
-                            {
-                                // Relay any members that were synced to the outer result instance.
-                                result.Created.UnionWith( innerGroupSyncResult.Created );
-                                result.Updated.UnionWith( innerGroupSyncResult.Updated );
-                                result.Deleted.UnionWith( innerGroupSyncResult.Deleted );
-
-                                if ( innerGroupSyncResult.HasException )
-                                {
-                                    perChannelExceptions.Add( innerGroupSyncResult.Exception );
+                                    syncChannelCommand.MembersToCreateOrUpdate.Add( chatChannelMember );
+                                    MapMemberToChannelMemberKey( chatChannelMember.Key, member );
                                 }
                             }
                         }
-
-                        continue;
                     }
-                    else if ( getChatChannelMembersResult == null || getChatChannelMembersResult.HasException )
+
+                    #endregion Channel Members to Create or Update
+
+                    // Don't let individual channel failures cause all to fail.
+                    var perChannelExceptions = new List<Exception>();
+
+                    foreach ( var command in perChannelCommands )
                     {
-                        perChannelExceptions.Add(
-                            new ChatSyncException(
-                                $"{logMessagePrefix} failed on step '{nameof( ChatProvider.GetChatChannelMembersAsync ).SplitCase()}' for Chat Channel with key '{command.ChatChannelKey}'.",
-                                getChatChannelMembersResult?.Exception
-                            )
+                        // Get the existing members.
+                        var getChatChannelMembersResult = await ChatProvider.GetChatChannelMembersAsync(
+                            command.ChatChannelTypeKey,
+                            command.ChatChannelKey,
+                            command.DistinctChatUserKeys
                         );
 
-                        continue;
-                    }
-
-                    var existingMembers = getChatChannelMembersResult.ChatChannelMembers;
-
-                    var membersToCreate = new List<ChatChannelMember>();
-                    var membersToUpdate = new Dictionary<ChatChannelMember, ChatChannelMember>();
-                    var membersToDelete = new List<string>();
-
-                    foreach ( var chatChannelMember in command.MembersToCreateOrUpdate )
-                    {
-                        // Do they already exist in the external chat system?
-                        var existingMember = existingMembers?.FirstOrDefault( m => m.ChatUserKey == chatChannelMember.ChatUserKey );
-
-                        if ( existingMember != null )
+                        if ( getChatChannelMembersResult?.Exception is MemberChatChannelNotFoundException memberChatChannelNotFoundException )
                         {
-                            // Examine the member to see if anything has changed.
-                            if ( existingMember.Role != chatChannelMember.Role
-                                || existingMember.IsChatBanned != chatChannelMember.IsChatBanned
-                                || existingMember.IsChatMuted != chatChannelMember.IsChatMuted )
+                            // If this failure was due to the channel not existing in the external chat system, we'll try to
+                            // create it and then re-attempt to sync all of its members.
+
+                            // Note that we only want to handle this exception if the channel was originally created
+                            // within Rock; we don't want to accidentally recreate a Stream channel that's been deleted.
+                            // Looking up the group ID using this method will accomplish this, as it will only return
+                            // the ID if it's embedded within the chat channel key.
+                            var groupId = GetGroupId( memberChatChannelNotFoundException.ChatChannelKey );
+
+                            // We'll manage a hash set of group IDs we've already tried to sync using this approach, to
+                            // prevent a recursive loop that could lead to a stack overflow exception.
+                            var shouldSyncGroup = groupId.GetValueOrDefault() > 0
+                                && (
+                                    groupSyncConfig.AlreadySyncedGroupIds == null
+                                    || groupSyncConfig.AlreadySyncedGroupIds.Add( groupId.Value )
+                                );
+
+                            GroupCache groupCache = null;
+                            if ( shouldSyncGroup )
                             {
-                                // Add both the new and old instances so the chat provider can decide how to apply updates.
-                                membersToUpdate.Add( chatChannelMember, existingMember );
+                                groupCache = GroupCache.Get( groupId.Value );
+                            }
+
+                            if ( groupCache != null )
+                            {
+                                if ( groupSyncConfig.AlreadySyncedGroupIds == null )
+                                {
+                                    groupSyncConfig.AlreadySyncedGroupIds = new HashSet<int> { groupCache.Id };
+                                }
+
+                                var groupSyncCommands = new List<SyncGroupToChatCommand>
+                                {
+                                    new SyncGroupToChatCommand
+                                    {
+                                        GroupTypeId = groupCache.GroupTypeId,
+                                        GroupId = groupCache.Id,
+                                        ChatChannelKey = groupCache.ChatChannelKey
+                                    }
+                                };
+
+                                // Enable syncing of group members for skipped & updated groups, just in case another
+                                // process beats this one to creating the missing channel.
+                                groupSyncConfig.ShouldSyncAllGroupMembers = true;
+
+                                var innerGroupSyncResult = await SyncGroupsToChatProviderAsync(
+                                    groupSyncCommands,
+                                    groupSyncConfig
+                                );
+
+                                if ( innerGroupSyncResult != null )
+                                {
+                                    // Relay any members that were synced to the outer result instance.
+                                    result.Created.UnionWith( innerGroupSyncResult.Created );
+                                    result.Updated.UnionWith( innerGroupSyncResult.Updated );
+                                    result.Deleted.UnionWith( innerGroupSyncResult.Deleted );
+
+                                    if ( innerGroupSyncResult.HasException )
+                                    {
+                                        perChannelExceptions.Add( innerGroupSyncResult.Exception );
+                                    }
+                                }
+                            }
+
+                            continue;
+                        }
+                        else if ( getChatChannelMembersResult == null || getChatChannelMembersResult.HasException )
+                        {
+                            perChannelExceptions.Add(
+                                new ChatSyncException(
+                                    $"{logMessagePrefix} failed on step '{nameof( ChatProvider.GetChatChannelMembersAsync ).SplitCase()}' for Chat Channel with key '{command.ChatChannelKey}'.",
+                                    getChatChannelMembersResult?.Exception
+                                )
+                            );
+
+                            continue;
+                        }
+
+                        var existingMembers = getChatChannelMembersResult.ChatChannelMembers;
+
+                        var membersToCreate = new List<ChatChannelMember>();
+                        var membersToUpdate = new Dictionary<ChatChannelMember, ChatChannelMember>();
+                        var membersToDelete = new List<string>();
+
+                        foreach ( var chatChannelMember in command.MembersToCreateOrUpdate )
+                        {
+                            // Do they already exist in the external chat system?
+                            var existingMember = existingMembers?.FirstOrDefault( m => m.ChatUserKey == chatChannelMember.ChatUserKey );
+
+                            if ( existingMember != null )
+                            {
+                                // Examine the member to see if anything has changed.
+                                if ( existingMember.Role != chatChannelMember.Role
+                                    || existingMember.IsChatBanned != chatChannelMember.IsChatBanned
+                                    || existingMember.IsChatMuted != chatChannelMember.IsChatMuted )
+                                {
+                                    // Add both the new and old instances so the chat provider can decide how to apply updates.
+                                    membersToUpdate.Add( chatChannelMember, existingMember );
+                                }
+                                else
+                                {
+                                    // Add them to the results as an already up-to-date member.
+                                    AddMemberToResult( existingMember.Key, ChatSyncType.Skip );
+                                }
                             }
                             else
                             {
-                                // Add them to the results as an already up-to-date member.
-                                AddMemberToResult( existingMember.Key, ChatSyncType.Skip );
+                                // The member doesn't exist yet in the external chat system; create them.
+                                membersToCreate.Add( chatChannelMember );
                             }
                         }
-                        else
+
+                        foreach ( var chatUserKey in command.UserKeysToDelete )
                         {
-                            // The member doesn't exist yet in the external chat system; create them.
-                            membersToCreate.Add( chatChannelMember );
+                            // Do they exist in the external chat system?
+                            if ( existingMembers?.Any( m => m.ChatUserKey == chatUserKey ) == true )
+                            {
+                                membersToDelete.Add( chatUserKey );
+                            }
+                        }
+
+                        // Don't let individual CRUD failures cause all to fail.
+                        var crudExceptions = new List<Exception>();
+
+                        if ( membersToDelete.Any() )
+                        {
+                            var deletedResult = await ChatProvider.DeleteChatChannelMembersAsync(
+                                command.ChatChannelTypeKey,
+                                command.ChatChannelKey,
+                                membersToDelete
+                            );
+
+                            deletedResult?.Deleted.ToList().ForEach( key => AddMemberToResult( key, ChatSyncType.Delete ) );
+
+                            if ( deletedResult?.HasException == true )
+                            {
+                                crudExceptions.Add( deletedResult.Exception );
+                            }
+                        }
+
+                        if ( membersToCreate.Any() )
+                        {
+                            var createdResult = await ChatProvider.CreateChatChannelMembersAsync(
+                                command.ChatChannelTypeKey,
+                                command.ChatChannelKey,
+                                membersToCreate
+                            );
+
+                            createdResult?.Created.ToList().ForEach( key => AddMemberToResult( key, ChatSyncType.Create ) );
+
+                            if ( createdResult?.HasException == true )
+                            {
+                                crudExceptions.Add( createdResult.Exception );
+                            }
+                        }
+
+                        if ( membersToUpdate.Any() )
+                        {
+                            var updatedResult = await ChatProvider.UpdateChatChannelMembersAsync(
+                                command.ChatChannelTypeKey,
+                                command.ChatChannelKey,
+                                membersToUpdate
+                            );
+
+                            updatedResult?.Updated.ToList().ForEach( key => AddMemberToResult( key, ChatSyncType.Update ) );
+
+                            if ( updatedResult?.HasException == true )
+                            {
+                                crudExceptions.Add( updatedResult.Exception );
+                            }
+                        }
+
+                        if ( crudExceptions.Any() )
+                        {
+                            perChannelExceptions.Add( GetFirstOrAggregateException( crudExceptions ) );
                         }
                     }
 
-                    foreach ( var chatUserKey in command.UserKeysToDelete )
+                    if ( perChannelExceptions.Any() )
                     {
-                        // Do they exist in the external chat system?
-                        if ( existingMembers?.Any( m => m.ChatUserKey == chatUserKey ) == true )
-                        {
-                            membersToDelete.Add( chatUserKey );
-                        }
-                    }
-
-                    // Don't let individual CRUD failures cause all to fail.
-                    var crudExceptions = new List<Exception>();
-
-                    if ( membersToDelete.Any() )
-                    {
-                        var deletedResult = await ChatProvider.DeleteChatChannelMembersAsync(
-                            command.ChatChannelTypeKey,
-                            command.ChatChannelKey,
-                            membersToDelete
-                        );
-
-                        deletedResult?.Deleted.ToList().ForEach( key => AddMemberToResult( key, ChatSyncType.Delete ) );
-
-                        if ( deletedResult?.HasException == true )
-                        {
-                            crudExceptions.Add( deletedResult.Exception );
-                        }
-                    }
-
-                    if ( membersToCreate.Any() )
-                    {
-                        var createdResult = await ChatProvider.CreateChatChannelMembersAsync(
-                            command.ChatChannelTypeKey,
-                            command.ChatChannelKey,
-                            membersToCreate
-                        );
-
-                        createdResult?.Created.ToList().ForEach( key => AddMemberToResult( key, ChatSyncType.Create ) );
-
-                        if ( createdResult?.HasException == true )
-                        {
-                            crudExceptions.Add( createdResult.Exception );
-                        }
-                    }
-
-                    if ( membersToUpdate.Any() )
-                    {
-                        var updatedResult = await ChatProvider.UpdateChatChannelMembersAsync(
-                            command.ChatChannelTypeKey,
-                            command.ChatChannelKey,
-                            membersToUpdate
-                        );
-
-                        updatedResult?.Updated.ToList().ForEach( key => AddMemberToResult( key, ChatSyncType.Update ) );
-
-                        if ( updatedResult?.HasException == true )
-                        {
-                            crudExceptions.Add( updatedResult.Exception );
-                        }
-                    }
-
-                    if ( crudExceptions.Any() )
-                    {
-                        perChannelExceptions.Add( GetFirstOrAggregateException( crudExceptions ) );
+                        result.Exception = GetFirstOrAggregateException( perChannelExceptions );
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} failed. {structuredLog}", syncCommands, groupSyncConfig );
                     }
                 }
-
-                if ( perChannelExceptions.Any() )
+                catch ( Exception ex )
                 {
-                    result.Exception = GetFirstOrAggregateException( perChannelExceptions );
-                    Logger.LogError( result.Exception, $"{logMessagePrefix} failed. {structuredLog}", syncCommands, groupSyncConfig );
+                    result.Exception = ex;
+                    Logger.LogError( ex, $"{logMessagePrefix} failed. {structuredLog}", syncCommands, groupSyncConfig );
                 }
-            }
-            catch ( Exception ex )
-            {
-                result.Exception = ex;
-                Logger.LogError( ex, $"{logMessagePrefix} failed. {structuredLog}", syncCommands, groupSyncConfig );
-            }
 
-            return result;
+                return result;
+            }
         }
 
         /// <summary>
@@ -2307,164 +2323,167 @@ namespace Rock.Communication.Chat
                 return result;
             }
 
-            var structuredLog = "SyncCommands: {@SyncCommands}";
-            var logMessagePrefix = $"{LogMessagePrefix} {nameof( CreateOrUpdateChatUsersAsync ).SplitCase()} failed";
-
-            try
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Create Or Update Chat Users" ) )
             {
-                var chatConfiguration = GetChatConfiguration();
+                var structuredLog = "SyncCommands: {@SyncCommands}";
+                var logMessagePrefix = $"{LogMessagePrefix} {nameof( CreateOrUpdateChatUsersAsync ).SplitCase()} failed";
 
-                // Ensure each person has a chat-specific person alias record in Rock IF instructed by their respective sync commands.
-                var rockChatUserPeople = GetOrCreateRockChatUserPeople( syncCommands, chatConfiguration );
-
-                // Do we have any people to sync all the way to the chat provider?
-                if ( !rockChatUserPeople.Any() )
+                try
                 {
-                    return result;
-                }
+                    var chatConfiguration = GetChatConfiguration();
 
-                // Get the existing chat users.
-                var chatUserKeys = rockChatUserPeople
-                    .Where( p => p.ChatPersonAliasGuid.HasValue )
-                    .Select( p => p.ChatUserKey )
-                    .ToList();
+                    // Ensure each person has a chat-specific person alias record in Rock IF instructed by their respective sync commands.
+                    var rockChatUserPeople = GetOrCreateRockChatUserPeople( syncCommands, chatConfiguration );
 
-                // Get the existing users.
-                var getChatUsersResult = await ChatProvider.GetChatUsersAsync( chatUserKeys );
-                if ( getChatUsersResult == null || getChatUsersResult.HasException )
-                {
-                    result.Exception = getChatUsersResult?.Exception;
-                    Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.GetChatUsersAsync ).SplitCase()}'. {structuredLog}", syncCommands );
-
-                    return result;
-                }
-
-                var usersToCreate = new List<ChatUser>();
-                var usersToUpdate = new List<ChatUser>();
-
-                // A local function to add users to the outgoing results collection only AFTER we know they've been
-                // successfully created or updated within the external chat system.
-                void AddChatUserToResults( string chatUserKey, ChatSyncType chatSyncType )
-                {
-                    var chatUserPerson = rockChatUserPeople.FirstOrDefault( p => p.ChatUserKey == chatUserKey );
-                    if ( chatUserPerson == null )
+                    // Do we have any people to sync all the way to the chat provider?
+                    if ( !rockChatUserPeople.Any() )
                     {
-                        // Should never happen.
-                        return;
+                        return result;
                     }
 
-                    result.UserResults.Add(
-                        new ChatSyncCreateOrUpdateUserResult
+                    // Get the existing chat users.
+                    var chatUserKeys = rockChatUserPeople
+                        .Where( p => p.ChatPersonAliasGuid.HasValue )
+                        .Select( p => p.ChatUserKey )
+                        .ToList();
+
+                    // Get the existing users.
+                    var getChatUsersResult = await ChatProvider.GetChatUsersAsync( chatUserKeys );
+                    if ( getChatUsersResult == null || getChatUsersResult.HasException )
+                    {
+                        result.Exception = getChatUsersResult?.Exception;
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.GetChatUsersAsync ).SplitCase()}'. {structuredLog}", syncCommands );
+
+                        return result;
+                    }
+
+                    var usersToCreate = new List<ChatUser>();
+                    var usersToUpdate = new List<ChatUser>();
+
+                    // A local function to add users to the outgoing results collection only AFTER we know they've been
+                    // successfully created or updated within the external chat system.
+                    void AddChatUserToResults( string chatUserKey, ChatSyncType chatSyncType )
+                    {
+                        var chatUserPerson = rockChatUserPeople.FirstOrDefault( p => p.ChatUserKey == chatUserKey );
+                        if ( chatUserPerson == null )
                         {
-                            ChatUserKey = chatUserKey,
-                            PersonId = chatUserPerson.PersonId,
-                            SyncTypePerformed = chatSyncType
+                            // Should never happen.
+                            return;
                         }
-                    );
-                }
 
-                // A local function for quick badge list comparison.
-                bool AreBadgeListsEqual( List<ChatBadge> badges1, List<ChatBadge> badges2 )
-                {
-                    if ( badges1?.Count != badges2?.Count )
-                    {
-                        // Quick exit if counts differ.
-                        return false;
-                    }
-
-                    var badgeSet1 = new HashSet<string>( badges1.Select( b => b?.BadgeHash ) );
-                    var badgeSet2 = new HashSet<string>( badges2.Select( b => b?.BadgeHash ) );
-
-                    return badgeSet1.SetEquals( badgeSet2 );
-                }
-
-                foreach ( var rockChatUserPerson in rockChatUserPeople )
-                {
-                    var chatUser = TryConvertToChatUser( rockChatUserPerson, chatConfiguration );
-                    if ( chatUser == null )
-                    {
-                        continue;
-                    }
-
-                    // Do they already exist in the external chat system?
-                    var existingUser = getChatUsersResult
-                        .ChatUsers
-                        .FirstOrDefault( u => u.Key == chatUser.Key );
-
-                    if ( existingUser != null )
-                    {
-                        // Examine the user to see if anything has changed.
-                        var shouldUpdate = existingUser.Name != chatUser.Name
-                            || existingUser.PhotoUrl != chatUser.PhotoUrl
-                            || existingUser.IsAdmin != chatUser.IsAdmin
-                            || existingUser.IsProfileVisible != chatUser.IsProfileVisible
-                            || existingUser.IsOpenDirectMessageAllowed != chatUser.IsOpenDirectMessageAllowed
-                            || existingUser.CampusId != chatUser.CampusId;
-
-                        if ( !shouldUpdate )
-                        {
-                            // Only compare badges as a last resort, if no other props already forced an update.
-                            if ( !AreBadgeListsEqual( existingUser.Badges, chatUser.Badges ) )
+                        result.UserResults.Add(
+                            new ChatSyncCreateOrUpdateUserResult
                             {
-                                shouldUpdate = true;
+                                ChatUserKey = chatUserKey,
+                                PersonId = chatUserPerson.PersonId,
+                                SyncTypePerformed = chatSyncType
                             }
+                        );
+                    }
+
+                    // A local function for quick badge list comparison.
+                    bool AreBadgeListsEqual( List<ChatBadge> badges1, List<ChatBadge> badges2 )
+                    {
+                        if ( badges1?.Count != badges2?.Count )
+                        {
+                            // Quick exit if counts differ.
+                            return false;
                         }
 
-                        if ( shouldUpdate )
+                        var badgeSet1 = new HashSet<string>( badges1.Select( b => b?.BadgeHash ) );
+                        var badgeSet2 = new HashSet<string>( badges2.Select( b => b?.BadgeHash ) );
+
+                        return badgeSet1.SetEquals( badgeSet2 );
+                    }
+
+                    foreach ( var rockChatUserPerson in rockChatUserPeople )
+                    {
+                        var chatUser = TryConvertToChatUser( rockChatUserPerson, chatConfiguration );
+                        if ( chatUser == null )
                         {
-                            usersToUpdate.Add( chatUser );
+                            continue;
+                        }
+
+                        // Do they already exist in the external chat system?
+                        var existingUser = getChatUsersResult
+                            .ChatUsers
+                            .FirstOrDefault( u => u.Key == chatUser.Key );
+
+                        if ( existingUser != null )
+                        {
+                            // Examine the user to see if anything has changed.
+                            var shouldUpdate = existingUser.Name != chatUser.Name
+                                || existingUser.PhotoUrl != chatUser.PhotoUrl
+                                || existingUser.IsAdmin != chatUser.IsAdmin
+                                || existingUser.IsProfileVisible != chatUser.IsProfileVisible
+                                || existingUser.IsOpenDirectMessageAllowed != chatUser.IsOpenDirectMessageAllowed
+                                || existingUser.CampusId != chatUser.CampusId;
+
+                            if ( !shouldUpdate )
+                            {
+                                // Only compare badges as a last resort, if no other props already forced an update.
+                                if ( !AreBadgeListsEqual( existingUser.Badges, chatUser.Badges ) )
+                                {
+                                    shouldUpdate = true;
+                                }
+                            }
+
+                            if ( shouldUpdate )
+                            {
+                                usersToUpdate.Add( chatUser );
+                            }
+                            else
+                            {
+                                // Add them to the results as an already-up-to-date user.
+                                AddChatUserToResults( chatUser.Key, ChatSyncType.Skip );
+                            }
                         }
                         else
                         {
-                            // Add them to the results as an already-up-to-date user.
-                            AddChatUserToResults( chatUser.Key, ChatSyncType.Skip );
+                            // The user doesn't exist yet in the external chat system; create them.
+                            usersToCreate.Add( chatUser );
                         }
                     }
-                    else
+
+                    // Don't let individual CRUD failures cause all to fail.
+                    var crudExceptions = new List<Exception>();
+
+                    if ( usersToCreate.Any() )
                     {
-                        // The user doesn't exist yet in the external chat system; create them.
-                        usersToCreate.Add( chatUser );
+                        var createdResult = await ChatProvider.CreateChatUsersAsync( usersToCreate );
+                        createdResult?.Created.ToList().ForEach( key => AddChatUserToResults( key, ChatSyncType.Create ) );
+
+                        if ( createdResult?.HasException == true )
+                        {
+                            crudExceptions.Add( createdResult.Exception );
+                        }
+                    }
+
+                    if ( usersToUpdate.Any() )
+                    {
+                        var updatedResult = await ChatProvider.UpdateChatUsersAsync( usersToUpdate );
+                        updatedResult?.Updated.ToList().ForEach( key => AddChatUserToResults( key, ChatSyncType.Update ) );
+
+                        if ( updatedResult?.HasException == true )
+                        {
+                            crudExceptions.Add( updatedResult.Exception );
+                        }
+                    }
+
+                    if ( crudExceptions.Any() )
+                    {
+                        result.Exception = GetFirstOrAggregateException( crudExceptions );
+                        Logger.LogError( result.Exception, $"{logMessagePrefix}. {structuredLog}", syncCommands );
                     }
                 }
-
-                // Don't let individual CRUD failures cause all to fail.
-                var crudExceptions = new List<Exception>();
-
-                if ( usersToCreate.Any() )
+                catch ( Exception ex )
                 {
-                    var createdResult = await ChatProvider.CreateChatUsersAsync( usersToCreate );
-                    createdResult?.Created.ToList().ForEach( key => AddChatUserToResults( key, ChatSyncType.Create ) );
-
-                    if ( createdResult?.HasException == true )
-                    {
-                        crudExceptions.Add( createdResult.Exception );
-                    }
+                    result.Exception = ex;
+                    Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", syncCommands );
                 }
 
-                if ( usersToUpdate.Any() )
-                {
-                    var updatedResult = await ChatProvider.UpdateChatUsersAsync( usersToUpdate );
-                    updatedResult?.Updated.ToList().ForEach( key => AddChatUserToResults( key, ChatSyncType.Update ) );
-
-                    if ( updatedResult?.HasException == true )
-                    {
-                        crudExceptions.Add( updatedResult.Exception );
-                    }
-                }
-
-                if ( crudExceptions.Any() )
-                {
-                    result.Exception = GetFirstOrAggregateException( crudExceptions );
-                    Logger.LogError( result.Exception, $"{logMessagePrefix}. {structuredLog}", syncCommands );
-                }
+                return result;
             }
-            catch ( Exception ex )
-            {
-                result.Exception = ex;
-                Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", syncCommands );
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -2495,80 +2514,83 @@ namespace Rock.Communication.Chat
                 return result;
             }
 
-            var structuredLog = "PersonId: {PersonId}";
-            var logMessagePrefix = $"{LogMessagePrefix} {nameof( DeleteMergedChatUsersAsync ).SplitCase()} failed";
-
-            try
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Delete Merged Chat Users" ) )
             {
-                var peopleWithMultipleChatUserKeys = new PersonService( RockContext )
-                        .GetPeopleWithMultipleChatUserKeys( personId );
+                var structuredLog = "PersonId: {PersonId}";
+                var logMessagePrefix = $"{LogMessagePrefix} {nameof( DeleteMergedChatUsersAsync ).SplitCase()} failed";
 
-                if ( peopleWithMultipleChatUserKeys?.Any() != true )
+                try
                 {
-                    return result;
-                }
+                    var peopleWithMultipleChatUserKeys = new PersonService( RockContext )
+                            .GetPeopleWithMultipleChatUserKeys( personId );
 
-                // Don't let individual exceptions cause all to fail.
-                var perPersonExceptions = new List<Exception>();
-
-                // This will be used to clear out the chat user[foreign] keys for the chat users who are deleted.
-                var personAliasService = new PersonAliasService( RockContext );
-
-                foreach ( var personKvp in peopleWithMultipleChatUserKeys )
-                {
-                    var rockChatUserKeys = personKvp.Value
-                        ?.Where( k =>
-                            k.ChatPersonAliasId.HasValue
-                            && k.ChatUserKey.IsNotNullOrWhiteSpace()
-                        )
-                        .OrderBy( k => k.ChatPersonAliasId ) // Keep the earliest chat person alias.
-                        .ToList();
-
-                    var keyToKeep = rockChatUserKeys?.FirstOrDefault();
-                    if ( keyToKeep == null )
+                    if ( peopleWithMultipleChatUserKeys?.Any() != true )
                     {
-                        continue;
+                        return result;
                     }
 
-                    var keysToDelete = rockChatUserKeys.Skip( 1 ).ToList();
-                    if ( !keysToDelete.Any() )
-                    {
-                        continue;
-                    }
+                    // Don't let individual exceptions cause all to fail.
+                    var perPersonExceptions = new List<Exception>();
 
-                    var deleteResult = await DeleteChatUsersAsync( personAliasService, keysToDelete, keyToKeep );
+                    // This will be used to clear out the chat user[foreign] keys for the chat users who are deleted.
+                    var personAliasService = new PersonAliasService( RockContext );
 
-                    // If `DeleteChatUsersAsync` failed, a detailed error will have already been logged.
-                    // But we still want to add an exception to the outgoing result (for chat sync job logging).
-                    if ( deleteResult == null || deleteResult?.HasException == true )
+                    foreach ( var personKvp in peopleWithMultipleChatUserKeys )
                     {
-                        perPersonExceptions.Add(
-                            new ChatSyncException(
-                                $"{logMessagePrefix} on step '{nameof( DeleteChatUsersAsync ).SplitCase()}' for Person Alias ID {keyToKeep.ChatPersonAliasId}.",
-                                deleteResult?.Exception
+                        var rockChatUserKeys = personKvp.Value
+                            ?.Where( k =>
+                                k.ChatPersonAliasId.HasValue
+                                && k.ChatUserKey.IsNotNullOrWhiteSpace()
                             )
-                        );
+                            .OrderBy( k => k.ChatPersonAliasId ) // Keep the earliest chat person alias.
+                            .ToList();
 
-                        continue;
+                        var keyToKeep = rockChatUserKeys?.FirstOrDefault();
+                        if ( keyToKeep == null )
+                        {
+                            continue;
+                        }
+
+                        var keysToDelete = rockChatUserKeys.Skip( 1 ).ToList();
+                        if ( !keysToDelete.Any() )
+                        {
+                            continue;
+                        }
+
+                        var deleteResult = await DeleteChatUsersAsync( personAliasService, keysToDelete, keyToKeep );
+
+                        // If `DeleteChatUsersAsync` failed, a detailed error will have already been logged.
+                        // But we still want to add an exception to the outgoing result (for chat sync job logging).
+                        if ( deleteResult == null || deleteResult?.HasException == true )
+                        {
+                            perPersonExceptions.Add(
+                                new ChatSyncException(
+                                    $"{logMessagePrefix} on step '{nameof( DeleteChatUsersAsync ).SplitCase()}' for Person Alias ID {keyToKeep.ChatPersonAliasId}.",
+                                    deleteResult?.Exception
+                                )
+                            );
+
+                            continue;
+                        }
+
+                        result.Deleted.UnionWith( deleteResult.Deleted );
+                        result.Skipped.UnionWith( deleteResult.Skipped );
                     }
 
-                    result.Deleted.UnionWith( deleteResult.Deleted );
-                    result.Skipped.UnionWith( deleteResult.Skipped );
+                    if ( perPersonExceptions.Any() )
+                    {
+                        result.Exception = GetFirstOrAggregateException( perPersonExceptions );
+                        Logger.LogError( result.Exception, $"{logMessagePrefix}. {structuredLog}", personId );
+                    }
                 }
-
-                if ( perPersonExceptions.Any() )
+                catch ( Exception ex )
                 {
-                    result.Exception = GetFirstOrAggregateException( perPersonExceptions );
-                    Logger.LogError( result.Exception, $"{logMessagePrefix}. {structuredLog}", personId );
+                    result.Exception = ex;
+                    Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", personId );
                 }
-            }
-            catch ( Exception ex )
-            {
-                result.Exception = ex;
-                Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", personId );
-            }
 
-            return result;
+                return result;
+            }
         }
 
         /// <summary>
@@ -2594,52 +2616,55 @@ namespace Rock.Communication.Chat
                 return result;
             }
 
-            var structuredLog = "PersonId: {PersonId}";
-            var logMessagePrefix = $"{LogMessagePrefix} {nameof( DeleteChatUsersAsync ).SplitCase()} failed";
-
-            try
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Delete Chat Users" ) )
             {
-                var keysToDelete = new PersonService( RockContext )
-                    .GetAllRockChatUserKeysQuery( personId )
-                    .AsEnumerable() // Materialize the query.
-                    .Where( k =>
-                        k.ChatPersonAliasId.HasValue
-                        && k.ChatUserKey.IsNotNullOrWhiteSpace()
-                    )
-                    .ToList();
+                var structuredLog = "PersonId: {PersonId}";
+                var logMessagePrefix = $"{LogMessagePrefix} {nameof( DeleteChatUsersAsync ).SplitCase()} failed";
 
-                if ( keysToDelete?.Any() != true )
+                try
                 {
-                    return result;
-                }
+                    var keysToDelete = new PersonService( RockContext )
+                        .GetAllRockChatUserKeysQuery( personId )
+                        .AsEnumerable() // Materialize the query.
+                        .Where( k =>
+                            k.ChatPersonAliasId.HasValue
+                            && k.ChatUserKey.IsNotNullOrWhiteSpace()
+                        )
+                        .ToList();
 
-                var deleteResult = await DeleteChatUsersAsync(
-                    personAliasService ?? new PersonAliasService( RockContext ),
-                    keysToDelete
-                );
+                    if ( keysToDelete?.Any() != true )
+                    {
+                        return result;
+                    }
 
-                // If `DeleteChatUsersAsync` failed, a detailed error will have already been logged.
-                // But we still want to add an exception to the outgoing result (for chat sync job logging).
-                if ( deleteResult == null || deleteResult?.HasException == true )
-                {
-                    result.Exception = new ChatSyncException(
-                        $"{logMessagePrefix} on step '{nameof( DeleteChatUsersAsync ).SplitCase()}' for Person ID {personId}.",
-                        deleteResult?.Exception
+                    var deleteResult = await DeleteChatUsersAsync(
+                        personAliasService ?? new PersonAliasService( RockContext ),
+                        keysToDelete
                     );
 
-                    return result;
+                    // If `DeleteChatUsersAsync` failed, a detailed error will have already been logged.
+                    // But we still want to add an exception to the outgoing result (for chat sync job logging).
+                    if ( deleteResult == null || deleteResult?.HasException == true )
+                    {
+                        result.Exception = new ChatSyncException(
+                            $"{logMessagePrefix} on step '{nameof( DeleteChatUsersAsync ).SplitCase()}' for Person ID {personId}.",
+                            deleteResult?.Exception
+                        );
+
+                        return result;
+                    }
+
+                    result.Deleted.UnionWith( deleteResult.Deleted );
+                    result.Skipped.UnionWith( deleteResult.Skipped );
+                }
+                catch ( Exception ex )
+                {
+                    result.Exception = ex;
+                    Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", personId );
                 }
 
-                result.Deleted.UnionWith( deleteResult.Deleted );
-                result.Skipped.UnionWith( deleteResult.Skipped );
+                return result;
             }
-            catch ( Exception ex )
-            {
-                result.Exception = ex;
-                Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", personId );
-            }
-
-            return result;
         }
 
         #endregion Synchronization: From Rock To Chat Provider
@@ -2654,37 +2679,40 @@ namespace Rock.Communication.Chat
                 return new WebhookValidationResult( null );
             }
 
-            WebhookValidationResult result;
-
-            try
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Validate Webhook Request" ) )
             {
-                result = await ChatProvider.ValidateWebhookRequestAsync( request );
-            }
-            catch ( Exception ex )
-            {
-                result = new WebhookValidationResult( null, ex );
-            }
+                WebhookValidationResult result;
 
-            if ( result?.IsValid != true )
-            {
-                var structuredLog = "RequestBody: {RequestBody}";
-                var logMessagePrefix = $"{LogMessagePrefix} {nameof( ValidateWebhookRequestAsync ).SplitCase()} failed.";
-
-                var requestBody = result?.RequestBody ?? string.Empty;
-
-                if ( result?.Exception is InvalidChatWebhookRequestException validationEx )
+                try
                 {
-                    // Prefer a structured log without a stack trace.
-                    Logger.LogError( $"{logMessagePrefix} {validationEx.Message} {structuredLog}", requestBody );
+                    result = await ChatProvider.ValidateWebhookRequestAsync( request );
                 }
-                else
+                catch ( Exception ex )
                 {
-                    // Fall back to logging unexpected exceptions.
-                    Logger.LogError( result?.Exception, $"{logMessagePrefix} Webhook request is invalid. {structuredLog}", requestBody );
+                    result = new WebhookValidationResult( null, ex );
                 }
-            }
 
-            return result;
+                if ( result?.IsValid != true )
+                {
+                    var structuredLog = "RequestBody: {RequestBody}";
+                    var logMessagePrefix = $"{LogMessagePrefix} {nameof( ValidateWebhookRequestAsync ).SplitCase()} failed.";
+
+                    var requestBody = result?.RequestBody ?? string.Empty;
+
+                    if ( result?.Exception is InvalidChatWebhookRequestException validationEx )
+                    {
+                        // Prefer a structured log without a stack trace.
+                        Logger.LogError( $"{logMessagePrefix} {validationEx.Message} {structuredLog}", requestBody );
+                    }
+                    else
+                    {
+                        // Fall back to logging unexpected exceptions.
+                        Logger.LogError( result?.Exception, $"{logMessagePrefix} Webhook request is invalid. {structuredLog}", requestBody );
+                    }
+                }
+
+                return result;
+            }
         }
 
         /// <summary>
@@ -2699,24 +2727,27 @@ namespace Rock.Communication.Chat
                 return;
             }
 
-            var logMessage = $"{LogMessagePrefix} {nameof( HandleChatWebhookRequestsAsync ).SplitCase()} failed.";
-
-            try
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Handle Chat Webhook Requests" ) )
             {
-                var result = ChatProvider.GetChatToRockSyncCommands( webhookRequests );
-                if ( result == null || result?.HasException == true )
-                {
-                    Logger.LogError( result?.Exception, logMessage );
-                }
+                var logMessage = $"{LogMessagePrefix} {nameof( HandleChatWebhookRequestsAsync ).SplitCase()} failed.";
 
-                if ( result?.SyncCommands?.Any() == true )
+                try
                 {
-                    await SyncFromChatToRockAsync( result.SyncCommands );
+                    var result = ChatProvider.GetChatToRockSyncCommands( webhookRequests );
+                    if ( result == null || result?.HasException == true )
+                    {
+                        Logger.LogError( result?.Exception, logMessage );
+                    }
+
+                    if ( result?.SyncCommands?.Any() == true )
+                    {
+                        await SyncFromChatToRockAsync( result.SyncCommands );
+                    }
                 }
-            }
-            catch ( Exception ex )
-            {
-                Logger.LogError( ex, logMessage );
+                catch ( Exception ex )
+                {
+                    Logger.LogError( ex, logMessage );
+                }
             }
         }
 
@@ -2735,28 +2766,31 @@ namespace Rock.Communication.Chat
                 return result;
             }
 
-            var logMessage = $"{LogMessagePrefix} {nameof( GetAllChatChannelsAsync ).SplitCase()} failed.";
-
-            try
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Get All Chat Channels" ) )
             {
-                var chatProviderResult = await ChatProvider.GetAllChatChannelsAsync();
-                if ( chatProviderResult == null || chatProviderResult.HasException )
-                {
-                    result.Exception = chatProviderResult?.Exception;
-                    Logger.LogError( result.Exception, logMessage );
-                }
-                else
-                {
-                    result = chatProviderResult;
-                }
-            }
-            catch ( Exception ex )
-            {
-                result.Exception = ex;
-                Logger.LogError( ex, logMessage );
-            }
+                var logMessage = $"{LogMessagePrefix} {nameof( GetAllChatChannelsAsync ).SplitCase()} failed.";
 
-            return result;
+                try
+                {
+                    var chatProviderResult = await ChatProvider.GetAllChatChannelsAsync();
+                    if ( chatProviderResult == null || chatProviderResult.HasException )
+                    {
+                        result.Exception = chatProviderResult?.Exception;
+                        Logger.LogError( result.Exception, logMessage );
+                    }
+                    else
+                    {
+                        result = chatProviderResult;
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    result.Exception = ex;
+                    Logger.LogError( ex, logMessage );
+                }
+
+                return result;
+            }
         }
 
         /// <summary>
@@ -2781,29 +2815,32 @@ namespace Rock.Communication.Chat
                 return result;
             }
 
-            var structuredLog = "ChatChannelTypeKey: {ChatChannelTypeKey}, ChatChannelKey: {ChatChannelKey}";
-            var logMessage = $"{LogMessagePrefix} {nameof( GetChatChannelMembersAsync ).SplitCase()} failed for {structuredLog}.";
-
-            try
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Get Chat Channel Members" ) )
             {
-                var chatProviderResult = await ChatProvider.GetAllChatChannelMembersAsync( chatChannelTypeKey, chatChannelKey );
-                if ( chatProviderResult == null || chatProviderResult.HasException )
-                {
-                    result.Exception = chatProviderResult?.Exception;
-                    Logger.LogError( result.Exception, logMessage, chatChannelTypeKey, chatChannelKey );
-                }
-                else
-                {
-                    result = chatProviderResult;
-                }
-            }
-            catch ( Exception ex )
-            {
-                result.Exception = ex;
-                Logger.LogError( ex, logMessage, chatChannelTypeKey, chatChannelKey );
-            }
+                var structuredLog = "ChatChannelTypeKey: {ChatChannelTypeKey}, ChatChannelKey: {ChatChannelKey}";
+                var logMessage = $"{LogMessagePrefix} {nameof( GetChatChannelMembersAsync ).SplitCase()} failed for {structuredLog}.";
 
-            return result;
+                try
+                {
+                    var chatProviderResult = await ChatProvider.GetAllChatChannelMembersAsync( chatChannelTypeKey, chatChannelKey );
+                    if ( chatProviderResult == null || chatProviderResult.HasException )
+                    {
+                        result.Exception = chatProviderResult?.Exception;
+                        Logger.LogError( result.Exception, logMessage, chatChannelTypeKey, chatChannelKey );
+                    }
+                    else
+                    {
+                        result = chatProviderResult;
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    result.Exception = ex;
+                    Logger.LogError( ex, logMessage, chatChannelTypeKey, chatChannelKey );
+                }
+
+                return result;
+            }
         }
 
         /// <summary>
@@ -2821,49 +2858,52 @@ namespace Rock.Communication.Chat
                 return result;
             }
 
-            var logMessagePrefix = $"{LogMessagePrefix} {nameof( DeleteRockChatUsersMissingFromChatProviderAsync ).SplitCase()} failed";
-
-            try
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Delete Rock Chat Users Missing From Chat Provider" ) )
             {
-                // Get all of the existing external chat user keys.
-                var getChatUserKeysResult = await ChatProvider.GetAllChatUserKeysAsync();
-                if ( getChatUserKeysResult == null || getChatUserKeysResult.HasException )
-                {
-                    result.Exception = getChatUserKeysResult?.Exception;
-                    Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.GetAllChatUserKeysAsync ).SplitCase()}'." );
+                var logMessagePrefix = $"{LogMessagePrefix} {nameof( DeleteRockChatUsersMissingFromChatProviderAsync ).SplitCase()} failed";
 
-                    return result;
+                try
+                {
+                    // Get all of the existing external chat user keys.
+                    var getChatUserKeysResult = await ChatProvider.GetAllChatUserKeysAsync();
+                    if ( getChatUserKeysResult == null || getChatUserKeysResult.HasException )
+                    {
+                        result.Exception = getChatUserKeysResult?.Exception;
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.GetAllChatUserKeysAsync ).SplitCase()}'." );
+
+                        return result;
+                    }
+
+                    var externalChatUserKeys = getChatUserKeysResult.Keys;
+
+                    // Get all of the existing Rock chat user keys
+                    var rockChatUserKeys = new PersonAliasService( RockContext )
+                        .GetAllChatUserKeysQuery()
+                        .ToHashSet();
+
+                    // Get those that exist in Rock but don't exist externally.
+                    var keysToDelete = rockChatUserKeys.Except( externalChatUserKeys ).ToList();
+                    if ( !keysToDelete.Any() )
+                    {
+                        return result;
+                    }
+
+                    // Create a sync command for each.
+                    var syncCommands = keysToDelete
+                        .Select( key => new DeleteChatPersonInRockCommand { ChatPersonKey = key } )
+                        .ToList();
+
+                    var deleteResult = DeleteChatUsersInRock( syncCommands );
+                    result.Deleted.UnionWith( deleteResult.Deleted );
+                }
+                catch ( Exception ex )
+                {
+                    result.Exception = ex;
+                    Logger.LogError( ex, $"{logMessagePrefix}." );
                 }
 
-                var externalChatUserKeys = getChatUserKeysResult.Keys;
-
-                // Get all of the existing Rock chat user keys
-                var rockChatUserKeys = new PersonAliasService( RockContext )
-                    .GetAllChatUserKeysQuery()
-                    .ToHashSet();
-
-                // Get those that exist in Rock but don't exist externally.
-                var keysToDelete = rockChatUserKeys.Except( externalChatUserKeys ).ToList();
-                if ( !keysToDelete.Any() )
-                {
-                    return result;
-                }
-
-                // Create a sync command for each.
-                var syncCommands = keysToDelete
-                    .Select( key => new DeleteChatPersonInRockCommand { ChatPersonKey = key } )
-                    .ToList();
-
-                var deleteResult = DeleteChatUsersInRock( syncCommands );
-                result.Deleted.UnionWith( deleteResult.Deleted );
+                return result;
             }
-            catch ( Exception ex )
-            {
-                result.Exception = ex;
-                Logger.LogError( ex, $"{logMessagePrefix}." );
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -2889,83 +2929,86 @@ namespace Rock.Communication.Chat
                 return;
             }
 
-            try
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Sync From Chat To Rock" ) )
             {
-                // ---------------------------------------------------------
-                // 1) Delete group members and chat-specific person aliases.
-                var deleteChatPersonCommands = syncCommands.OfType<DeleteChatPersonInRockCommand>().ToList();
+                try
+                {
+                    // ---------------------------------------------------------
+                    // 1) Delete group members and chat-specific person aliases.
+                    var deleteChatPersonCommands = syncCommands.OfType<DeleteChatPersonInRockCommand>().ToList();
 
-                DeleteChatUsersInRock( deleteChatPersonCommands );
+                    DeleteChatUsersInRock( deleteChatPersonCommands );
 
-                // Keep track of deleted chat users, so we can avoid syncing them in subsequent commands.
-                var deletedChatUserKeys = new HashSet<string>(
-                    deleteChatPersonCommands
-                        .Where( c => c.WasCompleted )
-                        .Select( c => c.ChatPersonKey )
-                );
+                    // Keep track of deleted chat users, so we can avoid syncing them in subsequent commands.
+                    var deletedChatUserKeys = new HashSet<string>(
+                        deleteChatPersonCommands
+                            .Where( c => c.WasCompleted )
+                            .Select( c => c.ChatPersonKey )
+                    );
 
-                // -------------------------------------
-                // 2) Sync chat channels to Rock groups.
-                var syncChatChannelCommands = syncCommands.OfType<SyncChatChannelToRockCommand>().ToList();
+                    // -------------------------------------
+                    // 2) Sync chat channels to Rock groups.
+                    var syncChatChannelCommands = syncCommands.OfType<SyncChatChannelToRockCommand>().ToList();
 
-                SyncChatChannelsToRock( syncChatChannelCommands );
+                    SyncChatChannelsToRock( syncChatChannelCommands );
 
-                // ---------------------------------------------------
-                // 3) Sync chat channel members to Rock group members.
-                var syncChatChannelMemberCommands = syncCommands.OfType<SyncChatChannelMemberToRockCommand>().ToList();
+                    // ---------------------------------------------------
+                    // 3) Sync chat channel members to Rock group members.
+                    var syncChatChannelMemberCommands = syncCommands.OfType<SyncChatChannelMemberToRockCommand>().ToList();
 
-                // Avoid syncing chat channel members for chat users that were already deleted above.
-                syncChatChannelMemberCommands.Where( c => deletedChatUserKeys.Contains( c.ChatPersonKey ) )
-                    .ToList()
-                    .ForEach( c => c.MarkAsSkipped() );
+                    // Avoid syncing chat channel members for chat users that were already deleted above.
+                    syncChatChannelMemberCommands.Where( c => deletedChatUserKeys.Contains( c.ChatPersonKey ) )
+                        .ToList()
+                        .ForEach( c => c.MarkAsSkipped() );
 
-                SyncChatChannelMembersToRock( syncChatChannelMemberCommands.Where( c => c.ShouldRetry ).ToList() );
+                    SyncChatChannelMembersToRock( syncChatChannelMemberCommands.Where( c => c.ShouldRetry ).ToList() );
 
-                // ---------------------------------------
-                // 4) Sync global chat user ban statuses.
-                var syncGlobalBannedStatusCommands = syncCommands.OfType<SyncChatBannedStatusToRockCommand>()
-                    .Where( c => !c.IsChatChannelBan )
-                    .ToList();
+                    // ---------------------------------------
+                    // 4) Sync global chat user ban statuses.
+                    var syncGlobalBannedStatusCommands = syncCommands.OfType<SyncChatBannedStatusToRockCommand>()
+                        .Where( c => !c.IsChatChannelBan )
+                        .ToList();
 
-                // Avoid syncing global chat user bans for chat users that were already deleted above.
-                syncGlobalBannedStatusCommands.Where( c => deletedChatUserKeys.Contains( c.ChatPersonKey ) )
-                    .ToList()
-                    .ForEach( c => c.MarkAsSkipped() );
+                    // Avoid syncing global chat user bans for chat users that were already deleted above.
+                    syncGlobalBannedStatusCommands.Where( c => deletedChatUserKeys.Contains( c.ChatPersonKey ) )
+                        .ToList()
+                        .ForEach( c => c.MarkAsSkipped() );
 
-                SyncGlobalBannedStatusesToRock( syncGlobalBannedStatusCommands.Where( c => c.ShouldRetry ).ToList() );
+                    SyncGlobalBannedStatusesToRock( syncGlobalBannedStatusCommands.Where( c => c.ShouldRetry ).ToList() );
 
-                // -----------------------------------------
-                // 5) Sync chat channel member ban statuses.
-                var syncChatChannelMemberBannedStatusCommands = syncCommands.OfType<SyncChatBannedStatusToRockCommand>()
-                    .Where( c => c.IsChatChannelBan )
-                    .ToList();
+                    // -----------------------------------------
+                    // 5) Sync chat channel member ban statuses.
+                    var syncChatChannelMemberBannedStatusCommands = syncCommands.OfType<SyncChatBannedStatusToRockCommand>()
+                        .Where( c => c.IsChatChannelBan )
+                        .ToList();
 
-                // Avoid syncing chat channel member bans for chat users that were already deleted above.
-                syncChatChannelMemberBannedStatusCommands.Where( c => deletedChatUserKeys.Contains( c.ChatPersonKey ) )
-                    .ToList()
-                    .ForEach( c => c.MarkAsSkipped() );
+                    // Avoid syncing chat channel member bans for chat users that were already deleted above.
+                    syncChatChannelMemberBannedStatusCommands.Where( c => deletedChatUserKeys.Contains( c.ChatPersonKey ) )
+                        .ToList()
+                        .ForEach( c => c.MarkAsSkipped() );
 
-                SyncChatChannelMemberBannedStatusesToRock( syncChatChannelMemberBannedStatusCommands.Where( c => c.ShouldRetry ).ToList() );
+                    SyncChatChannelMemberBannedStatusesToRock( syncChatChannelMemberBannedStatusCommands.Where( c => c.ShouldRetry ).ToList() );
 
-                // -------------------------------------------
-                // 6) Sync chat channel member muted statuses.
-                var syncChatChannelMutedStatusCommands = syncCommands.OfType<SyncChatChannelMutedStatusToRockCommand>().ToList();
+                    // -------------------------------------------
+                    // 6) Sync chat channel member muted statuses.
+                    var syncChatChannelMutedStatusCommands = syncCommands.OfType<SyncChatChannelMutedStatusToRockCommand>().ToList();
 
-                // Avoid syncing chat channel member mutes for chat users that were already deleted above.
-                syncChatChannelMutedStatusCommands.Where( c => deletedChatUserKeys.Contains( c.ChatPersonKey ) )
-                    .ToList()
-                    .ForEach( c => c.MarkAsSkipped() );
+                    // Avoid syncing chat channel member mutes for chat users that were already deleted above.
+                    syncChatChannelMutedStatusCommands.Where( c => deletedChatUserKeys.Contains( c.ChatPersonKey ) )
+                        .ToList()
+                        .ForEach( c => c.MarkAsSkipped() );
 
-                SyncChatChannelMemberMutedStatusesToRock( syncChatChannelMutedStatusCommands.Where( c => c.ShouldRetry ).ToList() );
-            }
-            catch ( Exception ex )
-            {
-                Logger.LogError( ex, $"{LogMessagePrefix} {nameof( SyncFromChatToRockAsync ).SplitCase()} failed." );
-            }
-            finally
-            {
-                LogChatToRockSyncCommandOutcomes( syncCommands );
-                await RequeueRecoverableChatToRockSyncCommandsAsync( syncCommands );
+                    SyncChatChannelMemberMutedStatusesToRock( syncChatChannelMutedStatusCommands.Where( c => c.ShouldRetry ).ToList() );
+                }
+                catch ( Exception ex )
+                {
+                    Logger.LogError( ex, $"{LogMessagePrefix} {nameof( SyncFromChatToRockAsync ).SplitCase()} failed." );
+                }
+                finally
+                {
+                    LogChatToRockSyncCommandOutcomes( syncCommands );
+                    await RequeueRecoverableChatToRockSyncCommandsAsync( syncCommands );
+                }
             }
         }
 
@@ -2989,29 +3032,32 @@ namespace Rock.Communication.Chat
                 return result;
             }
 
-            var structuredLog = "MessageDate: {MessageDate}";
-            var logMessage = $"{LogMessagePrefix} {nameof( GetChatUserMessageCountsByChatChannelKeyAsync ).SplitCase()} failed for {structuredLog}.";
-
-            try
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Get Chat User Message Counts By Chat Channel Key" ) )
             {
-                var chatProviderResult = await ChatProvider.GetChatUserMessageCountsByChatChannelKeyAsync( messageDate );
-                if ( chatProviderResult == null || chatProviderResult.HasException )
-                {
-                    result.Exception = chatProviderResult?.Exception;
-                    Logger.LogError( result.Exception, logMessage, messageDate );
-                }
-                else
-                {
-                    result = chatProviderResult;
-                }
-            }
-            catch ( Exception ex )
-            {
-                result.Exception = ex;
-                Logger.LogError( ex, logMessage, messageDate );
-            }
+                var structuredLog = "MessageDate: {MessageDate}";
+                var logMessage = $"{LogMessagePrefix} {nameof( GetChatUserMessageCountsByChatChannelKeyAsync ).SplitCase()} failed for {structuredLog}.";
 
-            return result;
+                try
+                {
+                    var chatProviderResult = await ChatProvider.GetChatUserMessageCountsByChatChannelKeyAsync( messageDate );
+                    if ( chatProviderResult == null || chatProviderResult.HasException )
+                    {
+                        result.Exception = chatProviderResult?.Exception;
+                        Logger.LogError( result.Exception, logMessage, messageDate );
+                    }
+                    else
+                    {
+                        result = chatProviderResult;
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    result.Exception = ex;
+                    Logger.LogError( ex, logMessage, messageDate );
+                }
+
+                return result;
+            }
         }
 
         #endregion Interactions
@@ -3056,203 +3102,206 @@ namespace Rock.Communication.Chat
         /// </remarks>
         private List<RockChatUserPerson> GetOrCreateRockChatUserPeople( List<SyncPersonToChatCommand> syncCommands, ChatConfiguration chatConfiguration )
         {
-            // Start by getting the minimum data set needed to add or update chat users in the external chat system.
-            // Note that we never want to include deceased individuals here.
-            var personQry = new PersonService( RockContext ).Queryable();
-            var chatAliasQry = new PersonAliasService( RockContext ).GetChatPersonAliasesQuery();
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Get Or Create Rock Chat User People" ) )
+            {
+                // Start by getting the minimum data set needed to add or update chat users in the external chat system.
+                // Note that we never want to include deceased individuals here.
+                var personQry = new PersonService( RockContext ).Queryable();
+                var chatAliasQry = new PersonAliasService( RockContext ).GetChatPersonAliasesQuery();
 
-            var personIds = syncCommands.Select( c => c.PersonId ).Distinct().ToList();
+                var personIds = syncCommands.Select( c => c.PersonId ).Distinct().ToList();
 
-            if ( personIds.Count == 1 )
-            {
-                // Most performant: limit queries to just this person.
-                var firstPersonId = personIds.First();
-                personQry = personQry.Where( p => p.Id == firstPersonId );
-                chatAliasQry = chatAliasQry.Where( pa => pa.PersonId == firstPersonId );
-            }
-            else if ( personIds.Count < 1000 )
-            {
-                // For fewer than 1k people, allow a SQL `WHERE...IN` clause.
-                personQry = personQry.Where( p => personIds.Contains( p.Id ) );
-                chatAliasQry = chatAliasQry.Where( pa => personIds.Contains( pa.PersonId ) );
-            }
-            else
-            {
-                // For 1k or more people, create and join to an entity set.
-                var entitySetOptions = new AddEntitySetActionOptions
+                if ( personIds.Count == 1 )
                 {
-                    Name = $"{nameof( ChatHelper )}_{nameof( GetOrCreateRockChatUserPeople )}",
-                    EntityTypeId = EntityTypeCache.Get<Person>().Id,
-                    EntityIdList = personIds,
-                    ExpiryInMinutes = 20
-                };
-
-                var entitySetService = new EntitySetService( RockContext );
-                var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
-                var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
-
-                personQry = personQry.Where( p => entitySetItemQry.Contains( p.Id ) );
-                chatAliasQry = chatAliasQry.Where( pa => entitySetItemQry.Contains( pa.PersonId ) );
-            }
-
-            var chatAdministratorPersonIdQry = new GroupMemberService( RockContext )
-                .Queryable()
-                .Where( gm =>
-                    gm.GroupId == ChatAdministratorsGroupId
-                    && gm.GroupMemberStatus == GroupMemberStatus.Active
-                )
-                .Select( gm => gm.PersonId );
-
-            var rockChatUserPeople = personQry
-                .GroupJoin(
-                    chatAliasQry,
-                    p => p.Id,
-                    pa => pa.PersonId,
-                    ( p, chatAliases ) => new
-                    {
-                        Person = p,
-                        ChatAliases = chatAliases.Select( ca => new { ca.Id, ca.Guid } )
-                    }
-                )
-                .GroupJoin(
-                    chatAdministratorPersonIdQry,
-                    p => p.Person.Id,
-                    adminId => adminId,
-                    ( p, admins ) => new { p.Person, p.ChatAliases, IsChatAdmin = admins.Any() }
-                )
-                .ToList() // Materialize everything in a single query; we'll perform in-memory sorting of chat aliases below.
-                .Select( p => new RockChatUserPerson
-                {
-                    PersonId = p.Person.Id,
-                    NickName = p.Person.NickName,
-                    LastName = p.Person.LastName,
-                    SuffixValueId = p.Person.SuffixValueId,
-                    RecordTypeValueId = p.Person.RecordTypeValueId,
-                    PhotoId = p.Person.PhotoId,
-                    BirthYear = p.Person.BirthYear,
-                    Gender = p.Person.Gender,
-                    AgeClassification = p.Person.AgeClassification,
-                    IsChatProfilePublic = p.Person.IsChatProfilePublic,
-                    IsChatOpenDirectMessageAllowed = p.Person.IsChatOpenDirectMessageAllowed,
-                    ChatPersonAliasGuid = p.ChatAliases?.Any() == true
-                        ? p.ChatAliases.OrderBy( a => a.Id ).First().Guid // Get the earliest chat alias in the case of multiple.
-                        : ( Guid? ) null,
-                    IsChatAdministrator = p.IsChatAdmin,
-                    Badges = new List<ChatBadge>(),
-                    CampusId = p.Person.PrimaryCampusId
-                } )
-                .ToList();
-
-            // If any people don't already have a chat alias, add them in bulk IF instructed by their respective sync commands.
-            var newChatAliasesToSave = new List<PersonAlias>();
-
-            // Iterate backwards for ease-of-removal for those people who will not be synced further.
-            for ( var i = rockChatUserPeople.Count - 1; i >= 0; i-- )
-            {
-                var rockChatUserPerson = rockChatUserPeople[i];
-                if ( rockChatUserPerson.ChatPersonAliasGuid.HasValue )
-                {
-                    // This person already has a chat alias; move on.
-                    continue;
+                    // Most performant: limit queries to just this person.
+                    var firstPersonId = personIds.First();
+                    personQry = personQry.Where( p => p.Id == firstPersonId );
+                    chatAliasQry = chatAliasQry.Where( pa => pa.PersonId == firstPersonId );
                 }
-
-                // Find this person's sync command.
-                var syncCommand = syncCommands.FirstOrDefault( c => c.PersonId == rockChatUserPerson.PersonId );
-                if ( syncCommand?.ShouldEnsureChatAliasExists != true )
+                else if ( personIds.Count < 1000 )
                 {
-                    // This person didn't already have a chat alias, and we're not going to add one.
-                    // Remove them from the results and move on.
-                    rockChatUserPeople.RemoveAt( i );
-                    continue;
-                }
-
-                var guid = Guid.NewGuid();
-                var chatAlias = new PersonAlias
-                {
-                    Name = ChatPersonAliasName,
-                    PersonId = rockChatUserPerson.PersonId,
-                    Guid = guid,
-                    ForeignKey = GetChatUserKey( guid )
-                };
-
-                newChatAliasesToSave.Add( chatAlias );
-                rockChatUserPerson.ChatPersonAliasGuid = guid;
-            }
-
-            // If we don't have any people to sync further, return early.
-            if ( !rockChatUserPeople.Any() )
-            {
-                return rockChatUserPeople;
-            }
-
-            if ( newChatAliasesToSave.Any() )
-            {
-                RockContext.BulkInsert( newChatAliasesToSave );
-            }
-
-            // Build the badge rosters.
-            var anyBadges = false;
-            var badgeRosters = new List<RockChatBadgeRoster>();
-            if ( chatConfiguration.ChatBadgeDataViewGuids?.Any() == true )
-            {
-                foreach ( var dataViewGuid in chatConfiguration.ChatBadgeDataViewGuids )
-                {
-                    var dataViewCache = DataViewCache.Get( dataViewGuid );
-                    var dataViewIdKey = dataViewCache?.IdKey;
-
-                    // Note that we're strictly enforcing ONLY persisted data views for this purpose.
-                    if ( dataViewCache?.IsPersisted() != true || badgeRosters.Any( r => r.ChatBadge.Key == dataViewIdKey ) )
-                    {
-                        continue;
-                    }
-
-                    var badgePersonIds = dataViewCache.GetVolatileEntityIds().ToHashSet();
-                    if ( !badgePersonIds.Any() )
-                    {
-                        continue;
-                    }
-
-                    ColorPair colorPair = null;
-                    if ( dataViewCache.HighlightColor.IsNotNullOrWhiteSpace() )
-                    {
-                        colorPair = RockColor.CalculateColorPair( new RockColor( dataViewCache.HighlightColor ) );
-                    }
-
-                    badgeRosters.Add(
-                        new RockChatBadgeRoster
-                        {
-                            ChatBadge = new ChatBadge
-                            {
-                                Key = dataViewCache.IdKey,
-                                Name = dataViewCache.Name,
-                                IconCssClass = dataViewCache.IconCssClass,
-                                BackgroundColor = colorPair?.BackgroundColor?.ToHex(),
-                                ForegroundColor = colorPair?.ForegroundColor?.ToHex()
-                            },
-                            PersonIds = badgePersonIds
-                        }
-                    );
-
-                    anyBadges = true;
-                }
-            }
-
-            rockChatUserPeople.ForEach( p =>
-            {
-                if ( !anyBadges )
-                {
-                    p.Badges = new List<ChatBadge>();
+                    // For fewer than 1k people, allow a SQL `WHERE...IN` clause.
+                    personQry = personQry.Where( p => personIds.Contains( p.Id ) );
+                    chatAliasQry = chatAliasQry.Where( pa => personIds.Contains( pa.PersonId ) );
                 }
                 else
                 {
-                    p.Badges = badgeRosters
-                        .Where( r => r.PersonIds.Contains( p.PersonId ) )
-                        .Select( r => r.ChatBadge )
-                        .ToList();
-                }
-            } );
+                    // For 1k or more people, create and join to an entity set.
+                    var entitySetOptions = new AddEntitySetActionOptions
+                    {
+                        Name = $"{nameof( ChatHelper )}_{nameof( GetOrCreateRockChatUserPeople )}",
+                        EntityTypeId = EntityTypeCache.Get<Person>().Id,
+                        EntityIdList = personIds,
+                        ExpiryInMinutes = 20
+                    };
 
-            return rockChatUserPeople;
+                    var entitySetService = new EntitySetService( RockContext );
+                    var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
+                    var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
+
+                    personQry = personQry.Where( p => entitySetItemQry.Contains( p.Id ) );
+                    chatAliasQry = chatAliasQry.Where( pa => entitySetItemQry.Contains( pa.PersonId ) );
+                }
+
+                var chatAdministratorPersonIdQry = new GroupMemberService( RockContext )
+                    .Queryable()
+                    .Where( gm =>
+                        gm.GroupId == ChatAdministratorsGroupId
+                        && gm.GroupMemberStatus == GroupMemberStatus.Active
+                    )
+                    .Select( gm => gm.PersonId );
+
+                var rockChatUserPeople = personQry
+                    .GroupJoin(
+                        chatAliasQry,
+                        p => p.Id,
+                        pa => pa.PersonId,
+                        ( p, chatAliases ) => new
+                        {
+                            Person = p,
+                            ChatAliases = chatAliases.Select( ca => new { ca.Id, ca.Guid } )
+                        }
+                    )
+                    .GroupJoin(
+                        chatAdministratorPersonIdQry,
+                        p => p.Person.Id,
+                        adminId => adminId,
+                        ( p, admins ) => new { p.Person, p.ChatAliases, IsChatAdmin = admins.Any() }
+                    )
+                    .ToList() // Materialize everything in a single query; we'll perform in-memory sorting of chat aliases below.
+                    .Select( p => new RockChatUserPerson
+                    {
+                        PersonId = p.Person.Id,
+                        NickName = p.Person.NickName,
+                        LastName = p.Person.LastName,
+                        SuffixValueId = p.Person.SuffixValueId,
+                        RecordTypeValueId = p.Person.RecordTypeValueId,
+                        PhotoId = p.Person.PhotoId,
+                        BirthYear = p.Person.BirthYear,
+                        Gender = p.Person.Gender,
+                        AgeClassification = p.Person.AgeClassification,
+                        IsChatProfilePublic = p.Person.IsChatProfilePublic,
+                        IsChatOpenDirectMessageAllowed = p.Person.IsChatOpenDirectMessageAllowed,
+                        ChatPersonAliasGuid = p.ChatAliases?.Any() == true
+                            ? p.ChatAliases.OrderBy( a => a.Id ).First().Guid // Get the earliest chat alias in the case of multiple.
+                            : ( Guid? ) null,
+                        IsChatAdministrator = p.IsChatAdmin,
+                        Badges = new List<ChatBadge>(),
+                        CampusId = p.Person.PrimaryCampusId
+                    } )
+                    .ToList();
+
+                // If any people don't already have a chat alias, add them in bulk IF instructed by their respective sync commands.
+                var newChatAliasesToSave = new List<PersonAlias>();
+
+                // Iterate backwards for ease-of-removal for those people who will not be synced further.
+                for ( var i = rockChatUserPeople.Count - 1; i >= 0; i-- )
+                {
+                    var rockChatUserPerson = rockChatUserPeople[i];
+                    if ( rockChatUserPerson.ChatPersonAliasGuid.HasValue )
+                    {
+                        // This person already has a chat alias; move on.
+                        continue;
+                    }
+
+                    // Find this person's sync command.
+                    var syncCommand = syncCommands.FirstOrDefault( c => c.PersonId == rockChatUserPerson.PersonId );
+                    if ( syncCommand?.ShouldEnsureChatAliasExists != true )
+                    {
+                        // This person didn't already have a chat alias, and we're not going to add one.
+                        // Remove them from the results and move on.
+                        rockChatUserPeople.RemoveAt( i );
+                        continue;
+                    }
+
+                    var guid = Guid.NewGuid();
+                    var chatAlias = new PersonAlias
+                    {
+                        Name = ChatPersonAliasName,
+                        PersonId = rockChatUserPerson.PersonId,
+                        Guid = guid,
+                        ForeignKey = GetChatUserKey( guid )
+                    };
+
+                    newChatAliasesToSave.Add( chatAlias );
+                    rockChatUserPerson.ChatPersonAliasGuid = guid;
+                }
+
+                // If we don't have any people to sync further, return early.
+                if ( !rockChatUserPeople.Any() )
+                {
+                    return rockChatUserPeople;
+                }
+
+                if ( newChatAliasesToSave.Any() )
+                {
+                    RockContext.BulkInsert( newChatAliasesToSave );
+                }
+
+                // Build the badge rosters.
+                var anyBadges = false;
+                var badgeRosters = new List<RockChatBadgeRoster>();
+                if ( chatConfiguration.ChatBadgeDataViewGuids?.Any() == true )
+                {
+                    foreach ( var dataViewGuid in chatConfiguration.ChatBadgeDataViewGuids )
+                    {
+                        var dataViewCache = DataViewCache.Get( dataViewGuid );
+                        var dataViewIdKey = dataViewCache?.IdKey;
+
+                        // Note that we're strictly enforcing ONLY persisted data views for this purpose.
+                        if ( dataViewCache?.IsPersisted() != true || badgeRosters.Any( r => r.ChatBadge.Key == dataViewIdKey ) )
+                        {
+                            continue;
+                        }
+
+                        var badgePersonIds = dataViewCache.GetVolatileEntityIds().ToHashSet();
+                        if ( !badgePersonIds.Any() )
+                        {
+                            continue;
+                        }
+
+                        ColorPair colorPair = null;
+                        if ( dataViewCache.HighlightColor.IsNotNullOrWhiteSpace() )
+                        {
+                            colorPair = RockColor.CalculateColorPair( new RockColor( dataViewCache.HighlightColor ) );
+                        }
+
+                        badgeRosters.Add(
+                            new RockChatBadgeRoster
+                            {
+                                ChatBadge = new ChatBadge
+                                {
+                                    Key = dataViewCache.IdKey,
+                                    Name = dataViewCache.Name,
+                                    IconCssClass = dataViewCache.IconCssClass,
+                                    BackgroundColor = colorPair?.BackgroundColor?.ToHex(),
+                                    ForegroundColor = colorPair?.ForegroundColor?.ToHex()
+                                },
+                                PersonIds = badgePersonIds
+                            }
+                        );
+
+                        anyBadges = true;
+                    }
+                }
+
+                rockChatUserPeople.ForEach( p =>
+                {
+                    if ( !anyBadges )
+                    {
+                        p.Badges = new List<ChatBadge>();
+                    }
+                    else
+                    {
+                        p.Badges = badgeRosters
+                            .Where( r => r.PersonIds.Contains( p.PersonId ) )
+                            .Select( r => r.ChatBadge )
+                            .ToList();
+                    }
+                } );
+
+                return rockChatUserPeople;
+            }
         }
 
         /// <summary>
@@ -3265,87 +3314,90 @@ namespace Rock.Communication.Chat
         /// </returns>
         private List<RockChatGroup> GetRockChatGroups( List<SyncGroupToChatCommand> syncCommands )
         {
-            // Get the distinct group IDs represented within the commands, and the corresponding group queryable.
-            var groupIds = syncCommands.Select( c => c.GroupId ).Distinct().ToList();
-            var groupQry = GetGroupQuery( groupIds );
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Get Rock Chat Groups" ) )
+            {
+                // Get the distinct group IDs represented within the commands, and the corresponding group queryable.
+                var groupIds = syncCommands.Select( c => c.GroupId ).Distinct().ToList();
+                var groupQry = GetGroupQuery( groupIds );
 
-            // Get all groups matching the provided commands, along with their chat-specific attributes.
-            var groups = groupQry.ToList();
-            groups.LoadFilteredAttributes( a => a.Key == GroupAttributeKey.AvatarImage );
+                // Get all groups matching the provided commands, along with their chat-specific attributes.
+                var groups = groupQry.ToList();
+                groups.LoadFilteredAttributes( a => a.Key == GroupAttributeKey.AvatarImage );
 
-            var dbRockChatGroups = groups
-                .Select( g =>
-                {
-                    var chatChannelKey = GetChatChannelKey( g.Id, g.ChatChannelKey );
-
-                    var avatarImageUrl = string.Empty;
-                    var avatarImageGuid = g.GetAttributeValue( GroupAttributeKey.AvatarImage ).AsGuidOrNull();
-                    if ( avatarImageGuid.HasValue )
+                var dbRockChatGroups = groups
+                    .Select( g =>
                     {
-                        avatarImageUrl = GetChatChannelAvatarImageUrl( avatarImageGuid.Value );
+                        var chatChannelKey = GetChatChannelKey( g.Id, g.ChatChannelKey );
+
+                        var avatarImageUrl = string.Empty;
+                        var avatarImageGuid = g.GetAttributeValue( GroupAttributeKey.AvatarImage ).AsGuidOrNull();
+                        if ( avatarImageGuid.HasValue )
+                        {
+                            avatarImageUrl = GetChatChannelAvatarImageUrl( avatarImageGuid.Value );
+                        }
+
+                        return new RockChatGroup
+                        {
+                            GroupTypeId = g.GroupTypeId,
+                            GroupId = g.Id,
+                            ChatChannelTypeKey = GetChatChannelTypeKey( g.GroupTypeId ),
+                            ChatChannelKey = chatChannelKey,
+                            ShouldSaveChatChannelKeyInRock = g.ChatChannelKey != chatChannelKey,
+                            Name = g.Name,
+                            AvatarImageUrl = avatarImageUrl,
+                            CampusId = g.CampusId,
+                            IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
+                            IsPublic = g.GetIsChatChannelPublic(),
+                            IsAlwaysShown = g.GetIsChatChannelAlwaysShown(),
+                            IsChatEnabled = g.GetIsChatEnabled(),
+                            IsChatChannelActive = g.GetIsChatChannelActive()
+                        };
+                    } )
+                    .ToList();
+
+                var rockChatGroups = new List<RockChatGroup>();
+
+                // Loop through the commands and create a rock chat group instance for each, regardless of whether we found
+                // it in the Rock database.
+                foreach ( var command in syncCommands )
+                {
+                    // Create and add the outgoing group to the collection with the data we already know from the command;
+                    // we'll refine it below.
+                    var rockChatGroup = new RockChatGroup
+                    {
+                        GroupTypeId = command.GroupTypeId,
+                        GroupId = command.GroupId,
+                        ChatChannelTypeKey = GetChatChannelTypeKey( command.GroupTypeId ),
+                        ChatChannelKey = GetChatChannelKey( command.GroupId, command.ChatChannelKey )
+                    };
+
+                    rockChatGroups.Add( rockChatGroup );
+
+                    // Did we find this group in the database?
+                    var dbRockChatGroup = dbRockChatGroups.FirstOrDefault( g => g.GroupId == command.GroupId );
+                    if ( dbRockChatGroup == null )
+                    {
+                        // Since we didn't find this group in the database, mark it for deletion.
+                        rockChatGroup.ShouldDelete = true;
+                        continue;
                     }
 
-                    return new RockChatGroup
-                    {
-                        GroupTypeId = g.GroupTypeId,
-                        GroupId = g.Id,
-                        ChatChannelTypeKey = GetChatChannelTypeKey( g.GroupTypeId ),
-                        ChatChannelKey = chatChannelKey,
-                        ShouldSaveChatChannelKeyInRock = g.ChatChannelKey != chatChannelKey,
-                        Name = g.Name,
-                        AvatarImageUrl = avatarImageUrl,
-                        CampusId = g.CampusId,
-                        IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
-                        IsPublic = g.GetIsChatChannelPublic(),
-                        IsAlwaysShown = g.GetIsChatChannelAlwaysShown(),
-                        IsChatEnabled = g.GetIsChatEnabled(),
-                        IsChatChannelActive = g.GetIsChatChannelActive()
-                    };
-                } )
-                .ToList();
-
-            var rockChatGroups = new List<RockChatGroup>();
-
-            // Loop through the commands and create a rock chat group instance for each, regardless of whether we found
-            // it in the Rock database.
-            foreach ( var command in syncCommands )
-            {
-                // Create and add the outgoing group to the collection with the data we already know from the command;
-                // we'll refine it below.
-                var rockChatGroup = new RockChatGroup
-                {
-                    GroupTypeId = command.GroupTypeId,
-                    GroupId = command.GroupId,
-                    ChatChannelTypeKey = GetChatChannelTypeKey( command.GroupTypeId ),
-                    ChatChannelKey = GetChatChannelKey( command.GroupId, command.ChatChannelKey )
-                };
-
-                rockChatGroups.Add( rockChatGroup );
-
-                // Did we find this group in the database?
-                var dbRockChatGroup = dbRockChatGroups.FirstOrDefault( g => g.GroupId == command.GroupId );
-                if ( dbRockChatGroup == null )
-                {
-                    // Since we didn't find this group in the database, mark it for deletion.
-                    rockChatGroup.ShouldDelete = true;
-                    continue;
+                    // Copy the database values to the outgoing group.
+                    rockChatGroup.ChatChannelTypeKey = dbRockChatGroup.ChatChannelTypeKey;
+                    rockChatGroup.ChatChannelKey = dbRockChatGroup.ChatChannelKey;
+                    rockChatGroup.ShouldSaveChatChannelKeyInRock = dbRockChatGroup.ShouldSaveChatChannelKeyInRock;
+                    rockChatGroup.Name = dbRockChatGroup.Name;
+                    rockChatGroup.AvatarImageUrl = dbRockChatGroup.AvatarImageUrl;
+                    rockChatGroup.CampusId = dbRockChatGroup.CampusId;
+                    rockChatGroup.IsLeavingAllowed = dbRockChatGroup.IsLeavingAllowed;
+                    rockChatGroup.IsPublic = dbRockChatGroup.IsPublic;
+                    rockChatGroup.IsAlwaysShown = dbRockChatGroup.IsAlwaysShown;
+                    rockChatGroup.IsChatEnabled = dbRockChatGroup.IsChatEnabled;
+                    rockChatGroup.IsChatChannelActive = dbRockChatGroup.IsChatChannelActive;
                 }
 
-                // Copy the database values to the outgoing group.
-                rockChatGroup.ChatChannelTypeKey = dbRockChatGroup.ChatChannelTypeKey;
-                rockChatGroup.ChatChannelKey = dbRockChatGroup.ChatChannelKey;
-                rockChatGroup.ShouldSaveChatChannelKeyInRock = dbRockChatGroup.ShouldSaveChatChannelKeyInRock;
-                rockChatGroup.Name = dbRockChatGroup.Name;
-                rockChatGroup.AvatarImageUrl = dbRockChatGroup.AvatarImageUrl;
-                rockChatGroup.CampusId = dbRockChatGroup.CampusId;
-                rockChatGroup.IsLeavingAllowed = dbRockChatGroup.IsLeavingAllowed;
-                rockChatGroup.IsPublic = dbRockChatGroup.IsPublic;
-                rockChatGroup.IsAlwaysShown = dbRockChatGroup.IsAlwaysShown;
-                rockChatGroup.IsChatEnabled = dbRockChatGroup.IsChatEnabled;
-                rockChatGroup.IsChatChannelActive = dbRockChatGroup.IsChatChannelActive;
+                return rockChatGroups;
             }
-
-            return rockChatGroups;
         }
 
         /// <summary>
@@ -3402,203 +3454,206 @@ namespace Rock.Communication.Chat
         /// </returns>
         private List<RockChatGroupMember> GetRockChatGroupMembers( List<SyncGroupMemberToChatCommand> syncCommands )
         {
-            /*
-                2/12/2025: JPH
-
-                When looking for group member records to sync to the external chat system, we need to follow a
-                less-than-obvious plan of attack:
-
-                    1. A group member record that is deleted, inactive (`GroupMemberStatus != GroupMemberStatus.Active`)
-                       or archived (`IsArchived == true`) should sometimes result in the member being removed from the
-                       external chat channel. BUT there might be another group member record for this person, that
-                       should now be used as the source of truth instead.
-                    2. If there are multiple group member records for a given group and person combination, we should
-                       prefer the first active, non-archived record (but still allow an inactive or archived, banned
-                       record if there are no active ones), further sorted as follows:
-                            `GroupRole.Order` (ascending)
-                            `GroupRole.IsLeader` (descending)
-                            `GroupRole.Id` (ascending)
-                    3. If the selected group member record for a given person matches both of the following:
-                            `GroupMemberStatus != GroupMemberStatus.Active || IsArchived == true`
-                            `IsChatBanned == true`
-                       Then we SHOULD NOT remove the member from the external chat system, so it can know that the
-                       member has already been banned from the channel.
-
-                Reason: Always return the "correct" group member for a given group & person combination.
-             */
-
-            // In this case, we DO want to get deceased individuals and archived group members. This method will decide
-            // how to handle archived group members, and the callers of this method know how to handle deceased individuals.
-            var groupMemberQry = new GroupMemberService( RockContext )
-                .Queryable(
-                    includeDeceased: true,
-                    includeArchived: true
-                );
-
-            // Get the distinct group IDs represented within the commands.
-            var groupIds = syncCommands.Select( c => c.GroupId ).Distinct().ToList();
-            if ( groupIds.Count == 1 )
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Get Rock Chat Group Members" ) )
             {
-                // Most performant: limit queries to just this group.
-                var firstGroupId = groupIds.First();
-                groupMemberQry = groupMemberQry.Where( gm => gm.GroupId == firstGroupId );
-            }
-            else if ( groupIds.Count < 1000 )
-            {
-                // For fewer than 1k groups, allow a SQL `WHERE...IN` clause.
-                groupMemberQry = groupMemberQry.Where( gm => groupIds.Contains( gm.GroupId ) );
-            }
-            else
-            {
-                // For 1k or more groups, create and join to an entity set.
-                var entitySetOptions = new AddEntitySetActionOptions
+                /*
+                    2/12/2025: JPH
+
+                    When looking for group member records to sync to the external chat system, we need to follow a
+                    less-than-obvious plan of attack:
+
+                        1. A group member record that is deleted, inactive (`GroupMemberStatus != GroupMemberStatus.Active`)
+                           or archived (`IsArchived == true`) should sometimes result in the member being removed from the
+                           external chat channel. BUT there might be another group member record for this person, that
+                           should now be used as the source of truth instead.
+                        2. If there are multiple group member records for a given group and person combination, we should
+                           prefer the first active, non-archived record (but still allow an inactive or archived, banned
+                           record if there are no active ones), further sorted as follows:
+                                `GroupRole.Order` (ascending)
+                                `GroupRole.IsLeader` (descending)
+                                `GroupRole.Id` (ascending)
+                        3. If the selected group member record for a given person matches both of the following:
+                                `GroupMemberStatus != GroupMemberStatus.Active || IsArchived == true`
+                                `IsChatBanned == true`
+                           Then we SHOULD NOT remove the member from the external chat system, so it can know that the
+                           member has already been banned from the channel.
+
+                    Reason: Always return the "correct" group member for a given group & person combination.
+                */
+
+                // In this case, we DO want to get deceased individuals and archived group members. This method will decide
+                // how to handle archived group members, and the callers of this method know how to handle deceased individuals.
+                var groupMemberQry = new GroupMemberService( RockContext )
+                    .Queryable(
+                        includeDeceased: true,
+                        includeArchived: true
+                    );
+
+                // Get the distinct group IDs represented within the commands.
+                var groupIds = syncCommands.Select( c => c.GroupId ).Distinct().ToList();
+                if ( groupIds.Count == 1 )
                 {
-                    Name = $"{nameof( ChatHelper )}_{nameof( GetRockChatGroupMembers )}_Groups",
-                    EntityTypeId = EntityTypeCache.Get<Group>().Id,
-                    EntityIdList = groupIds,
-                    ExpiryInMinutes = 20
-                };
-
-                var entitySetService = new EntitySetService( RockContext );
-                var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
-                var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
-
-                groupMemberQry = groupMemberQry.Where( gm => entitySetItemQry.Contains( gm.GroupId ) );
-            }
-
-            // Get the distinct person IDs represented within the commands.
-            var personIds = syncCommands.Select( c => c.PersonId ).Distinct().ToList();
-            if ( personIds.Count == 1 )
-            {
-                // Most performant: limit queries to just this person.
-                var firstPersonId = personIds.First();
-                groupMemberQry = groupMemberQry.Where( gm => gm.PersonId == firstPersonId );
-            }
-            else if ( personIds.Count < 1000 )
-            {
-                // For fewer than 1k people, allow a SQL `WHERE...IN` clause.
-                groupMemberQry = groupMemberQry.Where( gm => personIds.Contains( gm.PersonId ) );
-            }
-            else
-            {
-                // For 1k or more people, create and join to an entity set.
-                var entitySetOptions = new AddEntitySetActionOptions
-                {
-                    Name = $"{nameof( ChatHelper )}_{nameof( GetRockChatGroupMembers )}_People",
-                    EntityTypeId = EntityTypeCache.Get<Person>().Id,
-                    EntityIdList = personIds,
-                    ExpiryInMinutes = 20
-                };
-
-                var entitySetService = new EntitySetService( RockContext );
-                var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
-                var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
-
-                groupMemberQry = groupMemberQry.Where( gm => entitySetItemQry.Contains( gm.PersonId ) );
-            }
-
-            // Get all group members for each group & person combination.
-            var membersByGroupAndPerson = groupMemberQry
-                .Select( gm => new
-                {
-                    GroupMemberId = gm.Id,
-                    gm.GroupId,
-                    gm.PersonId,
-                    gm.GroupMemberStatus,
-                    GroupRoleId = gm.GroupRole.Id,
-                    GroupRoleOrder = gm.GroupRole.Order,
-                    GroupRoleIsLeader = gm.GroupRole.IsLeader,
-                    gm.GroupRole.ChatRole,
-                    gm.IsChatMuted,
-                    gm.IsChatBanned,
-                    gm.Person.IsDeceased,
-                    gm.IsArchived,
-                    IsGroupActive = gm.Group.IsActive,
-                    IsGroupArchived = gm.Group.IsArchived
-                } )
-                .GroupBy( gm => new
-                {
-                    gm.GroupId,
-                    gm.PersonId
-                } )
-                .AsEnumerable() // Materialize the query so inner `ToList()` calls don't result in multiple queries.
-                .Select( g => new
-                {
-                    g.Key.GroupId,
-                    g.Key.PersonId,
-                    GroupMembers = g.ToList()
-                } )
-                .ToDictionary( g => $"{g.GroupId}|{g.PersonId}", g => g.GroupMembers );
-
-            var rockChatGroupMembers = new List<RockChatGroupMember>();
-
-            // Because the list of commands could represent a given group & person combination more than once, let's
-            // keep track of those we've already seen to speed up this method's return.
-            var alreadySeenCombinations = new HashSet<string>();
-
-            // Loop through the commands and create a rock chat group member instance for each, regardless of whether we
-            // found them in the Rock database.
-            foreach ( var command in syncCommands )
-            {
-                var groupAndPersonKey = $"{command.GroupId}|{command.PersonId}";
-                if ( !alreadySeenCombinations.Add( groupAndPersonKey ) )
-                {
-                    continue;
+                    // Most performant: limit queries to just this group.
+                    var firstGroupId = groupIds.First();
+                    groupMemberQry = groupMemberQry.Where( gm => gm.GroupId == firstGroupId );
                 }
-
-                // Create and add the outgoing member to the collection with the data we already know from the command;
-                // we'll refine them below.
-                var rockChatChannelMember = new RockChatGroupMember
+                else if ( groupIds.Count < 1000 )
                 {
-                    GroupId = command.GroupId,
-                    PersonId = command.PersonId
-                };
-
-                rockChatGroupMembers.Add( rockChatChannelMember );
-
-                // Find all member records for this group & person combination.
-                if ( !membersByGroupAndPerson.TryGetValue( groupAndPersonKey, out var members ) || !members.Any() )
-                {
-                    // This person is not currently a member of this group.
-                    rockChatChannelMember.ShouldDelete = true;
-                    continue;
-                }
-
-                var memberToSync = members
-                    .OrderBy( gm => gm.IsArchived ) // Prefer non-archived.
-                    .ThenByDescending( gm => gm.GroupMemberStatus == GroupMemberStatus.Active ) // Prefer active.
-                    .ThenBy( gm => gm.GroupRoleOrder )
-                    .ThenByDescending( gm => gm.GroupRoleIsLeader )
-                    .ThenBy( gm => gm.GroupRoleId )
-                    .First();
-
-                if ( !memberToSync.IsGroupActive || memberToSync.IsGroupArchived )
-                {
-                    // This member's group is not currently active; they'll only be synced if recently deceased.
-                    rockChatChannelMember.IsDeceased = memberToSync.IsDeceased;
-                    rockChatChannelMember.ShouldIgnore = true;
-                    continue;
-                }
-
-                var isMemberInactive = memberToSync.IsArchived || memberToSync.GroupMemberStatus != GroupMemberStatus.Active;
-                if ( isMemberInactive && !memberToSync.IsChatBanned && !memberToSync.IsDeceased )
-                {
-                    // Only delete non-archived, non-active, non-banned members, non-deceased members.
-                    // Other processes within the chat sync code know how to properly delete deceased individuals.
-                    rockChatChannelMember.ShouldDelete = true;
+                    // For fewer than 1k groups, allow a SQL `WHERE...IN` clause.
+                    groupMemberQry = groupMemberQry.Where( gm => groupIds.Contains( gm.GroupId ) );
                 }
                 else
                 {
-                    rockChatChannelMember.ChatRole = memberToSync.ChatRole;
-                    rockChatChannelMember.IsChatMuted = memberToSync.IsChatMuted;
-                    rockChatChannelMember.IsChatBanned = memberToSync.IsChatBanned;
-                    rockChatChannelMember.IsDeceased = memberToSync.IsDeceased;
-                    rockChatChannelMember.ShouldDelete = false;
-                    rockChatChannelMember.ShouldIgnore = false;
-                }
-            }
+                    // For 1k or more groups, create and join to an entity set.
+                    var entitySetOptions = new AddEntitySetActionOptions
+                    {
+                        Name = $"{nameof( ChatHelper )}_{nameof( GetRockChatGroupMembers )}_Groups",
+                        EntityTypeId = EntityTypeCache.Get<Group>().Id,
+                        EntityIdList = groupIds,
+                        ExpiryInMinutes = 20
+                    };
 
-            return rockChatGroupMembers;
+                    var entitySetService = new EntitySetService( RockContext );
+                    var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
+                    var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
+
+                    groupMemberQry = groupMemberQry.Where( gm => entitySetItemQry.Contains( gm.GroupId ) );
+                }
+
+                // Get the distinct person IDs represented within the commands.
+                var personIds = syncCommands.Select( c => c.PersonId ).Distinct().ToList();
+                if ( personIds.Count == 1 )
+                {
+                    // Most performant: limit queries to just this person.
+                    var firstPersonId = personIds.First();
+                    groupMemberQry = groupMemberQry.Where( gm => gm.PersonId == firstPersonId );
+                }
+                else if ( personIds.Count < 1000 )
+                {
+                    // For fewer than 1k people, allow a SQL `WHERE...IN` clause.
+                    groupMemberQry = groupMemberQry.Where( gm => personIds.Contains( gm.PersonId ) );
+                }
+                else
+                {
+                    // For 1k or more people, create and join to an entity set.
+                    var entitySetOptions = new AddEntitySetActionOptions
+                    {
+                        Name = $"{nameof( ChatHelper )}_{nameof( GetRockChatGroupMembers )}_People",
+                        EntityTypeId = EntityTypeCache.Get<Person>().Id,
+                        EntityIdList = personIds,
+                        ExpiryInMinutes = 20
+                    };
+
+                    var entitySetService = new EntitySetService( RockContext );
+                    var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
+                    var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
+
+                    groupMemberQry = groupMemberQry.Where( gm => entitySetItemQry.Contains( gm.PersonId ) );
+                }
+
+                // Get all group members for each group & person combination.
+                var membersByGroupAndPerson = groupMemberQry
+                    .Select( gm => new
+                    {
+                        GroupMemberId = gm.Id,
+                        gm.GroupId,
+                        gm.PersonId,
+                        gm.GroupMemberStatus,
+                        GroupRoleId = gm.GroupRole.Id,
+                        GroupRoleOrder = gm.GroupRole.Order,
+                        GroupRoleIsLeader = gm.GroupRole.IsLeader,
+                        gm.GroupRole.ChatRole,
+                        gm.IsChatMuted,
+                        gm.IsChatBanned,
+                        gm.Person.IsDeceased,
+                        gm.IsArchived,
+                        IsGroupActive = gm.Group.IsActive,
+                        IsGroupArchived = gm.Group.IsArchived
+                    } )
+                    .GroupBy( gm => new
+                    {
+                        gm.GroupId,
+                        gm.PersonId
+                    } )
+                    .AsEnumerable() // Materialize the query so inner `ToList()` calls don't result in multiple queries.
+                    .Select( g => new
+                    {
+                        g.Key.GroupId,
+                        g.Key.PersonId,
+                        GroupMembers = g.ToList()
+                    } )
+                    .ToDictionary( g => $"{g.GroupId}|{g.PersonId}", g => g.GroupMembers );
+
+                var rockChatGroupMembers = new List<RockChatGroupMember>();
+
+                // Because the list of commands could represent a given group & person combination more than once, let's
+                // keep track of those we've already seen to speed up this method's return.
+                var alreadySeenCombinations = new HashSet<string>();
+
+                // Loop through the commands and create a rock chat group member instance for each, regardless of whether we
+                // found them in the Rock database.
+                foreach ( var command in syncCommands )
+                {
+                    var groupAndPersonKey = $"{command.GroupId}|{command.PersonId}";
+                    if ( !alreadySeenCombinations.Add( groupAndPersonKey ) )
+                    {
+                        continue;
+                    }
+
+                    // Create and add the outgoing member to the collection with the data we already know from the command;
+                    // we'll refine them below.
+                    var rockChatChannelMember = new RockChatGroupMember
+                    {
+                        GroupId = command.GroupId,
+                        PersonId = command.PersonId
+                    };
+
+                    rockChatGroupMembers.Add( rockChatChannelMember );
+
+                    // Find all member records for this group & person combination.
+                    if ( !membersByGroupAndPerson.TryGetValue( groupAndPersonKey, out var members ) || !members.Any() )
+                    {
+                        // This person is not currently a member of this group.
+                        rockChatChannelMember.ShouldDelete = true;
+                        continue;
+                    }
+
+                    var memberToSync = members
+                        .OrderBy( gm => gm.IsArchived ) // Prefer non-archived.
+                        .ThenByDescending( gm => gm.GroupMemberStatus == GroupMemberStatus.Active ) // Prefer active.
+                        .ThenBy( gm => gm.GroupRoleOrder )
+                        .ThenByDescending( gm => gm.GroupRoleIsLeader )
+                        .ThenBy( gm => gm.GroupRoleId )
+                        .First();
+
+                    if ( !memberToSync.IsGroupActive || memberToSync.IsGroupArchived )
+                    {
+                        // This member's group is not currently active; they'll only be synced if recently deceased.
+                        rockChatChannelMember.IsDeceased = memberToSync.IsDeceased;
+                        rockChatChannelMember.ShouldIgnore = true;
+                        continue;
+                    }
+
+                    var isMemberInactive = memberToSync.IsArchived || memberToSync.GroupMemberStatus != GroupMemberStatus.Active;
+                    if ( isMemberInactive && !memberToSync.IsChatBanned && !memberToSync.IsDeceased )
+                    {
+                        // Only delete non-archived, non-active, non-banned members, non-deceased members.
+                        // Other processes within the chat sync code know how to properly delete deceased individuals.
+                        rockChatChannelMember.ShouldDelete = true;
+                    }
+                    else
+                    {
+                        rockChatChannelMember.ChatRole = memberToSync.ChatRole;
+                        rockChatChannelMember.IsChatMuted = memberToSync.IsChatMuted;
+                        rockChatChannelMember.IsChatBanned = memberToSync.IsChatBanned;
+                        rockChatChannelMember.IsDeceased = memberToSync.IsDeceased;
+                        rockChatChannelMember.ShouldDelete = false;
+                        rockChatChannelMember.ShouldIgnore = false;
+                    }
+                }
+
+                return rockChatGroupMembers;
+            }
         }
 
         #endregion Rock Model CRUD
@@ -3769,55 +3824,58 @@ namespace Rock.Communication.Chat
         {
             var result = new ChatSyncCrudResult();
 
-            var structuredLog = "KeysToDelete: {@KeysToDelete}, NewKey: {@NewKey}";
-            var logMessagePrefix = $"{LogMessagePrefix} {nameof( DeleteChatUsersAsync ).SplitCase()} failed";
-
-            try
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Delete Chat Users" ) )
             {
-                var chatUserKeys = keysToDelete
-                    .Select( k => k.ChatUserKey )
-                    .ToList();
+                var structuredLog = "KeysToDelete: {@KeysToDelete}, NewKey: {@NewKey}";
+                var logMessagePrefix = $"{LogMessagePrefix} {nameof( DeleteChatUsersAsync ).SplitCase()} failed";
 
-                var deleteResult = await ChatProvider.DeleteChatUsersAsync( chatUserKeys, newKey?.ChatUserKey );
-                if ( deleteResult == null || deleteResult.HasException )
+                try
                 {
-                    result.Exception = deleteResult?.Exception;
-                    Logger.LogError( result.Exception, $"{logMessagePrefix} at step '{nameof( ChatProvider.DeleteChatUsersAsync ).SplitCase()}'. {structuredLog}", keysToDelete, newKey );
+                    var chatUserKeys = keysToDelete
+                        .Select( k => k.ChatUserKey )
+                        .ToList();
+
+                    var deleteResult = await ChatProvider.DeleteChatUsersAsync( chatUserKeys, newKey?.ChatUserKey );
+                    if ( deleteResult == null || deleteResult.HasException )
+                    {
+                        result.Exception = deleteResult?.Exception;
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} at step '{nameof( ChatProvider.DeleteChatUsersAsync ).SplitCase()}'. {structuredLog}", keysToDelete, newKey );
+                    }
+                    else
+                    {
+                        result.Skipped.UnionWith( deleteResult.Skipped );
+                        result.Deleted.UnionWith( deleteResult.Deleted );
+                    }
                 }
-                else
+                catch ( Exception ex )
                 {
-                    result.Skipped.UnionWith( deleteResult.Skipped );
-                    result.Deleted.UnionWith( deleteResult.Deleted );
+                    result.Exception = ex;
+                    Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", keysToDelete, newKey );
                 }
+
+                // Even if an exception occurred, if any users were actually deleted in the external chat system (or skipped),
+                // let's take this opportunity to ensure their chat person alias name and foreign key values are cleared.
+                if ( result.Deleted.Any() || result.Skipped.Any() )
+                {
+                    var keysToClear = keysToDelete
+                        .Where( k =>
+                            result.Deleted.Contains( k.ChatUserKey )
+                            || result.Skipped.Contains( k.ChatUserKey )
+                        )
+                        .ToList();
+
+                    // This will always be a short list of records (usually just one), so a  SQL `WHERE...IN` clause will
+                    // never be problematic here.
+                    var deletedAliasIds = keysToClear.Select( k => k.ChatPersonAliasId.Value ).ToList();
+                    var aliasesToUpdateQry = personAliasService
+                        .Queryable()
+                        .Where( a => deletedAliasIds.Contains( a.Id ) );
+
+                    RockContext.BulkUpdate( aliasesToUpdateQry, a => new PersonAlias { Name = null, ForeignKey = null } );
+                }
+
+                return result;
             }
-            catch ( Exception ex )
-            {
-                result.Exception = ex;
-                Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", keysToDelete, newKey );
-            }
-
-            // Even if an exception occurred, if any users were actually deleted in the external chat system (or skipped),
-            // let's take this opportunity to ensure their chat person alias name and foreign key values are cleared.
-            if ( result.Deleted.Any() || result.Skipped.Any() )
-            {
-                var keysToClear = keysToDelete
-                    .Where( k =>
-                        result.Deleted.Contains( k.ChatUserKey )
-                        || result.Skipped.Contains( k.ChatUserKey )
-                    )
-                    .ToList();
-
-                // This will always be a short list of records (usually just one), so a  SQL `WHERE...IN` clause will
-                // never be problematic here.
-                var deletedAliasIds = keysToClear.Select( k => k.ChatPersonAliasId.Value ).ToList();
-                var aliasesToUpdateQry = personAliasService
-                    .Queryable()
-                    .Where( a => deletedAliasIds.Contains( a.Id ) );
-
-                RockContext.BulkUpdate( aliasesToUpdateQry, a => new PersonAlias { Name = null, ForeignKey = null } );
-            }
-
-            return result;
         }
 
         #endregion Synchronization: From Rock To Chat Provider
@@ -3831,115 +3889,118 @@ namespace Rock.Communication.Chat
         /// <param name="config">The optional configuration for fine-tuning the deletion process.</param>
         private ChatSyncCrudResult DeleteChatUsersInRock( List<DeleteChatPersonInRockCommand> syncCommands, DeleteChatUsersInRockConfig config = null )
         {
-            var result = new ChatSyncCrudResult();
-
-            if ( config == null )
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Delete Chat Users In Rock" ) )
             {
-                config = new DeleteChatUsersInRockConfig();
-            }
+                var result = new ChatSyncCrudResult();
 
-            foreach ( var syncCommand in syncCommands )
-            {
-                if ( syncCommand.ChatSyncType != ChatSyncType.Delete )
+                if ( config == null )
                 {
-                    // Only delete commands should be processed here.
-                    syncCommand.MarkAsUnrecoverable( $"ChatSyncType '{syncCommand.ChatSyncType.ConvertToString()}' is not supported for chat person deletion commands." );
-                    continue;
+                    config = new DeleteChatUsersInRockConfig();
                 }
 
-                syncCommand.ResetForSyncAttempt();
-
-                // We'll use a new rock context to keep each command isolated.
-                // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
-                using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
+                foreach ( var syncCommand in syncCommands )
                 {
-                    var personAliasService = new PersonAliasService( rockContext );
-
-                    var personIdentifier = GetChatToRockPersonIdentifier(
-                        syncCommand.ChatPersonKey,
-                        personAliasService,
-                        isRecoverableIfPersonNotFound: true
-                    );
-
-                    if ( personIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
+                    if ( syncCommand.ChatSyncType != ChatSyncType.Delete )
                     {
-                        // Unable to identify the targeted person.
-                        syncCommand.MarkAsUnrecoverable( personIdentifier.UnrecoverableReason );
+                        // Only delete commands should be processed here.
+                        syncCommand.MarkAsUnrecoverable( $"ChatSyncType '{syncCommand.ChatSyncType.ConvertToString()}' is not supported for chat person deletion commands." );
                         continue;
                     }
 
-                    var chatPersonAlias = personIdentifier.PersonAlias;
-                    if ( chatPersonAlias == null )
+                    syncCommand.ResetForSyncAttempt();
+
+                    // We'll use a new rock context to keep each command isolated.
+                    // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
+                    using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
                     {
-                        // No matching person alias found; it must have already been deleted.
-                        syncCommand.MarkAsSkipped();
-                        continue;
-                    }
+                        var personAliasService = new PersonAliasService( rockContext );
 
-                    // Supplement the command.
-                    syncCommand.PersonAliasId = chatPersonAlias.Id;
-                    syncCommand.PersonId = chatPersonAlias.PersonId;
+                        var personIdentifier = GetChatToRockPersonIdentifier(
+                            syncCommand.ChatPersonKey,
+                            personAliasService,
+                            isRecoverableIfPersonNotFound: true
+                        );
 
-                    // Inactivate this person's chat-related group member records.
-                    var groupMembers = new GroupMemberService( rockContext )
-                        // In this case, we DO want to get deceased individuals, so we can inactivate them.
-                        // Their group member records SHOULD already be inactive, but we'll just make sure.
-                        .Queryable( includeDeceased: true )
-                        .Where( gm =>
-                            gm.PersonId == chatPersonAlias.PersonId
-                            && (
-                                gm.GroupId == ChatAdministratorsGroupId
-                                || (
-                                    config.ShouldUnban
-                                    && gm.GroupId == ChatBanListGroupId
-                                )
-                                || (
-                                    gm.Group.GroupType.IsChatAllowed
-                                    && (
-                                        gm.Group.GroupType.IsChatEnabledForAllGroups
-                                        || gm.Group.IsChatEnabledOverride == true
+                        if ( personIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
+                        {
+                            // Unable to identify the targeted person.
+                            syncCommand.MarkAsUnrecoverable( personIdentifier.UnrecoverableReason );
+                            continue;
+                        }
+
+                        var chatPersonAlias = personIdentifier.PersonAlias;
+                        if ( chatPersonAlias == null )
+                        {
+                            // No matching person alias found; it must have already been deleted.
+                            syncCommand.MarkAsSkipped();
+                            continue;
+                        }
+
+                        // Supplement the command.
+                        syncCommand.PersonAliasId = chatPersonAlias.Id;
+                        syncCommand.PersonId = chatPersonAlias.PersonId;
+
+                        // Inactivate this person's chat-related group member records.
+                        var groupMembers = new GroupMemberService( rockContext )
+                            // In this case, we DO want to get deceased individuals, so we can inactivate them.
+                            // Their group member records SHOULD already be inactive, but we'll just make sure.
+                            .Queryable( includeDeceased: true )
+                            .Where( gm =>
+                                gm.PersonId == chatPersonAlias.PersonId
+                                && (
+                                    gm.GroupId == ChatAdministratorsGroupId
+                                    || (
+                                        config.ShouldUnban
+                                        && gm.GroupId == ChatBanListGroupId
+                                    )
+                                    || (
+                                        gm.Group.GroupType.IsChatAllowed
+                                        && (
+                                            gm.Group.GroupType.IsChatEnabledForAllGroups
+                                            || gm.Group.IsChatEnabledOverride == true
+                                        )
                                     )
                                 )
                             )
-                        )
-                        .ToList();
+                            .ToList();
 
-                    var shouldSaveChanges = false;
+                        var shouldSaveChanges = false;
 
-                    foreach ( var groupMember in groupMembers )
-                    {
-                        groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
-
-                        if ( !groupMember.InactiveDateTime.HasValue )
+                        foreach ( var groupMember in groupMembers )
                         {
-                            groupMember.InactiveDateTime = RockDateTime.Now;
+                            groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
+
+                            if ( !groupMember.InactiveDateTime.HasValue )
+                            {
+                                groupMember.InactiveDateTime = RockDateTime.Now;
+                            }
+
+                            shouldSaveChanges = true;
                         }
 
-                        shouldSaveChanges = true;
+                        if ( config.ShouldClearChatPersonAliasForeignKey )
+                        {
+                            // We can't DELETE this chat person alias (because there are probably already interactions tied
+                            // to it), so we should - instead - clear out the name and foreign key field that designates it
+                            // as a chat-specific record.
+                            chatPersonAlias.Name = null;
+                            chatPersonAlias.ForeignKey = null;
+
+                            shouldSaveChanges = true;
+                        }
+
+                        if ( shouldSaveChanges )
+                        {
+                            rockContext.SaveChanges();
+                        }
+
+                        result.Deleted.Add( chatPersonAlias.Id.ToString() );
+                        syncCommand.MarkAsCompleted();
                     }
-
-                    if ( config.ShouldClearChatPersonAliasForeignKey )
-                    {
-                        // We can't DELETE this chat person alias (because there are probably already interactions tied
-                        // to it), so we should - instead - clear out the name and foreign key field that designates it
-                        // as a chat-specific record.
-                        chatPersonAlias.Name = null;
-                        chatPersonAlias.ForeignKey = null;
-
-                        shouldSaveChanges = true;
-                    }
-
-                    if ( shouldSaveChanges )
-                    {
-                        rockContext.SaveChanges();
-                    }
-
-                    result.Deleted.Add( chatPersonAlias.Id.ToString() );
-                    syncCommand.MarkAsCompleted();
                 }
-            }
 
-            return result;
+                return result;
+            }
         }
 
         /// <summary>
@@ -3949,173 +4010,176 @@ namespace Rock.Communication.Chat
         /// <returns>A <see cref="ChatSyncCrudResult"/> containing the results of the synchronization.</returns>
         internal ChatSyncCrudResult SyncChatChannelsToRock( List<SyncChatChannelToRockCommand> syncCommands )
         {
-            var result = new ChatSyncCrudResult();
-
-            foreach ( var syncCommand in syncCommands )
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Sync Chat Channels To Rock" ) )
             {
-                syncCommand.ResetForSyncAttempt();
+                var result = new ChatSyncCrudResult();
 
-                int? groupId = syncCommand.GroupId;
-                int? groupTypeId = syncCommand.GroupTypeId;
+                foreach ( var syncCommand in syncCommands )
+                {
+                    syncCommand.ResetForSyncAttempt();
 
-                if ( !groupId.HasValue && syncCommand.ChatChannelKey.IsNullOrWhiteSpace() )
-                {
-                    syncCommand.MarkAsUnrecoverable( "Rock group ID and chat channel key are both missing from sync command; unable to identify group." );
-                    continue;
-                }
+                    int? groupId = syncCommand.GroupId;
+                    int? groupTypeId = syncCommand.GroupTypeId;
 
-                if ( !groupTypeId.HasValue )
-                {
-                    syncCommand.MarkAsUnrecoverable( "Rock group type ID is missing from sync command." );
-                    continue;
-                }
-                else
-                {
-                    // Only allow sync operations to be performed against chat-enabled Rock group types.
-                    var groupTypeCache = GroupTypeCache.Get( groupTypeId.Value );
-                    if ( groupTypeCache == null )
+                    if ( !groupId.HasValue && syncCommand.ChatChannelKey.IsNullOrWhiteSpace() )
                     {
-                        syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {groupTypeId} could not be found." );
+                        syncCommand.MarkAsUnrecoverable( "Rock group ID and chat channel key are both missing from sync command; unable to identify group." );
                         continue;
                     }
-                    else if ( !groupTypeCache.IsChatAllowed )
+
+                    if ( !groupTypeId.HasValue )
                     {
-                        syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {groupTypeId} is not chat-enabled." );
+                        syncCommand.MarkAsUnrecoverable( "Rock group type ID is missing from sync command." );
                         continue;
                     }
-                }
-
-                // We'll use a new rock context to keep each command isolated.
-                // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
-                using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
-                {
-                    var groupService = new GroupService( rockContext );
-
-                    // Try to get the targeted group.
-                    Group group;
-
-                    if ( groupId.HasValue )
+                    else
                     {
-                        group = groupService
-                            .GetChatChannelGroupsQuery()
-                            .FirstOrDefault( g => g.Id == groupId.Value );
-
-                        if ( group == null )
+                        // Only allow sync operations to be performed against chat-enabled Rock group types.
+                        var groupTypeCache = GroupTypeCache.Get( groupTypeId.Value );
+                        if ( groupTypeCache == null )
                         {
-                            // Since the group's ID was provided, this means the group existed in Rock before we got this
-                            // sync command. If we can't find a group matching the specified ID, we have nothing more to do.
-                            if ( syncCommand.ChatSyncType == ChatSyncType.Delete )
+                            syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {groupTypeId} could not be found." );
+                            continue;
+                        }
+                        else if ( !groupTypeCache.IsChatAllowed )
+                        {
+                            syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {groupTypeId} is not chat-enabled." );
+                            continue;
+                        }
+                    }
+
+                    // We'll use a new rock context to keep each command isolated.
+                    // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
+                    using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
+                    {
+                        var groupService = new GroupService( rockContext );
+
+                        // Try to get the targeted group.
+                        Group group;
+
+                        if ( groupId.HasValue )
+                        {
+                            group = groupService
+                                .GetChatChannelGroupsQuery()
+                                .FirstOrDefault( g => g.Id == groupId.Value );
+
+                            if ( group == null )
                             {
-                                // No need to report these delete attempts as failures.
+                                // Since the group's ID was provided, this means the group existed in Rock before we got this
+                                // sync command. If we can't find a group matching the specified ID, we have nothing more to do.
+                                if ( syncCommand.ChatSyncType == ChatSyncType.Delete )
+                                {
+                                    // No need to report these delete attempts as failures.
+                                    result.Skipped.Add( groupId.ToString() );
+                                    syncCommand.MarkAsSkipped();
+                                    continue;
+                                }
+
+                                syncCommand.MarkAsUnrecoverable( $"Rock group with ID {groupId.Value} could not be found." );
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            group = groupService
+                                .GetChatChannelGroupsQuery()
+                                .FirstOrDefault( g => g.ChatChannelKey == syncCommand.ChatChannelKey );
+                        }
+
+                        if ( group?.GetIsChatEnabled() == false )
+                        {
+                            // Only allow sync operations to be performed against chat-enabled Rock groups.
+                            syncCommand.MarkAsUnrecoverable( $"Rock group with ID {groupId.Value} is not chat-enabled." );
+                            continue;
+                        }
+
+                        var groupNotFoundMsg = $"Rock group with chat channel key '{syncCommand.ChatChannelKey}' could not be found.";
+
+                        var groupName = syncCommand.GroupName;
+                        if ( groupName.IsNullOrWhiteSpace() )
+                        {
+                            if ( syncCommand.GroupTypeId == ChatDirectMessageGroupTypeId )
+                            {
+                                groupName = ChatDirectMessageGroupName;
+                            }
+                            else
+                            {
+                                // This isn't ideal, but we need a value to use for the required Rock group name field.
+                                groupName = syncCommand.ChatChannelKey;
+                            }
+                        }
+
+                        if ( syncCommand.ChatSyncType == ChatSyncType.Create )
+                        {
+                            if ( group != null )
+                            {
+                                // There's already a matching group.
                                 result.Skipped.Add( groupId.ToString() );
                                 syncCommand.MarkAsSkipped();
                                 continue;
                             }
 
-                            syncCommand.MarkAsUnrecoverable( $"Rock group with ID {groupId.Value} could not be found." );
-                            continue;
+                            var newGroup = new Group
+                            {
+                                ParentGroupId = ChatDirectMessagesGroupId,
+                                Name = groupName,
+                                GroupTypeId = groupTypeId.Value,
+                                ChatChannelKey = syncCommand.ChatChannelKey,
+                                IsActive = syncCommand.IsActive
+                            };
+
+                            // Add the group.
+                            groupService.Add( newGroup );
+                            rockContext.SaveChanges();
+
+                            result.Created.Add( newGroup.Id.ToString() );
                         }
-                    }
-                    else
-                    {
-                        group = groupService
-                            .GetChatChannelGroupsQuery()
-                            .FirstOrDefault( g => g.ChatChannelKey == syncCommand.ChatChannelKey );
-                    }
-
-                    if ( group?.GetIsChatEnabled() == false )
-                    {
-                        // Only allow sync operations to be performed against chat-enabled Rock groups.
-                        syncCommand.MarkAsUnrecoverable( $"Rock group with ID {groupId.Value} is not chat-enabled." );
-                        continue;
-                    }
-
-                    var groupNotFoundMsg = $"Rock group with chat channel key '{syncCommand.ChatChannelKey}' could not be found.";
-
-                    var groupName = syncCommand.GroupName;
-                    if ( groupName.IsNullOrWhiteSpace() )
-                    {
-                        if ( syncCommand.GroupTypeId == ChatDirectMessageGroupTypeId )
+                        else if ( syncCommand.ChatSyncType == ChatSyncType.Update )
                         {
-                            groupName = ChatDirectMessageGroupName;
+                            if ( group == null )
+                            {
+                                // We don't have a matching group record [yet]; it's possible we got an update command
+                                // before the corresponding create command completed. Send it back through the queue.
+                                syncCommand.MarkAsRecoverable( groupNotFoundMsg );
+                                continue;
+                            }
+
+                            // Update the group (but only if needed).
+                            if ( group.Name == groupName )
+                            {
+                                result.Skipped.Add( groupId.ToString() );
+                                syncCommand.MarkAsSkipped();
+                                continue;
+                            }
+
+                            /*
+                                3/18/2025 - JPH
+
+                                While the sync command technically contains an `IsActive` value, we'll not consider this when
+                                updating existing Rock groups.
+
+                                Reason: Rock should be the system of truth for `IsActive` & `IsArchived` status, for existing groups.
+                            */
+
+                            group.Name = groupName;
+
+                            rockContext.SaveChanges();
+
+                            result.Updated.Add( groupId.ToString() );
                         }
                         else
                         {
-                            // This isn't ideal, but we need a value to use for the required Rock group name field.
-                            groupName = syncCommand.ChatChannelKey;
-                        }
-                    }
-
-                    if ( syncCommand.ChatSyncType == ChatSyncType.Create )
-                    {
-                        if ( group != null )
-                        {
-                            // There's already a matching group.
-                            result.Skipped.Add( groupId.ToString() );
-                            syncCommand.MarkAsSkipped();
+                            syncCommand.MarkAsUnrecoverable( $"ChatSyncType '{syncCommand.ChatSyncType.ConvertToString()}' is not supported for channel synchronizations." );
                             continue;
                         }
 
-                        var newGroup = new Group
-                        {
-                            ParentGroupId = ChatDirectMessagesGroupId,
-                            Name = groupName,
-                            GroupTypeId = groupTypeId.Value,
-                            ChatChannelKey = syncCommand.ChatChannelKey,
-                            IsActive = syncCommand.IsActive
-                        };
-
-                        // Add the group.
-                        groupService.Add( newGroup );
-                        rockContext.SaveChanges();
-
-                        result.Created.Add( newGroup.Id.ToString() );
+                        // If we got this far, the command was successfully completed.
+                        syncCommand.MarkAsCompleted();
                     }
-                    else if ( syncCommand.ChatSyncType == ChatSyncType.Update )
-                    {
-                        if ( group == null )
-                        {
-                            // We don't have a matching group record [yet]; it's possible we got an update command
-                            // before the corresponding create command completed. Send it back through the queue.
-                            syncCommand.MarkAsRecoverable( groupNotFoundMsg );
-                            continue;
-                        }
-
-                        // Update the group (but only if needed).
-                        if ( group.Name == groupName )
-                        {
-                            result.Skipped.Add( groupId.ToString() );
-                            syncCommand.MarkAsSkipped();
-                            continue;
-                        }
-
-                        /*
-                            3/18/2025 - JPH
-
-                            While the sync command technically contains an `IsActive` value, we'll not consider this when
-                            updating existing Rock groups.
-
-                            Reason: Rock should be the system of truth for `IsActive` & `IsArchived` status, for existing groups.
-                         */
-
-                        group.Name = groupName;
-
-                        rockContext.SaveChanges();
-
-                        result.Updated.Add( groupId.ToString() );
-                    }
-                    else
-                    {
-                        syncCommand.MarkAsUnrecoverable( $"ChatSyncType '{syncCommand.ChatSyncType.ConvertToString()}' is not supported for channel synchronizations." );
-                        continue;
-                    }
-
-                    // If we got this far, the command was successfully completed.
-                    syncCommand.MarkAsCompleted();
                 }
-            }
 
-            return result;
+                return result;
+            }
         }
 
         /// <summary>
@@ -4125,185 +4189,188 @@ namespace Rock.Communication.Chat
         /// <returns>A <see cref="ChatSyncCrudResult"/> containing the results of the synchronization.</returns>
         internal ChatSyncCrudResult SyncChatChannelMembersToRock( List<SyncChatChannelMemberToRockCommand> syncCommands )
         {
-            var result = new ChatSyncCrudResult();
-
-            foreach ( var syncCommand in syncCommands )
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Sync Chat Channel Members To Rock" ) )
             {
-                syncCommand.ResetForSyncAttempt();
+                var result = new ChatSyncCrudResult();
 
-                int? groupId = syncCommand.GroupId;
-                if ( !groupId.HasValue && syncCommand.ChatChannelKey.IsNullOrWhiteSpace() )
+                foreach ( var syncCommand in syncCommands )
                 {
-                    syncCommand.MarkAsUnrecoverable( "Rock group ID and chat channel key are both missing from sync command; unable to identify group." );
-                    continue;
-                }
+                    syncCommand.ResetForSyncAttempt();
 
-                // We don't have a person ID yet, so we'll start with their chat user key.
-                var memberId = $"{syncCommand.GroupId}|{syncCommand.ChatPersonKey}";
-
-                // We'll use a new rock context to keep each command isolated.
-                // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
-                using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
-                {
-                    // Try to get the targeted group.
-                    var groupIdentifier = GetChatToRockGroupIdentifier(
-                        groupId,
-                        syncCommand.ChatChannelKey,
-                        syncCommand.ChatSyncType,
-                        rockContext
-                    );
-
-                    if ( groupIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
+                    int? groupId = syncCommand.GroupId;
+                    if ( !groupId.HasValue && syncCommand.ChatChannelKey.IsNullOrWhiteSpace() )
                     {
-                        // Unable to identify the targeted group.
-                        syncCommand.MarkAsUnrecoverable( groupIdentifier.UnrecoverableReason );
+                        syncCommand.MarkAsUnrecoverable( "Rock group ID and chat channel key are both missing from sync command; unable to identify group." );
                         continue;
                     }
 
-                    if ( groupIdentifier.GroupCache == null )
+                    // We don't have a person ID yet, so we'll start with their chat user key.
+                    var memberId = $"{syncCommand.GroupId}|{syncCommand.ChatPersonKey}";
+
+                    // We'll use a new rock context to keep each command isolated.
+                    // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
+                    using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
                     {
-                        if ( groupId.HasValue && syncCommand.ChatSyncType == ChatSyncType.Delete )
+                        // Try to get the targeted group.
+                        var groupIdentifier = GetChatToRockGroupIdentifier(
+                            groupId,
+                            syncCommand.ChatChannelKey,
+                            syncCommand.ChatSyncType,
+                            rockContext
+                        );
+
+                        if ( groupIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
                         {
-                            // No need to report these delete attempts as failures. Since the group couldn't be found,
-                            // this means the child members have also been deleted (or archived).
-                            result.Skipped.Add( memberId );
-                            syncCommand.MarkAsSkipped();
+                            // Unable to identify the targeted group.
+                            syncCommand.MarkAsUnrecoverable( groupIdentifier.UnrecoverableReason );
                             continue;
                         }
 
-                        // We don't have a matching group record [yet]; it's possible we got this group member command
-                        // before the corresponding create channel command completed. Send it back through the queue.
-                        syncCommand.MarkAsRecoverable( $"Rock group with chat channel key '{syncCommand.ChatChannelKey}' could not be found." );
-                        continue;
-                    }
-
-                    var groupCache = groupIdentifier.GroupCache;
-                    if ( !groupCache.GetIsChatEnabled() )
-                    {
-                        // Only allow sync operations to be performed against chat-enabled Rock groups.
-                        syncCommand.MarkAsUnrecoverable( $"Rock group with ID {groupCache.Id} is not chat-enabled." );
-                        continue;
-                    }
-
-                    // Supplement the command.
-                    syncCommand.GroupId = groupCache.Id;
-
-                    // Try to get the targeted person.
-                    var personIdentifier = GetChatToRockPersonIdentifier(
-                        syncCommand.ChatPersonKey,
-                        new PersonAliasService( rockContext )
-                    );
-
-                    if ( personIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
-                    {
-                        // Unable to identify the targeted person.
-                        syncCommand.MarkAsUnrecoverable( personIdentifier.UnrecoverableReason );
-                        continue;
-                    }
-
-                    // We now have the targeted person.
-                    var chatPersonAlias = personIdentifier.PersonAlias;
-
-                    // Supplement the command and update the member ID.
-                    syncCommand.PersonAliasId = chatPersonAlias.Id;
-                    syncCommand.PersonId = chatPersonAlias.PersonId;
-                    memberId = $"{syncCommand.GroupId}|{chatPersonAlias.PersonId}";
-
-                    // Try to get the targeted group members (they might have more than one role).
-                    var groupMemberService = new GroupMemberService( rockContext );
-
-                    // Eager-load the parent group, as the group member service knows how to delete vs. archive members when needed.
-                    var groupMembers = groupMemberService
-                        .Queryable()
-                        .Include( gm => gm.Group )
-                        .Where( gm =>
-                            gm.GroupId == groupCache.Id
-                            && gm.PersonId == chatPersonAlias.PersonId
-                        )
-                        .ToList();
-
-                    if ( syncCommand.ChatSyncType == ChatSyncType.Create )
-                    {
-                        if ( groupMembers.Any() )
+                        if ( groupIdentifier.GroupCache == null )
                         {
-                            // There's already a matching group member.
-                            result.Skipped.Add( memberId );
-                            syncCommand.MarkAsSkipped();
+                            if ( groupId.HasValue && syncCommand.ChatSyncType == ChatSyncType.Delete )
+                            {
+                                // No need to report these delete attempts as failures. Since the group couldn't be found,
+                                // this means the child members have also been deleted (or archived).
+                                result.Skipped.Add( memberId );
+                                syncCommand.MarkAsSkipped();
+                                continue;
+                            }
+
+                            // We don't have a matching group record [yet]; it's possible we got this group member command
+                            // before the corresponding create channel command completed. Send it back through the queue.
+                            syncCommand.MarkAsRecoverable( $"Rock group with chat channel key '{syncCommand.ChatChannelKey}' could not be found." );
                             continue;
                         }
 
-                        // Add the group member.
-                        int? groupRoleId;
-                        var groupTypeCache = groupCache.GroupType;
-
-                        if ( syncCommand.ChatRole.HasValue )
+                        var groupCache = groupIdentifier.GroupCache;
+                        if ( !groupCache.GetIsChatEnabled() )
                         {
-                            groupRoleId = groupTypeCache.Roles
-                                .FirstOrDefault( r => r.ChatRole == syncCommand.ChatRole.Value )
-                                ?.Id;
+                            // Only allow sync operations to be performed against chat-enabled Rock groups.
+                            syncCommand.MarkAsUnrecoverable( $"Rock group with ID {groupCache.Id} is not chat-enabled." );
+                            continue;
+                        }
+
+                        // Supplement the command.
+                        syncCommand.GroupId = groupCache.Id;
+
+                        // Try to get the targeted person.
+                        var personIdentifier = GetChatToRockPersonIdentifier(
+                            syncCommand.ChatPersonKey,
+                            new PersonAliasService( rockContext )
+                        );
+
+                        if ( personIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
+                        {
+                            // Unable to identify the targeted person.
+                            syncCommand.MarkAsUnrecoverable( personIdentifier.UnrecoverableReason );
+                            continue;
+                        }
+
+                        // We now have the targeted person.
+                        var chatPersonAlias = personIdentifier.PersonAlias;
+
+                        // Supplement the command and update the member ID.
+                        syncCommand.PersonAliasId = chatPersonAlias.Id;
+                        syncCommand.PersonId = chatPersonAlias.PersonId;
+                        memberId = $"{syncCommand.GroupId}|{chatPersonAlias.PersonId}";
+
+                        // Try to get the targeted group members (they might have more than one role).
+                        var groupMemberService = new GroupMemberService( rockContext );
+
+                        // Eager-load the parent group, as the group member service knows how to delete vs. archive members when needed.
+                        var groupMembers = groupMemberService
+                            .Queryable()
+                            .Include( gm => gm.Group )
+                            .Where( gm =>
+                                gm.GroupId == groupCache.Id
+                                && gm.PersonId == chatPersonAlias.PersonId
+                            )
+                            .ToList();
+
+                        if ( syncCommand.ChatSyncType == ChatSyncType.Create )
+                        {
+                            if ( groupMembers.Any() )
+                            {
+                                // There's already a matching group member.
+                                result.Skipped.Add( memberId );
+                                syncCommand.MarkAsSkipped();
+                                continue;
+                            }
+
+                            // Add the group member.
+                            int? groupRoleId;
+                            var groupTypeCache = groupCache.GroupType;
+
+                            if ( syncCommand.ChatRole.HasValue )
+                            {
+                                groupRoleId = groupTypeCache.Roles
+                                    .FirstOrDefault( r => r.ChatRole == syncCommand.ChatRole.Value )
+                                    ?.Id;
+                            }
+                            else
+                            {
+                                groupRoleId = groupTypeCache.DefaultGroupRoleId;
+                            }
+
+                            if ( !groupRoleId.HasValue )
+                            {
+                                syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {groupTypeCache.Id} doesn't have a default group role; unable to assign person (ID {chatPersonAlias.PersonId})." );
+                                continue;
+                            }
+
+                            groupMemberService.Add(
+                                new GroupMember
+                                {
+                                    GroupId = groupCache.Id,
+                                    PersonId = chatPersonAlias.PersonId,
+                                    GroupRoleId = groupRoleId.Value,
+                                    GroupMemberStatus = GroupMemberStatus.Active,
+                                    GroupTypeId = groupTypeCache.Id,
+                                    IsChatBanned = syncCommand.IsBanned ?? false,
+                                    IsChatMuted = syncCommand.IsMuted ?? false
+                                }
+                            );
+
+                            // For new member creation, we actually DO want to sync back to the external chat system, to
+                            // ensure the correct channel member role is in place.
+                            rockContext.IsRockToChatSyncEnabled = true;
+                            rockContext.SaveChanges();
+
+                            result.Created.Add( memberId );
+                        }
+                        else if ( syncCommand.ChatSyncType == ChatSyncType.Delete )
+                        {
+                            if ( !groupMembers.Any() )
+                            {
+                                // We don't have a matching group member record [yet]; it's possible we got a delete command
+                                // before the corresponding create command completed. Send it back through the queue.
+                                syncCommand.MarkAsRecoverable( $"Rock group member could not be found (group ID {groupCache.Id}, person ID {chatPersonAlias.PersonId})." );
+                                continue;
+                            }
+
+                            foreach ( var groupMember in groupMembers )
+                            {
+                                groupMemberService.Delete( groupMember );
+                            }
+
+                            rockContext.SaveChanges();
+
+                            result.Deleted.Add( memberId );
                         }
                         else
                         {
-                            groupRoleId = groupTypeCache.DefaultGroupRoleId;
-                        }
-
-                        if ( !groupRoleId.HasValue )
-                        {
-                            syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {groupTypeCache.Id} doesn't have a default group role; unable to assign person (ID {chatPersonAlias.PersonId})." );
+                            syncCommand.MarkAsUnrecoverable( $"ChatSyncType '{syncCommand.ChatSyncType.ConvertToString()}' is not supported for channel member synchronizations." );
                             continue;
                         }
 
-                        groupMemberService.Add(
-                            new GroupMember
-                            {
-                                GroupId = groupCache.Id,
-                                PersonId = chatPersonAlias.PersonId,
-                                GroupRoleId = groupRoleId.Value,
-                                GroupMemberStatus = GroupMemberStatus.Active,
-                                GroupTypeId = groupTypeCache.Id,
-                                IsChatBanned = syncCommand.IsBanned ?? false,
-                                IsChatMuted = syncCommand.IsMuted ?? false
-                            }
-                        );
-
-                        // For new member creation, we actually DO want to sync back to the external chat system, to
-                        // ensure the correct channel member role is in place.
-                        rockContext.IsRockToChatSyncEnabled = true;
-                        rockContext.SaveChanges();
-
-                        result.Created.Add( memberId );
+                        // If we got this far, the command was successfully completed.
+                        syncCommand.MarkAsCompleted();
                     }
-                    else if ( syncCommand.ChatSyncType == ChatSyncType.Delete )
-                    {
-                        if ( !groupMembers.Any() )
-                        {
-                            // We don't have a matching group member record [yet]; it's possible we got a delete command
-                            // before the corresponding create command completed. Send it back through the queue.
-                            syncCommand.MarkAsRecoverable( $"Rock group member could not be found (group ID {groupCache.Id}, person ID {chatPersonAlias.PersonId})." );
-                            continue;
-                        }
-
-                        foreach ( var groupMember in groupMembers )
-                        {
-                            groupMemberService.Delete( groupMember );
-                        }
-
-                        rockContext.SaveChanges();
-
-                        result.Deleted.Add( memberId );
-                    }
-                    else
-                    {
-                        syncCommand.MarkAsUnrecoverable( $"ChatSyncType '{syncCommand.ChatSyncType.ConvertToString()}' is not supported for channel member synchronizations." );
-                        continue;
-                    }
-
-                    // If we got this far, the command was successfully completed.
-                    syncCommand.MarkAsCompleted();
                 }
-            }
 
-            return result;
+                return result;
+            }
         }
 
         /// <summary>
@@ -4312,105 +4379,108 @@ namespace Rock.Communication.Chat
         /// <param name="syncCommands">The list of commands for global chat user bans to sync.</param>
         private void SyncGlobalBannedStatusesToRock( List<SyncChatBannedStatusToRockCommand> syncCommands )
         {
-            foreach ( var syncCommand in syncCommands )
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Sync Global Banned Statuses To Rock" ) )
             {
-                syncCommand.ResetForSyncAttempt();
-
-                // We'll use a new rock context to keep each command isolated.
-                // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
-                using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
+                foreach ( var syncCommand in syncCommands )
                 {
-                    // Try to get the targeted person.
-                    var personIdentifier = GetChatToRockPersonIdentifier(
-                        syncCommand.ChatPersonKey,
-                        new PersonAliasService( rockContext )
-                    );
+                    syncCommand.ResetForSyncAttempt();
 
-                    if ( personIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
+                    // We'll use a new rock context to keep each command isolated.
+                    // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
+                    using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
                     {
-                        // Unable to identify the targeted person.
-                        syncCommand.MarkAsUnrecoverable( personIdentifier.UnrecoverableReason );
-                        continue;
-                    }
-
-                    // We now have the targeted person.
-                    var chatPersonAlias = personIdentifier.PersonAlias;
-
-                    // Supplement the command.
-                    syncCommand.PersonAliasId = chatPersonAlias.Id;
-                    syncCommand.PersonId = chatPersonAlias.PersonId;
-
-                    // Try to get the targeted group members (they might have more than one role).
-                    var groupMemberService = new GroupMemberService( rockContext );
-
-                    // Eager-load the parent group, as the group member service knows how to delete vs. archive members when needed.
-                    var groupMembers = groupMemberService
-                        .Queryable()
-                        .Include( gm => gm.Group )
-                        .Where( gm =>
-                            gm.GroupId == ChatBanListGroupId
-                            && gm.PersonId == chatPersonAlias.PersonId
-                        )
-                        .ToList();
-
-                    if ( syncCommand.ChatSyncType == ChatSyncType.Ban )
-                    {
-                        if ( groupMembers.Any() )
-                        {
-                            // This person is already banned.
-                            syncCommand.MarkAsSkipped();
-                            continue;
-                        }
-
-                        // Ban them.
-                        var groupCache = GroupCache.Get( ChatBanListGroupId );
-                        var groupRoleId = groupCache.GroupType.DefaultGroupRoleId;
-
-                        if ( !groupRoleId.HasValue )
-                        {
-                            var action = syncCommand.ChatSyncType == ChatSyncType.Ban ? "ban" : "unban";
-                            syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {groupCache.GroupTypeId} doesn't have a default group role; unable to {action} person (ID {chatPersonAlias.PersonId})." );
-                            continue;
-                        }
-
-                        groupMemberService.Add(
-                            new GroupMember
-                            {
-                                GroupId = ChatBanListGroupId,
-                                PersonId = chatPersonAlias.PersonId,
-                                GroupRoleId = groupRoleId.Value,
-                                GroupMemberStatus = GroupMemberStatus.Active,
-                                GroupTypeId = groupCache.GroupTypeId
-                            }
+                        // Try to get the targeted person.
+                        var personIdentifier = GetChatToRockPersonIdentifier(
+                            syncCommand.ChatPersonKey,
+                            new PersonAliasService( rockContext )
                         );
 
-                        rockContext.SaveChanges();
-                    }
-                    else if ( syncCommand.ChatSyncType == ChatSyncType.Unban )
-                    {
-                        if ( !groupMembers.Any() )
+                        if ( personIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
                         {
-                            // This person isn't banned.
-                            syncCommand.MarkAsSkipped();
+                            // Unable to identify the targeted person.
+                            syncCommand.MarkAsUnrecoverable( personIdentifier.UnrecoverableReason );
                             continue;
                         }
 
-                        // Unban them.
-                        foreach ( var groupMember in groupMembers )
+                        // We now have the targeted person.
+                        var chatPersonAlias = personIdentifier.PersonAlias;
+
+                        // Supplement the command.
+                        syncCommand.PersonAliasId = chatPersonAlias.Id;
+                        syncCommand.PersonId = chatPersonAlias.PersonId;
+
+                        // Try to get the targeted group members (they might have more than one role).
+                        var groupMemberService = new GroupMemberService( rockContext );
+
+                        // Eager-load the parent group, as the group member service knows how to delete vs. archive members when needed.
+                        var groupMembers = groupMemberService
+                            .Queryable()
+                            .Include( gm => gm.Group )
+                            .Where( gm =>
+                                gm.GroupId == ChatBanListGroupId
+                                && gm.PersonId == chatPersonAlias.PersonId
+                            )
+                            .ToList();
+
+                        if ( syncCommand.ChatSyncType == ChatSyncType.Ban )
                         {
-                            groupMemberService.Delete( groupMember );
+                            if ( groupMembers.Any() )
+                            {
+                                // This person is already banned.
+                                syncCommand.MarkAsSkipped();
+                                continue;
+                            }
+
+                            // Ban them.
+                            var groupCache = GroupCache.Get( ChatBanListGroupId );
+                            var groupRoleId = groupCache.GroupType.DefaultGroupRoleId;
+
+                            if ( !groupRoleId.HasValue )
+                            {
+                                var action = syncCommand.ChatSyncType == ChatSyncType.Ban ? "ban" : "unban";
+                                syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {groupCache.GroupTypeId} doesn't have a default group role; unable to {action} person (ID {chatPersonAlias.PersonId})." );
+                                continue;
+                            }
+
+                            groupMemberService.Add(
+                                new GroupMember
+                                {
+                                    GroupId = ChatBanListGroupId,
+                                    PersonId = chatPersonAlias.PersonId,
+                                    GroupRoleId = groupRoleId.Value,
+                                    GroupMemberStatus = GroupMemberStatus.Active,
+                                    GroupTypeId = groupCache.GroupTypeId
+                                }
+                            );
+
+                            rockContext.SaveChanges();
+                        }
+                        else if ( syncCommand.ChatSyncType == ChatSyncType.Unban )
+                        {
+                            if ( !groupMembers.Any() )
+                            {
+                                // This person isn't banned.
+                                syncCommand.MarkAsSkipped();
+                                continue;
+                            }
+
+                            // Unban them.
+                            foreach ( var groupMember in groupMembers )
+                            {
+                                groupMemberService.Delete( groupMember );
+                            }
+
+                            rockContext.SaveChanges();
+                        }
+                        else
+                        {
+                            syncCommand.MarkAsUnrecoverable( $"ChatSyncType '{syncCommand.ChatSyncType.ConvertToString()}' is not supported for global chat ban synchronizations." );
+                            continue;
                         }
 
-                        rockContext.SaveChanges();
+                        // If we got this far, the command was successfully completed.
+                        syncCommand.MarkAsCompleted();
                     }
-                    else
-                    {
-                        syncCommand.MarkAsUnrecoverable( $"ChatSyncType '{syncCommand.ChatSyncType.ConvertToString()}' is not supported for global chat ban synchronizations." );
-                        continue;
-                    }
-
-                    // If we got this far, the command was successfully completed.
-                    syncCommand.MarkAsCompleted();
                 }
             }
         }
@@ -4421,140 +4491,143 @@ namespace Rock.Communication.Chat
         /// <param name="syncCommands">The list of commands for chat channel member bans to sync.</param>
         private void SyncChatChannelMemberBannedStatusesToRock( List<SyncChatBannedStatusToRockCommand> syncCommands )
         {
-            foreach ( var syncCommand in syncCommands )
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Sync Chat Channel Member Banned Statuses To Rock" ) )
             {
-                syncCommand.ResetForSyncAttempt();
-
-                int? groupId = syncCommand.GroupId;
-                if ( !groupId.HasValue && syncCommand.ChatChannelKey.IsNullOrWhiteSpace() )
+                foreach ( var syncCommand in syncCommands )
                 {
-                    syncCommand.MarkAsUnrecoverable( "Rock group ID and chat channel key are both missing from sync command; unable to identify group." );
-                    continue;
-                }
+                    syncCommand.ResetForSyncAttempt();
 
-                // We'll use a new rock context to keep each command isolated.
-                // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
-                using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
-                {
-                    // Try to get the targeted group.
-                    var groupIdentifier = GetChatToRockGroupIdentifier(
-                        groupId,
-                        syncCommand.ChatChannelKey,
-                        syncCommand.ChatSyncType,
-                        rockContext
-                    );
-
-                    if ( groupIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
+                    int? groupId = syncCommand.GroupId;
+                    if ( !groupId.HasValue && syncCommand.ChatChannelKey.IsNullOrWhiteSpace() )
                     {
-                        // Unable to identify the targeted group.
-                        syncCommand.MarkAsUnrecoverable( groupIdentifier.UnrecoverableReason );
+                        syncCommand.MarkAsUnrecoverable( "Rock group ID and chat channel key are both missing from sync command; unable to identify group." );
                         continue;
                     }
 
-                    if ( groupIdentifier.GroupCache == null )
+                    // We'll use a new rock context to keep each command isolated.
+                    // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
+                    using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
                     {
-                        // We don't have a matching group record [yet]; it's possible we got this group member command
-                        // before the corresponding create channel command completed. Send it back through the queue.
-                        syncCommand.MarkAsRecoverable( $"Rock group with chat channel key '{syncCommand.ChatChannelKey}' could not be found." );
-                        continue;
-                    }
+                        // Try to get the targeted group.
+                        var groupIdentifier = GetChatToRockGroupIdentifier(
+                            groupId,
+                            syncCommand.ChatChannelKey,
+                            syncCommand.ChatSyncType,
+                            rockContext
+                        );
 
-                    var groupCache = groupIdentifier.GroupCache;
-                    if ( !groupCache.GetIsChatEnabled() )
-                    {
-                        // Only allow sync operations to be performed against chat-enabled Rock groups.
-                        syncCommand.MarkAsUnrecoverable( $"Rock group with ID {groupCache.Id} is not chat-enabled." );
-                        continue;
-                    }
-
-                    // Supplement the command.
-                    syncCommand.GroupId = groupCache.Id;
-
-                    // Try to get the targeted person.
-                    var personIdentifier = GetChatToRockPersonIdentifier(
-                        syncCommand.ChatPersonKey,
-                        new PersonAliasService( rockContext )
-                    );
-
-                    if ( personIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
-                    {
-                        // Unable to identify the targeted person.
-                        syncCommand.MarkAsUnrecoverable( personIdentifier.UnrecoverableReason );
-                        continue;
-                    }
-
-                    // We now have the targeted person.
-                    var chatPersonAlias = personIdentifier.PersonAlias;
-
-                    // Supplement the command.
-                    syncCommand.PersonAliasId = chatPersonAlias.Id;
-                    syncCommand.PersonId = chatPersonAlias.PersonId;
-
-                    // Try to get the targeted group members (they might have more than one role).
-                    var groupMembers = new GroupMemberService( rockContext )
-                        .Queryable()
-                        .Where( gm =>
-                            gm.GroupId == groupCache.Id
-                            && gm.PersonId == chatPersonAlias.PersonId
-                        )
-                        .ToList();
-
-                    if ( !groupMembers.Any() )
-                    {
-                        // We don't have a matching group member record [yet]; it's possible we got a ban/unban command
-                        // before the corresponding create command completed. Send it back through the queue.
-                        syncCommand.MarkAsRecoverable( $"Rock group member could not be found (group ID {groupCache.Id}, person ID {chatPersonAlias.PersonId})." );
-                        continue;
-                    }
-
-                    if ( syncCommand.ChatSyncType == ChatSyncType.Ban )
-                    {
-                        var groupMembersToBan = groupMembers
-                            .Where( gm => !gm.IsChatBanned )
-                            .ToList();
-
-                        if ( !groupMembersToBan.Any() )
+                        if ( groupIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
                         {
-                            // This person is already banned.
-                            syncCommand.MarkAsSkipped();
+                            // Unable to identify the targeted group.
+                            syncCommand.MarkAsUnrecoverable( groupIdentifier.UnrecoverableReason );
                             continue;
                         }
 
-                        foreach ( var groupMember in groupMembersToBan )
+                        if ( groupIdentifier.GroupCache == null )
                         {
-                            groupMember.IsChatBanned = true;
-                        }
-
-                        rockContext.SaveChanges();
-                    }
-                    else if ( syncCommand.ChatSyncType == ChatSyncType.Unban )
-                    {
-                        var groupMembersToUnban = groupMembers
-                            .Where( gm => gm.IsChatBanned )
-                            .ToList();
-
-                        if ( !groupMembersToUnban.Any() )
-                        {
-                            // This person isn't banned.
-                            syncCommand.MarkAsSkipped();
+                            // We don't have a matching group record [yet]; it's possible we got this group member command
+                            // before the corresponding create channel command completed. Send it back through the queue.
+                            syncCommand.MarkAsRecoverable( $"Rock group with chat channel key '{syncCommand.ChatChannelKey}' could not be found." );
                             continue;
                         }
 
-                        foreach ( var groupMember in groupMembersToUnban )
+                        var groupCache = groupIdentifier.GroupCache;
+                        if ( !groupCache.GetIsChatEnabled() )
                         {
-                            groupMember.IsChatBanned = false;
+                            // Only allow sync operations to be performed against chat-enabled Rock groups.
+                            syncCommand.MarkAsUnrecoverable( $"Rock group with ID {groupCache.Id} is not chat-enabled." );
+                            continue;
                         }
 
-                        rockContext.SaveChanges();
-                    }
-                    else
-                    {
-                        syncCommand.MarkAsUnrecoverable( $"ChatSyncType '{syncCommand.ChatSyncType.ConvertToString()}' is not supported for channel member ban synchronizations." );
-                        continue;
-                    }
+                        // Supplement the command.
+                        syncCommand.GroupId = groupCache.Id;
 
-                    // If we got this far, the command was successfully completed.
-                    syncCommand.MarkAsCompleted();
+                        // Try to get the targeted person.
+                        var personIdentifier = GetChatToRockPersonIdentifier(
+                            syncCommand.ChatPersonKey,
+                            new PersonAliasService( rockContext )
+                        );
+
+                        if ( personIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
+                        {
+                            // Unable to identify the targeted person.
+                            syncCommand.MarkAsUnrecoverable( personIdentifier.UnrecoverableReason );
+                            continue;
+                        }
+
+                        // We now have the targeted person.
+                        var chatPersonAlias = personIdentifier.PersonAlias;
+
+                        // Supplement the command.
+                        syncCommand.PersonAliasId = chatPersonAlias.Id;
+                        syncCommand.PersonId = chatPersonAlias.PersonId;
+
+                        // Try to get the targeted group members (they might have more than one role).
+                        var groupMembers = new GroupMemberService( rockContext )
+                            .Queryable()
+                            .Where( gm =>
+                                gm.GroupId == groupCache.Id
+                                && gm.PersonId == chatPersonAlias.PersonId
+                            )
+                            .ToList();
+
+                        if ( !groupMembers.Any() )
+                        {
+                            // We don't have a matching group member record [yet]; it's possible we got a ban/unban command
+                            // before the corresponding create command completed. Send it back through the queue.
+                            syncCommand.MarkAsRecoverable( $"Rock group member could not be found (group ID {groupCache.Id}, person ID {chatPersonAlias.PersonId})." );
+                            continue;
+                        }
+
+                        if ( syncCommand.ChatSyncType == ChatSyncType.Ban )
+                        {
+                            var groupMembersToBan = groupMembers
+                                .Where( gm => !gm.IsChatBanned )
+                                .ToList();
+
+                            if ( !groupMembersToBan.Any() )
+                            {
+                                // This person is already banned.
+                                syncCommand.MarkAsSkipped();
+                                continue;
+                            }
+
+                            foreach ( var groupMember in groupMembersToBan )
+                            {
+                                groupMember.IsChatBanned = true;
+                            }
+
+                            rockContext.SaveChanges();
+                        }
+                        else if ( syncCommand.ChatSyncType == ChatSyncType.Unban )
+                        {
+                            var groupMembersToUnban = groupMembers
+                                .Where( gm => gm.IsChatBanned )
+                                .ToList();
+
+                            if ( !groupMembersToUnban.Any() )
+                            {
+                                // This person isn't banned.
+                                syncCommand.MarkAsSkipped();
+                                continue;
+                            }
+
+                            foreach ( var groupMember in groupMembersToUnban )
+                            {
+                                groupMember.IsChatBanned = false;
+                            }
+
+                            rockContext.SaveChanges();
+                        }
+                        else
+                        {
+                            syncCommand.MarkAsUnrecoverable( $"ChatSyncType '{syncCommand.ChatSyncType.ConvertToString()}' is not supported for channel member ban synchronizations." );
+                            continue;
+                        }
+
+                        // If we got this far, the command was successfully completed.
+                        syncCommand.MarkAsCompleted();
+                    }
                 }
             }
         }
@@ -4565,140 +4638,143 @@ namespace Rock.Communication.Chat
         /// <param name="syncCommands">The list of commands for chat channel member mutes to sync.</param>
         private void SyncChatChannelMemberMutedStatusesToRock( List<SyncChatChannelMutedStatusToRockCommand> syncCommands )
         {
-            foreach ( var syncCommand in syncCommands )
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Sync Chat Channel Member Muted Statuses To Rock" ) )
             {
-                syncCommand.ResetForSyncAttempt();
-
-                int? groupId = syncCommand.GroupId;
-                if ( !groupId.HasValue && syncCommand.ChatChannelKey.IsNullOrWhiteSpace() )
+                foreach ( var syncCommand in syncCommands )
                 {
-                    syncCommand.MarkAsUnrecoverable( "Rock group ID and chat channel key are both missing from sync command; unable to identify group." );
-                    continue;
-                }
+                    syncCommand.ResetForSyncAttempt();
 
-                // We'll use a new rock context to keep each command isolated.
-                // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
-                using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
-                {
-                    // Try to get the targeted group.
-                    var groupIdentifier = GetChatToRockGroupIdentifier(
-                        groupId,
-                        syncCommand.ChatChannelKey,
-                        syncCommand.ChatSyncType,
-                        rockContext
-                    );
-
-                    if ( groupIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
+                    int? groupId = syncCommand.GroupId;
+                    if ( !groupId.HasValue && syncCommand.ChatChannelKey.IsNullOrWhiteSpace() )
                     {
-                        // Unable to identify the targeted group.
-                        syncCommand.MarkAsUnrecoverable( groupIdentifier.UnrecoverableReason );
+                        syncCommand.MarkAsUnrecoverable( "Rock group ID and chat channel key are both missing from sync command; unable to identify group." );
                         continue;
                     }
 
-                    if ( groupIdentifier.GroupCache == null )
+                    // We'll use a new rock context to keep each command isolated.
+                    // Note that we're also disabling Rock-to-Chat post save hooks as a result of any saves performed here.
+                    using ( var rockContext = new RockContext { IsRockToChatSyncEnabled = false } )
                     {
-                        // We don't have a matching group record [yet]; it's possible we got this group member command
-                        // before the corresponding create channel command completed. Send it back through the queue.
-                        syncCommand.MarkAsRecoverable( $"Rock group with chat channel key '{syncCommand.ChatChannelKey}' could not be found." );
-                        continue;
-                    }
+                        // Try to get the targeted group.
+                        var groupIdentifier = GetChatToRockGroupIdentifier(
+                            groupId,
+                            syncCommand.ChatChannelKey,
+                            syncCommand.ChatSyncType,
+                            rockContext
+                        );
 
-                    var groupCache = groupIdentifier.GroupCache;
-                    if ( !groupCache.GetIsChatEnabled() )
-                    {
-                        // Only allow sync operations to be performed against chat-enabled Rock groups.
-                        syncCommand.MarkAsUnrecoverable( $"Rock group with ID {groupCache.Id} is not chat-enabled." );
-                        continue;
-                    }
-
-                    // Supplement the command.
-                    syncCommand.GroupId = groupCache.Id;
-
-                    // Try to get the targeted person.
-                    var personIdentifier = GetChatToRockPersonIdentifier(
-                        syncCommand.ChatPersonKey,
-                        new PersonAliasService( rockContext )
-                    );
-
-                    if ( personIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
-                    {
-                        // Unable to identify the targeted person.
-                        syncCommand.MarkAsUnrecoverable( personIdentifier.UnrecoverableReason );
-                        continue;
-                    }
-
-                    // We now have the targeted person.
-                    var chatPersonAlias = personIdentifier.PersonAlias;
-
-                    // Supplement the command.
-                    syncCommand.PersonAliasId = chatPersonAlias.Id;
-                    syncCommand.PersonId = chatPersonAlias.PersonId;
-
-                    // Try to get the targeted group members (they might have more than one role).
-                    var groupMembers = new GroupMemberService( rockContext )
-                        .Queryable()
-                        .Where( gm =>
-                            gm.GroupId == groupCache.Id
-                            && gm.PersonId == chatPersonAlias.PersonId
-                        )
-                        .ToList();
-
-                    if ( !groupMembers.Any() )
-                    {
-                        // We don't have a matching group member record [yet]; it's possible we got a mute/unmute command
-                        // before the corresponding create command completed. Send it back through the queue.
-                        syncCommand.MarkAsRecoverable( $"Rock group member could not be found (group ID {groupCache.Id}, person ID {chatPersonAlias.PersonId})." );
-                        continue;
-                    }
-
-                    if ( syncCommand.ChatSyncType == ChatSyncType.Mute )
-                    {
-                        var groupMembersToMute = groupMembers
-                            .Where( gm => !gm.IsChatMuted )
-                            .ToList();
-
-                        if ( !groupMembersToMute.Any() )
+                        if ( groupIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
                         {
-                            // This person is already muted.
-                            syncCommand.MarkAsSkipped();
+                            // Unable to identify the targeted group.
+                            syncCommand.MarkAsUnrecoverable( groupIdentifier.UnrecoverableReason );
                             continue;
                         }
 
-                        foreach ( var groupMember in groupMembersToMute )
+                        if ( groupIdentifier.GroupCache == null )
                         {
-                            groupMember.IsChatMuted = true;
-                        }
-
-                        rockContext.SaveChanges();
-                    }
-                    else if ( syncCommand.ChatSyncType == ChatSyncType.Unmute )
-                    {
-                        var groupMembersToUnmute = groupMembers
-                            .Where( gm => gm.IsChatMuted )
-                            .ToList();
-
-                        if ( !groupMembersToUnmute.Any() )
-                        {
-                            // This person isn't muted.
-                            syncCommand.MarkAsSkipped();
+                            // We don't have a matching group record [yet]; it's possible we got this group member command
+                            // before the corresponding create channel command completed. Send it back through the queue.
+                            syncCommand.MarkAsRecoverable( $"Rock group with chat channel key '{syncCommand.ChatChannelKey}' could not be found." );
                             continue;
                         }
 
-                        foreach ( var groupMember in groupMembersToUnmute )
+                        var groupCache = groupIdentifier.GroupCache;
+                        if ( !groupCache.GetIsChatEnabled() )
                         {
-                            groupMember.IsChatMuted = false;
+                            // Only allow sync operations to be performed against chat-enabled Rock groups.
+                            syncCommand.MarkAsUnrecoverable( $"Rock group with ID {groupCache.Id} is not chat-enabled." );
+                            continue;
                         }
 
-                        rockContext.SaveChanges();
-                    }
-                    else
-                    {
-                        syncCommand.MarkAsUnrecoverable( $"ChatSyncType '{syncCommand.ChatSyncType.ConvertToString()}' is not supported for channel member mute synchronizations." );
-                        continue;
-                    }
+                        // Supplement the command.
+                        syncCommand.GroupId = groupCache.Id;
 
-                    // If we got this far, the command was successfully completed.
-                    syncCommand.MarkAsCompleted();
+                        // Try to get the targeted person.
+                        var personIdentifier = GetChatToRockPersonIdentifier(
+                            syncCommand.ChatPersonKey,
+                            new PersonAliasService( rockContext )
+                        );
+
+                        if ( personIdentifier.UnrecoverableReason.IsNotNullOrWhiteSpace() )
+                        {
+                            // Unable to identify the targeted person.
+                            syncCommand.MarkAsUnrecoverable( personIdentifier.UnrecoverableReason );
+                            continue;
+                        }
+
+                        // We now have the targeted person.
+                        var chatPersonAlias = personIdentifier.PersonAlias;
+
+                        // Supplement the command.
+                        syncCommand.PersonAliasId = chatPersonAlias.Id;
+                        syncCommand.PersonId = chatPersonAlias.PersonId;
+
+                        // Try to get the targeted group members (they might have more than one role).
+                        var groupMembers = new GroupMemberService( rockContext )
+                            .Queryable()
+                            .Where( gm =>
+                                gm.GroupId == groupCache.Id
+                                && gm.PersonId == chatPersonAlias.PersonId
+                            )
+                            .ToList();
+
+                        if ( !groupMembers.Any() )
+                        {
+                            // We don't have a matching group member record [yet]; it's possible we got a mute/unmute command
+                            // before the corresponding create command completed. Send it back through the queue.
+                            syncCommand.MarkAsRecoverable( $"Rock group member could not be found (group ID {groupCache.Id}, person ID {chatPersonAlias.PersonId})." );
+                            continue;
+                        }
+
+                        if ( syncCommand.ChatSyncType == ChatSyncType.Mute )
+                        {
+                            var groupMembersToMute = groupMembers
+                                .Where( gm => !gm.IsChatMuted )
+                                .ToList();
+
+                            if ( !groupMembersToMute.Any() )
+                            {
+                                // This person is already muted.
+                                syncCommand.MarkAsSkipped();
+                                continue;
+                            }
+
+                            foreach ( var groupMember in groupMembersToMute )
+                            {
+                                groupMember.IsChatMuted = true;
+                            }
+
+                            rockContext.SaveChanges();
+                        }
+                        else if ( syncCommand.ChatSyncType == ChatSyncType.Unmute )
+                        {
+                            var groupMembersToUnmute = groupMembers
+                                .Where( gm => gm.IsChatMuted )
+                                .ToList();
+
+                            if ( !groupMembersToUnmute.Any() )
+                            {
+                                // This person isn't muted.
+                                syncCommand.MarkAsSkipped();
+                                continue;
+                            }
+
+                            foreach ( var groupMember in groupMembersToUnmute )
+                            {
+                                groupMember.IsChatMuted = false;
+                            }
+
+                            rockContext.SaveChanges();
+                        }
+                        else
+                        {
+                            syncCommand.MarkAsUnrecoverable( $"ChatSyncType '{syncCommand.ChatSyncType.ConvertToString()}' is not supported for channel member mute synchronizations." );
+                            continue;
+                        }
+
+                        // If we got this far, the command was successfully completed.
+                        syncCommand.MarkAsCompleted();
+                    }
                 }
             }
         }
