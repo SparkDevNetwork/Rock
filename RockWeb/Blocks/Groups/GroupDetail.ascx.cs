@@ -1025,6 +1025,15 @@ namespace RockWeb.Blocks.Groups
             group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
             group.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
 
+            if ( group.GroupType.AllowGroupSpecificRecordSource )
+            {
+                group.GroupMemberRecordSourceValueId = dvpRecordSource.SelectedValueAsInt();
+            }
+            else
+            {
+                group.GroupMemberRecordSourceValueId = null;
+            }
+
             group.IsSecurityRole = cbIsSecurityRole.Checked;
 
             // If this block's attribute limits group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
@@ -1482,6 +1491,7 @@ namespace RockWeb.Blocks.Groups
                 var group = new Group { GroupTypeId = CurrentGroupTypeId };
                 var groupType = CurrentGroupTypeCache;
 
+                SetRecordSourceControls( groupType, group );
                 SetPeerNetworkControls( groupType, group );
                 SetRsvpControls( groupType, null );
                 SetScheduleControls( groupType, null );
@@ -1982,6 +1992,7 @@ namespace RockWeb.Blocks.Groups
             BindAdministratorPerson( group, groupTypeCache );
             nbGroupCapacity.Visible = groupTypeCache != null && groupTypeCache.GroupCapacityRule != GroupCapacityRule.None;
             nbGroupCapacity.Help = nbGroupCapacity.Visible ? GetGroupCapacityHelpText( groupTypeCache.GroupCapacityRule ) : string.Empty;
+            SetRecordSourceControls( groupTypeCache, group );
             SetPeerNetworkControls( groupTypeCache, group );
             SetRsvpControls( groupTypeCache, group );
             SetScheduleControls( groupTypeCache, group );
@@ -2272,6 +2283,26 @@ namespace RockWeb.Blocks.Groups
             }
 
             SetScheduleDisplay();
+        }
+
+        /// <summary>
+        /// Sets the record source controls.
+        /// </summary>
+        /// <param name="groupType">The group type cache.</param>
+        /// <param name="group">The group.</param>
+        private void SetRecordSourceControls( GroupTypeCache groupType, Group group )
+        {
+            if ( groupType?.AllowGroupSpecificRecordSource == true )
+            {
+                // Setting the type here, as setting it in `LoadDropDowns()` wasn't reliably working.
+                dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )?.Id;
+                dvpRecordSource.SetValue( group.GroupMemberRecordSourceValueId );
+                dvpRecordSource.Visible = true;
+            }
+            else
+            {
+                dvpRecordSource.Visible = false;
+            }
         }
 
         /// <summary>

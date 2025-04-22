@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.ElectronicSignature;
 using Rock.Model;
@@ -1592,11 +1593,16 @@ namespace RockWeb.Blocks.WorkFlow
 
             existingPersonSpouseId = pePerson2.PersonId;
 
+            var recordSourceValueId = RecordSourceHelper.GetSessionRecordSourceValueId()
+                ?? formPersonEntrySettings.RecordSourceValueId
+                ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_WORKFLOW.AsGuid() )?.Id;
+
             var personEntryPerson = CreateOrUpdatePersonFromPersonEditor( existingPersonId, null, pePerson1, personEntryRockContext );
             if ( personEntryPerson.Id == 0 )
             {
                 personEntryPerson.ConnectionStatusValueId = formPersonEntrySettings.ConnectionStatusValueId;
                 personEntryPerson.RecordStatusValueId = formPersonEntrySettings.RecordStatusValueId;
+                personEntryPerson.RecordSourceValueId = recordSourceValueId;
                 PersonService.SaveNewPerson( personEntryPerson, personEntryRockContext, cpPersonEntryCampus.SelectedCampusId );
             }
 
@@ -1633,6 +1639,7 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     personEntryPersonSpouse.ConnectionStatusValueId = formPersonEntrySettings.ConnectionStatusValueId;
                     personEntryPersonSpouse.RecordStatusValueId = formPersonEntrySettings.RecordStatusValueId;
+                    personEntryPersonSpouse.RecordSourceValueId = recordSourceValueId;
 
                     // if adding/editing the 2nd Person (should normally be the spouse), set both people to selected Marital Status
 

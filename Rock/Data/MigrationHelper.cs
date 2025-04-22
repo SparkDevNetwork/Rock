@@ -1896,6 +1896,58 @@ END" );
         }
 
         /// <summary>
+        /// Adds the block type attribute to the category if it hasn't already been added.
+        /// </summary>
+        /// <param name="blockTypeAttributeGuid">The block type attribute GUID.</param>
+        /// <param name="categoryName">The category name.</param>
+        /// <remarks>
+        /// The block type attribute and category must already exist in the database.
+        /// </remarks>
+        public void AddBlockTypeAttributeToCategoryIfNotAlreadyAdded( string blockTypeAttributeGuid, string categoryName )
+        {
+            Migration.Sql( $@"
+DECLARE @AttributeEntityTypeId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '{Rock.SystemGuid.EntityType.ATTRIBUTE}');
+DECLARE @BlockEntityTypeId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '{Rock.SystemGuid.EntityType.BLOCK}');
+DECLARE @CategoryId INT = (
+    SELECT TOP 1 [Id]
+    FROM [Category]
+    WHERE [EntityTypeId] = @AttributeEntityTypeId
+        AND [EntityTypeQualifierColumn] = 'EntityTypeId'
+        AND [EntityTypeQualifierValue] = CAST(@BlockEntityTypeId AS NVARCHAR(200))
+        AND [Name] = '{categoryName}'
+);
+
+DECLARE @AttributeId INT = (
+    SELECT TOP 1 [Id]
+    FROM [Attribute]
+    WHERE [EntityTypeId] = @BlockEntityTypeId -- Ensure the caller is truly providing a block [type] attribute GUID.
+        AND [EntityTypeQualifierColumn] = 'BlockTypeId'
+        AND [Guid] = '{blockTypeAttributeGuid}'
+);
+
+IF @CategoryId IS NOT NULL
+    AND @AttributeId IS NOT NULL
+    AND NOT EXISTS (
+        SELECT *
+        FROM [AttributeCategory]
+        WHERE [AttributeId] = @AttributeId
+            AND [CategoryId] = @CategoryId
+    )
+BEGIN
+    INSERT INTO [AttributeCategory]
+    (
+        [AttributeId]
+        , [CategoryId]
+    )
+    VALUES
+    (
+        @AttributeId
+        , @CategoryId
+    );
+END" );
+        }
+
+        /// <summary>
         /// Deletes the category.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>

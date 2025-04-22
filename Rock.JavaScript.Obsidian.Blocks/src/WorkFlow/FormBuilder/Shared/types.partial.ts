@@ -446,6 +446,12 @@ export type FormPersonEntry = {
     recordStatus?: Guid | null;
 
     /**
+     * The DefinedValue unique identifier that specifies the value used
+     * for Person.RecordSourceValue when a new Person is created.
+     */
+    recordSource?: Guid | null;
+
+    /**
      * The DefinedValue unique identifier that specifies the value used for
      * Person.ConnectionStatusValue when a new Person is created.
      */

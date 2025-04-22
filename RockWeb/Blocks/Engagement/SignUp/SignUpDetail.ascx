@@ -64,6 +64,7 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
+                                <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source Override" Help="The record source for attendees added to this project. If not set, the group type's record source will be used." />
                             </div>
                         </div>
 

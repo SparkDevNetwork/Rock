@@ -494,6 +494,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             workflowActionType.WorkflowForm.PersonEntryFamilyAttributeGuid = familyAttribute.Guid;
             workflowActionType.WorkflowForm.AllowPersonEntry = true;
             workflowActionType.WorkflowForm.PersonEntryRecordStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+            workflowActionType.WorkflowForm.PersonEntryRecordSourceValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_WORKFLOW.AsGuid() );
             workflowActionType.WorkflowForm.PersonEntryConnectionStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
             workflowActionType.WorkflowForm.PersonEntryGroupLocationTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
             workflowActionType.WorkflowForm.Actions = "Submit^^^Your information has been submitted successfully.";

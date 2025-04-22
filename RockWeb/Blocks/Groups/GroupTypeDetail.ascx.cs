@@ -523,6 +523,8 @@ namespace RockWeb.Blocks.Groups
             groupType.EnableGroupTag = cbEnableGroupTag.Checked;
             groupType.AllowAnyChildGroupType = cbAllowAnyChildGroupType.Checked;
             groupType.ShowAdministrator = cbShowAdministrator.Checked;
+            groupType.GroupMemberRecordSourceValueId = dvpRecordSource.SelectedValueAsInt();
+            groupType.AllowGroupSpecificRecordSource = cbAllowGroupSpecificRecordSource.Checked;
             groupType.GroupAttendanceRequiresLocation = cbGroupAttendanceRequiresLocation.Checked;
             groupType.GroupAttendanceRequiresSchedule = cbGroupAttendanceRequiresSchedule.Checked;
             groupType.AttendanceCountsAsWeekendService = cbWeekendService.Checked;
@@ -949,6 +951,11 @@ namespace RockWeb.Blocks.Groups
             cbEnableGroupTag.Checked = groupType.EnableGroupTag;
             cbGroupsRequireCampus.Checked = groupType.GroupsRequireCampus;
             cbShowAdministrator.Checked = groupType.ShowAdministrator;
+
+            dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )?.Id;
+            dvpRecordSource.SetValue( groupType.GroupMemberRecordSourceValueId );
+
+            cbAllowGroupSpecificRecordSource.Checked = groupType.AllowGroupSpecificRecordSource;
 
             // Peer Network
             cbEnablePeerNetwork.Checked = groupType.IsPeerNetworkEnabled;

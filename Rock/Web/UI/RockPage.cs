@@ -36,6 +36,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Cms.Utm;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -1199,6 +1200,11 @@ namespace Rock.Web.UI
                 else
                 {
                     /* At this point, we know the Person (or NULL person) is authorized to View the page */
+
+                    RecordSourceHelper.TrySetRecordSourceSessionCookie( ( cookieName, cookieValue ) =>
+                    {
+                        AddOrUpdateCookie( new HttpCookie( cookieName, cookieValue ) );
+                    } );
 
                     if ( Site.EnableVisitorTracking )
                     {

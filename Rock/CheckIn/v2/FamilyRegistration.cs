@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
@@ -938,6 +939,17 @@ namespace Rock.CheckIn.v2
             }
 
             var isNewPerson = person.Id == 0;
+
+            if ( isNewPerson )
+            {
+                if ( !saveResult.RecordSourceValueId.HasValue )
+                {
+                    saveResult.RecordSourceValueId = RecordSourceHelper.GetSessionRecordSourceValueId()
+                        ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_CHECK_IN.AsGuid() )?.Id;
+                }
+
+                person.RecordSourceValueId = saveResult.RecordSourceValueId;
+            }
 
             _rockContext.SaveChanges();
 

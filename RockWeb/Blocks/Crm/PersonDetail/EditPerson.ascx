@@ -74,6 +74,8 @@
                                         <Rock:DefinedValuePicker ID="dvpConnectionStatus" runat="server" Label="Connection Status" Required="true" />
                                     </div>
                                     <div class="col-sm-6">
+                                        <Rock:RockLiteral ID="lRecordSourceReadOnly" runat="server" Label="Record Source" />
+                                        <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source" />
                                     </div>
                                 </div>
                                 <Rock:RockRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender">

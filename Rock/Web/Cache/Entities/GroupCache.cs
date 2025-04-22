@@ -314,6 +314,20 @@ namespace Rock.Web.Cache
             return this.GetIsChatEnabled() && this.IsActive && !this.IsArchived;
         }
 
+        /// <summary>
+        /// Gets or sets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing
+        /// the source of <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/>
+        /// (or if <see cref="GroupTypeCache.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the
+        /// value of <see cref="GroupTypeCache.GroupMemberRecordSourceValueId"/> will be used. Call the
+        /// <see cref="GetGroupMemberRecordSourceValueId"/> method instead to get the value, as that method will also
+        /// check the <see cref="GroupTypeCache.GroupMemberRecordSourceValueId"/> property.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>.
+        /// </value>
+        [DataMember]
+        public int? GroupMemberRecordSourceValueId { get; private set; }
+
         #endregion
 
         #region Navigation Properties
@@ -399,6 +413,44 @@ namespace Rock.Web.Cache
             return groupType.GetRootGroupTypes( rockContext );
         }
 
+        /// <summary>
+        /// Gets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source
+        /// of <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/> (or if
+        /// <see cref="GroupTypeCache.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the value
+        /// of <see cref="GroupTypeCache.GroupMemberRecordSourceValueId"/> will be used.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>.
+        /// </value>
+        internal int? GetGroupMemberRecordSourceValueId()
+        {
+            if ( this.GroupMemberRecordSourceValueId.HasValue && this.GroupType?.AllowGroupSpecificRecordSource == true  )
+            {
+                return this.GroupMemberRecordSourceValueId.Value;
+            }
+
+            return this.GroupType?.GroupMemberRecordSourceValueId;
+        }
+
+        /// <summary>
+        /// Gets the default Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source of
+        /// <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/> (or if
+        /// <see cref="GroupTypeCache.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the value
+        /// of <see cref="GroupTypeCache.GroupMemberRecordSourceValue"/> will be used.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> representing the Record Source Type.
+        /// </value>
+        internal DefinedValueCache GetGroupMemberRecordSourceValue()
+        {
+            if ( this.GroupMemberRecordSourceValueId.HasValue && this.GroupType?.AllowGroupSpecificRecordSource == true )
+            {
+                return DefinedValueCache.Get( this.GroupMemberRecordSourceValueId.Value );
+            }
+
+            return this.GroupType?.GroupMemberRecordSourceValue;
+        }
+
         /// <inheritdoc/>
         public override void SetFromEntity( IEntity entity )
         {
@@ -453,6 +505,7 @@ namespace Rock.Web.Cache
             IsChatChannelPublicOverride = group.IsChatChannelPublicOverride;
             IsChatChannelAlwaysShownOverride = group.IsChatChannelAlwaysShownOverride;
             ChatChannelKey = group.ChatChannelKey;
+            GroupMemberRecordSourceValueId = group.GroupMemberRecordSourceValueId;
         }
 
         /// <inheritdoc/>

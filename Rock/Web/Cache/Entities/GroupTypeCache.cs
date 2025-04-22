@@ -892,6 +892,40 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool IsChatChannelAlwaysShown { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing
+        /// the source of <see cref="GroupMember"/>s added to <see cref="Group"/>s of this type. This can be overridden
+        /// by <see cref="Group.GroupMemberRecordSourceValueId"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>.
+        /// </value>
+        [DataMember]
+        public int? GroupMemberRecordSourceValueId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the default Record Source Type <see cref="DefinedValueCache"/>, representing the source of
+        /// <see cref="GroupMember"/>s added to <see cref="Group"/>s of this type. This can be overridden by
+        /// <see cref="Group.GroupMemberRecordSourceValue"/> if <see cref="AllowGroupSpecificRecordSource"/> is
+        /// <see langword="true"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="DefinedValueCache"/> representing the Record Source Type.
+        /// </value>
+        public DefinedValueCache GroupMemberRecordSourceValue => GroupMemberRecordSourceValueId.HasValue
+            ? DefinedValueCache.Get( GroupMemberRecordSourceValueId.Value )
+            : null;
+
+        /// <summary>
+        /// Gets or sets whether <see cref="Group"/>s of this type can override <see cref="GroupMemberRecordSourceValueId"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> representing whether <see cref="Group"/>s of this type can override
+        /// <see cref="GroupMemberRecordSourceValueId"/>.
+        /// </value>
+        [DataMember]
+        public bool AllowGroupSpecificRecordSource { get; private set; }
+
         #endregion
 
         #region Public Methods
@@ -1235,6 +1269,8 @@ namespace Rock.Web.Cache
             IsLeavingChatChannelAllowed = groupType.IsLeavingChatChannelAllowed;
             IsChatChannelPublic = groupType.IsChatChannelPublic;
             IsChatChannelAlwaysShown = groupType.IsChatChannelAlwaysShown;
+            GroupMemberRecordSourceValueId = groupType.GroupMemberRecordSourceValueId;
+            AllowGroupSpecificRecordSource = groupType.AllowGroupSpecificRecordSource;
         }
 
         /// <summary>

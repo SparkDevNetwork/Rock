@@ -151,6 +151,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 actionForm.PersonEntryMobilePhoneEntryOption = formSettings.PersonEntry.MobilePhone.ToPersonEntryOption();
                 actionForm.PersonEntrySmsOptInEntryOption = formSettings.PersonEntry.SmsOptIn.ToShowHideOption();
                 actionForm.PersonEntryRecordStatusValueId = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueId( formSettings.PersonEntry.RecordStatus );
+                actionForm.PersonEntryRecordSourceValueId = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueId( formSettings.PersonEntry.RecordSource );
                 actionForm.PersonEntryCampusIsVisible = formSettings.PersonEntry.ShowCampus;
                 actionForm.PersonEntrySpouseEntryOption = formSettings.PersonEntry.SpouseEntry.ToPersonEntryOption();
                 actionForm.PersonEntrySpouseLabel = formSettings.PersonEntry.SpouseLabel;
@@ -473,6 +474,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     MobilePhone = actionForm.PersonEntryMobilePhoneEntryOption.ToFormFieldVisibility(),
                     SmsOptIn = actionForm.PersonEntrySmsOptInEntryOption.ToFormFieldShowHide(),
                     RecordStatus = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( actionForm.PersonEntryRecordStatusValueId ),
+                    RecordSource = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( actionForm.PersonEntryRecordSourceValueId ),
                     ShowCampus = actionForm.PersonEntryCampusIsVisible,
                     IncludeInactiveCampus = personEntryAdditionalSettings?.IncludeInactiveCampus ?? true,
                     SpouseEntry = actionForm.PersonEntrySpouseEntryOption.ToFormFieldVisibility(),
@@ -653,6 +655,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 AddressTypeOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ),
                 ConnectionStatusOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ),
                 RecordStatusOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() ),
+                RecordSourceOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() ),
                 EmailTemplateOptions = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetEmailTemplateOptions( rockContext, RequestContext ),
                 FormTemplateOptions = GetFormTemplateOptions( rockContext ),
 
