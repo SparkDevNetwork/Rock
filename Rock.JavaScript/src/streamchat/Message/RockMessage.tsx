@@ -117,6 +117,7 @@ const MessageSimpleWithContext = <
         'str-chat__message str-chat__message-simple',
         `str-chat__message--${message.type}`,
         `str-chat__message--${message.status}`,
+        'rock-chat__message rock-chat__message-simple',
         isMyMessage()
             ? 'str-chat__message--me str-chat__message-simple--me'
             : 'str-chat__message--other',
@@ -176,6 +177,7 @@ const MessageSimpleWithContext = <
                     />
                 </Modal>
             )}
+
             {isBounceDialogOpen && (
                 <MessageBounceModal
                     MessageBouncePrompt={MessageBouncePrompt}
@@ -183,96 +185,97 @@ const MessageSimpleWithContext = <
                     open={isBounceDialogOpen}
                 />
             )}
-            {
-                <div className='rock-message-container'>
+
+            <div className='rock-message-container'>
+                <div className={rootClassName} key={message.id}>
+                    {/* AVATAR */}
+                    {message.user && !isMyMessage() && (
+                        <div className='rock-avatar-container'>
+                            <Avatar
+                                image={message.user.image}
+                                name={message.user.name || message.user.id}
+                                onClick={onUserClick}
+                                onMouseOver={onUserHover}
+                                user={message.user}
+                            />
+                        </div>
+                    )}
+
+                    {/* HEADER */}
                     {message.user && !isMyMessage() && (
                         <div className='rock-message-header'>
                             <span className='str-chat__message-simple-name rock-message-author'>
                                 {message.user.name || message.user.id}
                             </span>
-
                             <div className='rock-message-badges'>
                                 {getRockBadges() as React.ReactNode}
                             </div>
                         </div>
                     )}
 
-                    <div className={rootClassName} key={message.id}>
-                        {PinIndicator && <PinIndicator />}
+                    {/* CONTENT / BUBBLE */}
+                    <div
+                        className={clsx('str-chat__message-inner', {
+                            'str-chat__simple-message--error-failed': allowRetry || isBounced,
+                        })}
+                        data-testid='message-inner'
+                        onClick={handleClick}
+                        onKeyUp={handleClick}>
+                        <MessageActions />
 
-                        {message.user && !isMyMessage() && (
-                            <div className='rock-avatar-container'>
-                                <Avatar
-                                    image={message.user.image}
-                                    name={message.user.name || message.user.id}
-                                    onClick={onUserClick}
-                                    onMouseOver={onUserHover}
-                                    user={message.user}
+                        <div className='str-chat__message-bubble'>
+                            {poll && <Poll poll={poll} />}
+                            {message.attachments?.length && !message.quoted_message ? (
+                                <Attachment
+                                    actionHandler={handleAction}
+                                    attachments={message.attachments}
                                 />
-                            </div>
-                        )}
-                        <div
-                            className={clsx('str-chat__message-inner', {
-                                'str-chat__simple-message--error-failed': allowRetry || isBounced,
-                            })}
-                            data-testid='message-inner'
-                            onClick={handleClick}
-                            onKeyUp={handleClick}>
-                            <MessageActions />
-
-                            <div className='str-chat__message-bubble'>
-                                {poll && <Poll poll={poll} />}
-                                {message.attachments?.length && !message.quoted_message ? (
-                                    <Attachment
-                                        actionHandler={handleAction}
-                                        attachments={message.attachments}
-                                    />
-                                ) : null}
-                                {isAIGenerated ? (
-                                    <StreamedMessageText message={message} renderText={renderText} />
-                                ) : (
-                                    <MessageText message={message} renderText={renderText} />
-                                )}
-                                {message.mml && (
-                                    <MML
-                                        actionHandler={handleAction}
-                                        align={isMyMessage() ? 'right' : 'left'}
-                                        source={message.mml}
-                                    />
-                                )}
-                                <MessageErrorIcon />
-                            </div>
-                        </div>
-                        {showReplyCountButton && (
-                            <MessageRepliesCountButton
-                                onClick={handleOpenThread}
-                                reply_count={message.reply_count}
-                            />
-                        )}
-
-                        <div className="rock-message-footer">
-                            {showMetadata && (
-                                <div className='str-chat__message-metadata'>
-                                    <MessageStatus />
-
-                                    <MessageTimestamp customClass='str-chat__message-simple-timestamp' />
-                                    {isEdited && (
-                                        <span className='str-chat__mesage-simple-edited'>
-                                            {t<string>('Edited')}
-                                        </span>
-                                    )}
-                                    {isEdited && (
-                                        <MessageEditedTimestamp calendar open={isEditedTimestampOpen} />
-                                    )}
-                                </div>
+                            ) : null}
+                            {isAIGenerated ? (
+                                <StreamedMessageText message={message} renderText={renderText} />
+                            ) : (
+                                <MessageText message={message} renderText={renderText} />
                             )}
+                            {message.mml && (
+                                <MML
+                                    actionHandler={handleAction}
+                                    align={isMyMessage() ? 'right' : 'left'}
+                                    source={message.mml}
+                                />
+                            )}
+                            <MessageErrorIcon />
+                        </div>
+                    </div>
+
+                    {/* FOOTER */}
+                    <div className='rock-message-footer'>
+                        <div className='str-chat__message-reactions-host'>
+                            {hasReactions && <ReactionsList reverse />}
                         </div>
 
+                        {showMetadata && (
+                            <div className='str-chat__message-metadata'>
+                                <MessageStatus />
+                                <MessageTimestamp customClass='str-chat__message-simple-timestamp' />
+                                {isEdited && (
+                                    <span className='str-chat__mesage-simple-edited'>
+                                        {t<string>('Edited')}
+                                    </span>
+                                )}
+                                {isEdited && (
+                                    <MessageEditedTimestamp
+                                        calendar
+                                        open={isEditedTimestampOpen}
+                                    />
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
-            }
+            </div>
         </>
     );
+
 };
 
 const MemoizedMessageSimple = React.memo(
