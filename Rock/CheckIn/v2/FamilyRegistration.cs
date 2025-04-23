@@ -196,7 +196,7 @@ namespace Rock.CheckIn.v2
                 group.LoadAttributes( _rockContext );
             }
 
-            group.Members.Select( gm => gm.Person ).LoadAttributes( _rockContext );
+            group.Members.Select( gm => gm.Person ).ToList().LoadAttributes( _rockContext );
 
             var bag = new RegistrationFamilyBag
             {
@@ -225,7 +225,7 @@ namespace Rock.CheckIn.v2
         /// <returns>An list of <see cref="RegistrationPersonBag"/> objects.</returns>
         public List<ValidPropertiesBox<RegistrationPersonBag>> GetFamilyMemberBags( Group group, List<GroupMember> canCheckInMembers )
         {
-            group.Members.Select( gm => gm.Person ).LoadAttributes( _rockContext );
+            group.Members.Select( gm => gm.Person ).ToList().LoadAttributes( _rockContext );
 
             var personBags = group.Members
                 .Select( gm => GetPersonBag( gm.Person, null ) )
@@ -254,6 +254,7 @@ namespace Rock.CheckIn.v2
         {
             members.Select( gm => gm.Person )
                 .DistinctBy( p => p.Id )
+                .ToList()
                 .LoadAttributes( _rockContext );
 
             foreach ( var member in members )

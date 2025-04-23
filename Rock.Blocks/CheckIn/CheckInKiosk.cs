@@ -1394,7 +1394,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 }
 
                 group.LoadAttributes( RockContext );
-                group.Members.Select( gm => gm.Person ).LoadAttributes( RockContext );
+                group.Members.Select( gm => gm.Person ).ToList().LoadAttributes( RockContext );
             }
             else
             {
