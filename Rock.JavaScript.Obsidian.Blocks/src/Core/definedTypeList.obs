@@ -29,6 +29,8 @@
                     title="Description"
                     field="description"
                     :filter="textValueFilter"
+                    :filterValue="getHtmlFilterValue"
+                    :quickFilterValue="getHtmlFilterValue"
                     visiblePriority="xs"
                     width="50%"
                     columnType="html" />
@@ -51,6 +53,8 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./DefinedTypeList/types.partial";
     import { reactive, ref } from "vue";
+    import { ColumnDefinition } from "@Obsidian/Types/Controls/grid";
+
     const config = useConfigurationValues<ListBlockBox<DefinedTypeListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -62,6 +66,24 @@
     // #endregion
 
     // #region Functions
+
+    /**
+     * Function to extract text from HTML content for filtering
+     */
+    function getHtmlFilterValue(row: Record<string, unknown>, column: ColumnDefinition): string | undefined {
+        if (!column.field) {
+            return undefined;
+        }
+
+        const value = row[column.field];
+
+        if (typeof value !== "string") {
+            return undefined;
+        }
+
+        // Return the HTML as text for filtering
+        return value;
+    }
 
     /**
      * Called when the grid is requesting the row data be loaded.
