@@ -26,7 +26,9 @@ using System.Web.UI.WebControls;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Utility;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -39,7 +41,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people by address using a set of locations identified by a Location Data View" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Location Data View Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "CC24FC79-5A5F-48F2-A6A3-9DD49A90A42B")]
+    [Rock.SystemGuid.EntityTypeGuid( "CC24FC79-5A5F-48F2-A6A3-9DD49A90A42B" )]
     public class LocationDataViewFilter : DataFilterComponent, IRelatedChildDataView
     {
         #region Settings
@@ -132,6 +134,47 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Related Data Views"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/locationDataViewFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new FilterSettings( selection );
+            var data = new Dictionary<string, string>();
+
+            var familyLocations = GroupTypeCache.GetFamilyGroupType()
+                .LocationTypeValues
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Value )
+                .Select( l => new ListItemBag { Value = l.Guid.ToString(), Text = l.Value } )
+                .ToList();
+            data.Add( "locationTypeOptions", familyLocations.ToCamelCaseJson( false, true ) );
+
+            data.Add( "locationType", settings.LocationTypeGuid.ToStringSafe() );
+
+            var dataView = new DataViewService( rockContext ).Get( settings.DataViewGuid.GetValueOrDefault() );
+            var dataViewBag = dataView == null ? null : new ListItemBag { Value = dataView?.Guid.ToString(), Text = dataView?.ToString() };
+            data.Add( "dataView", dataViewBag.ToCamelCaseJson( false, true ) );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new FilterSettings();
+
+            settings.LocationTypeGuid = data.GetValueOrNull( "locationType" )?.AsGuidOrNull();
+            settings.DataViewGuid = data.GetValueOrNull( "dataView" )?.FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+
+            return settings.ToSelectionString();
         }
 
         #endregion
