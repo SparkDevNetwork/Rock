@@ -1897,6 +1897,7 @@
     <Compile Include="Security\ExcludeSecurityActionsAttribute.cs" />
     <Compile Include="Security\GlobalRestrictedDefault.cs" />
     <Compile Include="Security\HistoryLoginRelatedData.cs" />
+    <Compile Include="Security\SecurityGrantRules\AddDefinedValueToTypeGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
     <Compile Include="SystemGuid\EmailSection.cs" />
