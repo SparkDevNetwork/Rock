@@ -253,6 +253,13 @@ const MessageSimpleWithContext = <
                             {hasReactions && <ReactionsList reverse />}
                         </div>
 
+                        {showReplyCountButton && (
+                            <MessageRepliesCountButton
+                                onClick={handleOpenThread}
+                                reply_count={message.reply_count}
+                            />
+                        )}
+
                         {showMetadata && (
                             <div className='str-chat__message-metadata'>
                                 <MessageStatus />
