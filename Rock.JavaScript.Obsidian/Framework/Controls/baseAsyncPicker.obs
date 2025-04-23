@@ -300,7 +300,7 @@
         updateRefValue(internalValue, modelValueToInternalValue(props.modelValue, props.multiple));
     });
 
-    watch([internalValue, actualItems], () => {
+    watch(internalValue, () => {
         if (Array.isArray(internalValue.value)) {
             const selectedValues = internalValue.value;
             const newValue = actualItems.value.filter(o => selectedValues.some(v => v === o.value));
