@@ -7,6 +7,19 @@ import {
 import { useChatConfig } from '../Chat/ChatConfigContext';
 import { RockMessageSimple } from "../Message/RockMessage";
 
+
+interface WrappedChannelProps {
+    children: ReactNode;
+}
+
+export const WrappedChannel: React.FC<WrappedChannelProps> = ({ children }) => {
+    return (
+        <Channel CustomMessageActionsList={RockMessageActionList} Message={RockMessageSimple}>
+            {children}
+        </Channel>);
+}
+
+
 const RockMessageActionList: React.FC = () => {
     const { message } = useMessageContext("CustomMessageActionList");
     const { client, setActiveChannel } = useChatContext();
@@ -53,13 +66,3 @@ const RockMessageActionList: React.FC = () => {
         </>
     );
 };
-
-interface WrappedChannelProps {
-    children: ReactNode;
-}
-
-export const WrappedChannel: React.FC<WrappedChannelProps> = ({ children }) => (
-    <Channel CustomMessageActionsList={RockMessageActionList} Message={RockMessageSimple}>
-        {children}
-    </Channel>
-);

@@ -7,6 +7,8 @@ import {
     Thread,
     Window,
     DialogManagerProvider,
+    Channel,
+    MessageActions,
 } from "stream-chat-react";
 import { ChannelSort, ChannelFilters } from "stream-chat";
 import { useCreateChatClient } from "stream-chat-react";
@@ -21,6 +23,7 @@ import { SafeMessageInput } from "./MessageInput/SafeMessageInput";
 import ChannelListHeader from "./ChannelListHeader/ChannelListHeader";
 import CreateChannelModal from "./CreateChannel/CreateChannelModal";
 import { RockChannelHeader } from "./ChannelHeader/RockChannelHeader";
+import { CustomMessageActions } from "./MessageAction/CustomMessageActions";
 
 /**
  * The ChatComponent sets up and renders the Stream Chat UI
@@ -47,7 +50,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
     });
 
     if (!chatClient) {
-        return null;
+        return <></>;
     }
 
     // Define base filters
@@ -96,6 +99,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
     };
 
     return (
+        // Only show the chat if the client is initialized
         <Chat client={chatClient}>
             <ChatConfigContext.Provider
                 value={{
@@ -116,7 +120,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
                     <WrappedChannel>
                         <Window>
                             <RockChannelHeader />
-                            <MessageList noGroupByUser />
+                            <MessageList messageActions={['edit', 'delete', 'flag', 'mute', 'quote', 'react', 'reply']} noGroupByUser />
                             <SafeMessageInput />
                         </Window>
                         <Thread />
