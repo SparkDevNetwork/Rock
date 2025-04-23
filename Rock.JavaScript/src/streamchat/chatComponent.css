@@ -53,17 +53,12 @@
     gap: 0.5rem;
     margin-top: 0.5rem;
     margin-bottom: 0.3rem;
-    padding-left: calc(var(--str-chat__avatar-size) + 0.5rem);
 }
 
 .rock-message-header .rock-message-author {
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--str-chat__message-color);
-}
-
-.rock-avatar-container {
-    transform: translateY(-0.85rem);
 }
 
 .rock-message-badges {
@@ -344,4 +339,64 @@
 
 .create-channel-modal-search-results li:hover {
     background: rgba(0, 0, 0, 0.05);
+}
+
+
+/* .str-chat__message.str-chat__message--other,
+.str-chat__message.str-chat__quoted-message-preview,
+.str-chat__quoted-message-preview.str-chat__message--other,
+.str-chat__quoted-message-preview.str-chat__quoted-message-preview {
+    grid-template-areas:
+        "avatar message"
+        ". replies"
+        ". translation-notice"
+        ". custom-metadata"
+        ". metadata";
+    column-gap: var(--str-chat__spacing-2);
+    grid-template-columns: auto 1fr;
+    justify-items: flex-start;
+} */
+
+/* We want a grid with two columns (avatar, content) */
+/* And three rows ( header, message content, footer ) */
+
+/* 1) Define the 2×3 grid on the message container */
+.rock-chat__message-simple.str-chat__message--other,
+.str-chat__quoted-message-preview.str-chat__message--other,
+.str-chat__quoted-message-preview.str-chat__quoted-message-preview {
+    display: grid;
+    grid-template-columns: var(--str-chat__avatar-size) 1fr;
+    grid-template-rows: auto auto auto;
+    /* header / content / footer */
+    grid-template-areas:
+        "avatar header"
+        "avatar content"
+        ".      footer";
+    column-gap: var(--str-chat__spacing-2);
+}
+
+.rock-chat__message-simple.str-chat__message--other .rock-avatar-container {
+    grid-area: avatar;
+    align-self: center;
+    justify-self: start;
+}
+
+.rock-chat__message-simple.str-chat__message--other .rock-message-header {
+    grid-area: header;
+}
+
+.rock-chat__message-simple.str-chat__message--other .str-chat__message-inner {
+    grid-area: content;
+}
+
+.rock-chat__message-simple.str-chat__message--other .rock-message-footer {
+    grid-area: footer;
+    justify-self: start;
+    padding-top: 0.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.str-chat__message-simple__actions .str-chat__message-options .str-chat__message-options--active {
+    align-items: center;
 }
