@@ -959,6 +959,13 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     return ActionBadRequest( "Invalid group type for current configuration." );
                 }
 
+                // Just flat out don't allow them to add themselves to a
+                // security role - ever.
+                if ( group.IsSecurityRole )
+                {
+                    return ActionBadRequest( "The group is a restricted group type." );
+                }
+
                 // Verify the data provided about the person and spouse is valid.
                 if ( !IsRegistrationValid( person, spouse ) )
                 {

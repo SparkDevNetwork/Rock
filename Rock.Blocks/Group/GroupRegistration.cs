@@ -552,9 +552,8 @@ namespace Rock.Blocks.Group
         /// <param name="person">The person.</param>
         /// <param name="groupMembers">The group members.</param>
         /// <param name="groupMember">The new or existing group member being registered.</param>
-        private bool AddPersonToGroup( RockContext rockContext, Person person, List<GroupMember> groupMembers, out string errorMessage, out GroupMember groupMember )
+        private bool AddPersonToGroup( RockContext rockContext, Model.Group group, Person person, List<GroupMember> groupMembers, out string errorMessage, out GroupMember groupMember )
         {
-            var group = GetGroup( rockContext );
             var defaultGroupRole = group.GroupType.DefaultGroupRole;
             errorMessage = string.Empty;
             groupMember = null;
@@ -671,6 +670,22 @@ namespace Rock.Blocks.Group
                 var homeAddressType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                 var isSimple = GetAttributeValue( AttributeKey.Mode ) == "Simple";
                 var isFullWithSpouse = GetAttributeValue( AttributeKey.Mode ) == "FullSpouse";
+
+                var targetGroup = GetGroup( rockContext );
+                var groupTypeGuids = this.GetAttributeValue( AttributeKey.AllowedGroupTypes ).SplitDelimitedValues().AsGuidList();
+                var isFromBlockAttribute = GetAttributeValue( AttributeKey.Group ).AsGuidOrNull() == targetGroup.Guid;
+
+                if ( !isFromBlockAttribute && groupTypeGuids.Any() && !groupTypeGuids.Contains( targetGroup.GroupType.Guid ) )
+                {
+                    return ActionBadRequest( "The group is a restricted group type." );
+                }
+
+                // Just flat out don't allow them to add themselves to a
+                // security role - ever.
+                if ( targetGroup.IsSecurityRole )
+                {
+                    return ActionBadRequest( "The group is a restricted group type." );
+                }
 
                 var isCurrentPerson = RequestContext.CurrentPerson != null
                     && RequestContext.CurrentPerson.NickName.IsNotNullOrWhiteSpace()
@@ -872,7 +887,7 @@ namespace Rock.Blocks.Group
                 {
                     rockContext.SaveChanges();
 
-                    bool isAddPersonValid = AddPersonToGroup( rockContext, person, newGroupMembers, out errorMessage, out newOrExistingGroupMember );
+                    bool isAddPersonValid = AddPersonToGroup( rockContext, targetGroup, person, newGroupMembers, out errorMessage, out newOrExistingGroupMember );
                     if ( !isAddPersonValid )
                     {
                         return false;
@@ -881,7 +896,7 @@ namespace Rock.Blocks.Group
 
                     if ( spouse != null )
                     {
-                        isAddPersonValid = AddPersonToGroup( rockContext, spouse, newGroupMembers, out errorMessage, out newOrExistingSpouseGroupMember );
+                        isAddPersonValid = AddPersonToGroup( rockContext, targetGroup, spouse, newGroupMembers, out errorMessage, out newOrExistingSpouseGroupMember );
                         if ( !isAddPersonValid )
                         {
                             return false;
@@ -894,8 +909,6 @@ namespace Rock.Blocks.Group
 
                 if ( isAddingPeopleToGroupSuccessful )
                 {
-                    var group = GetGroup( rockContext );
-
                     foreach ( GroupMember gm in newOrExistingGroupMembers )
                     {
                         if ( gm != null && workflowType != null && ( workflowType.IsActive ?? true ) )
@@ -914,7 +927,7 @@ namespace Rock.Blocks.Group
 
                     // Show lava content
                     var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "Group", group );
+                    mergeFields.Add( "Group", targetGroup );
                     mergeFields.Add( "GroupMembers", newGroupMembers );
 
                     string template = GetAttributeValue( "ResultLavaTemplate" );
