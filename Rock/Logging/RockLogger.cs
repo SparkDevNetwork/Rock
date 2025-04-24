@@ -106,6 +106,21 @@ namespace Rock.Logging
         }
 
         /// <summary>
+        /// Configures a <see cref="IServiceCollection"/> to support the Rock
+        /// Logging system when using <see cref="ILogger{TCategoryName}"/>
+        /// in dependency injection.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection to be configured.</param>
+        /// <returns>The service collection to allow chaining calls.</returns>
+        internal static IServiceCollection AddRockLogging( this IServiceCollection serviceCollection )
+        {
+            serviceCollection.AddSingleton( _ => LoggerFactory );
+            serviceCollection.AddSingleton( typeof( ILogger<> ), typeof( Logger<> ) );
+
+            return serviceCollection;
+        }
+
+        /// <summary>
         /// Gets the standard categories that have been defined in Rock.
         /// </summary>
         /// <returns>A list of category names.</returns>
