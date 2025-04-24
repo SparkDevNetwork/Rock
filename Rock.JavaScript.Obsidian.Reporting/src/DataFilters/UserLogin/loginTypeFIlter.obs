@@ -1,0 +1,32 @@
+<template>
+    <DropDownList v-model="loginType"
+                  :items="loginTypeOptions"
+                  label="Login Type"
+                  help="Select a specific Login Type"
+                  showBlankItem
+                  enhanceForLongLists />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const loginTypeOptions = safeParseJson<ListItemBag[]>(props.modelValue.loginTypeOptions) ?? [];
+    const loginType = ref<Guid>(props.modelValue.loginType ?? "");
+
+    watch(loginType, () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            loginType: loginType.value,
+        });
+    });
+</script>
