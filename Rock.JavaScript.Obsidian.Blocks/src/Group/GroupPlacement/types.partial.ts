@@ -24,6 +24,10 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 export const enum PreferenceKey {
     PlacementConfigurationJSONRegistrationInstanceId = "PlacementConfigurationJSON_RegistrationInstanceId_{0}",
     PlacementConfigurationJSONRegistrationTemplateId = "PlacementConfigurationJSON_RegistrationTemplateId_{0}",
+    SortOrderRegistrationInstanceId = "SortOrder_RegistrationInstanceId_{0}",
+    SortOrderRegistrationTemplateId = "SortOrder_RegistrationTemplateId_{0}",
+    IsGenderHighlightingRegistrationInstanceId = "IsGenderHighlighting_RegistrationInstanceId_{0}",
+    IsGenderHighlightingRegistrationTemplateId = "IsGenderHighlighting_RegistrationTemplateId_{0}",
     RegistrantAttributeFilterRegistrationInstanceId = "RegistrantAttributeFilter_RegistrationInstanceId_{0}",
     RegistrantAttributeFilterRegistrationTemplateId = "RegistrantAttributeFilter_RegistrationTemplateId_{0}",
     GroupAttributeFilterGroupTypeId = "GroupAttributeFilter_GroupTypeId_{0}",
@@ -35,3 +39,10 @@ export type AvailablePlacementAttributes = {
     groupAttributes: ListItemBag[];
     groupMemberAttributes: ListItemBag[];
 };
+
+export enum SortTypes {
+    SortByLastName = 0,
+    SortByFirstName = 1,
+    SortByDateAddedAsc = 2,
+    SortByDateAddedDesc = 3
+}

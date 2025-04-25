@@ -56,6 +56,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 
         public AttributeFiltersBag AttributeFilters { get; set; }
 
+        public Dictionary<string, PublicAttributeBag> GroupAttributes { get; set; }
+
         //public List<PlacementGroupDetailsBag> PlacementGroupDetails { get; set; }
 
         /// <summary>

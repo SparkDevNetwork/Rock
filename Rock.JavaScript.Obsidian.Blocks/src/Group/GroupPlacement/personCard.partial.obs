@@ -1,5 +1,6 @@
 <template>
-    <div :class="['person-card', { 'selected': isSelected }]"
+    <div v-if="person.personId"
+         :class="['person-card', { 'selected': isSelected }]"
          :style="{ borderLeftColor: getPersonBorderColor(person.gender) }"
          @click="onPersonCardClick"
          @mouseenter="toggleIsCardExpandedOnHover(true)"
@@ -9,7 +10,7 @@
                 <div class="mr-3 flex-shrink-0"
                      :style="{ 'width': '32px', 'height': '32px', 'border-radius': '18px', 'background-image': `url('${person.photoUrl}')`, 'background-size': 'cover' }">
                 </div>
-                {{ person.lastName }}, {{ person.nickname }}
+                {{ displayedPersonName }}
             </div>
             <div :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === index }]">
                 <button type="button"
@@ -82,7 +83,8 @@
     border: 1px solid #dfe0e1;
     border-left: 4px solid var(--color-interface-medium);
     border-radius: 4px;
-    width: 300px;
+    width: 100%;
+    /* width: 300px; */
     /* height: 48px; */
     /* margin: 10px 0; */
     /* margin: 0 8px 12px 0; */
@@ -127,7 +129,7 @@
 
 .person-card .details-container dl {
     display: grid;
-    grid-template-columns: max-content auto;
+    grid-template-columns: 1fr 1fr;
     justify-content: space-between;
     margin: 0;
     row-gap: 0.5rem;
@@ -146,8 +148,8 @@
 
 .person-card .details-container dt {
     color: var(--color-interface-medium);
-    min-width: 130px;
-    max-width: 170px;
+    /* min-width: 130px; */
+    /* max-width: 170px; */
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -157,15 +159,15 @@
 .person-card .details-container dd {
     text-align: right;
     color: var(--color-interface-stronger);
-    min-width: 130px;
-    max-width: 170px;
+    /* min-width: 130px; */
+    /* max-width: 170px; */
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.attribute-value-list {
+/* .attribute-value-list {
     text-align: right;
     color: var(--color-interface-stronger);
     min-width: 130px;
@@ -174,7 +176,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
+} */
 
 .person-card .details-container hr {
     color: var(--color-interface-soft);
@@ -223,6 +225,14 @@
             type: Boolean as PropType<boolean>,
             default: false,
         },
+        isFirstNameLastName: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+        },
+        isGenderHighlighting: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+        }
     });
 
     const emit = defineEmits<{
@@ -234,16 +244,26 @@
     const openDropdownIndex = ref<number | null>(null);
     const isCardExpanded = useVModelPassthrough(props, "isCardExpanded", emit);
 
-    function getPersonBorderColor(gender: Gender) {
-        switch (gender) {
-            case Gender.Male:
-                return "#1A8AE5";
-            case Gender.Female:
-                return "#DE69CE";
-            case Gender.Unknown:
-            default:
-                return "var(--color-interface-medium)";
+    const displayedPersonName = computed(() => {
+        if (props.isFirstNameLastName) {
+            return `${props.person.firstName} ${props.person.lastName}`;
         }
+        return `${props.person.lastName}, ${props.person.firstName}`;
+    });
+
+    function getPersonBorderColor(gender: Gender) {
+        if (props.isGenderHighlighting) {
+            switch (gender) {
+                case Gender.Male:
+                    return "#1A8AE5";
+                case Gender.Female:
+                    return "#DE69CE";
+                case Gender.Unknown:
+                default:
+                    return "var(--color-interface-medium)";
+            }
+        }
+        return "var(--color-interface-medium)";
     }
 
     function onPersonCardClick(event: MouseEvent) {

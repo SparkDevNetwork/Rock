@@ -163,6 +163,7 @@
     <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\GroupMemberBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\AttributeFiltersBag.cs" />
+    <Compile Include="Blocks\Group\GroupPlacement\AddGroupBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\RegistrantBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PersonBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\GroupPlacementMappingBag.cs" />

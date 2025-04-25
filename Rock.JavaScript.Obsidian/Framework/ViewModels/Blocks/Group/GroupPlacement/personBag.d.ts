@@ -33,7 +33,7 @@ export type PersonBag = {
 
     nickname?: string | null;
 
-    personId: number;
+    personId?: number | null;
 
     photoUrl?: string | null;
 

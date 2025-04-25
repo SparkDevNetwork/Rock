@@ -1,5 +1,5 @@
 <template>
-    <Panel type="block" v-model="isGroupExpanded" :hasCollapse="true" :headerSecondaryActions="secondaryActions">
+    <Panel type="default" v-model="isGroupExpanded" :hasCollapse="true" :headerSecondaryActions="secondaryActions">
         <template #title>
             <div class="d-flex align-items-center gap-2">
                 {{ destinationGroup.groupName }}
@@ -11,7 +11,7 @@
                 </span>
             </div>
         </template>
-        <template #headerActions v-if="!isGroupExpanded">
+        <template #headerActions v-if="isGenderHighlighting && !isGroupExpanded">
             <div class="d-flex gap-1 mr-3">
                 <Badge class="unknown-badge">{{ genderCounts.unknown }}</Badge>
                 <Badge class="male-badge">{{ genderCounts.males }}</Badge>
@@ -38,20 +38,98 @@
                              @dismiss="clearGroupRoleError(destinationGroup.groupId, role.id)">
                 {{ getGroupRoleError(destinationGroup.groupId, role.id) }}
             </NotificationBox>
-            <div class="group-role-wrapper"
+            <template v-if="isGenderHighlighting">
+                <div class="group-role-wrapper"
+                     v-drag-target="dragTargetId"
+                     :data-group-section-id="`${destinationGroup.groupId}:${role.id}`">
+                    <template v-if="getGroupMembersFilteredByRole(role.id).length">
+                        <div class="gender-section">
+                            <div v-if="getGroupMembersFilteredByRoleAndGender(role.id, Gender.Male).length > 0">
+                                <HighlightLabel customClass="gender-highlight-label male-label" labelType="custom">
+                                    Males ({{ getGroupMembersFilteredByRoleAndGender(role.id, Gender.Male).length }})
+                                </HighlightLabel>
+                                <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
+                                    <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.id, Gender.Male)">
+                                        <PersonCard v-if="groupMember.person"
+                                                    :key="index"
+                                                    :isCardExpanded="arePersonCardsExpanded"
+                                                    :person="groupMember.person"
+                                                    :index="index"
+                                                    :isDetailHoverDisabled="true"
+                                                    :data-group-id="destinationGroup.groupId"
+                                                    :data-group-member-id="groupMember.groupMemberId"
+                                                    :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                                    :isGenderHighlighting="isGenderHighlighting" />
+                                    </template>
+                                </div>
+                            </div>
+                            <div v-if="getGroupMembersFilteredByRoleAndGender(role.id, Gender.Female).length > 0">
+                                <HighlightLabel customClass="gender-highlight-label female-label" labelType="custom">
+                                    Females ({{ getGroupMembersFilteredByRoleAndGender(role.id, Gender.Female).length }})
+                                </HighlightLabel>
+                                <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
+                                    <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.id, Gender.Female)">
+                                        <PersonCard v-if="groupMember.person"
+                                                    :key="index"
+                                                    :isCardExpanded="arePersonCardsExpanded"
+                                                    :person="groupMember.person"
+                                                    :index="index"
+                                                    :isDetailHoverDisabled="true"
+                                                    :data-group-id="destinationGroup.groupId"
+                                                    :data-group-member-id="groupMember.groupMemberId"
+                                                    :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                                    :isGenderHighlighting="isGenderHighlighting" />
+                                    </template>
+                                </div>
+                            </div>
+                            <div v-if="getGroupMembersFilteredByRoleAndGender(role.id, Gender.Unknown).length > 0">
+                                <HighlightLabel customClass="gender-highlight-label unknown-label" labelType="custom">
+                                    Unknown ({{ getGroupMembersFilteredByRoleAndGender(role.id, Gender.Unknown).length }})
+                                </HighlightLabel>
+                                <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
+                                    <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.id, Gender.Unknown)">
+                                        <PersonCard v-if="groupMember.person"
+                                                    :key="index"
+                                                    :isCardExpanded="arePersonCardsExpanded"
+                                                    :person="groupMember.person"
+                                                    :index="index"
+                                                    :isDetailHoverDisabled="true"
+                                                    :data-group-id="destinationGroup.groupId"
+                                                    :data-group-member-id="groupMember.groupMemberId"
+                                                    :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                                    :isGenderHighlighting="isGenderHighlighting" />
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                    <div v-else class="empty-drop-zone">
+                        Drag and Drop Here
+                    </div>
+                </div>
+            </template>
+            <div v-else
+                 class="group-role-wrapper"
                  v-drag-target="dragTargetId"
                  :data-group-section-id="`${destinationGroup.groupId}:${role.id}`"
                  v-drag-source="groupMemberDragOptions">
-                <template v-for="(groupMember, index) in getGroupMembersFilteredByRole(role.id)">
-                    <PersonCard v-if="groupMember.person"
-                                :key="index"
-                                :isCardExpanded="arePersonCardsExpanded"
-                                :person="groupMember.person"
-                                :index="index"
-                                :isDetailHoverDisabled="true"
-                                :data-group-id="destinationGroup.groupId"
-                                :data-group-member-id="groupMember.groupMemberId" />
+                <template v-if="getGroupMembersFilteredByRole(role.id).length">
+                    <template v-for="(groupMember, index) in getGroupMembersFilteredByRole(role.id)">
+                        <PersonCard v-if="groupMember.person"
+                                    :key="index"
+                                    :isCardExpanded="arePersonCardsExpanded"
+                                    :person="groupMember.person"
+                                    :index="index"
+                                    :isDetailHoverDisabled="true"
+                                    :data-group-id="destinationGroup.groupId"
+                                    :data-group-member-id="groupMember.groupMemberId"
+                                    :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                    :isGenderHighlighting="isGenderHighlighting" />
+                    </template>
                 </template>
+                <div v-else class="empty-drop-zone">
+                    Drag and Drop Here
+                </div>
             </div>
         </div>
     </Panel>
@@ -61,6 +139,48 @@
 :deep(.panel.panel-block) {
     height: 100%;
     margin-bottom: 24px;
+}
+
+.gender-section {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.gender-section .group-role-wrapper {
+    padding: 0;
+    padding-top: 12px;
+}
+
+.gender-highlight-label {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+}
+
+.male-label {
+    background-color: #E8F3FC;
+    color: #1A8AE5;
+}
+
+.female-label {
+    background-color: #FCE8FA;
+    color: #DE69C3;
+}
+
+.unknown-label {
+    background-color: var(--color-interface-soft);
+    color: var(--color-interface-strong);
+}
+
+.empty-drop-zone {
+    width: 100%;
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem;
+    border: 1px dashed var(--color-interface-soft);
+    color: var(--color-interface-soft);
 }
 
 .panel-inline {
@@ -134,33 +254,33 @@
 .group-role-wrapper {
     display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(auto-fit, 300px);
+    grid-template-columns: repeat(auto-fit, 1fr);
     padding: 16px;
 }
 
-/* @media (min-width: 1024px) {
+@media (min-width: 1024px) {
     .group-role-wrapper {
-        grid-template-columns: repeat(2, 300px);
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (min-width: 1440px) {
     .group-role-wrapper {
-        grid-template-columns: repeat(3, 300px);
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
 @media (min-width: 1800px) {
     .group-role-wrapper {
-        grid-template-columns: repeat(4, 300px);
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
 @media (min-width: 2000px) {
     .group-role-wrapper {
-        grid-template-columns: repeat(5, 300px);
+        grid-template-columns: repeat(5, 1fr);
     }
-} */
+}
 </style>
 
 <script setup lang="ts">
@@ -180,6 +300,8 @@
     import { Guid } from "@Obsidian/Types";
     import { DragSource as vDragSource, IDragSourceOptions, DragTarget as vDragTarget } from "@Obsidian/Directives/dragDrop";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { SortTypes } from "./types.partial";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
 
     const props = defineProps({
         destinationGroup: {
@@ -212,6 +334,14 @@
         clearGroupRoleError: {
             type: Function as PropType<(groupId: number, roleId: number) => void>,
             required: true
+        },
+        currentSortOrder: {
+            type: Number as PropType<SortTypes>,
+            required: true
+        },
+        isGenderHighlighting: {
+            type: Boolean as PropType<boolean>,
+            default: false,
         }
     });
 
@@ -219,7 +349,8 @@
         (e: "update:isGroupExpanded", value: boolean): void;
     }>();
 
-    const destinationGroup = ref<PlacementGroupBag>(props.destinationGroup);
+    // const destinationGroup = ref<PlacementGroupBag>(props.destinationGroup);
+    const destinationGroup = computed(() => props.destinationGroup);
     const groupTypeRoles = ref<PlacementGroupTypeRoleBag[]>(props.groupTypeRoles ?? []);
     // TODO - handle parent edge cases.
     const isGroupExpanded = useVModelPassthrough(props, "isGroupExpanded", emit);
@@ -326,6 +457,10 @@
 
     function getGroupMembersFilteredByRole(roleId: number): GroupMemberBag[] {
         return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleId === roleId) ?? [];
+    }
+
+    function getGroupMembersFilteredByRoleAndGender(roleId: number, gender: Gender): GroupMemberBag[] {
+        return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleId === roleId && gm.person?.gender === gender) ?? [];
     }
 
     function getRoleCountTooltipText(roleId: number): string {

@@ -29,9 +29,9 @@ export type GroupMemberBag = {
 
     attributeValues?: Record<string, string> | null;
 
-    groupMemberId: number | null;
+    groupMemberId?: number | null;
 
-    groupRoleId: number;
+    groupRoleId?: number | null;
 
     person?: PersonBag | null;
 };

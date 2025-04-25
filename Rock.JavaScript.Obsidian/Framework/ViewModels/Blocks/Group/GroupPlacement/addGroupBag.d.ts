@@ -21,20 +21,24 @@
 // </copyright>
 //
 
-import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export type RegistrantBag = {
-    attributes?: Record<string, PublicAttributeBag> | null;
+export type AddGroupBag = {
+    existingGroupsToAdd?: ListItemBag[] | null;
 
-    attributeValues?: Record<string, string> | null;
+    groupCampus?: ListItemBag | null;
 
-    createdDateTime?: string | null;
+    groupCapacity?: number | null;
 
-    fees?: Record<string, string> | null;
+    groupDescription?: string | null;
 
-    registrantId: number;
+    groupName?: string | null;
 
-    registrationInstanceId: number;
+    newGroupAttributeValues?: Record<string, string> | null;
 
-    registrationInstanceName?: string | null;
+    parentGroupForChildren?: ListItemBag | null;
+
+    parentGroupForNewGroup?: ListItemBag | null;
+
+    selectedGroupOption?: string | null;
 };

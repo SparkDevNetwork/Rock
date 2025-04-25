@@ -15,28 +15,30 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 
-using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
-    public class RegistrantBag
+    public class AddGroupBag
     {
-        public int RegistrantId { get; set; }
+        public string SelectedGroupOption { get; set; }
 
-        public string RegistrationInstanceName { get; set; }
+        public ListItemBag ParentGroupForNewGroup { get; set; }
 
-        public int RegistrationInstanceId { get; set; }
+        public string GroupName { get; set; }
 
-        public DateTimeOffset? CreatedDateTime { get; set; }
+        public ListItemBag GroupCampus { get; set; }
 
-        public Dictionary<string, string> Fees { get; set; }
+        public int? GroupCapacity { get; set; }
 
-        public Dictionary<string, PublicAttributeBag> Attributes {  get; set; }
+        public string GroupDescription { get; set; }
 
-        public Dictionary<string, string> AttributeValues { get; set; }
+        public Dictionary<string, string> NewGroupAttributeValues { get; set; }
+
+        public List<ListItemBag> ExistingGroupsToAdd { get; set; }
+
+        public ListItemBag ParentGroupForChildren { get; set; }
     }
 }

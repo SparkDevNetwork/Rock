@@ -28,6 +28,7 @@ import { PlacementConfigurationSettingOptionsBag } from "@Obsidian/ViewModels/Bl
 import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
 import { PlacementGroupTypeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupTypeBag";
 import { PlacementGroupTypeRoleBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupTypeRoleBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** The SMS Conversations Initialization Box */
 export type GroupPlacementInitializationBox = {
@@ -35,6 +36,8 @@ export type GroupPlacementInitializationBox = {
 
     /** Gets or sets the error message, if any. */
     errorMessage?: string | null;
+
+    groupAttributes?: Record<string, PublicAttributeBag> | null;
 
     inTemplateMode: boolean;
 

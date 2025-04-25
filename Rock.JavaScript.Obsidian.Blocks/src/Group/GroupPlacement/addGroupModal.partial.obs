@@ -1,0 +1,179 @@
+<template>
+    <Modal v-model="isVisible"
+           title="Add Group"
+           cancelText="Cancel"
+           saveText="Save"
+           @save="onSave"
+           @closeModal="resetForm">
+        <div class="mb-3">
+            <ButtonGroup v-model="selectedGroupOption"
+                         :btnSize="BtnSize.Default"
+                         :btnType="BtnType.Default"
+                         :items="addGroupOptions" />
+        </div>
+
+        <NotificationBox v-if="errorMessage"
+                         alertType="warning"
+                         :dismissible="true"
+                         @dismiss="onMessageDismissed">{{ errorMessage }}</NotificationBox>
+
+        <template v-if="selectedGroupOption === 'Add New Group'">
+            <div class="row">
+                <div class="col-md-3">
+                    <!-- TODO - notification box -->
+                    <GroupPicker v-model="parentGroupForNewGroup"
+                                 label="Parent Group" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="groupName" label="Name" rules="required" />
+                </div>
+                <div class="col-md-6">
+                    <CampusPicker v-model="groupCampus" label="Campus" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <!-- TODO - nullable or not? -->
+                    <NumberBox v-model="groupCapacity" label="Group Capacity" :minimumValue="0" />
+                </div>
+            </div>
+            <div class="row">
+                <div class=col-md-12>
+                    <TextBox v-model="groupDescription" label="Description" textMode="multiline" :rows="4" />
+                    <AttributeValuesContainer v-model="newGroupAttributeValues" :attributes="groupAttributes" isEditMode />
+                </div>
+            </div>
+        </template>
+        <template v-else-if="selectedGroupOption === 'Add Existing Group(s)'">
+            <div class="row">
+                <div class="col-md-3">
+                    <GroupPicker v-model="existingGroupsToAdd"
+                                 label="Groups"
+                                 :multiple="true" />
+                </div>
+            </div>
+        </template>
+        <template v-else-if="selectedGroupOption === 'Add All Child Groups'">
+            <div class="row">
+                <div class="col-md-3">
+                    <GroupPicker v-model="parentGroupForChildren"
+                                 label="Parent Group" />
+                </div>
+            </div>
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PropType, ref, computed, watch } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { AddGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupBag";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        groupAttributes: {
+            type: Object as PropType<Record<string, PublicAttributeBag>>,
+            required: true
+        },
+        errorMessage: {
+            type: String as PropType<string>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "save", value: AddGroupBag): void;
+        (e: "dismissMessage"): void
+    }>();
+
+    defineExpose({
+        resetForm
+    });
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+    const selectedGroupOption = ref<string>("Add New Group");
+
+    const errorMessage = computed(() => props.errorMessage);
+
+    // Add New Group refs
+    const parentGroupForNewGroup = ref<ListItemBag>();
+    const groupName = ref<string>("");
+    const groupCampus = ref<ListItemBag>();
+    const groupCapacity = ref<number>();
+    const groupDescription = ref<string>("");
+    const newGroupAttributeValues = ref<Record<string, string>>({});
+
+    // Add Existing Group(s) refs
+    const existingGroupsToAdd = ref<ListItemBag[]>();
+
+    // Add All Child Groups refs
+    const parentGroupForChildren = ref<ListItemBag>();
+
+    const addGroupOptions = [
+        {
+            text: "Add New Group",
+            value: "Add New Group"
+        },
+        {
+            text: "Add Existing Group(s)",
+            value: "Add Existing Group(s)"
+        },
+        {
+            text: "Add All Child Groups",
+            value: "Add All Child Groups"
+        }
+    ];
+
+    function onSave(): void {
+        const addGroupBag: AddGroupBag = {
+            selectedGroupOption: selectedGroupOption.value,
+            parentGroupForNewGroup: parentGroupForNewGroup.value,
+            groupName: groupName.value,
+            groupCampus: groupCampus.value,
+            groupCapacity: groupCapacity.value,
+            groupDescription: groupDescription.value,
+            newGroupAttributeValues: newGroupAttributeValues.value,
+            existingGroupsToAdd: existingGroupsToAdd.value,
+            parentGroupForChildren: parentGroupForChildren.value
+        };
+        emit("save", addGroupBag);
+    }
+
+    function onMessageDismissed(): void {
+        emit("dismissMessage");
+    }
+
+    function resetForm(): void {
+        selectedGroupOption.value = "Add New Group";
+        parentGroupForNewGroup.value = undefined;
+        groupName.value = "";
+        groupCampus.value = undefined;
+        groupCapacity.value = undefined;
+        groupDescription.value = "";
+        newGroupAttributeValues.value = {};
+        existingGroupsToAdd.value = undefined;
+        parentGroupForChildren.value = undefined;
+    }
+
+    watch(selectedGroupOption, () => {
+        onMessageDismissed();
+    });
+</script>

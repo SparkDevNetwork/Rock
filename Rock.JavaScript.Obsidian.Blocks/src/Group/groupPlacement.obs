@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-
-    <Panel type="block">
+    <Panel type="block" panelBodyCssClass="overflow-hidden" class="styled-scroll">
         <template #title>
             <div class="d-flex align-items-center">
                 <span class="clickable text-sm mr-3" @click="onBack">
@@ -15,18 +14,27 @@
 
         <template #headerActions>
             <div class="d-flex gap-1 mr-3">
-                <RockButton :btnType="BtnType.Default"
-                            :btnSize="BtnSize.Small"
-                            :isSquare="true"
-                            title="Sort Items"
-                            @click="sort">
-                    <i class="fa fa-sort"></i>
-                </RockButton>
+                <div class="dropdown">
+                    <RockButton :btnType="BtnType.Default"
+                                :btnSize="BtnSize.Small"
+                                :isSquare="true"
+                                title="Sort Items"
+                                data-toggle="dropdown">
+                        <i class="fa fa-sort"></i>
+                    </RockButton>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li v-for="[key, label] in sortOptions" :key="key">
+                            <a href="#" @click.prevent="changeSort(key)">
+                                {{ label }}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
                 <RockButton :btnType="BtnType.Default"
                             :btnSize="BtnSize.Small"
                             :isSquare="true"
                             title="Gender Highlight"
-                            @click="highlightGender">
+                            @click="toggleHighlightGender">
                     <i class="fa fa-venus-mars"></i>
                 </RockButton>
                 <RockButton :btnType="BtnType.Default"
@@ -47,8 +55,8 @@
         </template>
 
         <div class="d-flex w-100 h-100">
-            <div style="width: 350px;">
-                <Panel type="block" title="People To Place">
+            <div class="col-md-4 col-lg-3 p-0 h-100 helper-height">
+                <Panel type="default" title="People To Place" panelBodyCssClass="h-100 overflow-hidden">
                     <template #headerActions>
                         <RockButton :btnType="BtnType.Default"
                                     :btnSize="BtnSize.Small"
@@ -70,8 +78,8 @@
                         </RockButton>
                     </template>
 
-                    <div class="card-container">
-                        <div class="d-flex justify-content-between align-items-center" style="width: 300px;">
+                    <div class="people-to-place-panel-body">
+                        <div class="d-flex justify-content-between align-items-center w-100 p-2 pb-0">
                             <div class="prevent-clear">
                                 <CheckBox v-model="areAllPeopleSelected"
                                           label=""
@@ -86,18 +94,21 @@
                                 </i>
                             </span>
                         </div>
-                        <div v-drag-source="personDragSourceOptions" v-drag-target="groupMemberDragSourceOptions.id" class="people-to-place-wrapper">
-                            <PersonCard v-for="(person, index) in peopleToPlace"
-                                        v-if="peopleToPlace.length > 0"
-                                        :key="index"
-                                        :data-person-id="person.personId"
-                                        :isCardExpanded="arePersonCardsExpanded"
-                                        :person="person"
-                                        :index="index"
-                                        :isSelected="isSelected(person.personId)"
-                                        :isInstanceDisplayed="placementConfigurationSettings.showRegistrationInstanceName"
-                                        @toggleCardExpansion="toggleCardExpansion"
-                                        @toggleSelection="toggleSelection(person.personId)" />
+                        <div v-drag-source="personDragSourceOptions" v-drag-target="groupMemberDragSourceOptions.id" class="people-to-place-card-container">
+                            <template v-for="(person, index) in sortedPeopleToPlace" v-if="sortedPeopleToPlace.length > 0">
+                                <PersonCard v-if="person.personId"
+                                            :key="index"
+                                            :data-person-id="person.personId"
+                                            :isCardExpanded="arePersonCardsExpanded"
+                                            :person="person"
+                                            :index="index"
+                                            :isSelected="isSelected(person.personId)"
+                                            :isInstanceDisplayed="placementConfigurationSettings.showRegistrationInstanceName"
+                                            :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                            :isGenderHighlighting="isGenderHighlighting"
+                                            @toggleCardExpansion="toggleCardExpansion"
+                                            @toggleSelection="toggleSelection(person.personId)" />
+                            </template>
                             <div v-else>
                                 <span v-if="!isNoPeopleLabelHidden" class="no-people-label">No People Available</span>
                             </div>
@@ -108,14 +119,14 @@
 
             </div>
 
-            <div class="flex-fill">
-                <Panel type="block" title="Destination Groups">
+            <div class="col-md-8 col-lg-9 p-0 h-100 helper-height">
+                <Panel type="default" title="Destination Groups" panelBodyCssClass="h-100 overflow-hidden">
                     <template #headerActions>
                         <div class="d-flex gap-1 mr-3">
                             <RockButton :btnType="BtnType.Default"
                                         :btnSize="BtnSize.Small"
                                         title="Add Group"
-                                        @click="addGroup">
+                                        @click="openAddGroupModal">
                                 <i class="fa fa-group text-xs mr-2"></i>
                                 <span>Add Group</span>
                             </RockButton>
@@ -124,7 +135,7 @@
                                         :btnSize="BtnSize.Small"
                                         :isSquare="true"
                                         @click="toggleGroupExpansion">
-                                <i :class="areGroupsExpanded ? 'fa fa-angle-double-down' : 'fa fa-angle-double-up'"></i>
+                                <i :class="areGroupsExpanded ? 'fa fa-angle-double-up' : 'fa fa-angle-double-down'"></i>
                             </RockButton>
                         </div>
                     </template>
@@ -142,7 +153,7 @@
                         </RockButton>
                     </template>
                     <div class="p-3 h-100 group-container">
-                        <DestinationGroup v-for="(group, index) in placementGroups"
+                        <DestinationGroup v-for="(group, index) in sortedGroups"
                                           :key="index"
                                           :destinationGroup="group"
                                           :arePersonCardsExpanded="arePersonCardsExpanded"
@@ -151,7 +162,9 @@
                                           :dragTargetId="personDragSourceOptions.id"
                                           :groupMemberDragOptions="groupMemberDragSourceOptions"
                                           :getGroupRoleError="getGroupRoleError"
-                                          :clearGroupRoleError="clearGroupRoleError" />
+                                          :clearGroupRoleError="clearGroupRoleError"
+                                          :currentSortOrder="currentSortOrder"
+                                          :isGenderHighlighting="isGenderHighlighting" />
                     </div>
 
                 </Panel>
@@ -166,9 +179,30 @@
                                  :inTemplateMode="box.inTemplateMode"
                                  @save="savePlacementCofigSettings" />
 
+    <AddGroupModal v-model="isAddGroupModalVisible"
+                   ref="addGroupModalElement"
+                   :groupAttributes="box.groupAttributes ?? {}"
+                   :errorMessage="addGroupModalErrorText"
+                   @save="addGroup"
+                   @dismissMessage="addGroupModalErrorText = ''" />
 </template>
 
 <style scoped>
+:deep(.panel-default) {
+    height: 100%;
+}
+
+:deep(.panel-default>.panel-heading) {
+    background-color: var(--color-interface-softest);
+    border-color: var(--color-interface-softer);
+    color: #2d2e31;
+}
+
+/* Work-around to allow the height to descend (through the fullscreen div) all the way down to panel-body */
+:deep(.helper-height > div:first-child) {
+    height: 100%;
+}
+
 .no-people-label {
     color: var(--color-interface-medium);
 }
@@ -227,7 +261,7 @@
     padding: 0;
 }
 
-.card-container {
+.people-to-place-panel-body {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -236,22 +270,30 @@
     background-color: var(--color-interface-softer);
 }
 
-.people-to-place-wrapper {
+.people-to-place-card-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
     padding-top: 0.5rem;
     width: 100%;
-    height: 100%;
+    padding: 0.5rem;
+    overflow: hidden;
+    overflow-y: auto;
 }
 
 .group-container {
     background-color: var(--color-interface-softer);
+    overflow: hidden;
+    overflow-y: auto;
 }
 
 :deep(.highlight) {
     background-color: var(--color-interface-soft) !important;
+}
+
+:deep(.is-drag-over) {
+    display: none;
 }
 
 /* from webforms css */
@@ -648,7 +690,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { tooltip } from "@Obsidian/Utility/tooltip";
-    import { PreferenceKey } from "./GroupPlacement/types.partial";
+    import { PreferenceKey, SortTypes } from "./GroupPlacement/types.partial";
     import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -658,10 +700,14 @@
     import PersonCard from "./GroupPlacement/personCard.partial.obs";
     import DestinationGroup from "./GroupPlacement/destinationGroup.partial.obs";
     import PlacementConfigurationModal from "./GroupPlacement/placementConfigurationModal.partial.obs";
+    import AddGroupModal from "./GroupPlacement/addGroupModal.partial.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+    import { AddGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupBag";
 
     // #region Values
     const box = useConfigurationValues<GroupPlacementInitializationBox>();
@@ -670,10 +716,10 @@
     const exampleBox = ref<string>("");
 
     const arePersonCardsExpanded = ref(false);
-    const areGroupsExpanded = ref(true);
     // const areAllPeopleSelected = ref(false);
     const selectionInfoElement = ref<HTMLElement | undefined>();
     const isPlacementConfigModalVisible = ref(false);
+    const isAddGroupModalVisible = ref(false);
     const placementGroups = ref<PlacementGroupBag[]>(box.placementGroups ?? []);
     const peopleToPlace = ref<PersonBag[]>(box.peopleToPlace ?? []);
     const selectedPersonIds = ref<Set<number>>(new Set());
@@ -685,10 +731,23 @@
     const groupMemberAttributesForFilter = ref(box.attributeFilters?.groupMemberAttributesForFilters ?? {});
     const groupMemberAttributeValuesForFilter = ref(box.attributeFilters?.groupMemberAttributeValuesForFilters ?? {});
 
+    const areGroupsExpanded = ref(placementGroups.value.length > 3 ? false : true);
     const isNoPeopleLabelHidden = ref(false);
 
     const groupRoleErrors = ref<Record<number, Record<number, string>>>({});
 
+    const currentSortOrder = ref<SortTypes>(toNumberOrNull(preferences.getValue(getSortOrderKey())) as SortTypes ?? SortTypes.SortByLastName);
+    const sortOptions: Array<[SortTypes, string]> = [
+        [SortTypes.SortByLastName, "Last Name, First Name (Default)"],
+        [SortTypes.SortByFirstName, "First Name Last Name"],
+        [SortTypes.SortByDateAddedAsc, "Date Added (Oldest First)"],
+        [SortTypes.SortByDateAddedDesc, "Date Added (Newest First)"]
+    ];
+
+    const addGroupModalElement = ref<InstanceType<typeof AddGroupModal>>();
+    const addGroupModalErrorText = ref<string>();
+
+    const isGenderHighlighting = ref<boolean>(asBooleanOrNull(preferences.getValue(getIsGenderHighlightingKey())) ?? false);
 
     const personDragSourceOptions = getPersonDragSourceOptions();
     const groupMemberDragSourceOptions = getGroupMemberDragSourceOptions();
@@ -705,23 +764,116 @@
 
     const areAllPeopleSelected = computed({
         get() {
-            return peopleToPlace.value.every(person =>
-                selectedPersonIds.value.has(person.personId)
-            );
+            return peopleToPlace.value.every(person => {
+                if (person.personId) {
+                    selectedPersonIds.value.has(person.personId);
+                }
+            });
         },
         set(value: boolean) {
             if (value) {
                 // Select all
                 for (const person of peopleToPlace.value) {
-                    selectedPersonIds.value.add(person.personId);
+                    if (person.personId) {
+                        selectedPersonIds.value.add(person.personId);
+                    }
                 }
             }
         }
     });
 
+    const sortedPeopleToPlace = computed(() => {
+        return getSortedPeople(peopleToPlace.value);
+    });
+
+    const sortedGroups = computed(() => {
+        console.log("Sorting Groups...", placementGroups.value);
+        return placementGroups.value.map(group => {
+            const validGroupMembers = (group.groupMembers ?? []).filter(m => m?.person);
+
+            const sortedPeople = getSortedPeople(validGroupMembers.map(m => m.person!));
+
+            const memberMap = new Map(
+                validGroupMembers.map(m => [m.person!.personId, m])
+            );
+
+            const sortedGroupMembers = sortedPeople
+                .map(p => memberMap.get(p.personId))
+                .filter((m): m is typeof validGroupMembers[number] => !!m);
+
+            return {
+                ...group,
+                groupMembers: sortedGroupMembers
+            };
+        });
+    });
+
+
     // #endregion
 
     // #region Functions
+
+    function getSortedPeople(people: PersonBag[]): PersonBag[] {
+        return [...people].sort((a, b) => {
+            switch (currentSortOrder.value) {
+                case SortTypes.SortByFirstName: {
+                    const firstNameComparison = (a.firstName ?? "").localeCompare(b.firstName ?? "");
+                    if (firstNameComparison !== 0) {
+                        return firstNameComparison;
+                    }
+                    return (a.lastName ?? "").localeCompare(b.lastName ?? "");
+                }
+
+                case SortTypes.SortByLastName: {
+                    const lastNameComparison = (a.lastName ?? "").localeCompare(b.lastName ?? "");
+                    if (lastNameComparison !== 0) {
+                        return lastNameComparison;
+                    }
+                    return (a.firstName ?? "").localeCompare(b.firstName ?? "");
+                }
+
+                // TODO - Figure out how to sort by date when not in registration mode.
+                case SortTypes.SortByDateAddedAsc: {
+                    // We'll just grab the first registrant on each person.
+                    const dateA = RockDateTime.parseISO(a.registrants?.[0]?.createdDateTime ?? "");
+                    const dateB = RockDateTime.parseISO(b.registrants?.[0]?.createdDateTime ?? "");
+
+                    if (dateA && dateB) {
+                        return dateA.toMilliseconds() - dateB.toMilliseconds();
+                    }
+                    else if (dateA && !dateB) {
+                        return -1;
+                    }
+                    else if (!dateA && dateB) {
+                        return 1;
+                    }
+
+                    return 0;
+                }
+
+                case SortTypes.SortByDateAddedDesc: {
+                    // We'll just grab the first registrant on each person.
+                    const dateA = RockDateTime.parseISO(a.registrants?.[0]?.createdDateTime ?? "");
+                    const dateB = RockDateTime.parseISO(b.registrants?.[0]?.createdDateTime ?? "");
+
+                    if (dateA && dateB) {
+                        return dateB.toMilliseconds() - dateA.toMilliseconds();
+                    }
+                    else if (dateA && !dateB) {
+                        return -1;
+                    }
+                    else if (!dateA && dateB) {
+                        return 1;
+                    }
+
+                    return 0;
+                }
+
+                default:
+                    return 0;
+            }
+        });
+    }
 
     function setGroupRoleError(groupId: number, roleId: number, message: string): void {
         if (!groupRoleErrors.value[groupId]) {
@@ -788,17 +940,23 @@
                 }
             },
             dragOver(operation) {
-                if (selectedPersonIds.value.size > 1) {
+                if (isGenderHighlighting.value) {
                     nextTick(() => {
-                        const mirror = document.querySelector(".gu-transit") as HTMLElement;
-                        if (!mirror) return;
+                        const transit = document.querySelector(".gu-transit") as HTMLElement;
+                        if (!transit) return;
+                        transit.style = "display: none";
+                    });
+                }
+                else if (selectedPersonIds.value.size > 1) {
+                    nextTick(() => {
+                        const transit = document.querySelector(".gu-transit") as HTMLElement;
+                        if (!transit) return;
 
-                        mirror.innerHTML = "";
+                        transit.innerHTML = "";
 
-                        // Clean the original mirror and restyle it
-                        mirror.classList.add("multi-hover-preview");
+                        transit.classList.add("multi-hover-preview");
 
-                        mirror.innerHTML = `
+                        transit.innerHTML = `
                             <div class="multi-card-preview">
                             <i class="fa fa-user-friends"></i>
                             </div>
@@ -807,12 +965,26 @@
                 }
                 if (operation.targetContainer && operation.targetContainer instanceof HTMLElement) {
                     operation.targetContainer.closest(".group-role-wrapper")?.classList.add("highlight");
+
+                    const emptyDropZone = operation.targetContainer.querySelector(".empty-drop-zone");
+
+                    if (emptyDropZone) {
+                        emptyDropZone.classList.add("is-drag-over");
+                    }
                 }
+
             },
             dragOut(operation) {
                 if (operation.targetContainer && operation.targetContainer instanceof HTMLElement) {
                     operation.targetContainer.closest(".group-role-wrapper")?.classList.remove("highlight");
+
+                    const emptyDropZone = operation.targetContainer.querySelector(".empty-drop-zone");
+
+                    if (emptyDropZone) {
+                        emptyDropZone.classList.remove("is-drag-over");
+                    }
                 }
+
             },
             async dragDrop(operation) {
                 operation.element.remove();
@@ -829,7 +1001,7 @@
                 var pendingGroupMembers: GroupMemberBag[] = [];
 
                 if (selectedPersonIds.value.size > 1) {
-                    const selectedPeopleToPlace = peopleToPlace.value.filter(p => selectedPersonIds.value.has(p.personId));
+                    const selectedPeopleToPlace = peopleToPlace.value.filter(p => p.personId && selectedPersonIds.value.has(p.personId));
 
                     if (selectedPeopleToPlace && groupRoleId && operation.targetIndex !== undefined) {
                         selectedPeopleToPlace.forEach((person) => {
@@ -889,12 +1061,12 @@
                 }
                 if (operation.targetContainer && operation.targetContainer instanceof HTMLElement) {
                     // TODO - ask UI team if they want this.
-                    operation.targetContainer.closest(".people-to-place-wrapper")?.classList.add("highlight");
+                    operation.targetContainer.closest(".people-to-place-card-container")?.classList.add("highlight");
                 }
             },
             dragOut(operation) {
                 if (operation.targetContainer && operation.targetContainer instanceof HTMLElement) {
-                    operation.targetContainer.closest(".people-to-place-wrapper")?.classList.remove("highlight");
+                    operation.targetContainer.closest(".people-to-place-card-container")?.classList.remove("highlight");
                 }
             },
             dragCancel(operation) {
@@ -955,6 +1127,7 @@
         return selectedPersonIds.value.has(personId);
     }
 
+    //TODO - buggy behavior
     function toggleSelectAllCheckbox() {
         if (areAllPeopleSelected.value) {
             selectedPersonIds.value.clear();
@@ -966,13 +1139,14 @@
         // window.history.back();
     }
 
-    function sort(): void {
-        console.log("Sort button clicked");
-        // Implement sorting logic here
+    function changeSort(sortType: SortTypes): void {
+        currentSortOrder.value = sortType;
+        // Add logic here to apply the sort
+        console.log("Sort changed to:", sortType);
     }
 
-    function highlightGender(): void {
-        console.log("Highlight gender");
+    function toggleHighlightGender(): void {
+        isGenderHighlighting.value = !isGenderHighlighting.value;
     }
 
     function toggleDetails(): void {
@@ -988,8 +1162,8 @@
         console.log("Search people");
     }
 
-    function addGroup(): void {
-        console.log("Add group");
+    function openAddGroupModal(): void {
+        isAddGroupModalVisible.value = true;
     }
 
     function toggleCardExpansion(): void {
@@ -1009,6 +1183,26 @@
     function applyGroupFilter(): void {
         console.log("Apply group filter with value:", exampleBox.value);
         // Implement filter logic here
+    }
+
+    function getSortOrderKey(): string {
+        if (box.registrationInstanceId) {
+            return PreferenceKey.SortOrderRegistrationInstanceId.replace("{0}", box.registrationInstanceId.toString());
+        }
+        else if (box.registrationTemplateId) {
+            return PreferenceKey.SortOrderRegistrationTemplateId.replace("{0}", box.registrationTemplateId.toString());
+        }
+        return "";
+    }
+
+    function getIsGenderHighlightingKey(): string {
+        if (box.registrationInstanceId) {
+            return PreferenceKey.IsGenderHighlightingRegistrationInstanceId.replace("{0}", box.registrationInstanceId.toString());
+        }
+        else if (box.registrationTemplateId) {
+            return PreferenceKey.IsGenderHighlightingRegistrationTemplateId.replace("{0}", box.registrationTemplateId.toString());
+        }
+        return "";
     }
 
     function getPlacementConfigurationSettingsKey(): string {
@@ -1047,7 +1241,9 @@
             return result.data;
         }
         else {
-            setGroupRoleError(groupId, pendingGroupMembers[0].groupRoleId, result.errorMessage ?? "Unknown error while trying to add a group member.");
+            if (pendingGroupMembers[0].groupRoleId) {
+                setGroupRoleError(groupId, pendingGroupMembers[0].groupRoleId, result.errorMessage ?? "Unknown error while trying to add a group member.");
+            }
         }
         return [];
     }
@@ -1068,6 +1264,30 @@
         return false;
     }
 
+    async function addGroup(addGroupBag: AddGroupBag) {
+        // TODO - need to make grouptypeid non nullable
+        if (!box.placementGroupType?.id) {
+            console.error("Group Type Id required");
+            return;
+        }
+
+        const result = await invokeBlockAction("AddPlacementGroup", {
+            addGroupBag,
+            groupTypeId: box.placementGroupType.id,
+            registrationInstanceId: box.registrationInstanceId,
+            registrationTemplatePlacementId: box.registrationTemplatePlacementId
+        });
+
+        if (result.isSuccess) {
+            console.log("Add group success.");
+            addGroupModalElement.value?.resetForm();
+            isAddGroupModalVisible.value = false;
+        }
+        else {
+            addGroupModalErrorText.value = result.errorMessage ?? "Unknown error while adding a group.";
+        }
+    }
+
     // #endregion
 
     // #region Watchers
@@ -1076,6 +1296,14 @@
         if (element) {
             tooltip(element);
         }
+    });
+
+
+    watch([currentSortOrder, isGenderHighlighting], async () => {
+        preferences.setValue(getSortOrderKey(), currentSortOrder.value.toString());
+        preferences.setValue(getIsGenderHighlightingKey(), isGenderHighlighting.value.toString());
+
+        await preferences.save();
     });
 
     // #endregion
