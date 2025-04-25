@@ -114,7 +114,7 @@
                       :excludeFromExport="true"
                       @click="onCopyClick" />
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'className'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" :disableConfirmation="true" />
     </Grid>
