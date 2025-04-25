@@ -736,7 +736,11 @@ namespace RockWeb.Blocks.Mobile
 
                     // Add the person to the default mobile rest security group.
                     var groupMember = new GroupMember();
-                    groupMember.PersonId = restPerson.Id;
+                    // GroupMember validation needs access to the full Person record to determine if the individual is a RESTUSER RecordType.
+                    // This check is important because RESTUSERs are allowed to bypass group requirements validation.
+                    // However, during the GroupMember save process, the restPerson.Id is still 0.
+                    // Because of this, we CANNOT set `groupMember.PersonId = restPerson.Id` at this point.
+                    groupMember.Person = restPerson;
                     groupMember.GroupId = mobileApplicationUsersGroup.Id;
                     groupMember.GroupRoleId = groupRoleId.Value;
 

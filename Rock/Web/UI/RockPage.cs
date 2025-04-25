@@ -39,6 +39,7 @@ using Rock.Cms.Utm;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Net;
 using Rock.Observability;
@@ -2790,6 +2791,7 @@ Sys.Application.add_load(function () {
             {
                 WebRootPath = AppDomain.CurrentDomain.BaseDirectory
             } );
+            serviceCollection.AddRockLogging();
 
             return serviceCollection.BuildServiceProvider();
         }

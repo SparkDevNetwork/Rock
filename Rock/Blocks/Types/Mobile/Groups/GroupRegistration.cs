@@ -53,6 +53,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [GroupTypesField( "Allowed Group Types",
         Description = "Determines which group types are allowed when adding people to a group from this block.",
         IsRequired = false,
+        DefaultValue = SystemGuid.GroupType.GROUPTYPE_SMALL_GROUP,
         EnhancedSelection = true,
         Key = AttributeKey.GroupTypes,
         Order = 1 )]

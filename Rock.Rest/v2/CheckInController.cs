@@ -34,6 +34,8 @@ using Rock.ViewModels.Rest.CheckIn;
 using Rock.Web.Cache;
 using Rock.ViewModels.CheckIn.Labels;
 using Rock.Security;
+using Microsoft.Extensions.Logging;
+
 
 
 #if WEBFORMS
@@ -57,15 +59,25 @@ namespace Rock.Rest.v2
     [Rock.SystemGuid.RestControllerGuid( "52b3c68a-da8d-4374-a199-8bc8368a22bc" )]
     public sealed class CheckInController : ApiControllerBase
     {
+        /// <summary>
+        /// The database context to use for this request.
+        /// </summary>
         private readonly RockContext _rockContext;
+
+        /// <summary>
+        /// The logger to use when writing messages.
+        /// </summary>
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInController"/> class.
         /// </summary>
         /// <param name="rockContext">The database context to use for this request.</param>
-        public CheckInController( RockContext rockContext )
+        /// <param name="logger">The logger to use when writing messages.</param>
+        public CheckInController( RockContext rockContext, ILogger<CheckInController> logger )
         {
             _rockContext = rockContext;
+            _logger = logger;
         }
 
         /// <summary>
@@ -603,6 +615,33 @@ namespace Rock.Rest.v2
             } );
 
             return ResponseMessage( Request.CreateResponse( HttpStatusCode.SwitchingProtocols ) );
+        }
+
+        /// <summary>
+        /// Notifies server that an individual has entered or left the range
+        /// of one or more proximity beacons.
+        /// </summary>
+        /// <param name="proximity">The data that describes the detected beacons.</param>
+        /// <returns>The result of the operation.</returns>
+        [HttpPost]
+        [Route( "ProximityCheckIn" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.NoContent )]
+        [SystemGuid.RestActionGuid( "2e0e2704-8730-4949-b726-05401930b0e0" )]
+        public IActionResult PostProximityCheckIn( [FromBody] ProximityCheckInOptionsBag proximity )
+        {
+            proximity = proximity ?? new ProximityCheckInOptionsBag();
+
+            var beacons = ( proximity.Beacons ?? new List<ProximityBeaconBag>() )
+                .Select( b => $"{{Major={b.Major}, Minor={b.Minor}, Rssi={b.Rssi}, Accuracy={b.Accuracy}}}" );
+
+            _logger.LogInformation( "ProximityCheckin Uuid={uuid}, Present={present}, PersonalDeviceGuid={personalDeviceguid}, Beacons=[{beacons:l}]",
+                proximity.ProximityGuid,
+                proximity.IsPresent,
+                proximity.PersonalDeviceGuid,
+                string.Join( ", ", beacons ) );
+
+            return NoContent();
         }
     }
 }

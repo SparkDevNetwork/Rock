@@ -3443,6 +3443,8 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
+            var securityGrant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
             using ( var rockContext = new RockContext() )
             {
                 var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
@@ -3454,6 +3456,11 @@ namespace Rock.Rest.v2
                     Value = options.Value,
                     Description = options.Description
                 };
+
+                if ( securityGrant?.IsAccessGranted( definedValue, Authorization.EDIT ) != true )
+                {
+                    return Unauthorized();
+                }
 
                 DefinedValueService definedValueService = new DefinedValueService( rockContext );
                 var orders = definedValueService.Queryable()

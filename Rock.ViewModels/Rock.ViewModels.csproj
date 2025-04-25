@@ -842,6 +842,8 @@
     <Compile Include="Controls\MobileNavigationActionBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
+    <Compile Include="Rest\CheckIn\ProximityBeaconBag.cs" />
+    <Compile Include="Rest\CheckIn\ProximityCheckInOptionsBag.cs" />
     <Compile Include="Rest\Controls\AIProviderPickerGetAIProviderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerExtractFileOptionsBag.cs" />
     <Compile Include="Rest\Controls\DataFilterFormatSelectionOptionsBag.cs" />

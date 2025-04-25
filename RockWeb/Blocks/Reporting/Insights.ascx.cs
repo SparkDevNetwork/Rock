@@ -409,14 +409,16 @@ namespace RockWeb.Blocks.Reporting
             var dataItems = new List<DataItem>();
             var total = alivePersonsQry.Count();
 
-            var activeCount = alivePersonsQry.Count( p => p.RecordStatusValue.Guid.ToString() == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
-            dataItems.Add( new DataItem( "Active", DataItem.GetPercentage( activeCount, total ) ) );
+            foreach ( var recordStatus in DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS).DefinedValues )
+            {
+                if ( !recordStatus.IsActive )
+                {
+                    continue;
+                }
 
-            var inActiveCount = alivePersonsQry.Count( p => p.RecordStatusValue.Guid.ToString() == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
-            dataItems.Add( new DataItem( "Inactive", DataItem.GetPercentage( inActiveCount, total ) ) );
-
-            var pendingCount = alivePersonsQry.Count( p => p.RecordStatusValue.Guid.ToString() == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING );
-            dataItems.Add( new DataItem( "Pending", DataItem.GetPercentage( pendingCount, total ) ) );
+                var count = alivePersonsQry.Count( p => p.RecordStatusValueId == recordStatus.Id );
+                dataItems.Add( new DataItem( $"{recordStatus.Value}", DataItem.GetPercentage( count, total ) ) );
+            }
 
             const string chartConfig = "{[ chart type:'pie' chartheight:'200px' legendshow:'true' legendposition:'right' valueformat:'percentage' ]}";
 
