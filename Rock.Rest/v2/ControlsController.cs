@@ -5730,6 +5730,132 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Group Roles for Groups
+
+        /// <summary>
+        /// Gets the roles that can be displayed in the group and role picker for the specified group.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the groups.</returns>
+        [HttpPost]
+        [Route( "InGroupFilterGetGroupRolesForGroups" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [Rock.SystemGuid.RestActionGuid( "EAC8814B-8FAD-408F-B76F-703A3F529197" )]
+        public IActionResult InGroupFilterGetGroupRolesForGroups( [FromBody] InGroupFilterGetGroupRolesForGroupsOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupRoles = GetGroupTypeRolesForSelectedGroups(
+                    options.GroupGuids,
+                    options.IncludeChildGroups,
+                    options.IncludeSelectedGroups,
+                    options.IncludeAllDescendants,
+                    options.IncludeInactiveGroups,
+                    grant,
+                    rockContext
+                );
+
+                return Ok( groupRoles );
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of group type roles that should be available for
+        /// selection in the filter settings UI.
+        /// </summary>
+        /// <param name="groupGuids">The integer identifiers of the selected groups.</param>
+        /// <param name="includeChildGroups">If <c>true</c> then child groups will be included when determining which group types to include.</param>
+        /// <param name="includeSelectedGroups">If <paramref name="includeChildGroups"/> and this are <c>true</c> then the originally selected groups will be included along with the child groups when determining the group types.</param>
+        /// <param name="includeAllDescendants">If <paramref name="includeChildGroups"/> and this are <c>true</c> then all descendant groups will be included when determining the group types.</param>
+        /// <param name="includeInactiveGroups">If <paramref name="includeChildGroups"/> and this are <c>true</c> then inactive groups will be included when determining the group types.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A list of <see cref="ListItemBag"/> objects that represent the options to display to the individual.</returns>
+        private List<ListItemBag> GetGroupTypeRolesForSelectedGroups( List<Guid> groupGuids, bool includeChildGroups, bool includeSelectedGroups, bool includeAllDescendants, bool includeInactiveGroups, SecurityGrant grant, RockContext rockContext )
+        {
+            var groupService = new GroupService( rockContext );
+            var groupTypeRoleService = new GroupTypeRoleService( rockContext );
+            var qryGroupTypeRoles = groupTypeRoleService.Queryable();
+
+            var selectedGroups = groupService.GetByGuids( groupGuids )
+                .Select( s => new
+                {
+                    s.Id,
+                    s.GroupTypeId
+                } )
+                .ToList();
+
+            var selectedGroupTypeIds = selectedGroups.Select( a => a.GroupTypeId )
+                .Distinct()
+                .ToList();
+
+            if ( includeChildGroups )
+            {
+                var childGroupTypeIds = new List<int>();
+
+                foreach ( var groupId in selectedGroups.Select( a => a.Id ).ToList() )
+                {
+                    if ( includeAllDescendants )
+                    {
+                        // Get all children and descendants of the selected group(s).
+                        var descendantGroupTypes = groupService.GetAllDescendentsGroupTypes( groupId, includeInactiveGroups )
+                            .Where( gt => gt.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || ( grant.IsAccessGranted( gt, Security.Authorization.VIEW ) ) );
+
+                        childGroupTypeIds.AddRange( descendantGroupTypes.Select( a => a.Id ).ToList() );
+                    }
+                    else
+                    {
+                        // Get only immediate children of the selected group(s).
+                        var childGroups = groupService.Queryable().Where( a => a.ParentGroupId == groupId
+                            && a.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || ( grant.IsAccessGranted( a, Security.Authorization.VIEW ) ) );
+
+                        if ( !includeInactiveGroups )
+                        {
+                            childGroups = childGroups.Where( a => a.IsActive == true );
+                        }
+
+                        childGroupTypeIds.AddRange( childGroups.Select( a => a.GroupTypeId ).Distinct().ToList() );
+                    }
+                }
+
+                childGroupTypeIds = childGroupTypeIds.Distinct().ToList();
+
+                if ( includeSelectedGroups )
+                {
+                    qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue
+                        && ( selectedGroupTypeIds.Contains( a.GroupTypeId.Value ) || childGroupTypeIds.Contains( a.GroupTypeId.Value ) ) );
+                }
+                else
+                {
+                    qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue
+                        && childGroupTypeIds.Contains( a.GroupTypeId.Value ) );
+                }
+            }
+            else
+            {
+                qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue
+                    && selectedGroupTypeIds.Contains( a.GroupTypeId.Value ) );
+            }
+
+            return qryGroupTypeRoles.OrderBy( a => a.GroupType.Order )
+                .ThenBy( a => a.GroupType.Name )
+                .ThenBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList()
+                .Where( gtr => gtr.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || ( grant.IsAccessGranted( gtr, Security.Authorization.VIEW ) ) )
+                .Select( a => new ListItemBag
+                {
+                    Value = a.Guid.ToString(),
+                    Text = $"{a.Name} ({a.GroupType.Name})"
+                } )
+                .ToList();
+        }
+
+        #endregion
+
         #region Group Type Group Picker
 
         /// <summary>

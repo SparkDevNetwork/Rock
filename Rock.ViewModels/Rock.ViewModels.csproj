@@ -855,6 +855,7 @@
     <Compile Include="Rest\Controls\EmailEditorDeleteEmailSectionOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorGetEmailSectionOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorEmailSectionBag.cs" />
+    <Compile Include="Rest\Controls\InGroupFilterGetGroupRolesForGroupsOptionsBag.cs" />
     <Compile Include="Rest\Controls\LearningClassActivityPickerGetLearningClassActivitiesOptionsBag.cs" />
     <Compile Include="Rest\Controls\LearningClassPickerGetLearningClassesOptionsBag.cs" />
     <Compile Include="Rest\Controls\MergeFieldPickerGetSearchedMergedFieldsOptionsBag.cs" />
