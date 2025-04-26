@@ -109,6 +109,9 @@
                                             @toggleCardExpansion="toggleCardExpansion"
                                             @toggleSelection="toggleSelection(person.personId)" />
                             </template>
+                            <div v-else-if="arePeopleLoading" class="d-flex align-items-center justify-content-center">
+                                <Loading :isLoading="arePeopleLoading" />
+                            </div>
                             <div v-else>
                                 <span v-if="!isNoPeopleLabelHidden" class="no-people-label">No People Available</span>
                             </div>
@@ -153,7 +156,11 @@
                         </RockButton>
                     </template>
                     <div class="p-3 h-100 group-container">
+                        <div v-if="areGroupsLoading" class="d-flex align-items-center justify-content-center">
+                            <Loading :isLoading="areGroupsLoading" />
+                        </div>
                         <DestinationGroup v-for="(group, index) in sortedGroups"
+                                          v-else
                                           :key="index"
                                           :destinationGroup="group"
                                           :arePersonCardsExpanded="arePersonCardsExpanded"
@@ -164,7 +171,8 @@
                                           :getGroupRoleError="getGroupRoleError"
                                           :clearGroupRoleError="clearGroupRoleError"
                                           :currentSortOrder="currentSortOrder"
-                                          :isGenderHighlighting="isGenderHighlighting" />
+                                          :isGenderHighlighting="isGenderHighlighting"
+                                          :arePeopleLoading="arePeopleLoading" />
                     </div>
 
                 </Panel>
@@ -708,6 +716,8 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
     import { AddGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupBag";
+    import { PlacementPeopleBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementPeopleBag";
+    import Loading from "@Obsidian/Controls/loading.obs";
 
     // #region Values
     const box = useConfigurationValues<GroupPlacementInitializationBox>();
@@ -720,8 +730,14 @@
     const selectionInfoElement = ref<HTMLElement | undefined>();
     const isPlacementConfigModalVisible = ref(false);
     const isAddGroupModalVisible = ref(false);
-    const placementGroups = ref<PlacementGroupBag[]>(box.placementGroups ?? []);
-    const peopleToPlace = ref<PersonBag[]>(box.peopleToPlace ?? []);
+    // const placementGroups = ref<PlacementGroupBag[]>(box.placementGroups ?? []);
+    // const peopleToPlace = ref<PersonBag[]>(box.peopleToPlace ?? []);
+    const placementGroups = ref<PlacementGroupBag[]>([]);
+    const peopleToPlace = ref<PersonBag[]>([]);
+
+    const areGroupsLoading = ref<boolean>(true);
+    const arePeopleLoading = ref<boolean>(true);
+
     const selectedPersonIds = ref<Set<number>>(new Set());
 
     const personAttributesForFilter = ref(box.attributeFilters?.registrantAttributesForFilters ?? {});
@@ -1215,6 +1231,41 @@
         return "";
     }
 
+    async function loadPlacementData() {
+        // Start both API calls immediately
+        const groupsPromise = getDestinationGroups();
+        const placementPeoplePromise = getPlacementPeople();
+
+        groupsPromise.then(groups => {
+            placementGroups.value = groups.map(g => ({
+                ...g,
+                groupMembers: [] // Ensure groupMembers is initialized
+            }));
+            areGroupsLoading.value = false;
+        });
+
+        placementPeoplePromise.then(async placementPeople => {
+            // Wait here until groups are loaded
+            await groupsPromise;
+            console.log("placementGroups: ", placementGroups.value);
+            console.log("placementpeople: ", placementPeople);
+
+            if (placementPeople.peopleToPlace) {
+                peopleToPlace.value = placementPeople.peopleToPlace;
+            }
+            if (placementPeople.tempGroups) {
+                placementPeople.tempGroups.forEach(g => {
+                    const placementGroup = placementGroups.value.find(pg => pg.groupId === g.groupId);
+                    if (placementGroup?.groupMembers && g.groupMembers?.length) {
+                        placementGroup.groupMembers.push(...g.groupMembers);
+                    }
+                });
+            }
+
+            arePeopleLoading.value = false;
+        });
+    }
+
     async function savePlacementCofigSettings(bag: PlacementConfigurationSettingsBag): Promise<void> {
         console.log("Here is my saved bag: ", bag);
         preferences.setValue(getPlacementConfigurationSettingsKey(), JSON.stringify(bag));
@@ -1229,6 +1280,42 @@
     // #endregion
 
     // #region Block Actions
+
+    async function getPlacementPeople(): Promise<PlacementPeopleBag> {
+        arePeopleLoading.value = true;
+
+        const result = await invokeBlockAction<PlacementPeopleBag>("GetPlacementPeople", {
+            registrationTemplateId: box.registrationTemplateId,
+            registrationInstanceId: box.registrationInstanceId,
+            registrationTemplatePlacementId: box.registrationTemplatePlacementId,
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            console.error(result.errorMessage);
+        }
+        return {};
+    }
+
+    async function getDestinationGroups(): Promise<PlacementGroupBag[]> {
+        areGroupsLoading.value = true;
+
+        const result = await invokeBlockAction<PlacementGroupBag[]>("GetDestinationGroups", {
+            registrationTemplateId: box.registrationTemplateId,
+            registrationInstanceId: box.registrationInstanceId,
+            registrationTemplatePlacementId: box.registrationTemplatePlacementId,
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            console.error(result.errorMessage);
+        }
+        return [];
+    }
 
     async function addGroupMembersToGroup(pendingGroupMembers: GroupMemberBag[], groupId: number): Promise<GroupMemberBag[]> {
         const result = await invokeBlockAction<GroupMemberBag[]>("AddGroupMembersToGroup", {
@@ -1308,8 +1395,12 @@
 
     // #endregion
 
-    onMounted(() => {
+    onMounted(async () => {
         document.addEventListener("click", handleOutsideClick);
+
+        console.log(box.registrationTemplateId);
+
+        loadPlacementData();
     });
 
     onBeforeUnmount(() => {

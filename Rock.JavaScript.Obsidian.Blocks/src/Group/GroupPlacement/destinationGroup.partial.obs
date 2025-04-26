@@ -103,6 +103,9 @@
                             </div>
                         </div>
                     </template>
+                    <div v-else-if="arePeopleLoading" class="d-flex align-items-center justify-content-center">
+                        <Loading :isLoading="arePeopleLoading" />
+                    </div>
                     <div v-else class="empty-drop-zone">
                         Drag and Drop Here
                     </div>
@@ -342,6 +345,10 @@
         isGenderHighlighting: {
             type: Boolean as PropType<boolean>,
             default: false,
+        },
+        arePeopleLoading: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
