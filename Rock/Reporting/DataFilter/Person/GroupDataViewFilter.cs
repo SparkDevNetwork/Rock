@@ -280,6 +280,8 @@ function ()
         private const string _CtlGroupStatus = "ddlGroupStatus";
         private const string _CtlRoleType = "ddlRoleType";
 
+#if WEBFORMS
+
         /// <summary>
         /// Creates the model representation of the child controls used to display and edit the filter settings.
         /// Implement this version of CreateChildControls if your DataFilterComponent works the same in all filter modes
@@ -404,6 +406,9 @@ function ()
 
             return ddlDataView.SelectedValueAsId();
         }
+
+#endif
+
         #endregion
 
         #region Settings
