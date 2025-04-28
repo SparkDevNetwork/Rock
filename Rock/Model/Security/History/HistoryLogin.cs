@@ -33,6 +33,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "HistoryLogin" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.HISTORY_LOGIN )]
     public partial class HistoryLogin : Model<HistoryLogin>
     {
