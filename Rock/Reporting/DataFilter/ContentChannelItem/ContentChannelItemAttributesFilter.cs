@@ -142,7 +142,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                     return data;
                 }
 
-                var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( values[0].AsGuid() );
+                var contentChannelType = channelTypeService.Get( values[0].AsGuid() );
                 data.AddOrReplace( "contentChannelType", contentChannelType == null ? "" : values[0] );
 
                 if ( values.Count > 1 )
