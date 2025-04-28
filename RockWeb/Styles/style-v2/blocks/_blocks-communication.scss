@@ -7,6 +7,7 @@
 // Table of Content           
 //  + Communication Entry 
 //  + Communication Detail
+//  + Communication List
 //  + Communication Wizard
 // =============================================================
 
@@ -44,6 +45,27 @@ iframe.email-body {
 }
 // ======================== END COMMUNICATION DETAIL ========================
 
+// ======================== COMMUNICATION LIST ========================
+.hint {
+  background-color: var(--color-interface-soft);
+  padding: 0 6px;
+  border-radius: var(--rounded-small);
+  color: var(--color-interface-strongest);
+}
+
+.hint-ai {
+  border: 2px solid transparent;
+  border-radius: var(--rounded-small);
+  background: linear-gradient(var(--color-interface-softest), var(--color-interface-softest)) padding-box,
+              linear-gradient(to right, #FBC453, #F7964F, #EF6653) border-box;
+  padding: 0 6px;
+  color: var(--color-primary);
+}
+
+.hint-ai::before {
+  content:'AI';
+}
+// ======================== END COMMUNICATION LIST ========================
 
 
 // ======================== COMMUNICATION WIZARD ========================
