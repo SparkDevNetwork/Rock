@@ -88,5 +88,10 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
         /// are added to the form.
         /// </summary>
         public Guid? DefaultSectionType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of pages that are available to pick from.
+        /// </summary>
+        public List<FormBuilderDetailLinkToFormBag> LinkToFormOptions { get; set; }
     }
 }

@@ -104,6 +104,11 @@
     <Compile Include="Migrations\202504222122021_AddRecordSource.Designer.cs">
       <DependentUpon>202504222122021_AddRecordSource.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport.cs" />
+    <Compile Include="Migrations\202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport.Designer.cs">
+      <DependentUpon>202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport.cs</DependentUpon>
+    </Compile>
+    <Content Include="Migrations\202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport_GenerateWorkflowTypeSlugs.sql" />
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.Designer.cs">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>
@@ -2635,6 +2640,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202504222122021_AddRecordSource.resx">
       <DependentUpon>202504222122021_AddRecordSource.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport.resx">
+      <DependentUpon>202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.resx">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>

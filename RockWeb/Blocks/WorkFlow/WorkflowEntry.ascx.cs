@@ -114,6 +114,21 @@ namespace RockWeb.Blocks.WorkFlow
         DefaultBooleanValue = false,
         Order = 8
         )]
+
+    [BooleanField(
+        "Enable for Form Sharing",
+        Description = "Marks this block instance as available for form sharing. When enabled, the Form Builder can display this block as a shareable link option.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.EnableForFormSharing,
+        Order = 9 )]
+
+    [BooleanField(
+        "Use Form Name for Page Title",
+        Description = "When enabled, the page title will be overridden with the name of the form associated with this workflow.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.UseFormNameForPageTitle,
+        Order = 10 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.WORKFLOW_ENTRY )]
@@ -135,6 +150,8 @@ namespace RockWeb.Blocks.WorkFlow
             public const string LogInteractionOnView = "LogInteractionOnView";
             public const string LogInteractionOnCompletion = "LogInteractionOnCompletion";
             public const string DisableCaptchaSupport = "DisableCaptchaSupport";
+            public const string EnableForFormSharing = "EnableForFormSharing";
+            public const string UseFormNameForPageTitle = "UseFormNameForPageTitle";
         }
 
         #endregion Attribute Keys
@@ -150,8 +167,16 @@ namespace RockWeb.Blocks.WorkFlow
             public const string WorkflowGuid = "WorkflowGuid";
             public const string WorkflowName = "WorkflowName";
             public const string ActionId = "ActionId";
+            
+            /// <summary>
+            /// "WorkflowType" supports integer IDs, unique IDs, ID keys, and slugs.
+            /// It is used to load the workflow type associated with the workflow.
+            /// </summary>
+            public const string WorkflowType = "WorkflowType";
             public const string WorkflowTypeId = "WorkflowTypeId";
             public const string WorkflowTypeGuid = "WorkflowTypeGuid";
+            public const string WorkflowTypeSlug = "WorkflowTypeSlug";
+
             public const string Command = "Command";
             public const string GroupId = "GroupId";
             public const string PersonId = "PersonId";
@@ -266,6 +291,12 @@ namespace RockWeb.Blocks.WorkFlow
             get { return ViewState[ViewStateKey.IsCaptchaValid] as bool? ?? false; }
             set { ViewState[ViewStateKey.IsCaptchaValid] = value; }
         }
+
+        private string WorkflowTypePageParameter => PageParameter( PageParameterKey.WorkflowType ); 
+
+        private string WorkflowTypeSlugPageParameter => PageParameter( PageParameterKey.WorkflowTypeSlug ); 
+
+        private bool UseFormNameForPageTitle => GetAttributeValue( AttributeKey.UseFormNameForPageTitle ).AsBoolean();
 
         #endregion Properties
 
@@ -838,61 +869,89 @@ namespace RockWeb.Blocks.WorkFlow
         private WorkflowTypeCache GetWorkflowType()
         {
             // Get the block setting to disable passing WorkflowTypeID.
-            bool allowPassingWorkflowTypeId = !this.GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean();
-            WorkflowTypeCache _workflowType = null;
+            var allowPassingWorkflowTypeId = !this.GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean();
+            WorkflowTypeCache workflowType = null;
 
             // If the ViewState value for WorkflowTypeGuid is empty, try to set it.
-            if ( WorkflowTypeGuid.AsGuid().IsEmpty() )
+            if ( this.WorkflowTypeGuid.AsGuid().IsEmpty() )
             {
                 // Get workflow type set by attribute value of this block.
-                Guid workflowTypeGuidFromAttribute = GetAttributeValue( AttributeKey.WorkflowType ).AsGuid();
+                var workflowTypeGuidFromAttribute = GetAttributeValue( AttributeKey.WorkflowType ).AsGuid();
 
                 if ( !workflowTypeGuidFromAttribute.IsEmpty() )
                 {
-                    _workflowType = WorkflowTypeCache.Get( workflowTypeGuidFromAttribute );
-                    WorkflowTypeDeterminedByBlockAttribute = true;
+                    workflowType = WorkflowTypeCache.Get( workflowTypeGuidFromAttribute );
+                    this.WorkflowTypeDeterminedByBlockAttribute = true;
                 }
 
-                if ( _workflowType == null )
+                if ( workflowType == null )
                 {
                     // If an attribute value was not provided, check for query parameter or route value.
-                    WorkflowTypeDeterminedByBlockAttribute = false;
+                    this.WorkflowTypeDeterminedByBlockAttribute = false;
                     if ( allowPassingWorkflowTypeId )
                     {
                         // Try to find a WorkflowTypeID from either the query or route, via the PageParameter.
-                        int? workflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
+                        var workflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
                         if ( workflowTypeId.HasValue )
                         {
-                            _workflowType = WorkflowTypeCache.Get( workflowTypeId.Value );
+                            workflowType = WorkflowTypeCache.Get( workflowTypeId.Value );
                         }
                     }
 
-                    if ( _workflowType == null )
+                    if ( workflowType == null )
                     {
                         // If the workflowType is still not set, try to find a WorkflowTypeGuid from either the query or route, via the PageParameter.
                         var workflowTypeGuidFromURL = PageParameter( PageParameterKey.WorkflowTypeGuid ).AsGuid();
-                        WorkflowTypeGuid = PageParameter( PageParameterKey.WorkflowTypeGuid );
+                        this.WorkflowTypeGuid = PageParameter( PageParameterKey.WorkflowTypeGuid );
                         if ( !workflowTypeGuidFromURL.IsEmpty() )
                         {
-                            _workflowType = WorkflowTypeCache.Get( workflowTypeGuidFromURL );
+                            workflowType = WorkflowTypeCache.Get( workflowTypeGuidFromURL );
+                        }
+                    }
+
+                    if ( workflowType == null )
+                    {
+                        // If the workflowType is still not set, try to find it from the "WorkflowTypeSlug" PageParameter.
+                        var workflowTypeSlugPageParam = this.WorkflowTypeSlugPageParameter;
+
+                        if ( workflowTypeSlugPageParam.IsNotNullOrWhiteSpace() )
+                        {
+                            workflowType = WorkflowTypeCache.GetBySlug( workflowTypeSlugPageParam );
+                        }
+                    }
+
+                    if ( workflowType == null )
+                    {
+                        // If the workflowType is still not set, try to find it from the "WorkflowType" PageParameter, which supports Guid, int ID, ID key, and slug values.
+                        var workflowTypeIdKeyOrSlugPageParam = this.WorkflowTypePageParameter;
+
+                        if ( workflowTypeIdKeyOrSlugPageParam.IsNotNullOrWhiteSpace() )
+                        {
+                            workflowType = WorkflowTypeCache.Get( workflowTypeIdKeyOrSlugPageParam, allowPassingWorkflowTypeId );
+
+                            if ( workflowType == null )
+                            {
+                                // Try loading it from a slug.
+                                workflowType = WorkflowTypeCache.GetBySlug( workflowTypeIdKeyOrSlugPageParam );
+                            }
                         }
                     }
                 }
             }
 
             // If the ViewState WorkflowTypeGuid is still empty
-            if ( WorkflowTypeGuid == null )
+            if ( this.WorkflowTypeGuid.IsNullOrWhiteSpace() )
             {
                 // If the workflowType is not set, set the ViewState WorkflowTypeGuid to empty, otherwise set it to the Guid of the workflowType.
-                WorkflowTypeGuid = _workflowType == null ? string.Empty : _workflowType.Guid.ToString();
+                this.WorkflowTypeGuid = workflowType == null ? string.Empty : workflowType.Guid.ToString();
             }
             else
             {
                 // Get the WorkflowType via the ViewState WorkflowTypeGuid.
-                _workflowType = WorkflowTypeCache.Get( WorkflowTypeGuid );
+                workflowType = WorkflowTypeCache.Get( WorkflowTypeGuid );
             }
 
-            return _workflowType;
+            return workflowType;
         }
 
         /// <summary>
@@ -2649,7 +2708,8 @@ namespace RockWeb.Blocks.WorkFlow
             lTitle.Text = blockTitle;
 
             // Set the Page Title to the Workflow Type name, unless the Workflow Type has been specified by a configuration setting.
-            if ( workflowType != null && !WorkflowTypeDeterminedByBlockAttribute )
+            if ( workflowType != null
+                && ( !WorkflowTypeDeterminedByBlockAttribute || ( workflowType.IsFormBuilder && this.UseFormNameForPageTitle ) ) )
             {
                 RockPage.PageTitle = workflowType.Name;
             }

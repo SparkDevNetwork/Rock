@@ -332,6 +332,11 @@ export type FormGeneral = {
      */
     template?: Guid | null;
 
+    /**
+     * The unique slug for the workflow type.
+     */
+    slug?: string | null;
+
     /** The category that this form belongs to for organization purposes. */
     category?: ListItemBag | null;
 

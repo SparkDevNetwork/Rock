@@ -371,6 +371,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             pnlFormList.Visible = false;
             tbFormName.Text = string.Empty;
             tbDescription.Text = string.Empty;
+            tbSlug.Text = string.Empty;
             cpCategory.SetValue( hfSelectedCategory.ValueAsInt() );
             BindTemplateDropdown();
         }
@@ -398,6 +399,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             workflowType.IsActive = true;
             workflowType.Name = tbFormName.Text;
             workflowType.Description = tbDescription.Text;
+            workflowType.Slug = tbSlug.Text;
             workflowType.CategoryId = cpCategory.SelectedValueAsInt();
             workflowType.FormBuilderTemplateId = ddlTemplate.SelectedValueAsInt();
             workflowType.ProcessingIntervalSeconds = 365 * 24 * 60 * 60;
@@ -668,6 +670,36 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         protected void mdLinkToFormModal_SaveClick( object sender, EventArgs e )
         {
             mdLinkToFormModal.Hide();
+        }
+
+        /// <summary>
+        /// Handles the TextChanged event of the tbFormName control.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void tbFormName_TextChanged( object sender, EventArgs e )
+        {
+            // Auto-update the slug when the name changes using the form name.
+            using ( var rockContext = new RockContext() )
+            {
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+                tbSlug.Text = workflowTypeService.GetUniqueSlug( tbFormName.Text );
+            }
+        }
+
+        /// <summary>
+        /// Handles the TextChanged event of the tbSlug control.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void tbSlug_TextChanged( object sender, EventArgs e )
+        {
+            // Ensure the manually entered slug is unique anytime it is changed.
+            using ( var rockContext = new RockContext() )
+            {
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+                tbSlug.Text = workflowTypeService.GetUniqueSlug( tbSlug.Text );
+            }
         }
 
         #endregion
@@ -1179,15 +1211,16 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         private void BindLinkToFormGrid( int workflowTypeId )
         {
             var workflowEntryBlockType = BlockTypeCache.Get( Rock.SystemGuid.BlockType.WORKFLOW_ENTRY );
+            var obsidianWorkflowEntryBlockType = BlockTypeCache.Get( Rock.SystemGuid.BlockType.OBSIDIAN_WORKFLOW_ENTRY );
             var pages = Rock.Web.Cache.PageCache.All()
-                .Where( p => p.Blocks.Any( b => b.BlockTypeId == workflowEntryBlockType.Id ) )
+                .Where( p => p.Blocks.Any( b => b.BlockTypeId == workflowEntryBlockType.Id || b.BlockTypeId == obsidianWorkflowEntryBlockType.Id ) )
                 .ToList();
 
             var filteredPages = new List<PageCache>();
 
             foreach ( var page in pages.Where( p => p.IsAuthorized( Authorization.VIEW, CurrentPerson ) ) )
             {
-                var workflowEntryBlocks = page.Blocks.Where( b => b.BlockTypeId == workflowEntryBlockType.Id ).ToList();
+                var workflowEntryBlocks = page.Blocks.Where( b => b.BlockTypeId == workflowEntryBlockType.Id || b.BlockTypeId == obsidianWorkflowEntryBlockType.Id ).ToList();
 
                 // Only show pages with a "Workflow Entry" block on them that are not configured to show a single specific workflow type.
                 foreach ( var block in workflowEntryBlocks )
@@ -1196,10 +1229,13 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                     var workflowTypeAttribute = block.Attributes.FirstOrDefault( a => a.Value.EntityTypeQualifierColumn == "BlockTypeId" && a.Value.EntityTypeQualifierValue == workflowEntryBlockType.Id.ToString() );
 
                     // Add page if the Workflow Entry block's workflowType block setting is not configured to show a single specific workflow type.
-                    if ( string.IsNullOrWhiteSpace( block.GetAttributeValue( workflowTypeAttribute.Key ) ) )
+                    if ( workflowTypeAttribute.Key.IsNullOrWhiteSpace() || block.GetAttributeValue( workflowTypeAttribute.Key ).IsNullOrWhiteSpace() )
                     {
-                        filteredPages.Add( page );
-                        break;
+                        if ( block.GetAttributeValue( "EnableForFormSharing" ).AsBoolean() )
+                        {
+                            filteredPages.Add( page );
+                            break;
+                        }
                     }
                 }
             }
@@ -1215,21 +1251,35 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 {
                     { "WorkflowTypeId", workflowType?.Id.ToString() },
                     { "WorkflowTypeGuid", workflowType?.Guid.ToString() },
+                    { "WorkflowTypeSlug", workflowType?.Slug },
                     { "WorkflowId", "0" },
                     { "WorkflowGuid", "" },
                 };
 
                 var pageReference = route != null ? new PageReference( page.Id, route.Id, parameters ) : new PageReference( page.Guid.ToString(), parameters );
-                return pageReference.BuildUrl();
+                
+                return GetFullUrl( page, pageReference.BuildUrl() ); 
             }
 
-            gPages.DataSource = filteredPages.Select( p => new
+            string GetFullUrl( PageCache pageCache, string relativeUrl )
             {
-                Id = p.Id,
-                Name = p.InternalName,
-                Site = p.Site,
-                Route = p.PageRoutes.FirstOrDefault()?.Route,
-                RouteURL = BuildRouteURL( p )
+                // Use the site's domain and append the page's relative URL.
+                // If the page is a fully formed URL (with scheme, domain, and port),
+                // then it will override the site domain.
+                var site = SiteCache.Get( pageCache.SiteId );
+                var uri = new Uri( site.DefaultDomainUri, relativeUrl );
+
+                return uri.AbsoluteUri; 
+            }
+
+            gPages.DataSource = filteredPages.Select( page => new
+            {
+                Id = page.Id,
+                SiteAndPage = $"{page.Site} > {page.InternalName}",
+                FriendlyRouteUrl = page.PageRoutes.FirstOrDefault()?.Route != null
+                    ? GetFullUrl( page, page.PageRoutes.FirstOrDefault().Route ).Replace( "%7B", "{" ).Replace( "%7D", "}" ) // Unescape the "{" and "}" for the friendly route.
+                    : null,
+                RouteURL = BuildRouteURL( page )
             } );
 
             gPages.DataBind();

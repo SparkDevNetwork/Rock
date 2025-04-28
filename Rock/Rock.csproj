@@ -1432,6 +1432,7 @@
     <Compile Include="Model\Reporting\ReportField\ReportField.Logic.cs" />
     <Compile Include="Model\Security\History\HistoryLogin.cs" />
     <Compile Include="Model\Security\History\HistoryLogin.Logic.cs" />
+    <Compile Include="Model\Workflow\WorkflowType\WorkflowTypeService.cs" />
     <Compile Include="Net\Geolocation\IpGeoException.cs" />
     <Compile Include="Net\Geolocation\IpGeolocation.cs" />
     <Compile Include="Net\Geolocation\IpGeoLookup.cs" />
