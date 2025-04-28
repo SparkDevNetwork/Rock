@@ -510,7 +510,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     return GetUserInfoFromData( payload, SupportedAuthenticationProvider.Auth0 );
                 }
             }
-            catch ( Exception ex )
+            catch ( Exception )
             {
                 return null;
             }
@@ -548,7 +548,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     return GetUserInfoFromData( payload, SupportedAuthenticationProvider.Entra );
                 }
             }
-            catch ( Exception ex )
+            catch ( Exception )
             {
                 return null;
             }

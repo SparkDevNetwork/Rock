@@ -21,16 +21,29 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
 /**
- * The options that can be passed to the GetStepStatuses API action of
- * the StepStatusPicker control.
+ * Describes a single beacon that was detected when entering or leaving
+ * a proximity area.
  */
-export type StepStatusPickerGetStepStatusesOptionsBag = {
-    /** The security grant token to use when performing authorization checks. */
-    securityGrantToken?: string | null;
+export type ProximityBeaconBag = {
+    /** The accuracy estimate of the signal strength. */
+    accuracy: number;
 
-    /** The GUID of the step program that this step status is part of. */
-    stepProgramGuid?: Guid | null;
+    /**
+     * The major identifier value (0 - 65535) of the beacon. This is used
+     * to identify the campus.
+     */
+    major: number;
+
+    /**
+     * The minor identifier value (0 - 65535) of the beacon. This is used
+     * to identify the specific location within the campus.
+     */
+    minor: number;
+
+    /**
+     * The signal strength of the beacon. This is used to determine how
+     * close the individual is to the beacon.
+     */
+    rssi: number;
 };

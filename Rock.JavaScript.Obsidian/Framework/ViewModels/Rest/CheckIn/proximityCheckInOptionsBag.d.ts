@@ -22,15 +22,35 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { ProximityBeaconBag } from "@Obsidian/ViewModels/Rest/CheckIn/proximityBeaconBag";
 
 /**
- * The options that can be passed to the GetStepStatuses API action of
- * the StepStatusPicker control.
+ * Describes the values that are expected to be sent to the ProximityCheckIn
+ * API endpoint.
  */
-export type StepStatusPickerGetStepStatusesOptionsBag = {
-    /** The security grant token to use when performing authorization checks. */
-    securityGrantToken?: string | null;
+export type ProximityCheckInOptionsBag = {
+    /**
+     * The set of beacons that were detected when entering or leaving
+     * an area.
+     */
+    beacons?: ProximityBeaconBag[] | null;
 
-    /** The GUID of the step program that this step status is part of. */
-    stepProgramGuid?: Guid | null;
+    /**
+     * true if this message indicates that the individual has entered
+     * the area; otherwise, false.
+     */
+    isPresent: boolean;
+
+    /**
+     * The unique identifier of the personal device that is being used
+     * when the area was entered or left.
+     */
+    personalDeviceGuid?: Guid | null;
+
+    /**
+     * The unique identifier of the proximity group. Multiple beacons
+     * will share the same unique identifier. There is usually only one
+     * proximity identifier per organization.
+     */
+    proximityGuid: Guid;
 };
