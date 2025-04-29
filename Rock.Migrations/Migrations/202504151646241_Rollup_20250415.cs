@@ -1103,7 +1103,7 @@ WHERE [Guid] IN ('ACAE542B-51E3-4BB2-99B3-FF420A85D019', '6CBE0906-9A9A-4B67-91A
         private void ChopBlocksUp()
         {
             RegisterBlockAttributesForChop();
-            ChopBlockTypesv17_1();
+            //ChopBlockTypesv17_1();
         }
 
         /// <summary>

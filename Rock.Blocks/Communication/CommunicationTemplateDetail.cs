@@ -40,6 +40,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "Communication Template Detail" )]
     [Category( "Communication" )]
     [Description( "Used for editing a communication template that can be selected when creating a new communication, SMS, etc. to people." )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
