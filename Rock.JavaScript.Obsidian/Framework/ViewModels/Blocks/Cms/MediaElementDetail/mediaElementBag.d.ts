@@ -21,7 +21,6 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** The item details for the Media Element Detail block. */
@@ -44,17 +43,14 @@ export type MediaElementBag = {
     /** EngagementStat */
     engagementStat: number;
 
-    /** Gets or sets the file data JSON content that will be stored in the database. */
+    /**
+     * Gets or sets the file data JSON content that will be stored in
+     * the database.
+     */
     fileDataJson?: string | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
-
-    /** Gets or sets the Media Folder that this Element belongs to. */
-    mediaFolder?: ListItemBag | null;
-
-    /** Gets or sets the MediaFolderId of the Rock.Model.MediaFolder that this MediaElement belongs to. This property is required. */
-    mediaFolderId: number;
 
     /** Gets or sets the custom provider metric data for this instance. */
     metricData?: string | null;
@@ -68,7 +64,10 @@ export type MediaElementBag = {
     /** PlayCountText */
     playCountText?: string | null;
 
-    /** Gets or sets the thumbnail data JSON content that will stored in the database. */
+    /**
+     * Gets or sets the thumbnail data JSON content that will stored
+     * in the database.
+     */
     thumbnailDataJson?: string | null;
 
     /** Transcripts Text */

@@ -15,19 +15,12 @@
 // </copyright>
 //
 
-using Rock.ViewModels.Core.Grid;
-
 namespace Rock.ViewModels.Blocks.Security.LoginHistory
-
 {
     /// <summary>
-    /// The box that contains all the initialization information for the login history block.
+    /// The additional configuration options for the Login History block.
     /// </summary>
-    public class LoginHistoryInitializationBox : BlockBox
+    public class LoginHistoryOptionsBag
     {
-        /// <summary>
-        /// Gets or sets the grid definition.
-        /// </summary>
-        public GridDefinitionBag GridDefinition { get; set; }
     }
 }

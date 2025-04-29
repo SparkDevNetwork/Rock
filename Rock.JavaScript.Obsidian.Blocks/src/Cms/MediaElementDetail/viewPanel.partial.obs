@@ -84,9 +84,9 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.mediaFolder) {
-            valueBuilder.addTextValue("Folder", props.modelValue.mediaFolder.text ?? "");
-        }
+        // if (props.modelValue.mediaFolder) {
+        //     valueBuilder.addTextValue("Folder", props.modelValue.mediaFolder.text ?? "");
+        // }
 
         if (props.modelValue.description) {
             valueBuilder.addTextValue("Description", props.modelValue.description);

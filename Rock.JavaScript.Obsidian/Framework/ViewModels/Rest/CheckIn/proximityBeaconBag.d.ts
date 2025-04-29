@@ -21,11 +21,29 @@
 // </copyright>
 //
 
-/** A bag that contains the filters to limit what is shown in the login history block grid. */
-export type LoginHistoryFiltersBag = {
-    /** Gets or sets the end date and time. */
-    endDateTime?: string | null;
+/**
+ * Describes a single beacon that was detected when entering or leaving
+ * a proximity area.
+ */
+export type ProximityBeaconBag = {
+    /** The accuracy estimate of the signal strength. */
+    accuracy: number;
 
-    /** Gets or set sets the start date and time. */
-    startDateTime?: string | null;
+    /**
+     * The major identifier value (0 - 65535) of the beacon. This is used
+     * to identify the campus.
+     */
+    major: number;
+
+    /**
+     * The minor identifier value (0 - 65535) of the beacon. This is used
+     * to identify the specific location within the campus.
+     */
+    minor: number;
+
+    /**
+     * The signal strength of the beacon. This is used to determine how
+     * close the individual is to the beacon.
+     */
+    rssi: number;
 };

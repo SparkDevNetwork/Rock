@@ -325,7 +325,8 @@ namespace RockWeb.Blocks.Cms
                    Id = a.Id,
                    Name = a.Name,
                    DurationSeconds =  a.DurationSeconds,
-                   WatchCount = watchCountQry.Where( b => interactionComponentQry.Where( c => a.Id == c.EntityId && b.InteractionComponentId == c.Id ).Any() ).Count()
+                   WatchCount = watchCountQry.Where( b => interactionComponentQry.Where( c => a.Id == c.EntityId && b.InteractionComponentId == c.Id ).Any() ).Count(),
+                   Transcribed = a.TranscriptionText != null && a.TranscriptionText.Trim() != string.Empty
                } );
 
             var sortProperty = gElementList.SortProperty;
@@ -419,5 +420,9 @@ namespace RockWeb.Blocks.Cms
         /// </value>
         public int WatchCount { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether or not the element has TranscriptionText
+        /// </summary>
+        public bool Transcribed { get; set; }
     }
 }

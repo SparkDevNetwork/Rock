@@ -753,10 +753,14 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "B47DCE1B-89D7-4DD5-88A7-B3C393D49A7C" )]
         public IActionResult AssessmentTypePickerGetEntityTypes( [FromBody] AssessmentTypePickerGetAssessmentTypesOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
             using ( var rockContext = new RockContext() )
             {
                 var items = AssessmentTypeCache.All( rockContext )
                     .Where( at => options.isInactiveIncluded == true || at.IsActive )
+                    .Where( at => at.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( at, Authorization.VIEW ) == true )
                     .OrderBy( at => at.Title )
                     .ThenBy( at => at.Id )
                     .Select( at => new ListItemBag
@@ -8790,6 +8794,7 @@ namespace Rock.Rest.v2
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Description = "A 200 response indicates the reminder was added." )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "58DC4454-ED33-4871-9BD1-2AC9118340E2" )]
         public IActionResult ReminderButtonAddReminder( [FromBody] ReminderButtonAddReminderOptionsBag options )
         {
@@ -8809,6 +8814,11 @@ namespace Rock.Rest.v2
                 if ( reminderType == null )
                 {
                     return BadRequest();
+                }
+
+                if ( !reminderType.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return Unauthorized();
                 }
 
                 var reminder = new Reminder
@@ -8864,13 +8874,20 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ReminderButtonGetRemindersReminderBag> ) )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "D0720DE1-8417-4E01-8163-A17AB5D7F0BF" )]
         public IActionResult ReminderButtonCompleteReminder( [FromBody] ReminderButtonReminderActionOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
-                var reminder = reminderService.Get( options.ReminderGuid );
+                var reminder = reminderService.GetInclude( options.ReminderGuid, r => r.PersonAlias );
+
+                if ( reminder.PersonAlias.PersonId != RockRequestContext.CurrentPerson?.Id )
+                {
+                    return Unauthorized();
+                }
+
                 reminder.CompleteReminder();
                 rockContext.SaveChanges();
 
@@ -8890,13 +8907,20 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ReminderButtonGetRemindersReminderBag> ) )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "52CF7D4D-E604-4B2E-B64E-DE865E2E0DF9" )]
         public IActionResult ReminderButtonDeleteReminder( [FromBody] ReminderButtonReminderActionOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
-                var reminder = reminderService.Get( options.ReminderGuid );
+                var reminder = reminderService.GetInclude( options.ReminderGuid, r => r.PersonAlias );
+
+                if ( reminder.PersonAlias.PersonId != RockRequestContext.CurrentPerson?.Id )
+                {
+                    return Unauthorized();
+                }
+
                 reminderService.Delete( reminder );
                 rockContext.SaveChanges();
 
@@ -8916,13 +8940,20 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ReminderButtonGetRemindersReminderBag> ) )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "2B3F7D40-2AD2-432E-8B77-C9F40AC45D2D" )]
         public IActionResult ReminderButtonCancelReminder( [FromBody] ReminderButtonReminderActionOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
-                var reminder = reminderService.Get( options.ReminderGuid );
+                var reminder = reminderService.GetInclude( options.ReminderGuid, r => r.PersonAlias );
+
+                if ( reminder.PersonAlias.PersonId != RockRequestContext.CurrentPerson?.Id )
+                {
+                    return Unauthorized();
+                }
+
                 reminder.CancelReoccurrence();
                 rockContext.SaveChanges();
 
@@ -9019,6 +9050,8 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "c1c338d2-6364-4217-81ec-7fc34e9218b6" )]
         public IActionResult ReminderTypePickerGetReminderTypes( [FromBody] ReminderTypePickerGetReminderTypesOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
             using ( var rockContext = new RockContext() )
             {
                 var reminderTypesQuery = new ReminderTypeService( rockContext ).Queryable();
@@ -9031,6 +9064,9 @@ namespace Rock.Rest.v2
                 var orderedReminderTypes = reminderTypesQuery
                     .OrderBy( t => t.EntityType.FriendlyName )
                     .ThenBy( t => t.Name )
+                    .ToList()
+                    .Where( t => t.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( t, Authorization.VIEW ) == true )
                     .Select( t => new ListItemBag
                     {
                         Value = t.Guid.ToString(),
@@ -9405,7 +9441,8 @@ namespace Rock.Rest.v2
                 .Where( sp => sp.IsActive )
                 .OrderBy( sp => sp.Order )
                 .ThenBy( sp => sp.Name )
-                .ToList();
+                .ToList()
+                .Where( sp => sp.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) );
 
             foreach ( var stepProgram in stepPrograms )
             {
@@ -9441,6 +9478,7 @@ namespace Rock.Rest.v2
 
             var items = new List<ListItemBag>();
             int stepProgramId = StepProgramCache.GetId( options.StepProgramGuid.Value ) ?? 0;
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
             var stepStatusService = new StepStatusService( new RockContext() );
             var statuses = stepStatusService.Queryable().AsNoTracking()
@@ -9449,7 +9487,9 @@ namespace Rock.Rest.v2
                     ss.IsActive )
                 .OrderBy( ss => ss.Order )
                 .ThenBy( ss => ss.Name )
-                .ToList();
+                .ToList()
+                .Where( ss => ss.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                    || grant?.IsAccessGranted( ss, Authorization.VIEW ) == true );
 
             foreach ( var status in statuses )
             {
@@ -9485,6 +9525,7 @@ namespace Rock.Rest.v2
 
             var items = new List<ListItemBag>();
             int stepProgramId = StepProgramCache.GetId( options.StepProgramGuid.Value ) ?? 0;
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
             var stepTypeService = new StepTypeService( new RockContext() );
             var stepTypes = stepTypeService.Queryable().AsNoTracking()
@@ -9493,7 +9534,9 @@ namespace Rock.Rest.v2
                     st.IsActive )
                 .OrderBy( st => st.Order )
                 .ThenBy( st => st.Name )
-                .ToList();
+                .ToList()
+                .Where( st => st.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                    || grant?.IsAccessGranted( st, Authorization.VIEW ) == true );
 
             foreach ( var stepType in stepTypes )
             {
@@ -9526,7 +9569,8 @@ namespace Rock.Rest.v2
                 .Where( st => st.IsActive )
                 .OrderBy( st => st.Name )
                 .ThenBy( st => st.Id )
-                .ToList();
+                .ToList()
+                .Where( st => st.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) );
 
             foreach ( var streakType in streakTypes )
             {

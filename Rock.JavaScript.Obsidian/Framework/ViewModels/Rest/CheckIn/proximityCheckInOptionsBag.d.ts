@@ -21,22 +21,36 @@
 // </copyright>
 //
 
-import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+import { Guid } from "@Obsidian/Types";
+import { ProximityBeaconBag } from "@Obsidian/ViewModels/Rest/CheckIn/proximityBeaconBag";
 
-/** The box that contains all the initialization information for the login history block. */
-export type LoginHistoryInitializationBox = {
+/**
+ * Describes the values that are expected to be sent to the ProximityCheckIn
+ * API endpoint.
+ */
+export type ProximityCheckInOptionsBag = {
     /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
+     * The set of beacons that were detected when entering or leaving
+     * an area.
      */
-    errorMessage?: string | null;
+    beacons?: ProximityBeaconBag[] | null;
 
-    /** Gets or sets the grid definition. */
-    gridDefinition?: GridDefinitionBag | null;
+    /**
+     * true if this message indicates that the individual has entered
+     * the area; otherwise, false.
+     */
+    isPresent: boolean;
 
-    /** Gets or sets the navigation urls. */
-    navigationUrls?: Record<string, string> | null;
+    /**
+     * The unique identifier of the personal device that is being used
+     * when the area was entered or left.
+     */
+    personalDeviceGuid?: Guid | null;
 
-    /** Gets or sets the security grant token. */
-    securityGrantToken?: string | null;
+    /**
+     * The unique identifier of the proximity group. Multiple beacons
+     * will share the same unique identifier. There is usually only one
+     * proximity identifier per organization.
+     */
+    proximityGuid: Guid;
 };

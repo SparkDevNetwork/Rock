@@ -51,7 +51,7 @@
                       :excludeFromExport="true"
                       @click="onPreviewClick" />
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'name'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
