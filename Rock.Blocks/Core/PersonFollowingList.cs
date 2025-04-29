@@ -38,7 +38,7 @@ namespace Rock.Blocks.Core
     [Category( "Follow" )]
     [Description( "Block for displaying people that current person follows." )]
     [IconCssClass( "fa fa-list" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "030b944d-66b5-4edb-aa38-10081e2acfb6" )]
     [Rock.SystemGuid.BlockTypeGuid( "18fa879f-1466-413b-8623-834d728f677b" )]
