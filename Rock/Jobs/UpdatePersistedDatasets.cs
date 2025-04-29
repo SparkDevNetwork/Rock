@@ -91,11 +91,11 @@ namespace Rock.Jobs
                 foreach ( var persistedDataset in datasetsToBeUpdated )
                 {
                     var name = persistedDataset.Name;
-                    this.UpdateLastStatusMessage( FormatStatusMessage( "Updating", name, "success" ) );
+                    this.UpdateLastStatusMessage( FormatStatusMessage( "Updating...", name, "info" ) );
                     try
                     {
                         persistedDataset.UpdateResultData();
-                        this.UpdateLastStatusMessage( FormatStatusMessage( "Updating", name, "success" ) );
+                        this.UpdateLastStatusMessage( FormatStatusMessage( "Update", name, "success" ) );
                         updatedDatasetCount++;
                     }
                     catch ( Exception ex )
@@ -125,9 +125,7 @@ namespace Rock.Jobs
 
         private string FormatStatusMessage( string action, string datasetName, string statusType )
         {
-            string iconClass = statusType == "success" ? "fa-circle text-success" :
-                               statusType == "warning" ? "fa-circle text-warning" : "";
-            return $"<i class='fa {iconClass}'></i> {action}: {datasetName}";
+            return $"<i class='fa fa-circle text-{statusType}'></i> {action}: {datasetName}";
         }
     }
 }
