@@ -121,7 +121,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
-    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { CommunicationEntryWizardRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardRecipientBag";

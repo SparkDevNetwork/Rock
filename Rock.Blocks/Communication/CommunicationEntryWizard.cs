@@ -23,7 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
-using CommunicationEntryWizardCommunicationType = Rock.Enums.Blocks.Communication.CommunicationEntryWizard.CommunicationType;
+using CommunicationEntryWizardCommunicationType = Rock.Enums.Communication.CommunicationType;
 using CommunicationType = Rock.Model.CommunicationType;
 using CommunicationEntryWizardPushOpenAction = Rock.Enums.Blocks.Communication.CommunicationEntryWizard.PushOpenAction;
 using PushOpenAction = Rock.Utility.PushOpenAction;
