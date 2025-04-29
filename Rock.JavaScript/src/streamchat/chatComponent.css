@@ -389,6 +389,11 @@
     grid-area: content;
 }
 
+.str-chat__message .str-chat__message-inner .str-chat__message-bubble .str-chat__message-text .str-chat__message-text-inner,
+.str-chat__quoted-message-preview .str-chat__message-inner .str-chat__message-bubble .str-chat__message-text .str-chat__message-text-inner {
+    overflow: visible;
+}
+
 .rock-chat__message-simple.str-chat__message--other .rock-message-footer {
     grid-area: footer;
     justify-self: start;
@@ -425,4 +430,8 @@
 
 .str-chat__message-simple__actions .str-chat__message-options .str-chat__message-options--active {
     align-items: center;
+}
+
+.str-chat__message-reactions-container .str-chat__message-reactions .str-chat__message-reaction {
+    margin-right: var(--str-chat__spacing-1);
 }
