@@ -15,33 +15,55 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import type { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+import { Guid } from "@Obsidian/Types";
 import { NumberRangeModelValue } from "@Obsidian/Types/Controls/numberRangeBox";
+import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage",
-    RootUrl = "RootUrl"
 }
 
 export const enum PreferenceKey {
-    FilterSubject = "filter-subject",
-    FilterCommunicationType = "filter-communication-type",
-    FilterStatus = "filter-status",
     FilterCreatedBy = "filter-created-by",
-    FilterCreatedDateRangeFrom = "filter-created-date-from",
-    FilterCreatedDateRangeTo = "filter-created-date-to",
-    FilterContent = "filter-content",
-    FilterRecipientCountRangeFrom = "filter-recipient-count-from",
-    FilterRecipientCountRangeTo = "filter-recipient-count-to",
+    FilterCommunicationTypes = "filter-communication-types",
+    FilterHideDrafts = "filter-hide-drafts",
+    FilterSendDateRange = "filter-send-date-range",
+    FilterRecipientCountLower = "filter-recipient-count-lower",
+    FilterRecipientCountUpper = "filter-recipient-count-upper",
+    FilterTopic = "filter-topic",
+    FilterName = "filter-name",
+    FilterContent = "filter-content"
 }
 
 export type GridSettingsOptions = {
-    subject?: string | null;
-    communicationType?: string | null;
-    status?: string | null;
-    createdBy?: ListItemBag | undefined;
-    createdDateRange?: DateRangeParts | null;
-    content?: string | null;
-    recipientCount?: NumberRangeModelValue | undefined;
+    createdBy?: ListItemBag;
+    hideDrafts: boolean;
+    slidingDateRange: SlidingDateRange | null;
+    recipientCountRange?: NumberRangeModelValue;
+    topic?: ListItemBag | null;
+    name: string;
+    content: string;
+};
+
+export type Row = {
+    guid: Guid;
+    type: number;
+    name?: string | null;
+    summary?: string | null;
+    status: number;
+    recipientCount: number;
+    deliveredCount: number;
+    openedCount: number;
+    failedCount: number;
+    unsubscribedCount: number;
+    topic?: string | null;
+    sendDateTime?: string | null;
+    futureSendDateTime?: string | null;
+    sentByPersonFullName?: string | null;
+    sentByPerson?: PersonFieldBag | null;
+    reviewedDateTime?: string | null;
+    reviewedByPersonFullName?: string | null;
+    isDeleteDisabled: boolean
 };

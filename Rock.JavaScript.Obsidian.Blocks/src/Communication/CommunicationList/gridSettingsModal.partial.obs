@@ -1,57 +1,82 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Modal v-model="isVisible"
-           title="Settings"
-           saveText="Save"
+           title="Apply Fliters"
+           saveText="Apply"
            @save="onSave">
-        <SectionHeader title="Filters" />
 
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList v-model="communicationType"
-                              label="Communication Type"
-                              :items="communcationTypeItems" />
+        <div class="communication-list-filters-performance-tips well">
+            <h5>Performance Tips</h5>
+            <div class="performance-tips-detail">
+                The more filtered your data is, the faster the grid will load. Try filtering by Created By, Send Date Range, or Recipient Count to optimize loading performance.
             </div>
-
-            <div class="col-md-4">
-                <PersonPicker v-model="createdBy"
-                              label="Created By" />
-            </div>
-
-
-            <div class="col-md-4">
-                <DateRangePicker v-model="createdDateRange"
-                                 label="Created Date Range"
-                                 help="Note: Leaving dates blank will default to last 7 days." />
-            </div>
-
-            <div class="col-md-4">
-                <TextBox v-model="content"
-                         label="Content" />
-            </div>
-
-            <div class="col-md-4">
-                <NumberRangeBox label="Recipient Count" v-model="recipientCount" />
-            </div>
-
         </div>
+
+        <PersonPicker v-if="showCreatedByFilter"
+                      v-model="createdBy"
+                      label="Created By"
+                      :enableSelfSelection="true" />
+
+        <CheckBox v-model="hideDrafts" label="Hide Drafts" />
+
+        <SlidingDateRangePicker v-model="slidingDateRange"
+                                label="Send Date Range"
+                                :enabledSlidingDateRangeUnits="enabledSlidingDateRangeUnits" />
+
+        <NumberRangeBox v-model="recipientCountRange" label="Recipient Count" />
+
+        <DefinedValuePicker v-model="topic"
+                            label="Topic"
+                            :definedTypeGuid="DefinedType.CommunicationTopic"
+                            :showBlankItem="true" />
+
+        <TextBox v-model="name"
+                 label="Name"
+                 placeholder="Enter communication name..."
+                 :isClearable="true" />
+
+        <TextBox v-model="content"
+                 label="Content"
+                 placeholder="Enter communication content..."
+                 :isClearable="true" />
+
+        <div class="communication-list-filters-content-filter-warning">
+            Note: Content filter will significantly impact performance.
+        </div>
+
     </Modal>
 </template>
 
+<style scoped>
+.communication-list-filters-performance-tips h5 {
+    margin-top: 0;
+}
+
+.performance-tips-detail {
+    font-size: var(--font-size-small);
+    color: var(--color-interface-medium);
+}
+
+.communication-list-filters-content-filter-warning {
+    font-size: var(--font-size-small);
+    color: var(--color-interface-medium);
+}
+</style>
+
 <script setup lang="ts">
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
-    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
-    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
-    import NumberRangeBox from "@Obsidian/Controls/numberRangeBox.obs";
-    import Modal from "@Obsidian/Controls/modal.obs";
-    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
-    import { ref, PropType, watch } from "vue";
+    import { nextTick, PropType, ref, watch } from "vue";
     import { GridSettingsOptions } from "./types.partial";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NumberRangeBox from "@Obsidian/Controls/numberRangeBox.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { RangeType, SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
     import { deepEqual } from "@Obsidian/Utility/util";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const props = defineProps({
         modelValue: {
@@ -59,20 +84,20 @@
             required: true
         },
 
-        visible: {
+        showCreatedByFilter: {
             type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        defaultSlidingDateRange: {
+            type: Object as PropType<SlidingDateRange>,
             required: true
         },
 
-        communcationTypeItems: {
-            type: Object as PropType<ListItemBag[]>,
-            required: true,
-        },
-
-        statusItems: {
-            type: Object as PropType<ListItemBag[]>,
-            required: true,
-        },
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
     });
 
     const emit = defineEmits<{
@@ -81,30 +106,40 @@
         (e: "close"): void;
     }>();
 
-    const subject = ref(props.modelValue.subject ?? "");
-    const communicationType = ref(props.modelValue.communicationType ?? "");
-    const status = ref(props.modelValue.status ?? "");
-    const createdBy = ref(props.modelValue.createdBy);
-    const createdDateRange = ref(props.modelValue.createdDateRange ?? undefined);
-    const content = ref(props.modelValue.content ?? "");
-    const recipientCount = ref(props.modelValue.recipientCount);
+    const enabledSlidingDateRangeUnits: RangeType[] = [
+        RangeType.Last,
+        RangeType.Current,
+        RangeType.DateRange,
+        RangeType.Previous
+    ];
 
+    // #region Values
+
+    const createdBy = ref(props.modelValue.createdBy);
+    const hideDrafts = ref(props.modelValue.hideDrafts);
+    const slidingDateRange = ref<SlidingDateRange | null>(props.modelValue.slidingDateRange ?? props.defaultSlidingDateRange);
+    const recipientCountRange = ref(props.modelValue.recipientCountRange);
+    const topic = ref(props.modelValue.topic);
+    const name = ref(props.modelValue.name);
+    const content = ref(props.modelValue.content);
     const isVisible = useVModelPassthrough(props, "visible", emit);
 
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the save button is clicked.
+     */
     function onSave(): void {
-        if (!createdDateRange.value) {
-            createdDateRange.value = {
-                lowerValue: RockDateTime.now().addDays(-7).date.toISOString()
-            };
-        }
         const value: GridSettingsOptions = {
-            subject: subject.value,
-            communicationType: communicationType.value,
-            status: status.value,
             createdBy: createdBy.value,
-            createdDateRange: createdDateRange.value,
-            content: content.value,
-            recipientCount: recipientCount.value
+            hideDrafts: hideDrafts.value,
+            slidingDateRange: slidingDateRange.value,
+            recipientCountRange: recipientCountRange.value,
+            topic: topic.value,
+            name: name.value,
+            content: content.value
         };
 
         if (!deepEqual(value, props.modelValue, true)) {
@@ -114,14 +149,26 @@
         isVisible.value = false;
     }
 
+    // #endregion Event Handlers
+
+    // #region Watchers
+
     watch(() => props.modelValue, () => {
-        subject.value = props.modelValue.subject ?? "";
-        status.value = props.modelValue.communicationType ?? "";
-        status.value = props.modelValue.status ?? "";
         createdBy.value = props.modelValue.createdBy;
-        createdDateRange.value = props.modelValue.createdDateRange ?? undefined;
-        content.value = props.modelValue.content ?? "";
-        recipientCount.value = props.modelValue.recipientCount;
+        hideDrafts.value = props.modelValue.hideDrafts;
+        slidingDateRange.value = props.modelValue.slidingDateRange ?? props.defaultSlidingDateRange;
+        recipientCountRange.value = props.modelValue.recipientCountRange;
+        topic.value = props.modelValue.topic;
+        name.value = props.modelValue.name;
+        content.value = props.modelValue.content;
+    });
+
+    watch(slidingDateRange, () => {
+        nextTick(() => {
+            if (!slidingDateRange.value) {
+                slidingDateRange.value = props.defaultSlidingDateRange;
+            }
+        });
     });
 
     watch(isVisible, () => {
@@ -129,4 +176,6 @@
             emit("close");
         }
     });
+
+    // #endregion Watchers
 </script>
