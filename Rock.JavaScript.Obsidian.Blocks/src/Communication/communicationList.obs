@@ -1,152 +1,245 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning">
+        {{ config.errorMessage }}
+    </NotificationBox>
+
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
-          keyField="idKey"
+          keyField="guid"
           itemTerm="Communication"
-          :entityTypeGuid="EntityType.Communication"
-          stickyHeader
+          title="List of Communications"
           liveUpdates
           gridSettings
           :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="onGridSettingsClick"
-          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :showMergeTemplate="false"
+          :showLaunchWorkflow="false"
+          @gridSettingsClick="isGridSettingsVisible = true"
           @selectItem="onSelectItem">
 
-        <Column name="typeIcon"
-                visiblePriority="md"
-                width="150px">
+        <template #gridHeaderPrepend>
+            <div class="communication-list-grid-header-button-filters d-flex flex-column flex-sm-row justify-content-sm-between px-3 py-2">
+                <div class="buttons-created-by">
+                    <template v-if="showCreatedByFilter">
+                        <RockButton :btnType="createdByMeBtnType"
+                                    :btnSize="BtnSize.Small"
+                                    class="mr-1"
+                                    @click="onCreatedByMeClick">
+                            Created By Me
+                        </RockButton>
+                        <RockButton :btnType="createdByAnyoneBtnType"
+                                    :btnSize="BtnSize.Small"
+                                    @click="onCreatedByAnyoneClick">
+                            Created By Anyone
+                        </RockButton>
+                    </template>
+                </div>
+                <div :class="mediaButtonsCssClass">
+                    <RockButton v-if="showFilterToEmailButton"
+                                :btnType="filterToEmailBtnType"
+                                :btnSize="BtnSize.Small"
+                                :title="`Filter to ${CommunicationTypeDescription[CommunicationType.Email]}`"
+                                class="mr-1"
+                                @click="onToggleCommunicationTypeFilter(CommunicationType.Email, $event)">
+                        <i class="fa fa-envelope"></i>
+                    </RockButton>
+                    <RockButton v-if="showFilterToSMSButton"
+                                :btnType="filterToSMSBtnType"
+                                :btnSize="BtnSize.Small"
+                                :title="`Filter to ${CommunicationTypeDescription[CommunicationType.SMS]}`"
+                                class="mr-1"
+                                @click="onToggleCommunicationTypeFilter(CommunicationType.SMS, $event)">
+                        <i class="fa fa-sms"></i>
+                    </RockButton>
+                    <RockButton v-if="showFilterToPushButton"
+                                :btnType="filterToPushBtnType"
+                                :btnSize="BtnSize.Small"
+                                :title="`Filter to ${CommunicationTypeDescription[CommunicationType.PushNotification]}`"
+                                class="mr-1"
+                                @click="onToggleCommunicationTypeFilter(CommunicationType.PushNotification, $event)">
+                        <i class="fa fa-mobile-alt"></i>
+                    </RockButton>
+                    <RockButton :btnType="filterToRecipientPreferenceBtnType"
+                                :btnSize="BtnSize.Small"
+                                :title="`Filter to ${CommunicationTypeDescription[CommunicationType.RecipientPreference]}`"
+                                @click="onToggleCommunicationTypeFilter(CommunicationType.RecipientPreference, $event)">
+                        <i class="fa fa-user"></i>
+                    </RockButton>
+                </div>
+            </div>
+        </template>
+
+        <Column name="communicationType"
+                field="type"
+                :exportValue="getCommunicationTypeTextValue"
+                :hideOnScreen="true" />
+
+        <Column name="name" field="name" :hideOnScreen="true" />
+        <Column name="summary" field="summary" :hideOnScreen="true" />
+
+        <Column name="displayName"
+                field="displayName"
+                title="Name"
+                sortField="name"
+                width="25%"
+                :quickFilterValue="getDisplayNameTextValue"
+                :excludeFromExport="true">
             <template #format="{ row }">
-                <div class="text-center"><i :class="communicationTypeIcons[row.communicationType]"></i></div>
+                <DisplayName :row="(row as Row)" />
             </template>
         </Column>
-
-        <TextColumn name="subject"
-                    title="Subject"
-                    field="subject"
-                    :filter="textValueFilter"
-                    width="20%"
-                    visiblePriority="xs" />
 
         <Column name="status"
-                title="Status"
                 field="status"
+                title="Status"
                 :filter="pickExistingValueFilter"
-                :filterValue="getStatusFilterValue"
-                visiblePriority="md">
+                :filterValue="getCommunicationStatusTextValue"
+                :quickFilterValue="getCommunicationStatusTextValue">
             <template #format="{ row }">
-                {{ CommunicationStatusDescription[row.status] }}
-            </template>
-
-            <template #skeleton>
-                <div class="skeleton skeleton-text skeleton-rounded" />
+                <StatusLabel :row="row" :textSource="statusTextSource" />
             </template>
         </Column>
 
-        <Column name="details"
-                title="Details"
-                visiblePriority="md"
-                :sortValue="getDetailsSortValue">
+        <Column name="recipientCount"
+                field="recipientCount"
+                title="Recipients"
+                :filter="numberValueFilter"
+                :quickFilterValue="getRecipientCountFilterTextValue">
             <template #format="{ row }">
-                <div class="text-md">
-                    <div v-if="row.sender">
-                        Created on {{ dateTimeText(row.createdDateTime) }} by
-                        <div v-html="getAnchorTag(row, 'senderTag')"></div>
-                    </div>
-                    <div v-if="row.reviewer">
-                        Reviewed on {{ dateTimeText(row.reviewedDateTime) }} by
-                        <div v-html="getAnchorTag(row, 'reviewerTag')"></div>
-                    </div>
+                <Badge :badgeType="BadgeType.Info" class="grid-cell-recipients">
+                    <i class="fa fa-user-friends"></i> {{ asFormattedString(row.recipientCount) }}
+                </Badge>
+            </template>
+        </Column>
+
+        <Column name="deliveredCount" field="deliveredCount" :hideOnScreen="true" />
+        <Column name="openedCount" field="openedCount" :hideOnScreen="true" />
+        <Column name="failedCount" field="failedCount" :hideOnScreen="true" />
+        <Column name="unsubscribedCount" field="unsubscribedCount" :hideOnScreen="true" />
+
+        <LabelColumn name="topic"
+                     field="topic"
+                     title="Topic"
+                     defaultLabelClass="communication-topic"
+                     visiblePriority="xl"
+                     :filter="pickExistingValueFilter" />
+
+        <Column name="sendDateTime"
+                field="sendDateTime"
+                title="Send Date"
+                :filter="dateValueFilter"
+                :filterValue="getSendDateTimeIsoValue"
+                :quickFilterValue="getSendDateTimeTextValue"
+                :sortValue="getSendDateTimeIsoValue"
+                :exportValue="getSendDateTimeTextValue">
+            <template #format="{ row }">
+                <div class="grid-cell-send-date">
+                    <template v-if="row.sendDateTime">
+                        {{ getFormattedDateTime(row.sendDateTime) }}
+                    </template>
+                    <template v-else-if="row.futureSendDateTime">
+                        <i class="fa fa-clock-o align-self-center"></i>
+                        {{ getFormattedDateTime(row.futureSendDateTime) }}
+                    </template>
                 </div>
             </template>
-
-            <template #skeleton>
-                <div class="skeleton skeleton-text skeleton-rounded" />
-            </template>
         </Column>
 
-        <DateTimeColumn name="sendDateTime"
-                        title="Sent"
-                        field="sendDateTime"
-                        headerClass="title-right"
-                        itemClass="justify-content-end text-right"
-                        :filter="dateValueFilter"
-                        visiblePriority="xs" />
+        <PersonColumn name="sentByPerson"
+                      field="sentByPerson"
+                      title="Sent By"
+                      :hideAvatar="true"
+                      :showAsLink="true"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getSentByPersonTextValue"
+                      :quickFilterValue="getSentByPersonTextValue" />
 
-        <Column name="details"
-                title="Recipients"
-                visiblePriority="xs">
-            <template #format="{ row }">
-                <span v-if="row.openedRecipients > 0" class="badge badge-success mr-1" title="Opened">
-                    {{ row.openedRecipients }}
-                </span>
-                <span v-if="row.deliveredRecipients > 0" class="badge badge-info mr-1" title="Delivered">
-                    {{ row.deliveredRecipients }}
-                </span>
-                <span v-if="row.pendingRecipients > 0" class="badge badge-none mr-1" title="Pending">
-                    {{ row.pendingRecipients }}
-                </span>
-                <span v-if="row.cancelledRecipients > 0" class="badge badge-warning mr-1" title="Cancelled">
-                    {{ row.cancelledRecipients }}
-                </span>
-                <span v-if="row.failedRecipients > 0" class="badge badge-danger mr-1" title="Failed">
-                    {{ row.failedRecipients }}
-                </span>
-            </template>
+        <DeleteColumn v-if="config.isDeleteEnabled"
+                      :rowDisabled="getIsDeleteDisabled"
+                      @click="onDeleteClick" />
 
-            <template #skeleton>
-                <div class="skeleton skeleton-text skeleton-rounded" />
-            </template>
-        </Column>
-
-        <ButtonColumn name="copy"
-                      title="Copy"
-                      iconClass="fa fa-clone"
-                      visiblePriority="md"
-                      width="150"
-                      @click="onCopyClick" />
-
-        <DeleteColumn :rowDisabled="onDeleteRowDisabled" @click="onDeleteClick" />
     </Grid>
 
     <GridSettingsModal v-model="gridSettings"
                        v-model:visible="isGridSettingsVisible"
-                       :communcationTypeItems="config.options?.communicationTypeItems ?? []"
-                       :statusItems="config.options?.statusItems ?? []" />
+                       :showCreatedByFilter="showCreatedByFilter"
+                       :defaultSlidingDateRange="defaultSlidingDateRange" />
 </template>
 
-<style>
-.title-right .grid-column-title {
-    text-align: right;
+<style scoped>
+.communication-list-grid-header-button-filters {
+    background-color: var(--theme-light);
+}
+
+.grid-cell-recipients {
+    font-size: var(--font-size-small);
+}
+
+:deep(.label-communication-topic),
+:global(.grid-filter-popup-body .label-communication-topic) {
+    color: var(--color-interface-strong);
+    background-color: transparent;
+    border: solid 1px var(--color-interface-medium);
 }
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
-    import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { dateValueFilter, TextColumn, textValueFilter, pickExistingValueFilter, Column, DateTimeColumn, ButtonColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { computed, reactive, ref, watch } from "vue";
+    import DisplayName from "./CommunicationList/displayName.partial.obs";
+    import GridSettingsModal from "./CommunicationList/gridSettingsModal.partial.obs";
+    import StatusLabel from "./CommunicationList/statusLabel.partial.obs";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey, Row } from "./CommunicationList/types.partial";
+    import Badge from "@Obsidian/Controls/badge.obs";
+    import Grid, { Column, dateValueFilter, DeleteColumn, LabelColumn, numberValueFilter, PersonColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
+    import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { useStore } from "@Obsidian/PageState";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
     import { alert } from "@Obsidian/Utility/dialogs";
+    import { asFormattedString, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { CommunicationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationList/communicationListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./CommunicationList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
-    import { CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
-    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-    import GridSettingsModal from "./CommunicationList/gridSettingsModal.partial.obs";
+    import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
+    import { formatAspDate } from "@Obsidian/Utility/aspDateFormat";
+    import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { debounceAsync } from "@Obsidian/Utility/util";
 
     const config = useConfigurationValues<ListBlockBox<CommunicationListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
-    const communicationTypeIcons: Record<number, string> = {
-        0: "fa fa-user fa-lg",
-        1: "fa fa-envelope fa-lg",
-        2: "fa fa-comment fa-lg",
-        3: "fa fa-bell fa-lg",
+    const store = useStore();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    const statusTextSource = {
+        ...CommunicationStatusDescription,
+        5: "Sending",
+        6: "Sent"
     };
+
+    // We'll enforce a default date range of the last 6 months - to be applied
+    // if the individual doesn't have a preference - as the [Communication] table
+    // can have a large number of rows.
+    const defaultSlidingDateRange: SlidingDateRange = {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Month,
+        timeValue: 6
+    };
+
+    // Ensure rapid filter selection changes result in using only the latest
+    // filter values before saving person prefernces or making a request to the
+    // server for new grid data.
+    let filterCancellationTokenSource = new CancellationTokenSource();
 
     // #region Values
 
@@ -155,37 +248,142 @@
 
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>({
-        subject: preferences.getValue(PreferenceKey.FilterSubject),
-        communicationType: preferences.getValue(PreferenceKey.FilterCommunicationType),
-        status: preferences.getValue(PreferenceKey.FilterStatus),
-        createdBy: getCreatedByFilter(),
-        createdDateRange: {
-            lowerValue: preferences.getValue(PreferenceKey.FilterCreatedDateRangeFrom) || RockDateTime.now().addDays(-7).date.toISOString(),
-            upperValue: preferences.getValue(PreferenceKey.FilterCreatedDateRangeTo)
+        createdBy: JSON.parse(preferences.getValue(PreferenceKey.FilterCreatedBy) || "{}"),
+        hideDrafts: asBoolean(preferences.getValue(PreferenceKey.FilterHideDrafts)),
+        slidingDateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterSendDateRange)) ?? defaultSlidingDateRange,
+        recipientCountRange: {
+            lower: toNumberOrNull(preferences.getValue(PreferenceKey.FilterRecipientCountLower)),
+            upper: toNumberOrNull(preferences.getValue(PreferenceKey.FilterRecipientCountUpper))
         },
-        content: preferences.getValue(PreferenceKey.FilterContent),
-        recipientCount: {
-            lower: toNumberOrNull(preferences.getValue(PreferenceKey.FilterRecipientCountRangeFrom)),
-            upper: toNumberOrNull(preferences.getValue(PreferenceKey.FilterRecipientCountRangeTo))
-        },
+        topic: JSON.parse(preferences.getValue(PreferenceKey.FilterTopic) || "{}"),
+        name: preferences.getValue(PreferenceKey.FilterName),
+        content: preferences.getValue(PreferenceKey.FilterContent)
     });
 
-    // #endregion
+    const filterCommunicationTypes = ref(
+        (
+            preferences.getValue(PreferenceKey.FilterCommunicationTypes)
+                ?.split("|")
+                .filter(t => t)
+        ) ?? []
+    );
+
+    // #endregion Values
 
     // #region Computed Values
 
     /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.subject
-            || !!gridSettings.value.communicationType
-            || !!gridSettings.value.status
-            || !!gridSettings.value.createdBy?.value
-            || (!!gridSettings.value.createdDateRange?.lowerValue || !!gridSettings.value.createdDateRange?.upperValue)
-            || !!gridSettings.value.content
-            || (!!gridSettings.value.recipientCount?.lower || !!gridSettings.value.recipientCount?.upper);
+        return !!gridSettings.value.createdBy
+            || !!gridSettings.value.slidingDateRange
+            || !!gridSettings.value.recipientCountRange
+            || !!gridSettings.value.topic
+            || !!gridSettings.value.name
+            || !!gridSettings.value.content;
     });
 
-    // #endregion
+    /** `true` if the "Created By" filter controls should be displayed. */
+    const showCreatedByFilter = computed((): boolean => {
+        return config.options?.showCreatedByFilter ?? false;
+    });
+
+    /** `true` if the "Filter to Email" button should be displayed. */
+    const showFilterToEmailButton = computed((): boolean => {
+        return !!config.options?.hasActiveEmailTransport;
+    });
+
+    /** `true` if the "Filter to SMS" button should be displayed. */
+    const showFilterToSMSButton = computed((): boolean => {
+        return !!config.options?.hasActiveSmsTransport;
+    });
+
+    /** `true` if the "Filter to Push Notifications" button should be displayed. */
+    const showFilterToPushButton = computed((): boolean => {
+        return !!config.options?.hasActivePushTransport;
+    });
+
+    /** The CSS class[es] to use for the media filter buttons element. */
+    const mediaButtonsCssClass = computed((): string => {
+        return `buttons-media${showCreatedByFilter.value ? " pt-1 pt-sm-0" : " align-self-end align-self-stretch-sm"}`;
+    });
+
+    /** The person that is currently authenticated. */
+    const currentPerson = computed((): CurrentPersonBag | null => {
+        return store.state.currentPerson;
+    });
+
+    const filteredByPersonGuidLower = computed((): string | undefined => {
+        return gridSettings.value.createdBy?.value?.toLowerCase();
+    });
+
+    /** The button type to use for the "Created By Me" button. */
+    const createdByMeBtnType = computed((): BtnType => {
+        let isFilteredByMe = !!(
+            filteredByPersonGuidLower.value
+            && filteredByPersonGuidLower.value === currentPerson.value?.primaryAliasGuid.toLowerCase()
+        );
+
+        return isFilteredByMe
+            ? BtnType.Primary
+            : BtnType.Default;
+    });
+
+    /** The button type to use for the "Created By Anyone" button. */
+    const createdByAnyoneBtnType = computed((): BtnType => {
+        return !filteredByPersonGuidLower.value
+            ? BtnType.Primary
+            : BtnType.Default;
+    });
+
+    /** `true` if the grid is currently filtered to "Email" communications. */
+    const isFilteredToEmail = computed((): boolean => {
+        return filterCommunicationTypes.value.includes(CommunicationType.Email.toString());
+    });
+
+    /** `true` if the grid is currently filtered to "SMS" communications. */
+    const isFilteredToSMS = computed((): boolean => {
+        return filterCommunicationTypes.value.includes(CommunicationType.SMS.toString());
+    });
+
+    /** `true` if the grid is currently filtered to "Push Notification" communications. */
+    const isFilteredToPush = computed((): boolean => {
+        return filterCommunicationTypes.value.includes(CommunicationType.PushNotification.toString());
+    });
+
+    /** `true` if the grid is currently filtered to "Recipient Preference" communications. */
+    const isFilteredToRecipientPreference = computed((): boolean => {
+        return filterCommunicationTypes.value.includes(CommunicationType.RecipientPreference.toString());
+    });
+
+    /** The button type to use for the "Filter to Email" button. */
+    const filterToEmailBtnType = computed((): BtnType => {
+        return isFilteredToEmail.value
+            ? BtnType.Action
+            : BtnType.Default;
+    });
+
+    /** The button type to use for the "Filter to SMS" button. */
+    const filterToSMSBtnType = computed((): BtnType => {
+        return isFilteredToSMS.value
+            ? BtnType.Action
+            : BtnType.Default;
+    });
+
+    /** The button type to use for the "Filter to Push" button. */
+    const filterToPushBtnType = computed((): BtnType => {
+        return isFilteredToPush.value
+            ? BtnType.Action
+            : BtnType.Default;
+    });
+
+    /** The button type to use for the "Filter to Recipient Preference" button. */
+    const filterToRecipientPreferenceBtnType = computed((): BtnType => {
+        return isFilteredToRecipientPreference.value
+            ? BtnType.Action
+            : BtnType.Default;
+    });
+
+    // #endregion Computed Values
 
     // #region Functions
 
@@ -204,9 +402,200 @@
         }
     }
 
-    // #endregion
+    /**
+     * Sets the grid data source.
+     *
+     * @param cancellationToken A cancellation token that will instruct this
+     * function to exit early and discard results.
+     */
+    async function setGridDataSource(cancellationToken?: ICancellationToken): Promise<void> {
+        if (cancellationToken?.isCancellationRequested) {
+            return;
+        }
+
+        gridDataSource.value = loadGridData();
+    }
+
+    /**
+     * Calls the `setGridDataSource` function immediately and then debounces
+     * future calls so it will only be called once during the specified delay
+     * period (250ms).
+     */
+    const loadGridDataDebounce = debounceAsync(setGridDataSource, { eager: true });
+
+    /**
+     * Gets the text value for the "Type" column.
+     *
+     * @param row The row whose value to get.
+     */
+    function getCommunicationTypeTextValue(row: Record<string, unknown>): string {
+        return CommunicationTypeDescription[(row as Row).type];
+    }
+
+    /**
+     * Gets the text value for the "[Display]Name" column.
+     *
+     * @param row The row whose value to get.
+     */
+    function getDisplayNameTextValue(row: Record<string, unknown>): string {
+        return (row as Row).name?.toString() ?? "";
+    }
+
+    /**
+     * Gets the text value for the "Status" column.
+     *
+     * @param row The row whose value to get.
+     */
+    function getCommunicationStatusTextValue(row: Record<string, unknown>): string {
+        return statusTextSource[(row as Row).status];
+    }
+
+    /**
+     * Gets the text value for the "Recipient" column.
+     *
+     * @param row The row whose value to get.
+     */
+    function getRecipientCountFilterTextValue(row: Record<string, unknown>): string {
+        return (row as Row).recipientCount.toString();
+    }
+
+    /**
+     * Gets the text value for the "Send Date" column.
+     *
+     * @param row The row whose value to get.
+     */
+    function getSendDateTimeIsoValue(row: Record<string, unknown>): string {
+        const r = row as Row;
+
+        if (r.sendDateTime) {
+            return r.sendDateTime;
+        }
+
+        return r.futureSendDateTime ?? "";
+    }
+
+    /**
+     * Gets the text value for the "Send Date" column.
+     *
+     * @param row The row whose value to get.
+     */
+    function getSendDateTimeTextValue(row: Record<string, unknown>): string {
+        const r = row as Row;
+
+        if (r.sendDateTime) {
+            return getFormattedDateTime(r.sendDateTime);
+        }
+
+        return getFormattedDateTime(r.futureSendDateTime ?? "");
+    }
+
+    /**
+     * Gets a formatted date time from the provided date time string.
+     *
+     * @param dateTimeString The date time string to format.
+     */
+    function getFormattedDateTime(dateTimeString: string): string {
+        const rockDateTime = RockDateTime.parseISO(dateTimeString);
+        if (!rockDateTime) {
+            return "";
+        }
+
+        return formatAspDate(rockDateTime, "g");
+    }
+
+    /**
+     * Gets the text value for the "Sent By" column.
+     *
+     * @param row The row whose value to get.
+     */
+    function getSentByPersonTextValue(row: Record<string, unknown>): string {
+        const person = (row as Row).sentByPerson;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+     * `true` if delete is disabled for this row.
+     *
+     * @param row The row whose delete disabled status to get.
+     */
+    function getIsDeleteDisabled(row: Record<string, unknown>): boolean {
+        return (row as Row).isDeleteDisabled;
+    }
+
+    // #endregion Functions
 
     // #region Event Handlers
+
+    /**
+     * Called when the "Created By Me" button is clicked.
+     *
+     * @param event The mouse event.
+     */
+    function onCreatedByMeClick(event: MouseEvent): void {
+        (event.currentTarget as HTMLElement)?.blur();
+
+        gridSettings.value = {
+            ...gridSettings.value,
+            createdBy: {
+                value: currentPerson.value?.primaryAliasGuid,
+                text: currentPerson.value?.fullName,
+            }
+        };
+    }
+
+    /**
+     * Called when the "Created By Anyone" button is clicked.
+     *
+     * @param event The mouse event.
+     */
+    function onCreatedByAnyoneClick(event: MouseEvent): void {
+        (event.currentTarget as HTMLElement)?.blur();
+
+        gridSettings.value = {
+            ...gridSettings.value,
+            createdBy: undefined
+        };
+    }
+
+    /**
+     * Called when a communication type filter button is clicked.
+     *
+     * @param communicationType The communication type filter to toggle.
+     * @param event The mouse event.
+     */
+    async function onToggleCommunicationTypeFilter(communicationType: CommunicationType, event: MouseEvent): Promise<void> {
+        (event.currentTarget as HTMLElement)?.blur();
+
+        // Cancel any existing grid data requests.
+        filterCancellationTokenSource?.cancel();
+        filterCancellationTokenSource = new CancellationTokenSource();
+
+        // Add or remove the communication type filter.
+        var communicationTypeString = communicationType.toString();
+        if (!filterCommunicationTypes.value.includes(communicationTypeString)) {
+            // Add it.
+            filterCommunicationTypes.value = [
+                ...filterCommunicationTypes.value,
+                communicationTypeString
+            ];
+        }
+        else {
+            // Remove it.
+            filterCommunicationTypes.value = filterCommunicationTypes.value
+                .filter(t => t !== communicationTypeString);
+        }
+
+        // Set the preference.
+        preferences.setValue(PreferenceKey.FilterCommunicationTypes, filterCommunicationTypes.value.join("|"));
+
+        if (!filterCancellationTokenSource.token.isCancellationRequested) {
+            // Save the latest preferences.
+            await preferences.save();
+        }
+
+        // Reload the grid data.
+        loadGridDataDebounce(filterCancellationTokenSource.token);
+    }
 
     /**
      * Called when a row has been selected by the individual.
@@ -220,18 +609,9 @@
     }
 
     /**
-     * Called when the Add button has been clicked by the indivual.
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
      */
-    function onAddItem(): void {
-        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
-        }
-    }
-
-    /**
-    * Called when a row's delete button has been clicked by the individual. This
-    * happens only if they have confirmed the delete action.
-    */
     async function onDeleteClick(key: string): Promise<void> {
         const result = await invokeBlockAction<string>("Delete", {
             key
@@ -239,7 +619,7 @@
 
         if (result.isSuccess) {
             if (gridData && gridData.rows) {
-                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+                const index = gridData.rows.findIndex(r => (r["guid"] === key));
 
                 if (index !== -1) {
                     gridData.rows?.splice(index, 1);
@@ -251,149 +631,36 @@
         }
     }
 
-    /**
-    * Called when a row's copy button has been clicked by the individual.
-    * This sends a request to the server to create a new Communication
-    * based on the clicked entity and redirects the user to the specified
-    * detail page with the communication id.
-    */
-    async function onCopyClick(key: string): Promise<void> {
-        const result = await invokeBlockAction<string>("Copy", {
-            key
-        });
+    // #endregion Event Handlers
 
-        if (result.isSuccess) {
-            if (result.data) {
-                window.location.href = result.data;
-            }
-        }
-        else {
-            await alert(result.errorMessage ?? "Unknown error while trying to copy communication.");
-        }
-    }
-
-    /**
-     * Generates a link to the current person's profile page.
-     * @param row The current row.
-     */
-    function getAnchorTag(row: Record<string, unknown>, key: string): string {
-        const anchorTag = row[key] as string;
-        if (!anchorTag) {
-            return "#";
-        }
-
-        return anchorTag;
-    }
-
-    /**
-     * Returns the full name of the specified person.
-     * @param value
-     */
-    function formatName(value: PersonFieldBag | null): string {
-
-        if (!value || typeof value !== "object") {
-            return "";
-        }
-
-        return `${value.nickName ?? ""} ${value.lastName ?? ""}`;
-    }
-
-    /**
-     * If the current user can approve new communications and no filter value
-     * has been saved for the CreatedBy filter default to the Current person.
-     * If an empty JSON object has been saved then the previous filter was cleared
-     * by the user, thus return an empty value.
-     */
-    function getCreatedByFilter(): ListItemBag | undefined {
-        const createdByJson = preferences.getValue(PreferenceKey.FilterCreatedBy);
-        let createdBy = JSON.parse(createdByJson || "{}");
-
-        if (!config.options?.canApprove || !createdByJson) {
-            createdBy = config.options?.currentPerson;
-        }
-
-        return createdBy;
-    }
-
-    /**
-     * Formats the specified datetime string.
-     * @param dateTime the dateTime string.
-     */
-    function dateTimeText(dateTime: string): string {
-        const date = RockDateTime.parseISO(dateTime);
-        return date?.localDateTime.toASPString("d") ?? "";
-    }
-
-    /**
-    * Called when the grid setting icon is clicked, displays the block filters.
-    *
-    */
-    function onGridSettingsClick(): void {
-        isGridSettingsVisible.value = true;
-    }
-
-    /**
-    * Called when the delete button for a row wants to know if it should be
-    * disabled.
-    *
-    * @param row The row associated with the delete button.
-    */
-    function onDeleteRowDisabled(row: Record<string, unknown>): boolean {
-        return (row.deliveredRecipients as number) > 0;
-    }
-
-    /**
-    * Gets the filter value to use for the status column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getStatusFilterValue(row: Record<string, unknown>): string {
-        const status = row["status"] as number;
-        return CommunicationStatusDescription[status];
-    }
-
-    /**
-    * Gets the sort value to use for the details column.
-    *
-    * @param row The row to be sorted.
-    */
-    function getDetailsSortValue(row: Record<string, unknown>): string {
-        const sender = row.sender as PersonFieldBag;
-        const reviewer = row.reviewer as PersonFieldBag;
-        const createdDateTime = row.createdDateTime as string;
-        const reviewedDateTime = row.reviewedDateTime as string;
-        let details = "";
-
-        if (sender) {
-            details += `Created on ${dateTimeText(createdDateTime)} by ${formatName(sender)}`;
-        }
-
-        if (reviewer) {
-            details += `Created on ${dateTimeText(reviewedDateTime)} by ${formatName(reviewer)}`;
-        }
-
-        return details;
-    }
-
-    // #endregion
+    // #region Watchers
 
     watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterSubject, gridSettings.value.subject ?? "");
-        preferences.setValue(PreferenceKey.FilterCommunicationType, gridSettings.value.communicationType ?? "");
-        preferences.setValue(PreferenceKey.FilterStatus, gridSettings.value.status ?? "");
-        preferences.setValue(PreferenceKey.FilterContent, gridSettings.value.content ?? "");
-        preferences.setValue(PreferenceKey.FilterCreatedDateRangeFrom, gridSettings.value.createdDateRange?.lowerValue ?? RockDateTime.now().addDays(-7).date.toISOString());
-        preferences.setValue(PreferenceKey.FilterCreatedDateRangeTo, gridSettings.value.createdDateRange?.upperValue ?? "");
-        preferences.setValue(PreferenceKey.FilterRecipientCountRangeFrom, gridSettings.value.recipientCount?.lower?.toString() ?? "");
-        preferences.setValue(PreferenceKey.FilterRecipientCountRangeTo, gridSettings.value.recipientCount?.upper?.toString() ?? "");
+        filterCancellationTokenSource?.cancel();
+        filterCancellationTokenSource = new CancellationTokenSource();
 
-        const createdBy = gridSettings.value.createdBy ?? {};
-        preferences.setValue(PreferenceKey.FilterCreatedBy, config.options?.canApprove ? JSON.stringify(createdBy) : "");
+        const slidingDateRangeString = gridSettings.value.slidingDateRange
+            ? slidingDateRangeToString(gridSettings.value.slidingDateRange)
+            : slidingDateRangeToString(defaultSlidingDateRange);
 
-        await preferences.save();
+        preferences.setValue(PreferenceKey.FilterCreatedBy, JSON.stringify(gridSettings.value.createdBy));
+        preferences.setValue(PreferenceKey.FilterHideDrafts, asTrueOrFalseString(gridSettings.value.hideDrafts));
+        preferences.setValue(PreferenceKey.FilterSendDateRange, slidingDateRangeString);
+        preferences.setValue(PreferenceKey.FilterRecipientCountLower, gridSettings.value.recipientCountRange?.lower?.toString() ?? "");
+        preferences.setValue(PreferenceKey.FilterRecipientCountUpper, gridSettings.value.recipientCountRange?.upper?.toString() ?? "");
+        preferences.setValue(PreferenceKey.FilterTopic, JSON.stringify(gridSettings.value.topic));
+        preferences.setValue(PreferenceKey.FilterName, gridSettings.value.name);
+        preferences.setValue(PreferenceKey.FilterContent, gridSettings.value.content);
 
-        gridDataSource.value = loadGridData();
+        if (!filterCancellationTokenSource.token.isCancellationRequested) {
+            // Save the latest preferences.
+            await preferences.save();
+        }
+
+        loadGridDataDebounce(filterCancellationTokenSource.token);
     });
 
-    gridDataSource.value = loadGridData();
+    // #endregion Watchers
+
+    loadGridDataDebounce(filterCancellationTokenSource.token);
 </script>

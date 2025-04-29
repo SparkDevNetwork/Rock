@@ -1,0 +1,196 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="grid-cell-name-icon-container"
+         :data-original-title="CommunicationTypeDescription[row.type]"
+         :ref="applyTooltip">
+        <i :class="iconCssClass"></i>
+    </div>
+    <div class="grid-cell-name-details">
+        <div class="grid-cell-name-title">
+            {{ row.name }}
+        </div>
+        <div class="grid-cell-name-counts">
+            <span v-if="showDeliveredCount"
+                  :data-original-title="`Delivered: ${formattedDeliveredCount}`"
+                  :ref="applyTooltip">
+                <i class="fa fa-check-circle text-success"></i> {{ formattedDeliveredCount }}
+            </span>
+            <span v-if="showOpenedCount"
+                  :data-original-title="`Opened: ${formattedOpenedCount}`"
+                  :ref="applyTooltip">
+                <i class="fa fa-eye text-info"></i> {{ formattedOpenedCount }}
+            </span>
+            <span v-if="showFailedCount"
+                  :data-original-title="`Failed: ${formattedFailedCount}`"
+                  :ref="applyTooltip">
+                <i class="fa fa-exclamation-triangle text-warning"></i> {{ formattedFailedCount }}
+            </span>
+            <span v-if="showUnsubscribedCount"
+                  :data-original-title="`Unsubscribed: ${formattedUnsubscribedCount}`"
+                  :ref="applyTooltip">
+                <i class="fa fa-minus-circle text-danger"></i> {{ formattedUnsubscribedCount }}
+            </span>
+        </div>
+        <div v-if="row.summary" class="grid-cell-name-summary">
+            <Hint v-if="showSummaryHint" :type="HintType.AI" />
+            {{ row.summary }}
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.grid-cell-name-icon-container {
+    align-self: start;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    background-color: var(--color-info-soft);
+    border-radius: var(--rounded-huge);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: var(--spacing-medium);
+}
+
+.grid-cell-name-icon {
+    color: var(--color-info-strong);
+}
+
+.grid-cell-name-title {
+    color: var(--color-interface-strong);
+}
+
+.grid-cell-name-counts,
+.grid-cell-name-summary {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-xsmall);
+    margin-top: var(--spacing-tiny);
+}
+
+.grid-cell-name-summary .hint {
+    margin-right: var(--spacing-tiny);
+}
+
+.grid-cell-name-counts span:not(:last-of-type) {
+    margin-right: var(--spacing-xsmall);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { Row } from "./types.partial";
+    import Hint from "@Obsidian/Controls/hint.obs";
+    import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
+    import { HintType } from "@Obsidian/Enums/Controls/hintType";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+
+    const props = defineProps({
+        row: {
+            type: Object as PropType<Row>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    /** The icon CSS class to use for this row. */
+    const iconCssClass = computed((): string => {
+        let icon = "";
+
+        switch (props.row.type) {
+            case CommunicationType.Email:
+                icon = "fa fa-envelope ";
+                break;
+            case CommunicationType.SMS:
+                icon = "fa fa-sms ";
+                break;
+            case CommunicationType.PushNotification:
+                icon = "fa fa-mobile-alt ";
+                break;
+            case CommunicationType.RecipientPreference:
+                icon = "fa fa-user-circle ";
+                break;
+        }
+
+        return `${icon}grid-cell-name-icon`;
+    });
+
+    /** `true` if the communication type is SMS. */
+    const isSms = computed((): boolean => {
+        return props.row.type === CommunicationType.SMS;
+    });
+
+    /** `true` if the communication type is Push Notification. */
+    const isPush = computed((): boolean => {
+        return props.row.type === CommunicationType.PushNotification;
+    });
+
+    /** `true` if the delivered count should be displayed. */
+    const showDeliveredCount = computed((): boolean => {
+        return props.row.deliveredCount > 0;
+    });
+
+    /** `true` if the opened count should be displayed. */
+    const showOpenedCount = computed((): boolean => {
+        return props.row.openedCount > 0
+            && !isSms.value
+            && !isPush.value;
+    });
+
+    /** `true` if the failed count should be displayed. */
+    const showFailedCount = computed((): boolean => {
+        return props.row.failedCount > 0;
+    });
+
+    /** `true` if the unsubscribed count should be displayed. */
+    const showUnsubscribedCount = computed((): boolean => {
+        return props.row.unsubscribedCount > 0
+            && !isSms.value
+            && !isPush.value;
+    });
+
+    /** `true` if the "AI" summary hint should be displayed. */
+    const showSummaryHint = computed((): boolean => {
+        return !isSms.value && !isPush.value;
+    });
+
+    /** The formatted "Delivered" count for this row. */
+    const formattedDeliveredCount = computed((): string => {
+        return asFormattedString(props.row.deliveredCount);
+    });
+
+    /** The formatted "Opened" count for this row. */
+    const formattedOpenedCount = computed((): string => {
+        return asFormattedString(props.row.openedCount);
+    });
+
+    /** The formatted "Failed" count for this row. */
+    const formattedFailedCount = computed((): string => {
+        return asFormattedString(props.row.failedCount);
+    });
+
+    /** The formatted "Unsubscribed" count for this row. */
+    const formattedUnsubscribedCount = computed((): string => {
+        return asFormattedString(props.row.unsubscribedCount);
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Applies a tooltip to an element. The element should have an
+     * `data-original-title` attribute containing the tooltip text.
+     *
+     * Typical use, `:ref="applyTooltip"`
+     */
+    function applyTooltip(el: unknown): void {
+        const htmlElement = el as HTMLElement;
+        if (htmlElement) {
+            tooltip(htmlElement);
+        }
+    }
+
+    // #endregion Functions
+</script>
