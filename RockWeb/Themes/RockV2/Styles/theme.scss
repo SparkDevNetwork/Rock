@@ -564,6 +564,7 @@ $navbar-element-height: 40px;
     overflow-x: hidden;
     overflow-y: auto;
     text-align: left;
+    border: 1px solid var(--color-interface-soft);
     background-color: var(--color-interface-softer);
     line-height: var(--line-height-normal);
     font-size: var(--font-size-regular);
