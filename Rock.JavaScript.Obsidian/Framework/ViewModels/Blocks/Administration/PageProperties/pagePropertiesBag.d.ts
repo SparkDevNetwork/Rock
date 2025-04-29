@@ -22,6 +22,7 @@
 //
 
 import { DisplayInNavWhen } from "@Obsidian/Enums/Cms/displayInNavWhen";
+import { Guid } from "@Obsidian/Types";
 import { BlockContextInfoBag } from "@Obsidian/ViewModels/Blocks/Administration/PageProperties/blockContextInfoBag";
 import { RockCacheabilityBag } from "@Obsidian/ViewModels/Controls/rockCacheabilityBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -57,7 +58,7 @@ export type PagePropertiesBag = {
     cacheControlHeaderSettings?: RockCacheabilityBag | null;
 
     /** Gets or sets the defined value GUIDs for countries from which access will be restricted to this page. */
-    countriesRestrictedFromAccessing?: string[] | null;
+    countriesRestrictedFromAccessing?: Guid[] | null;
 
     /** Gets or sets a user defined description of the page.  This will be added as a meta tag for the page  */
     description?: string | null;

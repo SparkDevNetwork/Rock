@@ -482,6 +482,32 @@ export const DefinedValue = {
     ProjectTypeInPerson: "FF3F0C5C-9775-4A09-9CCF-94902DB99BF6",
     /** Project Type = Project Due */
     ProjectTypeProjectDue: "C999D489-5B8F-4892-BCC3-90DFFBC524F5",
+    /** The Apple TV app record source. */
+    RecordSourceTypeAppleTvApp: "96884743-3C6B-41D9-A8FD-5DDEE65A7983",
+    /** The check-in record source. */
+    RecordSourceTypeCheckIn: "12A138E7-6D93-4D84-B99A-545395694553",
+    /** The event registration record source. */
+    RecordSourceTypeEventRegistration: "8C461A53-160D-4693-A394-154673E83D17",
+    /** The external website record source. */
+    RecordSourceTypeExternalWebsite: "8F2394AE-AFF1-4773-8BF8-E4B9C9D5E978",
+    /** The family registration record source. */
+    RecordSourceTypeFamilyRegistration: "264C0969-55EA-4DF2-8FFD-2E3AAB311601",
+    /** The giving record source. */
+    RecordSourceTypeGiving: "A6677492-5AA5-4A09-9854-D9C54705C67D",
+    /** The group registration record source. */
+    RecordSourceTypeGroupRegistration: "A0F69572-B5C3-4195-8FD1-6FC72BB84FC8",
+    /** The mobile app record source. */
+    RecordSourceTypeMobileApp: "D465F0B7-4519-46B8-A4FF-11A207F9D86F",
+    /** The pledge record source. */
+    RecordSourceTypePledge: "59EAB321-27D7-4D57-A1EE-38287416E840",
+    /** The prayer record source. */
+    RecordSourceTypePrayer: "2B8DF7D7-FA3A-4A56-A72B-DB4CAAB2DF32",
+    /** The Roku TV app record source. */
+    RecordSourceTypeRokuTvApp: "1849A5FB-1434-45AA-AD78-D403A3C7685A",
+    /** The sign-up record source. */
+    RecordSourceTypeSignUp: "D0163E35-4065-4097-B018-D7D8092C86F7",
+    /** The workflow record source. */
+    RecordSourceTypeWorkflow: "42BA3F0C-00B5-4104-A9F8-C4C092BA2E0C",
     /** Schedule Type:  Weekend Service */
     ScheduleTypeWeekendService: "033FC160-2650-4C97-8075-0C0114FA7A8D",
     /** Spiritual Gifts: Administration */

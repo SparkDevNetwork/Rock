@@ -198,6 +198,8 @@ export const DefinedType = {
     ProjectType: "B7842AF3-6F04-495E-9A6C-F403D06C02F3",
     /** Protect My Ministry MVR jurisdiction codes */
     ProtectMyMinistryMvrJurisdictionCodes: "2F8821E8-05B9-4CD5-9FA4-303662AAC85D",
+    /** Guid for the types of Record Sources (such as external website, event registration, etc.) */
+    RecordSourceType: "B8F781C5-6690-4E5E-8BCE-75CC62DB0EBB",
     /** The REST allowed domains */
     RestApiAllowedDomains: "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8",
     /**

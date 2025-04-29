@@ -21,10 +21,12 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /** Contains the details required for general system configuration. */
 export type GeneralConfigurationBag = {
     /** Gets or sets the defined value GUIDs for countries from which access will be restricted to all pages. */
-    countriesRestrictedFromAccessing?: string[] | null;
+    countriesRestrictedFromAccessing?: Guid[] | null;
 
     /** Gets or sets a value indicating whether [enable keep alive]. */
     enableKeepAlive: boolean;
