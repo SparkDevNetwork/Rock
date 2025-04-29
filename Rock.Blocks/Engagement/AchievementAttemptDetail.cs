@@ -121,7 +121,6 @@ namespace Rock.Blocks.Engagement
 
             SetBoxInitialEntityState( box );
 
-            box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions( box.IsEditable );
 
             return box;
@@ -200,6 +199,8 @@ namespace Rock.Blocks.Engagement
             }
 
             PrepareDetailBox( box, entity );
+
+            box.NavigationUrls = GetBoxNavigationUrls( entity );
         }
 
         /// <summary>
@@ -304,11 +305,21 @@ namespace Rock.Blocks.Engagement
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
         /// <returns>A dictionary of key names and URL values.</returns>
-        private Dictionary<string, string> GetBoxNavigationUrls()
+        private Dictionary<string, string> GetBoxNavigationUrls( AchievementAttempt entity )
         {
+            var achievementTypeId = entity.AchievementTypeId.ToString();
+
+            if ( achievementTypeId == "0" )
+            {
+                achievementTypeId = PageParameter( PageParameterKey.AchievementTypeId );
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.AchievementTypeId] = achievementTypeId
+                } )
             };
         }
 
