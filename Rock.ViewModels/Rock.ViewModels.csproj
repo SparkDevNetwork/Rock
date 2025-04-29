@@ -202,8 +202,7 @@
     <Compile Include="Blocks\Finance\FinancialPersonBankAccountList\FinancialPersonBankAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialScheduledTransactionList\FinancialScheduledTransactionListOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\TithingOverview\TithingOverviewToolTipBag.cs" />
-    <Compile Include="Blocks\Security\LoginHistory\LoginHistoryFiltersBag.cs" />
-    <Compile Include="Blocks\Security\LoginHistory\LoginHistoryInitializationBox.cs" />
+    <Compile Include="Blocks\Security\LoginHistory\LoginHistoryOptionsBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageList\AppleTvPageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageList\PageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />

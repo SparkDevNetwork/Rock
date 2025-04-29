@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { nextTick, PropType, ref, watch } from "vue";
     import { GridSettingsOptions } from "./types.partial";
     import Modal from "@Obsidian/Controls/modal.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
@@ -25,6 +25,11 @@
     const props = defineProps({
         modelValue: {
             type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        defaultSlidingDateRange: {
+            type: Object as PropType<SlidingDateRange>,
             required: true
         },
 
@@ -49,8 +54,8 @@
 
     // #region Values
 
-    const slidingDateRange = ref<SlidingDateRange | null>(props.modelValue.slidingDateRange);
     const isVisible = useVModelPassthrough(props, "visible", emit);
+    const slidingDateRange = ref<SlidingDateRange | null>(props.modelValue.slidingDateRange ?? props.defaultSlidingDateRange);
 
     // #endregion Values
 
@@ -76,7 +81,15 @@
     // #region Watchers
 
     watch(() => props.modelValue, () => {
-        slidingDateRange.value = props.modelValue.slidingDateRange;
+        slidingDateRange.value = props.modelValue.slidingDateRange ?? props.defaultSlidingDateRange;
+    });
+
+    watch(slidingDateRange, () => {
+        nextTick(() => {
+            if (!slidingDateRange.value) {
+                slidingDateRange.value = props.defaultSlidingDateRange;
+            }
+        });
     });
 
     watch(isVisible, () => {

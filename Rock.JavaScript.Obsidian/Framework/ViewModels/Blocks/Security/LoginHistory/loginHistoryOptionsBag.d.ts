@@ -21,22 +21,6 @@
 // </copyright>
 //
 
-import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
-
-/** The box that contains all the initialization information for the login history block. */
-export type LoginHistoryInitializationBox = {
-    /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
-     */
-    errorMessage?: string | null;
-
-    /** Gets or sets the grid definition. */
-    gridDefinition?: GridDefinitionBag | null;
-
-    /** Gets or sets the navigation urls. */
-    navigationUrls?: Record<string, string> | null;
-
-    /** Gets or sets the security grant token. */
-    securityGrantToken?: string | null;
+/** The additional configuration options for the Login History block. */
+export type LoginHistoryOptionsBag = {
 };

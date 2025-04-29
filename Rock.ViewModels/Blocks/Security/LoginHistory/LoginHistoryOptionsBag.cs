@@ -14,23 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 
 namespace Rock.ViewModels.Blocks.Security.LoginHistory
 {
     /// <summary>
-    /// A bag that contains the filters to limit what is shown in the login history block grid.
+    /// The additional configuration options for the Login History block.
     /// </summary>
-    public class LoginHistoryFiltersBag
+    public class LoginHistoryOptionsBag
     {
-        /// <summary>
-        /// Gets or set sets the start date and time.
-        /// </summary>
-        public DateTimeOffset? StartDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the end date and time.
-        /// </summary>]
-        public DateTimeOffset? EndDateTime { get; set; }
     }
 }
