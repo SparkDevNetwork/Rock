@@ -414,7 +414,10 @@ namespace RockWeb.Blocks.Reporting
 <div class=""alert alert-info"">
     <span class=""js-notification-text"">There is no data on active individuals with assessments.</span>
 </div>";
-            rlActiveIndividualsWithAssessments.Text = PopulateShortcodeDataItems( chartConfig, dataItems );
+            rlActiveIndividualsWithAssessments.Text =
+            dataItems.All( d => decimal.Parse( d.Value ) == 0 )
+                ? noItemsNotification
+                : PopulateShortcodeDataItems( chartConfig, dataItems );
         }
 
         /// <summary>
@@ -587,6 +590,11 @@ namespace RockWeb.Blocks.Reporting
 
             internal static string GetPercentage( int count, int total )
             {
+                if ( total == 0 )
+                {
+                    return "0";
+                }
+
                 var asDecimal = decimal.Divide( count, total );
                 var percent = decimal.Round( asDecimal * 100, 1 );
                 return percent.ToString();
