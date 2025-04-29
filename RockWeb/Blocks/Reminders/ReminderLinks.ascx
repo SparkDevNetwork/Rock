@@ -56,7 +56,7 @@
 
     function updateReminders(reminderCount, notificationCount) {
         var remindersButton = $('#<%=btnReminders.ClientID %>');
-        var buttonHtml = '<i class="ti ti-bell"></i>';
+        var buttonHtml = '<i class="fa fa-bell"></i>';
 
         if (typeof reminderCount === "string") {
             reminderCount = parseInt(reminderCount || '0');
@@ -164,7 +164,7 @@
 
 <div class="dropdown js-rock-reminders">
     <%-- LinkButton inner html is updated by updateReminders() function. --%>
-    <asp:LinkButton runat="server" ID="btnReminders" Visible="false" CssClass="rock-bookmark" href="#" data-toggle="dropdown"><i class="ti ti-bell"></i></asp:LinkButton>
+    <asp:LinkButton runat="server" ID="btnReminders" Visible="false" CssClass="rock-bookmark" href="#" data-toggle="dropdown"><i class="fa fa-bell"></i></asp:LinkButton>
     <asp:Panel ID="pnlReminders" runat="server" CssClass="dropdown-menu dropdown-menu-reminders js-reminders-container">
         <li class="js-add-reminder d-none">
             <asp:LinkButton runat="server" ID="btnAddReminder" OnClick="btnAddReminder_Click">Add Reminder</asp:LinkButton>

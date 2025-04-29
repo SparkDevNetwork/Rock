@@ -72,8 +72,8 @@
 }
 
 .label-primary{
-  background-color:   var(--color-primary);
-  color:              var(--color-interface-softest);
+  background-color:   var(--color-primary-soft);
+  color:              var(--color-primary);
 
   &[href] {
     &:hover,

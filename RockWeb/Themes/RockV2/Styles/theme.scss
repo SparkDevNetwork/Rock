@@ -609,7 +609,7 @@ $navbar-element-height: 40px;
 
         &:hover {
           color: var(--color-primary);
-          background-color:  color-mix(in srgb, var(--color-primary) 25%, transparent 90%);
+          background-color:  var(--color-primary-soft);
           border-radius: var(--rounded-medium);
 
           &::before {
@@ -622,14 +622,14 @@ $navbar-element-height: 40px;
 
       &.current {
         .nav-link {
-          font-weight: 600;
+          font-weight: var(--font-weight-semibold);
           color: #FFFFFF;
           background-color: var(--color-primary);
           border-radius: var(--rounded-medium);
 
           &::before {
             width: 8px;
-            padding-left: 8px;
+            padding-left: var(--spacing-xsmall);
             margin-right: 6px;
             background-color: var(--color-primary);
           }
@@ -642,7 +642,7 @@ $navbar-element-height: 40px;
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        gap: 12px;
+        gap: var(--spacing-small);
         padding: 19px 0;
         //margin: 0 -20px;
         //font-size: @font-size-h1;
@@ -661,10 +661,10 @@ $navbar-element-height: 40px;
       &.header {
         padding-top: 11px;
         padding-left: 5px !important;
-        margin-top: 24px;
+        margin-top: var(--spacing-large);
         margin-bottom: ($line-height-computed / 2);
         font-size: var(--font-size-xsmall);
-        font-weight: 600;
+        font-weight: var(--font-weight-semibold);
         line-height: 1;
         color: var(--color-interface-medium);
         text-transform: uppercase;
@@ -698,7 +698,7 @@ $navbar-element-height: 40px;
     align-items: center;
     height: 48px;
     background: var(--color-primary);
-    padding: 0 12px;
+    padding: 0 var(--spacing-small);
     position: fixed;
     width: 100%;
     z-index: 1030;
@@ -724,7 +724,7 @@ $navbar-element-height: 40px;
 
     .nav-open & {
       z-index: 2000;
-      border-radius: 0 0 0 12px;
+      border-radius: 0 0 0 var(--rounded-large);
     }
 
     .navbar-side:first-child {
@@ -781,13 +781,13 @@ $navbar-element-height: 40px;
       margin-bottom:  var(--spacing-xsmall);
 
       .title {
-        padding-top: 24px;
+        padding-top: var(--spacing-large);
         padding-bottom: 27px;
 
         .item-title {
           color: var(--color-interface-strong);
           // display: inline-block;
-          font-size: 28px;
+          font-size: var(--font-size-h3);
 
           &:after {
             display: none;

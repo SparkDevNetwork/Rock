@@ -35,6 +35,15 @@
   padding: 1px 6px;
 }
 
+.form-control-group {
+  .picker-daterange.slidingdaterange-daterange {
+    > div {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xsmall);
+    }
+  }
+}
 // ====================== END BASE STYLE ======================
 
 
