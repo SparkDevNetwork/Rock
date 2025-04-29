@@ -73,7 +73,7 @@
     import Grid, { DateTimeColumn, dateValueFilter, LabelColumn, PersonColumn, pickExistingValueFilter, TextColumn } from "@Obsidian/Controls/grid";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LoginHistoryOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/LoginHistory/loginHistoryOptionsBag";
@@ -84,6 +84,8 @@
     const config = useConfigurationValues<ListBlockBox<LoginHistoryOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
+
+    onConfigurationValuesChanged(useReloadBlock());
 
     const statusLabelColors: Record<string, string> = {
         Success: "success"
