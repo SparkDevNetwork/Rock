@@ -410,10 +410,10 @@ namespace RockWeb.Blocks.Reporting
                 .ToList();
 
             const string chartConfig = "{[ chart type:'bar' yaxismin:'0' yaxismax:'100' yaxisstepsize:'20' valueformat:'percentage' ]}";
-            const string noItemsNotification = @"
-<div class=""alert alert-info"">
-    <span class=""js-notification-text"">There is no data on active individuals with assessments.</span>
-</div>";
+//            const string noItemsNotification = @"
+//<div class=""alert alert-info"">
+//    <span class=""js-notification-text"">There is no data on active individuals with assessments.</span>
+//</div>";
             rlActiveIndividualsWithAssessments.Text = PopulateShortcodeDataItems( chartConfig, dataItems );
         }
 
