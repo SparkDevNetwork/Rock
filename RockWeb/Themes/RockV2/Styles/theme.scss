@@ -1032,8 +1032,7 @@ $hamburger-spacing: 4px;
 .panel-widget .panel-heading {
   display: flex;
   align-items: center;
-  border-top-left-radius: var(--rounded-medium);
-  border-top-right-radius: var(--rounded-medium);
+  border-radius: var(--rounded-medium);
   
   .pull-left {
     margin-right: auto;
