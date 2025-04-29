@@ -364,7 +364,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { vShortcut } from "@Obsidian/Directives/shortcut";
-    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { SegmentCriteria, SegmentCriteriaDescription } from "@Obsidian/Enums/Communication/segmentCriteria";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";

@@ -223,7 +223,7 @@
     import { useCache, useInvokeBlockActionHelper, usePersonPreferencesHelper } from "./CommunicationEntryWizard/utils.partial";
     import WizardStartStep from "./CommunicationEntryWizard/wizardStartStep.partial.obs";
     import { GetHtmlResponse } from "@Obsidian/Controls/emailEditor";
-    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { PushOpenAction } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/pushOpenAction";
     import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
     import { SegmentCriteria } from "@Obsidian/Enums/Communication/segmentCriteria";

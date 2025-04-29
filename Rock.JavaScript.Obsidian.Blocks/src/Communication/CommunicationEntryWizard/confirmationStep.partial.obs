@@ -223,7 +223,7 @@ dl:not(.dl-horizontal) dt:first-child {
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { vShortcut } from "@Obsidian/Directives/shortcut";
-    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";

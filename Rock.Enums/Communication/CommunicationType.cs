@@ -15,11 +15,12 @@
 // </copyright>
 //
 
-namespace Rock.Enums.Blocks.Communication.CommunicationEntryWizard
+namespace Rock.Enums.Communication
 {
     /// <summary>
     /// Type of communication
     /// </summary>
+    [Enums.EnumDomain( "Communication" )]
     public enum CommunicationType
     {
         /// <summary>
