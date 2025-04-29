@@ -1394,7 +1394,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 }
 
                 group.LoadAttributes( RockContext );
-                group.Members.Select( gm => gm.Person ).LoadAttributes( RockContext );
+                group.Members.Select( gm => gm.Person ).ToList().LoadAttributes( RockContext );
             }
             else
             {
@@ -1416,7 +1416,11 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "Kiosk not found." );
             }
 
-            if ( !kiosk.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean() )
+            if ( group.Id == 0 && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_FAMILIES ).AsBoolean() )
+            {
+                return ActionBadRequest( "This kiosk does not support family registration." );
+            }
+            else if ( group.Id != 0 && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_EDITING_FAMILIES ).AsBoolean() )
             {
                 return ActionBadRequest( "This kiosk does not support family registration." );
             }
@@ -1495,6 +1499,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             var template = GroupTypeCache.GetByIdKey( options.TemplateId, RockContext )
                 ?.GetCheckInConfiguration( RockContext );
             var kiosk = DeviceCache.GetByIdKey( options.KioskId, RockContext );
+            var familyId = options.Family?.Bag?.Id;
 
             if ( template == null )
             {
@@ -1506,7 +1511,11 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "Kiosk not found." );
             }
 
-            if ( !kiosk.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean() )
+            if ( familyId.IsNullOrWhiteSpace() && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_FAMILIES ).AsBoolean() )
+            {
+                return ActionBadRequest( "This kiosk does not support family registration." );
+            }
+            else if ( familyId.IsNotNullOrWhiteSpace() && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_EDITING_FAMILIES ).AsBoolean() )
             {
                 return ActionBadRequest( "This kiosk does not support family registration." );
             }

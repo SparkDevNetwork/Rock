@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
@@ -196,7 +197,7 @@ namespace Rock.CheckIn.v2
                 group.LoadAttributes( _rockContext );
             }
 
-            group.Members.Select( gm => gm.Person ).LoadAttributes( _rockContext );
+            group.Members.Select( gm => gm.Person ).ToList().LoadAttributes( _rockContext );
 
             var bag = new RegistrationFamilyBag
             {
@@ -225,7 +226,7 @@ namespace Rock.CheckIn.v2
         /// <returns>An list of <see cref="RegistrationPersonBag"/> objects.</returns>
         public List<ValidPropertiesBox<RegistrationPersonBag>> GetFamilyMemberBags( Group group, List<GroupMember> canCheckInMembers )
         {
-            group.Members.Select( gm => gm.Person ).LoadAttributes( _rockContext );
+            group.Members.Select( gm => gm.Person ).ToList().LoadAttributes( _rockContext );
 
             var personBags = group.Members
                 .Select( gm => GetPersonBag( gm.Person, null ) )
@@ -254,6 +255,7 @@ namespace Rock.CheckIn.v2
         {
             members.Select( gm => gm.Person )
                 .DistinctBy( p => p.Id )
+                .ToList()
                 .LoadAttributes( _rockContext );
 
             foreach ( var member in members )
@@ -938,6 +940,17 @@ namespace Rock.CheckIn.v2
             }
 
             var isNewPerson = person.Id == 0;
+
+            if ( isNewPerson )
+            {
+                if ( !saveResult.RecordSourceValueId.HasValue )
+                {
+                    saveResult.RecordSourceValueId = RecordSourceHelper.GetSessionRecordSourceValueId()
+                        ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_CHECK_IN.AsGuid() )?.Id;
+                }
+
+                person.RecordSourceValueId = saveResult.RecordSourceValueId;
+            }
 
             _rockContext.SaveChanges();
 

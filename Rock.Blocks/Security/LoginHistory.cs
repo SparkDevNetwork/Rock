@@ -23,13 +23,17 @@ using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
+using Rock.Enums.Controls;
 using Rock.Enums.Security;
 using Rock.Field.Types;
 using Rock.Model;
+using Rock.Observability;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Security.LoginHistory;
-using Rock.Web.Cache;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Core.Grid;
 using Rock.Web.UI;
 
 namespace Rock.Blocks.Security
@@ -66,9 +70,28 @@ namespace Rock.Blocks.Security
             public const string EnablePersonContext = "EnablePersonContext";
         }
 
+        private static class PreferenceKey
+        {
+            public const string FilterSlidingDateRange = "filter-sliding-date-range";
+        }
+
+        private static class SqlParamKey
+        {
+            public const string DateTimeStart = "@DateTimeStart";
+            public const string DateTimeEnd = "@DateTimeEnd";
+            public const string PersonId = "@PersonId";
+        }
+
         #endregion Keys
 
         #region Properties
+
+        /// <summary>
+        /// Gets the sliding date range by which to filter the results.
+        /// </summary>
+        private SlidingDateRangeBag FilterSendDateRange => this.GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterSlidingDateRange )
+            .ToSlidingDateRangeBagOrNull();
 
         /// <summary>
         /// Gets the context person, if this block should show login history for only a single person.
@@ -89,10 +112,13 @@ namespace Rock.Blocks.Security
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var box = new LoginHistoryInitializationBox
-            {
-                GridDefinition = GetGridBuilder().BuildDefinition()
-            };
+            var box = new ListBlockBox<LoginHistoryOptionsBag>();
+            var builder = GetGridBuilder();
+
+            box.ExpectedRowCount = 50;
+            box.Options = GetBoxOptions();
+            box.GridDefinition = builder.BuildDefinition();
+            box.NavigationUrls = GetBoxNavigationUrls();
 
             return box;
         }
@@ -104,30 +130,37 @@ namespace Rock.Blocks.Security
         /// <summary>
         /// Gets the login history grid data.
         /// </summary>
-        /// <param name="bag">The information needed to get grid data.</param>
         /// <returns>A bag containing the login history grid data.</returns>
         [BlockAction]
-        public BlockActionResult GetGridData( LoginHistoryFiltersBag bag )
+        public BlockActionResult GetGridData()
         {
-            if ( bag == null )
+            // Default to the last 30 days if a null/invalid range was selected.
+            var defaultSlidingDateRange = new SlidingDateRangeBag
             {
-                return ActionBadRequest();
-            }
+                RangeType = SlidingDateRangeType.Last,
+                TimeUnit = TimeUnitType.Day,
+                TimeValue = 30
+            };
 
-            // Build a dynamic SQL query to project the needed data into a custom POCO.
-            var sqlSb = new StringBuilder( @"
+            var dateRange = FilterSendDateRange.Validate( defaultSlidingDateRange ).ActualDateRange;
+            var dateTimeStart = dateRange.Start;
+            var dateTimeEnd = dateRange.End;
+
+            var sqlParams = new List<SqlParameter>
+            {
+                new SqlParameter( SqlParamKey.DateTimeStart, dateTimeStart.Value ),
+                new SqlParameter( SqlParamKey.DateTimeEnd, dateTimeEnd.Value )
+            };
+
+            // Build a dynamic SQL query to project only the needed data into a custom POCO.
+            var sqlSb = new StringBuilder( $@"
 SELECT
     hl.[Guid] AS [HistoryLoginGuid]
-    , hl.[UserName]
-    , ul.[EntityTypeId] AS [UserLoginEntityTypeId]
+
+    -- Date
     , hl.[LoginAttemptDateTime]
-    , hl.[ClientIpAddress]
-    , hl.[ExternalSource]
-    , s.[Name] AS [SourceSiteName]
-    , JSON_VALUE(hl.[RelatedDataJson], '$.ImpersonatedByPersonFullName') AS [ImpersonatedBy]
-    , JSON_VALUE(hl.[RelatedDataJson], '$.LoginContext') AS [LoginContext]
-    , hl.[LoginFailureReason]
-    , hl.[LoginFailureMessage]
+
+    -- Person:
     , pa.[PersonId] AS [PersonId]
     , p.[NickName]
     , p.[LastName]
@@ -139,52 +172,62 @@ SELECT
     , p.[Gender]
     , p.[RecordTypeValueId]
     , p.[AgeClassification]
+
+    -- Provider
+    , et.[FriendlyName] AS [EntityTypeFriendlyName]
+    , JSON_VALUE(hl.[RelatedDataJson], '$.LoginContext') AS [LoginContext]
+
+    -- Username
+    , hl.[UserName]
+
+    -- Source
+    , hl.[ExternalSource]
+    , s.[Name] AS [SourceSiteName]
+
+    -- Client IP
+    , hl.[ClientIpAddress]
+
+    -- Status
+    , hl.[LoginFailureReason]
+
+    -- Tooltip:
+    , JSON_VALUE(hl.[RelatedDataJson], '$.ImpersonatedByPersonFullName') AS [ImpersonatedBy]
+    , hl.[LoginFailureMessage]
+
 FROM [HistoryLogin] hl
-LEFT OUTER JOIN [UserLogin] ul ON ul.[Id] = hl.[UserLoginId]
-LEFT OUTER JOIN [Site] s ON s.[Id] = hl.[SourceSiteId]
 LEFT OUTER JOIN [PersonAlias] pa ON pa.[Id] = hl.[PersonAliasId]
 LEFT OUTER JOIN [Person] p ON p.[Id] = pa.[PersonId]
-WHERE 1 = 1
+LEFT OUTER JOIN [UserLogin] ul ON ul.[Id] = hl.[UserLoginId]
+LEFT OUTER JOIN [EntityType] et ON et.[Id] = ul.[EntityTypeId]
+LEFT OUTER JOIN [Site] s ON s.[Id] = hl.[SourceSiteId]
+WHERE
+    hl.[LoginAttemptDateTime] >= {SqlParamKey.DateTimeStart}
+    AND hl.[LoginAttemptDateTime] < {SqlParamKey.DateTimeEnd}
 " );
-
-            var sqlParams = new List<SqlParameter>();
-
-            if ( bag.StartDateTime.HasValue )
-            {
-                sqlSb.AppendLine( "    AND hl.[LoginAttemptDateTime] >= @StartDateTime" );
-                sqlParams.Add( new SqlParameter( "@StartDateTime", bag.StartDateTime.Value.LocalDateTime ) );
-            }
-
-            if ( bag.EndDateTime.HasValue )
-            {
-                sqlSb.AppendLine( "    AND hl.[LoginAttemptDateTime] < @EndDateTime" );
-                sqlParams.Add( new SqlParameter( "@EndDateTime", bag.EndDateTime.Value.LocalDateTime ) );
-            }
 
             if ( this.IsPersonContextEnabled )
             {
-                sqlSb.AppendLine( "    AND pa.[PersonId] = @PersonId" );
-                sqlParams.Add( new SqlParameter( "@PersonId", this.ContextPerson.Id ) );
+                sqlSb.AppendLine( $"    AND pa.[PersonId] = {SqlParamKey.PersonId}" );
+                sqlParams.Add( new SqlParameter( SqlParamKey.PersonId, ContextPerson.Id ) );
             }
 
             sqlSb.Append( "ORDER BY hl.[LoginAttemptDateTime] DESC;" );
 
-            // Execute the query to load the rows into memory.
-            var sqlResults = RockContext.Database
-                .SqlQuery<LoginHistoryRow>( sqlSb.ToString(), sqlParams.ToArray() )
-                .ToList();
-
-            // Cache the provider [name] by entity type identifiers for this request, so we only have to look them up
-            // once per identifier, to be shared across all rows.
-            var providerCache = new Dictionary<int, string>();
-
-            // Attach the provider cache to each row.
-            var loginHistoryRows = sqlResults
-                .Select( r => r.WithProviderCache( providerCache ) )
-                .ToList();
+            List<LoginHistoryRow> loginHistoryRows;
+            using ( var activity = ObservabilityHelper.StartActivity( "Query [HistoryLogin] Records" ) )
+            {
+                loginHistoryRows = RockContext.Database
+                    .SqlQuery<LoginHistoryRow>( sqlSb.ToString(), sqlParams.ToArray() )
+                    .ToList();
+            }
 
             var builder = GetGridBuilder();
-            var gridDataBag = builder.Build( loginHistoryRows );
+
+            GridDataBag gridDataBag;
+            using ( var activity = ObservabilityHelper.StartActivity( "Build Grid Data Bag" ) )
+            {
+                gridDataBag = builder.Build( loginHistoryRows );
+            }
 
             return ActionOk( gridDataBag );
         }
@@ -194,24 +237,122 @@ WHERE 1 = 1
         #region Private Methods
 
         /// <summary>
+        /// Gets the box options required for the component to render the list.
+        /// </summary>
+        /// <returns>The options that provide additional details to the block.</returns>
+        private LoginHistoryOptionsBag GetBoxOptions()
+        {
+            var options = new LoginHistoryOptionsBag();
+
+            return options;
+        }
+
+        /// <summary>
+        /// Gets the box navigation URLs required for the page to operate.
+        /// </summary>
+        /// <returns>A dictionary of key names and URL values.</returns>
+        private Dictionary<string, string> GetBoxNavigationUrls()
+        {
+            return new Dictionary<string, string>();
+        }
+
+        /// <summary>
         /// Gets the grid builder for the login history grid.
         /// </summary>
         /// <returns>The grid builder for the login history grid.</returns>
         private GridBuilder<LoginHistoryRow> GetGridBuilder()
         {
+            // A local cache to prevent repeated reflection overhead.
+            var statusCache = new Dictionary<LoginFailureReason, string>();
+
             var gridBuilder = new GridBuilder<LoginHistoryRow>()
                 .AddField( "historyLoginGuid", a => a.HistoryLoginGuid )
                 .AddDateTimeField( "dateTime", a => a.LoginAttemptDateTime )
-                .AddTextField( "provider", a => a.Provider )
-                .AddTextField( "username", a => a.UserName )
-                .AddTextField( "source", a => a.Source )
-                .AddTextField( "clientIp", a => a.ClientIpAddress )
-                .AddTextField( "status", a => a.Status )
-                .AddTextField( "tooltip", a => a.Tooltip );
+                .AddTextField( "provider", a =>
+                {
+                    if ( a.EntityTypeFriendlyName.IsNotNullOrWhiteSpace() )
+                    {
+                        return a.EntityTypeFriendlyName;
+                    }
 
-            if ( !this.IsPersonContextEnabled )
+                    return a.LoginContext;
+                } )
+                .AddTextField( "username", a => a.UserName )
+                .AddTextField( "source", a =>
+                {
+                    if ( a.ExternalSource.IsNotNullOrWhiteSpace() )
+                    {
+                        return a.ExternalSource;
+                    }
+
+                    return a.SourceSiteName;
+                } )
+                .AddTextField( "clientIp", a => a.ClientIpAddress )
+                .AddTextField( "status", a =>
+                {
+                    if ( !a.LoginFailureReason.HasValue )
+                    {
+                        return "Success";
+                    }
+
+                    if ( statusCache.TryGetValue( a.LoginFailureReason.Value, out var status ) )
+                    {
+                        return status;
+                    }
+
+                    status = a.LoginFailureReason.GetDescription();
+                    if ( status.IsNullOrWhiteSpace() )
+                    {
+                        status = a.LoginFailureReason.ConvertToString();
+                    }
+
+                    statusCache.TryAdd( a.LoginFailureReason.Value, status );
+
+                    return status;
+                } )
+                .AddTextField( "tooltip", a =>
+                {
+                    var tooltips = new List<string>();
+
+                    if ( a.ImpersonatedBy.IsNotNullOrWhiteSpace() )
+                    {
+                        tooltips.Add( $"Impersonated by {a.ImpersonatedBy}." );
+                    }
+
+                    if ( a.LoginFailureMessage.IsNotNullOrWhiteSpace() )
+                    {
+                        tooltips.Add( a.LoginFailureMessage );
+                    }
+
+                    return tooltips.Any()
+                        ? tooltips.AsDelimited( " " )
+                        : string.Empty;
+                } );
+
+            if ( !IsPersonContextEnabled )
             {
-                gridBuilder.AddPersonField( "person", a => a.Person );
+                gridBuilder.AddPersonField( "person", a =>
+                {
+                    if ( !a.PersonId.HasValue )
+                    {
+                        return null;
+                    }
+
+                    return new Person
+                    {
+                        Id = a.PersonId.Value,
+                        NickName = a.NickName,
+                        LastName = a.LastName,
+                        ConnectionStatusValueId = a.ConnectionStatusValueId,
+                        PhotoId = a.PhotoId,
+                        BirthDay = a.BirthDay,
+                        BirthMonth = a.BirthMonth,
+                        BirthYear = a.BirthYear,
+                        Gender = a.Gender ?? Model.Gender.Unknown,
+                        RecordTypeValueId = a.RecordTypeValueId,
+                        AgeClassification = a.AgeClassification ?? Model.AgeClassification.Unknown
+                    };
+                } );
             }
 
             return gridBuilder;
@@ -226,42 +367,13 @@ WHERE 1 = 1
         /// </summary>
         private class LoginHistoryRow
         {
-            #region Database Properties
-
             /// <summary>
             /// Gets or sets the <see cref="HistoryLogin"/> unique identifier.
             /// </summary>
             public Guid HistoryLoginGuid { get; set; }
 
-            /// <inheritdoc cref="HistoryLogin.UserName"/>
-            public string UserName { get; set; }
-
-            /// <inheritdoc cref="UserLogin.EntityTypeId"/>
-            public int? UserLoginEntityTypeId { get; set; }
-
             /// <inheritdoc cref="HistoryLogin.LoginAttemptDateTime"/>
             public DateTime LoginAttemptDateTime { get; set; }
-
-            /// <inheritdoc cref="HistoryLogin.ClientIpAddress"/>
-            public string ClientIpAddress { get; set; }
-
-            /// <inheritdoc cref="HistoryLogin.ExternalSource"/>
-            public string ExternalSource { get; set; }
-
-            /// <inheritdoc cref="Site.Name"/>
-            public string SourceSiteName { get; set; }
-
-            /// <inheritdoc cref="HistoryLoginRelatedData.ImpersonatedByPersonFullName"/>
-            public string ImpersonatedBy { get; set; }
-
-            /// <inheritdoc cref="HistoryLoginRelatedData.LoginContext"/>
-            public string LoginContext { get; set; }
-
-            /// <inheritdoc cref="HistoryLogin.LoginFailureReason"/>
-            public LoginFailureReason? LoginFailureReason { get; set; }
-
-            /// <inheritdoc cref="HistoryLogin.LoginFailureMessage"/>
-            public string LoginFailureMessage { get; set; }
 
             /// <summary>
             /// Gets or sets the <see cref="Person"/> identifier.
@@ -298,181 +410,34 @@ WHERE 1 = 1
             /// <inheritdoc cref="Person.AgeClassification"/>
             public AgeClassification? AgeClassification { get; set; }
 
-            #endregion Database Properties
-
-            #region Runtime Properties
-
             /// <summary>
-            /// Gets or sets a local cache for provider [name] by entity type identifiers.
+            /// Gets or sets the <see cref="EntityType.FriendlyName"/> of the login provider.
             /// </summary>
-            public Dictionary<int, string> ProviderCache { get; private set; }
+            public string EntityTypeFriendlyName { get; set; }
 
-            /// <summary>
-            /// Gets the provider represented by the login history.
-            /// </summary>
-            public string Provider
-            {
-                get
-                {
-                    string provider = null;
+            /// <inheritdoc cref="HistoryLoginRelatedData.LoginContext"/>
+            public string LoginContext { get; set; }
 
-                    if ( this.UserLoginEntityTypeId.HasValue )
-                    {
-                        // Was this provider already encountered in a previous row?
-                        if ( this.ProviderCache?.TryGetValue( this.UserLoginEntityTypeId.Value, out provider ) == true )
-                        {
-                            return provider;
-                        }
+            /// <inheritdoc cref="HistoryLogin.UserName"/>
+            public string UserName { get; set; }
 
-                        var entityTypeCache = EntityTypeCache.Get( this.UserLoginEntityTypeId.Value );
-                        if ( entityTypeCache != null )
-                        {
-                            var componentName = Rock.Reflection.GetDisplayName( entityTypeCache.GetEntityType() );
+            /// <inheritdoc cref="HistoryLogin.ExternalSource"/>
+            public string ExternalSource { get; set; }
 
-                            // If it has a DisplayName, use it as is; otherwise, look within the container.
-                            if ( string.IsNullOrWhiteSpace( componentName ) )
-                            {
-                                componentName = AuthenticationContainer.GetComponentName( entityTypeCache.Name );
+            /// <inheritdoc cref="Site.Name"/>
+            public string SourceSiteName { get; set; }
 
-                                // If the component name already has a space, then trust that they are using the
-                                // exact name formatting they want.
-                                if ( !componentName.Contains( ' ' ) )
-                                {
-                                    // Otherwise split on spaces for better readability.
-                                    componentName = componentName.SplitCase();
-                                }
-                            }
+            /// <inheritdoc cref="HistoryLogin.ClientIpAddress"/>
+            public string ClientIpAddress { get; set; }
 
-                            provider = componentName;
+            /// <inheritdoc cref="HistoryLogin.LoginFailureReason"/>
+            public LoginFailureReason? LoginFailureReason { get; set; }
 
-                            if ( provider.IsNotNullOrWhiteSpace() )
-                            {
-                                // If we found a value and have an entity type identifier, cache it for subsequent rows.
-                                this.ProviderCache?.TryAdd( this.UserLoginEntityTypeId.Value, provider );
-                            }
-                        }
-                    }
+            /// <inheritdoc cref="HistoryLoginRelatedData.ImpersonatedByPersonFullName"/>
+            public string ImpersonatedBy { get; set; }
 
-                    if ( provider.IsNullOrWhiteSpace() )
-                    {
-                        // Do we have a login context we can fall back on?
-                        provider = this.LoginContext;
-                    }
-
-                    return provider;
-                }
-            }
-
-            /// <summary>
-            /// Gets the source represented by the login history.
-            /// </summary>
-            public string Source
-            {
-                get
-                {
-                    if ( this.ExternalSource.IsNotNullOrWhiteSpace() )
-                    {
-                        return this.ExternalSource;
-                    }
-
-                    return this.SourceSiteName;
-                }
-            }
-
-            /// <summary>
-            /// Gets the status of the login history.
-            /// </summary>
-            public string Status
-            {
-                get
-                {
-                    var status = this.LoginFailureReason.HasValue
-                        ? this.LoginFailureReason.GetDescription()
-                        : "Success";
-
-                    if ( status.IsNullOrWhiteSpace() )
-                    {
-                        status = this.LoginFailureReason.ConvertToString();
-                    }
-
-                    return status;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the tooltip to show when hovering over the row.
-            /// </summary>
-            public string Tooltip
-            {
-                get
-                {
-                    var tooltips = new List<string>();
-
-                    if ( this.ImpersonatedBy.IsNotNullOrWhiteSpace() == true )
-                    {
-                        tooltips.Add( $"Impersonated by {this.ImpersonatedBy}." );
-                    }
-
-                    if ( this.LoginFailureMessage.IsNotNullOrWhiteSpace() )
-                    {
-                        tooltips.Add( this.LoginFailureMessage );
-                    }
-
-                    return tooltips.Any()
-                        ? tooltips.AsDelimited( " " )
-                        : string.Empty;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the <see cref="Rock.Model.Person"/> represented by the login history.
-            /// </summary>
-            /// <remarks>
-            /// This will NOT be a full <see cref="Rock.Model.Person"/> entity, but instead: only the minimal fields
-            /// necessary to properly display this person in the Obsidian grid.
-            /// </remarks>
-            public Person Person
-            {
-                get
-                {
-                    if ( !this.PersonId.HasValue )
-                    {
-                        return null;
-                    }
-
-                    return new Person
-                    {
-                        Id = this.PersonId.Value,
-                        NickName = this.NickName,
-                        LastName = this.LastName,
-                        ConnectionStatusValueId = this.ConnectionStatusValueId,
-                        PhotoId = this.PhotoId,
-                        BirthDay = this.BirthDay,
-                        BirthMonth = this.BirthMonth,
-                        BirthYear = this.BirthYear,
-                        Gender = this.Gender ?? Model.Gender.Unknown,
-                        RecordTypeValueId = this.RecordTypeValueId,
-                        AgeClassification = this.AgeClassification ?? Model.AgeClassification.Unknown
-                    };
-                }
-            }
-
-            #endregion Runtime Properties
-
-            #region Methods
-
-            /// <summary>
-            /// Sets the <paramref name="providerCache"/> on the <see cref="ProviderCache"/>.
-            /// </summary>
-            /// <param name="providerCache">The provider cache to set.</param>
-            /// <returns>The <see cref="LoginHistoryRow"/> instance on which the provider cache was set.</returns>
-            public LoginHistoryRow WithProviderCache( Dictionary<int, string> providerCache )
-            {
-                this.ProviderCache = providerCache;
-                return this;
-            }
-
-            #endregion Methods
+            /// <inheritdoc cref="HistoryLogin.LoginFailureMessage"/>
+            public string LoginFailureMessage { get; set; }
         }
 
         #endregion Supporting Classes

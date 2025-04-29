@@ -136,6 +136,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 AddressTypeOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ),
                 ConnectionStatusOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ),
                 RecordStatusOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() ),
+                RecordSourceOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() ),
                 EmailTemplateOptions = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetEmailTemplateOptions( rockContext, RequestContext ),
             };
         }

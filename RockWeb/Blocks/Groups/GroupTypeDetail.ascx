@@ -99,6 +99,9 @@
                                 <Rock:RockDropDownList ID="ddlGroupStatusDefinedType" runat="server" Label="Group Status Defined Type" Help="Select the defined type to use when setting the group's status. Leave this blank if you don't want groups to prompt for group status." EnhanceForLongLists="true" />
                                 <Rock:RockCheckBox ID="cbShowAdministrator" runat="server" Label="Show Administrator"
                                     Help="This setting determines if groups of this type support assigning an administrator for each group." />
+
+                                <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source" Help="The record source for group members added to groups of this type." />
+                                <Rock:RockCheckBox ID="cbAllowGroupSpecificRecordSource" runat="server" Label="Allow Specific Group Record Source" Help="Determines if groups of this type should be allowed to override the record source." />
                             </div>
                             <div class="col-md-6">
                                 <div class="row">

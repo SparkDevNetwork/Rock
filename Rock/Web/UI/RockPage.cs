@@ -36,8 +36,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Cms.Utm;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Net;
 using Rock.Observability;
@@ -1199,6 +1201,11 @@ namespace Rock.Web.UI
                 else
                 {
                     /* At this point, we know the Person (or NULL person) is authorized to View the page */
+
+                    RecordSourceHelper.TrySetRecordSourceSessionCookie( ( cookieName, cookieValue ) =>
+                    {
+                        AddOrUpdateCookie( new HttpCookie( cookieName, cookieValue ) );
+                    } );
 
                     if ( Site.EnableVisitorTracking )
                     {
@@ -2784,6 +2791,7 @@ Sys.Application.add_load(function () {
             {
                 WebRootPath = AppDomain.CurrentDomain.BaseDirectory
             } );
+            serviceCollection.AddRockLogging();
 
             return serviceCollection.BuildServiceProvider();
         }
@@ -5088,6 +5096,15 @@ Sys.Application.add_load(function () {
             if ( _lazyServiceProvider.Value.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
             {
                 internalAccessor.RockRequestContext = RequestContext;
+            }
+
+            if ( RequestContext.IsClientForbidden( _pageCache ) )
+            {
+                context.Response.StatusCode = ( int ) System.Net.HttpStatusCode.Forbidden;
+                context.Response.SuppressContent = true;
+                context.ApplicationInstance.CompleteRequest();
+
+                return null;
             }
 
             return AsyncPageBeginProcessRequest( context, cb, extraData );

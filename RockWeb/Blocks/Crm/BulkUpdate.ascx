@@ -191,6 +191,56 @@
                         </div>
                     </Rock:PanelWidget>
 
+                    <Rock:PanelWidget ID="pwSteps" runat="server" Title="Steps" TitleIconCssClass="fa fa-walking" Expanded="false">
+
+                        <div class="row">
+
+                            <div class="col-md-6">
+
+                                <Rock:RockDropDownList ID="ddlStepAction" runat="server" Label="Action" AutoPostBack="true" OnSelectedIndexChanged="ddlStepAction_SelectedIndexChanged" >
+                                    <asp:ListItem Value="Add" Text="Add Step" />
+                                    <asp:ListItem Value="Remove" Text="Remove Step" />
+                                    <asp:ListItem Value="Update" Text="Update Step" />
+                                </Rock:RockDropDownList>
+
+                                <Rock:StepProgramPicker ID="sppProgramPicker" runat="server" Label="Step Program" OnSelectedIndexChanged="sppProgramPicker_SelectedIndexChanged" AutoPostBack="true" />
+
+                                <Rock:StepTypePicker ID="stpStepTypePicker" runat="server" Label="Step Type" OnSelectedIndexChanged="stpStepTypePicker_SelectedIndexChanged" AutoPostBack="true" Visible="false" />
+
+                            </div>
+
+                            <asp:Panel ID="pnlStepDetail" runat="server" CssClass="col-md-6" Visible="false">
+
+                                <Rock:StepStatusPicker ID="sspStatusPicker" runat="server" Label="Status" />
+
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <Rock:DatePicker ID="dpStepStartDate" runat="server" Label="Date" />
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <Rock:DatePicker ID="dpStepEndDate" runat="server" Label="End Date" Visible="false" />
+                                    </div>
+                                </div>
+
+                                <Rock:CampusPicker ID="cpStepCampus" runat="server" Label="Campus" />
+
+                                <Rock:RockTextBox ID="tbStepNote" runat="server" Label="Note" Rows="4" TextMode="MultiLine" />
+
+                            </asp:Panel>
+
+                        </div>
+
+                        <asp:Panel ID="pnlStepAttributes" runat="server" CssClass="row">
+                            <div class="col-sm-12">
+                                <asp:PlaceHolder ID="PlaceHolder1" runat="server"></asp:PlaceHolder>
+                                <Rock:AttributeValuesContainer ID="avcStepAttributes" runat="server" NumberOfColumns="2" />
+                            </div>
+                        </asp:Panel>
+
+                        <Rock:NotificationBox ID="nbStepMessage" runat="server" NotificationBoxType="Warning" Visible="false" />
+
+                    </Rock:PanelWidget>
+
                     <asp:CustomValidator ID="cvSelection" runat="server" OnServerValidate="cvSelection_ServerValidate" Display="None" ErrorMessage="You have not selected anything to update." />
 
                     <div class="actions">

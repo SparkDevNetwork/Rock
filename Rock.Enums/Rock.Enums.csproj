@@ -50,7 +50,7 @@
     <Compile Include="AI\ChatMessageRole.cs" />
     <Compile Include="AI\NameRemoval.cs" />
     <Compile Include="AI\TextEnhancement.cs" />
-    <Compile Include="Blocks\Communication\CommunicationEntryWizard\CommunicationType.cs" />
+    <Compile Include="Communication\CommunicationType.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntryWizard\PushOpenAction.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\Mode.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\MediumType.cs" />
@@ -59,6 +59,7 @@
     <Compile Include="CheckIn\AgeRestrictionMode.cs" />
     <Compile Include="CheckIn\GradeAndAgeMatchingMode.cs" />
     <Compile Include="CheckIn\LocationSelectionStrategy.cs" />
+    <Compile Include="Cms\MediaElementQuality.cs" />
     <Compile Include="Cms\ThemeFieldType.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\CommunicationPreference.cs" />
     <Compile Include="Blocks\Group\Scheduling\ToolboxActionType.cs" />

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -24,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -34,7 +36,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether they have a picture or not" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Has Picture Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "569CD481-0C0A-4A05-8EB5-4836CF13E853")]
+    [Rock.SystemGuid.EntityTypeGuid( "569CD481-0C0A-4A05-8EB5-4836CF13E853" )]
     public class HasPictureFilter : DataFilterComponent
     {
         #region Properties
@@ -59,6 +61,28 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/hasPictureFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new Dictionary<string, string>
+            {
+                { "hasPicture", selection == string.Empty ? "1" : selection }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return data.GetValueOrDefault( "hasPicture", "1" );
         }
 
         #endregion
@@ -112,6 +136,8 @@ namespace Rock.Reporting.DataFilter.Person
             }
         }
 
+#if WEBFORMS
+
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -163,6 +189,8 @@ namespace Rock.Reporting.DataFilter.Person
             ( controls[0] as RadioButtonList ).SelectedValue = selection;
         }
 
+#endif
+
         /// <summary>
         /// Gets the expression.
         /// </summary>
@@ -173,7 +201,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
+            var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
                 .Where( p => p.PhotoId.HasValue == ( selection == "1" ) );
 
             return FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

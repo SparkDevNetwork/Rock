@@ -71,6 +71,7 @@ namespace Rock.Communication.Chat
         private static class ChannelDataKey
         {
             public const string Disabled = "disabled";
+            public const string Image = "image";
             public const string Name = "name";
             public const string IsLeavingAllowed = "rock_leaving_allowed";
             public const string IsPublic = "rock_public";
@@ -319,6 +320,10 @@ namespace Rock.Communication.Chat
                                 ChatRole.User.GetDescription(),
                                 new List<string>
                                 {
+                                    // We allow channels to be displayed that a person may not be a member of.
+                                    // These channels are automatically joined when a user sends a message to them.
+                                    "add-own-channel-membership",
+
                                     // The following were taken from the default "messaging (Channel Type scope)" > "channel_member" grants.
                                     "add-links",
                                     "cast-vote",
@@ -377,6 +382,10 @@ namespace Rock.Communication.Chat
                                 ChatRole.Moderator.GetDescription(),
                                 new List<string>
                                 {
+                                    // We allow channels to be displayed that a person may not be a member of.
+                                    // These channels are automatically joined when a user sends a message to them.
+                                    "add-own-channel-membership",
+
                                     // The following were taken from the default "messaging (Channel Type scope)" > "moderator" grants.
                                     "add-links",
                                     "ban-channel-member",
@@ -426,6 +435,10 @@ namespace Rock.Communication.Chat
                                 ChatRole.Administrator.GetDescription(),
                                 new List<string>
                                 {
+                                    // We allow channels to be displayed that a person may not be a member of.
+                                    // These channels are automatically joined when a user sends a message to them.
+                                    "add-own-channel-membership",
+
                                     // The following were taken from the default "messaging (Channel Type scope)" > "admin" grants.
                                     "add-links",
                                     "ban-channel-member",
@@ -737,6 +750,69 @@ namespace Rock.Communication.Chat
             }
 
             // If an exception wasn't thrown, assume app settings were updated.
+            result.IsSetUp = !result.HasException;
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public async Task<ChatSyncSetupResult> UpdatePushNotificationSettingsAsync()
+        {
+            var result = new ChatSyncSetupResult();
+
+            var operationName = nameof( UpdatePushNotificationSettingsAsync ).SplitCase();
+
+            var pushProviderName = "rock-firebase";
+
+            try
+            {
+                var firebaseCredentials = ChatHelper.GetRockMobilePushServiceAccountJson();
+                if ( firebaseCredentials.IsNotNullOrWhiteSpace() )
+                {
+                    // Ensure Stream has the latest firebase account details.
+                    var pushProviderRequest = new PushProviderRequest
+                    {
+                        Type = PushProviderType.Firebase,
+                        Name = pushProviderName,
+                        FirebaseCredentials = firebaseCredentials
+                    };
+
+                    await RetryAsync(
+                        async () => await AppClient.UpsertPushProviderAsync( pushProviderRequest ),
+                        operationName
+                    );
+                }
+                else
+                {
+                    // Do we need to remove an existing push provider?
+                    var listPushProviderResponse = await RetryAsync(
+                        async () => await AppClient.ListPushProvidersAsync(),
+                        operationName
+                    );
+
+                    var shouldDelete = listPushProviderResponse
+                        ?.PushProviders
+                        ?.Any( p =>
+                            p.Type == PushProviderType.Firebase
+                            && p.Name == pushProviderName
+                        ) == true;
+
+                    if ( shouldDelete )
+                    {
+                        // TODO (Jason): Enable push provider deletion when Stream fixes an issue preventing deletion.
+                        //await RetryAsync(
+                        //    async () => await AppClient.DeletePushProviderAsync( PushProviderType.Firebase, pushProviderName ),
+                        //    operationName
+                        //);
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+            }
+
+            // If an exception wasn't thrown, assume push notification settings were updated.
             result.IsSetUp = !result.HasException;
 
             return result;
@@ -3379,6 +3455,7 @@ namespace Rock.Communication.Chat
                 channelRequest.SetData( ChannelDataKey.Name, chatChannel.Name );
             }
 
+            channelRequest.SetData( ChannelDataKey.Image, chatChannel.AvatarImageUrl ?? string.Empty );
             channelRequest.SetData( ChannelDataKey.CampusId, chatChannel.CampusId ?? 0 );
             channelRequest.SetData( ChannelDataKey.IsLeavingAllowed, chatChannel.IsLeavingAllowed );
             channelRequest.SetData( ChannelDataKey.IsPublic, chatChannel.IsPublic );
@@ -3465,6 +3542,7 @@ namespace Rock.Communication.Chat
                 ChatChannelTypeKey = channel.Type,
                 QueryableKey = channel.Cid,
                 Name = channel.GetDataOrDefault<string>( ChannelDataKey.Name, null ),
+                AvatarImageUrl = channel.GetDataOrDefault( ChannelDataKey.Image, string.Empty ),
                 CampusId = campusId,
                 IsLeavingAllowed = channel.GetDataOrDefault( ChannelDataKey.IsLeavingAllowed, false ),
                 IsPublic = channel.GetDataOrDefault( ChannelDataKey.IsPublic, false ),
@@ -3512,7 +3590,7 @@ namespace Rock.Communication.Chat
 
             var badges = user.GetDataOrDefault( UserDataKey.Badges, new List<ChatBadge>() ) ?? new List<ChatBadge>();
 
-            var campusId = user.GetDataOrDefault<int?>( ChannelDataKey.CampusId, null );
+            var campusId = user.GetDataOrDefault<int?>( UserDataKey.CampusId, null );
 
             // A Stream rock_campus_id value of 0 represents a null campus ID in Rock.
             campusId = ( campusId > 0 ) ? campusId : null;

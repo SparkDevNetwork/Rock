@@ -89,5 +89,13 @@ namespace Rock.ViewModels.Blocks.Administration.PageProperties
         ///   <c>true</c> if [enable full edit mode]; otherwise, <c>false</c>.
         /// </value>
         public bool EnableFullEditMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the countries.
+        /// </summary>
+        /// <value>
+        /// The countries.
+        /// </value>
+        public List<ListItemBag> Countries { get; set; }
     }
 }

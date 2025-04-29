@@ -5,9 +5,6 @@
             <div :class="columnClass">
                 <CheckBox v-model="autofillCurrentPerson"
                           label="Autofill Current Person" />
-            </div>
-
-            <div :class="columnClass">
                 <CheckBox v-model="hideIfCurrentPersonKnown"
                           label="Hide if Current Person Known" />
             </div>
@@ -16,6 +13,13 @@
                 <DropDownList v-model="recordStatus"
                               label="Record Status"
                               :items="recordStatusOptions"
+                              rules="required" />
+            </div>
+
+            <div :class="columnClass">
+                <DropDownList v-model="recordSource"
+                              label="Record Source"
+                              :items="recordSourceOptions"
                               rules="required" />
             </div>
 
@@ -168,6 +172,11 @@
             default: []
         },
 
+        recordSourceOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            default: []
+        },
+
         connectionStatusOptions: {
             type: Array as PropType<ListItemBag[]>,
             default: []
@@ -202,6 +211,7 @@
     const autofillCurrentPerson = ref(props.modelValue.autofillCurrentPerson ?? false);
     const hideIfCurrentPersonKnown = ref(props.modelValue.hideIfCurrentPersonKnown ?? false);
     const recordStatus = ref(props.modelValue.recordStatus ?? "");
+    const recordSource = ref(props.modelValue.recordSource ?? "");
     const connectionStatus = ref(props.modelValue.connectionStatus ?? "");
     const showCampus = ref(props.modelValue.showCampus ?? false);
     const includeInactiveCampus = ref(props.modelValue.includeInactiveCampus ?? false);

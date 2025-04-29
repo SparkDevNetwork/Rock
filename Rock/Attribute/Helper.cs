@@ -775,20 +775,82 @@ This can be due to multiple threads updating the same attribute at the same time
         }
 
         /// <summary>
-        /// <para>
+        /// Loads the attributes for all entities.
+        /// </summary>
+        /// <param name="entityType">The type that will be used when loading attribute data for the entities.</param>
+        /// <param name="entities">The entities.</param>
+        /// <param name="rockContext">The rock context.</param>
+        internal static void LoadAttributes( Type entityType, ICollection<IHasAttributes> entities, RockContext rockContext )
+        {
+            LoadFilteredAttributes( entityType, entities, rockContext, null );
+        }
+
+        /// <summary>
+        /// Loads the attributes for all entities.
+        /// </summary>
+        /// <param name="entityType">The type that will be used when loading attribute data for the entities.</param>
+        /// <param name="entities">The entities.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="attributeFilter">The expression to use when filtering which attributes to load.</param>
+        internal static void LoadFilteredAttributes( Type entityType, ICollection<IHasAttributes> entities, RockContext rockContext, Func<AttributeCache, bool> attributeFilter )
+        {
+            if ( entities.Count == 1 )
+            {
+                entities.First().LoadAttributes( rockContext );
+            }
+            else if ( entities.Count > 1 )
+            {
+                // This is a workaround for the fact that the LoadAttributes method
+                // needs to be a Generic in order to work correctly, but there are
+                // a few specific cases where we have a List<IHasAttributes> without
+                // knowing the exact type and we need to load all attributes.
+                // It's not lightning fast, but takes about 0.02ms to get the method
+                // and then another 0.06ms to create the list (of 20 items). Still
+                // faster than multiple database loads.
+                var method = typeof( Helper )
+                    .GetMethods( BindingFlags.NonPublic | BindingFlags.Static )
+                    .Where( m => m.Name == nameof( LoadFilteredAttributes )
+                        && m.IsGenericMethodDefinition )
+                    .Where( m =>
+                    {
+                        var typeParams = m.GetGenericArguments();
+
+                        if ( typeParams.Length != 1 )
+                        {
+                            return false;
+                        }
+
+                        var methodParams = m.GetParameters();
+
+                        return methodParams.Length == 3
+                            && methodParams[1].ParameterType == typeof( RockContext )
+                            && methodParams[2].ParameterType == typeof( Func<AttributeCache, bool> );
+                    } )
+                    .FirstOrDefault();
+
+                // Convert the list of IHasAttributes to a List<T> that can be
+                // passed to the method.
+                var list = ( System.Collections.IList ) Activator.CreateInstance( typeof( List<> ).MakeGenericType( entityType ), entities.Count );
+                foreach ( var entity in entities )
+                {
+                    list.Add( entity );
+                }
+
+                var genericMethod = method.MakeGenericMethod( entityType );
+
+                genericMethod.Invoke( null, new object[] { list, rockContext, attributeFilter } );
+            }
+        }
+
+        /// <summary>
         /// Loads the <see cref="IHasAttributes.Attributes" /> and <see cref="IHasAttributes.AttributeValues" /> of
-        /// any <see cref="IHasAttributes" /> object with an option to limit to specific attributes
-        /// </para>
-        /// <para>
-        /// This method can only operate on lists comprised of a single object type.
-        /// Meaning, you can't mix Person and Group objects and expect to get valid
-        /// attributes back.
-        /// </para>
+        /// any <see cref="IHasAttributes" /> object with an option to limit to specific attributes.
         /// </summary>
         /// <param name="entities">The entities whose attributes are to be loaded.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="limitToAttributes">The limit to attributes.</param>
-        internal static void LoadAttributes( IEnumerable<IHasAttributes> entities, RockContext rockContext, List<AttributeCache> limitToAttributes )
+        internal static void LoadAttributes<T>( ICollection<T> entities, RockContext rockContext, List<AttributeCache> limitToAttributes )
+            where T : class, IHasAttributes
         {
             if ( limitToAttributes != null )
             {
@@ -801,35 +863,21 @@ This can be due to multiple threads updating the same attribute at the same time
         }
 
         /// <summary>
-        /// <para>
         /// Loads the <see cref="IHasAttributes.Attributes" /> and <see cref="IHasAttributes.AttributeValues" />
-        /// of any <see cref="IHasAttributes" /> object with an option to limit to specific attributes
-        /// </para>
-        /// <para>
-        /// This method can only operate on lists comprised of a single object type.
-        /// Meaning, you can't mix Person and Group objects and expect to get valid
-        /// attributes back.
-        /// </para>
+        /// of any <see cref="IHasAttributes" /> object with an option to limit to specific attributes.
         /// </summary>
         /// <param name="entities">The entities whose attributes are to be loaded.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="attributeFilter">The expression to use when filtering which attributes to load.</param>
-        internal static void LoadFilteredAttributes( IEnumerable<IHasAttributes> entities, RockContext rockContext, Func<AttributeCache, bool> attributeFilter )
+        internal static void LoadFilteredAttributes<T>( ICollection<T> entities, RockContext rockContext, Func<AttributeCache, bool> attributeFilter )
+            where T : class, IHasAttributes
         {
             if ( entities == null || !entities.Any() )
             {
                 return;
             }
 
-            // Get the entity type from the first entity. In the future, we might
-            // throw an exception if any entities do not inherit from this type, or
-            // possibly group by the type and load in chunks.
-            var entityType = entities.First().GetType();
-
-            if ( entityType.IsDynamicProxyType() )
-            {
-                entityType = entityType.BaseType;
-            }
+            var entityType = typeof( T );
 
             // We can only operate on IEntity objects, but using both in the
             // constraints confuses the compiler a bit.
@@ -1124,7 +1172,8 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="entities">The entities whose values will be loaded.</param>
         /// <param name="attributes">The attributes that are up for consideration.</param>
         /// <returns>A list of attributes that match or have no qualifications.</returns>
-        private static List<AttributeCache> FilterAttributesByQualifiers( IEnumerable<IHasAttributes> entities, List<AttributeCache> attributes )
+        private static List<AttributeCache> FilterAttributesByQualifiers<T>( ICollection<T> entities, List<AttributeCache> attributes )
+            where T : class, IHasAttributes
         {
             var entityTypeQualifierColumnPropertyNames = attributes.Select( a => a.EntityTypeQualifierColumn )
                 .Distinct()
@@ -1139,10 +1188,9 @@ This can be due to multiple threads updating the same attribute at the same time
             }
 
             // Make sure it's a list since we will be materializing it many times.
-            var entityList = entities.ToList();
+            var entityList = entities;
             var entityQualifications = new HashSet<string>();
-            var innerType = entityList[0].GetType();
-            var entityType = innerType.IsDynamicProxyType() ? innerType.BaseType : innerType;
+            var entityType = typeof( T );
 
             // Populate the entityQualifications hash set with all the combinations
             // of qualifier columns and values. Use an actual for loop for

@@ -16,14 +16,16 @@
 //
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -62,6 +64,68 @@ namespace Rock.Reporting.DataFilter.Interaction
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/WebsitePageViewFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
+            if ( config == null )
+            {
+                return new Dictionary<string, string>();
+            }
+
+            var sites = InteractionChannelCache.GetMany( config.WebsiteIds ).Select( dv => dv.Guid );
+
+            var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
+            var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
+
+            var siteOptions = new InteractionChannelService( new RockContext() )
+                .Queryable()
+                .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
+                .Select( x => new ListItemBag() { Text = x.Name, Value = x.Guid.ToString() } )
+                .OrderBy( m => m.Text )
+                .ToList();
+
+            return new Dictionary<string, string>
+            {
+                { "sites", sites.ToCamelCaseJson( false, true ) },
+                { "siteOptions", siteOptions.ToCamelCaseJson( false, true ) },
+                { "comparisonType", config.ComparisonValue },
+                { "count", config.ViewsCount.ToString() },
+                { "dateRange", config.DelimitedDateRangeValues },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var count = data.GetValueOrNull( "count" );
+            if ( count.IsNullOrWhiteSpace() )
+            {
+                count = "1";
+            }
+
+            var siteGuids = data.GetValueOrNull( "sites" ).FromJsonOrNull<List<Guid>>() ?? new List<Guid>();
+            var siteIds = InteractionChannelCache.GetMany( siteGuids ).Select( dv => dv.Id ).ToList();
+
+            var selectionConfig = new SelectionConfig
+            {
+                WebsiteIds = siteIds,
+                ComparisonValue = data.GetValueOrDefault( "comparisonType", ComparisonType.EqualTo.ConvertToInt().ToString() ),
+                ViewsCount = count.AsInteger(),
+                DelimitedDateRangeValues = data.GetValueOrDefault( "dateRange", "All||||" ),
+            };
+
+            return selectionConfig.ToJson();
         }
 
         #endregion
@@ -162,6 +226,8 @@ console.log(websiteNames);
             return result;
         }
 
+#if WEBFORMS
+
         /// <summary>
         /// Creates the model representation of the child controls used to display and edit the filter settings.
         /// Implement this version of CreateChildControls if your DataFilterComponent works the same in all filter modes
@@ -223,20 +289,6 @@ console.log(websiteNames);
             controls.Add( slidingDateRangePicker );
 
             return controls.ToArray();
-        }
-
-        private List<ListItem> GetInteractionChannelListItems()
-        {
-            var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
-            var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
-
-            var channels = new InteractionChannelService( new RockContext() )
-                .Queryable()
-                .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
-                .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
-                .ToList();
-
-            return channels.OrderBy( m => m.Text ).ToList();
         }
 
         /// <summary>
@@ -343,6 +395,21 @@ console.log(websiteNames);
             nbValue.IntegerValue = selectionConfig.ViewsCount;
             rlbWebsites.SetValues( selectionConfig.WebsiteIds );
             dateRange.DelimitedValues = selectionConfig.DelimitedDateRangeValues;
+        }
+
+#endif
+        private List<ListItem> GetInteractionChannelListItems()
+        {
+            var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
+            var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
+
+            var channels = new InteractionChannelService( new RockContext() )
+                .Queryable()
+                .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
+                .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
+                .ToList();
+
+            return channels.OrderBy( m => m.Text ).ToList();
         }
 
         /// <summary>

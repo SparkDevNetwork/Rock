@@ -119,6 +119,8 @@ export const Category = {
     SchedulePersistedDataviews: "EEC7A935-BEF2-4450-9CBF-B85CEC6F7FEA",
     /** Gets the Service Times schedule category guid */
     ScheduleServiceTimes: "4FECC91B-83F9-4269-AE03-A006F401C47E",
+    /** The system communication Form Builder Category guid. */
+    SystemCommunicationFormBuilder: "E3696A97-3F69-4AA8-8DDF-7AC628CAF060",
     /** The System Communication RSVP Confirmation Category guid */
     SystemCommunicationRsvpConfirmation: "19024818-E456-4642-8858-F50C8B6DB5ED",
     /** The system communication Sign-Up Group confirmation Category guid */

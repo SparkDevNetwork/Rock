@@ -30,6 +30,7 @@ using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.ElectronicSignature;
 using Rock.Field;
@@ -2386,6 +2387,16 @@ namespace Rock.Blocks.Event
             }
             else
             {
+                if ( !settings.ActualRecordSourceValueId.HasValue )
+                {
+                    settings.ActualRecordSourceValueId = RecordSourceHelper.GetSessionRecordSourceValueId()
+                        ?? settings.RecordSourceValueId
+                        ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_EVENT_REGISTRATION.AsGuid() )?.Id;
+                }
+
+                // Assign the record source for new people.
+                person.RecordSourceValueId = settings.ActualRecordSourceValueId;
+
                 // If we've created the family already for this registrant, add them to it
                 if (
                         ( settings.RegistrantsSameFamily == RegistrantsSameFamily.Ask && multipleFamilyGroupIds.ContainsKey( familyGuid ) ) ||

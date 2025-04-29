@@ -1,0 +1,115 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="showModal" title="Thumbnail File Info">
+        <RockForm v-model:submit="submitForm" @submit="onFormSubmit">
+            <div class="row">
+                <div class="col-sm-12">
+                    <TextBox v-model="link"
+                             label="Link"
+                             rules="required">
+                        <template #inputGroupPrepend>
+                            <span class="input-group-addon">
+                                <i class="fa fa-link"></i>
+                            </span>
+                        </template>
+                    </TextBox>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <NumberBox v-model="width" help="The width in pixels of the thumbnail element."
+                               label="Width">
+                    </NumberBox>
+                </div>
+                <div class="col-sm-6">
+                    <NumberBox v-model="height" help="The height in pixels of the thumbnail element."
+                               label="Height">
+                    </NumberBox>
+                </div>
+            </div>
+
+            <NumberBox v-model="fileSize" help="The size of the thumbnail file in bytes."
+                       label="Filesize">
+            </NumberBox>
+        </RockForm>
+
+        <template #customButtons>
+            <RockButton @click="triggerSave" btnType="primary">Save</RockButton>
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        initialData: {
+            type: Object as PropType<{
+                link?: string;
+                width?: number;
+                height?: number;
+                fileSize?: number;
+            }>,
+            default: () => ({})
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "save", value: { link: string; width: number | null; height: number | null; fileSize: number | null }): void;
+    }>();
+
+    // #region Values
+    const showModal = ref(props.modelValue);
+    const link = ref(props.initialData.link || "");
+    const width = ref(props.initialData.width || null);
+    const height = ref(props.initialData.height || null);
+    const fileSize = ref(props.initialData.fileSize || null);
+    const submitForm = ref(false);
+    // #endregion
+
+    // #region Watch
+    watch(() => props.modelValue, () => {
+        showModal.value = props.modelValue;
+    });
+
+    watch(() => showModal.value, () => {
+        emit("update:modelValue", showModal.value);
+    });
+
+    watch(() => props.initialData, () => {
+        link.value = props.initialData.link || "";
+        width.value = props.initialData.width || null;
+        height.value = props.initialData.height || null;
+        fileSize.value = props.initialData.fileSize || null;
+    });
+    // #endregion
+
+    // #region Event Handlers
+    function triggerSave(): void {
+        submitForm.value = true;
+    }
+
+    function onFormSubmit(): void {
+        emit("save", {
+            link: link.value,
+            width: width.value,
+            height: height.value,
+            fileSize: fileSize.value
+        });
+
+        showModal.value = false;
+        submitForm.value = false;
+    }
+    // #endregion
+</script>

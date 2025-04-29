@@ -40,6 +40,12 @@
                             </template>
                         </NumberBox>
                     </div>
+                    <div class="col-md-6">
+                        <ValueList v-model="countriesRestrictedFromAccessing"
+                                   label="Countries Restricted from Accessing"
+                                   help="Select the countries from which access will be restricted to all pages. Users attempting to connect from these locations will be blocked."
+                                   :customValues="countries" />
+                    </div>
                 </div>
                 <RockButton :btnType="BtnType.Primary"
                             type="submit"
@@ -349,6 +355,7 @@
 
     const endpointProtocols = ref<ListItemBag[]>(config.observabilityEndpointProtocols ?? []);
     const timeZones = ref<ListItemBag[]>(config.timeZones ?? []);
+    const countries = ref<ListItemBag[]>(config.countries ?? []);
 
     // General Configuration
     const enableMultipleTimeZoneSupport = ref(config.generalConfigurationBag?.isMultipleTimeZoneSupportEnabled ?? false);
@@ -357,6 +364,7 @@
     const showBusinessInPersonPicker = ref(config.generalConfigurationBag?.includeBusinessInPersonPicker ?? false);
     const enableKeepAlive = ref(config.generalConfigurationBag?.enableKeepAlive ?? false);
     const personalizationCookieCacheLengthMinutes = ref(config.generalConfigurationBag?.personalizationCookieCacheLengthMinutes);
+    const countriesRestrictedFromAccessing = ref(config.generalConfigurationBag?.countriesRestrictedFromAccessing ?? []);
 
     const isSavingGeneralConfigForm = ref(false);
     const generalConfigNotificationMessage = ref("");
@@ -478,7 +486,8 @@
                 isMultipleTimeZoneSupportEnabled: enableMultipleTimeZoneSupport.value,
                 pdfExternalRenderEndpoint: pdfExternalRenderEndpoint.value,
                 personalizationCookieCacheLengthMinutes: personalizationCookieCacheLengthMinutes.value,
-                visitorCookiePersistenceLengthDays: visitorCookiePersistenceLength.value
+                visitorCookiePersistenceLengthDays: visitorCookiePersistenceLength.value,
+                countriesRestrictedFromAccessing: countriesRestrictedFromAccessing.value
             };
 
             const result = await invokeBlockAction<SaveConfigurationResponseBag>("SaveGeneralConfiguration", { bag });

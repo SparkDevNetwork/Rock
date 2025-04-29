@@ -57,7 +57,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
-    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
 

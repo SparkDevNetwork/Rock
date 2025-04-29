@@ -130,7 +130,7 @@ namespace Rock.Blocks
                 var gridAttributes = GetGridAttributes();
                 var gridAttributeIds = gridAttributes.Select( a => a.Id ).ToList();
 
-                Helper.LoadFilteredAttributes( items.Cast<IHasAttributes>(), rockContext, a => gridAttributeIds.Contains( a.Id ) );
+                Helper.LoadFilteredAttributes( typeof( T ), items.Cast<IHasAttributes>().ToList(), rockContext, a => gridAttributeIds.Contains( a.Id ) );
             }
 
             return GetGridBuilder().Build( items );

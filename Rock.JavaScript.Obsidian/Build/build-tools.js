@@ -645,7 +645,7 @@ class DeclarationBuilder {
 
         // Do a final check of all files in the source directory. If any new
         // files got added then this will pick then up and rebuild.
-        const files = glob.globSync(path.dirname(project.projectFile) + "/**/*");
+        const files = glob.globSync(path.dirname(project.projectFile).replace(/\\/g, "/") + "/**/*");
 
         for (const file of files) {
             const fileStamp = fs.statSync(file).mtimeMs;

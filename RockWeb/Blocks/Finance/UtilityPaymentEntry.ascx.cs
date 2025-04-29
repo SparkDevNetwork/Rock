@@ -38,6 +38,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Constants;
+using Rock.Crm.RecordSource;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -222,7 +223,7 @@ namespace RockWeb.Blocks.Finance
 
     [DefinedValueField( "Connection Status",
         Key = AttributeKey.ConnectionStatus,
-        Description = "The connection status to use for new individuals (default: 'Prospect'.)",
+        Description = "The connection status to use for new individuals (default: 'Prospect').",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
         IsRequired = true,
         AllowMultiple = false,
@@ -231,51 +232,60 @@ namespace RockWeb.Blocks.Finance
 
     [DefinedValueField( "Record Status",
         Key = AttributeKey.RecordStatus,
-        Description = "The record status to use for new individuals (default: 'Pending'.)",
+        Description = "The record status to use for new individuals (default: 'Pending').",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
         IsRequired = true,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
         Order = 23 )]
 
+    [DefinedValueField( "Record Source",
+        Key = AttributeKey.RecordSource,
+        Description = "The record source to use for new individuals (default = 'Giving'). If a 'RecordSource' page parameter is found, it will be used instead.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_GIVING,
+        Order = 24 )]
+
     [BooleanField( "Enable Comment Entry",
         Key = AttributeKey.EnableCommentEntry,
         Description = "Allows the guest to enter the value that's put into the comment field (will be appended to the 'Payment Comment Template' setting)",
         DefaultBooleanValue = false,
-        Order = 24 )]
+        Order = 25 )]
 
     [TextField( "Comment Entry Label",
         Key = AttributeKey.CommentEntryLabel,
         Description = "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).",
         IsRequired = false,
         DefaultValue = "Comment",
-        Order = 25 )]
+        Order = 26 )]
 
     [BooleanField( "Enable Business Giving",
         Key = AttributeKey.EnableBusinessGiving,
         Description = "Should the option to give as a business be displayed?",
         DefaultBooleanValue = true,
-        Order = 26 )]
+        Order = 27 )]
 
     [BooleanField( "Enable Anonymous Giving",
         Key = AttributeKey.EnableAnonymousGiving,
         Description = "Should the option to give anonymously be displayed. Giving anonymously will display the transaction as 'Anonymous' in places where it is shown publicly, for example, on a list of fundraising contributors.",
         DefaultBooleanValue = false,
-        Order = 27 )]
+        Order = 28 )]
 
     [BooleanField(
         "Disable Captcha Support",
         Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
         Key = AttributeKey.DisableCaptchaSupport,
         DefaultBooleanValue = false,
-        Order = 28 )]
+        Order = 29 )]
 
     [BooleanField(
         "Enable End Date",
         Description = "When enabled, this setting allows an individual to specify an optional end date for their recurring scheduled gifts.",
         Key = AttributeKey.EnableEndDate,
         DefaultBooleanValue = false,
-        Order = 29 )]
+        Order = 30 )]
 
     #endregion Default Category
 
@@ -563,6 +573,7 @@ namespace RockWeb.Blocks.Finance
             public const string AddressType = "AddressType";
             public const string ConnectionStatus = "ConnectionStatus";
             public const string RecordStatus = "RecordStatus";
+            public const string RecordSource = "RecordSource";
             public const string EnableCommentEntry = "EnableCommentEntry";
             public const string CommentEntryLabel = "CommentEntryLabel";
             public const string EnableBusinessGiving = "EnableBusinessGiving";
@@ -2630,6 +2641,8 @@ mission. We are so grateful for your commitment.</p>
                             person.RecordStatusValueId = dvcRecordStatus.Id;
                         }
 
+                        person.RecordSourceValueId = GetRecordSourceValueId();
+
                         // Create Person/Family
                         familyGroup = PersonService.SaveNewPerson( person, rockContext, null, false );
                     }
@@ -2776,6 +2789,8 @@ mission. We are so grateful for your commitment.</p>
                     person.RecordStatusValueId = dvcRecordStatus.Id;
                 }
 
+                person.RecordSourceValueId = GetRecordSourceValueId();
+
                 // Create Person/Family
                 PersonService.SaveNewPerson( person, rockContext, null, false );
             }
@@ -2898,6 +2913,8 @@ mission. We are so grateful for your commitment.</p>
                         business.RecordStatusValueId = dvcRecordStatus.Id;
                     }
 
+                    business.RecordSourceValueId = GetRecordSourceValueId();
+
                     // Create Person/Family
                     familyGroup = PersonService.SaveNewPerson( business, rockContext, null, false );
 
@@ -2995,6 +3012,18 @@ mission. We are so grateful for your commitment.</p>
             }
 
             return person;
+        }
+
+        /// <summary>
+        /// Gets the record source to use for new individuals.
+        /// </summary>
+        /// <returns>
+        /// The identifier of the Record Source Type <see cref="DefinedValue"/> to use.
+        /// </returns>
+        private int? GetRecordSourceValueId()
+        {
+            return RecordSourceHelper.GetSessionRecordSourceValueId()
+                ?? DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordSource ).AsGuid() )?.Id;
         }
 
         /// <summary>

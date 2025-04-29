@@ -774,6 +774,46 @@ namespace Rock.Model
             return this.GetIsChatEnabled() && this.IsActive && !this.IsArchived;
         }
 
+        /// <summary>
+        /// Gets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source
+        /// of <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/> (or if
+        /// <see cref="GroupType.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the value of
+        /// <see cref="GroupType.GroupMemberRecordSourceValueId"/> will be used.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>.
+        /// </returns>
+        internal int? GetGroupMemberRecordSourceValueId()
+        {
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+
+            if ( this.GroupMemberRecordSourceValueId.HasValue && groupTypeCache?.AllowGroupSpecificRecordSource == true )
+            {
+                return this.GroupMemberRecordSourceValueId.Value;
+            }
+
+            return groupTypeCache?.GroupMemberRecordSourceValueId;
+        }
+
+        /// <summary>
+        /// Gets the default Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source of
+        /// <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/> (or if
+        /// <see cref="GroupType.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the value of
+        /// <see cref="GroupType.GroupMemberRecordSourceValue"/> will be used.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Rock.Model.DefinedValue"/> representing the Record Source Type.
+        /// </returns>
+        internal DefinedValue GetGroupMemberRecordSourceValue()
+        {
+            if ( this.GroupMemberRecordSourceValue != null && this.GroupType?.AllowGroupSpecificRecordSource == true )
+            {
+                return this.GroupMemberRecordSourceValue;
+            }
+
+            return this.GroupType?.GroupMemberRecordSourceValue;
+        }
+
         #endregion
     }
 }

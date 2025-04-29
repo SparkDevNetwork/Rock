@@ -18,7 +18,15 @@
 import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
-import { FormConfirmationEmail, FormFieldType, FormNotificationEmail, FormPersonEntry, FormSection, FormSettings } from "../Shared/types.partial";
+import { FormBuilderDetailLinkToFormBag } from "@Obsidian/ViewModels/Blocks/Workflow/FormBuilder/formBuilderDetailLinkToFormBag";
+import {
+    FormConfirmationEmail,
+    FormFieldType,
+    FormNotificationEmail,
+    FormPersonEntry,
+    FormSection,
+    FormSettings
+} from "../Shared/types.partial";
 
 // #region Interfaces
 
@@ -176,6 +184,9 @@ export type FormValueSources = {
     formTemplateOptions?: FormTemplateListItem[] | null;
 
     defaultSectionType?: Guid | null;
+
+    /** Gets or sets the list of pages that are available to pick from. */
+    linkToFormOptions?: FormBuilderDetailLinkToFormBag[] | null;
 };
 
 /**
@@ -215,6 +226,8 @@ export type FormBuilderDetailConfiguration = {
 
     /** Other attributes that are available for use in the form. */
     otherAttributes?: FormOtherAttribute[] | null;
+
+    defaultPreviewPage?: FormBuilderDetailLinkToFormBag | null;
 };
 
 // #endregion

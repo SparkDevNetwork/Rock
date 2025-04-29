@@ -117,11 +117,16 @@
     <Compile Include="Blocks\Cms\ContentChannelTypeDetail\ContentChannelTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\LavaShortcodeList\LavaShortcodeListBox.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\MediaElementDetail\MediaElementBag.cs" />
+    <Compile Include="Blocks\Cms\MediaElementDetail\MediaElementDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PersonalizationSegmentList\PersonalizationSegmentListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationBag.cs" />
     <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationInitializationBox.cs" />
+    <Compile Include="Blocks\Communication\Chat\ChatView\ChatPersonDataBag.cs" />
     <Compile Include="Blocks\Communication\Chat\ChatView\ChatPersonSettingsBag.cs" />
+    <Compile Include="Blocks\Communication\Chat\ChatView\ChatViewConfigurationBag.cs" />
+    <Compile Include="Blocks\Communication\Chat\ChatView\ChatViewInitializationBox.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntryWizard\CommunicationEntryWizardGetEmailPreviewHtmlBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntryWizard\CommunicationEntryWizardCheckShortLinkTokenBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntryWizard\CommunicationEntryWizardSaveCommunicationTemplateResponseBag.cs" />
@@ -197,8 +202,7 @@
     <Compile Include="Blocks\Finance\FinancialPersonBankAccountList\FinancialPersonBankAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialScheduledTransactionList\FinancialScheduledTransactionListOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\TithingOverview\TithingOverviewToolTipBag.cs" />
-    <Compile Include="Blocks\Security\LoginHistory\LoginHistoryFiltersBag.cs" />
-    <Compile Include="Blocks\Security\LoginHistory\LoginHistoryInitializationBox.cs" />
+    <Compile Include="Blocks\Security\LoginHistory\LoginHistoryOptionsBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageList\AppleTvPageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageList\PageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
@@ -537,6 +541,7 @@
     <Compile Include="Blocks\Cms\ContentCollectionDetail\CustomFieldFilterBag.cs" />
     <Compile Include="Blocks\Core\Notes\DeleteNoteRequestBag.cs" />
     <Compile Include="Blocks\Core\Notes\EditNoteRequestBag.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormBuilderDetailLinkToFormBag.cs" />
     <Compile Include="Controls\NoteBag.cs" />
     <Compile Include="Controls\NoteEditBag.cs" />
     <Compile Include="Blocks\Core\Notes\NotesInitializationBox.cs" />
@@ -837,6 +842,8 @@
     <Compile Include="Controls\MobileNavigationActionBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
+    <Compile Include="Rest\CheckIn\ProximityBeaconBag.cs" />
+    <Compile Include="Rest\CheckIn\ProximityCheckInOptionsBag.cs" />
     <Compile Include="Rest\Controls\AIProviderPickerGetAIProviderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerExtractFileOptionsBag.cs" />
     <Compile Include="Rest\Controls\DataFilterFormatSelectionOptionsBag.cs" />
@@ -848,6 +855,9 @@
     <Compile Include="Rest\Controls\EmailEditorDeleteEmailSectionOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorGetEmailSectionOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorEmailSectionBag.cs" />
+    <Compile Include="Rest\Controls\InGroupFilterGetGroupRolesForGroupsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\LearningClassActivityPickerGetLearningClassActivitiesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\LearningClassPickerGetLearningClassesOptionsBag.cs" />
     <Compile Include="Rest\Controls\MergeFieldPickerGetSearchedMergedFieldsOptionsBag.cs" />
     <Compile Include="Rest\Controls\PageNavButtonsGetLinksOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerMoveFolderOptionsBag.cs" />

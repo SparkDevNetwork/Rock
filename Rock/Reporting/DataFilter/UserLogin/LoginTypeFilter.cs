@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -24,7 +25,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -36,7 +39,7 @@ namespace Rock.Reporting.DataFilter.UserLogin
     [Description( "Filter User that are associated with a specific Login Type." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Login Type Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "3EFAC902-0375-4F7E-9B3A-AC27F2B316D2")]
+    [Rock.SystemGuid.EntityTypeGuid( "3EFAC902-0375-4F7E-9B3A-AC27F2B316D2" )]
     public class LoginTypeFilter : DataFilterComponent
     {
         #region Properties
@@ -61,6 +64,62 @@ namespace Rock.Reporting.DataFilter.UserLogin
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/UserLogin/loginTypeFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = selection.Split( '|' );
+
+            var loginTypeId = selectionValues[0].AsIntegerOrNull() ?? 0;
+            Guid? loginTypeGuid = null;
+            var loginTypeOptions = new List<ListItemBag>();
+
+            foreach ( var item in AuthenticationContainer.Instance.Components.Values )
+            {
+                if ( item.Value.EntityType.Id == loginTypeId )
+                {
+                    loginTypeGuid = item.Value.EntityType.Guid;
+                }
+
+                if ( item.Value.IsActive )
+                {
+                    loginTypeOptions.Add( new ListItemBag { Text = item.Metadata.ComponentName, Value = item.Value.EntityType.Guid.ToString() } );
+                }
+            }
+
+            var data = new Dictionary<string, string>
+            {
+                { "loginTypeOptions", loginTypeOptions.ToCamelCaseJson(false, true) },
+                { "loginType", loginTypeGuid?.ToString() },
+            };
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var loginTypeGuid = data.GetValueOrNull( "loginType" )?.AsGuid() ?? Guid.Empty;
+            int? loginTypeId = null;
+
+            foreach ( var item in AuthenticationContainer.Instance.Components.Values )
+            {
+                if ( item.Value.EntityType.Guid == loginTypeGuid )
+                {
+                    loginTypeId = item.Value.EntityType.Id;
+                    break;
+                }
+            }
+
+            return loginTypeId?.ToString() ?? string.Empty;
         }
 
         #endregion
@@ -127,6 +186,8 @@ function() {
             return result;
         }
 
+#if WEBFORMS
+
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -189,6 +250,8 @@ function() {
                 }
             }
         }
+
+#endif
 
         /// <summary>
         /// Gets the expression.

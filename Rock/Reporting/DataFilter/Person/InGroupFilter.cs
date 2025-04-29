@@ -65,7 +65,7 @@ namespace Rock.Reporting.DataFilter.Person
         }
 
         /// <inheritdoc/>
-        public override string ObsidianFileUrl => null;//"~/Obsidian/Reporting/DataFilters/Person/inGroupFilter.obs";
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/inGroupFilter.obs";
 
         #endregion
 
@@ -172,8 +172,7 @@ namespace Rock.Reporting.DataFilter.Person
                 selections.Add( string.Empty );
             }
 
-            // Use .AsBoolean().ToString() on boolean values to force empty
-            // strings to become "False".
+            // Use .AsBoolean().ToString() on boolean values to force empty strings to become "False".
             selections.Add( data.GetValueOrDefault( "groupMemberRoles", string.Empty ) );
             selections.Add( data.GetValueOrDefault( "includeChildGroups", string.Empty ).AsBoolean().ToString() );
             selections.Add( data.GetValueOrDefault( "groupMemberStatus", string.Empty ) );
@@ -452,6 +451,7 @@ namespace Rock.Reporting.DataFilter.Person
         }
 
 #if WEBFORMS
+
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -794,6 +794,7 @@ namespace Rock.Reporting.DataFilter.Person
                 }
             }
         }
+
 #endif
 
         /// <summary>

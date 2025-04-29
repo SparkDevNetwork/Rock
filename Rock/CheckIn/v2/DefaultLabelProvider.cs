@@ -214,6 +214,7 @@ namespace Rock.CheckIn.v2
             attendanceLabels.Select( a => a.Person )
                 .Where( p => p.Attributes == null )
                 .DistinctBy( p => p.Id )
+                .ToList()
                 .LoadAttributes( RockContext );
 
             var sessionFamily = allAttendance.Where( a => a.SearchResultGroupId.HasValue ).FirstOrDefault()?.SearchResultGroup;
@@ -261,6 +262,7 @@ namespace Rock.CheckIn.v2
             attendanceLabels.Select( a => a.Person )
                 .Where( p => p.Attributes == null )
                 .DistinctBy( p => p.Id )
+                .ToList()
                 .LoadAttributes( RockContext );
 
             var sessionFamily = allAttendance.Where( a => a.SearchResultGroupId.HasValue ).FirstOrDefault()?.SearchResultGroup;
@@ -521,6 +523,7 @@ namespace Rock.CheckIn.v2
             {
                 people.Where( p => p.Attributes == null )
                     .DistinctBy( p => p.Id )
+                    .ToList()
                     .LoadAttributes( RockContext );
             }
 

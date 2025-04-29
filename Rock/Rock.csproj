@@ -715,7 +715,11 @@
     <Compile Include="Attribute\AIProviderFieldAttribute.cs" />
     <Compile Include="Attribute\ImageFieldAttribute.cs" />
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
+    <Compile Include="CheckIn\v2\Labels\Renderers\Zebra64.cs" />
+    <Compile Include="Bus\Message\RestrictedCountriesWereUpdatedMessage.cs" />
+    <Compile Include="Bus\Queue\IpGeolocationEventQueue.cs" />
     <Compile Include="ClientService\Core\Note\NoteClientService.cs" />
+    <Compile Include="Cms\PageAdditionalSettings.cs" />
     <Compile Include="Cms\RestActionMetadata.cs" />
     <Compile Include="Cms\RestControllerMetadata.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\AlertData.cs" />
@@ -1428,6 +1432,7 @@
     <Compile Include="Model\Reporting\ReportField\ReportField.Logic.cs" />
     <Compile Include="Model\Security\History\HistoryLogin.cs" />
     <Compile Include="Model\Security\History\HistoryLogin.Logic.cs" />
+    <Compile Include="Model\Workflow\WorkflowType\WorkflowTypeService.cs" />
     <Compile Include="Net\Geolocation\IpGeoException.cs" />
     <Compile Include="Net\Geolocation\IpGeolocation.cs" />
     <Compile Include="Net\Geolocation\IpGeoLookup.cs" />
@@ -1671,6 +1676,7 @@
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
     <Compile Include="Model\Validation\EmailAddressValidationAttribute.cs" />
     <Compile Include="Net\BrowserCookie.cs" />
+    <Compile Include="Net\Geolocation\RestrictedCountriesWereUpdatedConsumer.cs" />
     <Compile Include="Net\IRockRequestContextAccessor.cs" />
     <Compile Include="Net\IRockResponseContext.cs" />
     <Compile Include="Net\NullRockResponseContext.cs" />
@@ -1760,6 +1766,8 @@
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
     <Compile Include="Plugin\HotFixes\226_UpdateIndexesForV16_8.cs" />
+    <Compile Include="Plugin\HotFixes\242_UpdateFileAssetManagerDefaultValues.cs" />
+    <Compile Include="Plugin\HotFixes\241_ChatBackendSyncAdditions.cs" />
     <Compile Include="Plugin\HotFixes\239_AddLoginHistoryPageAndBlocks.cs" />
     <Compile Include="Plugin\HotFixes\238_ChatSharedChannelDefaultGroupRole.cs" />
     <Compile Include="Plugin\HotFixes\237_ChatAdminImprovements.cs" />
@@ -1800,6 +1808,8 @@
     <Compile Include="Plugin\HotFixes\234_MigrationRollupsForV16_10_1.cs" />
     <Compile Include="Plugin\HotFixes\233_UpdateAppleDeviceList.cs" />
     <Compile Include="Plugin\HotFixes\232_UpdateContentFileTypeBlacklist.cs" />
+    <Compile Include="Plugin\HotFixes\244_MigrationRollupsForV17_1_1.cs" />
+    <Compile Include="Plugin\HotFixes\243_AddDefaultAllowedGroupTypesToMobileGroupRegistration.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1896,6 +1906,7 @@
     <Compile Include="Security\ExcludeSecurityActionsAttribute.cs" />
     <Compile Include="Security\GlobalRestrictedDefault.cs" />
     <Compile Include="Security\HistoryLoginRelatedData.cs" />
+    <Compile Include="Security\SecurityGrantRules\AddDefinedValueToTypeGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
     <Compile Include="SystemGuid\EmailSection.cs" />
@@ -2507,6 +2518,7 @@
     <Compile Include="Utility\Enums\AccountProtectionProfile.cs" />
     <Compile Include="Utility\Enums\ElevatedSecurityLevel.cs" />
     <Compile Include="Utility\ExtensionMethods\RockBlockTypeExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\RockRequestContextExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\RockResponseContextExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\SecurityGrantExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Image.cs" />
@@ -2579,7 +2591,6 @@
     <Compile Include="Media\MediaAccountComponent.cs" />
     <Compile Include="Media\MediaAccountContainer.cs" />
     <Compile Include="Media\MediaElementFileData.cs" />
-    <Compile Include="Media\MediaElementQuality.cs" />
     <Compile Include="Media\SyncOperationResult.cs" />
     <Compile Include="Media\MediaElementThumbnailData.cs" />
     <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttemptService.cs" />
@@ -2686,6 +2697,7 @@
     <Compile Include="Utility\PersonPreferenceCollection.cs" />
     <Compile Include="Utility\PrayerRequestLastPrayedDetail.cs" />
     <Compile Include="Utility\PrayerRequestQueryOptions.cs" />
+    <Compile Include="Crm\RecordSource\RecordSourceHelper.cs" />
     <Compile Include="Utility\RockCurrencyCodeInfo.cs" />
     <Compile Include="Financial\FinancialStatementTemplateReportSettings.cs" />
     <Compile Include="Utility\RockDynamic.cs" />

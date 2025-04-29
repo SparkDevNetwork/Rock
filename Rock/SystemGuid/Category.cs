@@ -289,6 +289,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SYSTEM_COMMUNICATION_SIGNUP_GROUP_CONFIRMATION = "CB279EE1-9A12-4837-9A14-1F36B6F7CDAF";
 
+        /// <summary>
+        /// The system communication Form Builder Category guid.
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_FORM_BUILDER = "E3696A97-3F69-4AA8-8DDF-7AC628CAF060";
+
         #endregion
 
         #region Merge Template Categories

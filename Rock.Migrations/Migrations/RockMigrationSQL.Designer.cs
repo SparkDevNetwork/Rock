@@ -1676,6 +1676,16 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string _202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport_GenerateWorkflowTypeSlugs {
+            get {
+                return ResourceManager.GetString("_202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport_GenerateWork" +
+                        "flowTypeSlugs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {

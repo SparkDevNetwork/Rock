@@ -88,6 +88,10 @@
     <Compile Include="Migrations\202504111835181_AddPersonalDeviceLocationDisabledDateTime.Designer.cs">
       <DependentUpon>202504111835181_AddPersonalDeviceLocationDisabledDateTime.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.cs" />
+    <Compile Include="Migrations\202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.Designer.cs">
+      <DependentUpon>202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\202504151646241_Rollup_20250415.cs" />
     <Compile Include="Migrations\202504151646241_Rollup_20250415.Designer.cs">
       <DependentUpon>202504151646241_Rollup_20250415.cs</DependentUpon>
@@ -95,6 +99,23 @@
     <Compile Include="Migrations\202504151751340_CodeGenerated_20250415.cs" />
     <Compile Include="Migrations\202504151751340_CodeGenerated_20250415.Designer.cs">
       <DependentUpon>202504151751340_CodeGenerated_20250415.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202504222122021_AddRecordSource.cs" />
+    <Compile Include="Migrations\202504222122021_AddRecordSource.Designer.cs">
+      <DependentUpon>202504222122021_AddRecordSource.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport.cs" />
+    <Compile Include="Migrations\202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport.Designer.cs">
+      <DependentUpon>202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport.cs</DependentUpon>
+    </Compile>
+    <Content Include="Migrations\202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport_GenerateWorkflowTypeSlugs.sql" />
+    <Compile Include="Migrations\202504291730237_Rollup_20250429.cs" />
+    <Compile Include="Migrations\202504291730237_Rollup_20250429.Designer.cs">
+      <DependentUpon>202504291730237_Rollup_20250429.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202504291802180_CodeGenerated_20250429.cs" />
+    <Compile Include="Migrations\202504291802180_CodeGenerated_20250429.Designer.cs">
+      <DependentUpon>202504291802180_CodeGenerated_20250429.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.Designer.cs">
@@ -2616,11 +2637,26 @@
     <EmbeddedResource Include="Migrations\202504111835181_AddPersonalDeviceLocationDisabledDateTime.resx">
       <DependentUpon>202504111835181_AddPersonalDeviceLocationDisabledDateTime.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.resx">
+      <DependentUpon>202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202504151646241_Rollup_20250415.resx">
       <DependentUpon>202504151646241_Rollup_20250415.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202504151751340_CodeGenerated_20250415.resx">
       <DependentUpon>202504151751340_CodeGenerated_20250415.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202504222122021_AddRecordSource.resx">
+      <DependentUpon>202504222122021_AddRecordSource.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport.resx">
+      <DependentUpon>202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202504291730237_Rollup_20250429.resx">
+      <DependentUpon>202504291730237_Rollup_20250429.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202504291802180_CodeGenerated_20250429.resx">
+      <DependentUpon>202504291802180_CodeGenerated_20250429.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.resx">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>

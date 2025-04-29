@@ -1006,6 +1006,26 @@ namespace Rock.Net
             return RockApp.Current.ResolveRockUrl( input, _pageCache?.Layout?.Site?.Theme ?? "Rock" );
         }
 
+        /// <summary>
+        /// Gets the site cache for the current request.
+        /// </summary>
+        /// <remarks>This will return null if there is not a site/page associated with this request.</remarks>
+        /// <returns>The site type of this request.</returns>
+        public SiteType? GetSiteType()
+        {
+            return _siteCache?.SiteType;
+        }
+
+        /// <summary>
+        /// Checks if the current site is of the specified type.
+        /// </summary>
+        /// <param name="siteType">The <see cref="SiteType"/> to check against.</param>
+        /// <returns><c>true</c> if the type matches, <c>false</c> otherwise.</returns>
+        public bool IsSiteType( SiteType siteType )
+        {
+            return GetSiteType() == siteType;
+        }
+
         #endregion
 
         #region Person Preferences

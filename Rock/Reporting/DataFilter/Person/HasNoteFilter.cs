@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -25,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -39,7 +41,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based on notes" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Has Note Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "D1C6B443-823F-4188-B089-2804AD2C35D5")]
+    [Rock.SystemGuid.EntityTypeGuid( "D1C6B443-823F-4188-B089-2804AD2C35D5" )]
     public class HasNoteFilter : DataFilterComponent
     {
         #region Properties
@@ -64,6 +66,91 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/hasNoteFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
+            var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
+            var noteTypeOptions = NoteTypeCache.All()
+                .Where( a => a.EntityTypeId == entityTypeIdPerson )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => a.ToListItemBag() )
+                .ToList();
+
+            var noteType = NoteTypeCache.Get( config?.NoteTypeId ?? 0 )?.Guid;
+
+            var data = new Dictionary<string, string>
+            {
+                { "noteTypeOptions", noteTypeOptions.ToCamelCaseJson(false, true) },
+                { "noteType", noteType.ToString() },
+                { "dateRange", config?.DelimitedValues ?? "" },
+                { "contains", config?.NoteContains ?? "" },
+            };
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var noteType = data.GetValueOrNull( "noteType" )?.AsGuidOrNull();
+
+            var selectionConfig = new SelectionConfig
+            {
+                NoteTypeId = NoteTypeCache.Get( noteType ?? Guid.Empty )?.Id,
+                NoteContains = data.GetValueOrNull( "contains" )
+            };
+
+            string[] dateRangeValues = data.GetValueOrDefault( "dateRange", "" ).Split( '|' );
+            if ( dateRangeValues.Count() > 3 )
+            {
+                // DateRange index 0 is the mode
+                selectionConfig.DateRangeMode = dateRangeValues[0].ConvertToEnum<SlidingDateRangeType>();
+
+                // DateRange index 1 is the number of time units
+                selectionConfig.NumberOfTimeUnits = dateRangeValues[1].AsIntegerOrNull();
+
+                // DateRange index 2 is the time unit
+                selectionConfig.TimeUnit = dateRangeValues[2].ConvertToEnum<TimeUnitType>();
+
+                // DateRange index 3 is the start date
+                selectionConfig.StartDate = dateRangeValues[3].AsDateTime();
+
+                // DateRange index 4 is the end date if it exists
+                if ( dateRangeValues.Count() > 4 )
+                {
+                    selectionConfig.EndDate = dateRangeValues[4].AsDateTime();
+                }
+            }
+            else if ( dateRangeValues.Any() )
+            {
+                // Try to get a DateRange from what we have
+                selectionConfig.DateRangeMode = SlidingDateRangeType.DateRange;
+                selectionConfig.StartDate = dateRangeValues[0].AsDateTime();
+
+                if ( dateRangeValues.Count() > 1 )
+                {
+                    selectionConfig.EndDate = dateRangeValues[1].AsDateTime();
+                    if ( selectionConfig.EndDate.HasValue )
+                    {
+                        // This value would have been from the DatePicker which does not automatically add a day.
+                        selectionConfig.EndDate.Value.AddDays( 1 );
+                    }
+                }
+            }
+
+            return selectionConfig.ToJson();
         }
 
         #endregion
@@ -155,6 +242,8 @@ namespace Rock.Reporting.DataFilter.Person
 
             return result;
         }
+
+#if WEBFORMS
 
         /// <summary>
         /// Creates the child controls.
@@ -260,6 +349,8 @@ namespace Rock.Reporting.DataFilter.Person
                 slidingDateRange.DelimitedValues = selectionConfig.DelimitedValues;
             }
         }
+
+#endif
 
         /// <summary>
         /// Gets the expression.

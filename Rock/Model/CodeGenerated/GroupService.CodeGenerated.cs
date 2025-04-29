@@ -256,6 +256,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupCapacity = source.GroupCapacity;
+            target.GroupMemberRecordSourceValueId = source.GroupMemberRecordSourceValueId;
             target.GroupSalutation = source.GroupSalutation;
             target.GroupSalutationFull = source.GroupSalutationFull;
             target.GroupTypeId = source.GroupTypeId;

@@ -46,6 +46,15 @@ namespace Rock.Communication.Chat
         /// </returns>
         Task<ChatSyncSetupResult> UpdateAppSettingsAsync();
 
+        /// <summary>
+        /// Updates push notification settings in the external chat system to match the current Rock mobile push settings.
+        /// </summary>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncSetupResult"/> indicating
+        /// whether the push notification settings were updated in the external chat system.
+        /// </returns>
+        Task<ChatSyncSetupResult> UpdatePushNotificationSettingsAsync();
+
         #endregion Configuration
 
         #region Roles & Permission Grants

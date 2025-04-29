@@ -145,6 +145,8 @@ export const BlockType = {
     ObsidianExampleControlGallery: "3ED1B4B2-FD1C-4E4B-B4B9-2DE4E6EF8915",
     /** The obsidian event field type gallery */
     ObsidianExampleFieldTypeGallery: "B9C209C2-ABB8-4B48-A68E-944572007B03",
+    /** Workflow Entry */
+    ObsidianWorkflowEntry: "9116AAD8-CF16-4BCE-B0CF-5B4D565710ED",
     /** The oidc authorize */
     OidcAuthorize: "D9E2BE51-6AC2-43D6-BE63-9E5EC571BD95",
     /** The oidc claims */

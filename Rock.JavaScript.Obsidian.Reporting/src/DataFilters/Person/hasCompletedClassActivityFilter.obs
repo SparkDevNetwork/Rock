@@ -1,0 +1,119 @@
+<template>
+    <div class="row form-row">
+        <div class="col-md-3">
+            <DropDownList v-model="learningProgram"
+                          :items="learningProgramOptions"
+                          label="Program"
+                          rules="required"
+                          enhanceForLongLists
+                          showBlankItem />
+        </div>
+        <div class="col-md-3">
+            <DropDownList v-model="learningCourse"
+                          :items="learningCourseOptions"
+                          label="Course"
+                          rules="required"
+                          enhanceForLongLists
+                          showBlankItem />
+        </div>
+        <div class="col-md-3">
+            <LearningClassPicker v-model="learningClass"
+                                 :learningCourseGuid="learningCourse"
+                                 label="Class"
+                                 rules="required"
+                                 enhanceForLongLists
+                                 showBlankItem />
+        </div>
+        <div class="col-md-3">
+            <LearningClassActivityPicker v-model="learningClassActivity"
+                                         :learningClassGuid="learningClass?.value ?? null"
+                                         label="Activity"
+                                         rules="required"
+                                         enhanceForLongLists
+                                         showBlankItem />
+        </div>
+    </div>
+    <div class="row form-row">
+        <div class="col-md-3">
+            <DropDownList v-model="comparisonType" :items="comparisonItems" disableLabel :showBlankItem="false" />
+        </div>
+        <div class="col-md-1">
+            <NumberBox v-model="points" name="point-field" disableLabel />
+        </div>
+        <div class="col-md-8 mt-2">
+            <label for="point-field" class="text-normal"> Points </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <SlidingDateRangePicker v-model="dateRange" label="Date Range" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import LearningClassPicker from "@Obsidian/Controls/learningClassPicker.obs";
+    import LearningClassActivityPicker from "@Obsidian/Controls/learningClassActivityPicker.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { computed, ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { SlidingDateRange, parseSlidingDateRangeString, slidingDateRangeToString, RangeType } from "@Obsidian/Utility/slidingDateRange";
+    import { Guid } from "@Obsidian/Types";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const learningProgramOptions = ref<ListItemBag[]>(safeParseJson(props.modelValue.learningProgramOptions) ?? []);
+    const learningProgram = ref<Guid>(props.modelValue.learningProgram ?? "");
+    const learningCourseOptionsByProgram = ref<Record<Guid, ListItemBag[]>>(safeParseJson(props.modelValue.learningCourseOptions) ?? {});
+    const learningCourse = ref<Guid>(props.modelValue.learningCourse ?? "");
+    const learningClass = ref<ListItemBag | null>(safeParseJson(props.modelValue.learningClass) ?? null);
+    const learningClassActivity = ref<ListItemBag | null>(safeParseJson(props.modelValue.learningClassActivity) ?? null);
+    const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
+    const points = ref<number | null>(toNumberOrNull(props.modelValue.points));
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+
+    const learningCourseOptions = computed(() => {
+        return learningCourseOptionsByProgram.value[learningProgram.value] ?? [];
+    });
+
+    const comparisonItems = getFilteredComparisonTypeOptions(
+        ComparisonType.EqualTo,
+        ComparisonType.NotEqualTo,
+        ComparisonType.GreaterThan,
+        ComparisonType.GreaterThanOrEqualTo,
+        ComparisonType.LessThan,
+        ComparisonType.LessThanOrEqualTo
+    );
+
+    watch(learningProgram, () => {
+        learningCourse.value = "";
+    });
+
+    watch(learningCourse, () => {
+        learningClass.value = null;
+    });
+
+    watch(learningClass, () => {
+        learningClassActivity.value = null;
+    });
+
+    watch([learningClassActivity, comparisonType, points, dateRange], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            learningClassActivity: JSON.stringify(learningClassActivity.value),
+            comparisonType: comparisonType.value,
+            points: `${points.value}`,
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: RangeType.All }),
+        });
+    });
+</script>

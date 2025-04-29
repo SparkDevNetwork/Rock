@@ -23,7 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
-using CommunicationEntryWizardCommunicationType = Rock.Enums.Blocks.Communication.CommunicationEntryWizard.CommunicationType;
+using CommunicationEntryWizardCommunicationType = Rock.Enums.Communication.CommunicationType;
 using CommunicationType = Rock.Model.CommunicationType;
 using CommunicationEntryWizardPushOpenAction = Rock.Enums.Blocks.Communication.CommunicationEntryWizard.PushOpenAction;
 using PushOpenAction = Rock.Utility.PushOpenAction;
@@ -1416,7 +1416,7 @@ namespace Rock.Blocks.Communication
                 CommunicationTemplateGuid = communicationTemplateGuid,
                 CommunicationTopicValue = communication.CommunicationTopicValue?.ToListItemBag(),
                 CommunicationType = ConvertCommunicationType( communication.CommunicationType ),
-                EmailAttachmentBinaryFiles = communication.GetAttachments( CommunicationType.Email ).ToListItemBagList(),
+                EmailAttachmentBinaryFiles = communication.GetAttachments( CommunicationType.Email )?.Select( c => c.BinaryFile )?.ToListItemBagList(),
                 EnabledLavaCommands = GetEnabledLavaCommands( communication ),
                 ExcludeDuplicateRecipientAddress = communication.ExcludeDuplicateRecipientAddress,
                 FromEmail = communication.FromEmail,
@@ -2870,9 +2870,8 @@ namespace Rock.Blocks.Communication
                 .ToList();
             if ( emailAttachmentBinaryFileGuids?.Any() == true )
             {
-                communicationInfo.EmailBinaryFileIds = new BinaryFileService( rockContext )
+                communicationInfo.EmailBinaryFiles = new BinaryFileService( rockContext )
                     .GetByGuids( emailAttachmentBinaryFileGuids )
-                    .Select( b => b.Id )
                     .ToList();
             }
 
@@ -2883,9 +2882,8 @@ namespace Rock.Blocks.Communication
                 .ToList();
             if ( smsAttachmentBinaryFileGuids?.Any() == true )
             {
-                communicationInfo.SmsBinaryFileIds = new BinaryFileService( rockContext )
+                communicationInfo.SmsBinaryFiles = new BinaryFileService( rockContext )
                     .GetByGuids( smsAttachmentBinaryFileGuids )
-                    .Select( b => b.Id )
                     .ToList();
             }
 
@@ -3343,8 +3341,8 @@ namespace Rock.Blocks.Communication
                 communication.CCEmails = settings.Details.CCEmails;
                 communication.BCCEmails = settings.Details.BCCEmails;
 
-                var emailBinaryFileIds = settings.EmailBinaryFileIds ?? new List<int>();
-                var smsBinaryFileIds = settings.SmsBinaryFileIds ?? new List<int>();
+                var emailBinaryFiles = settings.EmailBinaryFiles ?? new List<BinaryFile>();
+                var smsBinaryFiles = settings.SmsBinaryFiles ?? new List<BinaryFile>();
 
                 using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Entry Wizard > Create Or Update Communication > Add/Remove Attachments" ) )
                 {
@@ -3356,22 +3354,22 @@ namespace Rock.Blocks.Communication
                     activity?.AddTag( "rock.communication.name", communication.Name );
 
                     // delete any attachments that are no longer included
-                    foreach ( var attachment in communication.Attachments.Where( a => ( !emailBinaryFileIds.Contains( a.BinaryFileId ) && !smsBinaryFileIds.Contains( a.BinaryFileId ) ) ).ToList() )
+                    foreach ( var attachment in communication.Attachments.Where( attachment => ( !emailBinaryFiles.Any( binaryFile => attachment.BinaryFileId == binaryFile.Id ) && !smsBinaryFiles.Any( binaryFile => attachment.BinaryFileId == binaryFile.Id ) ) ).ToList() )
                     {
                         communication.Attachments.Remove( attachment );
                         communicationAttachmentService.Delete( attachment );
                     }
 
                     // add any new email attachments that were added
-                    foreach ( var attachmentBinaryFileId in emailBinaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
+                    foreach ( var attachmentBinaryFile in emailBinaryFiles.Where( binaryFile => !communication.Attachments.Any( attachment => attachment.BinaryFileId == binaryFile.Id ) ) )
                     {
-                        communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId, CommunicationType = CommunicationType.Email } );
+                        communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFile.Id, BinaryFile = attachmentBinaryFile, CommunicationType = CommunicationType.Email } );
                     }
 
                     // add any new SMS attachments that were added
-                    foreach ( var attachmentBinaryFileId in smsBinaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
+                    foreach ( var attachmentBinaryFile in smsBinaryFiles.Where( binaryFile => !communication.Attachments.Any( attachment => attachment.BinaryFileId == binaryFile.Id ) ) )
                     {
-                        communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId, CommunicationType = CommunicationType.SMS } );
+                        communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFile.Id, BinaryFile = attachmentBinaryFile, CommunicationType = CommunicationType.SMS } );
                     }
                 }
 
@@ -3648,14 +3646,14 @@ namespace Rock.Blocks.Communication
                 public Guid? CommunicationTemplateGuid { get; set; }
 
                 /// <summary>
-                /// Gets or sets a list of binary file IDs representing email attachments.
+                /// Gets or sets a list of binary files representing email attachments.
                 /// </summary>
-                public List<int> EmailBinaryFileIds { get; set; }
+                public List<BinaryFile> EmailBinaryFiles { get; set; }
 
                 /// <summary>
-                /// Gets or sets a list of binary file IDs representing SMS attachments.
+                /// Gets or sets a list of binary files representing SMS attachments.
                 /// </summary>
-                public List<int> SmsBinaryFileIds { get; set; }
+                public List<BinaryFile> SmsBinaryFiles { get; set; }
 
                 /// <summary>
                 /// Gets or sets the scheduled send date and time for the communication, if applicable.
