@@ -56,7 +56,9 @@
 
         <div class="d-flex w-100 h-100">
             <div class="col-md-4 col-lg-3 p-0 h-100 helper-height">
-                <Panel type="default" title="People To Place" panelBodyCssClass="h-100 overflow-hidden">
+                <Panel type="default"
+                       title="People To Place"
+                       panelBodyCssClass="h-100 overflow-hidden">
                     <template #headerActions>
                         <RockButton :btnType="BtnType.Default"
                                     :btnSize="BtnSize.Small"
@@ -70,11 +72,17 @@
 
                     <!-- TODO: See about adding "Filter" to drawer. -->
                     <template #drawer>
-                        <AttributeValuesContainer v-model="personAttributeValuesForFilter" :attributes="personAttributesForFilter" isEditMode :numberOfColumns="1" />
+                        <AttributeValuesContainer v-model="pendingPersonAttributeValuesForFilter" :attributes="personAttributesForFilter" isEditMode :numberOfColumns="1" />
                         <RockButton :btnType="BtnType.Action"
                                     :btnSize="BtnSize.ExtraSmall"
-                                    @click="applyPeopleFilter">
+                                    @click="applyPeopleFilter"
+                                    class="mr-2">
                             Apply Filter
+                        </RockButton>
+                        <RockButton :btnType="BtnType.Default"
+                                    :btnSize="BtnSize.ExtraSmall"
+                                    @click="clearPeopleFilters">
+                            Clear Filter
                         </RockButton>
                     </template>
 
@@ -95,7 +103,7 @@
                             </span>
                         </div>
                         <div v-drag-source="personDragSourceOptions" v-drag-target="groupMemberDragSourceOptions.id" class="people-to-place-card-container">
-                            <template v-for="(person, index) in sortedPeopleToPlace" v-if="sortedPeopleToPlace.length > 0">
+                            <template v-for="(person, index) in filteredAndSortedPeopleToPlace" v-if="filteredAndSortedPeopleToPlace.length > 0">
                                 <PersonCard v-if="person.personId"
                                             :key="index"
                                             :data-person-id="person.personId"
@@ -151,8 +159,14 @@
                         <AttributeValuesContainer v-model="groupMemberAttributeValuesForFilter" :attributes="groupMemberAttributesForFilter" isEditMode :numberOfColumns="3" columnBreakpoint="lg" />
                         <RockButton :btnType="BtnType.Action"
                                     :btnSize="BtnSize.ExtraSmall"
-                                    @click="applyGroupFilter">
+                                    @click="applyGroupFilter"
+                                    class="mr-2">
                             Apply Filter
+                        </RockButton>
+                        <RockButton :btnType="BtnType.Default"
+                                    :btnSize="BtnSize.ExtraSmall"
+                                    @click="clearGroupFilters">
+                            Clear Filter
                         </RockButton>
                     </template>
                     <div class="p-3 h-100 group-container">
@@ -718,6 +732,10 @@
     import { AddGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupBag";
     import { PlacementPeopleBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementPeopleBag";
     import Loading from "@Obsidian/Controls/loading.obs";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
     // #region Values
     const box = useConfigurationValues<GroupPlacementInitializationBox>();
@@ -726,7 +744,7 @@
     const exampleBox = ref<string>("");
 
     const arePersonCardsExpanded = ref(false);
-    // const areAllPeopleSelected = ref(false);
+    const areAllPeopleSelected = ref(false);
     const selectionInfoElement = ref<HTMLElement | undefined>();
     const isPlacementConfigModalVisible = ref(false);
     const isAddGroupModalVisible = ref(false);
@@ -742,6 +760,7 @@
 
     const personAttributesForFilter = ref(box.attributeFilters?.registrantAttributesForFilters ?? {});
     const personAttributeValuesForFilter = ref(box.attributeFilters?.registrantAttributeValuesForFilters ?? {});
+    const pendingPersonAttributeValuesForFilter = ref(box.attributeFilters?.registrantAttributeValuesForFilters ?? {});
     const groupAttributesForFilter = ref(box.attributeFilters?.groupAttributesForFilters ?? {});
     const groupAttributeValuesForFilter = ref(box.attributeFilters?.groupAttributeValuesForFilters ?? {});
     const groupMemberAttributesForFilter = ref(box.attributeFilters?.groupMemberAttributesForFilters ?? {});
@@ -778,32 +797,20 @@
 
     const selectedPeopleCount = computed(() => selectedPersonIds.value.size);
 
-    const areAllPeopleSelected = computed({
-        get() {
-            return peopleToPlace.value.every(person => {
-                if (person.personId) {
-                    selectedPersonIds.value.has(person.personId);
+    const filteredAndSortedPeopleToPlace = computed(() => {
+        const filteredPeople = peopleToPlace.value.filter(p => {
+            return p.registrants?.some(r => {
+                if (!box.attributeFilters?.registrantAttributesForFilters || !r.attributeValues) {
+                    return false;
                 }
+                return areAttributeFiltersMet(box.attributeFilters?.registrantAttributesForFilters, personAttributeValuesForFilter.value, r.attributeValues);
             });
-        },
-        set(value: boolean) {
-            if (value) {
-                // Select all
-                for (const person of peopleToPlace.value) {
-                    if (person.personId) {
-                        selectedPersonIds.value.add(person.personId);
-                    }
-                }
-            }
-        }
-    });
+        });
 
-    const sortedPeopleToPlace = computed(() => {
-        return getSortedPeople(peopleToPlace.value);
+        return getSortedPeople(filteredPeople);
     });
 
     const sortedGroups = computed(() => {
-        console.log("Sorting Groups...", placementGroups.value);
         return placementGroups.value.map(group => {
             const validGroupMembers = (group.groupMembers ?? []).filter(m => m?.person);
 
@@ -828,6 +835,30 @@
     // #endregion
 
     // #region Functions
+
+    function areAttributeFiltersMet(attributes: Record<string, PublicAttributeBag>, attributeValuesFromFilter: Record<string, string>, attributeValuesFromEntity: Record<string, string>): boolean {
+        return Object.keys(attributeValuesFromFilter).every(attributeKey => {
+            const fieldType = getFieldType(attributes[attributeKey].fieldTypeGuid);
+
+            if (!fieldType) {
+                return false;
+            }
+
+            if (!attributeValuesFromFilter[attributeKey]) {
+                return true;
+            }
+
+            const comparisonValue: ComparisonValue = {
+                value: attributeValuesFromFilter[attributeKey],
+                comparisonType: ComparisonType.EqualTo
+            };
+
+            var result = fieldType.doesValueMatchFilter(attributeValuesFromEntity[attributeKey], comparisonValue, attributes[attributeKey].configurationValues ?? {});
+
+            // console.log("value: ", attributeValuesFromEntity[attributeKey], " filterValue: ", comparisonValue.value, " Attribute Key: ", attributeKey, " RESULT: ", result);
+            return result;
+        });
+    }
 
     function getSortedPeople(people: PersonBag[]): PersonBag[] {
         return [...people].sort((a, b) => {
@@ -1143,10 +1174,16 @@
         return selectedPersonIds.value.has(personId);
     }
 
-    //TODO - buggy behavior
     function toggleSelectAllCheckbox() {
         if (areAllPeopleSelected.value) {
             selectedPersonIds.value.clear();
+        }
+        else {
+            for (const person of filteredAndSortedPeopleToPlace.value) {
+                if (person.personId) {
+                    selectedPersonIds.value.add(person.personId);
+                }
+            }
         }
     }
 
@@ -1192,13 +1229,21 @@
     }
 
     function applyPeopleFilter(): void {
-        console.log("Apply people filter with value:", exampleBox.value);
-        // Implement filter logic here
+        personAttributeValuesForFilter.value = pendingPersonAttributeValuesForFilter.value;
+    }
+
+    function clearPeopleFilters(): void {
+        pendingPersonAttributeValuesForFilter.value = {};
+        personAttributeValuesForFilter.value = {};
     }
 
     function applyGroupFilter(): void {
         console.log("Apply group filter with value:", exampleBox.value);
         // Implement filter logic here
+    }
+
+    function clearGroupFilters(): void {
+
     }
 
     function getSortOrderKey(): string {
@@ -1271,10 +1316,12 @@
         preferences.setValue(getPlacementConfigurationSettingsKey(), JSON.stringify(bag));
 
         console.log("Saving preferences: ", preferences);
+        isPlacementConfigModalVisible.value = false;
 
         await preferences.save();
         // placementConfigurationSettings.value = bag;
-        isPlacementConfigModalVisible.value = false;
+
+        loadPlacementData();
     }
 
     // #endregion
@@ -1392,6 +1439,20 @@
 
         await preferences.save();
     });
+
+    watch([selectedPersonIds, filteredAndSortedPeopleToPlace], () => {
+        if (filteredAndSortedPeopleToPlace.value.length === 0) {
+            areAllPeopleSelected.value = false;
+        }
+        else {
+            areAllPeopleSelected.value = filteredAndSortedPeopleToPlace.value.every(person => {
+                if (person.personId) {
+                    return selectedPersonIds.value.has(person.personId);
+                }
+            });
+        }
+
+    }, { deep: true });
 
     // #endregion
 

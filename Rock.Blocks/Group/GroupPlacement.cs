@@ -1145,25 +1145,9 @@ namespace Rock.Blocks.Group
             }
 
             var placementConfiguration = GetPlacementConfiguration( registrationInstanceId, registrationTemplateId );
-            HashSet<int> includedRegistrationInstanceIds = new HashSet<int>();
-
-            // Build the TVP DataTable
-            var includedIdsTable = new DataTable();
-            includedIdsTable.Columns.Add( "Id", typeof( int ) );
-
-            foreach ( var id in includedRegistrationInstanceIds )
-            {
-                includedIdsTable.Rows.Add( id );
-            }
-
-            if ( placementConfiguration.IncludedRegistrationInstanceIds?.Any() == true )
-            {
-                includedRegistrationInstanceIds = placementConfiguration.IncludedRegistrationInstanceIds
-                    .Select( id => id.AsIntegerOrNull() )
-                    .Where( id => id.HasValue )
-                    .Select( id => id.Value )
-                    .ToHashSet();
-            }
+            var includedRegistrationInstanceIds = ( placementConfiguration.IncludedRegistrationInstanceIds?.Any() == true )
+                ? string.Join( ",", placementConfiguration.IncludedRegistrationInstanceIds )
+                : string.Empty;
 
             // If registration instance id has a value than we are in instance mode
             if ( registrationInstanceId.HasValue )
@@ -1178,7 +1162,8 @@ namespace Rock.Blocks.Group
                         @{nameof( registrationTemplateId )}, 
                         @{nameof( registrationInstanceId )}, 
                         @{nameof( registrationTemplatePlacementId )}, 
-                        @{nameof( placementMode )}",
+                        @{nameof( placementMode )},
+                        @{nameof( includedRegistrationInstanceIds )}",
                     new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
                     new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
                     new SqlParameter( nameof( groupEntityTypeId ), groupEntityTypeId ),
@@ -1186,11 +1171,7 @@ namespace Rock.Blocks.Group
                     new SqlParameter( nameof( registrationInstanceId ), registrationInstanceId.Value ),
                     new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
                     new SqlParameter( nameof( placementMode ), placementMode ),
-                    new SqlParameter( nameof( includedRegistrationInstanceIds ), includedIdsTable )
-                    {
-                        SqlDbType = SqlDbType.Structured,
-                        TypeName = "EntityIdList"
-                    }
+                    new SqlParameter( nameof( includedRegistrationInstanceIds ), includedRegistrationInstanceIds )
                 ).ToList();
             }
             else
@@ -1205,7 +1186,8 @@ namespace Rock.Blocks.Group
                         @{nameof( registrationTemplateId )}, 
                         @{nameof( registrationInstanceId )}, 
                         @{nameof( registrationTemplatePlacementId )}, 
-                        @{nameof( placementMode )}",
+                        @{nameof( placementMode )},
+                        @{ nameof( includedRegistrationInstanceIds )}",
                     new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
                     new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
                     new SqlParameter( nameof( groupEntityTypeId ), groupEntityTypeId ),
@@ -1213,11 +1195,7 @@ namespace Rock.Blocks.Group
                     new SqlParameter( nameof( registrationInstanceId ), DBNull.Value ),
                     new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
                     new SqlParameter( nameof( placementMode ), placementMode ),
-                    new SqlParameter( nameof( includedRegistrationInstanceIds ), includedIdsTable )
-                    {
-                        SqlDbType = SqlDbType.Structured,
-                        TypeName = "EntityIdList"
-                    }
+                    new SqlParameter( nameof( includedRegistrationInstanceIds ), includedRegistrationInstanceIds )
                 ).ToList();
             }
 
@@ -1341,25 +1319,9 @@ namespace Rock.Blocks.Group
             }
 
             var placementConfiguration = GetPlacementConfiguration( registrationInstanceId, registrationTemplateId );
-            HashSet<int> includedRegistrationInstanceIds = new HashSet<int>();
-
-            // Build the TVP DataTable
-            var includedIdsTable = new DataTable();
-            includedIdsTable.Columns.Add( "Id", typeof( int ) );
-
-            foreach ( var id in includedRegistrationInstanceIds )
-            {
-                includedIdsTable.Rows.Add( id );
-            }
-
-            if ( placementConfiguration.IncludedRegistrationInstanceIds?.Any() == true )
-            {
-                includedRegistrationInstanceIds = placementConfiguration.IncludedRegistrationInstanceIds
-                    .Select( id => id.AsIntegerOrNull() )
-                    .Where( id => id.HasValue )
-                    .Select( id => id.Value )
-                    .ToHashSet();
-            }
+            var includedRegistrationInstanceIds = ( placementConfiguration.IncludedRegistrationInstanceIds?.Any() == true )
+                ? string.Join( ",", placementConfiguration.IncludedRegistrationInstanceIds )
+                : string.Empty;
 
             // If registration instance id has a value than we are in instance mode
             if ( registrationInstanceId.HasValue )
@@ -1374,7 +1336,8 @@ namespace Rock.Blocks.Group
                         @{nameof( registrationTemplateId )}, 
                         @{nameof( registrationInstanceId )}, 
                         @{nameof( registrationTemplatePlacementId )}, 
-                        @{nameof( placementMode )}",
+                        @{nameof( placementMode )},
+                        @{ nameof( includedRegistrationInstanceIds )}",
                     new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
                     new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
                     new SqlParameter( nameof( groupEntityTypeId ), groupEntityTypeId ),
@@ -1382,11 +1345,7 @@ namespace Rock.Blocks.Group
                     new SqlParameter( nameof( registrationInstanceId ), registrationInstanceId.Value ),
                     new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
                     new SqlParameter( nameof( placementMode ), placementMode ),
-                    new SqlParameter( nameof( includedRegistrationInstanceIds ), includedIdsTable )
-                    {
-                        SqlDbType = SqlDbType.Structured,
-                        TypeName = "EntityIdList"
-                    }
+                    new SqlParameter( nameof( includedRegistrationInstanceIds ), includedRegistrationInstanceIds )
                 ).ToList();
             }
             else
@@ -1401,7 +1360,8 @@ namespace Rock.Blocks.Group
                         @{nameof( registrationTemplateId )}, 
                         @{nameof( registrationInstanceId )}, 
                         @{nameof( registrationTemplatePlacementId )}, 
-                        @{nameof( placementMode )}",
+                        @{nameof( placementMode )},
+                        @{nameof( includedRegistrationInstanceIds )}",
                     new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
                     new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
                     new SqlParameter( nameof( groupEntityTypeId ), groupEntityTypeId ),
@@ -1409,11 +1369,7 @@ namespace Rock.Blocks.Group
                     new SqlParameter( nameof( registrationInstanceId ), DBNull.Value ),
                     new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
                     new SqlParameter( nameof( placementMode ), placementMode ),
-                    new SqlParameter( nameof( includedRegistrationInstanceIds ), includedIdsTable )
-                    {
-                        SqlDbType = SqlDbType.Structured,
-                        TypeName = "EntityIdList"
-                    }
+                    new SqlParameter( nameof( includedRegistrationInstanceIds ), includedRegistrationInstanceIds )
                 ).ToList();
             }
 
