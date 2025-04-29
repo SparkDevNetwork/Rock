@@ -128,12 +128,14 @@ namespace Rock.Blocks.Core
             var marriedGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
 
             return person.Members.Where( m =>
+                    person.MaritalStatusValue != null && 
                     person.MaritalStatusValue.Guid.Equals( marriedGuid ) &&
                     m.GroupRole.Guid.Equals( adultGuid ) )
                 .SelectMany( m => m.Group.Members )
                 .Where( m =>
                     m.PersonId != person.Id &&
                     m.GroupRole.Guid.Equals( adultGuid ) &&
+                    m.Person.MaritalStatusValue != null &&
                     m.Person.MaritalStatusValue.Guid.Equals( marriedGuid ) )
                 .Select( s => s.Person )
                 .FirstOrDefault();

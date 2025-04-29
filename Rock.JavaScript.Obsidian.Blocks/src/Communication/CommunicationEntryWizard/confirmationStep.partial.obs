@@ -89,7 +89,9 @@
                         <EmailPreview v-if="selectedView === 'Email'"
                                       :bccEmails="bccEmails"
                                       :ccEmails="ccEmails"
-                                      :message="message"
+                                      :fromAddress="fromAddress"
+                                      :fromName="fromName"
+                                      :message="messagePreview"
                                       :replyToEmail="replyToEmail"
                                       :subject="subject"
                                       :to="emailTo"
@@ -122,7 +124,8 @@
             </template>
 
             <template #footerActions>
-                <RockButton :disabled="isSaving || isSending"
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowLeft'"
+                            :disabled="isSaving || isSending"
                             @click="onPreviousClicked()">Previous</RockButton>
             </template>
 
@@ -207,7 +210,7 @@ dl:not(.dl-horizontal) dt:first-child {
 
 
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
+    import { computed, onMounted, PropType, ref, watch } from "vue";
     import EmailPreview from "./emailPreview.partial.obs";
     import LoadingOverlay from "./loadingOverlay.partial.obs";
     import PushNotificationMobilePreview from "./pushNotificationMobilePreview.partial.obs";
@@ -219,15 +222,22 @@ dl:not(.dl-horizontal) dt:first-child {
     import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { vShortcut } from "@Obsidian/Directives/shortcut";
     import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
 
     type View = "Email" | "SMS" | "Push";
 
     const props = defineProps({
         allowedMediums: {
             type: Object as PropType<CommunicationType[]>,
+            required: true
+        },
+
+        areNavigationShortcutsDisabled: {
+            type: Boolean as PropType<boolean>,
             required: true
         },
 
@@ -271,6 +281,16 @@ dl:not(.dl-horizontal) dt:first-child {
             required: true
         },
 
+        fromAddress: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        fromName: {
+            type: String as PropType<string>,
+            required: true
+        },
+
         futureSendDateTime: {
             type: String as PropType<string | null | undefined>,
             required: true
@@ -283,6 +303,11 @@ dl:not(.dl-horizontal) dt:first-child {
 
         message: {
             type: String as PropType<string>,
+            required: true
+        },
+
+        previewHtmlProcessor: {
+            type: Object as PropType<(previewHtml: string) => string | null | undefined | Promise<string | null | undefined>>,
             required: true
         },
 
@@ -365,6 +390,8 @@ dl:not(.dl-horizontal) dt:first-child {
     const isSending = ref<boolean>(false);
     const selectedView = ref<View>(getView());
     const isSendModalShown = ref<boolean>(false);
+    const isPreviewLoading = ref<boolean>(false);
+    const messagePreview = ref<string>(props.message);
 
     // #endregion
 
@@ -471,6 +498,28 @@ dl:not(.dl-horizontal) dt:first-child {
         return "Email";
     }
 
+    async function loadEmailPreviewIfNecessary(): Promise<void> {
+        if (viewItems.value.some((item => item.value === get<View>("Email")))) {
+            isPreviewLoading.value = true;
+            try {
+                const result = props.previewHtmlProcessor(props.message);
+
+                if (isPromise(result)) {
+                    messagePreview.value = await result ?? props.message;
+                }
+                else {
+                    messagePreview.value = result ?? props.message;
+                }
+            }
+            catch {
+                messagePreview.value = props.message;
+            }
+            finally {
+                isPreviewLoading.value = false;
+            }
+        }
+    }
+
     // #endregion Functions
 
     // #region Event Handlers
@@ -523,5 +572,21 @@ dl:not(.dl-horizontal) dt:first-child {
         });
     }
 
-    // #endregion
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.message, async () => {
+        await loadEmailPreviewIfNecessary();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onMounted(async () => {
+        await loadEmailPreviewIfNecessary();
+    });
+
+    // #endregion Hooks
 </script>

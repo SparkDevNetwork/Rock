@@ -405,7 +405,7 @@ namespace Rock.Model
                 PersonService.UpdateGivingLeaderId( this.Entity.Id, RockContext );
                 PersonService.UpdateGroupSalutations( this.Entity.Id, RockContext );
 
-                if ( ChatHelper.IsChatEnabled )
+                if ( RockContext.IsRockToChatSyncEnabled && ChatHelper.IsChatEnabled )
                 {
                     Task.Run( async () =>
                     {
@@ -416,11 +416,6 @@ namespace Rock.Model
                                 PersonId = Entity.Id,
                                 ShouldEnsureChatAliasExists = false
                             };
-
-                            // Enforce a "full" sync of the chat user when saving an individual person. BUT take note
-                            // that because of the `ShouldEnsureChatAliasExists` flag above, this person will only be
-                            // synced to the external chat system if they have already been synced at least once before.
-                            chatHelper.RockToChatSyncConfig.ShouldEnsureChatUsersExist = true;
 
                             await chatHelper.CreateOrUpdateChatUsersAsync( new List<SyncPersonToChatCommand> { syncCommand } );
                         }

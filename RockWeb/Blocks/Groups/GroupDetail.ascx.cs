@@ -29,6 +29,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication.Chat;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Group;
@@ -968,6 +969,14 @@ namespace RockWeb.Blocks.Groups
                 checkinDataUpdated = true;
             }
 
+            if ( ChatHelper.IsChatEnabled && group.GroupType?.IsChatAllowed == true )
+            {
+                group.IsChatEnabledOverride = ddlIsChatEnabled.SelectedValue.AsBooleanOrNull();
+                group.IsLeavingChatChannelAllowedOverride = ddlIsLeavingChatChannelAllowed.SelectedValue.AsBooleanOrNull();
+                group.IsChatChannelPublicOverride = ddlIsChatChannelPublic.SelectedValue.AsBooleanOrNull();
+                group.IsChatChannelAlwaysShownOverride = ddlIsChatChannelAlwaysShown.SelectedValue.AsBooleanOrNull();
+            }
+
             // Add/update GroupSyncs
             foreach ( var groupSyncState in GroupSyncState )
             {
@@ -1015,6 +1024,15 @@ namespace RockWeb.Blocks.Groups
             group.StatusValueId = dvpGroupStatus.SelectedValueAsId();
             group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
             group.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
+
+            if ( group.GroupType.AllowGroupSpecificRecordSource )
+            {
+                group.GroupMemberRecordSourceValueId = dvpRecordSource.SelectedValueAsInt();
+            }
+            else
+            {
+                group.GroupMemberRecordSourceValueId = null;
+            }
 
             group.IsSecurityRole = cbIsSecurityRole.Checked;
 
@@ -1473,6 +1491,7 @@ namespace RockWeb.Blocks.Groups
                 var group = new Group { GroupTypeId = CurrentGroupTypeId };
                 var groupType = CurrentGroupTypeCache;
 
+                SetRecordSourceControls( groupType, group );
                 SetPeerNetworkControls( groupType, group );
                 SetRsvpControls( groupType, null );
                 SetScheduleControls( groupType, null );
@@ -1480,6 +1499,7 @@ namespace RockWeb.Blocks.Groups
                 BindInheritedAttributes( CurrentGroupTypeId, new AttributeService( new RockContext() ) );
                 BindGroupRequirementsGrid();
                 BindAdministratorPerson( group, groupType );
+                SetChatControls( groupType, group );
             }
         }
 
@@ -1972,10 +1992,12 @@ namespace RockWeb.Blocks.Groups
             BindAdministratorPerson( group, groupTypeCache );
             nbGroupCapacity.Visible = groupTypeCache != null && groupTypeCache.GroupCapacityRule != GroupCapacityRule.None;
             nbGroupCapacity.Help = nbGroupCapacity.Visible ? GetGroupCapacityHelpText( groupTypeCache.GroupCapacityRule ) : string.Empty;
+            SetRecordSourceControls( groupTypeCache, group );
             SetPeerNetworkControls( groupTypeCache, group );
             SetRsvpControls( groupTypeCache, group );
             SetScheduleControls( groupTypeCache, group );
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
+            SetChatControls( groupTypeCache, group );
 
             cbSchedulingMustMeetRequirements.Checked = group.SchedulingMustMeetRequirements;
             cbDisableScheduleToolboxAccess.Checked = group.DisableScheduleToolboxAccess;
@@ -2264,6 +2286,26 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Sets the record source controls.
+        /// </summary>
+        /// <param name="groupType">The group type cache.</param>
+        /// <param name="group">The group.</param>
+        private void SetRecordSourceControls( GroupTypeCache groupType, Group group )
+        {
+            if ( groupType?.AllowGroupSpecificRecordSource == true )
+            {
+                // Setting the type here, as setting it in `LoadDropDowns()` wasn't reliably working.
+                dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )?.Id;
+                dvpRecordSource.SetValue( group.GroupMemberRecordSourceValueId );
+                dvpRecordSource.Visible = true;
+            }
+            else
+            {
+                dvpRecordSource.Visible = false;
+            }
+        }
+
+        /// <summary>
         /// Sets the Peer Network controls.
         /// </summary>
         /// <param name="groupType">The group type cache.</param>
@@ -2385,6 +2427,52 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Sets the chat controls.
+        /// </summary>
+        /// <param name="groupType">The group type cache.</param>
+        /// <param name="group">The group.</param>
+        private void SetChatControls( GroupTypeCache groupType, Group group )
+        {
+            if ( ChatHelper.IsChatEnabled && groupType?.IsChatAllowed == true )
+            {
+                var isChatEnabled = group.IsChatEnabledOverride.HasValue
+                    ? group.IsChatEnabledOverride.Value ? "y" : "n"
+                    : string.Empty;
+
+                var isLeavingChatChannelAllowed = group.IsLeavingChatChannelAllowedOverride.HasValue
+                    ? group.IsLeavingChatChannelAllowedOverride.Value ? "y" : "n"
+                    : string.Empty;
+
+                var isChatChannelPublic = group.IsChatChannelPublicOverride.HasValue
+                    ? group.IsChatChannelPublicOverride.Value ? "y" : "n"
+                    : string.Empty;
+
+                var isChatChannelAlwaysShown = group.IsChatChannelAlwaysShownOverride.HasValue
+                    ? group.IsChatChannelAlwaysShownOverride.Value ? "y" : "n"
+                    : string.Empty;
+
+                ddlIsChatEnabled.SetValue( isChatEnabled );
+                ddlIsLeavingChatChannelAllowed.SetValue( isLeavingChatChannelAllowed );
+                ddlIsChatChannelPublic.SetValue( isChatChannelPublic );
+                ddlIsChatChannelAlwaysShown.SetValue( isChatChannelAlwaysShown );
+
+                if ( group.IsSystem )
+                {
+                    ddlIsChatEnabled.Enabled = false;
+                    ddlIsLeavingChatChannelAllowed.Enabled = false;
+                    ddlIsChatChannelPublic.Enabled = false;
+                    ddlIsChatChannelAlwaysShown.Enabled = false;
+                }
+
+                wpChat.Visible = true;
+            }
+            else
+            {
+                wpChat.Visible = false;
+            }
+        }
+
+        /// <summary>
         /// Shows the readonly details.
         /// </summary>
         /// <param name="group">The group.</param>
@@ -2483,6 +2571,16 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     hlPeerNetwork.Visible = false;
+                }
+
+                if ( ChatHelper.IsChatEnabled && group.GetIsChatEnabled() )
+                {
+                    hlChat.Text = $"Chat-Enabled <i class=\"fa fa-comments-o\"></i>";
+                    hlChat.Visible = true;
+                }
+                else
+                {
+                    hlChat.Visible = false;
                 }
 
                 if ( groupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )

@@ -218,11 +218,31 @@ namespace Rock.Core.EntitySearch
                 throw new Exception( $"Type '{entityType.Name}' is not valid for {nameof( DynamicLinqQueryExtensionMethods.IsFollowed )}()." );
             }
 
-            idQry = new FollowingService( _rockContext ).Queryable()
+            var followingQry = new FollowingService( _rockContext ).Queryable()
                 .Where( f => f.EntityTypeId == entityTypeId.Value
                     && string.IsNullOrEmpty( f.PurposeKey )
-                    && f.PersonAlias.PersonId == _currentPersonId.Value )
-                .Select( f => f.EntityId );
+                    && f.PersonAlias.PersonId == _currentPersonId.Value );
+
+            // When the EntitTypeId is for Person, then translate it to PersonAlias
+            if ( entityTypeId == EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON ) )
+            {
+                entityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON_ALIAS );
+
+                // In this case, the EntityId (followee) represents a PersonAlias.Id; to get the 
+                // actual person,join to PersonAlias and select the corresponding PersonAlias.PersonId.
+                var personAliasService = new PersonAliasService( _rockContext );
+                idQry = followingQry
+                    .Join(
+                        personAliasService.Queryable(),
+                        f => f.EntityId,
+                        pa => pa.Id,
+                        ( f, pa ) => pa.PersonId
+                    );
+            }
+            else
+            {
+                idQry = followingQry.Select( f => f.EntityId );
+            }
 
             _followedIdQueryables.Add( entityType, idQry );
 

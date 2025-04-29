@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,8 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -35,7 +37,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether they are in a registration instance of the specified registration template or templates" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Registration Template(s) Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "E7D705CC-E950-4E7B-9101-F9138F1B1B10")]
+    [Rock.SystemGuid.EntityTypeGuid( "E7D705CC-E950-4E7B-9101-F9138F1B1B10" )]
     public class InRegistrationInstanceRegistrationTemplateFilter : DataFilterComponent
     {
         #region Properties
@@ -60,6 +62,56 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/inRegistrationInstanceRegistrationTemplateFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+
+            string[] selectionValues = selection.Split( '|' );
+
+            if ( selection.IsNullOrWhiteSpace() )
+            {
+                return data;
+            }
+
+            List<Guid> registrationTemplateGuids = selectionValues[0].Split( ',' ).AsGuidList();
+            var registrationTemplates = new RegistrationTemplateService( new RockContext() )
+                .GetByGuids( registrationTemplateGuids )
+                .ToList()
+                .Select( rt => rt.ToListItemBag() );
+
+            data.Add( "templates", registrationTemplates.ToCamelCaseJson( false, true ) );
+
+            data.Add( "includeInactive", ( selectionValues.Length >= 2 && ( selectionValues[1].AsBooleanOrNull() ?? false ) ).ToTrueFalse() );
+
+            if ( selectionValues.Length >= 3 )
+            {
+                data.Add( "dateRange", selectionValues[2].Replace( ',', '|' ) );
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var templates = data.GetValueOrNull( "templates" )
+                ?.FromJsonOrNull<List<ListItemBag>>()
+                ?.Select( rt => rt.Value )
+                .ToList();
+            var dateRange = data.GetValueOrDefault( "dateRange", "" ).Replace( "|", "," );
+            var includeInactive = data.GetValueOrDefault( "includeInactive", "False" );
+
+            return string.Format( "{0}|{1}|{2}", templates.AsDelimited( "," ), includeInactive, dateRange );
         }
 
         #endregion
@@ -143,6 +195,8 @@ namespace Rock.Reporting.DataFilter.Person
 
             return result;
         }
+
+#if WEBFORMS
 
         /// <summary>
         /// Creates the child controls.
@@ -297,6 +351,8 @@ namespace Rock.Reporting.DataFilter.Person
                 }
             }
         }
+
+#endif
 
         /// <summary>
         /// Gets the expression.

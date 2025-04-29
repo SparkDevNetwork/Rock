@@ -14,13 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-import { App, Component, createApp, defineComponent, Directive, h, markRaw, onMounted, provide, ref, VNode } from "vue";
+import { App, Component, createApp, defineComponent, Directive, h, markRaw, onMounted, provide, reactive, ref, VNode } from "vue";
 import RockBlock from "./rockBlock.partial";
 import { useStore } from "@Obsidian/PageState";
 import "@Obsidian/ValidationRules";
 import "@Obsidian/FieldTypes/index";
 import { DebugTiming } from "@Obsidian/ViewModels/Utility/debugTiming";
 import { ObsidianBlockConfigBag } from "@Obsidian/ViewModels/Cms/obsidianBlockConfigBag";
+import { FormError, FormState, provideFormState } from "@Obsidian/Utility/form";
 import { PageConfig } from "@Obsidian/Utility/page";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { BasicSuspenseProvider, provideSuspense } from "@Obsidian/Utility/suspense";
@@ -322,16 +323,64 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
 
     const name = `Root${componentUrl.replace(/\//g, ".")}`;
 
+    // Initialize a fake form state to track errors and proxy them to the
+    // WebForms system.
+    const formErrors: Record<string, FormError> = {};
+    const formState = reactive<FormState>({
+        submitCount: 0,
+        setError(id, name, error) {
+            if (error) {
+                formErrors[id] = { name, text: error };
+            }
+            else if (formErrors[id]) {
+                delete formErrors[id];
+            }
+        }
+    });
+
+    // Register the validator function for this component. This will be called
+    // whenever form validation is triggered by submitting a form.
+    window[`validator_${rootElementId}`] = function (validationControl: HTMLElement & { errormessage?: string }, controlState: Record<string, unknown>): void {
+        formState.submitCount++;
+
+        // If we don't have any errors, then the form is valid.
+        if (Object.keys(formErrors).length === 0) {
+            controlState.IsValid = true;
+            return;
+        }
+
+        // Translate the form errors into error strings.
+        const errors: string[] = [];
+        for (const key of Object.keys(formErrors)) {
+            errors.push(`${formErrors[key].name} ${formErrors[key].text}`);
+        }
+
+        // Put the error strings into the WebForms control. It injects the error
+        // text as raw HTML, so we hijack things a bit to make the bullet list
+        // look right.
+        if (errors.length === 1) {
+            validationControl.errormessage = errors[0];
+        }
+        else {
+            const firstError = errors.shift();
+            validationControl.errormessage = `${firstError}</li><li>${errors.join("</li><li>")}</li>`;
+        }
+
+        controlState.IsValid = false;
+    };
+
     const app = createApp({
         name,
         setup() {
             let componentData: Record<string, string> = {};
             let componentProperties: Record<string, unknown> = {};
 
+            provideFormState(formState);
+
             try {
                 const componentDataElement = document.getElementById(componentDataId) as HTMLInputElement;
 
-                componentData = JSON.parse(componentDataElement.value) ?? {};
+                componentData = JSON.parse(decodeURIComponent(componentDataElement.value)) ?? {};
             }
             catch (e) {
                 if (!errorMessage) {
@@ -343,7 +392,7 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
                 try {
                     const componentPropertiesElement = document.getElementById(componentPropertiesId) as HTMLInputElement;
 
-                    componentProperties = JSON.parse(componentPropertiesElement.value) ?? {};
+                    componentProperties = JSON.parse(decodeURIComponent(componentPropertiesElement.value)) ?? {};
                 }
                 catch (e) {
                     if (!errorMessage) {
@@ -356,7 +405,7 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
                 const componentDataElement = document.getElementById(componentDataId) as HTMLInputElement;
 
                 if (componentDataElement) {
-                    componentDataElement.value = JSON.stringify(data);
+                    componentDataElement.value = encodeURIComponent(JSON.stringify(data));
                 }
             }
 
@@ -455,7 +504,7 @@ export async function showCustomBlockAction(actionFileUrl: string, pageGuid: str
                 return await httpCall<T>("POST", url, params, data);
             };
 
-            const invokeBlockAction = createInvokeBlockAction(post, pageGuid, blockGuid, store.state.pageParameters, store.state.interactionGuid);
+            const invokeBlockAction = createInvokeBlockAction(post, pageGuid, blockGuid, store.state.pageParameters, store.state.sessionGuid, store.state.interactionGuid);
 
             provideHttp({
                 doApiCall,

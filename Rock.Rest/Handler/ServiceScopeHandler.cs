@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Net;
 using Rock.Rest.Utility;
+using Rock.Utility.ExtensionMethods;
 
 namespace Rock.Rest.Handler
 {
@@ -65,6 +67,11 @@ namespace Rock.Rest.Handler
                     if ( accessor is RockRequestContextAccessor internalAccessor )
                     {
                         internalAccessor.RockRequestContext = rockRequestContext;
+                    }
+
+                    if ( rockRequestContext.IsClientForbidden() )
+                    {
+                        return request.CreateResponse( HttpStatusCode.Forbidden );
                     }
 
                     var responseMessage = await base.SendAsync( request, cancellationToken );

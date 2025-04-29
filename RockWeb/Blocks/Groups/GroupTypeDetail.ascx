@@ -99,6 +99,9 @@
                                 <Rock:RockDropDownList ID="ddlGroupStatusDefinedType" runat="server" Label="Group Status Defined Type" Help="Select the defined type to use when setting the group's status. Leave this blank if you don't want groups to prompt for group status." EnhanceForLongLists="true" />
                                 <Rock:RockCheckBox ID="cbShowAdministrator" runat="server" Label="Show Administrator"
                                     Help="This setting determines if groups of this type support assigning an administrator for each group." />
+
+                                <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source" Help="The record source for group members added to groups of this type." />
+                                <Rock:RockCheckBox ID="cbAllowGroupSpecificRecordSource" runat="server" Label="Allow Specific Group Record Source" Help="Determines if groups of this type should be allowed to override the record source." />
                             </div>
                             <div class="col-md-6">
                                 <div class="row">
@@ -519,6 +522,22 @@
                         </div>
                     </Rock:PanelWidget>
 
+                    <Rock:PanelWidget ID="wpChat" runat="server" Title="Chat">
+                        <Rock:NotificationBox ID="nbChatRunSyncJob" runat="server" NotificationBoxType="Info" Text="You'll need to run the Chat Sync Job after saving, for these changes to take affect in chat channels of this type." />
+                        <Rock:NotificationBox ID="nbDisableChatChannels" runat="server" NotificationBoxType="Warning" Visible="false" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbIsChatAllowed" runat="server" Label="Is Chat Allowed" Help="If enabled, groups of this type are allowed to participate in the chat system as a chat channel." AutoPostBack="true" OnCheckedChanged="cbIsChatAllowed_CheckedChanged" />
+                                <Rock:RockCheckBox ID="cbIsChatEnabledForAllGroups" runat="server" Label="Is Chat Enabled For All Groups" Help="If enabled, all groups of this type have the chat feature enabled by default." />
+                                <Rock:RockCheckBox ID="cbIsLeavingChatChannelAllowed" runat="server" Label="Is Leaving Chat Channel Allowed" Help="If enabled, individuals are allowed to leave chat channels of this type." />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbIsChatChannelPublic" runat="server" Label="Is Chat Channel Public" Help="If enabled, chat channels of this type are public. A public channel is visible to everyone when performing a search. This also implies that the channel may be joined by any person via the chat application." />
+                                <Rock:RockCheckBox ID="cbIsChatChannelAlwaysShown" runat="server" Label="Is Chat Channel Always Shown" Help="If enabled, chat channels of this type are always shown in the channel list even if the person has not joined the channel. This also implies that the channel may be joined by any person via the chat application." />
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
+
                     <Rock:PanelWidget ID="wpDisplay" runat="server" Title="Display Options">
                         <div class="row">
                             <div class="col-md-6">
@@ -590,10 +609,16 @@
                         <Rock:RockCheckBox ID="cbCanManageMembers" runat="server" Label="Can Manage Members" Help="Should individuals with this role be able to manage the members of this group regardless of the security settings on the group?" />
                         <Rock:RockCheckBox ID="cbIsCheckInAllowed" runat="server" Label="Can Check In to Group" Help="Should individuals with this role be allowed to check in to this group? Note that this only applies if the 'Check-in Rule' is set to &quot;Already Enrolled In Group&quot; in your check-in configuration." />
                         <Rock:RockCheckBox ID="cbIsExcludedFromPeerNetwork" runat="server" Label="Exclude from Peer Network" Help="Should individuals with this role be excluded from the group's peer network?" />
+                        <Rock:RockCheckBox ID="cbCanTakeAttendance" runat="server" Label="Can Take Attendance" Help="Should individuals with this role be allowed to take attendance for this group regardless of the group's security settings?" />
                     </div>
                     <div class="col-md-6">
                         <Rock:NumberBox ID="nbMinimumRequired" runat="server" NumberType="Integer" Label="Minimum Required" Help="The minimum number of people with this role that group should allow." />
                         <Rock:NumberBox ID="nbMaximumAllowed" runat="server" NumberType="Integer" Label="Maximum Allowed" Help="The maximum number of people with this role that group should allow." />
+                        <Rock:RockDropDownList ID="ddlChatRole" runat="server" Label="Chat Role" Help="The role of the chat individual, to be synchronized with the external chat system.">
+                            <asp:ListItem Value="0" Text="Member" />
+                            <asp:ListItem Value="1" Text="Moderator" />
+                            <asp:ListItem Value="2" Text="Administrator" />
+                        </Rock:RockDropDownList>
                         <asp:CustomValidator ID="cvAllowed" runat="server" Display="None" OnServerValidate="cvAllowed_ServerValidate"
                             ValidationGroup="Roles" ErrorMessage="The Minimum Required should be less than Maximum Allowed." />
                         <asp:PlaceHolder ID="phGroupTypeRoleAttributes" runat="server" />

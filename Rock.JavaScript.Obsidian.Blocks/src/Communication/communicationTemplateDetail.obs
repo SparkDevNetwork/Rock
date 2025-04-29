@@ -1,0 +1,977 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :title="config.title ?? 'New Communication Template'"
+           :headerSecondaryActions="headerSecondaryActions">
+        <RockForm :id="formId"
+                  @submit="onFormSubmitted">
+            <NotificationBox v-if="config.isEditRestrictedSystem" alertType="info">
+                <strong>Note</strong> Because this communication template is used by Rock, editing is restricted.
+            </NotificationBox>
+            <NotificationBox v-else-if="config.isEditRestrictedUnauthorized" alertType="info">
+                <strong>Note</strong> You are not authorized to edit this communication template .
+            </NotificationBox>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="name"
+                             :disabled="isSaving || config.isEditRestricted"
+                             label="Name"
+                             :maxLength="100"
+                             :rules="['required', createMaxLengthValidator(100)]" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="isActive"
+                              :disabled="isSaving || config.isEditRestricted"
+                              label="Active" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="isStarter"
+                              :disabled="isSaving || config.isEditRestricted"
+                              label="Is Starter" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <TextBox v-model="description"
+                             :disabled="isSaving || config.isEditRestrictedUnauthorized"
+                             label="Description"
+                             :rows="3"
+                             textMode="multiline" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <CategoryPicker v-model="category"
+                                    :disabled="isSaving"
+                                    :entityTypeGuid="EntityType.CommunicationTemplate"
+                                    label="Category" />
+                </div>
+
+                <div class="col-md-3">
+                    <RadioButtonList v-if="config.isNew"
+                                     v-model="versionAsString"
+                                     horizontal
+                                     :items="[
+                                        {
+                                            text: 'Legacy',
+                                            value: `${CommunicationTemplateVersion.Legacy}`
+                                        },
+                                        {
+                                            text: 'Beta',
+                                            value: `${CommunicationTemplateVersion.Beta}`
+                                        }
+                                    ]"
+                                     label="Version" />
+                    <StaticFormControl v-else
+                                       :modelValue="CommunicationTemplateVersionDescription[version]"
+                                       label="Version" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <ImageUploader v-model="templatePreviewImage"
+                                   :disabled="isSaving || config.isEditRestrictedUnauthorized"
+                                   help="The preview of this template to show when selecting a template for a new communication."
+                                   label="Template Preview Image" />
+                </div>
+            </div>
+
+            <Comment><!-- EMAIL PANEL (begin) --></Comment>
+            <Panel :modelValue="true"
+                   :hasCollapse="true"
+                   title="Email"
+                   titleIconCssClass="fa fa-envelope"
+                   type="widget">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="fromName"
+                                 :disabled="isSaving || config.isEditRestricted"
+                                 help="<small><span class='tip tip-lava'></span></small>"
+                                 label="From Name"
+                                 :maxLength="100"
+                                 :rules="[createMaxLengthValidator(100)]" />
+                    </div>
+                    <div class="col-md-6">
+                        <EmailBox v-model="fromEmail"
+                                  :disabled="isSaving || config.isEditRestricted"
+                                  allowLava
+                                  help="<small><span class='tip tip-lava'></span></small>"
+                                  label="From Address"
+                                  :maxLength="100"
+                                  :rules="[createMaxLengthValidator(100)]" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="subject"
+                                 :disabled="isSaving || config.isEditRestricted"
+                                 label="Email Subject"
+                                 :maxLength="1000"
+                                 :rules="[createMaxLengthValidator(1000)]" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <RockButton btnSize="xs"
+                                    btnType="link"
+                                    @click="areAdditionalFieldsShown = !areAdditionalFieldsShown">{{ areAdditionalFieldsShown ? 'Hide' : 'Show' }} Additional Fields</RockButton>
+                    </div>
+                </div>
+
+                <TransitionVerticalCollapse>
+                    <div v-if="areAdditionalFieldsShown">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <EmailBox v-model="replyToEmail"
+                                          allowLava
+                                          :disabled="isSaving || config.isEditRestricted"
+                                          help="<small><span class='tip tip-lava'></span></small>"
+                                          label="Reply To Address"
+                                          :maxLength="100"
+                                          :rules="[createMaxLengthValidator(100)]" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <EmailBox v-model="ccEmails"
+                                          allowLava
+                                          allowMultiple
+                                          :disabled="isSaving || config.isEditRestricted"
+                                          help="<small><span class='tip tip-lava'></span></small>"
+                                          label="CC List" />
+                            </div>
+                            <div class="col-md-6">
+                                <EmailBox v-model="bccEmails"
+                                          allowLava
+                                          allowMultiple
+                                          :disabled="isSaving || config.isEditRestricted"
+                                          help="<small><span class='tip tip-lava'></span></small>"
+                                          label="BCC List" />
+                            </div>
+                        </div>
+                    </div>
+                </TransitionVerticalCollapse>
+
+                <div class="row" v-if="!config.isEditRestricted">
+                    <div class="col-md-6">
+                        <ImageUploader v-model="currentAttachment"
+                                       :binaryFileTypeGuid="config.attachmentsBinaryFileTypeGuid"
+                                       :disabled="isSaving"
+                                       label="Attachments"
+                                       :uploadAsTemporary="true"
+                                       @update:modelValue="onAttachmentAdded" />
+
+                        <div class="attachment">
+                            <ul class="attachment-content">
+                                <li v-for="binaryFileAttachment in attachments">
+                                    <a :href="`/GetFile.ashx?guid=${binaryFileAttachment.value}&fileName=${binaryFileAttachment.text}`" target="_blank" rel="noopener noreferrer">{{ binaryFileAttachment.text }}</a> <a :disabled="isSaving"><i class="fa fa-times" @click="onAttachmentRemoved(binaryFileAttachment)"></i></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="email-design-container">
+                    <div class="email-design-header">
+                        <h4>Email Design</h4>
+                        <div v-if="!isAdvancedShown" class="email-preview-buttons btn-group" data-toggle="buttons">
+                            <RockButton btnType="default"
+                                        :class="emailPreviewMode === 'desktop' ? 'email-preview-selected' : ''"
+                                        @click="emailPreviewMode = 'desktop'"><i class="fa fa-laptop"></i> Desktop</RockButton>
+                            <RockButton btnType="default"
+                                        :class="emailPreviewMode === 'mobile' ? 'email-preview-selected' : ''"
+                                        @click="emailPreviewMode = 'mobile'"><i class="fa fa-mobile-alt"></i> Mobile</RockButton>
+                        </div>
+                        <div v-if="!isAdvancedShown" class="email-actions">
+                            <template v-if="isFeatureEnabled('EMAIL_BUILDER_FEATURE', version)">
+                                <RockButton v-if="!config.isEditRestrictedSystem"
+                                            btnType="info"
+                                            @click="onOpenEmailBuilder">
+                                    <i class="fa fa-drafting-compass"></i> Email Builder
+                                </RockButton>
+                            </template>
+
+                            <RockButton btnType="default"
+                                        isSquare
+                                        @click="onShowAdvanced"><i class="fa fa-code"></i></RockButton>
+                        </div>
+                    </div>
+
+                    <EmailDesignAdvanced v-if="isAdvancedShown"
+                                         v-model="message"
+                                         v-model:isCssInliningEnabled="isCssInliningEnabled"
+                                         v-model:lavaFields="lavaFields"
+                                         v-model:lavaFieldValues="lavaFieldValues"
+                                         :logoBinaryFile="logoBinaryFile"
+                                         :isSaving="isSaving"
+                                         :version="version"
+                                         :config="config"
+                                         @cancel="isAdvancedShown = false"
+                                         @apply="onAdvancedApplied"
+                                         @showAdvancedHelp="isAdvancedHelpShown = true" />
+
+                    <EmailDesignPreview v-else
+                                        v-model:lavaFieldValues="lavaFieldValues"
+                                        v-model:logoBinaryFile="logoBinaryFile"
+                                        :lavaFields="lavaFields"
+                                        :messagePreview="messagePreview"
+                                        :isSaving="isSaving"
+                                        :version="version"
+                                        :config="config"
+                                        :emailPreviewMode="emailPreviewMode"
+                                        @update:preview="onUpdateMessagePreview" />
+                </div>
+            </Panel>
+            <Comment><!-- EMAIL PANEL (end) --></Comment>
+
+            <Comment><!-- SMS PANEL (begin) --></Comment>
+            <Panel :hasCollapse="true"
+                   title="SMS"
+                   titleIconCssClass="fa fa-comments"
+                   type="widget">
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="smsFromSystemPhoneNumberGuidOrEmptyString"
+                                      :disabled="isSaving || config.isEditRestricted"
+                                      help="The number to originate message from (configured under Admin Tools > Communications > System Phone Numbers)."
+                                      :items="config.smsFromSystemPhoneNumbers ?? []"
+                                      label="From" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <SmsMessageEditor v-model="smsMessage"
+                                          :disabled="isSaving || config.isEditRestricted"
+                                          :editorHeight="100"
+                                          :isCharacterCountShown="true"
+                                          :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
+                                          toolbarLabel="Message" />
+                    </div>
+                </div>
+            </Panel>
+            <Comment><!-- SMS PANEL (end) --></Comment>
+
+            <Comment><!-- PUSH PANEL (begin) --></Comment>
+            <Panel :hasCollapse="true"
+                   title="Push"
+                   titleIconCssClass="fa fa-mobile-phone"
+                   type="widget">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="pushTitle"
+                                 :disabled="isSaving"
+                                 label="Title"
+                                 :maxLength="100"
+                                 :rules="[createMaxLengthValidator(100)]" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <SmsMessageEditor v-model="pushMessage"
+                                          :disabled="isSaving"
+                                          :editorHeight="100"
+                                          :isCharacterCountShown="true"
+                                          :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
+                                          toolbarLabel="Message" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <RadioButtonList v-model="pushOpenActionAsString"
+                                         :disabled="isSaving"
+                                         help="Defines the open action for the message."
+                                         horizontal
+                                         :items="pushOpenActions"
+                                         label="Open Action" />
+                    </div>
+                </div>
+
+                <template v-if="pushOpenActionAsString === `${PushOpenAction.LinkToUrl}`">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <UrlLinkBox v-model="pushUrl"
+                                        :disabled="isSaving"
+                                        label="URL" />
+                        </div>
+                    </div>
+                </template>
+
+                <template v-else-if="pushOpenActionAsString === `${PushOpenAction.LinkToMobilePage}`">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <PagePicker v-model="pushMobilePage"
+                                        :disabled="isSaving"
+                                        label="Mobile Page"
+                                        :siteType="SiteType.Mobile" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <KeyValueList v-model="pushMobilePageQueryStringItems"
+                                          :disabled="isSaving"
+                                          label="Mobile Page Query String"
+                                          keyPlaceholder="Key"
+                                          valuePlaceholder="Value" />
+                        </div>
+                    </div>
+                </template>
+
+                <template v-else-if="pushOpenActionAsString === `${PushOpenAction.ShowDetails}`">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <DropDownList v-model="pushMobileApplicationGuidOrEmptyString"
+                                          blankValue="All Applications"
+                                          :disabled="isSaving"
+                                          :items="config.pushMobileApplications ?? []"
+                                          label="Application" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <template v-if="onlyHadHtmlContentOnLoad">
+                                <NotificationBox alertType="warning">
+                                    Please convert the Additional Details section into structured content by copying its contents into the designated field below.
+                                </NotificationBox>
+                                <HtmlEditor v-model="pushOpenMessage"
+                                            :disabled="isSaving"
+                                            label="Additional Details" />
+                            </template>
+
+                            <StructuredContentEditor v-model="pushOpenMessageJson"
+                                                     :disabled="isSaving"
+                                                     label="Additional Details" />
+                        </div>
+                    </div>
+                </template>
+            </Panel>
+            <Comment><!-- PUSH PANEL (end) --></Comment>
+        </RockForm>
+
+        <Modal v-model="isAuditDetailsModalShown" title="Audit Details">
+            <AuditDetail :entityTypeGuid="EntityType.CommunicationTemplate"
+                         :entityKey="config.guid" />
+        </Modal>
+
+        <Modal v-model="isAdvancedHelpShown"
+               cancelText=""
+               saveText="Close"
+               title="HTML Email Template Help"
+               @save="onCloseAdvancedHelp">
+            <NotificationBox alertType="info" class="alert-inline">
+                <p>An email template needs to be an HTML document with some special divs to support the communication wizard.</p>
+                <br>
+                <p>The template needs to have at least one div with a &quot;dropzone&quot; class in the BODY</p>
+                <CodeSample :code="dropzonePre" language="html" />
+                <br>
+
+                <p>The template also needs to have at least one div with a &apos;structure-dropzone&apos; class in the BODY to support adding zones</p>
+                <CodeSample :code="structureDropzonePre" language="html" />
+
+                <p>To have some starter text, include a &apos;component component-text&apos; div within the &apos;dropzone&apos; div</p>
+                <CodeSample :code="textComponentPre" language="html" />
+                <br>
+
+                <p>To enable the PREHEADER text, a div with an id of &apos;preheader-text&apos; needs to be the first div in the <code>&lt;body&gt;</code></p>
+                <CodeSample :code="preheaderPre" language="html" />
+                <br>
+
+                <p>To include a logo, an img div with an id of 'template-logo' can be placed anywhere in the template. The template editor will then show the 'Logo' image uploader. The src of the 'template-logo' will be set from the template-editor.</p>
+                <CodeSample :code="logoPre" language="html" />
+            </NotificationBox>
+        </Modal>
+
+        <template #footerActions>
+            <RockButton btnType="primary"
+                        :disabled="isSaving || config.isEditRestrictedUnauthorized"
+                        :form="formId"
+                        shortcutKey="s"
+                        type="submit">Save</RockButton>
+            <RockButton v-if="parentPageUrl"
+                        btnType="link"
+                        :disabled="isSaving"
+                        :form="formId"
+                        shortcutKey="c"
+                        @click="onCancelClicked">Cancel</RockButton>
+
+            <NotificationBox v-if="saveErrorMessage" alertType="danger">
+                <strong>Error</strong> {{ saveErrorMessage }}
+            </NotificationBox>
+        </template>
+    </Panel>
+
+    <Panel v-if="version === CommunicationTemplateVersion.Beta && isEmailBuilderShown"
+           isFullscreen
+           isFullscreenPageOnly
+           panelBodyCssClass="email-builder-panel-body"
+           title="Email Builder">
+        <template #default>
+            <div class="panel-body-contents">
+                <EmailEditor :html="message"
+                             :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
+                             :disabled="isSaving"
+                             :videoProviderNames="undefined"
+                             :recipientPersonIds="undefined"
+                             :getHtmlRequest="getHtmlRequest" />
+            </div>
+        </template>
+
+        <template #footerActions>
+            <RockButton btnType="default" @click="isEmailBuilderShown = false">Cancel</RockButton>
+        </template>
+
+        <template #footerSecondaryActions>
+            <RockButton btnType="primary" @click="onEmailBuilderApplyDesign">Apply Design</RockButton>
+        </template>
+    </Panel>
+</template>
+
+<style scoped>
+:deep(.email-builder-panel-body) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+}
+
+:deep(.email-builder-panel-body .actions) {
+    margin: 0;
+}
+
+.panel-body-contents {
+    flex: 1;
+    overflow: hidden;
+}
+
+:deep(.panel-widget .panel-title) {
+    font-size: var(--font-size-regular);
+    font-weight: var(--font-weight-regular);
+}
+
+.email-design-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--panel-border);
+    padding: var(--spacing-small) var(--spacing-medium);
+    /* Make header stretch to the parent panel width. */
+    margin: 0 calc(0px - var(--panel-body-padding));
+}
+
+:deep(.email-design-subheader) {
+    margin: 0 calc(0px - var(--panel-body-padding));
+}
+
+.alert-inline,
+:deep(.alert-inline) {
+    margin-bottom: 0;
+}
+
+:deep(.email-design-body) {
+    margin: 0 calc(0px - var(--panel-body-padding));
+}
+
+:deep(.email-design-body .form-group.rock-check-box) {
+    min-height: unset;
+}
+
+:deep(.email-design-body) .side-panel {
+    padding: var(--spacing-medium) 0 var(--spacing-medium) var(--spacing-medium);
+}
+
+.email-preview-buttons button,
+.email-actions button:not(.btn-square) {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-tiny);
+}
+
+.email-preview-selected {
+    background-color: var(--color-interface-medium);
+    color: var(--color-interface-softest);
+}
+
+.email-actions {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-xsmall);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import Comment from "./CommunicationTemplateDetail/comment.partial.obs";
+    import CodeSample from "./CommunicationTemplateDetail/codeSample.partial.obs";
+    import EmailDesignAdvanced from "./CommunicationTemplateDetail/emailDesignAdvanced.partial.obs";
+    import EmailDesignPreview from "./CommunicationTemplateDetail/emailDesignPreview.partial.obs";
+    import { NavigationUrlKey } from "./CommunicationTemplateDetail/types.partial";
+    import { createMaxLengthValidator, isFeatureEnabled, useCommunicationTemplateMessageUtils, useInvokeCommunicationTemplateDetailBlockAction, useRecordUtils } from "./CommunicationTemplateDetail/utils.partial";
+    import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import EmailEditor, { GetHtmlRequest } from "@Obsidian/Controls/emailEditor";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import SmsMessageEditor from "@Obsidian/Controls/smsMessageEditor.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
+    import { PushOpenAction } from "@Obsidian/Enums/Blocks/Communication/CommunicationTemplateDetail/pushOpenAction";
+    import { SiteType } from "@Obsidian/Enums/Cms/siteType";
+    import { CommunicationTemplateVersion, CommunicationTemplateVersionDescription } from "@Obsidian/Enums/Communication/communicationTemplateVersion";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationTemplateDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationTemplateDetail/communicationTemplateDetailInitializationBox";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+
+    const config = useConfigurationValues<CommunicationTemplateDetailInitializationBox>();
+    const invokeBlockAction = useInvokeCommunicationTemplateDetailBlockAction();
+
+    const formId = `communication-template-detail-form-${newGuid()}`;
+
+    const {
+        getLavaFieldsFromHtmlMessage,
+        updateMessage,
+        hasLogoInMessage
+    } = useCommunicationTemplateMessageUtils();
+
+    const {
+        recordAsKeyValueItems,
+        keyValueItemsAsRecord
+    } = useRecordUtils();
+
+    const headerSecondaryActions: PanelAction[] = [
+        {
+            type: "default",
+            title: "Audit Details",
+            handler: (): void => {
+                isAuditDetailsModalShown.value = true;
+            }
+        }
+    ];
+
+    const dropzonePre = `<div class="dropzone">
+</div>`;
+
+    const structureDropzonePre = `<div class="structure-dropzone">
+    <div class="dropzone">
+    </div>
+</div>`;
+
+    const textComponentPre = `<div class="structure-dropzone">
+    <div class="dropzone">
+        <div class="component component-text" data-content="<h1>Hello There!</h1>" data-state="component">
+            <h1>Hello There!</h1>
+        </div>
+    </div>
+</div>`;
+
+    const preheaderPre = `<!-- HIDDEN PREHEADER TEXT -->;
+<div id="preheader-text" style="display: none; font-size: 1px; color: #fefefe; line-height: 1px; font-family: Helvetica, Arial, sans-serif; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">
+    Entice the open with some amazing preheader text. Use a little mystery and get those subscribers to read through...
+</div>`;
+
+    const logoPre = `<!-- LOGO -->
+<img id="template-logo" src="/Content/EmailTemplates/placeholder-logo.png" width="200" height="50" data-instructions="Provide a PNG with a transparent background or JPG with the background color of #ee7725." />`;
+
+    // #region Values
+
+    // Entity state.
+    const name = ref<string>(config.name ?? "");
+    const isActive = ref<boolean>(config.isActive);
+    const isStarter = ref<boolean>(config.isStarter);
+    const description = ref<string>(config.description ?? "");
+    const category = ref<ListItemBag | null | undefined>(config.category);
+    const templatePreviewImage = ref<ListItemBag | null | undefined>(config.imageFile);
+    // Email fields.
+    const fromName = ref<string>(config.fromName ?? "");
+    const fromEmail = ref<string>(config.fromEmail ?? "");
+    const replyToEmail = ref<string>(config.replyToEmail ?? "");
+    const ccEmails = ref<string>(config.ccEmails ?? "");
+    const bccEmails = ref<string>(config.bccEmails ?? "");
+    const subject = ref<string>(config.subject ?? "");
+    const attachments = ref<ListItemBag[]>(config.attachments ?? []);
+    const logoBinaryFile = ref<ListItemBag | null | undefined>(config.logoBinaryFile);
+    const message = ref<string>(config.message ?? "");
+    const messagePreview = ref<string>("");
+    const isCssInliningEnabled = ref<boolean>(config.isCssInliningEnabled);
+    const lavaFields = ref<Record<string, string>>({ ...config.lavaFields });
+
+    // SMS fields.
+    const smsFromSystemPhoneNumber = ref<ListItemBag | null | undefined>(config.smsFromSystemPhoneNumber);
+    const smsMessage = ref<string>(config.smsMessage ?? "");
+    // Push fields.
+    const pushTitle = ref<string>(config.pushTitle ?? "");
+    const pushMessage = ref<string>(config.pushMessage ?? "");
+    const pushOpenAction = ref<PushOpenAction>(config.pushOpenAction);
+    const pushUrl = ref<string>(config.pushUrl ?? "");
+    const pushMobilePage = ref<PageRouteValueBag | null | undefined>(config.pushMobilePage);
+    const pushMobilePageQueryStringItems = ref<KeyValueItem[]>(recordAsKeyValueItems(config.pushMobilePageQueryString || {}));
+    const pushOpenMessage = ref<string>(config.pushOpenMessage ?? "");
+    const pushOpenMessageJson = ref<string>(config.pushOpenMessageJson ?? "");
+    const pushMobileApplication = ref<ListItemBag | null | undefined>(config.pushMobileApplication);
+    const version = ref<CommunicationTemplateVersion>(config.version);
+
+    // UI state.
+    const isSaving = ref<boolean>(false);
+    const isAuditDetailsModalShown = ref<boolean>(false);
+    const areAdditionalFieldsShown = ref<boolean>(!!(config.replyToEmail || config.ccEmails || config.bccEmails));
+    const saveErrorMessage = ref<string | null | undefined>();
+    const currentAttachment = ref<ListItemBag | null | undefined>();
+    const onlyHadHtmlContentOnLoad = ref<boolean>(!!config.pushOpenMessage && !config.pushOpenMessageJson);
+    const emailPreviewMode = ref<"desktop" | "mobile">("desktop");
+
+    const lavaFieldValues = ref<Record<string, string>>(getLavaFieldsFromHtmlMessage(config.message ?? ""));
+
+    // Ensure the lava fields saved on the communication template
+    // are in sync with the lava fields extracted from the HTML message.
+
+    // Add lava fields that are in the HTML message but not in the template.
+    const syncedLavaFields = { ...lavaFields.value };
+    for (const [key, value] of Object.entries(lavaFieldValues.value)) {
+        if (isNullish(syncedLavaFields[key])) {
+            syncedLavaFields[key] = value;
+        }
+    }
+    // Remove lava fields that are in the template but not in the HTML message.
+    for (const key in syncedLavaFields) {
+        if (isNullish(lavaFieldValues.value[key])) {
+            delete syncedLavaFields[key];
+        }
+    }
+    lavaFields.value = syncedLavaFields;
+
+    // Advanced mode - these don't need to be initialized until shown.
+    const isAdvancedShown = ref<boolean>(false);
+    const isAdvancedHelpShown = ref<boolean>(false);
+
+    // Email Builder mode
+    const isEmailBuilderShown = ref<boolean>(false);
+    const getHtmlRequest = ref<GetHtmlRequest | null | undefined>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const versionAsString = computed<string>({
+        get(): string {
+            return `${version.value}`;
+        },
+        set(value: string) {
+            const parsed = Number(value);
+            if (isEnumValue(CommunicationTemplateVersion, parsed)) {
+                version.value = parsed;
+            }
+            else {
+                // If unknown, then set to the default.
+                version.value = CommunicationTemplateVersion.Legacy;
+            }
+        }
+    });
+
+    const isLogoInMessage = computed<boolean>(() => {
+        return hasLogoInMessage(message.value);
+    });
+
+    const parentPageUrl = computed<string | null | undefined>(() => {
+        const url = config.navigationUrls?.[NavigationUrlKey.ParentPage];
+        if (url) {
+            return makeUrlRedirectSafe(url);
+        }
+
+        return null;
+    });
+
+    const pushMobileApplicationGuidOrEmptyString = computed<string>({
+        get() {
+            const guid = toGuidOrNull(pushMobileApplication.value?.value);
+            return guid ?? "";
+        },
+        set(value: string) {
+            const guid = toGuidOrNull(value);
+
+            if (guid) {
+                pushMobileApplication.value = config.pushMobileApplications?.find(n => n.value === guid);
+            }
+            else {
+                pushMobileApplication.value = null;
+            }
+        }
+    });
+
+    const pushOpenActionAsString = computed<string>({
+        get() {
+            return `${pushOpenAction.value}`;
+        },
+        set(value: string) {
+            const parsed = Number(value);
+
+            if (isEnumValue(PushOpenAction, parsed)) {
+                pushOpenAction.value = parsed;
+            }
+            else {
+                // If unknown, then set to the default.
+                pushOpenAction.value = PushOpenAction.NoAction;
+            }
+        }
+    });
+
+    const pushOpenActions = computed<ListItemBag[]>(() => {
+        if (config.isRockMobilePushTransportConfigured) {
+            return [
+                {
+                    value: `${PushOpenAction.LinkToMobilePage}`,
+                    text: "Link To Mobile Page"
+                },
+                {
+                    value: `${PushOpenAction.ShowDetails}`,
+                    text: "Show Details"
+                }
+            ];
+        }
+        else {
+            return [
+                {
+                    value: `${PushOpenAction.NoAction}`,
+                    text: "No Action"
+                },
+                {
+                    value: `${PushOpenAction.LinkToUrl}`,
+                    text: "Link To URL"
+                }
+            ];
+        }
+    });
+
+    const smsFromSystemPhoneNumberGuidOrEmptyString = computed<string>({
+        get() {
+            const guid = toGuidOrNull(smsFromSystemPhoneNumber.value?.value);
+            return guid ?? "";
+        },
+        set(value: string) {
+            const guid = toGuidOrNull(value);
+
+            if (guid) {
+                smsFromSystemPhoneNumber.value = config.smsFromSystemPhoneNumbers?.find(n => n.value === guid);
+            }
+            else {
+                smsFromSystemPhoneNumber.value = null;
+            }
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function isEnumValue<T extends Record<string, number | string>>(enumObject: T, value: unknown): value is T[keyof T] {
+        return Object.values(enumObject).includes(value as T[keyof T]);
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onOpenEmailBuilder(): void {
+        if (isFeatureEnabled("EMAIL_BUILDER_FEATURE", version.value)) {
+            isEmailBuilderShown.value = true;
+        }
+    }
+
+    function onEmailBuilderApplyDesign(): void {
+        if (isFeatureEnabled("EMAIL_BUILDER_FEATURE", version.value)) {
+            // Issue a request to get the html from the email editor.
+            getHtmlRequest.value = {
+                onSuccess(response) {
+                    message.value = response.html;
+                    isEmailBuilderShown.value = false;
+                    invokeBlockAction.getPreviewMessage({
+                        message: message.value,
+                        isCssInlined: isCssInliningEnabled.value
+                    }).then(result => {
+                        messagePreview.value = result.isSuccess ? result.data ?? "" : "";
+                    });
+                },
+                onError(error) {
+                    console.error("Error getting HTML from email editor:", error);
+                    isEmailBuilderShown.value = false;
+                }
+            };
+        }
+    }
+
+    function onCloseAdvancedHelp(): void {
+        isAdvancedHelpShown.value = false;
+    }
+
+    async function onUpdateMessagePreview(): Promise<void> {
+        const result = updateMessage({
+            lavaFields: lavaFields.value,
+            lavaFieldValues: lavaFieldValues.value,
+            message: message.value,
+            logoBinaryFile: logoBinaryFile.value
+        });
+
+        // Only update the values (not the fields).
+        lavaFieldValues.value = result.lavaFieldValues;
+        message.value = result.message;
+
+        // Update the preview.
+        const preview = await invokeBlockAction.getPreviewMessage({
+            message: message.value,
+            isCssInlined: isCssInliningEnabled.value
+        });
+
+        messagePreview.value = preview.isSuccess ? preview.data ?? "" : "";
+    }
+
+    function onShowAdvanced(): void {
+        isAdvancedShown.value = true;
+    }
+
+    async function onAdvancedApplied(): Promise<void> {
+        const result = updateMessage({
+            lavaFields: lavaFields.value,
+            lavaFieldValues: lavaFieldValues.value,
+            message: message.value,
+            logoBinaryFile: logoBinaryFile.value
+        });
+
+        // Only update the fields (not the values).
+        lavaFields.value = result.lavaFields;
+        message.value = result.message;
+
+        // Update the preview.
+        const preview = await invokeBlockAction.getPreviewMessage({
+            message: message.value,
+            isCssInlined: isCssInliningEnabled.value
+        });
+
+        messagePreview.value = preview.isSuccess ? preview.data ?? "" : "";
+        isAdvancedShown.value = false;
+    }
+
+    async function onFormSubmitted(): Promise<void> {
+        isSaving.value = true;
+        saveErrorMessage.value = null;
+
+        try {
+            const result = await invokeBlockAction.saveTemplate({
+                isActive: isActive.value,
+                isStarter: isStarter.value,
+                name: name.value,
+                description: description.value,
+                category: category.value,
+                imageFile: templatePreviewImage.value,
+                fromName: fromName.value,
+                fromEmail: fromEmail.value,
+                replyToEmail: replyToEmail.value,
+                ccEmails: ccEmails.value,
+                bccEmails: bccEmails.value,
+                // Only remove the logo on save, not when the logo HTML is removed from the message.
+                logoBinaryFile: isLogoInMessage.value ? logoBinaryFile.value : null,
+                subject: subject.value,
+                smsFromSystemPhoneNumber: smsFromSystemPhoneNumber.value,
+                smsMessage: smsMessage.value,
+                pushTitle: pushTitle.value,
+                pushMessage: pushMessage.value,
+                pushOpenAction: pushOpenAction.value,
+                pushUrl: pushUrl.value,
+                pushMobilePage: pushMobilePage.value,
+                pushMobilePageQueryString: keyValueItemsAsRecord(pushMobilePageQueryStringItems.value),
+                pushOpenMessageJson: pushOpenMessageJson.value,
+                pushOpenMessage: pushOpenMessage.value,
+                pushMobileApplication: pushMobileApplication.value,
+                attachments: attachments.value,
+                message: message.value,
+                isCssInliningEnabled: isCssInliningEnabled.value,
+                lavaFields: lavaFields.value,
+                version: version.value
+            });
+
+            if (result.isSuccess) {
+                if (parentPageUrl.value) {
+                    // Leave isSaving.value = true since we're redirecting.
+                    window.location.href = parentPageUrl.value;
+                }
+            }
+            else {
+                saveErrorMessage.value = result.errorMessage ?? "An unknown error occurred while saving.";
+                isSaving.value = false;
+            }
+        }
+        catch {
+            isSaving.value = false;
+        }
+    }
+
+    function onCancelClicked(): void {
+        if (parentPageUrl.value) {
+            window.location.href = parentPageUrl.value;
+        }
+    }
+
+    function onAttachmentAdded(attachment: ListItemBag | null | undefined): void {
+        if (isNullish(attachment) || isSaving.value) {
+            return;
+        }
+
+        attachments.value = [
+            ...attachments.value ?? [],
+            attachment
+        ];
+
+        // Clear the attachment uploader.
+        currentAttachment.value = null;
+    }
+
+    function onAttachmentRemoved(attachment: ListItemBag | null | undefined): void {
+        if (isNullish(attachment) || isSaving.value) {
+            return;
+        }
+
+        attachments.value = attachments.value
+            ?.filter(a => attachment !== a);
+    }
+
+    // #endregion Event Handlers
+
+    invokeBlockAction.getPreviewMessage({ message: message.value, isCssInlined: isCssInliningEnabled.value })
+        .then(result => {
+            if (result.isSuccess) {
+                messagePreview.value = result.data ?? "";
+            }
+        });
+</script>

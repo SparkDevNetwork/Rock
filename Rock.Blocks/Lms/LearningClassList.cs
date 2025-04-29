@@ -127,9 +127,9 @@ namespace Rock.Blocks.Lms
         {
             var box = new ListBlockBox<LearningClassListOptionsBag>();
 
-            var isEditEnabled = GetIsEditEnabled();
-            box.IsAddEnabled = isEditEnabled;
-            box.IsDeleteEnabled = isEditEnabled;
+            var isAddEnabled = GetIsAddEnabled();
+            box.IsAddEnabled = isAddEnabled;
+            box.IsDeleteEnabled = true;
             box.ExpectedRowCount = 5;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -177,9 +177,12 @@ namespace Rock.Blocks.Lms
         /// Determines if the add button should be enabled in the grid.
         /// <summary>
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsEditEnabled()
+        private bool GetIsAddEnabled()
         {
-            var entity = new LearningClass();
+            var entity = new LearningClass
+            {
+                LearningCourseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId )
+            };
 
             return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
@@ -234,14 +237,21 @@ namespace Rock.Blocks.Lms
                 baseQuery = baseQuery.Where( c => c.IsActive );
             }
 
-            var currentPerson = GetCurrentPerson();
-            return baseQuery.ToList().Where( c => c.IsAuthorized( Authorization.VIEW, currentPerson ) ).AsQueryable();
+            return baseQuery;
         }
 
         /// <inheritdoc/>
         protected override IQueryable<LearningClass> GetOrderedListQueryable( IQueryable<LearningClass> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( c => c.LearningCourse.Name ).ThenBy( c => c.Name );
+        }
+
+        /// <inheritdoc/>
+        protected override List<LearningClass> GetListItems( IQueryable<LearningClass> queryable, RockContext rockContext )
+        {
+            return queryable.ToList()
+                .Where( lc => lc.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .ToList();
         }
 
         /// <inheritdoc/>

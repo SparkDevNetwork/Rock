@@ -5,9 +5,9 @@
             <div v-for="sidePanelMenuItem in sidePanelMenuItems"
                  :key="sidePanelMenuItem.type"
                  :class="[
-                     'side-panel-menu-item',
-                     selectedSidePanelMenuItem === sidePanelMenuItem.type ? 'selected' : ''
-                 ]"
+                    'side-panel-menu-item',
+                    selectedSidePanelMenuItem === sidePanelMenuItem.type ? 'selected' : ''
+                ]"
                  @click="onSidePanelButtonClicked(sidePanelMenuItem.type)">
                 <i :class="sidePanelMenuItem.iconCssClass"></i>
                 <span class="side-panel-menu-item-text">{{ sidePanelMenuItem.title }}</span>
@@ -21,11 +21,16 @@
                                         :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
                                         :mergeFields="mergeFields"
                                         :recipientPersonIds="recipientPersonIds"
+                                        :shortLinkCheckToken="shortLinkCheckToken"
+                                        :shortLinkGetPageId="shortLinkGetPageId"
+                                        :shortLinkSites="shortLinkSites"
+                                        :shortLinkTokenMinLength="shortLinkTokenMinLength"
                                         :videoProviderNames="videoProviderNames"
                                         @clone="onCloneComponent"
                                         @complete="onCompleteComponent"
                                         @delete="onDeleteComponent"
-                                        @emailSectionSaved="addEmailSectionToList" />
+                                        @emailSectionSaved="addEmailSectionToList"
+                                        @migrate="onMigrateComponent" />
 
                 <FlatPanel v-else
                            :hasPaddedBody="true"
@@ -102,7 +107,8 @@
                                     {{ emailSection.name }}
                                 </h5>
 
-                                <DropDownMenu anchorButtonCssClass="btn-xs email-section-menu-button"
+                                <DropDownMenu align="right"
+                                              anchorButtonCssClass="btn-xs email-section-menu-button"
                                               :items="getEmailSectionMenuItems(emailSection)"
                                               @mousedown.stop />
                             </header>
@@ -318,7 +324,7 @@
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { EmailEditorEmailSectionBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorEmailSectionBag";
     import { EmailEditorDeleteEmailSectionOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorDeleteEmailSectionOptionsBag";
-    import { CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, DeleteComponentRequest, EditorComponentTypeName } from "./types.partial";
+    import { CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, DeleteComponentRequest, EditorComponentTypeName, ReplaceComponentRequest } from "./types.partial";
     import { getComponentIconHtml, getComponentTitle } from "./utils.partial";
     import { Category } from "@Obsidian/SystemGuids/category";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -374,13 +380,29 @@
             required: true
         },
 
-        recipientPersonIds: {
-            type: Object as PropType<number[] | null | undefined>,
+        selectedComponentElement: {
+            type: Object as PropType<HTMLElement | null | undefined>,
             required: true
         },
 
-        selectedComponentElement: {
-            type: Object as PropType<HTMLElement | null | undefined>,
+        shortLinkCheckToken: {
+            type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>
+        },
+
+        shortLinkGetPageId: {
+            type: Object as PropType<((pageGuid: Guid) => Promise<number | null | undefined>) | null | undefined>
+        },
+
+        shortLinkSites: {
+            type: Array as PropType<ListItemBag[] | null | undefined>
+        },
+
+        shortLinkTokenMinLength: {
+            type: Number as PropType<number | null | undefined>
+        },
+
+        recipientPersonIds: {
+            type: Object as PropType<number[] | null | undefined>,
             required: true
         },
 
@@ -396,6 +418,7 @@
         (e: "componentTypeDragStart", value: ComponentTypeDragStartRequest): void;
         (e: "componentTypeDragEnd", value: ComponentTypeDragEndRequest): void;
         (e: "deleteComponent", value: DeleteComponentRequest): void;
+        (e: "replaceComponent", value: ReplaceComponentRequest): void;
         (e: "update:selectedComponentElement", value: HTMLElement | null | undefined): void;
         (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
     }>();
@@ -673,6 +696,14 @@
         }
     }
 
+    function onMigrateComponent(newComponentElement: Element): void {
+        if (isHTMLElement(newComponentElement)) {
+            emit("replaceComponent", {
+                newComponentElement
+            });
+        }
+    }
+
     function onCompleteComponent(): void {
         if (internalSelectedComponentElement.value) {
             emit("completeComponent", {
@@ -787,7 +818,8 @@
             dragCopy.style.boxShadow = `${keyLightShadow}, ${ambientLightShadow}`;
 
             // Ensure the dragging element is above elements added to body like drop downs, etc.
-            dragCopy.style.zIndex = "1000";
+            // Use default for dropdowns, modals, and full-screen panels (1060).
+            dragCopy.style.zIndex = "1060";
 
             document.body.appendChild(dragCopy);
 

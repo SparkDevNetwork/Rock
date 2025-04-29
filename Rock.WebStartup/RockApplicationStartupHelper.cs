@@ -104,6 +104,7 @@ namespace Rock.WebStartup
             LogStartupMessage( "Application Starting" );
 
             InitializeRockApp();
+            Rock.JsonExtensions.ReferenceEqualityComparer = new Rock.Utility.EntityReferenceEqualityComparer();
 
             AppDomain.CurrentDomain.AssemblyResolve += AppDomain_AssemblyResolve;
 

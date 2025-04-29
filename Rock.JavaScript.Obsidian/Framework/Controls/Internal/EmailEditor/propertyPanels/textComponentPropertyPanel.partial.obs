@@ -1,62 +1,76 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ComponentPropertyPanelBase :componentElement="componentElement"
+                                :componentMigrationHelper="textComponentHelper"
                                 title="Paragraph"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
-                                @delete="$emit('delete')">
-        <AccordionGroup>
-            <Accordion :isPaddingRemoved="true"
-                       title="Text">
-                <InnerHtmlProperty :element="componentElement"
-                                   :mergeFields="mergeFields"
-                                   mode="html" />
-            </Accordion>
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)">
+        <template v-if="componentHelper?.contentWrapper">
+            <AccordionGroup>
+                <Accordion :isPaddingRemoved="true"
+                           title="Text">
+                    <InnerHtmlProperty :element="componentHelper.contentWrapper"
+                                       :mergeFields="mergeFields"
+                                       mode="html"
+                                       :shortLinkCheckToken="shortLinkCheckToken"
+                                       :shortLinkGetPageId="shortLinkGetPageId"
+                                       :shortLinkSites="shortLinkSites"
+                                       :shortLinkTokenMinLength="shortLinkTokenMinLength" />
+                </Accordion>
 
-            <Accordion title="Text Styling">
-                <FontPropertyGroup :element="componentElement"
-                                   :visibilityOptions="{
-                                       isTextFormatHidden: true,
-                                       isJustifyTextHidden: true
-                                   }" />
-                <BackgroundColorProperty :element="componentElement" />
-            </Accordion>
+                <Accordion title="Text Styling">
+                    <FontPropertyGroup :element="componentHelper.contentWrapper"
+                                       :visibilityOptions="{
+                                        isJustifyTextHidden: true
+                                    }" />
 
-            <Accordion title="Spacing">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <PaddingProperty :element="componentElement" />
+                    <ColorPickerProperty label="Background Color"
+                                         :valueProvider="backgroundColorProvider" />
+                </Accordion>
+
+                <Accordion title="Spacing">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <PaddingProperty :element="componentHelper.marginWrapper.borderWrapper.paddingWrapper.td" />
+                        </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-12">
-                        <MarginProperty :element="componentElement" />
-                    </div>
-                </div>
-            </Accordion>
 
-            <Accordion title="Border">
-                <BorderPropertyGroup :element="componentElement" />
-                <BorderRadiusProperty :element="componentElement" />
-            </Accordion>
-        </AccordionGroup>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <PaddingProperty :element="componentHelper.marginWrapper.borderWrapper.paddingWrapper.td"
+                                             label="Margin" />
+                        </div>
+                    </div>
+                </Accordion>
+
+                <Accordion title="Border">
+                    <BorderPropertyGroup :element="componentHelper.marginWrapper.borderWrapper.td" />
+                    <BorderRadiusProperty :element="componentHelper.marginWrapper.borderWrapper.td" />
+                </Accordion>
+            </AccordionGroup>
+        </template>
     </ComponentPropertyPanelBase>
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { onUnmounted, PropType, ref, watch } from "vue";
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
-    import BackgroundColorProperty from "../properties/backgroundColorProperty.partial.obs";
+    import ColorPickerProperty from "../properties/colorPickerProperty.partial.obs";
     import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
     import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
     import FontPropertyGroup from "../properties/fontPropertyGroup.partial.obs";
     import InnerHtmlProperty from "../properties/innerHtmlProperty.partial.obs";
-    import MarginProperty from "../properties/marginProperty.partial.obs";
     import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import { createComponentBackgroundColorProvider } from "../providers.partial";
+    import { getTextComponentHelper } from "../utils.partial";
+    import { Guid } from "@Obsidian/Types";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    defineProps({
+    const props = defineProps({
         componentElement: {
             type: Object as PropType<HTMLElement>,
             required: true
@@ -65,12 +79,55 @@
         mergeFields: {
             type: Object as PropType<string[] | null | undefined>,
             required: false
-        }
+        },
+
+        shortLinkCheckToken: {
+            type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>
+        },
+
+        shortLinkGetPageId: {
+            type: Object as PropType<((pageGuid: Guid) => Promise<number | null | undefined>) | null | undefined>
+        },
+
+        shortLinkSites: {
+            type: Object as PropType<ListItemBag[] | null | undefined>
+        },
+
+        shortLinkTokenMinLength: {
+            type: Number as PropType<number | null | undefined>
+        },
     });
 
     defineEmits<{
         (e: "clone"): void;
         (e: "complete"): void;
         (e: "delete"): void;
+        (e: "migrate", value: Element): void;
     }>();
+
+    // #region Values
+
+    const backgroundColorProvider = ref(createComponentBackgroundColorProvider(props.componentElement));
+    const textComponentHelper = getTextComponentHelper();
+    const componentHelper = ref(textComponentHelper.getElements(props.componentElement));
+
+    // #endregion Values
+
+    // #region Watchers
+
+    watch(() => props.componentElement, () => {
+        backgroundColorProvider.value?.dispose();
+        backgroundColorProvider.value = createComponentBackgroundColorProvider(props.componentElement);
+        componentHelper.value = textComponentHelper.getElements(props.componentElement);
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        backgroundColorProvider.value?.dispose();
+    });
+
+    // #endregion Hooks
 </script>

@@ -165,6 +165,7 @@ namespace Rock.Field.Types
 
                     var tempAttributeMatrixItem = new AttributeMatrixItem();
                     tempAttributeMatrixItem.AttributeMatrix = new AttributeMatrix { AttributeMatrixTemplateId = templateData.Id };
+                    tempAttributeMatrixItem.AttributeMatrixTemplateId = templateData.Id;
                     tempAttributeMatrixItem.LoadAttributes();
 
                     attributes = tempAttributeMatrixItem.Attributes.ToDictionary(
@@ -219,7 +220,7 @@ namespace Rock.Field.Types
                             attr =>
                             {
                                 var attribute = AttributeCache.Get( attr.Value.AttributeId );
-                                return PublicAttributeHelper.GetPublicEditValue( attribute, attr.Value.Value );
+                                return PublicAttributeHelper.GetPublicValueForEdit( attribute, attr.Value.Value );
                             }
                          ),
                         ViewValues = a.AttributeValues.ToDictionary(

@@ -74,11 +74,13 @@
             </template>
 
             <template #footerActions>
-                <RockButton @click="onPreviousClicked">Previous</RockButton>
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowLeft'"
+                            @click="onPreviousClicked">Previous</RockButton>
             </template>
 
             <template #footerSecondaryActions>
-                <RockButton btnType="primary"
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowRight'"
+                            btnType="primary"
                             :disabled="isFetchingCommunicationTemplate"
                             @click="onNextStepClicked">
                     <i v-if="isFetchingCommunicationTemplate" class="fa fa-spinner fa-spin"></i>
@@ -148,19 +150,25 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { vShortcut } from "@Obsidian/Directives/shortcut";
     import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { scrollElementStartToTop } from "@Obsidian/Utility/dom";
     import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
-    import { CommunicationEntryWizardCommunicationTemplateBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateBag";
+    import { CommunicationEntryWizardCommunicationTemplateListItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateListItemBag";
     import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         allowedMediums: {
             type: Object as PropType<CommunicationType[]>,
+            required: true
+        },
+
+        areNavigationShortcutsDisabled: {
+            type: Boolean as PropType<boolean>,
             required: true
         },
 
@@ -175,7 +183,7 @@
         },
 
         communicationTemplates: {
-            type: Object as PropType<CommunicationEntryWizardCommunicationTemplateBag[]>,
+            type: Object as PropType<CommunicationEntryWizardCommunicationTemplateListItemBag[]>,
             required: true
         },
 
@@ -223,7 +231,7 @@
 
     // #region Computed Values
 
-    const filteredCommunicationTemplates = computed<CommunicationEntryWizardCommunicationTemplateBag[]>(() => {
+    const filteredCommunicationTemplates = computed<CommunicationEntryWizardCommunicationTemplateListItemBag[]>(() => {
         let templates = props.communicationTemplates;
 
         // Filter by search text.
@@ -268,7 +276,7 @@
         return templates;
     });
 
-    const starterCommunicationTemplates = computed<CommunicationEntryWizardCommunicationTemplateBag[]>(() => {
+    const starterCommunicationTemplates = computed<CommunicationEntryWizardCommunicationTemplateListItemBag[]>(() => {
         return filteredCommunicationTemplates.value
             .filter(communicationTemplate => {
                 return communicationTemplate.isStarter;
@@ -286,7 +294,7 @@
             });
     });
 
-    const moreCommunicationTemplates = computed<CommunicationEntryWizardCommunicationTemplateBag[]>(() => {
+    const moreCommunicationTemplates = computed<CommunicationEntryWizardCommunicationTemplateListItemBag[]>(() => {
         return filteredCommunicationTemplates.value
             .filter(communicationTemplate => {
                 return !communicationTemplate.isStarter;

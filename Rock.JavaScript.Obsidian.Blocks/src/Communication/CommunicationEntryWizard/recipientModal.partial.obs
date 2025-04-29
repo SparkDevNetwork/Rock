@@ -84,13 +84,6 @@
 
                 <DeleteColumn v-if="!isDeletingIndividualsFromRecipientListsDisabled" name="removeRecipient" itemClass="grid-columncommand remove-button" :disableConfirmation="true" @click="onRemoveRecipientClicked" />
             </Grid>
-
-
-            <CheckBox v-if="isDuplicatePreventionOptionShown"
-                      v-model="pendingExcludeDuplicateRecipientAddress"
-                      help="Prevent communications from being sent to people with the same email/SMS addresses. Two people who share an address will not receive a personalized communication, only one of them will."
-                      label="Prevent Duplicate Email/SMS Addresses"
-                      :text="pendingExcludeDuplicateRecipientAddress ? 'Yes' : 'No'" />
         </div>
     </Modal>
 </template>
@@ -123,7 +116,6 @@
 <script setup lang="ts">
     import { PropType, computed, ref, Ref, watch } from "vue";
     import { useBreakpointHelper, useInvokeBlockActionHelper } from "./utils.partial";
-    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import Grid, { Column, DeleteColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -163,11 +155,6 @@
             required: false
         },
 
-        excludeDuplicateRecipientAddress: {
-            type: Boolean as PropType<boolean>,
-            required: true
-        },
-
         getTooltipRef: {
             type: Function as PropType<(value: CommunicationEntryWizardRecipientBag | null, mode: CommunicationType) => Ref<string>>,
             default: (_: string) => ""
@@ -188,11 +175,6 @@
             default: false
         },
 
-        isDuplicatePreventionOptionShown: {
-            type: Boolean as PropType<boolean>,
-            required: true
-        },
-
         recipients: {
             type: Object as PropType<CommunicationEntryWizardRecipientBag[]>,
             required: true
@@ -200,7 +182,6 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:excludeDuplicateRecipientAddress", newValue: boolean): void,
         (e: "update:modelValue", newValue: boolean): void,
         (e: "update:recipients", newValue: CommunicationEntryWizardRecipientBag[]): void
     }>();
@@ -228,11 +209,9 @@
     const recipientTextFilterTemp = ref<string>("");
     const personPickerSelection = ref<ListItemBag | undefined>();
     const pendingItems = ref<CommunicationEntryWizardRecipientBag[]>([...props.recipients]);
-    const pendingExcludeDuplicateRecipientAddress = ref<boolean>(props.excludeDuplicateRecipientAddress);
 
     // Communication state.
     const internalRecipients = useVModelPassthrough(props, "recipients", emit);
-    const internalExcludeDuplicateRecipientAddress = useVModelPassthrough(props, "excludeDuplicateRecipientAddress", emit);
 
     //#endregion
 
@@ -339,31 +318,31 @@
         if (!recipient
             || (props.isBulkCommunication && recipient.isBulkEmailAllowed)
             || (!props.isBulkCommunication && recipient.isEmailAllowed)) {
-            return recipient?.email || "No Email.";
+            return recipient?.email || "No Email";
         }
 
         if (!recipient.email) {
-            return "No Email.";
+            return "No Email";
         }
         else if (!recipient.isEmailActive) {
-            return "Inactive Email.";
+            return "Inactive Email";
         }
         else {
-            return "Email Not Allowed.";
+            return "Email Not Allowed";
         }
     }
 
     function getSmsNumber(recipient: CommunicationEntryWizardRecipientBag): string {
         if (!recipient
             || recipient.isSmsAllowed) {
-            return recipient?.smsNumber ? formatPhoneNumber(recipient.smsNumber) : "No SMS Number.";
+            return recipient?.smsNumber ? formatPhoneNumber(recipient.smsNumber) : "No SMS Number";
         }
 
         if (!recipient.smsNumber) {
-            return "No SMS Number.";
+            return "No SMS Number";
         }
         else {
-            return "SMS Not Allowed.";
+            return "SMS Not Allowed";
         }
     }
 
@@ -373,7 +352,7 @@
             return "";
         }
 
-        return "No Push Device.";
+        return "No Push Device";
     }
 
     function tryGetRegExp(pattern: string): RegExp | undefined {
@@ -436,8 +415,11 @@
     }
 
     function onSaveClicked(): void {
-        internalRecipients.value = pendingItems.value;
-        internalExcludeDuplicateRecipientAddress.value = pendingExcludeDuplicateRecipientAddress.value;
+        // Only update the recipients if this is a manual communication list.
+        if (isManualCommunicationList.value) {
+            internalRecipients.value = pendingItems.value;
+        }
+
         internalIsOpen.value = false;
         clear();
     }
@@ -454,7 +436,6 @@
         // If opening the modal, reset the pending items.
         if (newValue && !oldValue) {
             pendingItems.value = [...props.recipients];
-            pendingExcludeDuplicateRecipientAddress.value = props.excludeDuplicateRecipientAddress;
         }
     });
 

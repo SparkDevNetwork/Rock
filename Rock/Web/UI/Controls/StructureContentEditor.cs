@@ -292,6 +292,17 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// The amount of padding to add to the bottom of the editor. This
+        /// helps to ensure that there is plenty of space to click below
+        /// the last block and have it trigger adding a new block.
+        /// </summary>
+        public int EditorBottomPadding
+        {
+            get => ViewState[nameof( EditorBottomPadding )] as int? ?? 100;
+            set => ViewState[nameof( EditorBottomPadding )] = value;
+        }
+
         #endregion
 
         /// <summary>
@@ -386,6 +397,9 @@ namespace Rock.Web.UI.Controls
                 var editorUrl = Page.ResolveUrl( "~/Scripts/Rock/UI/structuredcontenteditor/editor.js" );
                 var toolsUrl = Page.ResolveUrl( "~/Scripts/Rock/UI/structuredcontenteditor/editor-tools.js" );
 
+                editorUrl = Fingerprint.Tag( editorUrl );
+                toolsUrl = Fingerprint.Tag( toolsUrl );
+
                 ScriptManager.RegisterClientScriptInclude( Page, Page.GetType(), "rock-editorjs", editorUrl );
                 ScriptManager.RegisterClientScriptInclude( Page, Page.GetType(), "rock-editorjs-tools", toolsUrl );
             }
@@ -420,11 +434,21 @@ namespace Rock.Web.UI.Controls
             var script = string.Format( @"
 ;(function() {{
 var fieldContent = $('#{1}').val();
+var data = undefined;
+try {{
+    data = JSON.parse(decodeURIComponent(fieldContent));
+}}
+catch (error) {{
+    console.error(error);
+    data = undefined;
+}}
+
 var editor = new Rock.UI.StructuredContentEditor.EditorJS({{
     holder: '{0}',
     tools: {2},
     defaultBlock: 'paragraph',
-    data: JSON.parse(decodeURIComponent(fieldContent)),
+    data: data,
+    minHeight: {3},
     onReady: function() {{
         new Rock.UI.StructuredContentEditor.EditorDragDrop(editor);
     }},
@@ -439,7 +463,7 @@ var editor = new Rock.UI.StructuredContentEditor.EditorJS({{
     }}
 }});
 }})();
-", this.ClientID, _hfValue.ClientID, structuredContentToolConfiguration );
+", this.ClientID, _hfValue.ClientID, structuredContentToolConfiguration, EditorBottomPadding );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "structure-content-script" + this.ClientID, script, true );
         }
 

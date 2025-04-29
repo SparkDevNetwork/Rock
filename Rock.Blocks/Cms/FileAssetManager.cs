@@ -40,7 +40,7 @@ namespace Rock.Blocks.Cms
         "Enable Asset Storage Providers",
         Key = AttributeKey.EnableAssetProviders,
         Description = "Set this to true to enable showing folders and files from your configured asset storage providers.",
-        DefaultBooleanValue = true,
+        DefaultBooleanValue = false,
         Order = 0
     )]
 
@@ -48,7 +48,7 @@ namespace Rock.Blocks.Cms
         "Enable File Manager",
         Key = AttributeKey.EnableFileManager,
         Description = "Set this to true to enable showing folders and files your server's local file system.",
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Order = 1
     )]
 
@@ -56,7 +56,7 @@ namespace Rock.Blocks.Cms
         "Use Static Height",
         Key = AttributeKey.IsStaticHeight,
         Description = "Set this to true to be able to set a CSS height value dictating how tall the block will be. Otherwise, it will grow with the content.",
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Order = 2
     )]
 

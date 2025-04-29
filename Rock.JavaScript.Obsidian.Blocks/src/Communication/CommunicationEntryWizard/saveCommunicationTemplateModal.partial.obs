@@ -126,16 +126,26 @@
     // #region Computed Values
 
     const modes = computed<StandardListItemBag[]>(() => {
-        return [
-            {
-                text: "Overwrite Existing Template",
-                value: get<Mode>("save")
-            },
-            {
-                text: "Save As New Template",
-                value: get<Mode>("saveAs")
-            }
-        ];
+        if (props.communicationTemplate.isSystem) {
+            return [
+                {
+                    text: "Save As New Template",
+                    value: get<Mode>("saveAs")
+                }
+            ];
+        }
+        else {
+            return [
+                {
+                    text: "Overwrite Existing Template",
+                    value: get<Mode>("save")
+                },
+                {
+                    text: "Save As New Template",
+                    value: get<Mode>("saveAs")
+                }
+            ];
+        }
     });
 
     const originalName = computed<string>(() => {

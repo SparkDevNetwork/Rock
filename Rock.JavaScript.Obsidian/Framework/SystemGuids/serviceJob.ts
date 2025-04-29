@@ -25,6 +25,8 @@
 export const ServiceJob = {
     /** The job for calculating peer networks for individuals. */
     CalculatePeerNetwork: "D3172560-0E8C-4E69-A477-56ABC018FEEF",
+    /** The job for performing synchronization tasks between Rock and the external chat system. */
+    ChatSyncJob: "80202290-66DF-4289-8938-4FA6B84E3EE2",
     /** The collect hosting metrics job - collect metrics regarding database connections, Etc. */
     CollectHostingMetrics: "36FA38CA-9DB0-40A8-BABD-5411121B4809",
     /** The data migrations 120 add communication get queued index */
@@ -142,6 +144,8 @@ export const ServiceJob = {
     DataMigrations170ChopObsidianBlocks: "74265B89-31DF-4430-84D4-8343C64F2580",
     /** The Job to run Post v17.0 Data Migrations to chop Shortened Link Block. */
     DataMigrations170ChopShortenedLinksBlock: "8899363A-C52B-4D82-88C2-CA199D73E95C",
+    /** The Job to run Post v17.0 Interaction Index Migration . */
+    DataMigrations170InteractionIndexPostMigrationJob: "9984C806-FAEE-4005-973B-9FBE21948972",
     /** The post update data migration job to remove the legacy Communication Recipient List Webforms block. */
     DataMigrations170RemoveCommunicationRecipientListBlock: "54CCFFFD-83A8-4BB6-A699-DDE34310BFE6",
     /** The post update data migration job to remove the legacy Communication Recipient List Webforms block. */
@@ -154,6 +158,19 @@ export const ServiceJob = {
     DataMigrations170SwapWebformsBlocks: "AD8A38F7-1FCC-47CD-893F-9B4335DD7E08",
     /** The Job to run Post v17.0 Update Person PrimaryPersonAliasGuid. */
     DataMigrations170UpdatePersonPrimaryPersonAliasGuid: "11A4E70F-899F-4B1D-BB25-12768E487A24",
+    /** The job to run Post v17.1 Data Migrations to add an index on the CommunicationRecipient table. */
+    DataMigrations171AddCommunicationrecipientIndex: "9C04D469-FB52-438E-B725-D4211139A933",
+    /** The Job to run Post v17.1 Data Migrations to chop Block. */
+    DataMigrations171ChopObsidianBlocks: "C5AE8BF4-C83C-4695-9233-1B1D5D2801D7",
+    /** The job to run Post v17.1 Data Migrations to migrate login history from the History table to the HistoryLogin table. */
+    DataMigrations171MigrateLoginHistory: "D5E7B461-748F-4A01-BA3F-FA7BEF6AC0F0",
+    /**
+     * The job to run Post v17.1 Data Migration to upset the Attendance Occurrence
+     * table with RootGroupTypeId values for existing data.
+     */
+    DataMigrations171PopulateAttendanceRootGroupType: "e6755275-02ca-4159-af16-1e4cdcfa22d0",
+    /** The job to run Post v17.1 Data Migrations to update an existing index on the CommunicationRecipient table. */
+    DataMigrations171UpdateCommunicationrecipientIndex: "EB00BD84-D89C-44B4-8C0C-56322074C9C4",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail

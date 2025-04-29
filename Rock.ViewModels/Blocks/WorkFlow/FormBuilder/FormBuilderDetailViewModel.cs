@@ -59,5 +59,6 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
         /// user-defined attributes.
         /// </summary>
         public List<FormOtherAttributeViewModel> OtherAttributes { get; set; }
+        public FormBuilderDetailLinkToFormBag DefaultPreviewPage { get; internal set; }
     }
 }

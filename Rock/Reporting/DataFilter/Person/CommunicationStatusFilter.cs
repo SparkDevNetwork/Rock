@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -24,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -35,7 +37,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based by the communication status on the specific communication." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Communication Status Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "40A034D7-065A-4D57-8977-E94DB1162A96")]
+    [Rock.SystemGuid.EntityTypeGuid( "40A034D7-065A-4D57-8977-E94DB1162A96" )]
     public class CommunicationStatusFilter : DataFilterComponent
     {
         private const string _CtlCommunicationId = "tbCommunicationId";
@@ -71,6 +73,42 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/communicationStatusFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            string[] selectionValues = selection.Split( '|' );
+            var data = new Dictionary<string, string>();
+
+            if ( selectionValues.Length >= 2 )
+            {
+                data.AddOrReplace( "communicationId", selectionValues[0] );
+                data.AddOrReplace( "communicationStatus", selectionValues[1].ConvertToEnumOrNull<CommunicationStatusType>().ConvertToInt().ToString() );
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var communicationId = data.GetValueOrNull( "communicationId" )?.AsIntegerOrNull();
+            var communicationStatus = data.GetValueOrNull( "communicationStatus" )?.ConvertToEnumOrNull<CommunicationStatusType>();
+
+            if ( communicationId == null || communicationStatus == null )
+            {
+                return string.Empty;
+            }
+
+            return string.Format( "{0}|{1}", communicationId, communicationStatus );
         }
 
         #endregion
@@ -255,7 +293,7 @@ namespace Rock.Reporting.DataFilter.Person
                     case CommunicationStatusType.Open:
                         {
                             interactionQuery = interactionQuery.Where( a => a.Operation == "Opened" );
-                            communicationRecipients = communicationRecipients.Where( a => sentStatus.Contains( a.Status ) && interactionQuery.Any(b=>b.EntityId==a.Id) );
+                            communicationRecipients = communicationRecipients.Where( a => sentStatus.Contains( a.Status ) && interactionQuery.Any( b => b.EntityId == a.Id ) );
                         }
                         break;
                     case CommunicationStatusType.Clicked:

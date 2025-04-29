@@ -51,6 +51,17 @@ namespace Rock.Model
         public int? GroupId { get; set; }
 
         /// <summary>
+        /// The identifier of the root <see cref="GroupType"/> that the <see cref="Person"/>
+        /// was checked in to. This is set automatically on save to help with
+        /// reporting for check-in related attendance.
+        /// </summary>
+        /// <remarks>
+        /// This is a reference to the check-in configuration type, such as "Weekend Service".
+        /// </remarks>
+        [DataMember]
+        public int? RootGroupTypeId { get; set; }
+
+        /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Location"/> that the individual attended/checked in to. 
         /// </summary>
         /// <value>
@@ -242,6 +253,17 @@ namespace Rock.Model
         public virtual Group Group { get; set; }
 
         /// <summary>
+        /// The root <see cref="GroupType"/> that the <see cref="Person"/> was
+        /// checked in to. This is set automatically on save to help with
+        /// reporting for check-in related attendance.
+        /// </summary>
+        /// <remarks>
+        /// This is a reference to the check-in configuration type, such as "Weekend Service".
+        /// </remarks>
+        [LavaVisible]
+        public virtual GroupType RootGroupType { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Location"/> where the Person attended.
         /// </summary>
         /// <value>
@@ -308,6 +330,8 @@ namespace Rock.Model
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
             // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
             this.HasRequired( r => r.OccurrenceSourceDate ).WithMany().HasForeignKey( r => r.OccurrenceDateKey ).WillCascadeOnDelete( false );
+
+            this.HasOptional( a => a.RootGroupType ).WithMany().HasForeignKey( p => p.RootGroupTypeId ).WillCascadeOnDelete( true );
         }
     }
 

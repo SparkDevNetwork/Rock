@@ -402,6 +402,7 @@ namespace Rock.CheckIn
             groupLocationList
                 .Select( l => l.Group )
                 .DistinctBy( g => g.Id )
+                .ToList()
                 .LoadAttributes( rockContext );
 
             // The above call only loaded Attributes for the first Group of a given ID.

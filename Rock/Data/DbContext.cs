@@ -107,6 +107,15 @@ namespace Rock.Data
         /// <value><c>true</c> if RealTime messages should be sent by this context; otherwise, <c>false</c>.</value>
         public bool IsRealTimeEnabled { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether Rock-to-chat synchronization attempts should be made in response to
+        /// calls to one of the SaveChanges methods.
+        /// </summary>
+        /// <remarks>
+        /// <see langword="true"/> by default.
+        /// </remarks>
+        internal bool IsRockToChatSyncEnabled { get; set; } = true;
+
         #endregion
 
         #region Fields
@@ -1691,10 +1700,6 @@ namespace Rock.Data
             /// Gets the collection of property names that have been modified. This
             /// will include any additional changes made during the PreSave event.
             /// </summary>
-            /// <remarks>
-            /// This is a relatively expensive operation of up to 1.5ms so this
-            /// propery should not be accessed unless you really need to.
-            /// </remarks>
             /// <value>A collection of modified property names.</value>
             public IReadOnlyList<string> ModifiedProperties => _lazyModifiedProperties.Value;
 
@@ -1743,16 +1748,22 @@ namespace Rock.Data
                 {
                     var originalValues = new Dictionary<string, object>();
 
-                    foreach ( var p in DbEntityEntry.OriginalValues.PropertyNames )
+                    // Accessing the OriginalValues property creates a new
+                    // instance of the object that tracks the values, which
+                    // is expensive. On a Person object, this can take 0.03ms
+                    // by itself, which adds up quickly if we access the
+                    // property during the following loop.
+                    var entityOriginalValues = DbEntityEntry.OriginalValues;
+
+                    foreach ( var p in entityOriginalValues.PropertyNames )
                     {
-                        originalValues.Add( p, DbEntityEntry.OriginalValues[p] );
+                        originalValues.Add( p, entityOriginalValues[p] );
                     }
 
                     OriginalValues = originalValues;
 
-
                     // Construct this lazily because not all save hooks will
-                    // even use this. It takes about 0.6ms to run.
+                    // even use this. It takes about 0.03ms to run.
                     _lazyModifiedProperties = new Lazy<IReadOnlyList<string>>( () =>
                     {
                         if ( PreSaveState != EntityContextState.Modified )
@@ -1762,10 +1773,17 @@ namespace Rock.Data
 
                         var modifiedProperties = new List<string>();
 
+                        // Accessing the CurrentValues property creates a new
+                        // instance of the object that tracks the values, which
+                        // is expensive. On a Person object, this can take 0.03ms
+                        // by itself, which adds up quickly if we access the
+                        // property during the following loop.
+                        var currentValues = DbEntityEntry.CurrentValues;
+
                         foreach ( var p in OriginalValues.Keys )
                         {
                             var originalValue = OriginalValues[p];
-                            var currentValue = DbEntityEntry.CurrentValues[p];
+                            var currentValue = currentValues[p];
 
                             // Both are null, no change.
                             if ( originalValue == null && currentValue == null )

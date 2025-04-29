@@ -13,11 +13,19 @@
           @selectItem="onSelectItem">
         <SelectColumn />
 
-        <TextColumn name="name"
-                    title="Name"
-                    field="name"
-                    :filter="textValueFilter"
-                    visiblePriority="xs" />
+        <Column name="name"
+                title="Name"
+                field="name"
+                :filter="textValueFilter"
+                :quickFilterValue="getEntitySearchQuickFilterValue"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <div>
+                    <span class="text-semibold">{{ row.name }}</span>
+                    <div class="text-muted">{{ row.description }}</div>
+                </div>
+            </template>
+        </Column>
 
         <TextColumn name="entityType"
                     title="Entity Type"
@@ -36,22 +44,35 @@
                        field="isActive"
                        visiblePriority="xs" />
 
-        <SecurityColumn />
+        <ButtonColumn name="preview"
+                      tooltip="Preview"
+                      iconClass="fa fa-search"
+                      :disabled="row => !!row.disablePreview"
+                      :excludeFromExport="true"
+                      @click="onPreviewClick" />
+
+        <SecurityColumn :itemTitle="'name'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
+
+    <Preview ref="previewComponent" />
 </template>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, ButtonColumn, Column, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Preview from "./EntitySearchDetail/preview.partial.obs";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { EntitySearchListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchList/entitySearchListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./EntitySearchList/types.partial";
-    import { reactive, ref } from "vue";
+    import { reactive, ref, shallowRef } from "vue";
+    import { EntitySearchBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchBag";
+    import { EntitySearchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchDetailOptionsBag";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 
     const config = useConfigurationValues<ListBlockBox<EntitySearchListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -60,6 +81,8 @@
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+
+    const previewComponent = shallowRef<InstanceType<typeof Preview>>();
 
     // #endregion
 
@@ -80,6 +103,10 @@
         }
     }
 
+    function getEntitySearchQuickFilterValue(row: Record<string, unknown>): string {
+        return `${row.name} ${row.description}`;
+    }
+
     // #endregion
 
     // #region Event Handlers
@@ -92,6 +119,43 @@
     function onSelectItem(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Preview the results of the selected entity search in a modal.
+     *
+     * @param key The key of the row that was selected.
+     */
+    async function onPreviewClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<EntitySearchBag>("GetEntityForPreview", { key });
+
+        if (result.isSuccess) {
+            const data: DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag> = {
+                entity: result.data,
+                isEditable: true,
+                validProperties: [
+                    "description",
+                    "entityType",
+                    "groupByExpression",
+                    "includePaths",
+                    "isActive",
+                    "isEntitySecurityEnabled",
+                    "isRefinementAllowed",
+                    "key",
+                    "maximumResultsPerQuery",
+                    "name",
+                    "sortExpression",
+                    "selectExpression",
+                    "selectManyExpression",
+                    "whereExpression"
+                ]
+            };
+
+            previewComponent.value?.showPreview(data);
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to preview entity search.");
         }
     }
 

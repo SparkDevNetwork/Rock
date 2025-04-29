@@ -83,7 +83,7 @@ namespace Rock.Blocks.Lms
             var box = new ListBlockBox<LearningClassActivityCompletionListOptionsBag>();
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = GetIsAddEnabled();
+            box.IsAddEnabled = false;
             box.IsDeleteEnabled = false;
             box.ExpectedRowCount = 5;
             box.NavigationUrls = GetBoxNavigationUrls();
@@ -117,16 +117,6 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// Determines if the add button should be enabled in the grid.
-        /// <summary>
-        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
-        {
-            var learningClass = new LearningClassService( RockContext ).Get( PageParameter( PageParameterKey.LearningClassId ) );
-            return learningClass.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-        }
-
-        /// <summary>
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
         /// <returns>A dictionary of key names and URL values.</returns>
@@ -152,14 +142,10 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningClassActivityCompletion> GetListQueryable( RockContext rockContext )
         {
-            var classActivity = new LearningClassActivityService( rockContext ).Get(
-                PageParameter( PageParameterKey.LearningClassActivityId ),
-                !this.PageCache.Layout.Site.DisablePredictableIds );
+            var learningClassActivityId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassActivityId );
 
-            // Ensure the current person is authorized to view the class.
-            return classActivity?.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) == true ?
-                new LearningParticipantService( rockContext ).GetActivityCompletions( classActivity.Id ) :
-                default;
+            return new LearningClassActivityCompletionService( rockContext ).Queryable()
+                .Where( c => c.LearningClassActivityId == learningClassActivityId );
         }
 
         /// <inheritdoc/>
@@ -168,6 +154,13 @@ namespace Rock.Blocks.Lms
             return queryable
                 .OrderBy( c => c.Student.Person.NickName )
                 .ThenBy( c => c.Student.Person.LastName );
+        }
+
+        protected override List<LearningClassActivityCompletion> GetListItems( IQueryable<LearningClassActivityCompletion> queryable, RockContext rockContext )
+        {
+            return queryable.ToList()
+                .Where( lcac => lcac.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .ToList();
         }
 
         /// <inheritdoc/>
@@ -202,57 +195,6 @@ namespace Rock.Blocks.Lms
         #endregion
 
         #region Block Actions
-
-        /// <summary>
-        /// Adds a <see cref="LearningClassActivityCompletion"/> record for the participant with the matching Guid.
-        /// </summary>
-        /// <param name="participantGuid">The Guid of the participant to add the completion activity for.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult AddStudent( Guid participantGuid )
-        {
-            if ( !GetIsAddEnabled() )
-            {
-                return ActionBadRequest( $"Not authorized to edit {LearningClassActivity.FriendlyTypeName}." );
-            }
-
-            var classActivity = new LearningClassActivityService( RockContext ).GetInclude( PageParameter( PageParameterKey.LearningClassActivityId ), a => a.LearningClass.LearningSemester );
-
-            if ( classActivity == null )
-            {
-                return ActionBadRequest( $"The required {LearningClassActivity.FriendlyTypeName} was not found." );
-            }
-
-            var participant = new LearningParticipantService( RockContext ).GetParticipant( participantGuid, classActivity.LearningClassId )
-                .Select( p => new
-                {
-                    p.Id,
-                    EnrollmentDate = p.CreatedDateTime
-                } )
-                .FirstOrDefault();
-
-            if ( participant == null )
-            {
-                return ActionBadRequest( $"The required {LearningParticipant.FriendlyTypeName} was not found." );
-            }
-
-            var completionService = new LearningClassActivityCompletionService( RockContext );
-
-            var hasCompletion = completionService.Queryable().Any( c => c.Student.Id == participant.Id && c.LearningClassActivityId == classActivity.Id );
-
-            if ( hasCompletion )
-            {
-                return ActionBadRequest( $"The {LearningClassActivityCompletion.FriendlyTypeName} already exists." );
-            }
-
-            var programCommunicationId = new LearningProgramService( RockContext ).GetSelect( PageParameter( PageParameterKey.LearningProgramId ), p => p.SystemCommunicationId );
-            var completion = LearningClassActivityCompletionService.GetNew( classActivity, participant.Id, participant.EnrollmentDate, programCommunicationId );
-            completionService.Add( completion );
-
-            RockContext.SaveChanges();
-
-            return ActionOk();
-        }
 
         #endregion
     }

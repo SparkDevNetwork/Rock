@@ -27,5 +27,10 @@ namespace Rock.ViewModels.Rest.Controls
         /// Whether to include assessment types that are marked inactive
         /// </summary>
         public bool? isInactiveIncluded { get; set; }
+
+        /// <summary>
+        /// The security grant token to use when performing authorization checks.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }

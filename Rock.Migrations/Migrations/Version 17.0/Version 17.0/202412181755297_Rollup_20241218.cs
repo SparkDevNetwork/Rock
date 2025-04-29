@@ -2250,7 +2250,7 @@ WHERE [Guid] = '{SystemGuid.EntityType.HTTP_MODULE_ROCK_GATEWAY}';" );
             var sqlObsoletePersonProfile = $@"
 DECLARE @ObsoletePersonBlockId INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '48BBB7A7-1E1D-461E-9B64-E9CAD815E9E1');
 UPDATE [Block]
-SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in v17.0. Please replace it with either the Person Profile or the Person Recent Attendances blocks.</div>')
+SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in the future. Please replace it with either the Person Profile or the Person Recent Attendances blocks.</div>')
 WHERE [BlockTypeId] = @ObsoletePersonBlockId
 IF EXISTS(SELECT * FROM [Block] WHERE [BlockTypeId] = @ObsoletePersonBlockId)
 BEGIN
@@ -2269,8 +2269,8 @@ VALUES (
 		1
     , @AdminChecklistDefinedTypeId
     , @ORDER+1
-    , 'Obsoleted Person Profile block will be removed in v17.0. Please replace it with the Person Profile or the Person Recent Attendances blocks.'
-    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted Person Profile (Obsolete) block. This block will be removed in v17.0. Please replace the instances with either the Person Profile or the Person Recent Attendances blocks.</div>'
+    , 'Obsoleted Person Profile block will be removed in the future. Please replace it with the Person Profile or the Person Recent Attendances blocks.'
+    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted Person Profile (Obsolete) block. This block will be removed in the future. Please replace the instances with either the Person Profile or the Person Recent Attendances blocks.</div>'
     , '80343B7C-7731-473F-9947-15A3D74ABB02'
     , GETDATE()
     , GETDATE()
@@ -2280,7 +2280,7 @@ END";
             var sqlObsoleteLocation = $@"
 DECLARE @ObsoleteLocationBlockId INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '00FC1DEA-FE34-41E3-BC0A-2EE9138091EC');
 UPDATE [Block]
-SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in v17.0. Use Roster, Live Metrics, or Room Settings blocks instead.</div>')
+SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in the future. Use Roster, Live Metrics, or Room Settings blocks instead.</div>')
 WHERE [BlockTypeId] = @ObsoleteLocationBlockId
 IF EXISTS(SELECT * FROM [Block] WHERE [BlockTypeId] = @ObsoleteLocationBlockId)
 BEGIN
@@ -2299,8 +2299,8 @@ VALUES (
 		1
     , @AdminChecklistDefinedTypeId
     , @ORDER+2
-    , 'Obsoleted Locations block will be removed in v17.0. Please replace it with Roster or Live Metrics or Room Settings Blocks.'
-    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted Locations block. This block will be removed in v17.0. Please replace the instances with the Roster or the Live Metrics or the Room Settings blocks.</div>'
+    , 'Obsoleted Locations block will be removed in the future. Please replace it with Roster or Live Metrics or Room Settings Blocks.'
+    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted Locations block. This block will be removed in the future. Please replace the instances with the Roster or the Live Metrics or the Room Settings blocks.</div>'
     , '84D3F58A-B427-4348-98B9-D1121376FB30'
     , GETDATE()
     , GETDATE()
@@ -2310,7 +2310,7 @@ END";
             var sqlObsoleteContributionStatementLava = $@"
 DECLARE @ObsoleteContributionStatementLavaBlockId INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = 'AF986B72-ADD9-4E05-971F-1DE4EBED8667');
 UPDATE [Block]
-SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in v17.0. Use the Contribution Statement Generator block instead.</div>')
+SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in the future. Use the Contribution Statement Generator block instead.</div>')
 WHERE [BlockTypeId] = @ObsoleteContributionStatementLavaBlockId
 IF EXISTS(SELECT * FROM [Block] WHERE [BlockTypeId] = @ObsoleteContributionStatementLavaBlockId)
 BEGIN
@@ -2329,68 +2329,9 @@ VALUES (
 		1
     , @AdminChecklistDefinedTypeId
     , @ORDER+3
-    , 'Obsoleted Contribution Statement Generator block will be removed in v17.0. Please replace it with Contribution Statement Generator block.'
-    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted Contribution Statement Lava block. This block will be removed in v17.0. Please replace the instances with Contribution Statement Generator blocks.</div>'
+    , 'Obsoleted Contribution Statement Generator block will be removed in the future. Please replace it with Contribution Statement Generator block.'
+    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted Contribution Statement Lava block. This block will be removed in the future. Please replace the instances with Contribution Statement Generator blocks.</div>'
     , '85A4AE6F-8B52-484B-B594-C9A15EEDEBE1'
-    , GETDATE()
-    , GETDATE()
-    , 1)
-END";
-
-            var sqlObsoleteSystemEmailListBlock = $@"
-DECLARE @ObsoleteSystemEmailList INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '2645A264-D5E5-43E8-8FE2-D351F3D5435B');
-UPDATE [Block]
-SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in v17.0. Use System Communication List instead.</div>')
-WHERE [BlockTypeId] = @ObsoleteSystemEmailList
-IF EXISTS(SELECT * FROM [Block] WHERE [BlockTypeId] = @ObsoleteSystemEmailList AND [Guid] <> '68F10E30-BD74-49F5-B63F-DA671E31DA90')
-BEGIN
--- Insert the entry to delete the occurrences of the obsolete Person block from Rock
-INSERT INTO [dbo].[DefinedValue] (
-		[IsSystem]
-    , [DefinedTypeId]
-    , [Order]
-    , [Value]
-    , [Description]
-    , [Guid]
-    , [CreatedDateTime]
-    , [ModifiedDateTime]
-    , [IsActive])
-VALUES (
-		1
-    , @AdminChecklistDefinedTypeId
-    , @ORDER+4
-    , 'Obsoleted System Email List block will be removed in v17.0. Please replace it System Communication List block.'
-    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted System Email List block. This block will be removed in v17.0. Please replace the instances with the System Communication List block.</div>'
-    , '6D0A5968-4BF3-43B0-866C-11D9779165F6'
-    , GETDATE()
-    , GETDATE()
-    , 1)
-END";
-
-            var sqlObsoleteSystemEmailDetail = $@"
-DECLARE @ObsoleteSystemEmailDetail INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '82B00455-B8CF-4673-ACF5-641B961DF59F');
-UPDATE [Block]
-SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in v17.0. Use System Communication Detail block instead.</div>')
-WHERE [BlockTypeId] = @ObsoleteSystemEmailDetail
-IF EXISTS(SELECT * FROM [Block] WHERE [BlockTypeId] = @ObsoleteSystemEmailDetail AND [Guid] <> '707A99EB-C24A-46BB-9230-8607E674246C')
-BEGIN
-INSERT INTO [dbo].[DefinedValue] (
-		[IsSystem]
-    , [DefinedTypeId]
-    , [Order]
-    , [Value]
-    , [Description]
-    , [Guid]
-    , [CreatedDateTime]
-    , [ModifiedDateTime]
-    , [IsActive])
-VALUES (
-		1
-    , @AdminChecklistDefinedTypeId
-    , @ORDER+5
-    , 'Obsoleted System Email Detail block will be removed in v17.0. Please replace it with the System Communication Detail block.'
-    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted System Email Detail Block. This block will be removed in v17.0. Please replaces the instances with the System Communication Detail block.</div>'
-    , 'EF040A12-DEAD-43D5-84D2-8FEE0C9CF365'
     , GETDATE()
     , GETDATE()
     , 1)
@@ -2406,10 +2347,6 @@ SELECT @Order = ISNULL(MAX([order]) + 1, 0) FROM [DefinedValue] WHERE [DefinedTy
 {sqlObsoleteLocation}
 -- Add entry for obsoleted Contribution Statement Lava block
 {sqlObsoleteContributionStatementLava}
--- Add entry for obsoleted System Email List block
-{sqlObsoleteSystemEmailListBlock}
--- Add entry for obsoleted System Email Detail block
-{sqlObsoleteSystemEmailDetail}
 " );
         }
 
@@ -15784,7 +15721,7 @@ WHERE ([Guid]='1E6785C0-7D92-49A7-9E15-68E113399152')
         private void UndoObsidianChop_SwapBlockUp()
         {
             UndoObsidianChop_RegisterBlockAttributesForSwap();
-            UndoObsidianChop_SwapObsidianBlocks();
+            //UndoObsidianChop_SwapObsidianBlocks();
         }
 
         private void UndoObsidianChop_RegisterBlockAttributesForSwap()
@@ -16530,52 +16467,55 @@ END" );
 
             #region Delete Legacy Peer Network Groups and Group Type
 
-            try
-            {
-                Sql( @"
-DECLARE @GroupTypeId INT = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E');
+            // This code was moved to the PostV17AddAndUpdatePeerNetworkIndexes job
+            // on 2025-03-17 to reduce the time it takes migrations to run and
+            // reduce the chance of a timeout error.
+//            try
+//            {
+//                Sql( @"
+//DECLARE @GroupTypeId INT = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E');
 
--- [GroupMember] records tied to these groups will cascade-delete.
-DELETE [Group] WHERE [GroupTypeId] = @GroupTypeId;" );
+//-- [GroupMember] records tied to these groups will cascade-delete.
+//DELETE [Group] WHERE [GroupTypeId] = @GroupTypeId;" );
 
-                RockMigrationHelper.DeleteGroupType( "8C0E5852-F08F-4327-9AA5-87800A6AB53E" );
-            }
-            catch ( Exception ex )
-            {
-                // This could be risky, as there might be unforeseen foreign key relationships to the records we're
-                // trying to delete here. If there's an exception, log it and move on. It's not detrimental for these
-                // records to remain in the database. But let's at least try to hide this group type from display in
-                // lists and navigation, and ensure it doesn't take part in the new Peer Network functionality.
-                Sql( @"
-DECLARE @GroupTypeId INT = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E');
+//                RockMigrationHelper.DeleteGroupType( "8C0E5852-F08F-4327-9AA5-87800A6AB53E" );
+//            }
+//            catch ( Exception ex )
+//            {
+//                // This could be risky, as there might be unforeseen foreign key relationships to the records we're
+//                // trying to delete here. If there's an exception, log it and move on. It's not detrimental for these
+//                // records to remain in the database. But let's at least try to hide this group type from display in
+//                // lists and navigation, and ensure it doesn't take part in the new Peer Network functionality.
+//                Sql( @"
+//DECLARE @GroupTypeId INT = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E');
 
-UPDATE [GroupType]
-SET [ShowInGroupList] = 0
-    , [ShowInNavigation] = 0
-    , [ModifiedDateTime] = GETDATE()
-    , [IsPeerNetworkEnabled] = 0
-    , [RelationshipStrength] = 0
-    , [RelationshipGrowthEnabled] = 0
-    , [LeaderToLeaderRelationshipMultiplier] = 0
-    , [LeaderToNonLeaderRelationshipMultiplier] = 0
-    , [NonLeaderToLeaderRelationshipMultiplier] = 0
-    , [NonLeaderToNonLeaderRelationshipMultiplier] = 0
-WHERE [Id] = @GroupTypeId;
+//UPDATE [GroupType]
+//SET [ShowInGroupList] = 0
+//    , [ShowInNavigation] = 0
+//    , [ModifiedDateTime] = GETDATE()
+//    , [IsPeerNetworkEnabled] = 0
+//    , [RelationshipStrength] = 0
+//    , [RelationshipGrowthEnabled] = 0
+//    , [LeaderToLeaderRelationshipMultiplier] = 0
+//    , [LeaderToNonLeaderRelationshipMultiplier] = 0
+//    , [NonLeaderToLeaderRelationshipMultiplier] = 0
+//    , [NonLeaderToNonLeaderRelationshipMultiplier] = 0
+//WHERE [Id] = @GroupTypeId;
 
-UPDATE [Group]
-SET [IsActive] = 0
-    , [ModifiedDateTime] = GETDATE()
-    , [RelationshipStrengthOverride] = NULL
-    , [RelationshipGrowthEnabledOverride] = NULL
-    , [LeaderToLeaderRelationshipMultiplierOverride] = NULL
-    , [LeaderToNonLeaderRelationshipMultiplierOverride] = NULL
-    , [NonLeaderToLeaderRelationshipMultiplierOverride] = NULL
-    , [NonLeaderToNonLeaderRelationshipMultiplierOverride] = NULL
-WHERE [GroupTypeId] = @GroupTypeId;" );
+//UPDATE [Group]
+//SET [IsActive] = 0
+//    , [ModifiedDateTime] = GETDATE()
+//    , [RelationshipStrengthOverride] = NULL
+//    , [RelationshipGrowthEnabledOverride] = NULL
+//    , [LeaderToLeaderRelationshipMultiplierOverride] = NULL
+//    , [LeaderToNonLeaderRelationshipMultiplierOverride] = NULL
+//    , [NonLeaderToLeaderRelationshipMultiplierOverride] = NULL
+//    , [NonLeaderToNonLeaderRelationshipMultiplierOverride] = NULL
+//WHERE [GroupTypeId] = @GroupTypeId;" );
 
-                var exception = new Exception( "Unable to delete legacy Peer Network Groups and Group Type.", ex );
-                ExceptionLogService.LogException( exception );
-            }
+//                var exception = new Exception( "Unable to delete legacy Peer Network Groups and Group Type.", ex );
+//                ExceptionLogService.LogException( exception );
+//            }
 
             #endregion Delete Legacy Peer Network Groups and Group Type
         }

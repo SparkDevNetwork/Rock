@@ -72,7 +72,7 @@
                                          help="<span class='tip tip-lava'></span>"
                                          label="Email Subject"
                                          rules="required" />
-                                <ImageUploader v-model="currentAttachment"
+                                <FileUploader v-model="currentAttachment"
                                                :binaryFileTypeGuid="attachmentBinaryFileTypeGuid"
                                                label="Attachments"
                                                :uploadAsTemporary="true"
@@ -103,11 +103,13 @@
             </template>
 
             <template #footerActions>
-                <RockButton @click="onPreviousClicked">Previous</RockButton>
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowLeft'"
+                            @click="onPreviousClicked">Previous</RockButton>
             </template>
 
             <template #footerSecondaryActions>
-                <RockButton btnType="primary"
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowRight'"
+                            btnType="primary"
                             :form="formId"
                             type="submit">{{ nextStepTitle ? `Next: ${nextStepTitle}` : 'Next' }}</RockButton>
             </template>
@@ -142,12 +144,13 @@
     import { nextTick, onMounted, onUnmounted, PropType, ref, watch } from "vue";
     import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
-    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { vShortcut } from "@Obsidian/Directives/shortcut";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -156,6 +159,11 @@
     import { isHTMLElement } from "@Obsidian/Utility/dom";
 
     const props = defineProps({
+        areNavigationShortcutsDisabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
         attachmentBinaryFileTypeGuid: {
             type: String as PropType<Guid>,
             required: true

@@ -110,6 +110,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Specifies the modal manager (update panel) that  should use
+        /// when closing modals. This fixes an issue where a modal is closed
+        /// by C# code but the "modal-open" CSS class is not removed. This
+        /// causes drop down controls to be clipped.
+        /// </summary>
+        public string ModalManagerId
+        {
+            get => ViewState["ModalManagerId"] as string;
+            set => ViewState["ModalManagerId"] = value;
+        }
+
+        /// <summary>
         /// Gets or sets the activity type unique identifier.
         /// </summary>
         /// <value>
@@ -304,6 +316,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
 
             workflowActionForm.PersonEntryConnectionStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() );
             workflowActionForm.PersonEntryRecordStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() );
+            workflowActionForm.PersonEntryRecordSourceValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_WORKFLOW.AsGuid() );
             workflowActionForm.PersonEntryGroupLocationTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
 
             workflowActionForm.Actions = "Submit^^^Your information has been submitted successfully.";
@@ -371,7 +384,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             }
 
             _phActionAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( value, _phActionAttributes, true, ValidationGroup, new List<string>() { "Active", "Order" } );
+            Rock.Attribute.Helper.AddEditControls( value, _phActionAttributes, true, ValidationGroup, new List<string>() { "Active", "Order" }, false, null, true );
         }
 
         /// <summary>
@@ -448,6 +461,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             Controls.Add( _wfatpEntityType );
             _wfatpEntityType.ID = this.ID + "_wfatpEntityType";
             _wfatpEntityType.Label = "Action Type";
+            _wfatpEntityType.Required = true;
 
             _rlEntityTypeOverview = new RockLiteral();
             Controls.Add( _rlEntityTypeOverview );
@@ -467,6 +481,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _formEditor = new WorkflowFormEditor();
             Controls.Add( _formEditor );
             _formEditor.ID = this.ID + "_formEditor";
+            _formEditor.ModalManagerId = ModalManagerId;
 
             _phActionAttributes = new PlaceHolder();
             Controls.Add( _phActionAttributes );

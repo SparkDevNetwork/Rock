@@ -1,9 +1,9 @@
 # dotnet tool install -g dotnet-reportgenerator-globaltool
 # dotnet tool install -g coverlet.console
 
-coverlet bin\Debug\Rock.Tests.UnitTests.dll `
+coverlet bin\Debug\Rock.Tests.dll `
     --target dotnet `
-    --targetargs "vstest bin\Debug\Rock.Tests.UnitTests.dll" `
+    --targetargs "vstest bin\Debug\Rock.Tests.dll" `
     --include "[Rock]Rock.*" `
     --exclude "[Rock]Rock.Model.*" `
     --exclude "[Rock]Rock.Web.UI.*" `

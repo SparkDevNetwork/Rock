@@ -418,7 +418,7 @@ namespace Rock.Blocks.Core
             {
                 if ( fieldType.Field is Rock.Field.ISecurityGrantFieldType grantFieldType )
                 {
-                    grantFieldType.AddRulesToSecurityGrant( securityGrant );
+                    grantFieldType.AddRulesToSecurityGrant( securityGrant, new Dictionary<string, string>() );
                 }
             }
 
@@ -446,7 +446,7 @@ namespace Rock.Blocks.Core
 
             return new EditAttributeViewModel
             {
-                Attribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ),
+                Attribute = PublicAttributeHelper.GetPublicEditableAttribute( attribute ),
                 EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn,
                 EntityTypeQualifierValue = attribute.EntityTypeQualifierValue,
                 ValidQualifierColumns = validQualifierProperties,
@@ -493,7 +493,7 @@ namespace Rock.Blocks.Core
             return ActionOk( new
             {
                 Attribute = PublicAttributeHelper.GetPublicAttributeForEdit( attribute ),
-                Value = PublicAttributeHelper.GetPublicEditValue( attribute, value )
+                Value = PublicAttributeHelper.GetPublicValueForEdit( attribute, value )
             } );
         }
 

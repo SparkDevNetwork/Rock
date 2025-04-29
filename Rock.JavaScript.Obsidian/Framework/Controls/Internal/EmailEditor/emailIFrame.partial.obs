@@ -29,11 +29,16 @@ iframe {
         createGlobalBodyBackgroundColorProvider,
         createGlobalBackgroundColorProvider,
         createGlobalButtonWidthValuesProvider,
+        createMediaQueryEffect,
+        createGlobalButtonBackgroundColorProvider,
+        createGlobalDividerWidthProvider,
+        createGlobalDividerHorizontalAlignmentProvider
     } from "./providers.partial";
     import {
         copyShorthandInlineStyles,
         createComponentElement,
         createComponentElementPlaceholder,
+        getComponentHelper,
         moveShorthandInlineStyles,
         moveStandaloneInlineStyles,
         removeTemporaryAttributes,
@@ -48,11 +53,11 @@ iframe {
         checkDropzoneSize,
         RockStylesCssClass,
         RockRuntimeClassCssClassPrefix,
-        ensureComponentWrapsContentTableRecursive,
         ensureBodyWrapsEmailWrapper,
         GlobalStylesCssSelectors,
         getComponentTypeName,
-        getComponentHostSelector
+        getComponentHostSelector,
+        pixelConverter
     } from "./utils.partial";
     import {
         CssStyleDeclarationKebabKey,
@@ -71,7 +76,9 @@ iframe {
         ComponentTypeDragDropRequest,
         ComponentTypeDragLeaveRequest,
         ValueProvider,
-        ButtonWidthValues
+        ButtonWidthValues,
+        ReplaceComponentRequest,
+        HorizontalAlignment
     } from "./types.partial";
     import { GetHtmlRequest } from "./types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -79,6 +86,7 @@ iframe {
         findDirectChildContaining,
         findNearestIFrameElementFromPoint,
         isDocument,
+        isElement,
         isHTMLElement,
         removeWhiteSpaceFromChildElements,
         removeWhiteSpaceFromElement,
@@ -105,6 +113,11 @@ iframe {
 
         cloneComponentRequest: {
             type: Object as PropType<CloneComponentRequest | null | undefined>,
+            required: true
+        },
+
+        replaceComponentRequest: {
+            type: Object as PropType<ReplaceComponentRequest | null | undefined>,
             required: true
         },
 
@@ -155,6 +168,7 @@ iframe {
     }>();
 
     const draggingCssClass = `${RockRuntimeClassCssClassPrefix}-is-dragging` as const;
+    const nonRowHoveredClass = `${RockRuntimeClassCssClassPrefix}-non-row-hovered` as const;
 
     // #region Values
 
@@ -172,12 +186,16 @@ iframe {
     const sectionComponentMutationObserver = ref<MutationObserver | null | undefined>();
     const dropzoneEmptyResizeObserver = ref<ResizeObserver | null | undefined>();
 
-    // Global default providers.
+    // Global default providers and effects.
     const globalBodyWidthProvider = ref<ValueProvider<number | null | undefined> | undefined>();
     const globalBodyAlignmentProvider = ref<ValueProvider<string | null | undefined> | undefined>();
     const globalBodyColorProvider = ref<ValueProvider<string | null | undefined> | undefined>();
     const globalBackgroundColorProvider = ref<ValueProvider<string | null | undefined> | undefined>();
     const globalButtonWidthValuesProvider = ref<ValueProvider<ButtonWidthValues | null | undefined> | undefined>();
+    const globalBodyWidthMediaQueryEffect = ref<Disposable | undefined>();
+    const globalButtonBackgroundColorProvider = ref<ValueProvider<string | null | undefined> | undefined>();
+    const globalDividerWidthProvider = ref<ValueProvider<number | null | undefined> | undefined>();
+    const globalDividerHorizontalAlignmentProvider = ref<ValueProvider<HorizontalAlignment | null | undefined> | undefined>();
 
     // #endregion
 
@@ -193,7 +211,7 @@ iframe {
      * Adds event handlers to the iframe.
      */
     function addEventHandlers(iFrameElement: HTMLIFrameElement): void {
-        iFrameElement.addEventListener("load", () => {
+        iFrameElement.addEventListener("load", async () => {
             const iFrameWindow = iFrameElement.contentWindow!;
 
             // Window Events
@@ -216,7 +234,7 @@ iframe {
             iFrameWindow.document.removeEventListener("keydown", onIFrameKeyDownEscape);
             iFrameWindow.document.addEventListener("keydown", onIFrameKeyDownEscape);
 
-            onIFrameLoaded();
+            await onIFrameLoaded();
         });
     }
 
@@ -292,9 +310,16 @@ iframe {
             // The component is already selected. Make editable regions editable.
             getInlineEditableElements(componentElement)
                 .forEach(element => {
-                    element.setAttribute("contenteditable", "true");
-                    element.addEventListener("blur", () => {
-                        element.removeAttribute("contenteditable");
+                    // Ensure inline editing is enabled on a proper element.
+                    const editableElement = getOrCreateEditableWrapper(element);
+
+                    // Enable content editing.
+                    editableElement.setAttribute("contenteditable", "true");
+
+                    // Cleanup when editing stops.
+                    editableElement.addEventListener("blur", () => {
+                        editableElement.removeAttribute("contenteditable");
+                        unwrapEditableElement(editableElement);
                     }, { once: true });
                 });
             return;
@@ -320,7 +345,9 @@ iframe {
         // Disable in-line editing for in-line editable elements.
         getInlineEditableElements(componentElement)
             .forEach(element => {
+                const editableElement = getOrCreateEditableWrapper(element);
                 element.removeAttribute("contenteditable");
+                unwrapEditableElement(editableElement);
             });
 
         // Remove selected ranges for elements that were being edited inline.
@@ -329,6 +356,64 @@ iframe {
             ranges.forEach(range => {
                 selection.removeRange(range);
             });
+        }
+    }
+
+    /**
+     * Ensures the element is editable by wrapping it in a <div> if necessary.
+     */
+    function getOrCreateEditableWrapper(element: HTMLElement): HTMLElement {
+        // If the element is already a proper editable container, return it.
+        if (element.tagName !== "TD") {
+            return element;
+        }
+
+        // Check if there's already a wrapper div inside the <td>
+        const existingWrapper = element.querySelector(".rock-content-editable-wrapper");
+        if (existingWrapper && isHTMLElement(existingWrapper)) {
+            return existingWrapper;
+        }
+
+        // Create a new wrapper div
+        const wrapper = document.createElement("div");
+        wrapper.className = "rock-content-editable-wrapper";
+        wrapper.contentEditable = "true";
+
+        // Move child elements into the new wrapper
+        while (element.firstChild) {
+            wrapper.appendChild(element.firstChild);
+        }
+
+        // Insert wrapper into the <td>
+        element.appendChild(wrapper);
+
+        return wrapper;
+    }
+
+    /**
+    * Removes the temporary wrapper div and restores the original structure.
+    */
+    function unwrapEditableElement(wrapper: HTMLElement): void {
+        if (!wrapper.classList.contains("rock-content-editable-wrapper")) {
+            return;
+        }
+
+        const parent = wrapper.parentElement;
+        if (!parent) {
+            return;
+        }
+
+        // Move all children out of the wrapper and place them back in the parent
+        while (wrapper.firstChild) {
+            parent.insertBefore(wrapper.firstChild, wrapper);
+        }
+
+        // Remove the now-empty wrapper
+        try {
+            wrapper.remove();
+        }
+        catch {
+            // Ignore errors if wrapper is already removed.
         }
     }
 
@@ -394,6 +479,30 @@ iframe {
 
             // Select the new component.
             internalSelectedComponentElement.value = clone.classList.contains("component") ? clone : clone.querySelector(".component") as HTMLElement;
+        }
+    }
+
+    function replaceSelectedComponent(newComponentElement: HTMLElement): void {
+        if (internalSelectedComponentElement.value) {
+            let replaceableElement: HTMLElement | null = internalSelectedComponentElement.value;
+
+            // If the selected component is wrapped in a Rock runtime wrapper, replace the wrapper instead.
+            if (replaceableElement.parentElement?.classList.contains(RockRuntimeWrapperElementCssClass)) {
+                replaceableElement = replaceableElement.parentElement;
+            }
+
+            if (!replaceableElement.parentElement) {
+                console.error("replaceSelectedComponent: Cannot replace the component, no valid parent found.");
+                return;
+            }
+
+            const wrappedComponentElement = wrapComponentElement(replaceableElement.ownerDocument, newComponentElement);
+
+            // Replace the old component with the new one in the DOM.
+            replaceableElement.parentElement.replaceChild(wrappedComponentElement, replaceableElement);
+
+            // Update selection to the new component.
+            internalSelectedComponentElement.value = newComponentElement;
         }
     }
 
@@ -509,6 +618,35 @@ iframe {
         componentElement.parentNode?.insertBefore(wrapper, componentElement);
         wrapper.appendChild(componentElement);
 
+        // Add hover effect that prevents the row from being highlighted
+        // if a subcomponent is being hovered over.
+        if (getComponentTypeName(componentElement) !== "row") {
+            wrapper.addEventListener("mouseenter", () => {
+                document.body.classList.add(nonRowHoveredClass);
+            });
+            wrapper.addEventListener("mouseleave", () => {
+                document.body.classList.remove(nonRowHoveredClass);
+            });
+        }
+        else {
+            wrapper.addEventListener("mouseenter", (e) => {
+                // Check if a non-row is currently hovered. The other events may not have triggered,
+                // so check again here.
+                if (Enumerable.from(document.elementsFromPoint(e.clientX, e.clientY))
+                    .where(e => e.classList.contains("component") && getComponentTypeName(e) !== "row")
+                    .any()
+                ) {
+                    document.body.classList.add(nonRowHoveredClass);
+                }
+                else {
+                    document.body.classList.remove(nonRowHoveredClass);
+                }
+            });
+            wrapper.addEventListener("mouseleave", () => {
+                document.body.classList.remove(nonRowHoveredClass);
+            });
+        }
+
         // Automatically remove the wrapper if all of its children elements are removed.
         wrapperAutoRemovalObserver.value?.observe(wrapper, { childList: true });
 
@@ -520,10 +658,9 @@ iframe {
         return wrapper;
     }
 
-    function watchSectionComponentSizeChanges(componentElement: HTMLElement): void {
+    function watchSectionComponentSizeChanges(componentElement: Element): void {
         // Check dropzones now.
-        Enumerable.from(componentElement.querySelectorAll(".dropzone"))
-            .ofType(isHTMLElement)
+        componentElement.querySelectorAll(".dropzone")
             .forEach(dropzone => {
                 watchSectionComponentDropzoneSizeChanges(dropzone);
             });
@@ -532,7 +669,7 @@ iframe {
         sectionComponentMutationObserver.value?.observe(componentElement, { childList: true, subtree: true });
     }
 
-    function watchSectionComponentDropzoneSizeChanges(dropzone: HTMLElement): void {
+    function watchSectionComponentDropzoneSizeChanges(dropzone: Element): void {
         // Check size now.
         checkDropzoneSize(dropzone.getBoundingClientRect(), dropzone);
 
@@ -540,7 +677,12 @@ iframe {
         dropzoneEmptyResizeObserver.value?.observe(dropzone);
     }
 
-    function fixOldWizardElements(document: Document): void {
+    function unwatchSectionComponentDropzoneSizeChanges(dropzone: Element): void {
+        // Keep checking size.
+        dropzoneEmptyResizeObserver.value?.unobserve(dropzone);
+    }
+
+    async function fixOldWizardElements(document: Document): Promise<void> {
         // RSVP Component Fixes
 
         // The old wizard set some font styles and padding on the content elements instead of the button elements.
@@ -618,7 +760,24 @@ iframe {
                 }
             });
 
-        ensureComponentWrapsContentTableRecursive(document);
+        // Auto-migrate each component type to ensure they are all using the latest versions.
+        document.querySelectorAll(".component").forEach(componentElement => {
+            try {
+                const componentTypeName = getComponentTypeName(componentElement);
+                const componentHelper = getComponentHelper(componentTypeName);
+                if (componentHelper?.isMigrationRequired(componentElement)) {
+                    componentElement.replaceWith(componentHelper.migrate(componentElement));
+                }
+            }
+            catch (e) {
+                // Log and ignore errors so the email can load.
+                console.error(`Error migrating component type ${e}`, componentElement);
+            }
+        });
+
+        // Wait for the next tick to ensure the DOM is updated before wrapping body.
+        await nextTick();
+
         ensureBodyWrapsEmailWrapper(document);
     }
 
@@ -701,7 +860,7 @@ iframe {
      * to the editor, like CSS, fonts, etc., but they should
      * be removed before saving the email communication message.
      */
-    function onIFrameLoaded(): void {
+    async function onIFrameLoaded(): Promise<void> {
         console.log(`"loaded" iframe`);
 
         const iFrameDocument = iFrameElement.value?.contentDocument;
@@ -732,185 +891,187 @@ iframe {
         style.textContent = `
 ${createCssRuleset(":root", props.cssVariables)}
 
-                    body.${draggingCssClass}, body.${draggingCssClass} * {
-                        cursor: grabbing;
-                    }
+        body.${draggingCssClass}, body.${draggingCssClass} * {
+            cursor: grabbing;
+        }
 
-                    html ::-webkit-scrollbar {
-                        width: 8px;
-                        height: 8px;
-                        background-color: rgba(0,0,0,0.03);
-                        border-radius: 4px
-                    }
+        html ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+            background-color: rgba(0,0,0,0.03);
+            border-radius: 4px
+        }
 
-                    html ::-webkit-scrollbar-thumb {
-                        width: 8px;
-                        background-color: rgba(0,0,0,0.2);
-                        border-radius: 4px
-                    }
+        html ::-webkit-scrollbar-thumb {
+            width: 8px;
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 4px
+        }
 
-                    html ::-webkit-scrollbar-thumb:hover {
-                        background-color: rgba(0,0,0,0.3)
-                    }
+        html ::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(0,0,0,0.3)
+        }
 
-                    .dropzone:empty,
-                    .structure-dropzone:empty {
-                        position: relative;
-                        padding: var(--spacing-large) var(--spacing-medium);
-                        outline: 1px dashed var(--color-interface-medium);
-                        outline-offset: -1px;
-                        background-color: var(--color-interface-softer);
-                        min-height: 22px;
-                    }
+        .dropzone:empty,
+        .structure-dropzone:empty {
+            position: relative;
+            padding: var(--spacing-large) var(--spacing-medium);
+            outline: 1px dashed var(--color-interface-medium);
+            outline-offset: -1px;
+            background-color: var(--color-interface-softer);
+            min-height: 22px;
+        }
 
-                    .component-type-over.dropzone:empty,
-                    .component-type-over.structure-dropzone:empty {
-                        background-color: var(--color-info-soft);
-                    }
+        .component-type-over.dropzone:empty,
+        .component-type-over.structure-dropzone:empty {
+            background-color: var(--color-info-soft);
+        }
 
-                    .dropzone:empty::after,
-                    .structure-dropzone:empty::after {
-                        font-family: 'FontAwesome';
-                        font-weight: 900;
-                        /*content: "\\f055 \\00A0 Add Content";*/
-                        content: "";
-                        color: var(--color-info-strong);
-                        display: block;
-                        position: absolute;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        width: ${EmptyDropzoneSvgPixelWidth}px; /* Match SVG width */
-                        height: 15px; /* Match SVG height */
-                        background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAzIiBoZWlnaHQ9IjE1IiB2aWV3Qm94PSIwIDAgMTAzIDE1IiAKICAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLCAwKSI+CiAgICAgICAgCjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8zMDA3XzMyMzM0KSI+CjxwYXRoIGQ9Ik03LjUgMC43MTg3NUMzLjc1MzkxIDAuNzE4NzUgMC43MTg3NSAzLjc1MzkxIDAuNzE4NzUgNy41QzAuNzE4NzUgMTEuMjQ2MSAzLjc1MzkxIDE0LjI4MTIgNy41IDE0LjI4MTJDMTEuMjQ2MSAxNC4yODEyIDE0LjI4MTIgMTEuMjQ2MSAxNC4yODEyIDcuNUMxNC4yODEyIDMuNzUzOTEgMTEuMjQ2MSAwLjcxODc1IDcuNSAwLjcxODc1Wk0xMS40Mzc1IDguMjY1NjJDMTEuNDM3NSA4LjQ0NjA5IDExLjI4OTggOC41OTM3NSAxMS4xMDk0IDguNTkzNzVIOC41OTM3NVYxMS4xMDk0QzguNTkzNzUgMTEuMjg5OCA4LjQ0NjA5IDExLjQzNzUgOC4yNjU2MiAxMS40Mzc1SDYuNzM0MzhDNi41NTM5MSAxMS40Mzc1IDYuNDA2MjUgMTEuMjg5OCA2LjQwNjI1IDExLjEwOTRWOC41OTM3NUgzLjg5MDYyQzMuNzEwMTYgOC41OTM3NSAzLjU2MjUgOC40NDYwOSAzLjU2MjUgOC4yNjU2MlY2LjczNDM4QzMuNTYyNSA2LjU1MzkxIDMuNzEwMTYgNi40MDYyNSAzLjg5MDYyIDYuNDA2MjVINi40MDYyNVYzLjg5MDYyQzYuNDA2MjUgMy43MTAxNiA2LjU1MzkxIDMuNTYyNSA2LjczNDM4IDMuNTYyNUg4LjI2NTYyQzguNDQ2MDkgMy41NjI1IDguNTkzNzUgMy43MTAxNiA4LjU5Mzc1IDMuODkwNjJWNi40MDYyNUgxMS4xMDk0QzExLjI4OTggNi40MDYyNSAxMS40Mzc1IDYuNTUzOTEgMTEuNDM3NSA2LjczNDM4VjguMjY1NjJaIiBmaWxsPSIjMDA3QUZGIi8+CjwvZz4KPGRlZnM+CjxjbGlwUGF0aCBpZD0iY2xpcDBfMzAwN18zMjMzNCI+CjxyZWN0IHdpZHRoPSIxNCIgaGVpZ2h0PSIxNCIgZmlsbD0id2hpdGUiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuNSAwLjUpIi8+CjwvY2xpcFBhdGg+CjwvZGVmcz4KCiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyMywgMSkiPgogICAgICAgIAo8cGF0aCBkPSJNOS4zNzMwNSAxMUg4LjEwMTU2TDcuMDYyNSA4LjI1MTk1SDIuOTA2MjVMMS45Mjg3MSAxMUgwLjY1MDM5MUw0LjQxMDE2IDEuMTk3MjdINS41OTk2MUw5LjM3MzA1IDExWk02LjY4NjUyIDcuMjE5NzNMNS4xNDg0NCAzLjA0Mjk3QzUuMDk4MzEgMi45MDYyNSA1LjA0ODE4IDIuNjg3NSA0Ljk5ODA1IDIuMzg2NzJINC45NzA3QzQuOTI1MTMgMi42NjQ3MSA0Ljg3MjcyIDIuODgzNDYgNC44MTM0OCAzLjA0Mjk3TDMuMjg5MDYgNy4yMTk3M0g2LjY4NjUyWk0xNi42NDY1IDExSDE1LjUyNTRWOS44MTA1NUgxNS40OThDMTQuOTc4NSAxMC43MTI5IDE0LjE3NjQgMTEuMTY0MSAxMy4wOTE4IDExLjE2NDFDMTIuMjEyMiAxMS4xNjQxIDExLjUwODEgMTAuODUxOSAxMC45Nzk1IDEwLjIyNzVDMTAuNDU1NCA5LjU5ODYzIDEwLjE5MzQgOC43NDQxNCAxMC4xOTM0IDcuNjY0MDZDMTAuMTkzNCA2LjUwNjUxIDEwLjQ4NSA1LjU3OTEgMTEuMDY4NCA0Ljg4MTg0QzExLjY1MTcgNC4xODQ1NyAxMi40Mjg3IDMuODM1OTQgMTMuMzk5NCAzLjgzNTk0QzE0LjM2MSAzLjgzNTk0IDE1LjA2MDUgNC4yMTQxOSAxNS40OTggNC45NzA3SDE1LjUyNTRWMC42MzY3MTlIMTYuNjQ2NVYxMVpNMTUuNTI1NCA3LjgzNDk2VjYuODAyNzNDMTUuNTI1NCA2LjIzNzYzIDE1LjMzODUgNS43NTkxMSAxNC45NjQ4IDUuMzY3MTlDMTQuNTkxMSA0Ljk3NTI2IDE0LjExNzIgNC43NzkzIDEzLjU0MyA0Ljc3OTNDMTIuODU5NCA0Ljc3OTMgMTIuMzIxNiA1LjAyOTk1IDExLjkyOTcgNS41MzEyNUMxMS41Mzc4IDYuMDMyNTUgMTEuMzQxOCA2LjcyNTI2IDExLjM0MTggNy42MDkzOEMxMS4zNDE4IDguNDE2MDIgMTEuNTI4NiA5LjA1NDA0IDExLjkwMjMgOS41MjM0NEMxMi4yODA2IDkuOTg4MjggMTIuNzg2NSAxMC4yMjA3IDEzLjQxOTkgMTAuMjIwN0MxNC4wNDQzIDEwLjIyMDcgMTQuNTUwMSA5Ljk5NTEyIDE0LjkzNzUgOS41NDM5NUMxNS4zMjk0IDkuMDkyNzcgMTUuNTI1NCA4LjUyMzExIDE1LjUyNTQgNy44MzQ5NlpNMjQuODkwNiAxMUgyMy43Njk1VjkuODEwNTVIMjMuNzQyMkMyMy4yMjI3IDEwLjcxMjkgMjIuNDIwNiAxMS4xNjQxIDIxLjMzNTkgMTEuMTY0MUMyMC40NTY0IDExLjE2NDEgMTkuNzUyMyAxMC44NTE5IDE5LjIyMzYgMTAuMjI3NUMxOC42OTk1IDkuNTk4NjMgMTguNDM3NSA4Ljc0NDE0IDE4LjQzNzUgNy42NjQwNkMxOC40Mzc1IDYuNTA2NTEgMTguNzI5MiA1LjU3OTEgMTkuMzEyNSA0Ljg4MTg0QzE5Ljg5NTggNC4xODQ1NyAyMC42NzI5IDMuODM1OTQgMjEuNjQzNiAzLjgzNTk0QzIyLjYwNTEgMy44MzU5NCAyMy4zMDQ3IDQuMjE0MTkgMjMuNzQyMiA0Ljk3MDdIMjMuNzY5NVYwLjYzNjcxOUgyNC44OTA2VjExWk0yMy43Njk1IDcuODM0OTZWNi44MDI3M0MyMy43Njk1IDYuMjM3NjMgMjMuNTgyNyA1Ljc1OTExIDIzLjIwOSA1LjM2NzE5QzIyLjgzNTMgNC45NzUyNiAyMi4zNjEzIDQuNzc5MyAyMS43ODcxIDQuNzc5M0MyMS4xMDM1IDQuNzc5MyAyMC41NjU4IDUuMDI5OTUgMjAuMTczOCA1LjUzMTI1QzE5Ljc4MTkgNi4wMzI1NSAxOS41ODU5IDYuNzI1MjYgMTkuNTg1OSA3LjYwOTM4QzE5LjU4NTkgOC40MTYwMiAxOS43NzI4IDkuMDU0MDQgMjAuMTQ2NSA5LjUyMzQ0QzIwLjUyNDcgOS45ODgyOCAyMS4wMzA2IDEwLjIyMDcgMjEuNjY0MSAxMC4yMjA3QzIyLjI4ODQgMTAuMjIwNyAyMi43OTQzIDkuOTk1MTIgMjMuMTgxNiA5LjU0Mzk1QzIzLjU3MzYgOS4wOTI3NyAyMy43Njk1IDguNTIzMTEgMjMuNzY5NSA3LjgzNDk2Wk0zNy44MjQyIDEwLjU4OThDMzcuMDk5NiAxMC45NzI3IDM2LjE5NzMgMTEuMTY0MSAzNS4xMTcyIDExLjE2NDFDMzMuNzIyNyAxMS4xNjQxIDMyLjYwNjEgMTAuNzE1MiAzMS43Njc2IDkuODE3MzhDMzAuOTI5IDguOTE5NiAzMC41MDk4IDcuNzQxNTQgMzAuNTA5OCA2LjI4MzJDMzAuNTA5OCA0LjcxNTQ5IDMwLjk4MTQgMy40NDg1NyAzMS45MjQ4IDIuNDgyNDJDMzIuODY4MiAxLjUxNjI4IDM0LjA2NDUgMS4wMzMyIDM1LjUxMzcgMS4wMzMyQzM2LjQ0MzQgMS4wMzMyIDM3LjIxMzUgMS4xNjc2NCAzNy44MjQyIDEuNDM2NTJWMi42NjAxNkMzNy4xMjI0IDIuMjY4MjMgMzYuMzQ3NyAyLjA3MjI3IDM1LjUgMi4wNzIyN0MzNC4zNzQzIDIuMDcyMjcgMzMuNDYwNiAyLjQ0ODI0IDMyLjc1ODggMy4yMDAyQzMyLjA2MTUgMy45NTIxNSAzMS43MTI5IDQuOTU3MDMgMzEuNzEyOSA2LjIxNDg0QzMxLjcxMjkgNy40MDg4NSAzMi4wMzg3IDguMzYxMzMgMzIuNjkwNCA5LjA3MjI3QzMzLjM0NjcgOS43Nzg2NSAzNC4yMDU3IDEwLjEzMTggMzUuMjY3NiAxMC4xMzE4QzM2LjI1MiAxMC4xMzE4IDM3LjEwNDIgOS45MTMwOSAzNy44MjQyIDkuNDc1NTlWMTAuNTg5OFpNNDIuNTk1NyAxMS4xNjQxQzQxLjU2MTIgMTEuMTY0MSA0MC43MzQgMTAuODM4MiA0MC4xMTQzIDEwLjE4NjVDMzkuNDk5IDkuNTMwMjcgMzkuMTkxNCA4LjY2MjExIDM5LjE5MTQgNy41ODIwM0MzOS4xOTE0IDYuNDA2MjUgMzkuNTEyNyA1LjQ4Nzk2IDQwLjE1NTMgNC44MjcxNUM0MC43OTc5IDQuMTY2MzQgNDEuNjY2IDMuODM1OTQgNDIuNzU5OCAzLjgzNTk0QzQzLjgwMzQgMy44MzU5NCA0NC42MTY5IDQuMTU3MjMgNDUuMjAwMiA0Ljc5OThDNDUuNzg4MSA1LjQ0MjM4IDQ2LjA4MiA2LjMzMzMzIDQ2LjA4MiA3LjQ3MjY2QzQ2LjA4MiA4LjU4OTE5IDQ1Ljc2NTMgOS40ODQ3IDQ1LjEzMTggMTAuMTU5MkM0NC41MDI5IDEwLjgyOTEgNDMuNjU3NiAxMS4xNjQxIDQyLjU5NTcgMTEuMTY0MVpNNDIuNjc3NyA0Ljc3OTNDNDEuOTU3NyA0Ljc3OTMgNDEuMzg4IDUuMDI1MzkgNDAuOTY4OCA1LjUxNzU4QzQwLjU0OTUgNi4wMDUyMSA0MC4zMzk4IDYuNjc5NjkgNDAuMzM5OCA3LjU0MTAyQzQwLjMzOTggOC4zNzA0NCA0MC41NTE4IDkuMDI0NDEgNDAuOTc1NiA5LjUwMjkzQzQxLjM5OTQgOS45ODE0NSA0MS45NjY4IDEwLjIyMDcgNDIuNjc3NyAxMC4yMjA3QzQzLjQwMjMgMTAuMjIwNyA0My45NTgzIDkuOTg2IDQ0LjM0NTcgOS41MTY2QzQ0LjczNzYgOS4wNDcyIDQ0LjkzMzYgOC4zNzk1NiA0NC45MzM2IDcuNTEzNjdDNDQuOTMzNiA2LjYzODY3IDQ0LjczNzYgNS45NjQxOSA0NC4zNDU3IDUuNDkwMjNDNDMuOTU4MyA1LjAxNjI4IDQzLjQwMjMgNC43NzkzIDQyLjY3NzcgNC43NzkzWk01My42ODM2IDExSDUyLjU2MjVWNy4wMDc4MUM1Mi41NjI1IDUuNTIyMTQgNTIuMDIwMiA0Ljc3OTMgNTAuOTM1NSA0Ljc3OTNDNTAuMzc1IDQuNzc5MyA0OS45MTAyIDQuOTkxMjEgNDkuNTQxIDUuNDE1MDRDNDkuMTc2NCA1LjgzNDMxIDQ4Ljk5NDEgNi4zNjUyMyA0OC45OTQxIDcuMDA3ODFWMTFINDcuODczVjRINDguOTk0MVY1LjE2MjExSDQ5LjAyMTVDNDkuNTUwMSA0LjI3Nzk5IDUwLjMxNTggMy44MzU5NCA1MS4zMTg0IDMuODM1OTRDNTIuMDg0IDMuODM1OTQgNTIuNjY5NiA0LjA4NDMxIDUzLjA3NTIgNC41ODEwNUM1My40ODA4IDUuMDczMjQgNTMuNjgzNiA1Ljc4NjQ2IDUzLjY4MzYgNi43MjA3VjExWk01OS4wNDk4IDEwLjkzMTZDNTguNzg1NSAxMS4wNzc1IDU4LjQzNjggMTEuMTUwNCA1OC4wMDM5IDExLjE1MDRDNTYuNzc4IDExLjE1MDQgNTYuMTY1IDEwLjQ2NjggNTYuMTY1IDkuMDk5NjFWNC45NTcwM0g1NC45NjE5VjRINTYuMTY1VjIuMjkxMDJMNTcuMjg2MSAxLjkyODcxVjRINTkuMDQ5OFY0Ljk1NzAzSDU3LjI4NjFWOC45MDEzN0M1Ny4yODYxIDkuMzcwNzcgNTcuMzY1OSA5LjcwNTczIDU3LjUyNTQgOS45MDYyNUM1Ny42ODQ5IDEwLjEwNjggNTcuOTQ5MiAxMC4yMDcgNTguMzE4NCAxMC4yMDdDNTguNjAwOSAxMC4yMDcgNTguODQ0NyAxMC4xMjk2IDU5LjA0OTggOS45NzQ2MVYxMC45MzE2Wk02Ni4xNzI5IDcuNzgwMjdINjEuMjMwNUM2MS4yNDg3IDguNTU5NTcgNjEuNDU4MyA5LjE2MTEzIDYxLjg1OTQgOS41ODQ5NkM2Mi4yNjA0IDEwLjAwODggNjIuODExOCAxMC4yMjA3IDYzLjUxMzcgMTAuMjIwN0M2NC4zMDIxIDEwLjIyMDcgNjUuMDI2NyA5Ljk2MDk0IDY1LjY4NzUgOS40NDE0MVYxMC40OTQxQzY1LjA3MjMgMTAuOTQwOCA2NC4yNTg4IDExLjE2NDEgNjMuMjQ3MSAxMS4xNjQxQzYyLjI1ODEgMTEuMTY0MSA2MS40ODExIDEwLjg0NzMgNjAuOTE2IDEwLjIxMzlDNjAuMzUwOSA5LjU3NTg1IDYwLjA2ODQgOC42ODAzNCA2MC4wNjg0IDcuNTI3MzRDNjAuMDY4NCA2LjQzODE1IDYwLjM3NiA1LjU1MTc2IDYwLjk5MTIgNC44NjgxNkM2MS42MTEgNC4xODAwMSA2Mi4zNzg5IDMuODM1OTQgNjMuMjk0OSAzLjgzNTk0QzY0LjIxMDkgMy44MzU5NCA2NC45MTk2IDQuMTMyMTYgNjUuNDIwOSA0LjcyNDYxQzY1LjkyMjIgNS4zMTcwNiA2Ni4xNzI5IDYuMTM5NjUgNjYuMTcyOSA3LjE5MjM4VjcuNzgwMjdaTTY1LjAyNDQgNi44MzAwOEM2NS4wMTk5IDYuMTgyOTQgNjQuODYyNiA1LjY3OTM2IDY0LjU1MjcgNS4zMTkzNEM2NC4yNDc0IDQuOTU5MzEgNjMuODIxMyA0Ljc3OTMgNjMuMjc0NCA0Ljc3OTNDNjIuNzQ1OCA0Ljc3OTMgNjIuMjk2OSA0Ljk2ODQyIDYxLjkyNzcgNS4zNDY2OEM2MS41NTg2IDUuNzI0OTMgNjEuMzMwNyA2LjIxOTQgNjEuMjQ0MSA2LjgzMDA4SDY1LjAyNDRaTTczLjY4NTUgMTFINzIuNTY0NVY3LjAwNzgxQzcyLjU2NDUgNS41MjIxNCA3Mi4wMjIxIDQuNzc5MyA3MC45Mzc1IDQuNzc5M0M3MC4zNzcgNC43NzkzIDY5LjkxMjEgNC45OTEyMSA2OS41NDMgNS40MTUwNEM2OS4xNzg0IDUuODM0MzEgNjguOTk2MSA2LjM2NTIzIDY4Ljk5NjEgNy4wMDc4MVYxMUg2Ny44NzVWNEg2OC45OTYxVjUuMTYyMTFINjkuMDIzNEM2OS41NTIxIDQuMjc3OTkgNzAuMzE3NyAzLjgzNTk0IDcxLjMyMDMgMy44MzU5NEM3Mi4wODU5IDMuODM1OTQgNzIuNjcxNSA0LjA4NDMxIDczLjA3NzEgNC41ODEwNUM3My40ODI3IDUuMDczMjQgNzMuNjg1NSA1Ljc4NjQ2IDczLjY4NTUgNi43MjA3VjExWk03OS4wNTE4IDEwLjkzMTZDNzguNzg3NCAxMS4wNzc1IDc4LjQzODggMTEuMTUwNCA3OC4wMDU5IDExLjE1MDRDNzYuNzc5OSAxMS4xNTA0IDc2LjE2NyAxMC40NjY4IDc2LjE2NyA5LjA5OTYxVjQuOTU3MDNINzQuOTYzOVY0SDc2LjE2N1YyLjI5MTAyTDc3LjI4ODEgMS45Mjg3MVY0SDc5LjA1MThWNC45NTcwM0g3Ny4yODgxVjguOTAxMzdDNzcuMjg4MSA5LjM3MDc3IDc3LjM2NzggOS43MDU3MyA3Ny41MjczIDkuOTA2MjVDNzcuNjg2OCAxMC4xMDY4IDc3Ljk1MTIgMTAuMjA3IDc4LjMyMDMgMTAuMjA3Qzc4LjYwMjkgMTAuMjA3IDc4Ljg0NjcgMTAuMTI5NiA3OS4wNTE4IDkuOTc0NjFWMTAuOTMxNloiIGZpbGw9IiMwMDdBRkYiLz4KCiAgICA8L2c+Cjwvc3ZnPg==");
-                        background-size: contain;
-                        background-repeat: no-repeat;
-                    }
+        .dropzone:empty::after,
+        .structure-dropzone:empty::after {
+            font-family: 'FontAwesome';
+            font-weight: 900;
+            /*content: "\\f055 \\00A0 Add Content";*/
+            content: "";
+            color: var(--color-info-strong);
+            display: block;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: ${EmptyDropzoneSvgPixelWidth}px; /* Match SVG width */
+            height: 15px; /* Match SVG height */
+            background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAzIiBoZWlnaHQ9IjE1IiB2aWV3Qm94PSIwIDAgMTAzIDE1IiAKICAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLCAwKSI+CiAgICAgICAgCjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8zMDA3XzMyMzM0KSI+CjxwYXRoIGQ9Ik03LjUgMC43MTg3NUMzLjc1MzkxIDAuNzE4NzUgMC43MTg3NSAzLjc1MzkxIDAuNzE4NzUgNy41QzAuNzE4NzUgMTEuMjQ2MSAzLjc1MzkxIDE0LjI4MTIgNy41IDE0LjI4MTJDMTEuMjQ2MSAxNC4yODEyIDE0LjI4MTIgMTEuMjQ2MSAxNC4yODEyIDcuNUMxNC4yODEyIDMuNzUzOTEgMTEuMjQ2MSAwLjcxODc1IDcuNSAwLjcxODc1Wk0xMS40Mzc1IDguMjY1NjJDMTEuNDM3NSA4LjQ0NjA5IDExLjI4OTggOC41OTM3NSAxMS4xMDk0IDguNTkzNzVIOC41OTM3NVYxMS4xMDk0QzguNTkzNzUgMTEuMjg5OCA4LjQ0NjA5IDExLjQzNzUgOC4yNjU2MiAxMS40Mzc1SDYuNzM0MzhDNi41NTM5MSAxMS40Mzc1IDYuNDA2MjUgMTEuMjg5OCA2LjQwNjI1IDExLjEwOTRWOC41OTM3NUgzLjg5MDYyQzMuNzEwMTYgOC41OTM3NSAzLjU2MjUgOC40NDYwOSAzLjU2MjUgOC4yNjU2MlY2LjczNDM4QzMuNTYyNSA2LjU1MzkxIDMuNzEwMTYgNi40MDYyNSAzLjg5MDYyIDYuNDA2MjVINi40MDYyNVYzLjg5MDYyQzYuNDA2MjUgMy43MTAxNiA2LjU1MzkxIDMuNTYyNSA2LjczNDM4IDMuNTYyNUg4LjI2NTYyQzguNDQ2MDkgMy41NjI1IDguNTkzNzUgMy43MTAxNiA4LjU5Mzc1IDMuODkwNjJWNi40MDYyNUgxMS4xMDk0QzExLjI4OTggNi40MDYyNSAxMS40Mzc1IDYuNTUzOTEgMTEuNDM3NSA2LjczNDM4VjguMjY1NjJaIiBmaWxsPSIjMDA3QUZGIi8+CjwvZz4KPGRlZnM+CjxjbGlwUGF0aCBpZD0iY2xpcDBfMzAwN18zMjMzNCI+CjxyZWN0IHdpZHRoPSIxNCIgaGVpZ2h0PSIxNCIgZmlsbD0id2hpdGUiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuNSAwLjUpIi8+CjwvY2xpcFBhdGg+CjwvZGVmcz4KCiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyMywgMSkiPgogICAgICAgIAo8cGF0aCBkPSJNOS4zNzMwNSAxMUg4LjEwMTU2TDcuMDYyNSA4LjI1MTk1SDIuOTA2MjVMMS45Mjg3MSAxMUgwLjY1MDM5MUw0LjQxMDE2IDEuMTk3MjdINS41OTk2MUw5LjM3MzA1IDExWk02LjY4NjUyIDcuMjE5NzNMNS4xNDg0NCAzLjA0Mjk3QzUuMDk4MzEgMi45MDYyNSA1LjA0ODE4IDIuNjg3NSA0Ljk5ODA1IDIuMzg2NzJINC45NzA3QzQuOTI1MTMgMi42NjQ3MSA0Ljg3MjcyIDIuODgzNDYgNC44MTM0OCAzLjA0Mjk3TDMuMjg5MDYgNy4yMTk3M0g2LjY4NjUyWk0xNi42NDY1IDExSDE1LjUyNTRWOS44MTA1NUgxNS40OThDMTQuOTc4NSAxMC43MTI5IDE0LjE3NjQgMTEuMTY0MSAxMy4wOTE4IDExLjE2NDFDMTIuMjEyMiAxMS4xNjQxIDExLjUwODEgMTAuODUxOSAxMC45Nzk1IDEwLjIyNzVDMTAuNDU1NCA5LjU5ODYzIDEwLjE5MzQgOC43NDQxNCAxMC4xOTM0IDcuNjY0MDZDMTAuMTkzNCA2LjUwNjUxIDEwLjQ4NSA1LjU3OTEgMTEuMDY4NCA0Ljg4MTg0QzExLjY1MTcgNC4xODQ1NyAxMi40Mjg3IDMuODM1OTQgMTMuMzk5NCAzLjgzNTk0QzE0LjM2MSAzLjgzNTk0IDE1LjA2MDUgNC4yMTQxOSAxNS40OTggNC45NzA3SDE1LjUyNTRWMC42MzY3MTlIMTYuNjQ2NVYxMVpNMTUuNTI1NCA3LjgzNDk2VjYuODAyNzNDMTUuNTI1NCA2LjIzNzYzIDE1LjMzODUgNS43NTkxMSAxNC45NjQ4IDUuMzY3MTlDMTQuNTkxMSA0Ljk3NTI2IDE0LjExNzIgNC43NzkzIDEzLjU0MyA0Ljc3OTNDMTIuODU5NCA0Ljc3OTMgMTIuMzIxNiA1LjAyOTk1IDExLjkyOTcgNS41MzEyNUMxMS41Mzc4IDYuMDMyNTUgMTEuMzQxOCA2LjcyNTI2IDExLjM0MTggNy42MDkzOEMxMS4zNDE4IDguNDE2MDIgMTEuNTI4NiA5LjA1NDA0IDExLjkwMjMgOS41MjM0NEMxMi4yODA2IDkuOTg4MjggMTIuNzg2NSAxMC4yMjA3IDEzLjQxOTkgMTAuMjIwN0MxNC4wNDQzIDEwLjIyMDcgMTQuNTUwMSA5Ljk5NTEyIDE0LjkzNzUgOS41NDM5NUMxNS4zMjk0IDkuMDkyNzcgMTUuNTI1NCA4LjUyMzExIDE1LjUyNTQgNy44MzQ5NlpNMjQuODkwNiAxMUgyMy43Njk1VjkuODEwNTVIMjMuNzQyMkMyMy4yMjI3IDEwLjcxMjkgMjIuNDIwNiAxMS4xNjQxIDIxLjMzNTkgMTEuMTY0MUMyMC40NTY0IDExLjE2NDEgMTkuNzUyMyAxMC44NTE5IDE5LjIyMzYgMTAuMjI3NUMxOC42OTk1IDkuNTk4NjMgMTguNDM3NSA4Ljc0NDE0IDE4LjQzNzUgNy42NjQwNkMxOC40Mzc1IDYuNTA2NTEgMTguNzI5MiA1LjU3OTEgMTkuMzEyNSA0Ljg4MTg0QzE5Ljg5NTggNC4xODQ1NyAyMC42NzI5IDMuODM1OTQgMjEuNjQzNiAzLjgzNTk0QzIyLjYwNTEgMy44MzU5NCAyMy4zMDQ3IDQuMjE0MTkgMjMuNzQyMiA0Ljk3MDdIMjMuNzY5NVYwLjYzNjcxOUgyNC44OTA2VjExWk0yMy43Njk1IDcuODM0OTZWNi44MDI3M0MyMy43Njk1IDYuMjM3NjMgMjMuNTgyNyA1Ljc1OTExIDIzLjIwOSA1LjM2NzE5QzIyLjgzNTMgNC45NzUyNiAyMi4zNjEzIDQuNzc5MyAyMS43ODcxIDQuNzc5M0MyMS4xMDM1IDQuNzc5MyAyMC41NjU4IDUuMDI5OTUgMjAuMTczOCA1LjUzMTI1QzE5Ljc4MTkgNi4wMzI1NSAxOS41ODU5IDYuNzI1MjYgMTkuNTg1OSA3LjYwOTM4QzE5LjU4NTkgOC40MTYwMiAxOS43NzI4IDkuMDU0MDQgMjAuMTQ2NSA5LjUyMzQ0QzIwLjUyNDcgOS45ODgyOCAyMS4wMzA2IDEwLjIyMDcgMjEuNjY0MSAxMC4yMjA3QzIyLjI4ODQgMTAuMjIwNyAyMi43OTQzIDkuOTk1MTIgMjMuMTgxNiA5LjU0Mzk1QzIzLjU3MzYgOS4wOTI3NyAyMy43Njk1IDguNTIzMTEgMjMuNzY5NSA3LjgzNDk2Wk0zNy44MjQyIDEwLjU4OThDMzcuMDk5NiAxMC45NzI3IDM2LjE5NzMgMTEuMTY0MSAzNS4xMTcyIDExLjE2NDFDMzMuNzIyNyAxMS4xNjQxIDMyLjYwNjEgMTAuNzE1MiAzMS43Njc2IDkuODE3MzhDMzAuOTI5IDguOTE5NiAzMC41MDk4IDcuNzQxNTQgMzAuNTA5OCA2LjI4MzJDMzAuNTA5OCA0LjcxNTQ5IDMwLjk4MTQgMy40NDg1NyAzMS45MjQ4IDIuNDgyNDJDMzIuODY4MiAxLjUxNjI4IDM0LjA2NDUgMS4wMzMyIDM1LjUxMzcgMS4wMzMyQzM2LjQ0MzQgMS4wMzMyIDM3LjIxMzUgMS4xNjc2NCAzNy44MjQyIDEuNDM2NTJWMi42NjAxNkMzNy4xMjI0IDIuMjY4MjMgMzYuMzQ3NyAyLjA3MjI3IDM1LjUgMi4wNzIyN0MzNC4zNzQzIDIuMDcyMjcgMzMuNDYwNiAyLjQ0ODI0IDMyLjc1ODggMy4yMDAyQzMyLjA2MTUgMy45NTIxNSAzMS43MTI5IDQuOTU3MDMgMzEuNzEyOSA2LjIxNDg0QzMxLjcxMjkgNy40MDg4NSAzMi4wMzg3IDguMzYxMzMgMzIuNjkwNCA5LjA3MjI3QzMzLjM0NjcgOS43Nzg2NSAzNC4yMDU3IDEwLjEzMTggMzUuMjY3NiAxMC4xMzE4QzM2LjI1MiAxMC4xMzE4IDM3LjEwNDIgOS45MTMwOSAzNy44MjQyIDkuNDc1NTlWMTAuNTg5OFpNNDIuNTk1NyAxMS4xNjQxQzQxLjU2MTIgMTEuMTY0MSA0MC43MzQgMTAuODM4MiA0MC4xMTQzIDEwLjE4NjVDMzkuNDk5IDkuNTMwMjcgMzkuMTkxNCA4LjY2MjExIDM5LjE5MTQgNy41ODIwM0MzOS4xOTE0IDYuNDA2MjUgMzkuNTEyNyA1LjQ4Nzk2IDQwLjE1NTMgNC44MjcxNUM0MC43OTc5IDQuMTY2MzQgNDEuNjY2IDMuODM1OTQgNDIuNzU5OCAzLjgzNTk0QzQzLjgwMzQgMy44MzU5NCA0NC42MTY5IDQuMTU3MjMgNDUuMjAwMiA0Ljc5OThDNDUuNzg4MSA1LjQ0MjM4IDQ2LjA4MiA2LjMzMzMzIDQ2LjA4MiA3LjQ3MjY2QzQ2LjA4MiA4LjU4OTE5IDQ1Ljc2NTMgOS40ODQ3IDQ1LjEzMTggMTAuMTU5MkM0NC41MDI5IDEwLjgyOTEgNDMuNjU3NiAxMS4xNjQxIDQyLjU5NTcgMTEuMTY0MVpNNDIuNjc3NyA0Ljc3OTNDNDEuOTU3NyA0Ljc3OTMgNDEuMzg4IDUuMDI1MzkgNDAuOTY4OCA1LjUxNzU4QzQwLjU0OTUgNi4wMDUyMSA0MC4zMzk4IDYuNjc5NjkgNDAuMzM5OCA3LjU0MTAyQzQwLjMzOTggOC4zNzA0NCA0MC41NTE4IDkuMDI0NDEgNDAuOTc1NiA5LjUwMjkzQzQxLjM5OTQgOS45ODE0NSA0MS45NjY4IDEwLjIyMDcgNDIuNjc3NyAxMC4yMjA3QzQzLjQwMjMgMTAuMjIwNyA0My45NTgzIDkuOTg2IDQ0LjM0NTcgOS41MTY2QzQ0LjczNzYgOS4wNDcyIDQ0LjkzMzYgOC4zNzk1NiA0NC45MzM2IDcuNTEzNjdDNDQuOTMzNiA2LjYzODY3IDQ0LjczNzYgNS45NjQxOSA0NC4zNDU3IDUuNDkwMjNDNDMuOTU4MyA1LjAxNjI4IDQzLjQwMjMgNC43NzkzIDQyLjY3NzcgNC43NzkzWk01My42ODM2IDExSDUyLjU2MjVWNy4wMDc4MUM1Mi41NjI1IDUuNTIyMTQgNTIuMDIwMiA0Ljc3OTMgNTAuOTM1NSA0Ljc3OTNDNTAuMzc1IDQuNzc5MyA0OS45MTAyIDQuOTkxMjEgNDkuNTQxIDUuNDE1MDRDNDkuMTc2NCA1LjgzNDMxIDQ4Ljk5NDEgNi4zNjUyMyA0OC45OTQxIDcuMDA3ODFWMTFINDcuODczVjRINDguOTk0MVY1LjE2MjExSDQ5LjAyMTVDNDkuNTUwMSA0LjI3Nzk5IDUwLjMxNTggMy44MzU5NCA1MS4zMTg0IDMuODM1OTRDNTIuMDg0IDMuODM1OTQgNTIuNjY5NiA0LjA4NDMxIDUzLjA3NTIgNC41ODEwNUM1My40ODA4IDUuMDczMjQgNTMuNjgzNiA1Ljc4NjQ2IDUzLjY4MzYgNi43MjA3VjExWk01OS4wNDk4IDEwLjkzMTZDNTguNzg1NSAxMS4wNzc1IDU4LjQzNjggMTEuMTUwNCA1OC4wMDM5IDExLjE1MDRDNTYuNzc4IDExLjE1MDQgNTYuMTY1IDEwLjQ2NjggNTYuMTY1IDkuMDk5NjFWNC45NTcwM0g1NC45NjE5VjRINTYuMTY1VjIuMjkxMDJMNTcuMjg2MSAxLjkyODcxVjRINTkuMDQ5OFY0Ljk1NzAzSDU3LjI4NjFWOC45MDEzN0M1Ny4yODYxIDkuMzcwNzcgNTcuMzY1OSA5LjcwNTczIDU3LjUyNTQgOS45MDYyNUM1Ny42ODQ5IDEwLjEwNjggNTcuOTQ5MiAxMC4yMDcgNTguMzE4NCAxMC4yMDdDNTguNjAwOSAxMC4yMDcgNTguODQ0NyAxMC4xMjk2IDU5LjA0OTggOS45NzQ2MVYxMC45MzE2Wk02Ni4xNzI5IDcuNzgwMjdINjEuMjMwNUM2MS4yNDg3IDguNTU5NTcgNjEuNDU4MyA5LjE2MTEzIDYxLjg1OTQgOS41ODQ5NkM2Mi4yNjA0IDEwLjAwODggNjIuODExOCAxMC4yMjA3IDYzLjUxMzcgMTAuMjIwN0M2NC4zMDIxIDEwLjIyMDcgNjUuMDI2NyA5Ljk2MDk0IDY1LjY4NzUgOS40NDE0MVYxMC40OTQxQzY1LjA3MjMgMTAuOTQwOCA2NC4yNTg4IDExLjE2NDEgNjMuMjQ3MSAxMS4xNjQxQzYyLjI1ODEgMTEuMTY0MSA2MS40ODExIDEwLjg0NzMgNjAuOTE2IDEwLjIxMzlDNjAuMzUwOSA5LjU3NTg1IDYwLjA2ODQgOC42ODAzNCA2MC4wNjg0IDcuNTI3MzRDNjAuMDY4NCA2LjQzODE1IDYwLjM3NiA1LjU1MTc2IDYwLjk5MTIgNC44NjgxNkM2MS42MTEgNC4xODAwMSA2Mi4zNzg5IDMuODM1OTQgNjMuMjk0OSAzLjgzNTk0QzY0LjIxMDkgMy44MzU5NCA2NC45MTk2IDQuMTMyMTYgNjUuNDIwOSA0LjcyNDYxQzY1LjkyMjIgNS4zMTcwNiA2Ni4xNzI5IDYuMTM5NjUgNjYuMTcyOSA3LjE5MjM4VjcuNzgwMjdaTTY1LjAyNDQgNi44MzAwOEM2NS4wMTk5IDYuMTgyOTQgNjQuODYyNiA1LjY3OTM2IDY0LjU1MjcgNS4zMTkzNEM2NC4yNDc0IDQuOTU5MzEgNjMuODIxMyA0Ljc3OTMgNjMuMjc0NCA0Ljc3OTNDNjIuNzQ1OCA0Ljc3OTMgNjIuMjk2OSA0Ljk2ODQyIDYxLjkyNzcgNS4zNDY2OEM2MS41NTg2IDUuNzI0OTMgNjEuMzMwNyA2LjIxOTQgNjEuMjQ0MSA2LjgzMDA4SDY1LjAyNDRaTTczLjY4NTUgMTFINzIuNTY0NVY3LjAwNzgxQzcyLjU2NDUgNS41MjIxNCA3Mi4wMjIxIDQuNzc5MyA3MC45Mzc1IDQuNzc5M0M3MC4zNzcgNC43NzkzIDY5LjkxMjEgNC45OTEyMSA2OS41NDMgNS40MTUwNEM2OS4xNzg0IDUuODM0MzEgNjguOTk2MSA2LjM2NTIzIDY4Ljk5NjEgNy4wMDc4MVYxMUg2Ny44NzVWNEg2OC45OTYxVjUuMTYyMTFINjkuMDIzNEM2OS41NTIxIDQuMjc3OTkgNzAuMzE3NyAzLjgzNTk0IDcxLjMyMDMgMy44MzU5NEM3Mi4wODU5IDMuODM1OTQgNzIuNjcxNSA0LjA4NDMxIDczLjA3NzEgNC41ODEwNUM3My40ODI3IDUuMDczMjQgNzMuNjg1NSA1Ljc4NjQ2IDczLjY4NTUgNi43MjA3VjExWk03OS4wNTE4IDEwLjkzMTZDNzguNzg3NCAxMS4wNzc1IDc4LjQzODggMTEuMTUwNCA3OC4wMDU5IDExLjE1MDRDNzYuNzc5OSAxMS4xNTA0IDc2LjE2NyAxMC40NjY4IDc2LjE2NyA5LjA5OTYxVjQuOTU3MDNINzQuOTYzOVY0SDc2LjE2N1YyLjI5MTAyTDc3LjI4ODEgMS45Mjg3MVY0SDc5LjA1MThWNC45NTcwM0g3Ny4yODgxVjguOTAxMzdDNzcuMjg4MSA5LjM3MDc3IDc3LjM2NzggOS43MDU3MyA3Ny41MjczIDkuOTA2MjVDNzcuNjg2OCAxMC4xMDY4IDc3Ljk1MTIgMTAuMjA3IDc4LjMyMDMgMTAuMjA3Qzc4LjYwMjkgMTAuMjA3IDc4Ljg0NjcgMTAuMTI5NiA3OS4wNTE4IDkuOTc0NjFWMTAuOTMxNloiIGZpbGw9IiMwMDdBRkYiLz4KCiAgICA8L2c+Cjwvc3ZnPg==");
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
 
-                    .dropzone.${SmallEmptyClass}:empty::after,
-                    .structure-dropzone.${SmallEmptyClass}.rock-:empty::after {
-                        background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUiIGhlaWdodD0iMTUiIHZpZXdCb3g9IjAgMCAxNSAxNSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwXzMwMDdfMzIzMzQpIj4KPHBhdGggZD0iTTcuNSAwLjcxODc1QzMuNzUzOTEgMC43MTg3NSAwLjcxODc1IDMuNzUzOTEgMC43MTg3NSA3LjVDMC43MTg3NSAxMS4yNDYxIDMuNzUzOTEgMTQuMjgxMiA3LjUgMTQuMjgxMkMxMS4yNDYxIDE0LjI4MTIgMTQuMjgxMiAxMS4yNDYxIDE0LjI4MTIgNy41QzE0LjI4MTIgMy43NTM5MSAxMS4yNDYxIDAuNzE4NzUgNy41IDAuNzE4NzVaTTExLjQzNzUgOC4yNjU2MkMxMS40Mzc1IDguNDQ2MDkgMTEuMjg5OCA4LjU5Mzc1IDExLjEwOTQgOC41OTM3NUg4LjU5Mzc1VjExLjEwOTRDOC41OTM3NSAxMS4yODk4IDguNDQ2MDkgMTEuNDM3NSA4LjI2NTYyIDExLjQzNzVINi43MzQzOEM2LjU1MzkxIDExLjQzNzUgNi40MDYyNSAxMS4yODk4IDYuNDA2MjUgMTEuMTA5NFY4LjU5Mzc1SDMuODkwNjJDMy43MTAxNiA4LjU5Mzc1IDMuNTYyNSA4LjQ0NjA5IDMuNTYyNSA4LjI2NTYyVjYuNzM0MzhDMy41NjI1IDYuNTUzOTEgMy43MTAxNiA2LjQwNjI1IDMuODkwNjIgNi40MDYyNUg2LjQwNjI1VjMuODkwNjJDNi40MDYyNSAzLjcxMDE2IDYuNTUzOTEgMy41NjI1IDYuNzM0MzggMy41NjI1SDguMjY1NjJDOC40NDYwOSAzLjU2MjUgOC41OTM3NSAzLjcxMDE2IDguNTkzNzUgMy44OTA2MlY2LjQwNjI1SDExLjEwOTRDMTEuMjg5OCA2LjQwNjI1IDExLjQzNzUgNi41NTM5MSAxMS40Mzc1IDYuNzM0MzhWOC4yNjU2MloiIGZpbGw9IiMwMDdBRkYiLz4KPC9nPgo8ZGVmcz4KPGNsaXBQYXRoIGlkPSJjbGlwMF8zMDA3XzMyMzM0Ij4KPHJlY3Qgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiBmaWxsPSJ3aGl0ZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC41IDAuNSkiLz4KPC9jbGlwUGF0aD4KPC9kZWZzPgo8L3N2Zz4K");
-                        width: 15px; /* Match SVG width */
-                    }
+        .dropzone.${SmallEmptyClass}:empty::after,
+        .structure-dropzone.${SmallEmptyClass}.rock-:empty::after {
+            background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUiIGhlaWdodD0iMTUiIHZpZXdCb3g9IjAgMCAxNSAxNSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwXzMwMDdfMzIzMzQpIj4KPHBhdGggZD0iTTcuNSAwLjcxODc1QzMuNzUzOTEgMC43MTg3NSAwLjcxODc1IDMuNzUzOTEgMC43MTg3NSA3LjVDMC43MTg3NSAxMS4yNDYxIDMuNzUzOTEgMTQuMjgxMiA3LjUgMTQuMjgxMkMxMS4yNDYxIDE0LjI4MTIgMTQuMjgxMiAxMS4yNDYxIDE0LjI4MTIgNy41QzE0LjI4MTIgMy43NTM5MSAxMS4yNDYxIDAuNzE4NzUgNy41IDAuNzE4NzVaTTExLjQzNzUgOC4yNjU2MkMxMS40Mzc1IDguNDQ2MDkgMTEuMjg5OCA4LjU5Mzc1IDExLjEwOTQgOC41OTM3NUg4LjU5Mzc1VjExLjEwOTRDOC41OTM3NSAxMS4yODk4IDguNDQ2MDkgMTEuNDM3NSA4LjI2NTYyIDExLjQzNzVINi43MzQzOEM2LjU1MzkxIDExLjQzNzUgNi40MDYyNSAxMS4yODk4IDYuNDA2MjUgMTEuMTA5NFY4LjU5Mzc1SDMuODkwNjJDMy43MTAxNiA4LjU5Mzc1IDMuNTYyNSA4LjQ0NjA5IDMuNTYyNSA4LjI2NTYyVjYuNzM0MzhDMy41NjI1IDYuNTUzOTEgMy43MTAxNiA2LjQwNjI1IDMuODkwNjIgNi40MDYyNUg2LjQwNjI1VjMuODkwNjJDNi40MDYyNSAzLjcxMDE2IDYuNTUzOTEgMy41NjI1IDYuNzM0MzggMy41NjI1SDguMjY1NjJDOC40NDYwOSAzLjU2MjUgOC41OTM3NSAzLjcxMDE2IDguNTkzNzUgMy44OTA2MlY2LjQwNjI1SDExLjEwOTRDMTEuMjg5OCA2LjQwNjI1IDExLjQzNzUgNi41NTM5MSAxMS40Mzc1IDYuNzM0MzhWOC4yNjU2MloiIGZpbGw9IiMwMDdBRkYiLz4KPC9nPgo8ZGVmcz4KPGNsaXBQYXRoIGlkPSJjbGlwMF8zMDA3XzMyMzM0Ij4KPHJlY3Qgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiBmaWxsPSJ3aGl0ZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC41IDAuNSkiLz4KPC9jbGlwUGF0aD4KPC9kZWZzPgo8L3N2Zz4K");
+            width: 15px; /* Match SVG width */
+        }
 
-                    [contenteditable=true]:focus {
-                        cursor: text;
-                    }
+        [contenteditable=true]:focus {
+            cursor: text;
+        }
 
-                    /* Ensure the iframe wrapper style is reset properly */
-                    #email-iframe-wrapper {
-                        position: relative;
-                    }
+        /* Ensure the iframe wrapper style is reset properly */
+        #email-iframe-wrapper {
+            position: relative;
+        }
 
-                    /* Use overflow hidden to include margins in the hover outline. */
-                    .rock-runtime-wrapper-element,
-                    .component {
-                        overflow: hidden;
-                        cursor: pointer;
-                    }
+        /* Use overflow hidden to include margins in the hover outline. */
+        .rock-runtime-wrapper-element,
+        .component {
+            overflow: hidden;
+            cursor: pointer;
+        }
 
-                    /* Use position relative so hover labels can be absolutely positioned. */
-                    .rock-runtime-wrapper-element {
-                        position: relative;
-                    }
+        /* Use position relative so hover labels can be absolutely positioned. */
+        .rock-runtime-wrapper-element {
+            position: relative;
+        }
 
-                    /* Add outline to components when hovered or selected to help differentiate them from other components. */
-                    .rock-runtime-wrapper-element.${draggingCssClass},
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.selected,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element:hover {
-                        /* Use outline so the box sizing isn't affected. */
-                        outline: 1px solid var(--color-info-strong);
-                        outline-offset: -1px;
+        /* Add outline to components when hovered or selected to help differentiate them from other components. */
+        .rock-runtime-wrapper-element.${draggingCssClass},
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.selected,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element:not(.for-component-row):hover,
+        body:not(.${draggingCssClass},.${nonRowHoveredClass}) .rock-runtime-wrapper-element.for-component-row:hover {
+            /* Use outline so the box sizing isn't affected. */
+            outline: 1px solid var(--color-info-strong);
+            outline-offset: -1px;
 
-                        box-shadow: inset 0 0 0 1000px rgba(0, 0, 150, .2);
-                        transition: box-shadow 0.3s;
-                    }
+            box-shadow: inset 0 0 0 1000px rgba(0, 0, 150, .2);
+            transition: box-shadow 0.3s;
+        }
 
-                    /* Hover labels to help individuals select the correct component. */
-                    .rock-runtime-wrapper-element.${draggingCssClass}::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.selected::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element:hover::after {
-                        /* Override this for each component. */
-                        content: '';
+        /* Hover labels to help individuals select the correct component. */
+        .rock-runtime-wrapper-element.${draggingCssClass}::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.selected::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element:not(.for-component-row):hover::after,
+        body:not(.${draggingCssClass},.${nonRowHoveredClass}) .rock-runtime-wrapper-element.for-component-row:hover::after {
+            /* Override this for each component. */
+            content: '';
 
-                        /* Place component hover labels on the bottom right */
-                        position: absolute;
-                        right: 0;
-                        bottom: 0;
-                        background-color: var(--color-info-strong);
-                        padding: var(--spacing-tiny);
-                        color: white;
-                        font-family: sans-serif;
-                        font-size: var(--font-size-xsmall);
+            /* Place component hover labels on the bottom right */
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            background-color: var(--color-info-strong);
+            padding: var(--spacing-tiny);
+            color: white;
+            font-family: sans-serif;
+            font-size: var(--font-size-xsmall);
 
-                        border-radius: 4px 0 0 0;
-                        padding-left: 6px;
-                        padding-top: 6px;
-                    }
+            border-radius: 4px 0 0 0;
+            padding-left: 6px;
+            padding-top: 6px;
+        }
 
-                    .rock-runtime-wrapper-element.for-component-title.${draggingCssClass}::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-title.selected::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-title:hover::after {
-                        content: 'Title';
-                    }
+        .rock-runtime-wrapper-element.for-component-title.${draggingCssClass}::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-title.selected::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-title:hover::after {
+            content: 'Title';
+        }
 
-                    .rock-runtime-wrapper-element.for-component-text.${draggingCssClass}::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-text:hover::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-text.selected::after {
-                        content: 'Paragraph';
-                    }
+        .rock-runtime-wrapper-element.for-component-text.${draggingCssClass}::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-text:hover::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-text.selected::after {
+            content: 'Paragraph';
+        }
 
-                    .rock-runtime-wrapper-element.for-component-image.${draggingCssClass}::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-image.selected::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-image:hover::after {
-                        content: 'Image';
-                    }
+        .rock-runtime-wrapper-element.for-component-image.${draggingCssClass}::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-image.selected::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-image:hover::after {
+            content: 'Image';
+        }
 
-                    .rock-runtime-wrapper-element.for-component-video.${draggingCssClass}::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-video.selected::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-video:hover::after {
-                        content: 'Video';
-                    }
+        .rock-runtime-wrapper-element.for-component-video.${draggingCssClass}::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-video.selected::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-video:hover::after {
+            content: 'Video';
+        }
 
-                    .rock-runtime-wrapper-element.for-component-divider.${draggingCssClass}::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-divider.selected::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-divider:hover::after {
-                        content: 'Divider';
-                    }
+        .rock-runtime-wrapper-element.for-component-divider.${draggingCssClass}::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-divider.selected::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-divider:hover::after {
+            content: 'Divider';
+        }
 
-                    .rock-runtime-wrapper-element.for-component-code.${draggingCssClass}::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-code.selected::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-code:hover::after {
-                        content: 'Lava';
-                    }
+        .rock-runtime-wrapper-element.for-component-code.${draggingCssClass}::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-code.selected::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-code:hover::after {
+            content: 'Lava';
+        }
 
-                    .rock-runtime-wrapper-element.for-component-button.${draggingCssClass}::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-button.selected::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-button:hover::after {
-                        content: 'Button';
-                    }
+        .rock-runtime-wrapper-element.for-component-button.${draggingCssClass}::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-button.selected::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-button:hover::after {
+            content: 'Button';
+        }
 
-                    .rock-runtime-wrapper-element.for-component-message.${draggingCssClass}::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-message.selected::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-message:hover::after {
-                        content: 'Message';
-                    }
+        .rock-runtime-wrapper-element.for-component-message.${draggingCssClass}::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-message.selected::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-message:hover::after {
+            content: 'Message';
+        }
 
-                    .rock-runtime-wrapper-element.for-component-rsvp.${draggingCssClass}::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-rsvp.selected::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-rsvp:hover::after {
-                        content: 'RSVP';
-                    }
+        .rock-runtime-wrapper-element.for-component-rsvp.${draggingCssClass}::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-rsvp.selected::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-rsvp:hover::after {
+            content: 'RSVP';
+        }
 
-                    .rock-runtime-wrapper-element.for-component-row.${draggingCssClass}::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-row.selected::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-row:hover::after {
-                        content: 'Row';
-                    }
+        .rock-runtime-wrapper-element.for-component-row.${draggingCssClass}::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-row.selected::after,
+        body:not(.${draggingCssClass},.${nonRowHoveredClass}) .rock-runtime-wrapper-element.for-component-row:hover::after {
+            content: 'Row';
+        }
 
-                    .rock-runtime-wrapper-element.for-component-section.${draggingCssClass}::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-section.selected::after,
-                    body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-section:not(.selected):hover::after {
+        .rock-runtime-wrapper-element.for-component-section.${draggingCssClass}::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-section.selected::after,
+        body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-section:not(.selected):hover::after {
     content: 'Layout';
 
     border-radius: 0 0 0 4px;
@@ -952,6 +1113,10 @@ ${createCssRuleset(":root", props.cssVariables)}
             iFrameDocument.body.append(dropzone);
         }
 
+        removeWhiteSpaceFromChildElements(iFrameDocument, ".structure-dropzone, .dropzone");
+
+        await fixOldWizardElements(iFrameDocument);
+
         // Auto-select the first component with the "selected" CSS class.
         for (const [element, index] of Enumerable.from(iFrameDocument.querySelectorAll(".component.selected")).ofType(isHTMLElement).withIndex()) {
             if (index === 0) {
@@ -962,10 +1127,6 @@ ${createCssRuleset(":root", props.cssVariables)}
             }
         }
 
-        removeWhiteSpaceFromChildElements(iFrameDocument, ".structure-dropzone, .dropzone");
-
-        fixOldWizardElements(iFrameDocument);
-
         applyDefaultGlobalStylesIfNeeded(iFrameDocument);
 
         emailDocument.value = iFrameDocument;
@@ -973,53 +1134,93 @@ ${createCssRuleset(":root", props.cssVariables)}
         // Create a MutationObserver to watch for changes inside each wrapper
         wrapperAutoRemovalObserver.value?.disconnect();
         wrapperAutoRemovalObserver.value = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                const wrapper = mutation.target as HTMLElement;
+            // Batch processing with requestAnimationFrame.
+            requestAnimationFrame(() => {
+                // Use a set to track which wrappers have already been checked in the current batch.
+                const processedWrappers = new WeakSet();
 
-                // If the wrapper has no more (non-runtime) children, remove it.
-                if (wrapper) {
-                    const childrenWithoutRuntime = Array.from(wrapper.children).filter(
-                        (child) => !child.classList.contains(RockRuntimeElementCssClass)
-                    );
+                mutations.forEach((mutation) => {
+                    const wrapper = mutation.target;
 
-                    if (childrenWithoutRuntime.length === 0) {
-                        wrapper.remove();
+                    if (isElement(wrapper) && !processedWrappers.has(wrapper)) {
+                        processedWrappers.add(wrapper);
+
+                        // Check if there are any runtime children.
+                        const hasRuntimeChildren = Enumerable.from(wrapper.children).any(
+                            (child) => child.classList.contains(RockRuntimeElementCssClass)
+                        );
+
+                        // If there were no runtime children initially,
+                        // and none were added, remove the wrapper.
+                        if (!hasRuntimeChildren && wrapper.isConnected) {
+                            wrapper.remove();
+                        }
                     }
-                }
+                });
             });
         });
 
         dropzoneEmptyResizeObserver.value?.disconnect();
         dropzoneEmptyResizeObserver.value = new ResizeObserver((entries) => {
             Enumerable.from(entries)
-                .select(entry => entry.target)
-                .ofType(isHTMLElement)
-                .where(e => e.classList.contains("dropzone"))
-                .forEach(dropzone => {
-                    checkDropzoneSize(dropzone.getBoundingClientRect(), dropzone);
+                .where(e => e.target.classList.contains("dropzone"))
+                .forEach(e => {
+                    checkDropzoneSize(e.contentRect, e.target);
                 });
         });
 
         // Check dropzone sizes immediately.
         sectionComponentMutationObserver.value?.disconnect();
         sectionComponentMutationObserver.value = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === "childList") {
-                    Enumerable.from(mutation.addedNodes)
-                        .ofType(isHTMLElement)
-                        .where(e => e.classList.contains("dropzone"))
-                        .forEach(dropzone => {
-                            watchSectionComponentDropzoneSizeChanges(dropzone);
-                        });
+            // Batch processing with requestAnimationFrame.
+            requestAnimationFrame(() => {
+                // Use a set to track which nodes have already been checked in the current batch.
+                const newProcessedNodes = new WeakSet<Element>();
+                const oldProcessedNodes = new WeakSet<Element>();
 
-                    Enumerable.from(mutation.removedNodes)
-                        .ofType(isHTMLElement)
-                        .where(e => e.classList.contains("dropzone"))
-                        .forEach(e => {
-                            // Stop watching for size changes.
-                            dropzoneEmptyResizeObserver.value?.unobserve(e);
-                        });
-                }
+                mutations.forEach((mutation) => {
+                    if (mutation.type === "childList") {
+                        Enumerable.from(mutation.addedNodes)
+                            .ofType(isElement)
+                            .where(e => !newProcessedNodes.has(e))
+                            .forEach(e => {
+                                newProcessedNodes.add(e);
+
+                                // Watch if the node itself is a dropzone.
+                                if (e.classList.contains("dropzone")) {
+                                    watchSectionComponentDropzoneSizeChanges(e);
+                                }
+
+                                // Check for descendant dropzones.
+                                e.querySelectorAll(".dropzone").forEach(descendantDropzone => {
+                                    if (!newProcessedNodes.has(descendantDropzone)) {
+                                        newProcessedNodes.add(descendantDropzone);
+                                        watchSectionComponentDropzoneSizeChanges(descendantDropzone);
+                                    }
+                                });
+                            });
+
+                        Enumerable.from(mutation.removedNodes)
+                            .ofType(isElement)
+                            .where(e => !oldProcessedNodes.has(e))
+                            .forEach(e => {
+                                oldProcessedNodes.add(e);
+
+                                // Stop watching for size changes on the node itself.
+                                if (e.classList.contains("dropzone")) {
+                                    unwatchSectionComponentDropzoneSizeChanges(e);
+                                }
+
+                                // Stop watching for size changes on all descendant dropzones.
+                                e.querySelectorAll(".dropzone").forEach(descendantDropzone => {
+                                    if (!oldProcessedNodes.has(descendantDropzone)) {
+                                        oldProcessedNodes.add(descendantDropzone);
+                                        unwatchSectionComponentDropzoneSizeChanges(descendantDropzone);
+                                    }
+                                });
+                            });
+                    }
+                });
             });
         });
 
@@ -1054,20 +1255,13 @@ ${createCssRuleset(":root", props.cssVariables)}
 
     function applyDefaultGlobalStylesIfNeeded(iFrameDocument: Document): void {
         // Add default style sheet if it doesn't exist.
-
         if (!iFrameDocument.querySelector(`style.${RockStylesCssClass}`)) {
             const styleElement = iFrameDocument.createElement("style");
             styleElement.classList.add(RockStylesCssClass);
 
             const globalStyles = getStyleBuilder();
 
-            // Skip these as the providers will set them below.
-            // globalStylesCssDeclarations[GlobalStylesCssSelectors.bodyWidth] = `max-width: ${DefaultBodyWidth}px; width: 100%;`;
-            // globalStylesCssDeclarations[GlobalStylesCssSelectors.bodyColor] = `background-color: #ffffff;`;
-            // globalStylesCssDeclarations[GlobalStylesCssSelectors.bodyAlignment] = `text-align: left;`;
-            // globalStylesCssDeclarations[GlobalStylesCssSelectors.backgroundColor] = `background-color: #e7e7e7;`;
-
-            globalStyles.addStyle(GlobalStylesCssSelectors.bodyPadding, `padding: 24px;`);
+            globalStyles.addStyle(GlobalStylesCssSelectors.bodyPadding, "padding: 24px;");
             globalStyles.addStyle(GlobalStylesCssSelectors.globalTextStyling,
                 `font-family: Arial;
                 font-size: 16px;
@@ -1110,7 +1304,6 @@ ${createCssRuleset(":root", props.cssVariables)}
                 /* Line Height "Tight" */
                 line-height: 1.2;`);
             globalStyles.addStyle(GlobalStylesCssSelectors.paragraphMargin, `margin: 0;`);
-            globalStyles.addStyle(GlobalStylesCssSelectors.buttonBackgroundColor, `background-color: #2196f3;`);
             globalStyles.addStyle(GlobalStylesCssSelectors.buttonTextStyling,
                 `font-family: Arial;
                 font-weight: bold;
@@ -1119,14 +1312,12 @@ ${createCssRuleset(":root", props.cssVariables)}
 
                 /* Line Height "Tight" */
                 line-height: 1.2;`);
-            // TODO This should use the special button corner radius provider that sets the corner radius on multiple elements.
             globalStyles.addStyle(GlobalStylesCssSelectors.buttonCornerRadius, `border-radius: 4px;`);
             globalStyles.addStyle(GlobalStylesCssSelectors.buttonPadding, `padding: 15px;`);
             globalStyles.addStyle(GlobalStylesCssSelectors.dividerStyle, `border-style: solid none none;`);
             globalStyles.addStyle(GlobalStylesCssSelectors.dividerThickness, `border-width: 1px 0px 0px;`);
             globalStyles.addStyle(GlobalStylesCssSelectors.dividerColor, `border-color: #8b8ba7 transparent transparent;`);
-            globalStyles.addStyle(GlobalStylesCssSelectors.dividerWidth, `width: 100%;`);
-            globalStyles.addStyle(GlobalStylesCssSelectors.dividerPadding, `margin: 12px 0;`);
+            globalStyles.addStyle(GlobalStylesCssSelectors.dividerMargin, `padding: 12px 0;`);
 
             // Add non-editable global styles.
             globalStyles.addStyle(`html, body`,
@@ -1152,7 +1343,7 @@ ${createCssRuleset(":root", props.cssVariables)}
             iFrameDocument.body.insertBefore(styleElement, iFrameDocument.body.firstChild);
 
             const mediaStyleElement = iFrameDocument.createElement("style");
-            mediaStyleElement.classList.add("ignore");
+            mediaStyleElement.classList.add("rock-media-styles");
 
             const mediaStyles = getStyleBuilder();
             mediaStyles.addStyle(`@media screen and (max-width: 600px)`,
@@ -1171,6 +1362,79 @@ ${createCssRuleset(":root", props.cssVariables)}
         globalBodyWidthProvider.value?.dispose();
         globalBodyWidthProvider.value = createGlobalBodyWidthProvider(iFrameDocument);
 
+        globalBodyWidthMediaQueryEffect.value?.[Symbol.dispose]();
+        globalBodyWidthMediaQueryEffect.value = createMediaQueryEffect(
+            iFrameDocument.head,
+            "rock-media-styles",
+            `.small-12 {
+                display: inline-block !important;
+                width: 100% !important;
+            }
+
+            .small-11 {
+                display: inline-block !important;
+                width: 91.66667% !important;
+            }
+
+            .small-10 {
+                display: inline-block !important;
+                width: 83.33333% !important;
+            }
+
+            .small-9 {
+                display: inline-block !important;
+                width: 75% !important;
+            }
+
+            .small-8 {
+                display: inline-block !important;
+                width: 66.66667% !important;
+            }
+
+            .small-7 {
+                display: inline-block !important;
+                width: 58.33333% !important;
+            }
+
+            .small-6 {
+                display: inline-block !important;
+                width: 50% !important;
+            }
+
+            .small-5 {
+                display: inline-block !important;
+                width: 41.66667% !important;
+            }
+
+            .small-4 {
+                display: inline-block !important;
+                width: 33.33333% !important;
+            }
+
+            .small-3 {
+                display: inline-block !important;
+                width: 25% !important;
+            }
+
+            .small-2 {
+                display: inline-block !important;
+                width: 16.66667% !important;
+            }
+
+            .small-1 {
+                display: inline-block !important;
+                width: 8.33333% !important;
+            }
+
+            .spacer {
+                display: none !important;
+                width: 0 !important;
+            }`,
+            "max-width",
+            globalBodyWidthProvider.value,
+            pixelConverter
+        );
+
         globalBodyAlignmentProvider.value?.dispose();
         globalBodyAlignmentProvider.value = createGlobalBodyAlignmentProvider(iFrameDocument);
 
@@ -1182,6 +1446,15 @@ ${createCssRuleset(":root", props.cssVariables)}
 
         globalButtonWidthValuesProvider.value?.dispose();
         globalButtonWidthValuesProvider.value = createGlobalButtonWidthValuesProvider(iFrameDocument);
+
+        globalButtonBackgroundColorProvider.value?.dispose();
+        globalButtonBackgroundColorProvider.value = createGlobalButtonBackgroundColorProvider(iFrameDocument);
+
+        globalDividerWidthProvider.value?.dispose();
+        globalDividerWidthProvider.value = createGlobalDividerWidthProvider(iFrameDocument);
+
+        globalDividerHorizontalAlignmentProvider.value?.dispose();
+        globalDividerHorizontalAlignmentProvider.value = createGlobalDividerHorizontalAlignmentProvider(iFrameDocument);
     }
 
     function getComponentFromMouseEvent(event: MouseEvent): { componentElement: HTMLElement | null, componentWrapperElement: HTMLElement | null } {
@@ -1237,7 +1510,7 @@ ${createCssRuleset(":root", props.cssVariables)}
     function isComponentBeingEditedInline(componentElement: HTMLElement, activeElementOverride?: Element | null | undefined): boolean {
         const activeElement = activeElementOverride ?? componentElement.ownerDocument.activeElement;
 
-        return (activeElement?.getAttribute("contenteditable") === "true" || componentElement.getAttribute("contenteditable") === "true")
+        return (activeElement?.getAttribute("contenteditable") === "true" || componentElement.getAttribute("contenteditable") === "true" || !!activeElement?.closest("[contenteditable='true']"))
             && (activeElement === componentElement || componentElement.contains(activeElement));
     }
 
@@ -1392,6 +1665,13 @@ ${createCssRuleset(":root", props.cssVariables)}
         if (customHtml) {
             const tempElement = iFrameDocument.createElement("div");
             tempElement.innerHTML = customHtml;
+            const customComponentElement = tempElement.querySelector(".component");
+            if (customComponentElement) {
+                const helper = getComponentHelper(getComponentTypeName(customComponentElement));
+                if (helper && helper.isMigrationRequired(customComponentElement)) {
+                    customComponentElement.replaceWith(helper.migrate(customComponentElement));
+                }
+            }
             draggingElement.value = tempElement.firstElementChild as HTMLElement;
         }
         else {
@@ -1709,6 +1989,8 @@ ${createCssRuleset(":root", props.cssVariables)}
         if (draggingPlaceholderElement.value) {
             draggingPlaceholderElement.value.remove();
             draggingPlaceholderElement.value = null;
+            draggingElement.value = null;
+            draggingComponentTypeName.value = null;
         }
     }
 
@@ -1730,13 +2012,34 @@ ${createCssRuleset(":root", props.cssVariables)}
         }
 
         if (draggingPlaceholderElement.value && draggingElement.value) {
+            let elementToPlace = draggingElement.value;
+
+            // Try to automatically migrate the component if it is old.
+            // This is needed for email sections.
+            const componentElement = getComponentElement(draggingElement.value) ?? draggingElement.value.querySelector(".component");
+            const isComponentChild = draggingElement.value.contains(componentElement);
+            if (componentElement) {
+                const componentHelper = getComponentHelper(getComponentTypeName(componentElement));
+                if (componentHelper && componentHelper.isMigrationRequired(componentElement)) {
+                    const migratedComponentElement = componentHelper.migrate(componentElement);
+                    if (migratedComponentElement !== componentElement) {
+                        if (isComponentChild) {
+                            componentElement.replaceWith(migratedComponentElement);
+                        }
+                        else {
+                            elementToPlace = migratedComponentElement as HTMLElement;
+                        }
+                    }
+                }
+            }
+
             if (draggingPlaceholderElement.value.parentElement) {
                 // Swap the placeholder element with the permanent element.
-                draggingPlaceholderElement.value.replaceWith(draggingElement.value);
+                draggingPlaceholderElement.value.replaceWith(elementToPlace);
             }
             else if (emptySectionElementToBeAddedTo.value) {
                 // Put the permanent element in the empty section being dragged over.
-                emptySectionElementToBeAddedTo.value.appendChild(draggingElement.value);
+                emptySectionElementToBeAddedTo.value.appendChild(elementToPlace);
             }
         }
 
@@ -1843,6 +2146,12 @@ ${createCssRuleset(":root", props.cssVariables)}
         }
     });
 
+    watch(() => props.replaceComponentRequest, (newValue) => {
+        if (newValue) {
+            replaceSelectedComponent(newValue.newComponentElement);
+        }
+    });
+
     watch(() => props.completeComponentRequest, (newValue) => {
         if (newValue) {
             internalSelectedComponentElement.value = null;
@@ -1937,10 +2246,14 @@ ${createCssRuleset(":root", props.cssVariables)}
         sectionComponentMutationObserver.value?.disconnect();
 
         globalBodyWidthProvider.value?.dispose();
+        globalBodyWidthMediaQueryEffect.value?.[Symbol.dispose]();
         globalBodyAlignmentProvider.value?.dispose();
         globalBodyColorProvider.value?.dispose();
         globalBackgroundColorProvider.value?.dispose();
         globalButtonWidthValuesProvider.value?.dispose();
+        globalButtonBackgroundColorProvider.value?.dispose();
+        globalDividerWidthProvider.value?.dispose();
+        globalDividerHorizontalAlignmentProvider.value?.dispose();
     });
 
     // #endregion

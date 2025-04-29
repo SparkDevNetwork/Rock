@@ -32,7 +32,7 @@
             </template>
         </Column>
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'method'" />
     </Grid>
 
     <GridSettingsModal v-model:visible="showActionSettingsModal" :actionTitle="selectedActionPath" :actionCacheSettings="selectedActionCacheSettings" @save="saveActionSettings" />

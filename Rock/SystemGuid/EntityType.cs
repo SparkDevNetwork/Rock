@@ -274,6 +274,11 @@ namespace Rock.SystemGuid
         public const string HISTORY = "546D5F43-1184-47C9-8265-2D7BF4E1BCA5";
 
         /// <summary>
+        /// The guid for the <see cref="Rock.Model.HistoryLogin"/> entity.
+        /// </summary>
+        public const string HISTORY_LOGIN = "B0C039E1-D2B0-460A-A787-83565BCB665C";
+
+        /// <summary>
         /// The HTTP module component
         /// </summary>
         public const string HTTP_MODULE_COMPONENT = "EDE69F48-5E05-4260-B360-DA37DFD1AB83";
@@ -1997,7 +2002,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Web.HttpModules.RockGateway"/> 
         /// </summary>
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         [Obsolete( "Use HTTP_MODULE_ROCK_GATEWAY instead." )]
         public const string HTTP_MODULE_OBSERVABILITY = "FE7A8295-9383-4FD8-9FB2-FF77A8042462";
 

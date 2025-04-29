@@ -24,7 +24,7 @@ namespace Rock.Communication.Chat.DTO
     /// Represents the minimum necessary combined info from Rock <see cref="Person"/> and <see cref="PersonAlias"/>
     /// models needed to synchronize to a <see cref="ChatUser"/> in the external chat system.
     /// </summary>
-    internal class RockChatUserPerson : RockChatUserPersonKey
+    internal class RockChatUserPerson : RockChatUserKey
     {
         /// <inheritdoc cref="Person.NickName"/>
         public string NickName { get; set; }
@@ -64,15 +64,7 @@ namespace Rock.Communication.Chat.DTO
         /// <inheritdoc cref="ChatUser.Badges"/>
         public List<ChatBadge> Badges { get; set; }
 
-        /// <summary>
-        /// Gets or sets whether the underlying chat-specific <see cref="PersonAlias"/> already existed in Rock for
-        /// this <see cref="Person"/>.
-        /// </summary>
-        /// <remarks>
-        /// If <see langword="true"/>, a chat-specific <see cref="PersonAlias"/> already existed in Rock and was used to
-        /// build this <see cref="RockChatUserPerson"/>. If <see langword="false"/>, a new <see cref="PersonAlias"/> was
-        /// saved to the Rock database as a part of creating this <see cref="RockChatUserPerson"/>.
-        /// </remarks>
-        public bool AlreadyExistedInRock { get; set; } = true;
+        /// <inheritdoc cref="Person.PrimaryCampusId"/>
+        public int? CampusId { get; set; }
     }
 }

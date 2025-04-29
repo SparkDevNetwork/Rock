@@ -15,16 +15,24 @@
                              :isSearchVisible="isSearchVisible" />
         </div>
 
-        <div :class="{ 'grid-overflow': overflow, }">
+        <div class="grid-content-container"
+             :class="{ 'grid-overflow': overflow, }">
 
-            <div :class="{ 'sticky-column-header': !overflow }">
-                <slot name="gridHeaderPrepend" />
+            <div class="grid-header-container"
+                 :class="{ 'sticky-column-header': !overflow }">
+                <div v-if="$slots.gridHeaderPrepend"
+                     class="grid-header-prepend">
+                    <slot name="gridHeaderPrepend" />
+                </div>
                 <ColumnHeaderRow :columns="visibleColumnDefinitions"
                                  v-model:columnFilters="columnFilterValues"
                                  v-model:columnSort="columnSortDirection"
                                  :grid="gridState"
                                  :light="light" />
-                <slot name="gridHeaderAppend" />
+                <div v-if="$slots.gridHeaderAppend"
+                     class="grid-header-append">
+                    <slot name="gridHeaderAppend" />
+                </div>
             </div>
 
             <div class="grid-body" v-if="loadingData">
@@ -81,7 +89,10 @@
         </div>
 
         <div class="grid-footing">
-            <slot name="gridFooterPrepend" />
+            <div v-if="$slots.gridFooterPrepend"
+                 class="grid-footer-prepend">
+                <slot name="gridFooterPrepend" />
+            </div>
 
             <template v-if="!isFooterHidden">
                 <PagerRow v-if="isPagerRowVisible"
@@ -96,7 +107,10 @@
                                 :gridActions="gridActions" />
             </template>
 
-            <slot name="gridFooterAppend" />
+            <div v-if="$slots.gridFooterAppend"
+                 class="grid-footer-append">
+                <slot name="gridFooterAppend" />
+            </div>
         </div>
     </div>
 </template>
@@ -248,8 +262,8 @@
 .grid-column-header {
     position: relative;
     display: flex;
-    justify-content: center;
     align-items: center;
+    word-break: break-word;
     font-size: 14px;
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
     min-width: 120px;
@@ -402,6 +416,7 @@
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
     line-height: 1.4;
     align-self: stretch;
+    word-break: break-word;
     background-color: inherit;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -1418,7 +1433,8 @@
                 const value = row[column.key];
 
                 if (typeof value === "string") {
-                    maxLength = Math.max(maxLength, value.length + 1);
+                    const longestLineLength = value.split("\n").reduce((max, str) => Math.max(max, str.length), 0);
+                    maxLength = Math.max(maxLength, longestLineLength + 1);
                 }
                 else if (typeof value === "boolean") {
                     maxLength = Math.max(maxLength, 6);
@@ -1457,7 +1473,6 @@
         };
 
         const entitySet = await getEntitySetBag(gridState, [], options);
-
         const exceljs = await import("@Obsidian/Libs/exceljs");
 
         const title = props.exportTitle || pluralize(gridState.itemTerm);
@@ -1466,7 +1481,7 @@
         workbook.modified = new Date();
         const worksheet = workbook.addWorksheet(title);
 
-        // Build the header row.
+        // Build the header row
         const columns: Column[] = [];
         for (const key of Object.keys(mergeColumns)) {
             const column = gridState.columns.find(c => c.name === key);
@@ -1480,8 +1495,9 @@
         // Columns must be set all at once, you can't modify it in place.
         worksheet.columns = columns;
 
-        // Build the data rows.
+        // Build the data rows
         const rowData: Record<string, unknown>[] = [];
+
         for (const item of (entitySet.items ?? [])) {
             const row: Record<string, unknown> = {};
 
@@ -1494,11 +1510,17 @@
                     value = new Date(Date.UTC(value.year, value.month - 1, value.day, value.hour, value.minute, value.second));
                 }
 
+                // Replace <br> tags with newlines for Excel wrapping
+                if (typeof value === "string") {
+                    value = value.replace(/<br\s*\/?>/gi, "\n");
+                }
+
                 row[key] = value;
             }
 
             rowData.push(row);
         }
+
         worksheet.addRows(rowData);
 
         return {
@@ -1916,6 +1938,45 @@
         const { workbook, rowData } = await getExportWorkbook();
         const worksheet = workbook.getWorksheet(1);
         const title = props.exportTitle || pluralize(gridState.itemTerm);
+
+        const lineHeight = 15;
+        const padding = 2;
+
+        // Apply formatting to data rows
+        worksheet.eachRow((row, index) => {
+            let maxLines = 1;
+
+            row.eachCell((cell) => {
+                const text = cell.value?.toString() ?? "";
+
+                // Word wrap cells with multiple lines
+                if (text.includes("\n")) {
+                    const lineCount = text.split("\n").length;
+                    if (lineCount > maxLines) maxLines = lineCount;
+
+                    cell.alignment = {
+                        wrapText: true,
+                        vertical: "top"
+                    };
+                }
+                else {
+                    cell.alignment = {
+                        wrapText: false,
+                        vertical: "top"
+                    };
+                }
+                row.height = (maxLines * lineHeight) + padding;
+
+                // Zebra striping every other row
+                if ((index + 1) % 2 === 0) {
+                    cell.fill = {
+                        type: "pattern",
+                        pattern: "solid",
+                        fgColor: { argb: "ffc6f1c7" }
+                    };
+                }
+            });
+        });
 
         // Freeze the header rows.
         worksheet.views = [

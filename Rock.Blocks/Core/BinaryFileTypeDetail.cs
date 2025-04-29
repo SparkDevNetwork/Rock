@@ -212,7 +212,7 @@ namespace Rock.Blocks.Core
             var bag = GetCommonEntityBag( entity );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
-            bag.BinaryFileTypeAttributes = GetAttributes( entity ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttributeViewModel( a ) );
+            bag.BinaryFileTypeAttributes = GetAttributes( entity ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttribute( a ) );
 
             if ( entity.IsSystem )
             {

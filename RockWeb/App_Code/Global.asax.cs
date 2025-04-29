@@ -496,7 +496,7 @@ namespace RockWeb
                 {
                     HttpContext.Current = thisContext;
                     var currentUserName = UserLogin.GetCurrentUserName();
-                    UserLoginService.UpdateLastLogin( currentUserName );
+                    UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = currentUserName } );
                 } );
             }
             catch
@@ -599,6 +599,27 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Error( object sender, EventArgs e )
         {
+            bool IsIgnoredException( HttpException ex )
+            {
+                if ( ex != null && ex.Message.IsNotNullOrWhiteSpace() && ex.StackTrace.IsNotNullOrWhiteSpace() )
+                {
+                    // Ignore errors from SignalR when writing a response.
+                    if ( ex.Message.Contains( "The remote host closed the connection." ) && ex.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
+                    {
+                        return true;
+                    }
+
+                    // Ignore errors from the browser closing the connection before
+                    // we have finished sending all the data.
+                    if ( ex.Message.Contains( "The remote host closed the connection" ) && ex.StackTrace.Contains( "System.Web.HttpResponse.Flush" ) )
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
             try
             {
                 // Save information before IIS redirects to Error.aspx on an unhandled 500 error (configured in Web.Config).
@@ -620,11 +641,7 @@ namespace RockWeb
                                 return;
                             }
 
-                            // Check for client\remote host disconnection error specifically SignalR or web-socket connections
-                            // Ignore this error as it indicates the server it trying to write a response to a disconnected client.
-                            if ( httpEx.Message.IsNotNullOrWhiteSpace() && httpEx.StackTrace.IsNotNullOrWhiteSpace() &&
-                                httpEx.Message.Contains( "The remote host closed the connection." ) &&
-                                httpEx.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
+                            if ( IsIgnoredException( httpEx ) )
                             {
                                 context.ClearError();
                                 context.Response.StatusCode = 200;
@@ -635,9 +652,7 @@ namespace RockWeb
                     catch
                     {
                         // Check again, but don't access the context.
-                        if ( httpEx != null && httpEx.Message.IsNotNullOrWhiteSpace() && httpEx.StackTrace.IsNotNullOrWhiteSpace() &&
-                        httpEx.Message.Contains( "The remote host closed the connection." ) &&
-                        httpEx.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
+                        if ( httpEx != null && IsIgnoredException( httpEx ) )
                         {
                             return;
                         }

@@ -32,8 +32,14 @@ export type KioskBag = {
     /** Gets or sets the identifier of this item. */
     id?: string | null;
 
+    /** Determines if adding new families in registration mode is enabled. */
+    isAddingFamiliesEnabled: boolean;
+
     /** Gets or sets a value indicating whether this kiosk has the camera enabled. */
     isCameraEnabled: boolean;
+
+    /** Determines if editing new families in registration mode is enabled. */
+    isEditingFamiliesEnabled: boolean;
 
     /**
      * Gets or sets a value indicating whether this kiosk supports

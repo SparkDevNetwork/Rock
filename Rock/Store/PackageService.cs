@@ -121,7 +121,8 @@ namespace Rock.Store
             errorResponse = string.Empty;
 
             var storeKey = StoreService.GetOrganizationKey();
-            var response = ExecuteRestGetRequest<Package>( $"api/Packages/GetPackageDetails/{packageId}/{storeKey}/true", null );
+            var rockSemanticVersionNumber = Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber();
+            var response = ExecuteRestGetRequest<Package>( $"api/Packages/GetPackageDetails/{packageId}/{storeKey}/true/{rockSemanticVersionNumber}", null );
 
             var package = new Package();
 

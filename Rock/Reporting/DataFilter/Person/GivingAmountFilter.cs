@@ -75,6 +75,11 @@ namespace Rock.Reporting.DataFilter.Person
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
+            if ( selection.IsNullOrWhiteSpace() )
+            {
+                return new Dictionary<string, string>();
+            }
+
             var config = SelectionConfig.Parse( selection );
             var dict = new Dictionary<string, string>
             {

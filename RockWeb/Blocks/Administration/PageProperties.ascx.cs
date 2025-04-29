@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -25,6 +26,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Cms;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -218,6 +220,19 @@ namespace RockWeb.Blocks.Administration
                 else
                 {
                     dvpPageIntents.Visible = false;
+                }
+
+                var serverIpAddress = HttpContext.Current.Request.ServerVariables["LOCAL_ADDR"];
+                var locationCountries = DefinedTypeCache.GetLocationCountryListItemBagList( true )
+                    .ToDictionary( l => l.Value, l => l.Text );
+
+                if ( locationCountries.Any() )
+                {
+                    vlCountriesRestrictedFromAccessing.CustomValues = locationCountries;
+                    vlCountriesRestrictedFromAccessing.Visible = true;
+                }
+                else {
+                    vlCountriesRestrictedFromAccessing.Visible = false;
                 }
             }
             else
@@ -612,6 +627,15 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
+            var pageAdditionalSettings = page.GetAdditionalSettings<PageAdditionalSettings>();
+            if ( pageAdditionalSettings.CountriesRestrictedFromAccessing?.Any() == true )
+            {
+                vlCountriesRestrictedFromAccessing.Value = pageAdditionalSettings
+                    .CountriesRestrictedFromAccessing
+                    .Select( g => g.ToString() )
+                    .JoinStrings( "|" );
+            }
+
             // Add enctype attribute to page's <form> tag to allow file upload control to function
             Page.Form.Attributes.Add( "enctype", "multipart/form-data" );
         }
@@ -817,6 +841,16 @@ namespace RockWeb.Blocks.Administration
 
             page.Description = tbDescription.Text;
             page.HeaderContent = ceHeaderContent.Text;
+
+            var countriesRestrictedFromAccessing = vlCountriesRestrictedFromAccessing.Value
+                .Split( new[] { '|' }, StringSplitOptions.RemoveEmptyEntries )
+                .Distinct()
+                .AsGuidList();
+
+            var pageAdditionalSettings = page.GetAdditionalSettings<PageAdditionalSettings>();
+            pageAdditionalSettings.CountriesRestrictedFromAccessing = countriesRestrictedFromAccessing;
+
+            page.SetAdditionalSettings( pageAdditionalSettings );
 
             // update PageContexts
             foreach ( var pageContext in page.PageContexts.ToList() )

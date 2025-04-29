@@ -226,6 +226,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Campus target, Campus source )
         {
             target.Id = source.Id;
+            target.BeaconId = source.BeaconId;
             target.CampusStatusValueId = source.CampusStatusValueId;
             target.CampusTypeValueId = source.CampusTypeValueId;
             target.ClosedDate = source.ClosedDate;

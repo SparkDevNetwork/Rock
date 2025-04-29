@@ -232,7 +232,7 @@ namespace Rock.Lava.Blocks
                             .Where( a => IsCurrentlyActive( a.IsActive, a.StartDate, a.EndDate ) &&
                                         ( !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) ) &&
                                         ( !a.ViewSaturationCount.HasValue ||
-                                          !interactionCounts.ContainsKey( a.Id ) || // If the adaptation is not found in interactionCounts, then it has a count of 0 and should be shown.
+                                          !( interactionCounts?.ContainsKey( a.Id ) ?? false ) || // If interactionCounts is null or the adaptation is not found in interactionCounts, then it has a count of 0 and should be shown.
                                           interactionCounts[a.Id] < a.ViewSaturationCount.Value ) )
                             .OrderBy( a => a.Order )
                             .ThenBy( a => a.Name )

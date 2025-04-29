@@ -156,6 +156,15 @@ namespace Rock.Model
         public bool CanManageMembers { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance can take attendance.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can take attendance; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool CanTakeAttendance { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is excluded from peer network.
         /// </summary>
         /// <value>

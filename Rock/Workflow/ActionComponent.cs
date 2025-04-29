@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.Cache;
 
 namespace Rock.Workflow
@@ -348,5 +349,27 @@ namespace Rock.Workflow
             return mergeFields;
         }
 
+        /// <summary>
+        /// Gets the merge fields that should be used when resolving Lava
+        /// templates for the action.
+        /// </summary>
+        /// <param name="action">The action being processed.</param>
+        /// <param name="requestContext">The context that identifies the current request, must not be <c>null</c>.</param>
+        /// <returns>A dictionary of merge fields that should be used with the Lava template.</returns>
+        protected Dictionary<string, object> GetMergeFields( WorkflowAction action, RockRequestContext requestContext )
+        {
+            if ( requestContext == null )
+            {
+                throw new ArgumentNullException( nameof( requestContext ) );
+            }
+
+            var mergeFields = requestContext.GetCommonMergeFields();
+
+            mergeFields.Add( "Action", action );
+            mergeFields.Add( "Activity", action.Activity );
+            mergeFields.Add( "Workflow", action.Activity.Workflow );
+
+            return mergeFields;
+        }
     }
 }

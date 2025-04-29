@@ -23,14 +23,17 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml.Linq;
 using Rock.Attribute;
 using Rock.Configuration;
+using Rock.Enums.Observability;
 using Rock.Model;
 using Rock.Observability;
 using Rock.SystemKey;
 using Rock.ViewModels.Blocks.Administration.SystemConfiguration;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 using Rock.Web.Cache.NonEntities;
 using Rock.Web.UI.Controls;
 
@@ -117,7 +120,8 @@ namespace Rock.Blocks.Administration
                 UiSettingsConfigurationBag = InitializeUiSettingsConfigurationBag(),
                 WebConfigConfigurationBag = InitializeWebConfigConfigurationBag(),
                 ObservabilityEndpointProtocols = ObservabilityHelper.GetOpenTelemetryExporterProtocolsAsListItemBag(),
-                TimeZones = GetTimeZones()
+                TimeZones = GetTimeZones(),
+                Countries = DefinedTypeCache.GetLocationCountryListItemBagList( true )
             };
 
             return box;
@@ -168,12 +172,15 @@ namespace Rock.Blocks.Administration
         /// <returns></returns>
         private ObservabilityConfigurationBag InitializeObservabilityBag()
         {
+            var enabledFeatures = ObservabilityHelper.GetEnabledFeatures();
+
             return new ObservabilityConfigurationBag()
             {
-                EnableObservability = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENABLED ).AsBoolean(),
+                EnabledFeatures = enabledFeatures,
                 Endpoint = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT ),
                 EndpointHeaders = GetKeyValueListItems( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS ) ),
                 EndpointProtocol = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL ),
+                TraceLevel = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_TRACE_LEVEL ).ConvertToEnum<TraceLevel>( TraceLevel.Minimal ),
                 IncludeQueryStatements = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_INCLUDE_QUERY_STATEMENTS ).AsBoolean(),
                 MaximumAttributeLength = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_MAX_ATTRIBUTE_LENGTH ).AsIntegerOrNull(),
                 SpanCountLimit = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_SPAN_COUNT_LIMIT ).AsIntegerOrNull(),
@@ -187,6 +194,10 @@ namespace Rock.Blocks.Administration
         /// <returns></returns>
         private GeneralConfigurationBag InitializeGeneralConfigurationBag()
         {
+            var countriesRestrictedFromAccessing = Rock.Web.SystemSettings.GetValue( SystemSetting.COUNTRIES_RESTRICTED_FROM_ACCESSING )
+                .SplitDelimitedValues( "|", StringSplitOptions.RemoveEmptyEntries )
+                .AsGuidList();
+
             return new GeneralConfigurationBag()
             {
                 EnableKeepAlive = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_KEEP_ALIVE ).AsBoolean(),
@@ -194,7 +205,8 @@ namespace Rock.Blocks.Administration
                 IsMultipleTimeZoneSupportEnabled = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT ).AsBoolean(),
                 PDFExternalRenderEndpoint = Rock.Web.SystemSettings.GetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT ),
                 PersonalizationCookieCacheLengthMinutes = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES ).AsIntegerOrNull() ?? SettingDefault.PersonalizationCookieCacheLengthMinutes,
-                VisitorCookiePersistenceLengthDays = Rock.Web.SystemSettings.GetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS ).AsIntegerOrNull() ?? SettingDefault.VisitorCookieTimeoutDays
+                VisitorCookiePersistenceLengthDays = Rock.Web.SystemSettings.GetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS ).AsIntegerOrNull() ?? SettingDefault.VisitorCookieTimeoutDays,
+                CountriesRestrictedFromAccessing = countriesRestrictedFromAccessing
             };
         }
 
@@ -455,7 +467,7 @@ namespace Rock.Blocks.Administration
         /// <summary>
         /// Gets the time zones.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A <see cref="ListItemBag"/> list of time zone.</returns>
         private List<ListItemBag> GetTimeZones()
         {
             return TimeZoneInfo.GetSystemTimeZones().Select( tz => new ListItemBag() { Text = tz.DisplayName, Value = tz.Id } ).ToList();
@@ -575,6 +587,7 @@ namespace Rock.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT, bag.PDFExternalRenderEndpoint );
             Rock.Web.SystemSettings.SetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS, bag.VisitorCookiePersistenceLengthDays?.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES, bag.PersonalizationCookieCacheLengthMinutes?.ToString() );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.COUNTRIES_RESTRICTED_FROM_ACCESSING, string.Join( "|", bag.CountriesRestrictedFromAccessing.Distinct() ) );
 
             return ActionOk( GetSuccessResponseBag( "Settings saved successfully." ) );
         }
@@ -610,15 +623,16 @@ namespace Rock.Blocks.Administration
         [BlockAction( "SaveObservabilityConfiguration" )]
         public BlockActionResult SaveObservabilityConfiguration( ObservabilityConfigurationBag bag )
         {
-            if ( bag.EnableObservability && bag.Endpoint.IsNullOrWhiteSpace() )
+            if ( bag.EnabledFeatures != 0 && bag.Endpoint.IsNullOrWhiteSpace() )
             {
                 return ActionOk( GetWarningResponseBag( "To enable observability, please provide a valid service endpoint. (e.g. https://otlp.nr-data.net:4317)" ) );
             }
 
-            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENABLED, bag.EnableObservability.ToString() );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENABLED, bag.EnabledFeatures.ConvertToInt().ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL, bag.EndpointProtocol );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS, JoinKeyValueListItems( bag.EndpointHeaders ) );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT, bag.Endpoint );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_TRACE_LEVEL, bag.TraceLevel.ConvertToInt().ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_SPAN_COUNT_LIMIT, bag.SpanCountLimit?.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_MAX_ATTRIBUTE_LENGTH, bag.MaximumAttributeLength.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_INCLUDE_QUERY_STATEMENTS, bag.IncludeQueryStatements.ToString() );

@@ -24,14 +24,18 @@ import {
     AccordionManager,
     BorderStyle,
     CssStyleDeclarationKebabKey,
+    ComponentMigrationHelper,
+    ComponentTypeName,
     ContentAreaElements,
     DomWatcher,
     EditorComponentTypeName,
     HorizontalAlignment,
     StyleSheetElements,
-    ValueConverter
+    ValueConverter,
+    ComponentStructure,
+    TableElements
 } from "./types.partial";
-import { isDocument, isElement, isHTMLElement } from "@Obsidian/Utility/dom";
+import { isElement, isHTMLElement, isHTMLTableElement } from "@Obsidian/Utility/dom";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { Enumerable } from "@Obsidian/Utility/linq";
 import { splitCase, toTitleCase } from "@Obsidian/Utility/stringUtils";
@@ -58,30 +62,6 @@ export const RockStylesCssClass = "rock-styles" as const;
 export const EmailWrapperCssClass = "email-wrapper" as const;
 
 /**
- * Represents a **full-width row** within the email.
- * - **Purpose:** Defines sections with independent background styling.
- * - **Usage:** Can be repeated to create multiple sections.
- * - **Best Practice:** Each `.email-row` should contain exactly **one** `.email-row-content`.
- */
-export const EmailRowCssClass = "email-row" as const;
-
-/**
- * The **content container inside a row**, which constrains the width.
- * - **Purpose:** Centers content and limits its width (e.g., `600px`).
- * - **Usage:** Nested inside `.email-row` to maintain content alignment.
- * - **Best Practice:** Wrap all email components within `.email-row-content`.
- */
-export const EmailRowContentCssClass = "email-row-content" as const;
-
-/**
- * A wrapper for **individual content components** (e.g., text, buttons, images).
- * - **Purpose:** Ensures each component is properly structured within an email.
- * - **Usage:** Each `div.component-<type>` should wrap exactly **one** `.email-content` table.
- * - **Best Practice:** Apply this class to all modular email components.
- */
-export const EmailContentCssClass = "email-content" as const;
-
-/**
  * Add a temporary (runtime) CSS class with this prefix to any element that should be stripped out when the HTML is retrieved via getProcessedHtml().
  */
 export const RockRuntimeClassCssClassPrefix = "rock-runtime-class" as const;
@@ -105,51 +85,101 @@ export const RockRuntimeWrapperElementCssClass = "rock-runtime-wrapper-element" 
 
 export const SmallEmptyClass = `${RockRuntimeClassCssClassPrefix}-small` as const;
 
+export function getComponentCssClass(componentTypeName: ComponentTypeName): string {
+    return `component-${componentTypeName}`;
+}
+
+export function getMarginWrapperTableCssClass(componentTypeName: ComponentTypeName, wrapperSuffix: string = ""): string {
+    return `margin-wrapper-for-${componentTypeName}${wrapperSuffix}`;
+}
+
+export function getMarginWrapperTableSelector(componentTypeName: ComponentTypeName, wrapperSuffix: string = ""): string {
+    return `.${getMarginWrapperTableCssClass(componentTypeName, wrapperSuffix)}`;
+}
+
+export function getMarginWrapperCellSelector(componentTypeName: ComponentTypeName, wrapperSuffix: string = ""): string {
+    return `.${getMarginWrapperTableCssClass(componentTypeName, wrapperSuffix)} > tbody > tr > td`;
+}
+
+export function getBorderWrapperTableCssClass(componentTypeName: ComponentTypeName, wrapperSuffix: string = ""): string {
+    return `border-wrapper-for-${componentTypeName}${wrapperSuffix}`;
+}
+
+export function getBorderWrapperTableSelector(componentTypeName: ComponentTypeName, wrapperSuffix: string = ""): string {
+    return `.${getBorderWrapperTableCssClass(componentTypeName, wrapperSuffix)}`;
+}
+
+export function getBorderWrapperCellSelector(componentTypeName: ComponentTypeName, wrapperSuffix: string = ""): string {
+    return `.${getBorderWrapperTableCssClass(componentTypeName, wrapperSuffix)} > tbody > tr > td`;
+}
+
+export function getPaddingWrapperTableCssClass(componentTypeName: ComponentTypeName, wrapperSuffix: string = ""): string {
+    return `padding-wrapper-for-${componentTypeName}${wrapperSuffix}`;
+}
+
+export function getPaddingWrapperTableSelector(componentTypeName: ComponentTypeName, wrapperSuffix: string = ""): string {
+    return `.${getPaddingWrapperTableCssClass(componentTypeName, wrapperSuffix)}`;
+}
+
+export function getPaddingWrapperCellSelector(componentTypeName: ComponentTypeName, wrapperSuffix: string = ""): string {
+    return `.${getPaddingWrapperTableCssClass(componentTypeName, wrapperSuffix)} > tbody > tr > td`;
+}
+
+type ContentWrapperSupportedComponentType = Extract<ComponentTypeName, "text" | "code">;
+
+export function getContentWrapperCssClass(componentTypeName: ContentWrapperSupportedComponentType, wrapperSuffix: string = ""): string {
+    return `content-wrapper-for-${componentTypeName}${wrapperSuffix}`;
+}
+
+export function getContentWrapperSelector(componentTypeName: ContentWrapperSupportedComponentType, wrapperSuffix: string = ""): string {
+    return `.${getContentWrapperCssClass(componentTypeName, wrapperSuffix)}`;
+}
+
 export const GlobalStylesCssSelectors = {
     backgroundColor: `.${EmailWrapperCssClass}`,
 
-    bodyWidth: `.${EmailRowContentCssClass}`,
-    bodyColor: `.${EmailRowContentCssClass}`,
-    bodyPadding: `.${EmailRowContentCssClass} > tbody > tr > td, .${EmailRowContentCssClass} > tr > td`,
-    bodyAlignment: `.${EmailRowCssClass} > tbody > tr > td, .${EmailRowCssClass} > tr > td`,
-    bodyBorderStyling: `.${EmailRowContentCssClass}`,
-    bodyMargin: `.${EmailWrapperCssClass} > tbody > tr > td, .${EmailWrapperCssClass} > tr > td`,
+    bodyWidth: getBorderWrapperTableSelector("row"),
+    bodyColor: getBorderWrapperCellSelector("row"),
+    bodyPadding: getPaddingWrapperCellSelector("row"),
+    bodyAlignment: getMarginWrapperCellSelector("row"),
+    bodyBorderStyling: getBorderWrapperCellSelector("row"),
+    bodyMargin: getMarginWrapperCellSelector("row"),
 
-    globalTextStyling: `body, .${EmailWrapperCssClass} > tbody > tr > td, .${EmailWrapperCssClass} > tr > td`,
+    globalTextStyling: `body, .${EmailWrapperCssClass} > tbody > tr > td`,
 
     heading1TextStyling: `.component-title h1`,
-    heading1Margin: `.component-title h1`,
-    heading1Padding: `.component-title h1`,
-    heading1BorderStyling: `.component-title h1`,
+    heading1Margin: `${getMarginWrapperCellSelector("title", "-h1")}`,
+    heading1Padding: `${getPaddingWrapperCellSelector("title", "-h1")}`,
+    heading1BorderStyling: `${getBorderWrapperCellSelector("title", "-h1")}`,
 
     heading2TextStyling: `.component-title h2`,
-    heading2Margin: `.component-title h2`,
-    heading2Padding: `.component-title h2`,
-    heading2BorderStyling: `.component-title h2`,
+    heading2Margin: `${getMarginWrapperCellSelector("title", "-h2")}`,
+    heading2Padding: `${getPaddingWrapperCellSelector("title", "-h2")}`,
+    heading2BorderStyling: `${getBorderWrapperCellSelector("title", "-h2")}`,
 
     heading3TextStyling: `.component-title h3`,
-    heading3Margin: `.component-title h3`,
-    heading3Padding: `.component-title h3`,
-    heading3BorderStyling: `.component-title h3`,
+    heading3Margin: `${getMarginWrapperCellSelector("title", "-h3")}`,
+    heading3Padding: `${getPaddingWrapperCellSelector("title", "-h3")}`,
+    heading3BorderStyling: `${getBorderWrapperCellSelector("title", "-h3")}`,
 
-    paragraphTextStyling: `.component-text`,
-    paragraphMargin: `.component-text`,
+    paragraphTextStyling: getContentWrapperSelector("text"),
+    paragraphMargin: getMarginWrapperCellSelector("text"),
 
     buttonBackgroundColor: `.component-button .button-link`,
     buttonTextStyling: `.component-button .button-link`,
-    buttonCornerRadius: `.component-button .button-content, .component-button .button-link`,
+    buttonCornerRadius: getBorderWrapperCellSelector("button"),
+    // Padding needs to be applied to the anchor element instead of the padding-wrapper cell.
     buttonPadding: `.component-button .button-link`,
-    buttonMargin: `.component-button .button-innerwrap`,
-    buttonBorderStyling: `.component-button .button-link`,
+    buttonMargin: getMarginWrapperCellSelector("button"),
+    buttonBorderStyling: getBorderWrapperCellSelector("button"),
     buttonWidthValuesShell: `.component-button .button-shell, .component-rsvp .rsvp-button-shell`,
     buttonWidthValuesButton: `.component-button .button-link, .component-rsvp .rsvp-accept-link, .component-rsvp .rsvp-decline-link`,
 
-    dividerStyle: `.component-divider hr`,
-    dividerThickness: `.component-divider hr`,
-    dividerColor: `.component-divider hr`,
-    dividerWidth: `.component-divider hr`,
-    dividerHorizontalAlignment: `.component-divider hr`,
-    dividerPadding: `.component-divider hr`,
+    dividerMargin: getMarginWrapperCellSelector("divider"),
+    dividerWidth: getBorderWrapperTableSelector("divider"),
+    dividerStyle: getPaddingWrapperCellSelector("divider"),
+    dividerThickness: getPaddingWrapperCellSelector("divider"),
+    dividerColor: getPaddingWrapperCellSelector("divider"),
 } as const;
 
 // #endregion Constants
@@ -294,10 +324,10 @@ export function useAccordionGroup(isExpanded: Ref<boolean>): void {
     group?.register(accordionKey, isExpanded);
 }
 
-export function getComponentTypeName(componentElement: HTMLElement): EditorComponentTypeName {
+export function getComponentTypeName(componentElement: Element): ComponentTypeName {
     const classList = [...componentElement.classList];
 
-    const map: Record<string, EditorComponentTypeName> = {
+    const map: Record<string, ComponentTypeName> = {
         "component-button": "button",
         "component-code": "code",
         "component-divider": "divider",
@@ -395,10 +425,11 @@ export function getComponentIconHtml(componentTypeName: EditorComponentTypeName)
 </div>`;
         case "row":
             return `
-<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 40px; display: block;">
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M48 32H464C490.5 32 512 53.5 512 80V432C512 458.5 490.5 480 464 480H48C21.5 480 0 458.5 0 432V80C0 53.5 21.5 32 48 32ZM464 81H49V431H464V81Z" style="fill: var(--color-interface-strong)"></path>
-    <path d="M49 187H464V326H49V187Z" style="fill: var(--color-interface-soft)"></path>
-</svg>`;
+<svg viewBox="70 93 373 326" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 32px; display: block;">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M104.929 93H407.643C426.926 93 442.571 108.645 442.571 127.929V384.071C442.571 403.355 426.926 419 407.643 419H104.929C85.6451 419 70 403.355 70 384.071V127.929C70 108.645 85.6451 93 104.929 93ZM407.641 128.656H105.655V383.344H407.641V128.656Z" style="fill: var(--color-interface-strong);"></path>
+    <path d="M106.141 206H408.141V306H106.141V206Z" style="fill: var(--color-interface-soft)"></path>
+</svg>
+`;
         default:
             console.warn(`Unable to retrieve the icon for the unknown component type: '${componentTypeName}'. Returning the default icon.`);
             return createIconElement("fa fa-question");
@@ -469,95 +500,224 @@ export function createComponentElementPlaceholder(document: Document): HTMLEleme
  * Creates an `.email-content` table element with provided inner content.
  * Allows customization of the `<td>` cell styles (e.g., padding for sections).
  *
- * @param contentHtml Inner HTML string to place inside the `<td>` cell.
+ * @param cellInnerHtml Inner HTML string to place inside the `<td>` cell.
  * @returns A table element with `.email-content` structure.
  */
-export function createEmailContentTable(contentHtml: string | Enumerable<Element>): HTMLTableElement {
-    const contentTable = document.createElement("table");
-    contentTable.classList.add(EmailContentCssClass);
-    contentTable.setAttribute("border", "0");
-    contentTable.setAttribute("cellpadding", "0");
-    contentTable.setAttribute("cellspacing", "0");
-    contentTable.setAttribute("width", "100%");
-    contentTable.setAttribute("role", "presentation");
+export function createTable<T extends Element>(cellInnerHtml?: string | Enumerable<T> | T[] | undefined): { table: HTMLTableElement, tbody: HTMLTableSectionElement, tr: HTMLTableRowElement, td: HTMLTableCellElement } {
+    const table = document.createElement("table");
+    table.setAttribute("border", "0");
+    table.setAttribute("cellpadding", "0");
+    table.setAttribute("cellspacing", "0");
+    table.setAttribute("width", "100%");
+    table.setAttribute("role", "presentation");
 
-    const contentBody = document.createElement("tbody");
-    const contentRow = document.createElement("tr");
-    const contentCell = document.createElement("td");
+    const tbody = document.createElement("tbody");
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
 
-    if (typeof contentHtml === "string") {
-        contentCell.innerHTML = contentHtml;
+    if (typeof cellInnerHtml === "string") {
+        td.innerHTML = cellInnerHtml;
     }
-    else {
-        contentHtml.forEach(el => {
-            contentCell.appendChild(el);
+    else if (cellInnerHtml !== undefined) {
+        cellInnerHtml.forEach(el => {
+            td.appendChild(el);
         });
     }
 
-    contentRow.appendChild(contentCell);
-    contentBody.appendChild(contentRow);
-    contentTable.appendChild(contentBody);
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    table.appendChild(tbody);
 
-    return contentTable;
+    return {
+        table,
+        tbody,
+        tr,
+        td
+    };
 }
 
 /**
- * Creates `.email-row`, `.email-row-content`, and `.email-content` table elements with provided inner content.
- * Allows customization of the `<td>` cell styles (e.g., padding for sections).
- *
- * @param contentHtml Inner HTML string to place inside the `<td>` cell.
- * @param cellStyle Optional inline styles to apply to the `<td>` (e.g., padding).
- * @returns A table element with `.email-content` structure.
+ * Creates a standard component structure with margin, border, and padding wrappers.
+ * @param componentCssClass - The CSS class for the component.
+ * @param componentVersion - The version of the component.
+ * @param componentInnerHtml - Optional inner HTML for the component.
+ * @returns
  */
-export function createEmailRowTable<T extends Element>(contentHtml: string | Enumerable<T>): HTMLTableElement {
-    // Create `.email-row` (full width row)
-    const rowTable = document.createElement("table");
-    rowTable.classList.add(EmailRowCssClass);
-    rowTable.setAttribute("border", "0");
-    rowTable.setAttribute("cellpadding", "0");
-    rowTable.setAttribute("cellspacing", "0");
-    rowTable.setAttribute("width", "100%");
-    rowTable.setAttribute("role", "presentation");
+export function createComponent(
+    componentTypeName: Exclude<EditorComponentTypeName,
+        | "one-column-section"
+        | "two-column-section"
+        | "three-column-section"
+        | "four-column-section"
+        | "right-sidebar-section"
+        | "left-sidebar-section"
+    >,
+    componentVersion: string,
+    componentInnerHtml?: string | Enumerable<Element> | undefined
+): ComponentStructure {
+    const wrappers = createElementWrappers(componentInnerHtml);
 
-    const rowTbody = document.createElement("tbody");
-    const rowTr = document.createElement("tr");
-    const rowTd = document.createElement("td");
-    rowTd.setAttribute("align", "center");
+    const marginWrapper = wrappers.marginWrapper;
+    marginWrapper.table.classList.add(`margin-wrapper-for-${componentTypeName}`);
+    marginWrapper.table.classList.add("component", `component-${componentTypeName}`);
+    marginWrapper.table.dataset.state = "component";
+    setComponentVersionNumber(marginWrapper.table, componentVersion);
 
-    // Create `.email-row-content` (600px constrained content area)
-    const rowContentTable = document.createElement("table");
-    rowContentTable.classList.add(EmailRowContentCssClass);
-    rowContentTable.setAttribute("border", "0");
-    rowContentTable.setAttribute("cellpadding", "0");
-    rowContentTable.setAttribute("cellspacing", "0");
-    rowContentTable.setAttribute("width", `${DefaultBodyWidth}`);
-    rowContentTable.setAttribute("role", "presentation");
+    const borderWrapper = marginWrapper.borderWrapper;
+    borderWrapper.table.classList.add(`border-wrapper-for-${componentTypeName}`);
 
-    const rowContentTbody = document.createElement("tbody");
-    const rowContentTr = document.createElement("tr");
-    const rowContentTd = document.createElement("td");
+    const paddingWrapper = borderWrapper.paddingWrapper;
+    paddingWrapper.table.classList.add(`padding-wrapper-for-${componentTypeName}`);
 
-    if (typeof contentHtml === "string") {
-        rowContentTd.innerHTML = contentHtml;
+    return {
+        marginWrapper: {
+            ...marginWrapper,
+            borderWrapper: {
+                ...borderWrapper,
+                paddingWrapper
+            }
+        }
+    };
+}
+export function createElementWrappers(
+    componentInnerHtml?: string | Enumerable<Element> | undefined
+): ComponentStructure {
+    const paddingWrapper = createTable(componentInnerHtml);
+    paddingWrapper.table.classList.add("padding-wrapper");
+
+    const borderWrapper = createTable([paddingWrapper.table]);
+    borderWrapper.table.classList.add("border-wrapper");
+    // Important! To ensure border-radius is applied to the border,
+    // the table must have border-collapse: separate.
+    borderWrapper.table.style.setProperty("border-collapse", "separate", "important");
+    // Set overflow hidden so corner radius is applied to the border.
+    borderWrapper.td.style.overflow = "hidden";
+
+    const marginWrapper = createTable([borderWrapper.table]);
+    marginWrapper.table.classList.add("margin-wrapper");
+
+    return {
+        marginWrapper: {
+            ...marginWrapper,
+            borderWrapper: {
+                ...borderWrapper,
+                paddingWrapper
+            }
+        }
+    };
+}
+
+/**
+ * Finds the first descendant set of table elements matching the selector or null if some are not found.
+ */
+function findTable(element: Element | Document, tableSelector: string): TableElements | null {
+    const { table, tbody, tr, td } = findTablePartial(element, tableSelector);
+
+    if (table && tbody && tr && td) {
+        return {
+            table,
+            tbody,
+            tr,
+            td
+        };
     }
     else {
-        contentHtml.forEach((el) => {
-            rowContentTd.appendChild(el);
-        });
+        return null;
+    }
+}
+
+/**
+ * Finds the first descendant set of table elements matching the selector.
+ *
+ * May return undefined for table elements that aren't found.
+ */
+function findTablePartial(element: Element | Document, tableSelector: string): Partial<TableElements> {
+    let table = (isElement(element) && element.matches(tableSelector))
+        ? element
+        : (element.querySelector(tableSelector) ?? undefined);
+
+    if (table && !isHTMLTableElement(table)) {
+        table = undefined;
     }
 
-    // Build `.email-row-content` structure
-    rowContentTr.appendChild(rowContentTd);
-    rowContentTbody.appendChild(rowContentTr);
-    rowContentTable.appendChild(rowContentTbody);
+    const tbody = (table?.querySelector(":scope > tbody") ?? undefined) as HTMLTableSectionElement | undefined;
+    const tr = (tbody?.querySelector(":scope > tr") ?? undefined) as HTMLTableRowElement | undefined;
+    const td = (tr?.querySelector(":scope > td") ?? undefined) as HTMLTableCellElement | undefined;
 
-    // Build `.email-row` structure
-    rowTd.appendChild(rowContentTable);
-    rowTr.appendChild(rowTd);
-    rowTbody.appendChild(rowTr);
-    rowTable.appendChild(rowTbody);
+    return {
+        table,
+        tbody,
+        tr,
+        td
+    };
+}
 
-    return rowTable;
+/**
+ * Finds and returns the component inner wrappers or null if one or more are missing.
+ */
+export function findComponentInnerWrappers(componentElement: Element): ComponentStructure | null {
+    const componentInnerWrappers = findComponentInnerWrappersPartial(componentElement);
+
+    if (componentInnerWrappers.marginWrapper?.borderWrapper?.paddingWrapper) {
+        return componentInnerWrappers as ComponentStructure;
+    }
+    else {
+        // One or more wrappers were missing
+        // so return null.
+        return null;
+    }
+}
+
+/**
+ * Recursively makes all properties in T (including nested ones) optional.
+ */
+type DeepPartial<T> = {
+    [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
+
+/**
+ * Finds and returns the component inner wrappers that can be found.
+ */
+export function findComponentInnerWrappersPartial(componentElement: Element): DeepPartial<ComponentStructure> {
+    // Margin should be the outermost wrapper,
+    // then border + background,
+    // then padding.
+    const marginWrapper = findTable(componentElement, "table.margin-wrapper");
+
+    if (!marginWrapper) {
+        return {};
+    }
+
+    const borderWrapper = findTable(marginWrapper.table, "table.border-wrapper");
+
+    if (!borderWrapper) {
+        return {
+            marginWrapper: { ...marginWrapper }
+        };
+    }
+
+    const paddingWrapper = findTable(borderWrapper.table, "table.padding-wrapper");
+
+    if (!paddingWrapper) {
+        return {
+            marginWrapper: {
+                ...marginWrapper,
+                borderWrapper: {
+                    ...borderWrapper
+                }
+            }
+        };
+    }
+
+    return {
+        marginWrapper: {
+            ...marginWrapper,
+            borderWrapper: {
+                ...borderWrapper,
+                paddingWrapper
+            }
+        }
+    };
 }
 
 /**
@@ -610,47 +770,7 @@ export function ensureBodyWrapsEmailWrapper(document: Document): HTMLTableElemen
     return wrapperTable;
 }
 
-export function ensureComponentWrapsContentTableRecursive(root: Document | Element): void {
-    if (!isDocument(root) && root.matches(".component:not(.component-row)")) {
-        ensureComponentWrapsContentTable(root);
-    }
-
-    Enumerable
-        .from(root.querySelectorAll(":scope .component:not(.component-row)"))
-        .forEach(childComponent => {
-            ensureComponentWrapsContentTable(childComponent);
-        });
-}
-
-export function ensureComponentWrapsContentTable(componentElement: Element): HTMLTableElement {
-    if (!componentElement.classList.contains("component")) {
-        throw new Error("Element is not a valid component element.");
-    }
-
-    // It's safe to assume HTMLTableElement here because of the selector.
-    const existingEmailContentTable = componentElement.querySelector(`:scope > table.${EmailContentCssClass}`) as HTMLTableElement;
-
-    if (existingEmailContentTable) {
-        return existingEmailContentTable;
-    }
-
-    const emailContentTable = createEmailContentTable(Enumerable.from(componentElement.children));
-
-    componentElement.appendChild(emailContentTable);
-
-    // TODO Need custom handlers to move component-specific styles to the correct table elements.
-
-    return emailContentTable;
-}
-
 export function createComponentElement(document: Document, componentTypeName: EditorComponentTypeName): HTMLElement {
-    const componentTypeCssClass = `component-${componentTypeName.endsWith("-section") ? "section" : componentTypeName}`;
-    const componentElement = document.createElement("div");
-    componentElement.classList.add("component", componentTypeCssClass);
-    componentElement.dataset.state = "component";
-
-    // Inner HTML for the specific component.
-    let componentInnerHtml = "";
 
     // Notes:
     //  - Inline styles defined here will be at the component level instead of the global level.
@@ -659,95 +779,54 @@ export function createComponentElement(document: Document, componentTypeName: Ed
     //  - Rock CSS variables should not be used here as these will be added to the HTML email.
     //  - Global style defaults are maintained in the emailIFrame.partial.obs file.
     switch (componentTypeName) {
-        case "title":
-            componentInnerHtml = `<h1 class="${RockCssClassContentEditable}">Title</h1>`;
-            break;
+        case "title": {
+            const { createComponentElement } = getTitleComponentHelper();
+            return createComponentElement();
+        }
 
-        case "video":
-            componentInnerHtml = `<a href=""><img src="/Assets/Images/video-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></a>`;
-            break;
+        case "video": {
+            const { createComponentElement } = getVideoComponentHelper();
+            return createComponentElement();
+        }
 
-        case "button":
-            componentElement.classList.add("v2");
+        case "button": {
+            const { createComponentElement } = getButtonComponentHelper();
+            return createComponentElement();
+        }
 
-            // The styles and attributes here will default each button to have a "Fit To Text" width (see buttonWidthProperty.partial.obs for details).
-            componentInnerHtml = `<table class="button-outerwrap" border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="min-width: 100%;">
-                <tbody>
-                    <tr>
-                        <td class="button-innerwrap" align="center" valign="top">
-                            <table class="button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation">
-                                <tbody>
-                                    <tr>
-                                        <td class="button-content" align="center" valign="middle">
-                                            <a class="button-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Click Me">Click Me</a>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>`;
-            break;
-        case "text":
-            componentInnerHtml = `<p class="${RockCssClassContentEditable}">Let's see what you have to say!</p>`;
-            break;
-        case "divider":
-            componentInnerHtml = `<hr />`;
-            break;
-        case "message":
-            componentElement.classList.add(RockCssClassContentEditable);
-            componentInnerHtml = "Message";
-            break;
-        case "image":
-            // Image component needs a line-height of 0 to remove extra space under image.
-            componentElement.style.lineHeight = "0";
-            componentInnerHtml = `<img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;">`;
-            break;
-        case "code":
-            componentElement.classList.add(RockCssClassContentEditable);
-            componentInnerHtml = `Add your code here...`;
-            break;
-        case "rsvp":
-            componentInnerHtml = `<table class="rsvp-outerwrap" border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="min-width: 100%;">
-                <tbody>
-                    <tr>
-                        <td class="rsvp-innerwrap" align="center" valign="top" style="padding: 0;">
-                            <table border="0" cellpadding="0" cellspacing="0" role="presentation">
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <table class="accept-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #16C98D; border-collapse: separate; border-radius: 3px; display: inline-table;">
-                                                <tbody>
-                                                    <tr>
-                                                        <td class="rsvp-accept-content" align="center" valign="middle">
-                                                            <a class="rsvp-accept-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Accept" style="color: #FFFFFF; display: inline-block; font-family: Arial; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none; border-bottom-width: 0;">Accept</a>
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                        <td style="padding-left: 10px;">
-                                            <table class="decline-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #D4442E; border-collapse: separate; border-radius: 3px; display: inline-table;">
-                                                <tbody>
-                                                    <tr>
-                                                        <td class="rsvp-decline-content" align="center" valign="middle">
-                                                            <a class="rsvp-decline-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Decline" style="color: #FFFFFF; display: inline-block; font-family: Arial; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none; border-bottom-width: 0;">Decline</a>
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <input type="hidden" class="rsvp-group-id">
-            <input type="hidden" class="rsvp-occurrence-value">`;
-            break;
+        case "text": {
+            const { createComponentElement } = getTextComponentHelper();
+            return createComponentElement();
+        }
+
+        case "divider": {
+            const { createComponentElement } = getDividerComponentHelper();
+            return createComponentElement();
+        }
+
+        case "message": {
+            const componentElements = createComponent(
+                "message",
+                "v2-alpha",
+                "Message"
+            );
+            return componentElements.marginWrapper.table;
+        }
+
+        case "image": {
+            const { createComponentElement } = getImageComponentHelper();
+            return createComponentElement();
+        }
+
+        case "code": {
+            const { createComponentElement } = getCodeComponentHelper();
+            return createComponentElement();
+        }
+
+        case "rsvp": {
+            const { createComponentElement } = getRsvpComponentHelper();
+            return createComponentElement();
+        }
 
         // Section Components
         case "section":
@@ -756,60 +835,17 @@ export function createComponentElement(document: Document, componentTypeName: Ed
         case "three-column-section":
         case "four-column-section":
         case "right-sidebar-section":
-        case "left-sidebar-section":
-            componentInnerHtml = `
-                <table class="row" cellpadding="0" cellspacing="0" border="0" role="presentation" style="width: 100%;">
-                    <tr>
-                        ${getSectionColumns(componentTypeName)}
-                    </tr>
-                </table>`;
-            break;
-        case "row":
-            componentInnerHtml = `<div class="dropzone"></div>`;
-            break;
+        case "left-sidebar-section": {
+            const { createComponentElement } = getSectionComponentHelper();
+            return createComponentElement(componentTypeName);
+        }
+
+        case "row": {
+            const { createComponentElement } = getRowComponentHelper();
+            return createComponentElement();
+        }
         default:
             throw new Error(`Unknown typeName: ${componentTypeName}`);
-    }
-
-    // Fill cell with inner content
-    const contentTable = createEmailContentTable(componentInnerHtml);
-
-    if (componentTypeName !== "row") {
-        componentElement.appendChild(contentTable);
-    }
-    else {
-        const rowTable = createEmailRowTable(Enumerable.from([contentTable]));
-
-        componentElement.appendChild(rowTable);
-    }
-
-    return componentElement;
-}
-
-function getSectionColumns(componentTypeName: EditorComponentTypeName): string {
-    switch (componentTypeName) {
-        case "one-column-section":
-            return `<td class="dropzone columns small-12 start last large-12" valign="top" width="100%"></td>`;
-        case "right-sidebar-section":
-            return `<td class="dropzone columns small-12 start large-8" valign="top" width="66.666666%"></td>
-                    <td class="dropzone columns small-12 last large-4" valign="top" width="33.333333%"></td>`;
-        case "left-sidebar-section":
-            return `<td class="dropzone columns small-12 start large-4" valign="top" width="33.333333%"></td>
-                    <td class="dropzone columns small-12 last large-8" valign="top" width="66.666666%"></td>`;
-        case "two-column-section":
-            return `<td class="dropzone columns small-12 start large-6" valign="top" width="50%"></td>
-                    <td class="dropzone columns small-12 last large-6" valign="top" width="50%"></td>`;
-        case "three-column-section":
-            return `<td class="dropzone columns small-12 start large-4" valign="top" width="33.333333%"></td>
-                    <td class="dropzone columns small-12 large-4" valign="top" width="33.333333%"></td>
-                    <td class="dropzone columns small-12 last large-4" valign="top" width="33.333333%"></td>`;
-        case "four-column-section":
-            return `<td class="dropzone columns small-12 start large-3" valign="top" width="25%"></td>
-                    <td class="dropzone columns small-12 large-3" valign="top" width="25%"></td>
-                    <td class="dropzone columns small-12 large-3" valign="top" width="25%"></td>
-                    <td class="dropzone columns small-12 last large-3" valign="top" width="25%"></td>`;
-        default:
-            return `<div class="dropzone"></div>`;
     }
 }
 
@@ -877,7 +913,7 @@ export function findDescendantContentAreaElements(element: HTMLElement): Partial
     searchResult.outerTable = Enumerable
         .from(element.querySelectorAll(":scope table.container"))
         .where(filterTableMatches)
-        .ofType(isHTMLElement)
+        .select(el => el as HTMLTableElement)
         .firstOrDefault();
 
     // Look for any table that is a direct descendant of the root element.
@@ -885,7 +921,7 @@ export function findDescendantContentAreaElements(element: HTMLElement): Partial
         searchResult.outerTable = Enumerable
             .from(element.querySelectorAll(":scope > table"))
             .where(filterTableMatches)
-            .ofType(isHTMLElement)
+            .select(el => el as HTMLTableElement)
             .firstOrDefault();
     }
 
@@ -1305,14 +1341,23 @@ export function updateStyleElementTextContent(elements: StyleSheetElements): voi
 export function createDomWatcher(
     root: Document | Element,
     selector: string,
-    { includeSelf }: { includeSelf?: string | boolean; } = {}
+    { includeSelf, additionalFilter, additionalProjection }: { includeSelf?: string | boolean; additionalFilter?: (el: Element) => boolean; additionalProjection?: (el: Element) => Element; } = {}
 ): DomWatcher {
     const foundElements = new Set<Element>();
     let onFoundCallbacks: ((element: Element) => void)[] = [];
     let onRemovedCallbacks: ((element: Element) => void)[] = [];
 
     function updateMatches(): void {
-        const newMatches = new Set(root.querySelectorAll(selector));
+        let matches = Enumerable.from(root.querySelectorAll(selector));
+        if (additionalFilter) {
+            matches = matches.where(additionalFilter);
+        }
+
+        if (additionalProjection) {
+            matches = matches.select(additionalProjection);
+        }
+
+        const newMatches = new Set(matches);
 
         // Handle newly found elements
         newMatches.forEach((el) => {
@@ -1450,7 +1495,7 @@ export function removeTemporaryAttributes(element: Document | Element): void {
         });
 }
 
-export function checkDropzoneSize(rect: DOMRectReadOnly, element: HTMLElement): void {
+export function checkDropzoneSize(rect: DOMRectReadOnly, element: Element): void {
     if (rect.width < EmptyDropzoneSvgPixelWidth) {
         element.classList.add(SmallEmptyClass);
     }
@@ -1459,4 +1504,1667 @@ export function checkDropzoneSize(rect: DOMRectReadOnly, element: HTMLElement): 
     }
 }
 
+export function getComponentVersionNumber(componentElement: Element): string | null | undefined {
+    const version = (componentElement as HTMLElement).dataset.version ?? "";
+
+    if (isComponentVersionNumber(version)) {
+        return version;
+    }
+    else {
+        return null;
+    }
+}
+
+export function setComponentVersionNumber(componentElement: Element, version: string): void {
+    if (!isComponentVersionNumber(version)) {
+        console.warn(`Invalid version number: ${version}`);
+        return;
+    }
+
+    (componentElement as HTMLElement).dataset.version = version;
+}
+
+export function isComponentVersionNumber(str: string): boolean {
+    const componentVersionRegex = /^v\d+(\.\d+)?(-[a-zA-Z]+(\.\d+)?)?$/;
+    return componentVersionRegex.test(str);
+}
+
+/**
+ * Compares two component version strings using a **semantic-like** versioning system.
+ *
+ * Version format: `v<major>[.<minor>][-<phase>.<phaseVersion>]`
+ * - `v2` (Major-only version, treated as `v2.0`)
+ * - `v2.0` (Stable version)
+ * - `v2.1` (Minor update)
+ * - `v2.0-alpha.1` (Pre-release: alpha phase, version 1)
+ * - `v2.0-beta.2` (Pre-release: beta phase, version 2)
+ *
+ * **Comparison Rules:**
+ * 1. **Major version (`vX` vs `vY`)**: Higher major versions are greater.
+ * 2. **Minor version (`vX.Y` vs `vX.Z`)**: If major versions are equal, higher minor versions are greater.
+ * 3. **Stable vs. Pre-release (`vX.Y` vs `vX.Y-beta.Z`)**: Stable versions are always greater than pre-releases.
+ * 4. **Phase Sorting (`alpha < beta < rc`)**: Pre-release phases are sorted lexicographically.
+ * 5. **Phase Version (`alpha.1 < alpha.2`)**: If the phase is the same, numerical phase version is compared.
+ *
+ * **Examples:**
+ * ```typescript
+ * compareVersions("v2", "v2.1"); // -1 (v2.0 < v2.1)
+ * compareVersions("v2.0-alpha.1", "v2.0"); // -1 (alpha < stable)
+ * compareVersions("v2.0-beta.2", "v2.0-beta.10"); // -1 (beta.2 < beta.10)
+ * compareVersions("v2.0", "v3"); // -1 (v2 < v3)
+ * compareVersions("v10", "v2.1"); // 1 (v10 > v2.1)
+ * compareVersions("v2.0-beta.2", "v2.0-alpha.1"); // 1 (beta > alpha)
+ * compareVersions("v2.0-beta.2", "v2.0-beta.2"); // 0 (equal)
+ * ```
+ *
+ * @param {string} v1 - First version string (e.g., "v2.0-beta.1", "v2")
+ * @param {string} v2 - Second version string (e.g., "v2.0", "v2.1", "v3")
+ * @returns {number} Returns:
+ * - `-1` if `v1 < v2`
+ * - `1` if `v1 > v2`
+ * - `0` if they are equal
+ */
+export function compareComponentVersions(v1: string, v2: string): number {
+    function parseVersion(version: string): { major: number; minor: number; phase: string; phaseVersion: number } {
+        const match = version.match(/^v(\d+)(?:\.(\d+))?(?:-([a-zA-Z]+)(?:\.(\d+))?)?$/);
+
+        return {
+            major: match ? parseInt(match[1]) : 0,
+            minor: match?.[2] ? parseInt(match[2]) : 0, // Defaults to 0 if missing
+            phase: match?.[3] ?? "", // Phase name (e.g., alpha, beta)
+            phaseVersion: match?.[4] ? parseInt(match[4]) : 0 // Defaults to 0 if missing
+        };
+    }
+
+    const v1Parts = parseVersion(v1);
+    const v2Parts = parseVersion(v2);
+
+    return (
+        v1Parts.major - v2Parts.major ||  // Compare major version
+        v1Parts.minor - v2Parts.minor ||  // Compare minor version
+        (v1Parts.phase === v2Parts.phase
+            ? v1Parts.phaseVersion - v2Parts.phaseVersion // Only compare phase versions when same phase
+            : (!v1Parts.phase ? -1 : !v2Parts.phase ? 1 : v1Parts.phase.localeCompare(v2Parts.phase)))
+    );
+}
+
 // #endregion Functions
+
+// #region Components
+
+export function getVideoComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): ComponentStructure | null;
+    createComponentElement(): HTMLElement;
+} {
+    const latestVersion = "v2-alpha" as const;
+
+    return {
+        getElements(componentElement: Element): ComponentStructure | null {
+            if (!componentElement.classList.contains("component-video")) {
+                throw new Error(`Element is not a video component element: ${componentElement.outerHTML}`);
+            }
+
+            return findComponentInnerWrappers(componentElement);
+        },
+
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "video",
+                "v2-alpha",
+                `<a href=""><img src="/Assets/Images/video-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></a>`
+            );
+            // Image component needs a line-height of 0 to remove extra space under image.
+            componentElements.marginWrapper.borderWrapper.paddingWrapper.td.style.lineHeight = "0";
+            return componentElements.marginWrapper.table;
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-video")) {
+                throw new Error(`Element is not a video component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+
+            return !versionNumber || compareComponentVersions(versionNumber, latestVersion) < 0;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-video")) {
+                throw new Error(`Element is not a video component element: ${oldComponentElement.outerHTML}`);
+            }
+
+            if (!this.isMigrationRequired(oldComponentElement)) {
+                return oldComponentElement;
+            }
+
+            const migrations = [
+                function v0ToV2Alpha(componentElement: Element): Element {
+                    const anchor = componentElement.querySelector("a");
+                    const img = anchor?.querySelector("img");
+
+                    if (!anchor || !img) {
+                        throw new Error("Invalid video component structure: missing <a> or <img>.");
+                    }
+
+                    const href = anchor.getAttribute("href") ?? "";
+                    const src = img.getAttribute("src") ?? "";
+                    const style = img.getAttribute("style") ?? "";
+                    const dataImgCssWidth = img.getAttribute("data-imgcsswidth") ?? "";
+
+                    // Prepare the new component
+                    const newComponent = document.createElement("table");
+                    newComponent.setAttribute("border", "0");
+                    newComponent.setAttribute("cellpadding", "0");
+                    newComponent.setAttribute("cellspacing", "0");
+                    newComponent.setAttribute("width", "100%");
+                    newComponent.setAttribute("role", "presentation");
+                    newComponent.className = "margin-wrapper margin-wrapper-for-video component component-video";
+                    newComponent.setAttribute("data-state", "component");
+
+                    setComponentVersionNumber(newComponent, "v2-alpha");
+
+                    // Preserve any known metadata (no parsing, just forwarding)
+                    const filename = img.getAttribute("data-image-filename");
+                    const guid = img.getAttribute("data-image-guid");
+                    const sourceUrl = componentElement.getAttribute("data-image-source-video-url");
+
+                    if (filename) newComponent.setAttribute("data-image-filename", filename);
+                    if (guid) newComponent.setAttribute("data-image-guid", guid);
+                    if (sourceUrl) newComponent.setAttribute("data-image-source-video-url", sourceUrl);
+
+                    // Create the v2-alpha structure
+                    newComponent.innerHTML = `
+            <tbody>
+                <tr>
+                    <td>
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper border-wrapper-for-video" style="border-collapse: separate !important;">
+                            <tbody>
+                                <tr>
+                                    <td style="overflow: hidden;">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper padding-wrapper-for-video">
+                                            <tbody>
+                                                <tr>
+                                                    <td style="line-height: 0;">
+                                                        <a href="${href}">
+                                                            <img src="${src}" ${dataImgCssWidth ? `data-imgcsswidth="${dataImgCssWidth}"` : ""} style="${style}">
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        `;
+
+                    return newComponent;
+                }
+            ];
+
+
+            // Run migrations.
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
+        }
+    };
+}
+
+export function getTitleComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): ComponentStructure & { readonly headingEl: HTMLHeadElement | null; } | null;
+    createComponentElement(): HTMLElement;
+} {
+    const latestVersion = "v2-alpha" as const;
+
+    return {
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "title",
+                latestVersion,
+                `<h1 class="${RockCssClassContentEditable}" style="margin: 0;">Title</h1>`
+            );
+            // Initialize the component with the correct classes.
+            componentElements.marginWrapper.table.classList.add(getMarginWrapperTableCssClass("title", "-h1"));
+            componentElements.marginWrapper.borderWrapper.table.classList.add(getBorderWrapperTableCssClass("title", "-h1"));
+            componentElements.marginWrapper.borderWrapper.paddingWrapper.table.classList.add(getPaddingWrapperTableCssClass("title", "-h1"));
+            return componentElements.marginWrapper.table;
+        },
+
+        getElements(componentElement: Element): ComponentStructure & { headingEl: HTMLHeadElement | null; } | null {
+            if (!componentElement.classList.contains("component-title")) {
+                throw new Error(`Element is not a title component element: ${componentElement.outerHTML}`);
+            }
+
+            const wrappers = findComponentInnerWrappers(componentElement);
+
+            if (!wrappers) {
+                return null;
+            }
+
+            return {
+                ...wrappers,
+
+                get headingEl(): HTMLHeadingElement | null {
+                    return (wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector("h1, h2, h3, h4, h5, h6") ?? null) as HTMLHeadingElement | null;
+                }
+            };
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-title")) {
+                throw new Error(`Element is not a title component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+
+            if (!versionNumber) {
+                return true;
+            }
+
+            const comparison = compareComponentVersions(versionNumber, latestVersion);
+
+            if (comparison < 0) {
+                return true;
+            }
+
+            return false;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-title")) {
+                throw new Error(`Element is not a title component element: ${oldComponentElement.outerHTML}`);
+            }
+
+            if (!this.isMigrationRequired(oldComponentElement)) {
+                return oldComponentElement;
+            }
+
+            const migrations = [
+                function v0ToV2Alpha(componentElement: Element): Element {
+                    if (getComponentVersionNumber(componentElement)) {
+                        return componentElement; // Already migrated
+                    }
+
+                    const heading = (componentElement.querySelector("h1, h2, h3, h4, h5, h6") ?? null) as HTMLHeadingElement | null;
+                    if (!heading) {
+                        throw new Error("Heading tag not found in title component.");
+                    }
+
+                    const headingTag = heading.tagName.toLowerCase();
+                    const headingText = heading.textContent || "";
+                    const style = heading.style;
+
+                    // Extract and remove margin/padding
+                    const simulatedMargin = style.margin || "";
+                    const contentPadding = style.padding || "";
+
+                    // Remove margin and padding from style to preserve the rest
+                    const cleanStyle: string[] = [];
+                    for (const prop of heading.style) {
+                        if (prop !== "margin" && prop !== "padding") {
+                            cleanStyle.push(`${prop}: ${style.getPropertyValue(prop)};`);
+                        }
+                    }
+                    // Always override margin to 0 on heading
+                    cleanStyle.push("margin: 0px;");
+
+                    const version = "v2-alpha";
+
+                    const wrapper = document.createElement("table");
+                    wrapper.setAttribute("border", "0");
+                    wrapper.setAttribute("cellpadding", "0");
+                    wrapper.setAttribute("cellspacing", "0");
+                    wrapper.setAttribute("width", "100%");
+                    wrapper.setAttribute("role", "presentation");
+                    wrapper.className = `margin-wrapper margin-wrapper-for-title component component-title margin-wrapper-for-title-${headingTag}`;
+                    wrapper.setAttribute("data-state", "component");
+                    setComponentVersionNumber(wrapper, version); // Ensure version tracking
+
+                    const wrapperPaddingAttr = simulatedMargin ? ` style="padding: ${simulatedMargin};"` : "";
+                    const innerTdPaddingAttr = contentPadding ? ` style="padding: ${contentPadding};"` : "";
+
+                    wrapper.innerHTML = `
+                        <tbody><tr><td${wrapperPaddingAttr}>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation"
+                                class="border-wrapper border-wrapper-for-title border-wrapper-for-title-${headingTag}"
+                                style="border-collapse: separate !important;">
+                                <tbody><tr><td style="overflow: hidden;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation"
+                                        class="padding-wrapper padding-wrapper-for-title padding-wrapper-for-title-${headingTag}">
+                                        <tbody><tr><td${innerTdPaddingAttr}>
+                                            <${headingTag} class="rock-content-editable" style="${cleanStyle.join(" ")}">${headingText}</${headingTag}>
+                                        </td></tr></tbody>
+                                    </table>
+                                </td></tr></tbody>
+                            </table>
+                        </td></tr></tbody>
+                    `;
+
+                    return wrapper;
+                }
+            ];
+
+            // Run migrations.
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
+        }
+    };
+}
+
+export function getTextComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): ComponentStructure & { readonly contentWrapper: HTMLElement | null; } | null;
+    createComponentElement(): HTMLElement;
+} {
+    const latestVersion = "v2-alpha" as const;
+
+    return {
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "text",
+                latestVersion,
+                // Wrap component in a content-wrapper so the wrapper can be styled.
+                // It's important that no whitespace is left around the editable area.
+                `<div class="content-wrapper content-wrapper-for-text ${RockCssClassContentEditable}"><p style="margin: 0;">Let's see what you have to say!</p></div>`
+            );
+
+            return componentElements.marginWrapper.table;
+        },
+
+        getElements(componentElement: Element): ComponentStructure & { readonly contentWrapper: HTMLElement | null; } | null {
+            if (!componentElement.classList.contains("component-text")) {
+                throw new Error(`Element is not a text component element: ${componentElement.outerHTML}`);
+            }
+
+            const wrappers = findComponentInnerWrappers(componentElement);
+
+            if (wrappers) {
+                return {
+                    ...wrappers,
+
+                    get contentWrapper(): HTMLElement | null {
+                        return wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(getContentWrapperSelector("text")) as HTMLElement | null;
+                    }
+                };
+            }
+            else {
+                return null;
+            }
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-text")) {
+                throw new Error(`Element is not a text component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+
+            return !versionNumber || compareComponentVersions(versionNumber, latestVersion) < 0;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-text")) {
+                throw new Error(`Element is not a text component element: ${oldComponentElement.outerHTML}`);
+            }
+
+            if (!this.isMigrationRequired(oldComponentElement)) {
+                return oldComponentElement;
+            }
+
+            const migrations = [
+                function v0ToV2Alpha(componentElement: Element): Element {
+                    if (getComponentVersionNumber(componentElement)) {
+                        return componentElement; // Already migrated
+                    }
+
+                    // Create the new root table element
+                    const newRoot = document.createElement("table");
+                    newRoot.setAttribute("border", "0");
+                    newRoot.setAttribute("cellpadding", "0");
+                    newRoot.setAttribute("cellspacing", "0");
+                    newRoot.setAttribute("width", "100%");
+                    newRoot.setAttribute("role", "presentation");
+                    newRoot.classList.add("margin-wrapper", "component", "component-text");
+                    newRoot.setAttribute("data-state", "component");
+                    setComponentVersionNumber(newRoot, "v2-alpha"); // Ensure version tracking
+
+                    // Check for `.js-component-text-wrapper`
+                    const oldWrapper = (componentElement.querySelector(".js-component-text-wrapper") ?? null) as HTMLElement | null;
+
+                    // Start building the inner structure
+                    let innerStructure = `
+                        <tbody><tr><td>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper" style="border-collapse: separate !important;">
+                                <tbody><tr><td`;
+
+                    let padding = "";
+                    if (oldWrapper) {
+                        // Extract styles from `.js-component-text-wrapper`
+                        const backgroundColor = (componentElement as HTMLElement).style.backgroundColor || "";
+                        const borderWidth = oldWrapper.style.borderWidth || "";
+                        const borderColor = oldWrapper.style.borderColor || "";
+                        const borderStyle = oldWrapper.style.borderStyle || "";
+                        padding = oldWrapper.style.padding || "";
+
+                        // Apply inline styles for full "v0" migration
+                        let inlineStyle = "";
+                        if (backgroundColor) inlineStyle += `background-color: ${backgroundColor}; `;
+                        if (borderWidth) inlineStyle += `border-width: ${borderWidth}; `;
+                        if (borderColor) inlineStyle += `border-color: ${borderColor}; `;
+                        if (borderStyle) inlineStyle += `border-style: ${borderStyle}; `;
+
+                        innerStructure += inlineStyle ? ` style="${inlineStyle.trim()}"` : "";
+                    }
+
+                    innerStructure += `>
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper">
+                                        <tbody><tr><td`;
+
+                    if (oldWrapper) {
+                        // Apply padding style if `.js-component-text-wrapper` existed
+                        innerStructure += padding ? ` style="padding: ${padding};"` : "";
+                    }
+
+                    innerStructure += `>
+                                            <div class="content-wrapper content-wrapper-for-text rock-content-editable"></div>
+                                        </td></tr></tbody>
+                                    </table>
+                                </td></tr></tbody>
+                            </table>
+                        </td></tr></tbody>
+                    `;
+
+                    // Set the new structure
+                    newRoot.innerHTML = innerStructure;
+
+                    // Move existing content into `.rock-content-editable`
+                    const newContentContainer = newRoot.querySelector(".rock-content-editable") as HTMLElement;
+                    if (oldWrapper) {
+                        // Move children of `.js-component-text-wrapper`
+                        oldWrapper.childNodes.forEach(node => newContentContainer.appendChild(node.cloneNode(true)));
+                    }
+                    else {
+                        // Move children of the original `.component-text` (simple case)
+                        componentElement.childNodes.forEach(node => newContentContainer.appendChild(node.cloneNode(true)));
+                    }
+
+                    return newRoot;
+                }
+            ];
+
+            // Run migrations.
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
+        }
+    };
+}
+
+export function getButtonComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): ComponentStructure & { readonly linkButton: HTMLAnchorElement | null; } | null;
+    createComponentElement(): HTMLElement;
+} {
+    const latestVersion = "v2.1-alpha" as const;
+
+    return {
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "button",
+                latestVersion,
+                `<a class="button-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Click Me" style="text-align: center; display: block;">Click Me</a>`
+            );
+
+            componentElements.marginWrapper.table.classList.add("button-outerwrap");
+            componentElements.marginWrapper.table.style.minWidth = "100%";
+            componentElements.marginWrapper.td.classList.add("button-innerwrap");
+            componentElements.marginWrapper.td.setAttribute("align", "center");
+            componentElements.marginWrapper.td.setAttribute("valign", "top");
+            componentElements.marginWrapper.borderWrapper.table.removeAttribute("width");
+            componentElements.marginWrapper.borderWrapper.table.classList.add("button-shell");
+            componentElements.marginWrapper.borderWrapper.td.classList.add("button-content");
+            componentElements.marginWrapper.borderWrapper.td.setAttribute("align", "center");
+            componentElements.marginWrapper.borderWrapper.td.setAttribute("valign", "middle");
+            return componentElements.marginWrapper.table;
+        },
+
+        getElements(componentElement: Element): ComponentStructure & { readonly linkButton: HTMLAnchorElement | null; } | null {
+            if (!componentElement.classList.contains("component-button")) {
+                throw new Error(`Element is not a button component element: ${componentElement.outerHTML}`);
+            }
+
+            const wrappers = findComponentInnerWrappers(componentElement);
+
+            if (!wrappers) {
+                return null;
+            }
+
+            return {
+                ...wrappers,
+
+                get linkButton(): HTMLAnchorElement | null {
+                    const searchFrom = wrappers.marginWrapper.borderWrapper.paddingWrapper.td;
+
+                    return (searchFrom.querySelector("a.button-link") ?? null) as HTMLAnchorElement | null;
+                }
+            };
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-button")) {
+                throw new Error(`Element is not a button component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+            return !versionNumber || compareComponentVersions(versionNumber, latestVersion) < 0;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-button")) {
+                throw new Error(`Element is not a button component element: ${oldComponentElement.outerHTML}`);
+            }
+
+            if (!this.isMigrationRequired(oldComponentElement)) {
+                return oldComponentElement;
+            }
+
+            const migrations = [
+                function v0ToV2o1oAlpha(componentElement: Element): Element {
+                    if (getComponentVersionNumber(componentElement)) {
+                        return componentElement; // Already migrated
+                    }
+
+                    const outerWrapper = document.createElement("table");
+                    outerWrapper.setAttribute("border", "0");
+                    outerWrapper.setAttribute("cellpadding", "0");
+                    outerWrapper.setAttribute("cellspacing", "0");
+                    outerWrapper.setAttribute("width", "100%");
+                    outerWrapper.setAttribute("role", "presentation");
+                    outerWrapper.className = "margin-wrapper margin-wrapper-for-button component component-button button-outerwrap";
+                    outerWrapper.setAttribute("data-state", "component");
+                    outerWrapper.setAttribute("data-version", "v2.1-alpha");
+                    outerWrapper.style.minWidth = "100%";
+                    outerWrapper.setAttribute("data-component-background-color", "true");
+                    outerWrapper.setAttribute("data-component-button-width", "true");
+
+                    const buttonShell = componentElement.querySelector(".button-shell") as HTMLElement;
+                    const buttonContent = componentElement.querySelector(".button-content") as HTMLElement;
+                    const buttonLink = componentElement.querySelector("a.button-link") as HTMLElement;
+
+                    const text = buttonLink.textContent?.trim() ?? "";
+                    const href = (buttonLink as HTMLAnchorElement).href || "#";
+                    const title = buttonLink.getAttribute("title") || "";
+
+                    const backgroundColor = buttonLink.style.backgroundColor || "";
+                    const color = buttonLink.style.color || "";
+
+                    const fontFamily = buttonLink.style.fontFamily || "";
+                    const fontSize = buttonLink.style.fontSize || "";
+                    const fontWeight = buttonLink.style.fontWeight || "";
+                    const padding = buttonLink.style.padding || "";
+                    const borderRadius = buttonContent?.style.borderRadius || "";
+                    const align = componentElement.querySelector(".button-innerwrap")?.getAttribute("align") || "left";
+
+                    const widthAttr = buttonShell?.getAttribute("width") || "";
+                    const widthStyle = buttonShell?.style.width || buttonLink.style.width || "";
+                    const isFullWidth = widthAttr === "100%" || widthStyle === "100%";
+                    const isFixedWidth = !!widthStyle && /\d+px/.test(widthStyle);
+                    const fixedWidthValue = isFixedWidth ? widthStyle : "";
+
+                    // Build inner structure
+                    outerWrapper.innerHTML = `
+                        <tbody><tr><td class="button-innerwrap" align="${align}" valign="top">
+                            <table border="0" cellpadding="0" cellspacing="0" role="presentation" class="border-wrapper border-wrapper-for-button button-shell" style="border-collapse: separate !important;">
+                                <tbody><tr><td class="button-content" align="center" valign="middle" style="overflow: hidden;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper padding-wrapper-for-button" ${backgroundColor ? `bgcolor="${backgroundColor}"` : ""}>
+                                        <tbody><tr><td ${backgroundColor ? `style="background-color: ${backgroundColor};"` : ""}>
+                                            <a class="button-link rock-content-editable" href="${href}" rel="noopener noreferrer" title="${title}" style="display: block; text-align: center;">${text}</a>
+                                        </td></tr></tbody>
+                                    </table>
+                                </td></tr></tbody>
+                            </table>
+                        </td></tr></tbody>
+                    `;
+
+                    // Apply width logic
+                    const shell = outerWrapper.querySelector(".button-shell") as HTMLElement;
+                    const link = outerWrapper.querySelector(".button-link") as HTMLElement;
+                    const content = outerWrapper.querySelector(".button-content") as HTMLElement;
+
+                    if (isFullWidth) {
+                        shell.setAttribute("width", "100%");
+                        shell.style.width = "100%";
+                        shell.style.maxWidth = "100%";
+                    }
+                    else if (isFixedWidth) {
+                        shell.setAttribute("width", fixedWidthValue);
+                        shell.style.width = fixedWidthValue;
+                        link.style.width = fixedWidthValue;
+                    }
+                    else {
+                        shell.style.maxWidth = "100%";
+                    }
+
+                    // Apply style properties
+                    if (borderRadius) {
+                        content.style.borderRadius = borderRadius;
+                    }
+
+                    if (color) {
+                        link.style.color = color;
+                    }
+
+                    if (fontFamily) {
+                        link.style.fontFamily = fontFamily;
+                    }
+
+                    if (fontSize) {
+                        link.style.fontSize = fontSize;
+                    }
+
+                    if (fontWeight) {
+                        link.style.fontWeight = fontWeight;
+                    }
+
+                    if (padding) {
+                        link.style.padding = padding;
+                    }
+
+                    return outerWrapper;
+                }
+            ];
+
+            // Run migrations.
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement as Element);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
+        }
+    };
+}
+
+export function getCodeComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): ComponentStructure & { readonly contentWrapper: HTMLElement | null; } | null
+    createComponentElement(): HTMLElement;
+} {
+    const latestVersion = "v2-alpha" as const;
+
+    return {
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "code",
+                latestVersion,
+                // Wrap component in a content-wrapper so the wrapper can be styled.
+                // It's important that no whitespace is left around the editable area.
+                `<div class="content-wrapper content-wrapper-for-code ${RockCssClassContentEditable}">Add your code here...</div>`
+            );
+            return componentElements.marginWrapper.table;
+        },
+
+        getElements(componentElement: Element): ComponentStructure & { readonly contentWrapper: HTMLElement | null; } | null {
+            if (!componentElement.classList.contains("component-code")) {
+                throw new Error(`Element is not a code component element: ${componentElement.outerHTML}`);
+            }
+
+            const wrappers = findComponentInnerWrappers(componentElement);
+
+            if (wrappers) {
+                return {
+                    ...wrappers,
+
+                    get contentWrapper(): HTMLElement | null {
+                        const searchFromElement = wrappers.marginWrapper.borderWrapper.paddingWrapper.td;
+                        return (searchFromElement.querySelector(getContentWrapperSelector("code")) ?? null) as HTMLElement | null;
+                    }
+                };
+            }
+
+            return wrappers;
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-code")) {
+                throw new Error(`Element is not a code component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+
+            return !versionNumber || compareComponentVersions(versionNumber, latestVersion) < 0;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-code")) {
+                throw new Error(`Element is not a code component element: ${oldComponentElement.outerHTML}`);
+            }
+
+            if (!this.isMigrationRequired(oldComponentElement)) {
+                return oldComponentElement;
+            }
+
+            const migrations = [
+                function v0ToV2Alpha(componentElement: Element): Element {
+                    if (!componentElement.classList.contains("component-code")) {
+                        throw new Error("Element is not a code component.");
+                    }
+
+                    const newComponentElement = document.createElement("table");
+                    newComponentElement.setAttribute("border", "0");
+                    newComponentElement.setAttribute("cellpadding", "0");
+                    newComponentElement.setAttribute("cellspacing", "0");
+                    newComponentElement.setAttribute("width", "100%");
+                    newComponentElement.setAttribute("role", "presentation");
+                    newComponentElement.className = "margin-wrapper margin-wrapper-for-code component component-code";
+                    newComponentElement.setAttribute("data-state", "component");
+
+                    // Ensure version tracking.
+                    setComponentVersionNumber(newComponentElement, "v2-alpha");
+
+                    const margin = (componentElement as HTMLElement).style.margin || "";
+
+                    newComponentElement.innerHTML = `
+                    <tbody><tr><td${margin ? ` style="padding: ${margin};"` : ""}>
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper border-wrapper-for-code" style="border-collapse: separate !important;">
+                            <tbody><tr><td style="overflow: hidden;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper padding-wrapper-for-code">
+                                    <tbody><tr><td>
+                                        <div class="content-wrapper content-wrapper-for-code rock-content-editable"></div>
+                                    </td></tr></tbody>
+                                </table>
+                            </td></tr></tbody>
+                        </table>
+                    </td></tr></tbody>
+                `;
+
+                    const contentContainer = newComponentElement.querySelector(".rock-content-editable") as HTMLElement;
+                    contentContainer.innerHTML = componentElement.innerHTML;
+
+                    return newComponentElement;
+                }
+            ];
+
+            // Run migrations.
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement as Element);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
+        }
+    };
+}
+
+export function getDividerComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): ComponentStructure | null;
+    createComponentElement(): HTMLElement;
+} {
+    const latestVersion = "v2-alpha" as const;
+
+    return {
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "divider",
+                latestVersion
+            );
+            return componentElements.marginWrapper.table;
+        },
+
+        getElements(componentElement: Element): ComponentStructure | null {
+            if (!componentElement.classList.contains("component-divider")) {
+                throw new Error(`Element is not a divider component element: ${componentElement.outerHTML}`);
+            }
+
+            return findComponentInnerWrappers(componentElement);
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-divider")) {
+                throw new Error(`Element is not a divider component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+            return !versionNumber || compareComponentVersions(versionNumber, latestVersion) < 0;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-divider")) {
+                throw new Error(`Element is not a divider component element: ${oldComponentElement.outerHTML}`);
+            }
+
+            if (!this.isMigrationRequired(oldComponentElement)) {
+                // The component is already at the latest version.
+                return oldComponentElement;
+            }
+
+            const migrations = [
+                function v0ToV2Alpha(componentElement: Element): Element {
+                    if (getComponentVersionNumber(componentElement)) {
+                        // Already migrated since v0 didn't have a version number.
+                        return componentElement;
+                    }
+
+                    // Create the new root table element
+                    const newRoot = document.createElement("table");
+                    newRoot.setAttribute("border", "0");
+                    newRoot.setAttribute("cellpadding", "0");
+                    newRoot.setAttribute("cellspacing", "0");
+                    newRoot.setAttribute("width", "100%");
+                    newRoot.setAttribute("role", "presentation");
+                    newRoot.classList.add("margin-wrapper", "component", "component-divider");
+                    newRoot.setAttribute("data-state", "component");
+                    setComponentVersionNumber(newRoot, "v2-alpha"); // Ensure version tracking
+
+                    // Extract the existing divider element (`<hr>` or `<div>`)
+                    const oldDivider = componentElement.querySelector("hr, div") as HTMLElement;
+                    if (!oldDivider) {
+                        throw new Error("No divider found in Divider component.");
+                    }
+
+                    // Determine if this was an `<hr>` or `<div>`
+                    const isHr = oldDivider.tagName.toLowerCase() === "hr";
+
+                    // Extract styles from the old divider
+                    let height = oldDivider.style.height;
+                    if (isHr && !height) {
+                        height = "1px"; // Default to 1px if no height is specified
+                    }
+                    const backgroundColor = oldDivider.style.backgroundColor || "transparent"; // If missing, keep transparent
+                    const marginTop = oldDivider.style.marginTop || "";
+                    const marginBottom = oldDivider.style.marginBottom || "";
+
+                    // Define border properties based on element type
+                    const borderWidth = `${height} 0px 0px`; // Top border uses height, others are 0px
+                    const borderColor = isHr ? `${backgroundColor} transparent transparent` : "transparent";
+                    const borderStyle = isHr ? "solid none none" : "solid"; // `solid` is optional for div
+
+                    // Create the new inner structure
+                    newRoot.innerHTML = `
+                        <tbody><tr><td ${marginTop || marginBottom ? `style="${marginTop ? `padding-top: ${marginTop};` : ""} ${marginBottom ? `padding-bottom: ${marginBottom};` : ""}"` : ""}>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper" style="border-collapse: separate !important;">
+                                <tbody><tr><td>
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper">
+                                        <tbody><tr><td style="border-width: ${borderWidth};
+                                                             border-color: ${borderColor};
+                                                             ${isHr ? `border-style: ${borderStyle};` : ""}">
+                                        </td></tr></tbody>
+                                    </table>
+                                </td></tr></tbody>
+                            </table>
+                        </td></tr></tbody>
+                    `;
+
+                    return newRoot;
+                }
+            ];
+
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
+        }
+    };
+}
+
+export function getRsvpComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): ComponentStructure | null;
+    createComponentElement(): HTMLElement;
+} {
+    const latestVersion = "v2-alpha" as const;
+
+    return {
+        createComponentElement(): HTMLElement {
+            const div = document.createElement("div");
+            div.classList.add("component", "component-rsvp");
+            setComponentVersionNumber(div, latestVersion); // Ensure version tracking
+            div.dataset.state = "component";
+            div.innerHTML =
+                `<table class="rsvp-outerwrap" border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="min-width: 100%;">
+                    <tbody>
+                        <tr>
+                            <td class="rsvp-innerwrap" align="center" valign="top" style="padding: 0;">
+                                <table border="0" cellpadding="0" cellspacing="0" role="presentation">
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <table class="accept-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #16C98D; border-collapse: separate; border-radius: 3px; display: inline-table;">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="rsvp-accept-content" align="center" valign="middle">
+                                                                <a class="rsvp-accept-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Accept" style="color: #FFFFFF; display: inline-block; font-family: Arial; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none; border-bottom-width: 0;">Accept</a>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                            <td style="padding-left: 10px;">
+                                                <table class="decline-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #D4442E; border-collapse: separate; border-radius: 3px; display: inline-table;">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="rsvp-decline-content" align="center" valign="middle">
+                                                                <a class="rsvp-decline-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Decline" style="color: #FFFFFF; display: inline-block; font-family: Arial; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none; border-bottom-width: 0;">Decline</a>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <input type="hidden" class="rsvp-group-id">
+                <input type="hidden" class="rsvp-occurrence-value">`;
+            return div;
+        },
+
+        getElements(componentElement: Element): ComponentStructure | null {
+            if (!componentElement.classList.contains("component-rsvp")) {
+                throw new Error(`Element is not an RSVP component element: ${componentElement.outerHTML}`);
+            }
+
+            return findComponentInnerWrappers(componentElement);
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-rsvp")) {
+                throw new Error(`Element is not an RSVP component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+            return !versionNumber || compareComponentVersions(versionNumber, latestVersion) < 0;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-rsvp")) {
+                throw new Error(`Element is not an RSVP component element: ${oldComponentElement.outerHTML}`);
+            }
+
+            if (!this.isMigrationRequired(oldComponentElement)) {
+                // The component is already at the latest version.
+                return oldComponentElement;
+            }
+
+            const migrations = [
+                function v0ToV2Alpha(componentElement: Element): Element {
+                    if (!componentElement.classList.contains("component-rsvp")) {
+                        throw new Error("Element is not a valid RSVP component.");
+                    }
+
+                    const newComponent = document.createElement("div");
+                    newComponent.className = "component component-rsvp";
+                    newComponent.setAttribute("data-state", "component");
+                    setComponentVersionNumber(newComponent, "v2-alpha");
+
+                    const groupInput = componentElement.querySelector(".rsvp-group-id");
+                    const occurrenceInput = componentElement.querySelector(".rsvp-occurrence-value");
+
+                    const anchorAccept = componentElement.querySelector("a.rsvp-accept-link") as HTMLAnchorElement | null;
+                    const anchorDecline = componentElement.querySelector("a.rsvp-decline-link") as HTMLAnchorElement | null;
+
+                    const acceptText = anchorAccept?.textContent ?? "";
+                    const declineText = anchorDecline?.textContent ?? "";
+                    const acceptHref = anchorAccept?.getAttribute("href") ?? "";
+                    const declineHref = anchorDecline?.getAttribute("href") ?? "";
+
+                    const acceptStyle = anchorAccept?.style;
+                    const declineStyle = anchorDecline?.style;
+
+                    const acceptBgColor = (anchorAccept?.closest("table") as HTMLElement)?.style.backgroundColor || "";
+                    const declineBgColor = (anchorDecline?.closest("table") as HTMLElement)?.style.backgroundColor || "";
+                    const declineDisplay = (anchorDecline?.closest("table") as HTMLElement)?.style.display || "";
+
+                    const fontFamily = acceptStyle?.fontFamily.replace(/"/g, "&quot;") || "";
+                    const fontWeight = acceptStyle?.fontWeight || "";
+                    const fontSize = acceptStyle?.fontSize || "";
+                    const padding = acceptStyle?.padding || "";
+                    const align = (componentElement.querySelector(".rsvp-innerwrap") as HTMLElement)?.getAttribute("align") || "left";
+
+                    const acceptColor = acceptStyle?.color || "";
+                    const declineColor = declineStyle?.color || "";
+
+                    newComponent.innerHTML = `
+                        <table class="rsvp-outerwrap" border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="min-width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <td class="rsvp-innerwrap" align="${align}" valign="top" style="padding: 0;">
+                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation">
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <table class="accept-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation"
+                                                            style="background-color: ${acceptBgColor}; border-collapse: separate; border-radius: 3px; display: inline-table;">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td class="rsvp-accept-content" align="center" valign="middle">
+                                                                        <a class="rsvp-accept-link rock-content-editable"
+                                                                           href="${acceptHref}"
+                                                                           title="${acceptText}"
+                                                                           rel="noopener noreferrer"
+                                                                           style="color: ${acceptColor};
+                                                                                  display: inline-block;
+                                                                                  font-size: ${fontSize};
+                                                                                  font-weight: ${fontWeight};
+                                                                                  letter-spacing: normal;
+                                                                                  padding: ${padding};
+                                                                                  text-align: center;
+                                                                                  text-decoration: none;
+                                                                                  border-bottom-width: 0px;
+                                                                                  font-family: ${fontFamily};">${acceptText}</a>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </td>
+                                                    <td style="padding-left: 10px;">
+                                                        <table class="decline-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation"
+                                                            style="background-color: ${declineBgColor}; border-collapse: separate; border-radius: 3px; display: ${declineDisplay || "inline-table"};">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td class="rsvp-decline-content" align="center" valign="middle">
+                                                                        <a class="rsvp-decline-link rock-content-editable"
+                                                                           href="${declineHref}"
+                                                                           title="${declineText}"
+                                                                           rel="noopener noreferrer"
+                                                                           style="color: ${declineColor};
+                                                                                  display: inline-block;
+                                                                                  font-size: ${fontSize};
+                                                                                  font-weight: ${fontWeight};
+                                                                                  letter-spacing: normal;
+                                                                                  padding: ${padding};
+                                                                                  text-align: center;
+                                                                                  text-decoration: none;
+                                                                                  border-bottom-width: 0px;
+                                                                                  font-family: ${fontFamily};">${declineText}</a>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    `;
+
+                    if (groupInput) newComponent.appendChild(groupInput.cloneNode(true));
+                    if (occurrenceInput) newComponent.appendChild(occurrenceInput.cloneNode(true));
+
+                    return newComponent;
+                }
+            ];
+
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
+        }
+    };
+}
+
+export function getRowComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): ComponentStructure | null;
+    createComponentElement(): HTMLElement;
+} {
+    const latestVersion = "v2-alpha" as const;
+
+    return {
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "row",
+                "v2-alpha",
+                `<div class="dropzone"></div>`
+            );
+            return componentElements.marginWrapper.table;
+        },
+
+        getElements(componentElement: Element): ComponentStructure | null {
+            if (!componentElement.classList.contains("component-row")) {
+                throw new Error(`Element is not a row component element: ${componentElement.outerHTML}`);
+            }
+
+            const wrappers = findComponentInnerWrappers(componentElement);
+
+            if (!wrappers) {
+                return null;
+            }
+
+            return wrappers;
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-row")) {
+                throw new Error(`Element is not a row component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+
+            if (!versionNumber) {
+                return true;
+            }
+
+            const comparison = compareComponentVersions(versionNumber, latestVersion);
+
+            if (comparison < 0) {
+                return true;
+            }
+
+            // Are there any child components that need migration?
+            if (Enumerable
+                .from(componentElement.children)
+                .where(c => {
+                    try {
+                        const helper = getComponentHelper(getComponentTypeName(c));
+                        return helper?.isMigrationRequired(c) ?? false;
+                    }
+                    catch (e) {
+                        // Log error and continue
+                        console.error(`Error checking migration for row component child: ${e}`);
+                        return false;
+                    }
+                })
+            ) {
+                return true;
+            }
+
+            return false;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-row")) {
+                throw new Error(`Element is not a row component element: ${oldComponentElement.outerHTML}`);
+            }
+
+            if (!this.isMigrationRequired(oldComponentElement)) {
+                // The component is already at the latest version.
+                return oldComponentElement;
+            }
+
+            // These are in order from oldest to newest; new migrations should be added at the end.
+            const migrations = [
+                function v0ToV2Alpha(componentElement: Element): Element {
+                    // This component doesn't need a migration itself,
+                    // but a child component might need to be migrated.
+                    const childComponents = componentElement.querySelectorAll(".component");
+
+                    childComponents.forEach(childComponent => {
+                        const helper = getComponentHelper(getComponentTypeName(childComponent));
+                        if (helper?.isMigrationRequired(childComponent)) {
+                            const migratedChild = helper.migrate(childComponent);
+                            if (migratedChild !== childComponent) {
+                                childComponent.replaceWith(migratedChild);
+                            }
+                        }
+                    });
+
+                    return componentElement;
+                }
+            ];
+
+            // Run migrations.
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
+        }
+    };
+}
+
+type SectionComponentTypeName = Extract<EditorComponentTypeName,
+    "section"
+    | "one-column-section"
+    | "two-column-section"
+    | "three-column-section"
+    | "four-column-section"
+    | "right-sidebar-section"
+    | "left-sidebar-section">;
+export function getSectionComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): ComponentStructure & { readonly rowWrapper: HTMLTableElement | null; } | null;
+    createComponentElement(componentTypeName: SectionComponentTypeName): HTMLElement;
+} {
+    const latestVersion = "v2-alpha" as const;
+
+    return {
+        createComponentElement(componentTypeName: SectionComponentTypeName): HTMLElement {
+            function getSectionColumns(componentTypeName: EditorComponentTypeName): string {
+                const wrappers = createElementWrappers(`<div class="dropzone"></div>`);
+                const wrapperHtml = wrappers.marginWrapper.table.outerHTML;
+                switch (componentTypeName) {
+                    case "right-sidebar-section":
+                        return `<td class="section-column columns small-12 start large-8" valign="top" width="66.666666%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 last large-4" valign="top" width="33.333333%">${wrapperHtml}</td>`;
+                    case "left-sidebar-section":
+                        return `<td class="section-column columns small-12 start large-4" valign="top" width="33.333333%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 last large-8" valign="top" width="66.666666%">${wrapperHtml}</td>`;
+                    case "two-column-section":
+                        return `<td class="section-column columns small-12 start large-6" valign="top" width="50%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 last large-6" valign="top" width="50%">${wrapperHtml}</td>`;
+                    case "three-column-section":
+                        return `<td class="section-column columns small-12 start large-4" valign="top" width="33.333333%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 large-4" valign="top" width="33.333333%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 last large-4" valign="top" width="33.333333%">${wrapperHtml}</td>`;
+                    case "four-column-section":
+                        return `<td class="section-column columns small-12 start large-3" valign="top" width="25%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 large-3" valign="top" width="25%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 large-3" valign="top" width="25%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 last large-3" valign="top" width="25%">${wrapperHtml}</td>`;
+                    case "one-column-section":
+                    default:
+                        return `<td class="section-column columns small-12 start last large-12" valign="top" width="100%">${wrapperHtml}</td>`;
+                }
+            }
+
+            const componentElements = createComponent(
+                "section",
+                latestVersion,
+                `<table class="row section-row" cellpadding="0" cellspacing="0" border="0" role="presentation" style="width: 100%;">
+                    <tbody>
+                        <tr>
+                            ${getSectionColumns(componentTypeName)}
+                        </tr>
+                    </tbody>
+                </table>`
+            );
+            return componentElements.marginWrapper.table;
+        },
+
+        getElements(componentElement: Element): ComponentStructure & { readonly rowWrapper: HTMLTableElement | null; } | null {
+            if (!componentElement.classList.contains("component-section")) {
+                throw new Error(`Element is not a section component element: ${componentElement.outerHTML}`);
+            }
+
+            const wrappers = findComponentInnerWrappers(componentElement);
+
+            if (!wrappers) {
+                return null;
+            }
+
+            return {
+                ...wrappers,
+
+                get rowWrapper(): HTMLTableElement | null {
+                    return wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector("table.section-row") ?? null;
+                }
+            };
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-section")) {
+                throw new Error(`Element is not a section component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+
+            if (!versionNumber) {
+                return true;
+            }
+
+            const comparison = compareComponentVersions(versionNumber, latestVersion);
+
+            if (comparison < 0) {
+                return true;
+            }
+
+            return false;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            const componentVersion = getComponentVersionNumber(oldComponentElement);
+
+            // Check if the component is already at the latest version.
+            if (componentVersion && compareComponentVersions(componentVersion, latestVersion) === 0) {
+                return oldComponentElement;
+            }
+
+            // These are in order from oldest to newest; new migrations should be added at the end.
+            const migrations = [
+                function v0ToV2Alpha(componentElement: Element): Element {
+                    if (getComponentVersionNumber(componentElement)) {
+                        // The old component element didn't have a version number
+                        // so if there is any version number at all, it's already migrated.
+                        return componentElement;
+                    }
+
+                    // Create the new root table element.
+                    const newRoot = document.createElement("table");
+                    newRoot.setAttribute("border", "0");
+                    newRoot.setAttribute("cellpadding", "0");
+                    newRoot.setAttribute("cellspacing", "0");
+                    newRoot.setAttribute("width", "100%");
+                    newRoot.setAttribute("role", "presentation");
+                    newRoot.classList.add("margin-wrapper", "component", "component-section");
+                    newRoot.setAttribute("data-state", "component");
+
+                    // Ensure version tracking.
+                    setComponentVersionNumber(newRoot, "v2-alpha");
+
+                    // Extract inline styles from the old component.
+                    const componentElementStyle = (componentElement as HTMLElement).style;
+                    const backgroundColor = componentElementStyle.backgroundColor || "";
+                    const padding = componentElementStyle.padding || "";
+                    const borderRadius = componentElementStyle.borderRadius || "";
+                    const borderStyle = componentElementStyle.borderStyle || "";
+                    const borderWidth = componentElementStyle.borderWidth || "";
+                    const borderColor = componentElementStyle.borderColor || "";
+
+                    // Create the inner structure.
+                    newRoot.innerHTML = `
+                        <tbody>
+                            <tr><td>
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper" style="border-collapse: separate !important;">
+                                    <tbody><tr><td style="${backgroundColor ? `background-color: ${backgroundColor};` : ""}
+                                                    ${borderRadius ? `border-radius: ${borderRadius};` : ""}
+                                                    ${borderStyle ? `border-style: ${borderStyle};` : ""}
+                                                    ${borderWidth ? `border-width: ${borderWidth};` : ""}
+                                                    ${borderColor ? `border-color: ${borderColor};` : ""}">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper">
+                                            <tbody><tr><td ${padding ? `style="padding: ${padding};"` : ""}>
+                                                <table class="row section-row" cellpadding="0" cellspacing="0" border="0" role="presentation" style="width: 100%;">
+                                                    <tbody><tr></tr></tbody>
+                                                </table>
+                                            </td></tr></tbody>
+                                        </table>
+                                    </td></tr></tbody>
+                                </table>
+                            </td></tr>
+                        </tbody>
+                    `;
+
+                    // Find old columns (dropzones and spacers)
+                    const oldColumns = Array.from(componentElement.querySelectorAll(".dropzone, .spacer"));
+                    const nonSpacerColumns = oldColumns.filter(col => !col.classList.contains("spacer")).length;
+                    const newColumnsRow = newRoot.querySelector(".section-row tbody tr") as HTMLElement;
+
+                    // Calculate "large-[n]" values ensuring the sum is 12
+                    const calculatedLarge = Math.floor(12 / nonSpacerColumns);
+                    const remainder = 12 - (calculatedLarge * nonSpacerColumns);
+                    const largeValues = new Array(nonSpacerColumns).fill(calculatedLarge);
+                    for (let i = 0; i < remainder; i++) {
+                        largeValues[i]++;
+                    }
+
+                    // Process each column
+                    oldColumns.forEach((oldColumn, index) => {
+                        const oldColumnElement = oldColumn as HTMLElement;
+
+                        if (oldColumnElement.classList.contains("spacer")) {
+                            // Copy spacers exactly
+                            const spacer = document.createElement("td");
+                            spacer.className = "spacer";
+                            spacer.setAttribute("width", oldColumnElement.getAttribute("width") || "8px");
+                            spacer.setAttribute("style", oldColumnElement.getAttribute("style") || "width: 8px; min-width: 8px; font-size: 0px; line-height: 0; padding: 0px;");
+                            spacer.innerHTML = "&nbsp;";
+
+                            // Append the spacer to the new row
+                            newColumnsRow.appendChild(spacer);
+                        }
+                        else {
+                            const width = oldColumnElement.getAttribute("width") || `${(100 / nonSpacerColumns).toFixed(3)}%`;
+                            const existingLargeClass = Array.from(oldColumnElement.classList).find(cls => cls.startsWith("large-"));
+                            const largeClass = existingLargeClass || `large-${largeValues[index]}`;
+
+                            // Extract styles
+                            const dropzoneBackgroundColor = oldColumnElement.style.backgroundColor || "";
+                            const dropzoneBorderRadius = oldColumnElement.style.borderRadius || "";
+                            const dropzoneBorderStyle = oldColumnElement.style.borderStyle || "";
+                            const dropzoneBorderWidth = oldColumnElement.style.borderWidth || "";
+                            const dropzoneBorderColor = oldColumnElement.style.borderColor || "";
+                            const dropzonePadding = oldColumnElement.style.padding || "";
+                            const textAlign = oldColumnElement.style.textAlign;
+                            const alignAttribute = oldColumnElement.style.textAlign ? `align="${oldColumnElement.style.textAlign}"` : "";
+
+                            // Create new column
+                            const newColumn = document.createElement("td");
+                            newColumn.className = `dropzone columns small-12 section-column ${largeClass}`;
+                            newColumn.setAttribute("valign", "top");
+                            newColumn.setAttribute("width", width);
+
+                            // Construct column content
+                            newColumn.innerHTML = `
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="margin-wrapper" align="center">
+        <tbody><tr><td>
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper" style="border-collapse: separate !important;">
+                <tbody><tr><td style="${dropzoneBackgroundColor ? `background-color: ${dropzoneBackgroundColor};` : ""}
+                                ${dropzoneBorderRadius ? `border-radius: ${dropzoneBorderRadius};` : ""}
+                                ${dropzoneBorderStyle ? `border-style: ${dropzoneBorderStyle};` : ""}
+                                ${dropzoneBorderWidth ? `border-width: ${dropzoneBorderWidth};` : ""}
+                                ${dropzoneBorderColor ? `border-color: ${dropzoneBorderColor};` : ""}">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper">
+                        <tbody><tr><td style="${dropzonePadding ? `padding: ${dropzonePadding};` : ""} ${textAlign ? `text-align: ${textAlign};` : ""}" ${alignAttribute}>
+                            <div class="dropzone"></div>
+                        </td></tr></tbody>
+                    </table>
+                </td></tr></tbody>
+            </table>
+        </td></tr></tbody>
+    </table>
+`;
+
+                            // Create a new dropzone and move existing content into it
+                            const newDropzone = newColumn.querySelector(".dropzone") as HTMLElement;
+                            oldColumn.childNodes.forEach(node => newDropzone.appendChild(node.cloneNode(true)));
+
+                            // Append the new column to the row
+                            newColumnsRow.appendChild(newColumn);
+                        }
+                    });
+
+                    // Before returning the section, migrate all descendant components.
+                    const childComponents = newRoot.querySelectorAll(".component");
+                    childComponents.forEach(childComponent => {
+                        const helper = getComponentHelper(getComponentTypeName(childComponent));
+                        if (helper?.isMigrationRequired(childComponent)) {
+                            const migratedChild = helper.migrate(childComponent);
+                            if (migratedChild !== childComponent) {
+                                childComponent.replaceWith(migratedChild);
+                            }
+                        }
+                    });
+
+                    return newRoot;
+                }
+            ];
+
+            // Run migrations.
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
+        }
+    };
+}
+
+export function getImageComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): ComponentStructure | null,
+    createComponentElement(): HTMLElement
+} {
+    const latestVersion = "v2-alpha" as const;
+
+    return {
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "image",
+                "v2-alpha",
+                // Use box-sizing: border-box to ensure border is included in image width calculations.
+                `<img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%; box-sizing: border-box;">`
+            );
+            // Image component needs a line-height of 0 to remove extra space under image.
+            componentElements.marginWrapper.borderWrapper.paddingWrapper.td.style.lineHeight = "0";
+            return componentElements.marginWrapper.table;
+        },
+
+        getElements(componentElement: Element): ComponentStructure | null {
+            if (!componentElement.classList.contains("component-image")) {
+                throw new Error(`Element is not an image component element: ${componentElement.outerHTML}`);
+            }
+
+            return findComponentInnerWrappers(componentElement);
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-image")) {
+                throw new Error(`Element is not a image component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+
+            if (!versionNumber) {
+                return true;
+            }
+
+            const comparison = compareComponentVersions(versionNumber, latestVersion);
+
+            if (comparison < 0) {
+                return true;
+            }
+
+            return false;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-image")) {
+                throw new Error("Element is not a valid image component.");
+            }
+
+            const componentVersion = getComponentVersionNumber(oldComponentElement);
+
+            // Check if the component is already at the latest version.
+            if (componentVersion && compareComponentVersions(componentVersion, latestVersion) === 0) {
+                return oldComponentElement;
+            }
+
+            // These are in order from oldest to newest; new migrations should be added at the end.
+            const migrations = [
+                function v0ToV2Alpha(oldComponent: Element): Element {
+                    const image = oldComponent.querySelector("img");
+                    if (!image) {
+                        throw new Error("No <img> found in the image component.");
+                    }
+
+                    const anchor = oldComponent.querySelector("a");
+                    const imgSrc = image.getAttribute("src") ?? "";
+                    const alt = image.getAttribute("alt") ?? "";
+
+                    const imageGuid = oldComponent.getAttribute("data-image-guid") ?? "";
+                    const imageFilename = oldComponent.getAttribute("data-image-filename") ?? "";
+                    const imageWidth = oldComponent.getAttribute("data-image-width") ?? "";
+                    const imageHeight = oldComponent.getAttribute("data-image-height") ?? "";
+                    const imageResizeMode = oldComponent.getAttribute("data-image-resizemode") ?? "";
+
+                    const hasMargin = (oldComponent as HTMLElement).style.margin;
+                    const margin = hasMargin || "";
+
+                    const align = (oldComponent as HTMLElement).style.textAlign || "";
+
+                    const tdAlignAttr = align ? ` align="${align}"` : "";
+
+                    const widthAttr = imageWidth ? ` width="${imageWidth}"` : "";
+                    const heightAttr = imageHeight ? ` height="${imageHeight}"` : "";
+                    const heightStyle = imageHeight ? ` height: ${imageHeight};` : "";
+
+                    const tdPadding = margin ? ` style="padding: ${margin};"` : "";
+
+                    const wrapper = document.createElement("table");
+                    wrapper.setAttribute("border", "0");
+                    wrapper.setAttribute("cellpadding", "0");
+                    wrapper.setAttribute("cellspacing", "0");
+                    wrapper.setAttribute("width", "100%");
+                    wrapper.setAttribute("role", "presentation");
+                    wrapper.className = "margin-wrapper margin-wrapper-for-image component component-image";
+                    wrapper.setAttribute("data-state", "component");
+                    setComponentVersionNumber(wrapper, "v2-alpha");
+
+                    if (imageGuid) {
+                        wrapper.setAttribute("data-image-guid", imageGuid);
+                    }
+                    if (imageFilename) {
+                        wrapper.setAttribute("data-image-filename", imageFilename);
+                    }
+                    if (imageWidth) {
+                        wrapper.setAttribute("data-image-width", imageWidth);
+                    }
+                    if (imageHeight) {
+                        wrapper.setAttribute("data-image-height", imageHeight);
+                    }
+                    if (imageResizeMode) {
+                        wrapper.setAttribute("data-image-resizemode", imageResizeMode);
+                    }
+
+                    wrapper.innerHTML = `
+                        <tbody><tr><td${tdPadding}>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation"
+                                   class="border-wrapper border-wrapper-for-image" style="border-collapse: separate !important;">
+                                <tbody><tr><td style="overflow: hidden;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation"
+                                           class="padding-wrapper padding-wrapper-for-image">
+                                        <tbody><tr><td${tdAlignAttr} style="line-height: 0;">
+                                            ${anchor
+                            ? `<a href="${anchor.getAttribute("href") ?? ""}"><img alt="${alt}" src="${imgSrc}" style="box-sizing: border-box;${heightStyle}"${widthAttr}${heightAttr}></a>`
+                            : `<img alt="${alt}" src="${imgSrc}" style="box-sizing: border-box;${heightStyle}"${widthAttr}${heightAttr}>`}
+                                        </td></tr></tbody>
+                                    </table>
+                                </td></tr></tbody>
+                            </table>
+                        </td></tr></tbody>
+                    `;
+
+                    return wrapper;
+                }
+            ];
+
+            // Run migrations.
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
+        }
+    };
+}
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function getComponentHelper(componentTypeName: ComponentTypeName) {
+    switch (componentTypeName) {
+        case "title":
+            return getTitleComponentHelper();
+        case "text":
+            return getTextComponentHelper();
+        case "image":
+            return getImageComponentHelper();
+        case "button":
+            return getButtonComponentHelper();
+        case "video":
+            return getVideoComponentHelper();
+        case "divider":
+            return getDividerComponentHelper();
+        case "row":
+            return getRowComponentHelper();
+        case "rsvp":
+            return getRsvpComponentHelper();
+        case "code":
+            return getCodeComponentHelper();
+        case "section":
+            return getSectionComponentHelper();
+        default:
+            console.error(`Unknown component type: ${componentTypeName}`);
+            return null;
+    }
+}
+
+// #endregion Components

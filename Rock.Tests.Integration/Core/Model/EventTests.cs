@@ -371,19 +371,18 @@ namespace Rock.Tests.Integration.Core.Model
             var rockContext = new RockContext();
             var calendarService = new EventCalendarService( rockContext );
 
-            // Get Campus 2.
-            var campus2 = TestDataHelper.GetOrAddCampusSteppingStone( rockContext );
+            // Make sure our test campus exists.
+            TestDataHelper.GetOrAddCampusSteppingStone( rockContext );
 
             var args = GetCalendarEventFeedArgumentsForTest( "Public", campusName: TestGuids.Crm.CampusSteppingStone );
             var calendarString1 = calendarService.CreateICalendar( args );
 
             // Deserialize the calendar output and verify the results.
             var events1 = CalendarCollection.Load( calendarString1 )?.FirstOrDefault()?.Events;
-            var nonCampusLocation = events1.FirstOrDefault( x => x.Location != "Meeting Room 1" );
 
             Assert.IsTrue( events1.Count > 0,
                 "Expected result not found. Filter returned no Events." );
-            Assert.IsTrue( events1.Any( x => x.Location == "Meeting Room 1" ),
+            Assert.IsTrue( events1.Any( x => x.Location == "Meeting Room 2" ),
                 "Expected result not found. Event with Campus/Location not found." );
         }
 

@@ -3,9 +3,9 @@
     <div class="email-editor-step">
         <Panel :hasFullscreen="true"
                :headerSecondaryActions="[{
-                   title: 'Save As Template', type: 'default',
-                   handler: onSaveAsTemplate
-               }]"
+                title: 'Save As Template', type: 'default',
+                handler: onSaveAsTemplate
+            }]"
                panelBodyCssClass="panel-body-wizard"
                type="block">
             <template #title>
@@ -16,6 +16,16 @@
                                         labelType="success">
                             The communication has been saved.
                             <button type="button" class="close btn-dismiss-alert" aria-label="Hide This Alert" @click.prevent="isSaveSuccessMessageShown = false">
+                                <i class="fa fa-times" aria-hidden="true"></i>
+                            </button>
+                        </HighlightLabel>
+
+                        <HighlightLabel v-if="isSendTestErrorMessageShown"
+                                        labelType="danger"
+                                        :dismissible="true"
+                                        @dismiss="isSendTestErrorMessageShown = false">
+                            <div v-html="sendTestErrorMessage" style="font-weight: var(--font-weight-regular)"></div>
+                            <button type="button" class="close btn-dismiss-alert" aria-label="Hide This Alert" @click.prevent="isSendTestErrorMessageShown = false">
                                 <i class="fa fa-times" aria-hidden="true"></i>
                             </button>
                         </HighlightLabel>
@@ -55,6 +65,10 @@
                                  :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
                                  :disabled="isDisabled"
                                  :mergeFields="mergeFields"
+                                 :shortLinkCheckToken="shortLinkCheckToken"
+                                 :shortLinkGetPageId="shortLinkGetPageId"
+                                 :shortLinkSites="shortLinkSites"
+                                 :shortLinkTokenMinLength="shortLinkTokenMinLength"
                                  :recipientPersonIds="recipientPersonIds"
                                  :videoProviderNames="videoProviderNames" />
 
@@ -64,7 +78,8 @@
             </template>
 
             <template #footerActions>
-                <RockButton :disabled="isDisabled"
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowLeft'"
+                            :disabled="isDisabled"
                             @click="onPreviousClicked">Previous</RockButton>
             </template>
 
@@ -74,7 +89,8 @@
                     <i class="fa fa-paper-plane-o"></i> Send Test
                 </RockButton>
 
-                <RockButton btnType="primary"
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowRight'"
+                            btnType="primary"
                             :disabled="isDisabled"
                             @click="onNextClicked">{{ nextStepTitle ? `Next: ${nextStepTitle}` : 'Next' }}</RockButton>
             </template>
@@ -84,9 +100,9 @@
             <div class="preview">
                 <ButtonGroup v-model="previewDevice"
                              :items="[
-                                 { text: 'Desktop', value: 'desktop' },
-                                 { text: 'Mobile', value: 'mobile' }
-                             ]" />
+                                { text: 'Desktop', value: 'desktop' },
+                                { text: 'Mobile', value: 'mobile' }
+                            ]" />
 
                 <div :class="previewDevice === 'desktop' ? 'device-browser' : 'device-mobile'">
                     <iframe :srcdoc="previewHtml"></iframe>
@@ -167,6 +183,12 @@
     align-items: center;
 }
 
+.email-editor-panel-title-right {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-xsmall);
+}
+
 .btn-dismiss-alert {
     font-size: var(--font-size-xsmall);
 }
@@ -189,6 +211,7 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { vShortcut } from "@Obsidian/Directives/shortcut";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
@@ -196,8 +219,8 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
-        message: {
-            type: String as PropType<string>,
+        areNavigationShortcutsDisabled: {
+            type: Boolean as PropType<boolean>,
             required: true
         },
 
@@ -221,23 +244,18 @@
             required: true
         },
 
-        recipientsLabel: {
-            type: String as PropType<string>,
+        mergeFields: {
+            type: Object as PropType<string[] | undefined>,
             required: true
         },
 
-        title: {
+        message: {
             type: String as PropType<string>,
             required: true
         },
 
         nextStepTitle: {
             type: String as PropType<string | null | undefined>,
-            required: true
-        },
-
-        mergeFields: {
-            type: Object as PropType<string[] | undefined>,
             required: true
         },
 
@@ -251,7 +269,36 @@
             required: true
         },
 
+        recipientsLabel: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        shortLinkCheckToken: {
+            type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>,
+            required: true
+        },
+
+        shortLinkGetPageId: {
+            type: Object as PropType<((pageGuid: Guid) => Promise<number | null | undefined>) | null | undefined>,
+            required: true
+        },
+
+        shortLinkSites: {
+            type: Object as PropType<ListItemBag[] | null | undefined>,
+            required: true
+        },
+
+        shortLinkTokenMinLength: {
+            type: Number as PropType<number | null | undefined>
+        },
+
         testEmailAddress: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        title: {
             type: String as PropType<string>,
             required: true
         },
@@ -284,6 +331,8 @@
     const isPreviewOpen = ref<boolean>(false);
     const previewDevice = ref<string>("desktop");
     const isSaveSuccessMessageShown = ref<boolean>(false);
+    const isSendTestErrorMessageShown = ref<boolean>(false);
+    const sendTestErrorMessage = ref<string>("");
     const isSaving = ref<boolean>(false);
     const isSendingTest = ref<boolean>(false);
     const isSendTestModalShown = ref<boolean>(false);
@@ -320,6 +369,7 @@
         }
 
         isSendingTest.value = true;
+        isSendTestErrorMessageShown.value = false;
 
         getHtmlRequest.value = {
             onSuccess({ html }): void {
@@ -328,8 +378,10 @@
                         isSendingTest.value = false;
                     },
 
-                    onError() {
+                    onError(error?: string | null | undefined) {
                         isSendingTest.value = false;
+                        isSendTestErrorMessageShown.value = true;
+                        sendTestErrorMessage.value = error ?? "An error occurred while sending the test email.";
                     }
                 });
             }

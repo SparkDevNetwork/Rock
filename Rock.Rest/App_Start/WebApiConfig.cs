@@ -36,6 +36,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Rock;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Net;
 using Rock.Rest.Handler;
 using Rock.Rest.Utility;
@@ -366,6 +367,7 @@ namespace Rock.Rest
             {
                 WebRootPath = AppDomain.CurrentDomain.BaseDirectory
             } );
+            serviceCollection.AddRockLogging();
 
             var apiServiceProvider = serviceCollection.BuildServiceProvider();
 

@@ -660,8 +660,8 @@ namespace Rock.UI {
         }
 
         /**
-         * If resumePlaying is enabled, sets the start position at the first gap
-         * found in the playback history. If the entire media has already been
+         * If resumePlaying is enabled, sets the start position at the last stop
+         * location in the playback history. If the entire media has already been
          * watched then starts from the beginning.
          */
         private setResume() {
@@ -675,6 +675,8 @@ namespace Rock.UI {
 
             let startPosition = 0;
 
+            // Walk backwards looking for the first non-zero bit we find and
+            // then use that as the starting position.
             for (let i = this.watchBits.length - 1; i >= 0; i--) {
                 if (this.watchBits[i] !== 0) {
                     startPosition = i + 1;

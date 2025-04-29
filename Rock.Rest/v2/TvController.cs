@@ -859,7 +859,12 @@ namespace Rock.Rest.v2.Controllers
                     launchPacket.CurrentPerson = TvHelper.GetTvPerson( person );
                     launchPacket.CurrentPerson.AuthToken = TvHelper.GetAuthenticationTokenFromUsername( principal.Identity.Name );
 
-                    UserLoginService.UpdateLastLogin( principal.Identity.Name );
+                    UserLoginService.UpdateLastLogin(
+                        new UpdateLastLoginArgs {
+                            UserName = principal.Identity.Name,
+                            SourceSiteIdOverride = site.Id
+                        }
+                    );
                 }
 
                 // Get or create the personal device.

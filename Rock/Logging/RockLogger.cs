@@ -51,7 +51,7 @@ namespace Rock.Logging
         /// The log.
         /// </value>
         [Obsolete( "This is not used and will be removed in the future." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public static IRockLogger Log => _log.Value;
 #pragma warning disable CS0618 // Type or member is obsolete
         private static readonly Lazy<IRockLogger> _log = new Lazy<IRockLogger>( () => new LegacySerilogLogger() );
@@ -103,6 +103,21 @@ namespace Rock.Logging
 
             _serviceProvider = serviceCollection.BuildServiceProvider();
             LoggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
+        }
+
+        /// <summary>
+        /// Configures a <see cref="IServiceCollection"/> to support the Rock
+        /// Logging system when using <see cref="ILogger{TCategoryName}"/>
+        /// in dependency injection.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection to be configured.</param>
+        /// <returns>The service collection to allow chaining calls.</returns>
+        internal static IServiceCollection AddRockLogging( this IServiceCollection serviceCollection )
+        {
+            serviceCollection.AddSingleton( _ => LoggerFactory );
+            serviceCollection.AddSingleton( typeof( ILogger<> ), typeof( Logger<> ) );
+
+            return serviceCollection;
         }
 
         /// <summary>

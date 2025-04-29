@@ -67,7 +67,20 @@ namespace Rock
         /// </para>
         /// </summary>
         /// <param name="entities">The entities.</param>
-        public static void LoadAttributes( this IEnumerable<IHasAttributes> entities )
+        [Obsolete( "Use LoadAttributes overload that has generic type instead." )]
+        [RockObsolete( "17.1" )]
+        public static void LoadAttributes( IEnumerable<IHasAttributes> entities )
+        {
+            LoadAttributes( entities, null );
+        }
+
+        /// <summary>
+        /// Loads the attributes for all entities in the collection.
+        /// </summary>
+        /// <param name="entities">The entities.</param>
+        /// <typeparam name="T">The entity type that will be used when loading attributes.</typeparam>
+        public static void LoadAttributes<T>( this ICollection<T> entities )
+            where T : class, IHasAttributes
         {
             LoadAttributes( entities, null );
         }
@@ -84,7 +97,24 @@ namespace Rock
         /// </summary>
         /// <param name="entities">The entities.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void LoadAttributes( this IEnumerable<IHasAttributes> entities, RockContext rockContext )
+        [Obsolete( "Use LoadAttributes overload that has generic type instead." )]
+        [RockObsolete( "17.1" )]
+        public static void LoadAttributes( IEnumerable<IHasAttributes> entities, RockContext rockContext )
+        {
+            foreach ( var entity in entities )
+            {
+                entity.LoadAttributes( rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Loads the attributes for all entities in the collection.
+        /// </summary>
+        /// <param name="entities">The entities.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <typeparam name="T">The entity type that will be used when loading attributes.</typeparam>
+        public static void LoadAttributes<T>( this ICollection<T> entities, RockContext rockContext )
+            where T : class, IHasAttributes
         {
             Attribute.Helper.LoadAttributes( entities, rockContext, null );
         }
@@ -101,7 +131,9 @@ namespace Rock
         /// </summary>
         /// <param name="entities">The entities.</param>
         /// <param name="attributeFilter">The attribute filter.</param>
-        internal static void LoadFilteredAttributes( this IEnumerable<IHasAttributes> entities, Func<AttributeCache, bool> attributeFilter )
+        /// <typeparam name="T">The entity type that will be used when loading attributes.</typeparam>
+        internal static void LoadFilteredAttributes<T>( this ICollection<T> entities, Func<AttributeCache, bool> attributeFilter )
+            where T : class, IHasAttributes
         {
             Attribute.Helper.LoadFilteredAttributes( entities, null, attributeFilter );
         }
@@ -119,7 +151,9 @@ namespace Rock
         /// <param name="entities">The entities.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="attributeFilter">The attribute filter.</param>
-        internal static void LoadFilteredAttributes( this IEnumerable<IHasAttributes> entities, RockContext rockContext, Func<AttributeCache, bool> attributeFilter )
+        /// <typeparam name="T">The entity type that will be used when loading attributes.</typeparam>
+        internal static void LoadFilteredAttributes<T>( this ICollection<T> entities, RockContext rockContext, Func<AttributeCache, bool> attributeFilter )
+            where T : class, IHasAttributes
         {
             Attribute.Helper.LoadFilteredAttributes( entities, rockContext, attributeFilter );
         }
@@ -358,7 +392,7 @@ namespace Rock
                 } )
                 .Where( av => !enforceSecurity || IsAttributeAuthorized( entity, ref entityAuthorized, av.Attribute, Authorization.EDIT, currentPerson ) )
                 .Where( av => attributeFilter == null || attributeFilter( av.Attribute ) )
-                .ToDictionary( av => av.Attribute.Key, av => PublicAttributeHelper.GetPublicEditValue( av.Attribute, av.Value ) );
+                .ToDictionary( av => av.Attribute.Key, av => PublicAttributeHelper.GetPublicValueForEdit( av.Attribute, av.Value ) );
         }
 
         /// <summary>

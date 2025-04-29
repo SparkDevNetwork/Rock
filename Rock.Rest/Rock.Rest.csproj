@@ -183,6 +183,7 @@
     <Compile Include="Controllers\CodeGenerated\ContentTopicsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\EmailSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\EntityIntentsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\HistoryLoginsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractionSessionLocationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractiveExperienceActionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractiveExperienceAnswersController.CodeGenerated.cs" />
@@ -224,6 +225,7 @@
     <Compile Include="ProducesResponseTypeAttribute.cs" />
     <Compile Include="Utility\RockMessageResponseContext.cs" />
     <Compile Include="Utility\BlockUtilities.cs" />
+    <Compile Include="v2\ChatController.cs" />
     <Compile Include="v2\CheckInController.cs" />
     <Compile Include="v2\ControlsController.cs" />
     <Compile Include="v2\Models\CodeGenerated\AchievementAttemptsController.CodeGenerated.cs" />
@@ -374,6 +376,7 @@
     <Compile Include="v2\Models\CodeGenerated\GroupTypeRolesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\GroupTypesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\HistoriesController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\HistoryLoginsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\HtmlContentsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\IdentityVerificationCodesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\IdentityVerificationsController.CodeGenerated.cs" />

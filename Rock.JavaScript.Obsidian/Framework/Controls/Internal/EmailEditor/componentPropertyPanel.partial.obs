@@ -5,7 +5,8 @@
                                  :hasScrollableBody="true"
                                  @clone="$emit('clone')"
                                  @complete="$emit('complete')"
-                                 @delete="$emit('delete')" />
+                                 @delete="$emit('delete')"
+                                 @migrate="$emit('migrate', $event)" />
 
     <VideoComponentPropertyPanel v-else-if="componentTypeName === 'video'"
                                  :componentElement="componentElement"
@@ -13,29 +14,37 @@
                                  :videoProviderNames="videoProviderNames"
                                  @clone="$emit('clone')"
                                  @complete="$emit('complete')"
-                                 @delete="$emit('delete')" />
+                                 @delete="$emit('delete')"
+                                 @migrate="$emit('migrate', $event)" />
 
     <ButtonComponentPropertyPanel v-else-if="componentTypeName === 'button'"
                                   :componentElement="componentElement"
                                   :hasScrollableBody="true"
                                   @clone="$emit('clone')"
                                   @complete="$emit('complete')"
-                                  @delete="$emit('delete')" />
+                                  @delete="$emit('delete')"
+                                  @migrate="$emit('migrate', $event)" />
 
     <TextComponentPropertyPanel v-else-if="componentTypeName === 'text'"
                                 :componentElement="componentElement"
                                 :hasScrollableBody="true"
                                 :mergeFields="mergeFields"
+                                :shortLinkCheckToken="shortLinkCheckToken"
+                                :shortLinkGetPageId="shortLinkGetPageId"
+                                :shortLinkSites="shortLinkSites"
+                                :shortLinkTokenMinLength="shortLinkTokenMinLength"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
-                                @delete="$emit('delete')" />
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)" />
 
     <DividerComponentPropertyPanel v-else-if="componentTypeName === 'divider'"
                                    :componentElement="componentElement"
                                    :hasScrollableBody="true"
                                    @clone="$emit('clone')"
                                    @complete="$emit('complete')"
-                                   @delete="$emit('delete')" />
+                                   @delete="$emit('delete')"
+                                   @migrate="$emit('migrate', $event)" />
 
     <AdaptiveMessageComponentPropertyPanel v-else-if="componentTypeName === 'message'"
                                            :componentElement="componentElement"
@@ -50,7 +59,8 @@
                                  :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
                                  @clone="$emit('clone')"
                                  @complete="$emit('complete')"
-                                 @delete="$emit('delete')" />
+                                 @delete="$emit('delete')"
+                                 @migrate="$emit('migrate', $event)"  />
 
     <CodeComponentPropertyPanel v-else-if="componentTypeName === 'code'"
                                 :componentElement="componentElement"
@@ -58,7 +68,8 @@
                                 :mergeFields="mergeFields"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
-                                @delete="$emit('delete')" />
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)" />
 
     <RsvpComponentPropertyPanel v-else-if="componentTypeName === 'rsvp'"
                                 :componentElement="componentElement"
@@ -66,7 +77,8 @@
                                 :recipientPersonIds="recipientPersonIds"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
-                                @delete="$emit('delete')" />
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)" />
 
     <SectionComponentPropertyPanel v-else-if="componentTypeName === 'section'"
                                    :componentElement="componentElement"
@@ -75,14 +87,16 @@
                                    @clone="$emit('clone')"
                                    @complete="$emit('complete')"
                                    @delete="$emit('delete')"
-                                   @emailSectionSaved="$emit('emailSectionSaved', $event)" />
+                                   @emailSectionSaved="$emit('emailSectionSaved', $event)"
+                                   @migrate="$emit('migrate', $event)" />
 
     <RowComponentPropertyPanel v-else-if="componentTypeName === 'row'"
                                :componentElement="componentElement"
                                :hasScrollableBody="true"
                                @clone="$emit('clone')"
                                @complete="$emit('complete')"
-                               @delete="$emit('delete')" />
+                               @delete="$emit('delete')"
+                               @migrate="$emit('migrate', $event)" />
 
     <div v-else>Unknown component type: {{ componentTypeName }}.</div>
 </template>
@@ -105,6 +119,7 @@
     import { Guid } from "@Obsidian/Types";
     import { isHTMLElement } from "@Obsidian/Utility/dom";
     import { EmailEditorEmailSectionBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorEmailSectionBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         componentElement: {
@@ -127,6 +142,22 @@
             required: true
         },
 
+        shortLinkCheckToken: {
+            type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>
+        },
+
+        shortLinkGetPageId: {
+            type: Object as PropType<((pageGuid: Guid) => Promise<number | null | undefined>) | null | undefined>
+        },
+
+        shortLinkSites: {
+            type: Array as PropType<ListItemBag[] | null | undefined>
+        },
+
+        shortLinkTokenMinLength: {
+            type: Number as PropType<number | null | undefined>
+        },
+
         videoProviderNames: {
             type: Object as PropType<string[] | null | undefined>,
             required: true
@@ -137,6 +168,7 @@
         (e: "clone"): void;
         (e: "complete"): void;
         (e: "delete"): void;
+        (e: "migrate", value: Element): void;
         (e: "emailSectionSaved", value: EmailEditorEmailSectionBag): void;
     }>();
 

@@ -56,6 +56,13 @@ namespace Rock.Workflow.FormBuilder
 
         /// <summary>
         /// The <see cref="Rock.Model.DefinedValue"/> identifier that specifies the
+        /// value used for <see cref="Rock.Model.Person.RecordSourceValue"/>
+        /// when a new <see cref="Rock.Model.Person"/> is created.
+        /// </summary>
+        public int? RecordSourceValueId { get; set; }
+
+        /// <summary>
+        /// The <see cref="Rock.Model.DefinedValue"/> identifier that specifies the
         /// value used for <see cref="Rock.Model.Person.ConnectionStatusValue"/>
         /// when a new <see cref="Rock.Model.Person"/> is created.
         /// </summary>
@@ -88,16 +95,6 @@ namespace Rock.Workflow.FormBuilder
         public int? CampusStatusValueId { get; set; }
 
         /// <summary>
-        /// The <see cref="Rock.Model.DefinedValue"/> identifier for the person's race
-        /// </summary>
-        public int? RaceValueId { get; set; }
-
-        /// <summary>
-        /// The <see cref="Rock.Model.DefinedValue"/> identifier for the person's ethnicity
-        /// </summary>
-        public int? EthnicityValueId { get; set; }
-
-        /// <summary>
         /// Determines if the gender control should be hidden, optional or
         /// required when displaying the person entry form.
         /// </summary>
@@ -116,7 +113,7 @@ namespace Rock.Workflow.FormBuilder
         public WorkflowActionFormPersonEntryOption MobilePhone { get; set; }
 
         /// <summary>
-        /// Determines if the SMS Opt-In contol shold be hidden, optional or required when displaying the person entry form.
+        /// Determines if the SMS Opt-In control should be hidden, optional or required when displaying the person entry form.
         /// </summary>
         public WorkflowActionFormShowHideOption SmsOptIn { get; set; }
 
