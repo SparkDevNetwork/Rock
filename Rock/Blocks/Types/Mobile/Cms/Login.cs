@@ -140,12 +140,19 @@ namespace Rock.Blocks.Types.Mobile.Cms
         DefaultValue = "Login With Entra",
         Order = 12 )]
 
+    [BooleanField( "Use Embedded Web View For External Authentication",
+        Key = AttributeKeys.UseEmbeddedWebViewForExternalAuthentication,
+        Description = "When enabled, the application will use an embedded web view for the external authentication process. This must be disabled in cases where you want to offer Fido2/Passkey support.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        Order = 13 )]
+
     [BooleanField( "Enable Enhanced Authentication Security",
         Key = AttributeKeys.EnableEnhancedAuthenticationSecurity,
         Description = "Only applies to external authentication. Whether or not to enable enhanced authentication security. This will be automatically enabled in a future version of Rock, and the setting will be removed.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        Order = 13 )]
+        Order = 14 )]
 
     #endregion
 
@@ -216,6 +223,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
             public const string EntraLoginButtonText = "EntraLoginButtonText";
 
             /// <summary>
+            /// Whether or not to use an embedded web view for external authentication.
+            /// </summary>
+            public const string UseEmbeddedWebViewForExternalAuthentication = "UseEmbeddedWebViewForExternalAuthentication";
+
+            /// <summary>
             /// The header content key.
             /// </summary>
             public const string HeaderContent = "HeaderContent";
@@ -258,6 +270,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 EnableEntraLogin = GetAttributeValue( AttributeKeys.EnableEntraLogin ).AsBoolean(),
                 EntraLoginButtonText = GetAttributeValue( AttributeKeys.EntraLoginButtonText ),
                 Auth0LoginButtonText = GetAttributeValue( AttributeKeys.Auth0LoginButtonText ),
+                UseEmbeddedWebViewForExternalAuthentication = GetAttributeValue( AttributeKeys.UseEmbeddedWebViewForExternalAuthentication ).AsBoolean(),
                 HeaderContent = GetAttributeValue( AttributeKeys.HeaderContent ),
                 FooterContent = GetAttributeValue( AttributeKeys.FooterContent )
             };
