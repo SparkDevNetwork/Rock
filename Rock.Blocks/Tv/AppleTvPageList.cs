@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -33,12 +34,13 @@ namespace Rock.Blocks.Tv
     /// <summary>
     /// Displays a list of pages.
     /// </summary>
-    [DisplayName( "Apple TV Page List" )]
+    [DisplayName( "Apple TV Page List (Obsolete)" )]
     [Category( "TV > TV Apps" )]
     [Description( "Lists pages for TV apps (Apple or other)." )]
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
-
+    [RockObsolete( "17.1" )]
+    [Obsolete( "This block type has been replaced by the TvPageList block." )]
     [LinkedPage( "Detail Page",
         Description = "The page that will show the page details.",
         Key = AttributeKey.PageDetail )]
