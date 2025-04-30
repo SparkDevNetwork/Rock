@@ -4,6 +4,7 @@
                 v-model="innerHtml"
                 :autocommitDelayMs="0"
                 :editorHeight="380"
+                enableAssetManager
                 :mergeFields="mergeFields ?? []"
                 :shortLinkCheckToken="shortLinkCheckToken"
                 :shortLinkGetPageId="shortLinkGetPageId"
