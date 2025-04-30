@@ -1805,6 +1805,7 @@
     <Compile Include="Plugin\HotFixes\232_UpdateContentFileTypeBlacklist.cs" />
     <Compile Include="Plugin\HotFixes\244_MigrationRollupsForV17_1_1.cs" />
     <Compile Include="Plugin\HotFixes\243_AddDefaultAllowedGroupTypesToMobileGroupRegistration.cs" />
+    <Compile Include="Plugin\HotFixes\245_UpdateMergeFieldAttributeDescription.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
