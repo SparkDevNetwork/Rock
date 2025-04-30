@@ -78,6 +78,8 @@
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { EmailEditorApi, provideApi } from "./api";
 
     const props = defineProps({
         html: {
@@ -153,6 +155,14 @@
         (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
     }>();
 
+    defineExpose({
+        getApi
+    });
+
+    const securityGrantToken = useSecurityGrantToken();
+    const api = new EmailEditorApi({ securityGrantToken });
+    provideApi(api);
+
     // #region Values
 
     const selectedComponentElement = ref<HTMLElement | null | undefined>();
@@ -165,6 +175,19 @@
     const componentTypeDragStartRequest = ref<ComponentTypeDragStartRequest | null | undefined>();
     const componentTypeDragEndRequest = ref<ComponentTypeDragEndRequest | null | undefined>();
     const replaceComponentRequest = ref<ReplaceComponentRequest | null | undefined>();
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the API for the email editor.
+     *
+     * @returns The API for the email editor. This is used to communicate with server on behalf of the email editor.
+     */
+    function getApi(): EmailEditorApi {
+        return api;
+    }
 
     // #endregion
 

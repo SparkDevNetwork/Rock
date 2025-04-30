@@ -21,20 +21,8 @@
 // </copyright>
 //
 
-/** Bag containing the information to create an attendance occurrence in the Email Editor control. */
-export type EmailEditorCreateAttendanceOccurrenceOptionsBag = {
-    /** Gets or sets the group identifier. */
-    groupId: number;
-
-    /** Gets or sets the location identifier. */
-    locationId?: number | null;
-
-    /** Gets or sets the date of the attendance occurrence. */
-    occurrenceDate?: string | null;
-
-    /** Gets or sets the schedule identifier. */
-    scheduleId?: number | null;
-
+/** Bag containing the information needed to get all Email Sections from the Email Editor control. */
+export type EmailEditorGetAllEmailSectionsOptionsBag = {
     /**
      * Gets or sets the security grant token to use when performing
      * authorization checks.

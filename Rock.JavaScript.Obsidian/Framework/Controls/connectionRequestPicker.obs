@@ -9,6 +9,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { ConnectionRequestTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -23,11 +24,6 @@
         multiple: {
             type: Boolean as PropType<boolean>,
             default: false
-        },
-
-        securityGrantToken: {
-            type: String as PropType<string | null>,
-            required: false
         }
     });
 
@@ -36,11 +32,12 @@
     }>();
 
     const internalValue = ref(props.modelValue ?? null);
+    const securityGrantToken = useSecurityGrantToken();
 
     // Configure the item provider with our settings. These are not reactive
     // since we don't do lazy loading so there is no point.
     const itemProvider = new ConnectionRequestTreeItemProvider();
-    itemProvider.securityGrantToken = props.securityGrantToken;
+    itemProvider.securityGrantToken = securityGrantToken.value;
 
     watch(internalValue, () => {
         emit("update:modelValue", internalValue.value);

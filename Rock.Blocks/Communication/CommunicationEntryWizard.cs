@@ -1039,6 +1039,7 @@ namespace Rock.Blocks.Communication
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+            securityGrant.AddRule( new EmailEditorSecurityGrantRule() );
 
             return securityGrant.ToToken();
         }

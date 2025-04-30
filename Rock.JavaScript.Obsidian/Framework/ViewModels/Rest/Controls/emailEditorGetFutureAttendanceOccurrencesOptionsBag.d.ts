@@ -27,4 +27,10 @@ import { Guid } from "@Obsidian/Types";
 export type EmailEditorGetFutureAttendanceOccurrencesOptionsBag = {
     /** Gets or sets the group unique identifier. */
     groupGuid: Guid;
+
+    /**
+     * Gets or sets the security grant token to use when performing
+     * authorization checks.
+     */
+    securityGrantToken?: string | null;
 };

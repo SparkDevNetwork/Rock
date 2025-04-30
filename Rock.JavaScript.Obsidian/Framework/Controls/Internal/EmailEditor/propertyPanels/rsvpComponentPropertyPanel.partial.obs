@@ -212,7 +212,7 @@
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
-    import { createAttendanceOccurrence, getFutureAttendanceOccurrences, registerRsvpRecipients } from "../api";
+    import { useApi } from "../api";
     import AlignAttributeProperty from "../properties/alignAttributeProperty.partial.obs";
     import BackgroundColorProperty from "../properties/backgroundColorProperty.partial.obs";
     import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
@@ -259,6 +259,7 @@
     }>();
 
     const rsvpComponentHelper = getRsvpComponentHelper();
+    const api = useApi();
 
     // #region Computed Props
 
@@ -467,7 +468,7 @@
                 personIds: props.recipientPersonIds
             };
 
-            const result = await registerRsvpRecipients(bag);
+            const result = await api.registerRsvpRecipients(bag);
 
             if (result?.isSuccess) {
                 areRsvpRecipientsRegistered.value = true;
@@ -510,7 +511,7 @@
 
         if (groupGuid) {
             // Get the future group occurrences.
-            const result = await getFutureAttendanceOccurrences({
+            const result = await api.getFutureAttendanceOccurrences({
                 groupGuid
             });
 
@@ -530,7 +531,7 @@
             isCreatingOccurrence.value = true;
             try {
                 // Create new occurrence.
-                const result = await createAttendanceOccurrence({
+                const result = await api.createAttendanceOccurrence({
                     groupId: data.groupId,
                     locationId: data.locationId,
                     occurrenceDate: data.occurrenceDate,
@@ -588,7 +589,7 @@
 
         if (groupGuid) {
             // Get the future group occurrences.
-            const result = await getFutureAttendanceOccurrences({
+            const result = await api.getFutureAttendanceOccurrences({
                 groupGuid
             });
             if (result?.isSuccess && result.data) {

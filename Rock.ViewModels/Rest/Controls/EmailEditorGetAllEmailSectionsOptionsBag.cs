@@ -13,27 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
-using System.Collections.Generic;
 
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// Bag containing the information to register RSVP recipients from the Email Editor control.
+    /// Bag containing the information needed to get all Email Sections from the Email Editor control.
     /// </summary>
-    public class EmailEditorRegisterRsvpRecipientsOptionsBag
+    public class EmailEditorGetAllEmailSectionsOptionsBag
     {
-        /// <summary>
-        /// Gets or sets the attendance identifier.
-        /// </summary>
-        public int OccurrenceId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of person identifiers.
-        /// </summary>
-        /// <remarks>This uses an integer identifier for backward compatibility with old communications.</remarks>
-        public List<int> PersonIds { get; set; }
-
         /// <summary>
         /// Gets or sets the security grant token to use when performing
         /// authorization checks.

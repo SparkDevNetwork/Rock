@@ -67,7 +67,6 @@
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import { createBinaryFileImageFromElement } from "@Obsidian/Controls/emailEditor";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
@@ -78,6 +77,7 @@
     import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { truncate } from "@Obsidian/Utility/stringUtils";
+    import { EmailEditorApi } from "@Obsidian/Controls/emailEditor";
 
     type Mode = "save" | "saveAs";
     type StandardListItemBag = {
@@ -88,6 +88,11 @@
         modelValue: {
             type: Boolean as PropType<boolean>,
             required: true
+        },
+
+        api: {
+            type: Object as PropType<EmailEditorApi | null | undefined>,
+            required: false,
         },
 
         communicationTemplate: {
@@ -200,11 +205,16 @@
 
         // Generate a new thumbnail image every time the section is saved.
         useTemporaryRenderElement(async tempElement => {
+            if (!props.api) {
+                saveError.value = "You don't have access to create the template preview image.";
+                return;
+            }
+
             try {
                 isSaving.value = true;
                 saveError.value = null;
 
-                const thumbnailInfo = await createBinaryFileImageFromElement({
+                const thumbnailInfo = await props.api.createBinaryFileImageFromElement({
                     element: tempElement,
                     fileName: getFileName(name.value),
                     elementWidth: props.bodyWidth ?? undefined,
