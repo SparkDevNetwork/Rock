@@ -6057,7 +6057,8 @@ namespace Rock.Rest.v2
                 // get all group types that have at least one role
                 var groupTypes = groupTypeService.Queryable()
                     .Where( a => a.Roles.Any() )
-                    .OrderBy( a => a.Name )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
                     .Select( g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
                     .ToList();
 
