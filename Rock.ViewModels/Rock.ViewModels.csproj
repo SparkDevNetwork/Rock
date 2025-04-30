@@ -847,6 +847,7 @@
     <Compile Include="Rest\Controls\AssetManagerExtractFileOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorCreateAttendanceOccurrenceOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorAttendanceOccurrenceBag.cs" />
+    <Compile Include="Rest\Controls\EmailEditorGetAllEmailSectionsOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorGetAttendanceOccurrenceOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorGetFutureAttendanceOccurrencesOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorRegisterRsvpRecipientsOptionsBag.cs" />

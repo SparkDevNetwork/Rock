@@ -3563,6 +3563,16 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "67998BF6-CFEE-4740-8C11-195AF9C91F83" )]
         public IActionResult EmailEditorCreateEmailSection( [FromBody] EmailEditorEmailSectionBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            // Default security for ConnectionRequest is world view. So we decided
+            // to require a custom security grant in order to use the picker so that
+            // the API was not just open to the world.
+            if ( grant?.IsAccessGranted( EmailEditorSecurityGrantRule.AccessInstance, Authorization.VIEW ) != true )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 if ( options == null )
@@ -3631,6 +3641,16 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "23350465-88EC-472E-80DF-5445D84062EA" )]
         public IActionResult EmailEditorGetEmailSection( [FromBody] EmailEditorGetEmailSectionOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            // Default security for ConnectionRequest is world view. So we decided
+            // to require a custom security grant in order to use the picker so that
+            // the API was not just open to the world.
+            if ( grant?.IsAccessGranted( EmailEditorSecurityGrantRule.AccessInstance, Authorization.VIEW ) != true )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var emailSectionService = new EmailSectionService( rockContext );
@@ -3664,8 +3684,18 @@ namespace Rock.Rest.v2
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<EmailEditorEmailSectionBag> ) )]
         [Rock.SystemGuid.RestActionGuid( "4966E119-918B-47A8-AFD0-A6EB01EDD8C9" )]
-        public IActionResult EmailEditorGetAllEmailSections()
+        public IActionResult EmailEditorGetAllEmailSections( [FromBody] EmailEditorGetAllEmailSectionsOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            // Default security for ConnectionRequest is world view. So we decided
+            // to require a custom security grant in order to use the picker so that
+            // the API was not just open to the world.
+            if ( grant?.IsAccessGranted( EmailEditorSecurityGrantRule.AccessInstance, Authorization.VIEW ) != true )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var emailSectionService = new EmailSectionService( rockContext );
@@ -3696,6 +3726,16 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "E2250994-58D5-40BD-AB86-F02C40CB36A9" )]
         public IActionResult EmailEditorUpdateEmailSection( [FromBody] EmailEditorEmailSectionBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            // Default security for ConnectionRequest is world view. So we decided
+            // to require a custom security grant in order to use the picker so that
+            // the API was not just open to the world.
+            if ( grant?.IsAccessGranted( EmailEditorSecurityGrantRule.AccessInstance, Authorization.VIEW ) != true )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 if ( options == null )
@@ -3770,6 +3810,16 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "66B74F97-85D7-45F5-AD3E-0425903000AF" )]
         public IActionResult EmailEditorDeleteEmailSection( [FromBody] EmailEditorDeleteEmailSectionOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            // Default security for ConnectionRequest is world view. So we decided
+            // to require a custom security grant in order to use the picker so that
+            // the API was not just open to the world.
+            if ( grant?.IsAccessGranted( EmailEditorSecurityGrantRule.AccessInstance, Authorization.VIEW ) != true )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var emailSectionService = new EmailSectionService( rockContext );
@@ -3806,6 +3856,16 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "FFE635FE-3988-4286-AEC6-0ADFAC162A58" )]
         public IActionResult EmailEditorRegisterRsvpRecipients( [FromBody] EmailEditorRegisterRsvpRecipientsOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            // Default security for ConnectionRequest is world view. So we decided
+            // to require a custom security grant in order to use the picker so that
+            // the API was not just open to the world.
+            if ( grant?.IsAccessGranted( EmailEditorSecurityGrantRule.AccessInstance, Authorization.VIEW ) != true )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var attendanceService = new AttendanceService( rockContext );
@@ -3829,6 +3889,16 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "C8450C3D-4DD9-45D3-8020-8980D0E7CA02" )]
         public IActionResult EmailEditorGetAttendanceOccurrence( [FromBody] EmailEditorGetAttendanceOccurrenceOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            // Default security for ConnectionRequest is world view. So we decided
+            // to require a custom security grant in order to use the picker so that
+            // the API was not just open to the world.
+            if ( grant?.IsAccessGranted( EmailEditorSecurityGrantRule.AccessInstance, Authorization.VIEW ) != true )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).Get( options.OccurrenceId );
@@ -3856,6 +3926,16 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "25C14E2A-36A2-46C6-8B22-848D83A6D2C9" )]
         public IActionResult EmailEditorGetFutureAttendanceOccurrences( EmailEditorGetFutureAttendanceOccurrencesOptionsBag bag )
         {
+            var grant = SecurityGrant.FromToken( bag.SecurityGrantToken );
+
+            // Default security for ConnectionRequest is world view. So we decided
+            // to require a custom security grant in order to use the picker so that
+            // the API was not just open to the world.
+            if ( grant?.IsAccessGranted( EmailEditorSecurityGrantRule.AccessInstance, Authorization.VIEW ) != true )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var previousProxyCreationEnabled = rockContext.Configuration.ProxyCreationEnabled;
@@ -3884,6 +3964,16 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "2A8A1319-3A64-4449-876D-480FD500EAEC" )]
         public IActionResult EmailEditorCreateAttendanceOccurrence( [FromBody] EmailEditorCreateAttendanceOccurrenceOptionsBag bag )
         {
+            var grant = SecurityGrant.FromToken( bag.SecurityGrantToken );
+
+            // Default security for ConnectionRequest is world view. So we decided
+            // to require a custom security grant in order to use the picker so that
+            // the API was not just open to the world.
+            if ( grant?.IsAccessGranted( EmailEditorSecurityGrantRule.AccessInstance, Authorization.VIEW ) != true )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var occurrence = new AttendanceOccurrenceService( rockContext )

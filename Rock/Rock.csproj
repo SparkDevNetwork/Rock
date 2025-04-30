@@ -1903,6 +1903,7 @@
     <Compile Include="Security\SecurityGrantRules\AddDefinedValueToTypeGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\ConnectionRequestPickerSecurityGrantRule.cs" />
+    <Compile Include="Security\SecurityGrantRules\EmailEditorSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
     <Compile Include="SystemGuid\EmailSection.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />

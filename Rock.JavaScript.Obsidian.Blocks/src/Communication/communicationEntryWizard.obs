@@ -198,6 +198,7 @@
 
             <SaveCommunicationTemplateModal v-if="saveAsCommunicationTemplateDetail"
                                             v-model="isSaveCommunicationTemplateModalShown"
+                                            :api="saveAsCommunicationTemplateApi"
                                             :communicationTemplate="saveAsCommunicationTemplateDetail"
                                             :bodyWidth="saveAsCommunicationTemplateBodyWidth"
                                             @save="onOverwriteExistingCommunicationTemplate"
@@ -207,7 +208,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+    import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from "vue";
     import BreakpointObserver from "./CommunicationEntryWizard/breakpointObserver.partial.obs";
     import ChooseTemplateStep from "./CommunicationEntryWizard/chooseTemplateStep.partial.obs";
     import ConfirmationStep from "./CommunicationEntryWizard/confirmationStep.partial.obs";
@@ -222,7 +223,7 @@
     import { BinaryFileAttachment, BlockActionCallbacks } from "./CommunicationEntryWizard/types.partial";
     import { useCache, useInvokeBlockActionHelper, usePersonPreferencesHelper } from "./CommunicationEntryWizard/utils.partial";
     import WizardStartStep from "./CommunicationEntryWizard/wizardStartStep.partial.obs";
-    import { GetHtmlResponse } from "@Obsidian/Controls/emailEditor";
+    import { EmailEditorApi, GetHtmlResponse } from "@Obsidian/Controls/emailEditor";
     import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { PushOpenAction } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/pushOpenAction";
     import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
@@ -350,6 +351,7 @@
     const communicationTemplateDetail = ref<CommunicationEntryWizardCommunicationTemplateDetailBag | null | undefined>(config.communicationTemplateDetail);
     const saveAsCommunicationTemplateDetail = ref<CommunicationEntryWizardCommunicationTemplateDetailBag | null | undefined>(config.communicationTemplateDetail);
     const saveAsCommunicationTemplateBodyWidth = ref<number | null | undefined>();
+    const saveAsCommunicationTemplateApi = shallowRef<EmailEditorApi | null | undefined>(null);
     const hasDetailBlockOnCurrentPage = ref<boolean>(config.hasDetailBlockOnCurrentPage);
     const finalMessage = ref<string>("");
     const finalMessageAlertType = ref<AlertType>(AlertType.Default);
@@ -935,11 +937,12 @@
         }
     }
 
-    function onSaveAsTemplate({ html, bodyWidth }: GetHtmlResponse): void {
+    function onSaveAsTemplate({ html, bodyWidth }: GetHtmlResponse, api: EmailEditorApi): void {
         if (!communicationTemplateDetail.value) {
             throw new Error("The source template is required.");
         }
 
+        saveAsCommunicationTemplateApi.value = api;
         saveAsCommunicationTemplateBodyWidth.value = bodyWidth;
         saveAsCommunicationTemplateDetail.value = {
             ...communicationTemplateDetail.value,

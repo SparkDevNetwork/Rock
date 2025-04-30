@@ -60,7 +60,8 @@
 
             <template #default>
                 <div class="panel-body-contents">
-                    <EmailEditor :html="html"
+                    <EmailEditor ref="emailEditorElement"
+                                 :html="html"
                                  :getHtmlRequest="getHtmlRequest"
                                  :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
                                  :disabled="isDisabled"
@@ -201,7 +202,7 @@
 
 <script setup lang="ts">
     import { computed, onMounted, onUnmounted, PropType, ref, watch } from "vue";
-    import EmailEditor, { GetHtmlRequest } from "@Obsidian/Controls/emailEditor";
+    import EmailEditor, { EmailEditorApi, GetHtmlRequest } from "@Obsidian/Controls/emailEditor";
     import LoadingOverlay from "./loadingOverlay.partial.obs";
     import { BlockActionCallbacks } from "./types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
@@ -314,7 +315,7 @@
         (e: "previousStep"): void;
         (e: "sendTestCommunication", value: string, callbacks: BlockActionCallbacks): void;
         (e: "saveCommunication", value: BlockActionCallbacks): void;
-        (e: "saveAsTemplate", value: GetHtmlResponse): void;
+        (e: "saveAsTemplate", value: GetHtmlResponse, api: EmailEditorApi): void;
         (e: "update:message", value: string): void;
         (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
         (e: "update:testEmailAddress", value: string): void;
@@ -323,6 +324,7 @@
     // #region Values
 
     // UI state.
+    const emailEditorElement = ref<InstanceType<typeof EmailEditor> | null>(null);
     const previewElement = ref<HTMLElement | undefined>();
     const saveElement = ref<HTMLElement | undefined>();
     const previewHtml = ref<string>("");
@@ -358,7 +360,11 @@
     function onSaveAsTemplate(): void {
         getHtmlRequest.value = {
             onSuccess(response: GetHtmlResponse): void {
-                emit("saveAsTemplate", response);
+                const api = emailEditorElement.value?.getApi();
+
+                if (api) {
+                    emit("saveAsTemplate", response, api);
+                }
             }
         };
     }
