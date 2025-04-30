@@ -850,7 +850,7 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="rockContext">The rock context.</param>
         /// <param name="limitToAttributes">The limit to attributes.</param>
         internal static void LoadAttributes<T>( ICollection<T> entities, RockContext rockContext, List<AttributeCache> limitToAttributes )
-            where T : class, IHasAttributes
+            where T : class, IHasAttributes, new()
         {
             if ( limitToAttributes != null )
             {
@@ -870,7 +870,7 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="rockContext">The rock context.</param>
         /// <param name="attributeFilter">The expression to use when filtering which attributes to load.</param>
         internal static void LoadFilteredAttributes<T>( ICollection<T> entities, RockContext rockContext, Func<AttributeCache, bool> attributeFilter )
-            where T : class, IHasAttributes
+            where T : class, IHasAttributes, new()
         {
             if ( entities == null || !entities.Any() )
             {
@@ -1173,7 +1173,7 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="attributes">The attributes that are up for consideration.</param>
         /// <returns>A list of attributes that match or have no qualifications.</returns>
         private static List<AttributeCache> FilterAttributesByQualifiers<T>( ICollection<T> entities, List<AttributeCache> attributes )
-            where T : class, IHasAttributes
+            where T : class, IHasAttributes, new()
         {
             var entityTypeQualifierColumnPropertyNames = attributes.Select( a => a.EntityTypeQualifierColumn )
                 .Distinct()

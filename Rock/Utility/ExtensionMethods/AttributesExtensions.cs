@@ -80,7 +80,7 @@ namespace Rock
         /// <param name="entities">The entities.</param>
         /// <typeparam name="T">The entity type that will be used when loading attributes.</typeparam>
         public static void LoadAttributes<T>( this ICollection<T> entities )
-            where T : class, IHasAttributes
+            where T : class, IHasAttributes, new()
         {
             LoadAttributes( entities, null );
         }
@@ -114,7 +114,7 @@ namespace Rock
         /// <param name="rockContext">The rock context.</param>
         /// <typeparam name="T">The entity type that will be used when loading attributes.</typeparam>
         public static void LoadAttributes<T>( this ICollection<T> entities, RockContext rockContext )
-            where T : class, IHasAttributes
+            where T : class, IHasAttributes, new()
         {
             Attribute.Helper.LoadAttributes( entities, rockContext, null );
         }
@@ -133,7 +133,7 @@ namespace Rock
         /// <param name="attributeFilter">The attribute filter.</param>
         /// <typeparam name="T">The entity type that will be used when loading attributes.</typeparam>
         internal static void LoadFilteredAttributes<T>( this ICollection<T> entities, Func<AttributeCache, bool> attributeFilter )
-            where T : class, IHasAttributes
+            where T : class, IHasAttributes, new()
         {
             Attribute.Helper.LoadFilteredAttributes( entities, null, attributeFilter );
         }
@@ -153,7 +153,7 @@ namespace Rock
         /// <param name="attributeFilter">The attribute filter.</param>
         /// <typeparam name="T">The entity type that will be used when loading attributes.</typeparam>
         internal static void LoadFilteredAttributes<T>( this ICollection<T> entities, RockContext rockContext, Func<AttributeCache, bool> attributeFilter )
-            where T : class, IHasAttributes
+            where T : class, IHasAttributes, new()
         {
             Attribute.Helper.LoadFilteredAttributes( entities, rockContext, attributeFilter );
         }
