@@ -58,7 +58,6 @@
         { text: LearningCompletionStatusDescription[LearningCompletionStatus.Pass], value: LearningCompletionStatus.Pass.toString() },
         { text: LearningCompletionStatusDescription[LearningCompletionStatus.Fail], value: LearningCompletionStatus.Fail.toString() },
     ];
-    console.log(courseStatusOptions, courseStatus.value);
 
     watch([learningCourse, courseStatus, dateRange], () => {
         emit("update:modelValue", {
