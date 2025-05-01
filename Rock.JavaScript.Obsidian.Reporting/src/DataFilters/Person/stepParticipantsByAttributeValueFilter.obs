@@ -68,7 +68,7 @@
         };
     }
 
-    watch([stepType, filterRule], () => {
+    watch([stepProgram, stepType, filterRule], () => {
         emit("update:modelValue", {
             ...props.modelValue,
             stepProgram: JSON.stringify(stepProgram.value),
