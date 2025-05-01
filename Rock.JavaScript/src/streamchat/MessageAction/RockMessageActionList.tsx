@@ -1,26 +1,11 @@
-import React, { ReactNode } from "react";
+import React from "react";
 import {
-    Channel,
+    useChatContext,
     useMessageContext,
-    useChatContext
 } from "stream-chat-react";
 import { useChatConfig } from '../Chat/ChatConfigContext';
-import { RockMessageSimple } from "../Message/RockMessage";
 
-
-interface WrappedChannelProps {
-    children: ReactNode;
-}
-
-export const WrappedChannel: React.FC<WrappedChannelProps> = ({ children }) => {
-    return (
-        <Channel CustomMessageActionsList={RockMessageActionList} Message={RockMessageSimple}>
-            {children}
-        </Channel>);
-}
-
-
-const RockMessageActionList: React.FC = () => {
+export const RockMessageActionList: React.FC = () => {
     const { message } = useMessageContext("CustomMessageActionList");
     const { client, setActiveChannel } = useChatContext();
     const chatConfig = useChatConfig();

@@ -176,6 +176,22 @@ namespace Rock.Blocks.Communication.Chat
             public const string WebAgeRestrictionTemplate = "WebAgeRestrictionTemplate";
         }
 
+        /// <summary>
+        /// The page parameter key for the channel ID.
+        /// </summary>
+        private static class PageParameterKey
+        {
+            /// <summary>
+            /// The channel ID key.
+            /// </summary>
+            public const string ChannelId = "ChannelId";
+
+            /// <summary>
+            /// The message ID key.
+            /// </summary>
+            public const string MessageId = "MessageId";
+        }
+
         #endregion
 
         #region Methods
@@ -190,19 +206,48 @@ namespace Rock.Blocks.Communication.Chat
 
             var sharedChannelGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_SHARED_CHANNEL.AsGuid() );
             var directMessagingChannelGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE.AsGuid() );
-            var sharedChannelGroupStreamKey = ChatHelper.GetChatChannelTypeKey( sharedChannelGroupTypeId.Value );
-            var directMessagingChannelStreamKey = ChatHelper.GetChatChannelTypeKey( directMessagingChannelGroupTypeId.Value );
 
-            return new ChatViewInitializationBox
+            // Should never be null, but just in case.
+            if ( sharedChannelGroupTypeId == null || directMessagingChannelGroupTypeId == null )
             {
-                ChatViewConfigurationBag = new ChatViewConfigurationBag
+                return null;
+            }
+
+            using ( var chatHelper = new ChatHelper() )
+            {
+                var sharedChannelGroupStreamKey = ChatHelper.GetChatChannelTypeKey( sharedChannelGroupTypeId.Value );
+                var directMessagingChannelStreamKey = ChatHelper.GetChatChannelTypeKey( directMessagingChannelGroupTypeId.Value );
+
+                var channelId = PageParameter( PageParameterKey.ChannelId );
+
+                if ( channelId.IsNotNullOrWhiteSpace() )
                 {
-                    FilterSharedChannelsByCampus = FilterSharedChannelsByCampus,
-                    PublicApiKey = ChatHelper.GetChatConfiguration().ApiKey,
-                    SharedChannelTypeKey = sharedChannelGroupStreamKey,
-                    DirectMessageChannelTypeKey = directMessagingChannelStreamKey
+                    bool usePredictableId = !( this.PageCache?.Layout?.Site?.DisablePredictableIds ?? false );
+                    var rockGroup = GroupCache.Get( channelId, usePredictableId );
+
+                    var queryableChannelKey = rockGroup != null
+                        ? chatHelper.GetQueryableChatChannelKey( rockGroup.Id )
+                        : null;
+
+                    if ( queryableChannelKey.IsNotNullOrWhiteSpace() )
+                    {
+                        channelId = queryableChannelKey;
+                    }
                 }
-            };
+
+                return new ChatViewInitializationBox
+                {
+                    ChatViewConfigurationBag = new ChatViewConfigurationBag
+                    {
+                        FilterSharedChannelsByCampus = FilterSharedChannelsByCampus,
+                        PublicApiKey = ChatHelper.GetChatConfiguration().ApiKey,
+                        SharedChannelTypeKey = sharedChannelGroupStreamKey,
+                        DirectMessageChannelTypeKey = directMessagingChannelStreamKey,
+                        SelectedChannelId = channelId,
+                        SelectedMessageId = PageParameter( PageParameterKey.MessageId )
+                    }
+                };
+            }
         }
 
         /// <inheritdoc />

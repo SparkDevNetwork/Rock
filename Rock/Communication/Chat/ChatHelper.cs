@@ -1507,6 +1507,65 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
+        /// Gets the queryable chat channel key for a <see cref="Group"/>.
+        /// This is used to determine the key to use when querying for chat channels in the external chat system.
+        /// </summary>
+        /// <param name="groupId">The Rock group to get the key for.</param>
+        /// <returns>The <c>cid</c> of the chat channel.</returns>
+        internal string GetQueryableChatChannelKey( int groupId )
+        {
+            var group = new GroupService( RockContext ).Get( groupId );
+
+            if ( group == null )
+            {
+                return string.Empty;
+            }
+
+            var chatGroup = ConvertGroupToRockChatGroup( group );
+
+            if( chatGroup == null )
+            {
+                return string.Empty;
+            }
+
+            return ChatProvider.GetQueryableChatChannelKey( chatGroup );
+        }
+
+        /// <summary>
+        /// Converts a <see cref="Group"/> to a <see cref="RockChatGroup"/>.
+        /// </summary>
+        /// <param name="group">The group to convert to a <see cref="RockChatGroup"/>.</param>
+        /// <returns>The slimmed-down <see cref="RockChatGroup"/>.</returns>
+        internal static RockChatGroup ConvertGroupToRockChatGroup( Group group )
+        {
+            var chatChannelKey = ChatHelper.GetChatChannelKey( group.Id, group.ChatChannelKey );
+
+            var avatarImageUrl = string.Empty;
+            var avatarImageGuid = group.GetAttributeValue( ChatHelper.GroupAttributeKey.AvatarImage ).AsGuidOrNull();
+            if ( avatarImageGuid.HasValue )
+            {
+                avatarImageUrl = ChatHelper.GetChatChannelAvatarImageUrl( avatarImageGuid.Value );
+            }
+
+            return new RockChatGroup
+            {
+                GroupTypeId = group.GroupTypeId,
+                GroupId = group.Id,
+                ChatChannelTypeKey = ChatHelper.GetChatChannelTypeKey( group.GroupTypeId ),
+                ChatChannelKey = chatChannelKey,
+                ShouldSaveChatChannelKeyInRock = group.ChatChannelKey != chatChannelKey,
+                Name = group.Name,
+                AvatarImageUrl = avatarImageUrl,
+                CampusId = group.CampusId,
+                IsLeavingAllowed = group.GetIsLeavingChatChannelAllowed(),
+                IsPublic = group.GetIsChatChannelPublic(),
+                IsAlwaysShown = group.GetIsChatChannelAlwaysShown(),
+                IsChatEnabled = group.GetIsChatEnabled(),
+                IsChatChannelActive = group.GetIsChatChannelActive()
+            };
+        }
+
+        /// <summary>
         /// Synchronizes <see cref="GroupMember"/>s from Rock to <see cref="ChatUser"/>s and <see cref="ChatChannelMember"/>s
         /// in the external chat system.
         /// </summary>

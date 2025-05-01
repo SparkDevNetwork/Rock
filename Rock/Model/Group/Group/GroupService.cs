@@ -190,34 +190,7 @@ namespace Rock.Model
             groups.LoadFilteredAttributes( a => a.Key == ChatHelper.GroupAttributeKey.AvatarImage );
 
             return groups
-                .Select( g =>
-                {
-                    var chatChannelKey = ChatHelper.GetChatChannelKey( g.Id, g.ChatChannelKey );
-
-                    var avatarImageUrl = string.Empty;
-                    var avatarImageGuid = g.GetAttributeValue( ChatHelper.GroupAttributeKey.AvatarImage ).AsGuidOrNull();
-                    if ( avatarImageGuid.HasValue )
-                    {
-                        avatarImageUrl = ChatHelper.GetChatChannelAvatarImageUrl( avatarImageGuid.Value );
-                    }
-
-                    return new RockChatGroup
-                    {
-                        GroupTypeId = g.GroupTypeId,
-                        GroupId = g.Id,
-                        ChatChannelTypeKey = ChatHelper.GetChatChannelTypeKey( g.GroupTypeId ),
-                        ChatChannelKey = chatChannelKey,
-                        ShouldSaveChatChannelKeyInRock = g.ChatChannelKey != chatChannelKey,
-                        Name = g.Name,
-                        AvatarImageUrl = avatarImageUrl,
-                        CampusId = g.CampusId,
-                        IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
-                        IsPublic = g.GetIsChatChannelPublic(),
-                        IsAlwaysShown = g.GetIsChatChannelAlwaysShown(),
-                        IsChatEnabled = g.GetIsChatEnabled(),
-                        IsChatChannelActive = g.GetIsChatChannelActive()
-                    };
-                } )
+                .Select( ChatHelper.ConvertGroupToRockChatGroup )
                 .ToList();
         }
 
