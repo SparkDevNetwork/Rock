@@ -28,8 +28,8 @@ export const enum PreferenceKey {
     SortOrderRegistrationTemplateId = "SortOrder_RegistrationTemplateId_{0}",
     IsGenderHighlightingRegistrationInstanceId = "IsGenderHighlighting_RegistrationInstanceId_{0}",
     IsGenderHighlightingRegistrationTemplateId = "IsGenderHighlighting_RegistrationTemplateId_{0}",
-    RegistrantAttributeFilterRegistrationInstanceId = "RegistrantAttributeFilter_RegistrationInstanceId_{0}",
-    RegistrantAttributeFilterRegistrationTemplateId = "RegistrantAttributeFilter_RegistrationTemplateId_{0}",
+    PersonAttributeFilterRegistrationInstanceId = "PersonAttributeFilter_RegistrationInstanceId_{0}",
+    PersonAttributeFilterRegistrationTemplateId = "PersonAttributeFilter_RegistrationTemplateId_{0}",
     GroupAttributeFilterGroupTypeId = "GroupAttributeFilter_GroupTypeId_{0}",
     GroupMemberAttributeFilterGroupTypeId = "GroupMemberAttributeFilter_GroupTypeId_{0}"
 }

@@ -71,7 +71,7 @@
                     </template>
 
                     <!-- TODO: See about adding "Filter" to drawer. -->
-                    <template #drawer>
+                    <template v-if="Object.keys(personAttributesForFilter).length > 0" #drawer>
                         <AttributeValuesContainer v-model="pendingPersonAttributeValuesForFilter" :attributes="personAttributesForFilter" isEditMode :numberOfColumns="1" />
                         <RockButton :btnType="BtnType.Action"
                                     :btnSize="BtnSize.ExtraSmall"
@@ -152,11 +152,21 @@
                     </template>
 
                     <!-- TODO: See about adding "Filter" to drawer. -->
-                    <template #drawer>
-                        <RockLabel>Group Filters</RockLabel>
-                        <AttributeValuesContainer v-model="groupAttributeValuesForFilter" :attributes="groupAttributesForFilter" isEditMode :numberOfColumns="3" columnBreakpoint="lg" />
-                        <RockLabel>Group Member Filters</RockLabel>
-                        <AttributeValuesContainer v-model="groupMemberAttributeValuesForFilter" :attributes="groupMemberAttributesForFilter" isEditMode :numberOfColumns="3" columnBreakpoint="lg" />
+                    <template #drawer v-if="Object.keys(groupAttributesForFilter).length > 0 || Object.keys(groupMemberAttributesForFilter).length > 0">
+                        <RockLabel v-if="Object.keys(groupAttributesForFilter).length > 0">Group Filters</RockLabel>
+                        <AttributeValuesContainer v-model="pendingGroupAttributeValuesForFilter"
+                                                  :attributes="groupAttributesForFilter"
+                                                  isEditMode
+                                                  :numberOfColumns="3"
+                                                  columnBreakpoint="lg"
+                                                  :showCategoryLabel="false" />
+                        <RockLabel v-if="Object.keys(groupMemberAttributesForFilter).length > 0">Group Member Filters</RockLabel>
+                        <AttributeValuesContainer v-model="pendingGroupMemberAttributeValuesForFilter"
+                                                  :attributes="groupMemberAttributesForFilter"
+                                                  isEditMode
+                                                  :numberOfColumns="3"
+                                                  columnBreakpoint="lg"
+                                                  :showCategoryLabel="false" />
                         <RockButton :btnType="BtnType.Action"
                                     :btnSize="BtnSize.ExtraSmall"
                                     @click="applyGroupFilter"
@@ -173,7 +183,7 @@
                         <div v-if="areGroupsLoading" class="d-flex align-items-center justify-content-center">
                             <Loading :isLoading="areGroupsLoading" />
                         </div>
-                        <DestinationGroup v-for="(group, index) in sortedGroups"
+                        <DestinationGroup v-for="(group, index) in filteredAndSortedGroups"
                                           v-else
                                           :key="index"
                                           :destinationGroup="group"
@@ -186,6 +196,8 @@
                                           :clearGroupRoleError="clearGroupRoleError"
                                           :currentSortOrder="currentSortOrder"
                                           :isGenderHighlighting="isGenderHighlighting"
+                                          :isInstanceDisplayed="placementConfigurationSettings.showRegistrationInstanceName"
+                                          :areSourceAttributesDisplayedOnDestinationGroupMembers="placementConfigurationSettings.areSourceAttributesDisplayedOnDestinationGroupMembers"
                                           :arePeopleLoading="arePeopleLoading" />
                     </div>
 
@@ -759,12 +771,15 @@
     const selectedPersonIds = ref<Set<number>>(new Set());
 
     const personAttributesForFilter = ref(box.attributeFilters?.registrantAttributesForFilters ?? {});
-    const personAttributeValuesForFilter = ref(box.attributeFilters?.registrantAttributeValuesForFilters ?? {});
-    const pendingPersonAttributeValuesForFilter = ref(box.attributeFilters?.registrantAttributeValuesForFilters ?? {});
+    const personAttributeValuesForFilter = ref(preferences.getValue(getPersonAttributeFilterKey()) ? JSON.parse(preferences.getValue(getPersonAttributeFilterKey())) : {});
     const groupAttributesForFilter = ref(box.attributeFilters?.groupAttributesForFilters ?? {});
-    const groupAttributeValuesForFilter = ref(box.attributeFilters?.groupAttributeValuesForFilters ?? {});
+    const groupAttributeValuesForFilter = ref(preferences.getValue(getGroupAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupAttributeFilterKey())) : {});
     const groupMemberAttributesForFilter = ref(box.attributeFilters?.groupMemberAttributesForFilters ?? {});
-    const groupMemberAttributeValuesForFilter = ref(box.attributeFilters?.groupMemberAttributeValuesForFilters ?? {});
+    const groupMemberAttributeValuesForFilter = ref(preferences.getValue(getGroupMemberAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupMemberAttributeFilterKey())) : {});
+
+    const pendingPersonAttributeValuesForFilter = ref(preferences.getValue(getPersonAttributeFilterKey()) ? JSON.parse(preferences.getValue(getPersonAttributeFilterKey())) : {});
+    const pendingGroupAttributeValuesForFilter = ref(preferences.getValue(getGroupAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupAttributeFilterKey())) : {});
+    const pendingGroupMemberAttributeValuesForFilter = ref(preferences.getValue(getGroupMemberAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupMemberAttributeFilterKey())) : {});
 
     const areGroupsExpanded = ref(placementGroups.value.length > 3 ? false : true);
     const isNoPeopleLabelHidden = ref(false);
@@ -801,18 +816,37 @@
         const filteredPeople = peopleToPlace.value.filter(p => {
             return p.registrants?.some(r => {
                 if (!box.attributeFilters?.registrantAttributesForFilters || !r.attributeValues) {
-                    return false;
+                    return true;
                 }
-                return areAttributeFiltersMet(box.attributeFilters?.registrantAttributesForFilters, personAttributeValuesForFilter.value, r.attributeValues);
+                return areAttributeFiltersMet(box.attributeFilters.registrantAttributesForFilters, personAttributeValuesForFilter.value, r.attributeValues);
             });
         });
 
         return getSortedPeople(filteredPeople);
     });
 
-    const sortedGroups = computed(() => {
-        return placementGroups.value.map(group => {
-            const validGroupMembers = (group.groupMembers ?? []).filter(m => m?.person);
+    const filteredAndSortedGroups = computed(() => {
+        // TODO - Phone Number Filter seems to be broken
+        const filteredPlacementGroups = placementGroups.value.filter(g => {
+            if (!box.attributeFilters?.groupAttributesForFilters || !g.attributeValues) {
+                return true;
+            }
+            return areAttributeFiltersMet(box.attributeFilters.groupAttributesForFilters, groupAttributeValuesForFilter.value, g.attributeValues);
+        });
+
+        return filteredPlacementGroups.map(group => {
+            // const validGroupMembers = (group.groupMembers ?? []).filter(m => m?.person);
+            if (!group.groupMembers) {
+                group.groupMembers = [];
+            }
+
+            const validGroupMembers = group.groupMembers.filter(m => {
+                if (!box.attributeFilters?.groupMemberAttributesForFilters || !m.attributeValues) {
+                    return true;
+                }
+                return areAttributeFiltersMet(box.attributeFilters.groupMemberAttributesForFilters, groupMemberAttributeValuesForFilter.value, m.attributeValues);
+            });
+            console.log("Valid Group Members => ", validGroupMembers);
 
             const sortedPeople = getSortedPeople(validGroupMembers.map(m => m.person!));
 
@@ -855,7 +889,7 @@
 
             var result = fieldType.doesValueMatchFilter(attributeValuesFromEntity[attributeKey], comparisonValue, attributes[attributeKey].configurationValues ?? {});
 
-            // console.log("value: ", attributeValuesFromEntity[attributeKey], " filterValue: ", comparisonValue.value, " Attribute Key: ", attributeKey, " RESULT: ", result);
+            console.log("value: ", attributeValuesFromEntity[attributeKey], " filterValue: ", comparisonValue.value, " Attribute Key: ", attributeKey, " RESULT: ", result);
             return result;
         });
     }
@@ -1238,12 +1272,15 @@
     }
 
     function applyGroupFilter(): void {
-        console.log("Apply group filter with value:", exampleBox.value);
-        // Implement filter logic here
+        groupAttributeValuesForFilter.value = pendingGroupAttributeValuesForFilter.value;
+        groupMemberAttributeValuesForFilter.value = pendingGroupMemberAttributeValuesForFilter.value;
     }
 
     function clearGroupFilters(): void {
-
+        pendingGroupAttributeValuesForFilter.value = {};
+        pendingGroupMemberAttributeValuesForFilter.value = {};
+        groupAttributeValuesForFilter.value = {};
+        groupMemberAttributeValuesForFilter.value = {};
     }
 
     function getSortOrderKey(): string {
@@ -1262,6 +1299,30 @@
         }
         else if (box.registrationTemplateId) {
             return PreferenceKey.IsGenderHighlightingRegistrationTemplateId.replace("{0}", box.registrationTemplateId.toString());
+        }
+        return "";
+    }
+
+    function getPersonAttributeFilterKey(): string {
+        if (box.registrationInstanceId) {
+            return PreferenceKey.PersonAttributeFilterRegistrationInstanceId.replace("{0}", box.registrationInstanceId.toString());
+        }
+        else if (box.registrationTemplateId) {
+            return PreferenceKey.PersonAttributeFilterRegistrationTemplateId.replace("{0}", box.registrationTemplateId.toString());
+        }
+        return "";
+    }
+
+    function getGroupAttributeFilterKey(): string {
+        if (box.placementGroupType?.id) {
+            return PreferenceKey.GroupAttributeFilterGroupTypeId.replace("{0}", box.placementGroupType.id.toString());
+        }
+        return "";
+    }
+
+    function getGroupMemberAttributeFilterKey(): string {
+        if (box.placementGroupType?.id) {
+            return PreferenceKey.GroupMemberAttributeFilterGroupTypeId.replace("{0}", box.placementGroupType.id.toString());
         }
         return "";
     }
@@ -1290,6 +1351,8 @@
         });
 
         placementPeoplePromise.then(async placementPeople => {
+
+
             // Wait here until groups are loaded
             await groupsPromise;
             console.log("placementGroups: ", placementGroups.value);
@@ -1319,7 +1382,7 @@
         isPlacementConfigModalVisible.value = false;
 
         await preferences.save();
-        // placementConfigurationSettings.value = bag;
+        placementConfigurationSettings.value = bag;
 
         loadPlacementData();
     }
@@ -1433,9 +1496,12 @@
     });
 
 
-    watch([currentSortOrder, isGenderHighlighting], async () => {
+    watch([currentSortOrder, isGenderHighlighting, personAttributeValuesForFilter, groupAttributeValuesForFilter, groupMemberAttributeValuesForFilter], async () => {
         preferences.setValue(getSortOrderKey(), currentSortOrder.value.toString());
         preferences.setValue(getIsGenderHighlightingKey(), isGenderHighlighting.value.toString());
+        preferences.setValue(getPersonAttributeFilterKey(), JSON.stringify(personAttributeValuesForFilter.value));
+        preferences.setValue(getGroupAttributeFilterKey(), JSON.stringify(groupAttributeValuesForFilter.value));
+        preferences.setValue(getGroupMemberAttributeFilterKey(), JSON.stringify(groupMemberAttributeValuesForFilter.value));
 
         await preferences.save();
     });

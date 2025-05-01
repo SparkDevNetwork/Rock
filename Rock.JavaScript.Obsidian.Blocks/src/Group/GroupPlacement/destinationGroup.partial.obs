@@ -18,6 +18,15 @@
                 <Badge class="female-badge">{{ genderCounts.females }}</Badge>
             </div>
         </template>
+        <div v-if="destinationGroup.attributeValues && destinationGroup.attributes && hasNonEmptyGroupAttributeValue" class="panel-inline">
+            <div class="panel-heading">
+                <AttributeValuesContainer v-model="destinationGroup.attributeValues"
+                                          :attributes="destinationGroup.attributes"
+                                          :numberOfColumns="4"
+                                          columnBreakpoint="lg"
+                                          :showCategoryLabel="false" />
+            </div>
+        </div>
         <div v-for="role in groupTypeRoles" :key=role.id class="panel-inline">
             <div class="panel-heading">
                 <h1 class="panel-title d-inline-block mr-2">
@@ -59,7 +68,12 @@
                                                     :data-group-id="destinationGroup.groupId"
                                                     :data-group-member-id="groupMember.groupMemberId"
                                                     :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
-                                                    :isGenderHighlighting="isGenderHighlighting" />
+                                                    :isGenderHighlighting="isGenderHighlighting"
+                                                    :isInstanceDisplayed="isInstanceDisplayed"
+                                                    :groupMemberAttributes="groupMember.attributes"
+                                                    :groupMemberAttributeValues="groupMember.attributeValues"
+                                                    :isGroupMemberCard="true"
+                                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers" />
                                     </template>
                                 </div>
                             </div>
@@ -78,7 +92,12 @@
                                                     :data-group-id="destinationGroup.groupId"
                                                     :data-group-member-id="groupMember.groupMemberId"
                                                     :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
-                                                    :isGenderHighlighting="isGenderHighlighting" />
+                                                    :isGenderHighlighting="isGenderHighlighting"
+                                                    :isInstanceDisplayed="isInstanceDisplayed"
+                                                    :groupMemberAttributes="groupMember.attributes"
+                                                    :groupMemberAttributeValues="groupMember.attributeValues"
+                                                    :isGroupMemberCard="true"
+                                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers" />
                                     </template>
                                 </div>
                             </div>
@@ -97,13 +116,18 @@
                                                     :data-group-id="destinationGroup.groupId"
                                                     :data-group-member-id="groupMember.groupMemberId"
                                                     :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
-                                                    :isGenderHighlighting="isGenderHighlighting" />
+                                                    :isGenderHighlighting="isGenderHighlighting"
+                                                    :isInstanceDisplayed="isInstanceDisplayed"
+                                                    :groupMemberAttributes="groupMember.attributes"
+                                                    :groupMemberAttributeValues="groupMember.attributeValues"
+                                                    :isGroupMemberCard="true"
+                                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers" />
                                     </template>
                                 </div>
                             </div>
                         </div>
                     </template>
-                    <div v-else-if="arePeopleLoading" class="d-flex align-items-center justify-content-center">
+                    <div v-else-if="arePeopleLoading" class="loading-section">
                         <Loading :isLoading="arePeopleLoading" />
                     </div>
                     <div v-else class="empty-drop-zone">
@@ -127,9 +151,17 @@
                                     :data-group-id="destinationGroup.groupId"
                                     :data-group-member-id="groupMember.groupMemberId"
                                     :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
-                                    :isGenderHighlighting="isGenderHighlighting" />
+                                    :isGenderHighlighting="isGenderHighlighting"
+                                    :isInstanceDisplayed="isInstanceDisplayed"
+                                    :groupMemberAttributes="groupMember.attributes"
+                                    :groupMemberAttributeValues="groupMember.attributeValues"
+                                    :isGroupMemberCard="true"
+                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers" />
                     </template>
                 </template>
+                <div v-else-if="arePeopleLoading" class="loading-section">
+                    <Loading :isLoading="arePeopleLoading" />
+                </div>
                 <div v-else class="empty-drop-zone">
                     Drag and Drop Here
                 </div>
@@ -149,6 +181,13 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+
+.loading-section {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .gender-section .group-role-wrapper {
@@ -196,8 +235,10 @@
 
 .panel-inline .panel-heading {
     padding: 8px 16px;
-    background-color: rgba(245, 245, 245, 0.8);
-    border-top: 1px solid #eee
+    /* background-color: rgba(245, 245, 245, 0.8); */
+    background-color: var(--color-interface-softer);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: 0;
 }
 
 .panel-inline .panel-title {
@@ -257,31 +298,31 @@
 .group-role-wrapper {
     display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(auto-fit, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(300px, 400px));
     padding: 16px;
 }
 
 @media (min-width: 1024px) {
     .group-role-wrapper {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(300px, 400px));
     }
 }
 
 @media (min-width: 1440px) {
     .group-role-wrapper {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(300px, 400px));
     }
 }
 
 @media (min-width: 1800px) {
     .group-role-wrapper {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(4, minmax(300px, 400px));
     }
 }
 
 @media (min-width: 2000px) {
     .group-role-wrapper {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(5, minmax(300px, 400px));
     }
 }
 </style>
@@ -305,6 +346,8 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { SortTypes } from "./types.partial";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
 
     const props = defineProps({
         destinationGroup: {
@@ -349,7 +392,17 @@
         arePeopleLoading: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+        isInstanceDisplayed: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        },
+        areSourceAttributesDisplayedOnDestinationGroupMembers: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        },
     });
 
     const emit = defineEmits<{
@@ -362,6 +415,10 @@
     // TODO - handle parent edge cases.
     const isGroupExpanded = useVModelPassthrough(props, "isGroupExpanded", emit);
 
+    const hasNonEmptyGroupAttributeValue = computed(() => {
+        const values = props.destinationGroup.attributeValues ?? {};
+        return Object.values(values).some(v => !!v && v !== "");
+    });
 
     const capacityStatusClass = computed(() => {
         if (!destinationGroup.value.groupCapacity) {

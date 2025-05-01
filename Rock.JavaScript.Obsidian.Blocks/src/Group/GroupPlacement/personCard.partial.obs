@@ -41,9 +41,23 @@
         </div>
         <TransitionVerticalCollapse>
             <div v-if="isCardExpanded" class="details-container">
+                <template v-if="isGroupMemberCard && hasGroupMemberAttributesToDisplay">
+                    <div class="header">Group Member</div>
+                    <dl>
+                        <template v-for="attribute, key in getAttributesWithCorrespondingValues(groupMemberAttributes!, groupMemberAttributeValues!)" :key="key">
+                            <dt>{{ attribute.name }}</dt>
+                            <dd v-if="groupMemberAttributeValues"
+                                :ref="(el) => addTooltip(el as Element)"
+                                data-toggle="tooltip"
+                                :data-original-title="getAttributeValueText(groupMemberAttributeValues, attribute, key)">
+                                {{ getAttributeValueText(groupMemberAttributeValues, attribute, key) }}
+                            </dd>
+                        </template>
+                    </dl>
+                </template>
                 <!-- If show instance or show registrants attributes is on then we display this. -->
-                <div v-if="person.registrants && person.registrants.length > 1" class="header">Registrants</div>
-                <div v-if="person.registrants && person.registrants.length > 0">
+                <template v-if="(isInstanceDisplayed || (!isGroupMemberCard || areSourceAttributesDisplayedOnDestinationGroupMembers)) && hasRegistrantAttributesOrInstanceToDisplay">
+                    <div class="header">{{ registrantHeader }}</div>
                     <dl v-for="registrant in person.registrants" :key="registrant.registrantId">
                         <template v-if="isInstanceDisplayed">
                             <dt>Instance</dt>
@@ -53,22 +67,24 @@
                                 {{ registrant.registrationInstanceName }}
                             </dd>
                         </template>
-                        <template v-if="registrant.attributes && Object.keys(registrant.attributes).length > 0" v-for="(attribute, key) in registrant.attributes" :key="key">
+                        <template v-if="(!isGroupMemberCard || areSourceAttributesDisplayedOnDestinationGroupMembers) && registrant.attributes && registrant.attributeValues"
+                                  v-for="(attribute, key) in getAttributesWithCorrespondingValues(registrant.attributes, registrant.attributeValues)"
+                                  :key="key">
                             <dt>{{ attribute.name }}</dt>
                             <!-- TODO - tooltip isn't top right... have to rework the title as well -->
                             <dd v-if="registrant.attributeValues"
                                 :ref="(el) => addTooltip(el as Element)"
                                 data-toggle="tooltip"
-                                :data-original-title="getAttributeValueText(registrant, attribute, key)">
+                                :data-original-title="getAttributeValueText(registrant.attributeValues, attribute, key)">
                                 <!-- <RockField :attribute="attribute"
                                            :modelValue="registrant.attributeValues[key!]"
                                            :showLabel="false"
                                            class="attribute-value-list" /> -->
-                                {{ getAttributeValueText(registrant, attribute, key) }}
+                                {{ getAttributeValueText(registrant.attributeValues, attribute, key) }}
                             </dd>
                         </template>
                     </dl>
-                </div>
+                </template>
             </div>
         </TransitionVerticalCollapse>
     </div>
@@ -114,7 +130,7 @@
 
 .person-card .details-container {
     /* padding: 6px 8px; */
-    padding: 10px;
+    padding: 0 0.5rem 0.5rem 0.5rem;
     font-size: 14px;
     /* color: #2d2e31;
     background: rgba(255, 255, 255, 0.8);
@@ -124,7 +140,7 @@
 
 .person-card .details-container .header {
     font-weight: var(--font-weight-semibold);
-    margin-bottom: 0.5rem;
+    margin: 0.5rem 0;
 }
 
 .person-card .details-container dl {
@@ -137,7 +153,7 @@
     border-bottom: 1px solid var(--color-interface-soft);
 }
 
-.person-card .details-container dl:first-child {
+.person-card .details-container dl {
     padding-top: 0;
 }
 
@@ -232,7 +248,25 @@
         isGenderHighlighting: {
             type: Boolean as PropType<boolean>,
             default: false,
-        }
+        },
+        groupMemberAttributes: {
+            type: Object as PropType<Record<string, PublicAttributeBag> | null>,
+            default: {}
+        },
+        groupMemberAttributeValues: {
+            type: Object as PropType<Record<string, string> | null>,
+            default: {}
+        },
+        isGroupMemberCard: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        },
+        areSourceAttributesDisplayedOnDestinationGroupMembers: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        },
     });
 
     const emit = defineEmits<{
@@ -249,6 +283,32 @@
             return `${props.person.firstName} ${props.person.lastName}`;
         }
         return `${props.person.lastName}, ${props.person.firstName}`;
+    });
+
+    const registrantHeader = computed(() => props.person.registrants && props.person.registrants.length > 1 ? "Registrants" : "Registrant");
+
+    const hasGroupMemberAttributesToDisplay = computed((): boolean => {
+        if (!props.groupMemberAttributes || !props.groupMemberAttributeValues) {
+            return false;
+        }
+
+        return Object.keys(getAttributesWithCorrespondingValues(props.groupMemberAttributes, props.groupMemberAttributeValues) ?? {}).length > 0;
+    });
+
+    const hasRegistrantAttributesOrInstanceToDisplay = computed((): boolean => {
+        if (!props.person.registrants || props.person.registrants.length === 0) {
+            return false;
+        }
+
+        return props.person.registrants.some(registrant => {
+            const hasInstance = props.isInstanceDisplayed && !!registrant.registrationInstanceName;
+            const hasAttributes = (!props.isGroupMemberCard || props.areSourceAttributesDisplayedOnDestinationGroupMembers)
+                && registrant.attributes
+                && registrant.attributeValues
+                && Object.keys(getAttributesWithCorrespondingValues(registrant.attributes, registrant.attributeValues) ?? {}).length > 0;
+
+            return hasInstance || hasAttributes;
+        });
     });
 
     function getPersonBorderColor(gender: Gender) {
@@ -272,16 +332,30 @@
         }
     }
 
-    function getAttributeValueText(registrant: RegistrantBag, attribute: PublicAttributeBag, key: string): string {
+    function getAttributeValueText(attributeValues: Record<string, string> | null, attribute: PublicAttributeBag, key: string): string {
         const fieldTypeGuid = toGuidOrNull(attribute.fieldTypeGuid);
         const fieldType = getFieldType(fieldTypeGuid ?? FieldType.Text);
 
-        const rawValue = registrant.attributeValues?.[key] ?? "";
+        const rawValue = attributeValues?.[key] ?? "";
         const configValues = attribute.configurationValues ?? {};
 
         return fieldType?.getTextValue?.(rawValue, configValues) ?? rawValue;
     }
 
+    function getAttributesWithCorrespondingValues(attributes: Record<string, PublicAttributeBag>, attributeValues: Record<string, string>): Record<string, PublicAttributeBag> | null {
+        if (!attributes || !attributeValues) {
+            return null;
+        }
+
+        const filtered = Object.entries(attributes).filter(([key, attr]) => {
+            const value = attributeValues![key];
+            return !!value && value !== "";
+        });
+
+        return filtered.length > 0
+            ? Object.fromEntries(filtered)
+            : null;
+    }
 
     function togglePersonDropdown(index: number) {
         openDropdownIndex.value = openDropdownIndex.value === index ? null : index;

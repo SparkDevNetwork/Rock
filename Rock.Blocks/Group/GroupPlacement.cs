@@ -88,8 +88,8 @@ namespace Rock.Blocks.Group
         {
             public const string PlacementConfigurationJSONRegistrationInstanceId = "PlacementConfigurationJSON_RegistrationInstanceId_{0}";
             public const string PlacementConfigurationJSONRegistrationTemplateId = "PlacementConfigurationJSON_RegistrationTemplateId_{0}";
-            public const string RegistrantAttributeFilterRegistrationInstanceId = "RegistrantAttributeFilter_RegistrationInstanceId_{0}";
-            public const string RegistrantAttributeFilterRegistrationTemplateId = "RegistrantAttributeFilter_RegistrationTemplateId_{0}";
+            public const string PersonAttributeFilterRegistrationInstanceId = "PersonAttributeFilter_RegistrationInstanceId_{0}";
+            public const string PersonAttributeFilterRegistrationTemplateId = "PersonAttributeFilter_RegistrationTemplateId_{0}";
             public const string GroupAttributeFilterGroupTypeId = "GroupAttributeFilter_GroupTypeId_{0}";
             public const string GroupMemberAttributeFilterGroupTypeId = "GroupMemberAttributeFilter_GroupTypeId_{0}";
         }
@@ -1375,9 +1375,9 @@ namespace Rock.Blocks.Group
 
             HashSet<int> groupIdsToDisplay = new HashSet<int>();
 
-            if ( placementConfiguration.SourceAttributesToDisplay?.Any() == true )
+            if ( placementConfiguration.GroupAttributesToDisplay?.Any() == true )
             {
-                groupIdsToDisplay = placementConfiguration.SourceAttributesToDisplay
+                groupIdsToDisplay = placementConfiguration.GroupAttributesToDisplay
                     .Select( id => id.AsIntegerOrNull() )
                     .Where( id => id.HasValue )
                     .Select( id => id.Value )
