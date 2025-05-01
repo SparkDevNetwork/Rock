@@ -107,7 +107,7 @@ namespace Rock.Reporting.DataFilter.Person
             var templates = data.GetValueOrNull( "templates" )
                 ?.FromJsonOrNull<List<ListItemBag>>()
                 ?.Select( rt => rt.Value )
-                .ToList();
+                .ToList() ?? new List<string>();
             var dateRange = data.GetValueOrDefault( "dateRange", "" ).Replace( "|", "," );
             var includeInactive = data.GetValueOrDefault( "includeInactive", "False" );
 
