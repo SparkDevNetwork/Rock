@@ -196,6 +196,13 @@ namespace Rock.SystemKey
         public const string CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES = "core_checkin_AchievementTypes";
 
         /// <summary>
+        /// Attribute Key for Check-in Configuration Template to specify that all
+        /// areas and groups in this GroupType should be available for proximity
+        /// based check-in from the native mobile application.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_ENABLE_PROXIMITY_CHECKIN = "core_EnableProximityCheckIn";
+
+        /// <summary>
         /// Attribute key for check-in configuration template to specify the
         /// behavior of matching Grade and Age for groups.
         /// </summary>
