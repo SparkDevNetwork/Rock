@@ -117,7 +117,6 @@ namespace Rock.Attribute
         public static bool UpdateAttributes( Type type, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext = null )
         {
             bool attributesUpdated = false;
-            bool attributesDeleted = false;
 
             if ( type == null )
             {
@@ -187,18 +186,14 @@ namespace Rock.Attribute
             {
                 var attributeService = new Model.AttributeService( rockContext );
                 var existingKeys = entityProperties.Select( a => a.Key ).ToList();
+                var attributeIdsToDelete = AttributeCache.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true )
+                    .Where( a => !existingKeys.Contains( a.Key ) )
+                    .Select( a => a.Id )
+                    .ToList();
 
-                foreach ( var a in attributeService.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).ToList() )
+                if ( attributeIdsToDelete.Any() )
                 {
-                    if ( !existingKeys.Contains( a.Key ) )
-                    {
-                        attributeService.Delete( a );
-                        attributesDeleted = true;
-                    }
-                }
-
-                if ( attributesDeleted )
-                {
+                    attributeService.DeleteRange( attributeService.Queryable().Where( a => attributeIdsToDelete.Contains( a.Id ) ) );
                     rockContext.SaveChanges();
                 }
             }
@@ -237,54 +232,46 @@ namespace Rock.Attribute
             var propertyCategories = property.Category.SplitDelimitedValues( false ).ToList();
 
             // Look for an existing attribute record based on the entity, entityQualifierColumn and entityQualifierValue
-            Model.Attribute attribute = attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue, property.Key );
+            var attributeCache = AttributeCache.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true )
+                .Where( a => a.Key == property.Key )
+                .FirstOrDefault();
+            Model.Attribute attribute = null;
 
-            if ( attribute == null )
+            if ( attributeCache != null )
             {
-                // If an existing attribute record doesn't exist, create a new one
-                updated = true;
+                var qualifierKeys = attributeCache.QualifierValues.Keys.ToList();
 
-                attribute = new Model.Attribute();
-                attribute.EntityTypeId = entityTypeId;
-                attribute.EntityTypeQualifierColumn = entityQualifierColumn;
-                attribute.EntityTypeQualifierValue = entityQualifierValue;
-                attribute.Key = property.Key;
-                attribute.IconCssClass = string.Empty;
-                attribute.IsGridColumn = false;
-            }
-            else
-            {
                 // Check to see if the existing attribute record needs to be updated
-                if ( attribute.Name != property.Name ||
-                    attribute.DefaultValue != property.DefaultValue ||
-                    attribute.Description != property.Description ||
-                    attribute.Order != property.Order ||
-                    attribute.FieldType.Assembly != property.FieldTypeAssembly ||
-                    attribute.FieldType.Class != property.FieldTypeClass ||
-                    attribute.IsRequired != property.IsRequired )
+                if ( attributeCache.Name != property.Name ||
+                    attributeCache.DefaultValue != property.DefaultValue ||
+                    attributeCache.Description != property.Description ||
+                    attributeCache.Order != property.Order ||
+                    attributeCache.FieldType.Assembly != property.FieldTypeAssembly ||
+                    attributeCache.FieldType.Class != property.FieldTypeClass ||
+                    attributeCache.IsRequired != property.IsRequired )
                 {
                     updated = true;
                 }
 
                 // Check category
-                else if ( attribute.Categories.Select( c => c.Name ).Except( propertyCategories ).Any() ||
-                    propertyCategories.Except( attribute.Categories.Select( c => c.Name ) ).Any() )
+                else if ( attributeCache.Categories.Select( c => c.Name ).Except( propertyCategories ).Any() ||
+                    propertyCategories.Except( attributeCache.Categories.Select( c => c.Name ) ).Any() )
                 {
                     updated = true;
                 }
 
                 // Check the qualifier values
-                else if ( attribute.AttributeQualifiers.Select( q => q.Key ).Except( property.FieldConfigurationValues.Select( c => c.Key ) ).Any() ||
-                    property.FieldConfigurationValues.Select( c => c.Key ).Except( attribute.AttributeQualifiers.Select( q => q.Key ) ).Any() )
+                else if ( qualifierKeys.Except( property.FieldConfigurationValues.Select( c => c.Key ) ).Any() ||
+                    property.FieldConfigurationValues.Select( c => c.Key ).Except( qualifierKeys ).Any() )
                 {
                     updated = true;
                 }
                 else
                 {
-                    foreach ( var attributeQualifier in attribute.AttributeQualifiers )
+                    foreach ( var attributeQualifier in attributeCache.QualifierValues )
                     {
                         if ( !property.FieldConfigurationValues.ContainsKey( attributeQualifier.Key ) ||
-                            property.FieldConfigurationValues[attributeQualifier.Key].Value != attributeQualifier.Value )
+                            property.FieldConfigurationValues[attributeQualifier.Key].Value != attributeQualifier.Value.Value )
                         {
                             updated = true;
                             break;
@@ -293,17 +280,37 @@ namespace Rock.Attribute
                 }
 
                 // Check additional display settings.
-                var displaySettings = attribute.GetAdditionalSettings<AttributeDisplaySettings>();
+                var displaySettings = attributeCache.GetAdditionalSettings<AttributeDisplaySettings>();
 
                 if ( displaySettings.SiteTypes != property.SiteTypes )
                 {
                     updated = true;
                 }
+
+                if ( updated )
+                {
+                    attribute = attributeService.Get( attributeCache.Id );
+                }
+            }
+            else
+            {
+                updated = true;
             }
 
             if ( !updated )
             {
                 return false;
+            }
+
+            if ( attribute == null )
+            {
+                attribute = new Model.Attribute();
+                attribute.EntityTypeId = entityTypeId;
+                attribute.EntityTypeQualifierColumn = entityQualifierColumn;
+                attribute.EntityTypeQualifierValue = entityQualifierValue;
+                attribute.Key = property.Key;
+                attribute.IconCssClass = string.Empty;
+                attribute.IsGridColumn = false;
             }
 
             // Update the attribute
