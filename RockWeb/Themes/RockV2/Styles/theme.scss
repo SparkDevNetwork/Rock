@@ -560,7 +560,7 @@ $navbar-element-height: 40px;
     left: 0;
     width: 100%;
     display: none;
-    padding: 0 10px 0 12px;
+    padding: 0 10px 0 var(--spacing-small);
     overflow-x: hidden;
     overflow-y: auto;
     text-align: left;
