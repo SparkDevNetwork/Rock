@@ -411,12 +411,30 @@ namespace RockWeb
             foreach ( var blockTypeWithSiteType in blockTypesWithSiteTypes )
             {
                 var type = blockTypeWithSiteType.compiledType;
-                SiteTypeFlags? siteTypes = SiteTypeFlags.None;
+                var siteTypes = SiteTypeFlags.None;
+
                 if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
                 {
-                    siteTypes = type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes
-                        .Select( s => s.ToString().ConvertToEnum<SiteTypeFlags>() )
-                        .Aggregate( SiteTypeFlags.None, ( a, s ) => a | s );
+                    var blockSiteTypes = type.GetCustomAttribute<SupportedSiteTypesAttribute>();
+
+                    if ( blockSiteTypes != null )
+                    {
+                        foreach ( var blockSiteType in blockSiteTypes.SiteTypes )
+                        {
+                            if ( blockSiteType == SiteType.Web )
+                            {
+                                siteTypes |= SiteTypeFlags.Web;
+                            }
+                            else if ( blockSiteType == SiteType.Mobile )
+                            {
+                                siteTypes |= SiteTypeFlags.Mobile;
+                            }
+                            else if ( blockSiteType == SiteType.Tv )
+                            {
+                                siteTypes |= SiteTypeFlags.Tv;
+                            }
+                        }
+                    }
                 }
                 else if ( typeof( IRockObsidianBlockType ).IsAssignableFrom( type ) )
                 {
@@ -439,7 +457,7 @@ namespace RockWeb
                         {
                             continue;
                         }
-                        blockType.SiteTypeFlags = siteTypes ?? SiteTypeFlags.None;
+                        blockType.SiteTypeFlags = siteTypes;
                         rockContext.SaveChanges();
                     }
                 }
