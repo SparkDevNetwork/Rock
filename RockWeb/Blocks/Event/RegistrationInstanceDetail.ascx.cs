@@ -725,7 +725,8 @@ namespace RockWeb.Blocks.Event
                         Url = LinkedPageUrl( AttributeKey.GroupPlacementPage, new Dictionary<string, string>
                         {
                 { PageParameterKey.RegistrationInstanceId, registrationInstance.Id.ToString() },
-                { "RegistrationTemplatePlacementId", p.Id.ToString() }
+                { "RegistrationTemplatePlacementId", p.Id.ToString() },
+                { "ReturnUrl", GetCurrentPageUrl() }
                         } )
                     } )
                     .ToList();

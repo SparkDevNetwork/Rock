@@ -73,7 +73,10 @@
                                                     :groupMemberAttributes="groupMember.attributes"
                                                     :groupMemberAttributeValues="groupMember.attributeValues"
                                                     :isGroupMemberCard="true"
-                                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers" />
+                                                    :groupMemberId="groupMember.groupMemberId"
+                                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                                                    @editGroupMember="editGroupMember"
+                                                    @removeGroupMember="removeGroupMember" />
                                     </template>
                                 </div>
                             </div>
@@ -97,7 +100,10 @@
                                                     :groupMemberAttributes="groupMember.attributes"
                                                     :groupMemberAttributeValues="groupMember.attributeValues"
                                                     :isGroupMemberCard="true"
-                                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers" />
+                                                    :groupMemberId="groupMember.groupMemberId"
+                                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                                                    @editGroupMember="editGroupMember"
+                                                    @removeGroupMember="removeGroupMember" />
                                     </template>
                                 </div>
                             </div>
@@ -121,7 +127,10 @@
                                                     :groupMemberAttributes="groupMember.attributes"
                                                     :groupMemberAttributeValues="groupMember.attributeValues"
                                                     :isGroupMemberCard="true"
-                                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers" />
+                                                    :groupMemberId="groupMember.groupMemberId"
+                                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                                                    @editGroupMember="editGroupMember"
+                                                    @removeGroupMember="removeGroupMember" />
                                     </template>
                                 </div>
                             </div>
@@ -156,7 +165,10 @@
                                     :groupMemberAttributes="groupMember.attributes"
                                     :groupMemberAttributeValues="groupMember.attributeValues"
                                     :isGroupMemberCard="true"
-                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers" />
+                                    :groupMemberId="groupMember.groupMemberId"
+                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                                    @editGroupMember="editGroupMember"
+                                    @removeGroupMember="removeGroupMember" />
                     </template>
                 </template>
                 <div v-else-if="arePeopleLoading" class="loading-section">
@@ -407,6 +419,11 @@
 
     const emit = defineEmits<{
         (e: "update:isGroupExpanded", value: boolean): void;
+        (e: "editGroup", value: number): void;
+        (e: "detachGroup", value: number): void;
+        (e: "deleteGroup", value: number): void;
+        (e: "editGroupMember", value: number): void;
+        (e: "removeGroupMember", groupId: number, memberId: number): void;
     }>();
 
     // const destinationGroup = ref<PlacementGroupBag>(props.destinationGroup);
@@ -487,8 +504,23 @@
         actions.push({
             type: "default",
             title: "Edit",
-            handler: actionGoesHere
+            handler: editGroup
         });
+
+        if (!props.destinationGroup.isShared) {
+            actions.push(
+                {
+                    type: "default",
+                    title: "Detach",
+                    handler: detachGroup
+                },
+                {
+                    type: "danger", // TODO - The current panel.obs does not support this.
+                    title: "Delete",
+                    handler: deleteGroup
+                }
+            );
+        }
 
         return actions;
     });
@@ -546,8 +578,24 @@
         return parts.join("<br>");
     }
 
-    function actionGoesHere() {
-        // Logic to handle the action goes here
+    function editGroupMember(groupMemberId: number): void {
+        emit("editGroupMember", groupMemberId);
+    }
+
+    function removeGroupMember(groupMemberId: number) {
+        emit("removeGroupMember", props.destinationGroup.groupId, groupMemberId);
+    }
+
+    function editGroup(): void {
+        emit("editGroup", props.destinationGroup.groupId);
+    }
+
+    function detachGroup(): void {
+        emit("detachGroup", props.destinationGroup.groupId);
+    }
+
+    function deleteGroup(): void {
+        emit("deleteGroup", props.destinationGroup.groupId);
     }
 
     function addTooltip(element: Element | null): void {

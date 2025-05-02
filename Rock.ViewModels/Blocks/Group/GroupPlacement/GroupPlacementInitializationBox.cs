@@ -61,6 +61,14 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         //public List<PlacementGroupDetailsBag> PlacementGroupDetails { get; set; }
 
         /// <summary>
+        /// Gets or sets the navigation urls.
+        /// </summary>
+        /// <value>The navigation urls.</value>
+        public Dictionary<string, string> NavigationUrls { get; set; } = new Dictionary<string, string>();
+
+        public string BackPageUrl { get; set; }
+
+        /// <summary>
         /// Gets or sets the error message, if any.
         /// </summary>
         public string ErrorMessage { get; set; }

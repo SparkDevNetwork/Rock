@@ -3,7 +3,7 @@
     <Panel type="block" panelBodyCssClass="overflow-hidden" class="styled-scroll">
         <template #title>
             <div class="d-flex align-items-center">
-                <span class="clickable text-sm mr-3" @click="onBack">
+                <span v-if="!isNullOrWhiteSpace(box.backPageUrl)" class="clickable text-sm mr-3" @click="onBack">
                     <i class="fa fa-chevron-left d-block"></i>
                 </span>
                 <h1 class="panel-title">
@@ -65,9 +65,22 @@
                                     :isSquare="true"
                                     title="Search People"
                                     class="mr-3"
-                                    @click="searchPeople">
+                                    @click="toggleIsPersonSearchVisible">
                             <i class="fa fa-search"></i>
                         </RockButton>
+                    </template>
+                    <template #subheaderLeft>
+                        <transition name="slide">
+                            <div v-show="isPersonSearchVisible" class="p-3">
+                                <TextBox v-model="personSearchText" placeholder="Search" isClearable>
+                                    <template #inputGroupPrepend>
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-search"></i>
+                                        </div>
+                                    </template>
+                                </TextBox>
+                            </div>
+                        </transition>
                     </template>
 
                     <!-- TODO: See about adding "Filter" to drawer. -->
@@ -198,7 +211,12 @@
                                           :isGenderHighlighting="isGenderHighlighting"
                                           :isInstanceDisplayed="placementConfigurationSettings.showRegistrationInstanceName"
                                           :areSourceAttributesDisplayedOnDestinationGroupMembers="placementConfigurationSettings.areSourceAttributesDisplayedOnDestinationGroupMembers"
-                                          :arePeopleLoading="arePeopleLoading" />
+                                          :arePeopleLoading="arePeopleLoading"
+                                          @editGroup="editGroup"
+                                          @detachGroup="detachPlacementGroup"
+                                          @deleteGroup="deletePlacementGroup"
+                                          @editGroupMember="editGroupMember"
+                                          @removeGroupMember="removeGroupMember" />
                     </div>
 
                 </Panel>
@@ -226,6 +244,12 @@
     height: 100%;
 }
 
+:deep(.panel-sub-header) {
+    padding: 0;
+    background-color: var(--color-interface-softer);
+    min-height: unset;
+}
+
 :deep(.panel-default>.panel-heading) {
     background-color: var(--color-interface-softest);
     border-color: var(--color-interface-softer);
@@ -235,6 +259,26 @@
 /* Work-around to allow the height to descend (through the fullscreen div) all the way down to panel-body */
 :deep(.helper-height > div:first-child) {
     height: 100%;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+    transition: all 0.5s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0 1rem !important;
+}
+
+.slide-enter-to,
+.slide-leave-from {
+    max-height: var(--slide-height, 200px);
+    opacity: 1;
+    padding: 1rem !important;
 }
 
 .no-people-label {
@@ -724,7 +768,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { tooltip } from "@Obsidian/Utility/tooltip";
-    import { PreferenceKey, SortTypes } from "./GroupPlacement/types.partial";
+    import { PreferenceKey, SortTypes, NavigationUrlKey } from "./GroupPlacement/types.partial";
     import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -748,6 +792,8 @@
     import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
     import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { DetachGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/detachGroupBag";
 
     // #region Values
     const box = useConfigurationValues<GroupPlacementInitializationBox>();
@@ -781,7 +827,10 @@
     const pendingGroupAttributeValuesForFilter = ref(preferences.getValue(getGroupAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupAttributeFilterKey())) : {});
     const pendingGroupMemberAttributeValuesForFilter = ref(preferences.getValue(getGroupMemberAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupMemberAttributeFilterKey())) : {});
 
-    const areGroupsExpanded = ref(placementGroups.value.length > 3 ? false : true);
+    const isPersonSearchVisible = ref<boolean>(false);
+    const personSearchText = ref<string>("");
+
+    const areGroupsExpanded = ref(false);
     const isNoPeopleLabelHidden = ref(false);
 
     const groupRoleErrors = ref<Record<number, Record<number, string>>>({});
@@ -814,12 +863,18 @@
 
     const filteredAndSortedPeopleToPlace = computed(() => {
         const filteredPeople = peopleToPlace.value.filter(p => {
-            return p.registrants?.some(r => {
+            const matchesSearchText = personSearchText.value
+                ? p.nickname?.toLowerCase().includes(personSearchText.value.toLowerCase()) ||
+                p.lastName?.toLowerCase().includes(personSearchText.value.toLowerCase())
+                : true;
+
+            const matchesAttributeFilters = p.registrants?.some(r => {
                 if (!box.attributeFilters?.registrantAttributesForFilters || !r.attributeValues) {
                     return true;
                 }
                 return areAttributeFiltersMet(box.attributeFilters.registrantAttributesForFilters, personAttributeValuesForFilter.value, r.attributeValues);
             });
+            return matchesSearchText && matchesAttributeFilters;
         });
 
         return getSortedPeople(filteredPeople);
@@ -1116,7 +1171,13 @@
                 // TODO - what happens on error?
                 var newGroupMembers = await addGroupMembersToGroup(pendingGroupMembers, groupId);
                 newGroupMembers.forEach((groupMember, i) => {
-                    placementGroup.groupMembers!.splice(operation.targetIndex! + i, 0, {
+                    // placementGroup.groupMembers!.splice(operation.targetIndex! + i, 0, {
+                    //     groupRoleId: groupMember.groupRoleId,
+                    //     person: groupMember.person,
+                    //     groupMemberId: groupMember.groupMemberId
+                    // });
+                    // No need to splice because we are always sorting.
+                    placementGroup.groupMembers!.push({
                         groupRoleId: groupMember.groupRoleId,
                         person: groupMember.person,
                         groupMemberId: groupMember.groupMemberId
@@ -1159,31 +1220,60 @@
 
                 const groupId = toNumberOrNull((operation.element as HTMLElement).dataset.groupId);
                 const groupMemberId = toNumberOrNull((operation.element as HTMLElement).dataset.groupMemberId);
-                var placementGroup = placementGroups.value.find(g => g.groupId === groupId);
 
-                if (!placementGroup?.groupMembers || !groupMemberId) {
-                    return;
-                }
-
-                const groupMember = placementGroup.groupMembers.find(gm => gm.groupMemberId === groupMemberId);
-
-                if (placementGroup && groupMember && groupMember.person && operation.targetIndex !== undefined) {
-                    if (!peopleToPlace.value) {
-                        peopleToPlace.value = [];
-                    }
-
-                    var isRemoveSuccess = await removeGroupMemberFromGroup(groupMemberId, placementGroup.groupId);
-
-                    if (isRemoveSuccess) {
-                        peopleToPlace.value.splice(operation.targetIndex, 0, {
-                            ...groupMember.person,
-                        });
-
-                        placementGroup.groupMembers = placementGroup.groupMembers.filter(gm => gm.groupMemberId !== groupMemberId);
-                    }
-                }
+                removeGroupMember(groupId, groupMemberId);
             }
         };
+    }
+
+    async function removeGroupMember(groupId: number | null, groupMemberId: number | null): Promise<void> {
+        const placementGroup = placementGroups.value.find(g => g.groupId === groupId);
+        if (!placementGroup?.groupMembers || !groupMemberId) {
+            return;
+        }
+
+        const groupMember = placementGroup.groupMembers?.find(gm => gm.groupMemberId === groupMemberId);
+
+        if (groupMember && groupMember.person) {
+            if (!peopleToPlace.value) {
+                peopleToPlace.value = [];
+            }
+
+            var isRemoveSuccess = await removeGroupMemberFromGroup(groupMemberId, placementGroup.groupId);
+
+            if (isRemoveSuccess) {
+                // If the person does not have a Registrant in any of the included Registration Instances, then they should not be shown in the People To Place Panel.
+                // This matches with functionality from the old Webforms Block.
+                var shouldPersonBeDisplayed = groupMember.person.registrants?.some(r => {
+                    if (placementConfigurationSettings.value.includedRegistrationInstanceIds?.length === 0) {
+                        return true;
+                    }
+                    return placementConfigurationSettings.value.includedRegistrationInstanceIds?.includes(r.registrationInstanceId.toString());
+                });
+
+                if (shouldPersonBeDisplayed) {
+                    // peopleToPlace.value.splice(operation.targetIndex, 0, {
+                    //     ...groupMember.person,
+                    // });
+                    // No need to splice because we are always sorting.
+                    peopleToPlace.value.push({ ...groupMember.person });
+                }
+
+                placementGroup.groupMembers = placementGroup.groupMembers?.filter(gm => gm.groupMemberId !== groupMemberId);
+            }
+        }
+    }
+
+    function editGroup(key: number): void {
+        if (box.navigationUrls?.[NavigationUrlKey.GroupDetailPage]) {
+            window.location.href = box.navigationUrls[NavigationUrlKey.GroupDetailPage].replace("((Key))", key.toString());
+        }
+    }
+
+    function editGroupMember(key: number): void {
+        if (box.navigationUrls?.[NavigationUrlKey.GroupMemberDetailPage]) {
+            window.location.href = box.navigationUrls[NavigationUrlKey.GroupMemberDetailPage].replace("((Key))", key.toString());
+        }
     }
 
     function handleOutsideClick(event: MouseEvent) {
@@ -1222,7 +1312,9 @@
     }
 
     function onBack(): void {
-        console.log("Back button clicked");
+        if (box.backPageUrl) {
+            window.location.href = box.backPageUrl;
+        }
         // window.history.back();
     }
 
@@ -1245,8 +1337,8 @@
         isPlacementConfigModalVisible.value = true;
     }
 
-    function searchPeople(): void {
-        console.log("Search people");
+    function toggleIsPersonSearchVisible(): void {
+        isPersonSearchVisible.value = !isPersonSearchVisible.value;
     }
 
     function openAddGroupModal(): void {
@@ -1348,6 +1440,7 @@
                 groupMembers: [] // Ensure groupMembers is initialized
             }));
             areGroupsLoading.value = false;
+            areGroupsExpanded.value = groups.length > 3 ? false : true;
         });
 
         placementPeoplePromise.then(async placementPeople => {
@@ -1479,9 +1572,43 @@
             console.log("Add group success.");
             addGroupModalElement.value?.resetForm();
             isAddGroupModalVisible.value = false;
+            loadPlacementData();
         }
         else {
             addGroupModalErrorText.value = result.errorMessage ?? "Unknown error while adding a group.";
+        }
+    }
+
+    async function detachPlacementGroup(groupId: number): Promise<void> {
+        const result = await invokeBlockAction("DetachPlacementGroup", {
+            detachGroupBag: {
+                groupId: groupId,
+                registrationInstanceId: box.registrationInstanceId,
+                registrationTemplatePlacementId: box.registrationTemplatePlacementId
+            } as DetachGroupBag
+        });
+
+        if (result.isSuccess) {
+            // TODO - this doesn't work on template mode. Same on Webforms.
+            console.log("Detach group success.");
+            loadPlacementData();
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while trying to detach a group.");
+        }
+    }
+
+    async function deletePlacementGroup(groupId: number): Promise<void> {
+        const result = await invokeBlockAction("DeletePlacementGroup", {
+            groupId: groupId
+        });
+
+        if (result.isSuccess) {
+            console.log("Delete group success.");
+            loadPlacementData();
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while trying to delete a group.");
         }
     }
 

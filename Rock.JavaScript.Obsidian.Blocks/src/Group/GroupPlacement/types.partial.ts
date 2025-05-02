@@ -34,6 +34,11 @@ export const enum PreferenceKey {
     GroupMemberAttributeFilterGroupTypeId = "GroupMemberAttributeFilter_GroupTypeId_{0}"
 }
 
+export const enum NavigationUrlKey {
+    GroupDetailPage = "GroupDetailPage",
+    GroupMemberDetailPage = "GroupMemberDetailPage",
+}
+
 export type AvailablePlacementAttributes = {
     registrantAttributes: ListItemBag[];
     groupAttributes: ListItemBag[];

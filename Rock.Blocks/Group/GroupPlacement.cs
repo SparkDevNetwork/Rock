@@ -31,8 +31,6 @@ using Rock.ViewModels.Blocks.Group.GroupPlacement;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
-using static Rock.Web.UI.RegistrationInstanceBlock;
-
 namespace Rock.Blocks.Group
 {
     /// <summary>
@@ -101,6 +99,13 @@ namespace Rock.Blocks.Group
             public const string RegistrationTemplateId = "RegistrationTemplateId";
             public const string RegistrationTemplatePlacementId = "RegistrationTemplatePlacementId";
             public const string PromptForTemplatePlacement = "PromptForTemplatePlacement";
+            public const string ReturnUrl = "ReturnUrl";
+        }
+
+        private static class NavigationUrlKey
+        {
+            public const string GroupDetailPage = "GroupDetailPage";
+            public const string GroupMemberDetailPage = "GroupMemberDetailPage";
         }
 
         #endregion Keys
@@ -154,6 +159,7 @@ namespace Rock.Blocks.Group
             public int? GroupCapacity { get; set; }
             public int GroupTypeId { get; set; }
             public int GroupOrder { get; set; }
+            public bool IsShared { get; set; }
         }
 
         private class PlacementPeopleResult
@@ -201,6 +207,8 @@ namespace Rock.Blocks.Group
             box.PlacementGroupType = new PlacementGroupTypeBag();
             box.SelectedPlacement = new PlacementBag();
             box.Title = "Group Placement"; // TODO - convert to proper title
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.BackPageUrl = GetBackPageUrl();
 
             var registrationTemplatePlacementId = GetIdFromPageParameter( PageParameterKey.RegistrationTemplatePlacementId );
             var registrationInstanceId = GetIdFromPageParameter( PageParameterKey.RegistrationInstanceId );
@@ -506,103 +514,130 @@ namespace Rock.Blocks.Group
             return box;
         }
 
+        /// <summary>
+        /// Gets the box navigation URLs required for the page to operate.
+        /// </summary>
+        /// <returns>A dictionary of key names and URL values.</returns>
+        private Dictionary<string, string> GetBoxNavigationUrls()
+        {
+            return new Dictionary<string, string>
+            {
+                [NavigationUrlKey.GroupDetailPage] = this.GetLinkedPageUrl( AttributeKey.GroupDetailPage, new Dictionary<string, string> { ["GroupId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } ),
+                [NavigationUrlKey.GroupMemberDetailPage] = this.GetLinkedPageUrl( AttributeKey.GroupMemberDetailPage, new Dictionary<string, string> { ["GroupMemberId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } ),
+            };
+        }
+
+        /// <summary>
+        /// Gets the "Back" page URL.
+        /// </summary>
+        private string GetBackPageUrl()
+        {
+            var returnUrl = this.PageParameter( PageParameterKey.ReturnUrl );
+            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            {
+                return returnUrl;
+            }
+
+            return string.Empty;
+        }
+
         //private List<PersonBag> GetPlacementPeople( int registrationTemplateId, int? registrationInstanceId, int? registrantId )
         //{
         //    var registrationRegistrantService = new RegistrationRegistrantService( RockContext );
         //    var registrationRegistrantQuery = registrationRegistrantService.Queryable();
         //    var placementConfiguration = GetPlacementConfiguration( registrationInstanceId, registrationTemplateId );
 
-        //    HashSet<int> includedRegistrationInstanceIds = null;
-        //    if ( placementConfiguration.IncludedRegistrationInstanceIds?.Any() == true )
-        //    {
-        //        includedRegistrationInstanceIds = placementConfiguration.IncludedRegistrationInstanceIds?.Select( id => id.AsIntegerOrNull() )
-        //            .Where( id => id.HasValue )
-        //            .Select( id => id.Value )
-        //            .ToHashSet();
-        //    }
+            //    HashSet<int> includedRegistrationInstanceIds = null;
+            //    if ( placementConfiguration.IncludedRegistrationInstanceIds?.Any() == true )
+            //    {
+            //        includedRegistrationInstanceIds = placementConfiguration.IncludedRegistrationInstanceIds?.Select( id => id.AsIntegerOrNull() )
+            //            .Where( id => id.HasValue )
+            //            .Select( id => id.Value )
+            //            .ToHashSet();
+            //    }
 
-        //    if ( registrationInstanceId.HasValue )
-        //    {
-        //        registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Registration.RegistrationInstanceId == registrationInstanceId.Value );
-        //    }
-        //    else if ( includedRegistrationInstanceIds != null )
-        //    {
-        //        registrationRegistrantQuery = registrationRegistrantQuery.Where( a => includedRegistrationInstanceIds.Contains( a.Registration.RegistrationInstanceId ) );
-        //    }
-        //    else
-        //    {
-        //        var instanceIds = new RegistrationInstanceService( RockContext )
-        //            .Queryable()
-        //            .Where( i => i.RegistrationTemplateId == registrationTemplateId )
-        //            .Select( i => i.Id );
+            //    if ( registrationInstanceId.HasValue )
+            //    {
+            //        registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Registration.RegistrationInstanceId == registrationInstanceId.Value );
+            //    }
+            //    else if ( includedRegistrationInstanceIds != null )
+            //    {
+            //        registrationRegistrantQuery = registrationRegistrantQuery.Where( a => includedRegistrationInstanceIds.Contains( a.Registration.RegistrationInstanceId ) );
+            //    }
+            //    else
+            //    {
+            //        var instanceIds = new RegistrationInstanceService( RockContext )
+            //            .Queryable()
+            //            .Where( i => i.RegistrationTemplateId == registrationTemplateId )
+            //            .Select( i => i.Id );
 
-        //        registrationRegistrantQuery = registrationRegistrantQuery.Where( rr => instanceIds.Contains( rr.Registration.RegistrationInstanceId ) );
-        //    }
+            //        registrationRegistrantQuery = registrationRegistrantQuery.Where( rr => instanceIds.Contains( rr.Registration.RegistrationInstanceId ) );
+            //    }
 
-        //    if ( registrantId.HasValue )
-        //    {
-        //        registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Id == registrantId.Value );
-        //    }
+            //    if ( registrantId.HasValue )
+            //    {
+            //        registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Id == registrantId.Value );
+            //    }
 
-        //    HashSet<int> displayedAttributeIds = null;
+            //    HashSet<int> displayedAttributeIds = null;
 
-        //    if ( placementConfiguration.SourceAttributesToDisplay?.Any() == true )
-        //    {
-        //        displayedAttributeIds = placementConfiguration.SourceAttributesToDisplay
-        //            .Select( id => id.AsIntegerOrNull() )
-        //            .Where( id => id.HasValue )
-        //            .Select( id => id.Value )
-        //            .ToHashSet();
-        //    }
+            //    if ( placementConfiguration.SourceAttributesToDisplay?.Any() == true )
+            //    {
+            //        displayedAttributeIds = placementConfiguration.SourceAttributesToDisplay
+            //            .Select( id => id.AsIntegerOrNull() )
+            //            .Where( id => id.HasValue )
+            //            .Select( id => id.Value )
+            //            .ToHashSet();
+            //    }
 
-        //    var registrants = registrationRegistrantQuery
-        //        .Where( r => r.PersonAlias != null && r.PersonAlias.Person != null )
-        //        .Select( r => new
-        //        {
-        //            PersonId = r.PersonAlias.Person.Id,
-        //            r.PersonAlias.Person.FirstName,
-        //            r.PersonAlias.Person.NickName,
-        //            r.PersonAlias.Person.LastName,
-        //            r.PersonAlias.Person.Gender,
-        //            r.PersonAlias.Person.PhotoId,
-        //            r.PersonAlias.Person.Age,
-        //            PersonRecordTypeValueId = r.PersonAlias.Person.RecordTypeValueId,
-        //            r.PersonAlias.Person.AgeClassification,
-        //            RegistrantId = r.Id,
-        //            r.CreatedDateTime,
-        //            r.RegistrationTemplateId,
-        //            RegistrationInstanceId = r.Registration.RegistrationInstance.Id,
-        //            RegistrationInstanceName = r.Registration.RegistrationInstance.Name,
-        //        } )
-        //        .ToList();
+            //    var registrants = registrationRegistrantQuery
+            //        .Where( r => r.PersonAlias != null && r.PersonAlias.Person != null )
+            //        .Select( r => new
+            //        {
+            //            PersonId = r.PersonAlias.Person.Id,
+            //            r.PersonAlias.Person.FirstName,
+            //            r.PersonAlias.Person.NickName,
+            //            r.PersonAlias.Person.LastName,
+            //            r.PersonAlias.Person.Gender,
+            //            r.PersonAlias.Person.PhotoId,
+            //            r.PersonAlias.Person.Age,
+            //            PersonRecordTypeValueId = r.PersonAlias.Person.RecordTypeValueId,
+            //            r.PersonAlias.Person.AgeClassification,
+            //            RegistrantId = r.Id,
+            //            r.CreatedDateTime,
+            //            r.RegistrationTemplateId,
+            //            RegistrationInstanceId = r.Registration.RegistrationInstance.Id,
+            //            RegistrationInstanceName = r.Registration.RegistrationInstance.Name,
+            //        } )
+            //        .ToList();
 
-        //    // TODO - Consider Grouping in SQL
-        //    // TODO - Handle Fees
+            //    // TODO - Consider Grouping in SQL
+            //    // TODO - Handle Fees
 
-        //    var people = registrants
-        //        .GroupBy( r => r.PersonId )
-        //        .Select( g => new PersonBag
-        //        {
-        //            PersonId = g.Key,
-        //            FirstName = g.First().FirstName,
-        //            Nickname = g.First().NickName,
-        //            LastName = g.First().LastName,
-        //            Gender = g.First().Gender,
-        //            PhotoUrl = Rock.Model.Person.GetPersonPhotoUrl( $"{g.First().NickName.Truncate( 1, false )}{g.First().LastName.Truncate( 1, false )}", g.First().PhotoId, g.First().Age, g.First().Gender, g.First().PersonRecordTypeValueId, g.First().AgeClassification ),
-        //            Registrants = g.Select( r => new RegistrantBag
-        //            {
-        //                RegistrantId = r.RegistrantId,
-        //                RegistrationInstanceId = r.RegistrationInstanceId,
-        //                CreatedDateTime = r.CreatedDateTime,
-        //                RegistrationInstanceName = r.RegistrationInstanceName,
-        //                Attributes = GetRegistrantAttributes(r.RegistrantId, r.RegistrationTemplateId, displayedAttributeIds ),
-        //                AttributeValues = GetRegistrantAttributeValues( r.RegistrantId, r.RegistrationTemplateId, displayedAttributeIds )
-        //            } ).ToList()
-        //        } )
-        //        .ToList();
+            //    var people = registrants
+            //        .GroupBy( r => r.PersonId )
+            //        .Select( g => new PersonBag
+            //        {
+            //            PersonId = g.Key,
+            //            FirstName = g.First().FirstName,
+            //            Nickname = g.First().NickName,
+            //            LastName = g.First().LastName,
+            //            Gender = g.First().Gender,
+            //            PhotoUrl = Rock.Model.Person.GetPersonPhotoUrl( $"{g.First().NickName.Truncate( 1, false )}{g.First().LastName.Truncate( 1, false )}", g.First().PhotoId, g.First().Age, g.First().Gender, g.First().PersonRecordTypeValueId, g.First().AgeClassification ),
+            //            Registrants = g.Select( r => new RegistrantBag
+            //            {
+            //                RegistrantId = r.RegistrantId,
+            //                RegistrationInstanceId = r.RegistrationInstanceId,
+            //                CreatedDateTime = r.CreatedDateTime,
+            //                RegistrationInstanceName = r.RegistrationInstanceName,
+            //                Attributes = GetRegistrantAttributes(r.RegistrantId, r.RegistrationTemplateId, displayedAttributeIds ),
+            //                AttributeValues = GetRegistrantAttributeValues( r.RegistrantId, r.RegistrationTemplateId, displayedAttributeIds )
+            //            } ).ToList()
+            //        } )
+            //        .ToList();
 
-        //    return people;
-        //}
+            //    return people;
+            //}
 
         private List<PlacementGroupDetailsBag> GetPlacementGroupDetails( int registrationTemplatePlacementId, int? registrationInstanceId, int registrationTemplateId )
         {
@@ -1393,6 +1428,7 @@ namespace Rock.Blocks.Group
                     GroupCapacity = g.First().GroupCapacity,
                     GroupTypeId = g.First().GroupTypeId,
                     GroupOrder = g.First().GroupOrder,
+                    IsShared = g.First().IsShared,
                     Attributes = GetGroupAttributes( g.Key, g.First().GroupTypeId, groupIdsToDisplay ),
                     AttributeValues = GetGroupAttributeValues( g.Key, g.First().GroupTypeId, groupIdsToDisplay )
                 } ).ToList();
@@ -1622,6 +1658,79 @@ namespace Rock.Blocks.Group
             RockContext.SaveChanges();
 
             // TODO - return the added groups
+            return ActionOk();
+        }
+
+        [BlockAction]
+        public BlockActionResult DetachPlacementGroup( DetachGroupBag detachGroupBag )
+        {
+            var group = new GroupService( RockContext ).Get( detachGroupBag.GroupId );
+
+            if ( group == null )
+            {
+                return ActionNotFound( "Specified group not found." );
+            }
+
+            if (!detachGroupBag.RegistrationTemplatePlacementId.HasValue)
+            {
+                return ActionNotFound( "Specified registration template placement not found." );
+            }
+
+            if ( detachGroupBag.RegistrationInstanceId.HasValue )
+            {
+                var registrationInstanceService = new RegistrationInstanceService( RockContext );
+                var registrationInstance = registrationInstanceService.Get( detachGroupBag.RegistrationInstanceId.Value );
+
+                if ( registrationInstance == null )
+                {
+                    return ActionNotFound( "Specified registration instance not found." );
+                }
+
+                registrationInstanceService.DeleteRegistrationInstancePlacementGroup( registrationInstance, group, detachGroupBag.RegistrationTemplatePlacementId.Value );
+            }
+            else
+            {
+                var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( RockContext );
+                var registrationTemplatePlacement = registrationTemplatePlacementService.Get( detachGroupBag.RegistrationTemplatePlacementId.Value );
+
+                if ( registrationTemplatePlacement == null )
+                {
+                    return ActionNotFound( "Specified registration template placement not found." );
+                }
+
+                registrationTemplatePlacementService.DeleteRegistrationTemplatePlacementPlacementGroup( registrationTemplatePlacement, group );
+            }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
+        }
+
+        [BlockAction]
+        public BlockActionResult DeletePlacementGroup( int groupId )
+        {
+            var groupService = new GroupService( RockContext );
+            var group = groupService.Get( groupId );
+
+            if ( group == null )
+            {
+                return ActionNotFound( "Specified group not found." );
+            }
+
+            if ( !group.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+            {
+                return ActionBadRequest( "You are not authorized to delete this group." );
+            }
+
+            if ( !groupService.CanDelete( group, out string errorMessage, true ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            groupService.Delete( group );
+
+            RockContext.SaveChanges();
+
             return ActionOk();
         }
 

@@ -21,27 +21,12 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
-    /// <summary>
-    /// The SMS Conversations Initialization Box
-    /// </summary>
-    public class PlacementGroupBag
+    public class DetachGroupBag
     {
         public int GroupId { get; set; }
 
-        public string GroupName { get; set; }
+        public int? RegistrationTemplatePlacementId { get; set; }
 
-        public int GroupOrder { get; set; }
-
-        public int GroupTypeId { get; set; }
-
-        public int? GroupCapacity { get; set; }
-
-        public bool IsShared { get; set; }
-
-        public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
-
-        public Dictionary<string, string> AttributeValues { get; set; }
-
-        public List<GroupMemberBag> GroupMembers { get; set; }
+        public int? RegistrationInstanceId { get; set; }
     }
 }

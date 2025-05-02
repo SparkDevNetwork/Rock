@@ -3036,7 +3036,8 @@ The logged-in person's information will be used to complete the registrar inform
                     Url = LinkedPageUrl( AttributeKey.RegistrationTemplatePlacementPage, new Dictionary<string, string>
                     {
                         { PageParameterKey.RegistrationTemplateId, registrationTemplate.Id.ToString() },
-                        { "RegistrationTemplatePlacementId", p.Id.ToString() }
+                        { "RegistrationTemplatePlacementId", p.Id.ToString() },
+                        { "ReturnUrl", GetCurrentPageUrl() }
                     } )
                 } ).ToList();
 

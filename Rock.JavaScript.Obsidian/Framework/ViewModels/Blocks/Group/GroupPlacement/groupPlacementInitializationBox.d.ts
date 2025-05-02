@@ -34,6 +34,8 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 export type GroupPlacementInitializationBox = {
     attributeFilters?: AttributeFiltersBag | null;
 
+    backPageUrl?: string | null;
+
     /** Gets or sets the error message, if any. */
     errorMessage?: string | null;
 
@@ -42,6 +44,9 @@ export type GroupPlacementInitializationBox = {
     inTemplateMode: boolean;
 
     isPlacementAllowingMultiple: boolean;
+
+    /** Gets or sets the navigation urls. */
+    navigationUrls?: Record<string, string> | null;
 
     peopleToPlace?: PersonBag[] | null;
 
