@@ -79,6 +79,7 @@
          */
         requiredOverride: {
             type: Boolean as PropType<boolean>,
+            default: undefined,
             required: false
         }
     });
