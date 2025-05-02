@@ -31,6 +31,23 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
         base.OnInit( e );
     }
 
+    protected override void OnPreRender( EventArgs e )
+    {
+        base.OnPreRender( e );
+
+        var rockPage = this.Page as Rock.Web.UI.RockPage;
+        if (rockPage != null)
+        {
+            var pageCache = Rock.Web.Cache.PageCache.Get( rockPage.PageId );
+            if (pageCache != null )
+            {
+                if (pageCache.PageDisplayTitle == false || string.IsNullOrWhiteSpace( rockPage.PageTitle ) )
+                {
+                    secPageTitle.Visible = false;
+                }
+            }
+        }
+    }
 </script>
 
 <html>
@@ -114,6 +131,17 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                         <button id="themeSwitchButton" class="theme-toggle" type="button"><i id="theme-icon" class="ti theme-mode-icon"></i></button>
                     </div>
                     <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
+
+                    <!-- Page Title -->
+                    <section id="secPageTitle" class="page-title-display" runat="server">
+                        <div class="page-title">
+                            <h1 class="title"><Rock:PageIcon ID="PageIcon" runat="server" /> <Rock:PageTitle ID="PageTitle" runat="server" /></h1>
+                            <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
+                            <Rock:PageDescription ID="PageDescription" runat="server" />
+                        </div>
+                    </section>
+
+
                 </div>
             </nav>
 
