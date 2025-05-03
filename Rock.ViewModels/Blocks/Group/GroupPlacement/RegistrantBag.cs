@@ -33,7 +33,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 
         public DateTimeOffset? CreatedDateTime { get; set; }
 
-        public Dictionary<string, string> Fees { get; set; }
+        public Dictionary<string, ListItemBag> Fees { get; set; }
 
         public Dictionary<string, PublicAttributeBag> Attributes {  get; set; }
 

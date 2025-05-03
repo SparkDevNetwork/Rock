@@ -40,8 +40,8 @@
             </div>
         </div>
         <TransitionVerticalCollapse>
-            <div v-if="isCardExpanded && (hasGroupMemberAttributesToDisplay || hasRegistrantAttributesOrInstanceToDisplay)" class="details-container">
-                <template v-if="isGroupMemberCard && hasGroupMemberAttributesToDisplay">
+            <div v-if="isCardExpanded && (hasGroupMemberDetailsToDisplay || hasRegistrantDetailsToDisplay)" class="details-container">
+                <template v-if="isGroupMemberCard && hasGroupMemberDetailsToDisplay">
                     <div class="header">Group Member</div>
                     <dl>
                         <template v-for="attribute, key in getAttributesWithCorrespondingValues(groupMemberAttributes!, groupMemberAttributeValues!)" :key="key">
@@ -56,7 +56,8 @@
                     </dl>
                 </template>
                 <!-- If show instance or show registrants attributes is on then we display this. -->
-                <template v-if="(isInstanceDisplayed || (!isGroupMemberCard || areSourceAttributesDisplayedOnDestinationGroupMembers)) && hasRegistrantAttributesOrInstanceToDisplay">
+                <!-- TODO - Come back to this if statement -->
+                <template v-if="(isInstanceDisplayed || areFeesDisplayed || (!isGroupMemberCard || areSourceAttributesDisplayedOnDestinationGroupMembers)) && hasRegistrantDetailsToDisplay">
                     <div class="header">{{ registrantHeader }}</div>
                     <dl v-for="registrant in person.registrants" :key="registrant.registrantId">
                         <template v-if="isInstanceDisplayed">
@@ -81,6 +82,21 @@
                                            :showLabel="false"
                                            class="attribute-value-list" /> -->
                                 {{ getAttributeValueText(registrant.attributeValues, attribute, key) }}
+                            </dd>
+                        </template>
+                        <template v-if="!isGroupMemberCard && areFeesDisplayed && registrant.fees"
+                                  v-for="key in Object.keys(registrant.fees)"
+                                  :key="key">
+                            <dt :ref="(el) => addTooltip(el as Element)"
+                                data-toggle="tooltip"
+                                :data-original-title="registrant.fees[key].text">
+                                {{ registrant.fees[key].text }}
+                            </dt>
+                            <!-- TODO - tooltip isn't top right... have to rework the title as well -->
+                            <dd :ref="(el) => addTooltip(el as Element)"
+                                data-toggle="tooltip"
+                                :data-original-title="registrant.fees[key].value">
+                                {{ registrant.fees[key].value }}
                             </dd>
                         </template>
                     </dl>
@@ -237,6 +253,11 @@
             default: false,
             required: false
         },
+        areFeesDisplayed: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        },
         isDetailHoverDisabled: {
             type: Boolean as PropType<boolean>,
             default: false,
@@ -294,7 +315,7 @@
 
     const registrantHeader = computed(() => props.person.registrants && props.person.registrants.length > 1 ? "Registrants" : "Registrant");
 
-    const hasGroupMemberAttributesToDisplay = computed((): boolean => {
+    const hasGroupMemberDetailsToDisplay = computed((): boolean => {
         if (!props.groupMemberAttributes || !props.groupMemberAttributeValues) {
             return false;
         }
@@ -302,19 +323,20 @@
         return Object.keys(getAttributesWithCorrespondingValues(props.groupMemberAttributes, props.groupMemberAttributeValues) ?? {}).length > 0;
     });
 
-    const hasRegistrantAttributesOrInstanceToDisplay = computed((): boolean => {
+    const hasRegistrantDetailsToDisplay = computed((): boolean => {
         if (!props.person.registrants || props.person.registrants.length === 0) {
             return false;
         }
 
         return props.person.registrants.some(registrant => {
             const hasInstance = props.isInstanceDisplayed && !!registrant.registrationInstanceName;
+            const hasFees = props.areFeesDisplayed && Object.keys(registrant.fees ?? {}).length > 0;
             const hasAttributes = (!props.isGroupMemberCard || props.areSourceAttributesDisplayedOnDestinationGroupMembers)
                 && registrant.attributes
                 && registrant.attributeValues
                 && Object.keys(getAttributesWithCorrespondingValues(registrant.attributes, registrant.attributeValues) ?? {}).length > 0;
 
-            return hasInstance || hasAttributes;
+            return hasInstance || hasAttributes || hasFees;
         });
     });
 

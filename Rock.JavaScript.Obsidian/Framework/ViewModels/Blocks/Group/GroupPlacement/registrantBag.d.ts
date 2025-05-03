@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type RegistrantBag = {
@@ -30,7 +31,7 @@ export type RegistrantBag = {
 
     createdDateTime?: string | null;
 
-    fees?: Record<string, string> | null;
+    fees?: Record<string, ListItemBag> | null;
 
     registrantId: number;
 

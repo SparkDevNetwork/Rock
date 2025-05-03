@@ -35,5 +35,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         public Dictionary<string, PublicAttributeBag> GroupMemberAttributesForFilters { get; set; }
 
         public Dictionary<string, string> GroupMemberAttributeValuesForFilters { get; set; }
+
+        public List<ListItemBag> RegistrantFeeItemsForFilters { get; set; }
     }
 }

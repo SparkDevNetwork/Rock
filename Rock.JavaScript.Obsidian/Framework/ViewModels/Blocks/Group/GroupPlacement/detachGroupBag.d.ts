@@ -26,5 +26,5 @@ export type DetachGroupBag = {
 
     registrationInstanceId?: number | null;
 
-    registrationTemplatePlacementId: number;
+    registrationTemplatePlacementId?: number | null;
 };

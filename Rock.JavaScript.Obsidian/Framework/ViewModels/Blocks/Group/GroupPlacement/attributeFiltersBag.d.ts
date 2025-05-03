@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type AttributeFiltersBag = {
@@ -35,4 +36,6 @@ export type AttributeFiltersBag = {
     registrantAttributesForFilters?: Record<string, PublicAttributeBag> | null;
 
     registrantAttributeValuesForFilters?: Record<string, string> | null;
+
+    registrantFeeItemsForFilters?: ListItemBag[] | null;
 };

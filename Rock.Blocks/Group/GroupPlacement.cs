@@ -90,6 +90,8 @@ namespace Rock.Blocks.Group
             public const string PersonAttributeFilterRegistrationTemplateId = "PersonAttributeFilter_RegistrationTemplateId_{0}";
             public const string GroupAttributeFilterGroupTypeId = "GroupAttributeFilter_GroupTypeId_{0}";
             public const string GroupMemberAttributeFilterGroupTypeId = "GroupMemberAttributeFilter_GroupTypeId_{0}";
+            public const string RegistrantFeeItemValuesForFiltersJSONRegistrationInstanceId = "RegistrantFeeItemValuesForFiltersJSON_RegistrationInstanceId_{0}";
+            public const string RegistrantFeeItemValuesForFiltersJSONRegistrationTemplateId = "RegistrantFeeItemValuesForFiltersJSON_RegistrationTemplateId_{0}";
         }
 
         private static class PageParameterKey
@@ -187,6 +189,12 @@ namespace Rock.Blocks.Group
             public int? RegistrationInstanceId { get; set; }
             public DateTime? CreatedDateTime { get; set; }
             // TODO - Add Fees
+            public string FeeName { get; set; }
+            public string Option { get; set; }
+            public int? Quantity { get; set; }
+            public decimal? Cost { get; set; }
+            public RegistrationFeeType? FeeType { get; set; }
+            public int? FeeItemId { get; set; }
         }
 
         #endregion
@@ -432,6 +440,20 @@ namespace Rock.Blocks.Group
 
                 attributeFiltersBag.GroupMemberAttributesForFilters = fakeGroupMember.GetPublicAttributesForEdit( GetCurrentPerson(), true, attributeFilter: a => groupMemberAttributeIds.Contains( a.Id ) );
                 attributeFiltersBag.GroupMemberAttributeValuesForFilters = fakeGroupMember.GetPublicAttributeValuesForEdit( GetCurrentPerson(), true, attributeFilter: a => groupMemberAttributeIds.Contains( a.Id ) );
+            }
+
+            if ( placementConfiguration.AreFeesDisplayed )
+            {
+                var feeItemList = new RegistrationTemplateFeeService( RockContext )
+                    .Queryable()
+                    .SelectMany( fee => fee.FeeItems.Select( item => new ListItemBag
+                    {
+                        Value = item.Id.ToString(),
+                        Text = fee.Name + " - " + item.Name
+                    } ) )
+                    .ToList();
+
+                attributeFiltersBag.RegistrantFeeItemsForFilters = feeItemList;
             }
 
             box.AttributeFilters = attributeFiltersBag;
@@ -1005,6 +1027,23 @@ namespace Rock.Blocks.Group
 
         private PlacementConfigurationSettingsBag _placementConfiguration = null;
 
+        private List<string> GetRegistrantFeeItemValuesForFilters( int? registrationInstanceId, int? registrationTemplateId )
+        {
+            var preferences = GetBlockPersonPreferences();
+
+            string registrantFeeItemValuesJSON = string.Empty;
+            if ( registrationInstanceId.HasValue )
+            {
+                registrantFeeItemValuesJSON = preferences.GetValue( string.Format( PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationInstanceId, registrationInstanceId.Value ) );
+            }
+            else if ( registrationTemplateId.HasValue )
+            {
+                registrantFeeItemValuesJSON = preferences.GetValue( string.Format( PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationTemplateId, registrationTemplateId.Value ) );
+            }
+
+            return registrantFeeItemValuesJSON.FromJsonOrNull<List<string>>() ?? new List<string>();
+        }
+
         private bool CanPlacePeople( List<int?> personIds, int registrationTemplatePlacementId, int groupId, out string errorMessage )
         {
             RegistrationTemplatePlacementService registrationTemplatePlacementService = new RegistrationTemplatePlacementService( RockContext );
@@ -1145,6 +1184,32 @@ namespace Rock.Blocks.Group
             return true;
         }
 
+        private Dictionary<string, ListItemBag> GetFormattedFeesForRegistrant(
+            IEnumerable<PlacementPeopleResult> personGroup,
+            int registrantId )
+        {
+            return personGroup
+                .Where( f => f.RegistrantId == registrantId && f.Quantity > 0 && f.FeeItemId.HasValue )
+                .ToDictionary(
+                    f => f.FeeItemId.Value.ToString(),
+                    f =>
+                    {
+                        var feeLabel = f.FeeType == RegistrationFeeType.Multiple && f.Option.IsNotNullOrWhiteSpace()
+                            ? $"{f.FeeName}-{f.Option}"
+                            : f.Option;
+                        var costText = f.Quantity > 1
+                            ? $"{f.Quantity} at {f.Cost?.FormatAsCurrency()}" // TODO - check for null
+                            : ( ( f.Quantity ?? 0 ) * ( f.Cost ?? 0 ) ).FormatAsCurrency();
+
+                        return new ListItemBag
+                        {
+                            Text = feeLabel,
+                            Value = costText
+                        };
+                    }
+                );
+        }
+
         #endregion Methods
 
         #region Helper Methods
@@ -1183,6 +1248,9 @@ namespace Rock.Blocks.Group
             var includedRegistrationInstanceIds = ( placementConfiguration.IncludedRegistrationInstanceIds?.Any() == true )
                 ? string.Join( ",", placementConfiguration.IncludedRegistrationInstanceIds )
                 : string.Empty;
+            var includeFees = placementConfiguration.AreFeesDisplayed;
+            var includedFeeItemIdsFromPreferences = GetRegistrantFeeItemValuesForFilters( registrationInstanceId, registrationTemplateId );
+            var includedFeeItemIds = string.Join( ",", includedFeeItemIdsFromPreferences );
 
             // If registration instance id has a value than we are in instance mode
             if ( registrationInstanceId.HasValue )
@@ -1198,7 +1266,9 @@ namespace Rock.Blocks.Group
                         @{nameof( registrationInstanceId )}, 
                         @{nameof( registrationTemplatePlacementId )}, 
                         @{nameof( placementMode )},
-                        @{nameof( includedRegistrationInstanceIds )}",
+                        @{nameof( includedRegistrationInstanceIds )},
+                        @{nameof( includeFees )},
+                        @{nameof( includedFeeItemIds )}",
                     new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
                     new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
                     new SqlParameter( nameof( groupEntityTypeId ), groupEntityTypeId ),
@@ -1206,7 +1276,9 @@ namespace Rock.Blocks.Group
                     new SqlParameter( nameof( registrationInstanceId ), registrationInstanceId.Value ),
                     new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
                     new SqlParameter( nameof( placementMode ), placementMode ),
-                    new SqlParameter( nameof( includedRegistrationInstanceIds ), includedRegistrationInstanceIds )
+                    new SqlParameter( nameof( includedRegistrationInstanceIds ), includedRegistrationInstanceIds ),
+                    new SqlParameter( nameof( includeFees ), includeFees ),
+                    new SqlParameter( nameof( includedFeeItemIds ), includedFeeItemIds )
                 ).ToList();
             }
             else
@@ -1222,7 +1294,9 @@ namespace Rock.Blocks.Group
                         @{nameof( registrationInstanceId )}, 
                         @{nameof( registrationTemplatePlacementId )}, 
                         @{nameof( placementMode )},
-                        @{ nameof( includedRegistrationInstanceIds )}",
+                        @{ nameof( includedRegistrationInstanceIds )},
+                        @{nameof( includeFees )},
+                        @{nameof( includedFeeItemIds )}",
                     new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
                     new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
                     new SqlParameter( nameof( groupEntityTypeId ), groupEntityTypeId ),
@@ -1230,7 +1304,9 @@ namespace Rock.Blocks.Group
                     new SqlParameter( nameof( registrationInstanceId ), DBNull.Value ),
                     new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
                     new SqlParameter( nameof( placementMode ), placementMode ),
-                    new SqlParameter( nameof( includedRegistrationInstanceIds ), includedRegistrationInstanceIds )
+                    new SqlParameter( nameof( includedRegistrationInstanceIds ), includedRegistrationInstanceIds ),
+                    new SqlParameter( nameof( includeFees ), includeFees ),
+                    new SqlParameter( nameof( includedFeeItemIds ), includedFeeItemIds )
                 ).ToList();
             }
 
@@ -1287,13 +1363,14 @@ namespace Rock.Blocks.Group
                     ),
                     Registrants = personGroup
                         .Where( r => r.RegistrantId.HasValue )
+                        .DistinctBy( r => r.RegistrantId )
                         .Select( r => new RegistrantBag
                         {
                             RegistrantId = r.RegistrantId.Value,
                             RegistrationInstanceName = r.RegistrationInstanceName,
                             RegistrationInstanceId = r.RegistrationInstanceId ?? 0,
                             CreatedDateTime = r.CreatedDateTime?.ToRockDateTimeOffset(),
-                            Fees = new Dictionary<string, string>(), // TODO: Fill Fees
+                            Fees = GetFormattedFeesForRegistrant(personGroup, r.RegistrantId.Value),
                             Attributes = GetRegistrantAttributes( r.RegistrantId.Value, registrationTemplateId.Value, displayedRegistrantAttributeIds ),
                             AttributeValues = GetRegistrantAttributeValues( r.RegistrantId.Value, registrationTemplateId.Value, displayedRegistrantAttributeIds )
                         } )

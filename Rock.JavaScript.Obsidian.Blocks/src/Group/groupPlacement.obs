@@ -64,14 +64,14 @@
                                     :btnSize="BtnSize.Small"
                                     :isSquare="true"
                                     title="Search People"
-                                    class="mr-3"
+                                    :class="['mr-3', { 'active': isPersonSearchVisible }]"
                                     @click="toggleIsPersonSearchVisible">
                             <i class="fa fa-search"></i>
                         </RockButton>
                     </template>
                     <template #subheaderLeft>
                         <transition name="slide">
-                            <div v-show="isPersonSearchVisible" class="p-3">
+                            <div v-show="isPersonSearchVisible" ref="personSearchContainerElement" class="p-3">
                                 <TextBox v-model="personSearchText" placeholder="Search" isClearable>
                                     <template #inputGroupPrepend>
                                         <div class="input-group-addon">
@@ -84,8 +84,13 @@
                     </template>
 
                     <!-- TODO: See about adding "Filter" to drawer. -->
-                    <template v-if="Object.keys(personAttributesForFilter).length > 0" #drawer>
+                    <template v-if="Object.keys(personAttributesForFilter).length > 0 || registrantFeeItemsForFilter.length > 0" #drawer>
                         <AttributeValuesContainer v-model="pendingPersonAttributeValuesForFilter" :attributes="personAttributesForFilter" isEditMode :numberOfColumns="1" />
+                        <DropDownList v-model="pendingRegistrantFeeItemValuesForFilter"
+                                      label="Fees"
+                                      :items="registrantFeeItemsForFilter ?? []"
+                                      :enhanceForLongLists="true"
+                                      :multiple="true" />
                         <RockButton :btnType="BtnType.Action"
                                     :btnSize="BtnSize.ExtraSmall"
                                     @click="applyPeopleFilter"
@@ -125,6 +130,7 @@
                                             :index="index"
                                             :isSelected="isSelected(person.personId)"
                                             :isInstanceDisplayed="placementConfigurationSettings.showRegistrationInstanceName"
+                                            :areFeesDisplayed="placementConfigurationSettings.areFeesDisplayed"
                                             :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
                                             :isGenderHighlighting="isGenderHighlighting"
                                             @toggleCardExpansion="toggleCardExpansion"
@@ -166,20 +172,30 @@
 
                     <!-- TODO: See about adding "Filter" to drawer. -->
                     <template #drawer v-if="Object.keys(groupAttributesForFilter).length > 0 || Object.keys(groupMemberAttributesForFilter).length > 0">
-                        <RockLabel v-if="Object.keys(groupAttributesForFilter).length > 0">Group Filters</RockLabel>
                         <AttributeValuesContainer v-model="pendingGroupAttributeValuesForFilter"
                                                   :attributes="groupAttributesForFilter"
                                                   isEditMode
                                                   :numberOfColumns="3"
                                                   columnBreakpoint="lg"
                                                   :showCategoryLabel="false" />
-                        <RockLabel v-if="Object.keys(groupMemberAttributesForFilter).length > 0">Group Member Filters</RockLabel>
-                        <AttributeValuesContainer v-model="pendingGroupMemberAttributeValuesForFilter"
-                                                  :attributes="groupMemberAttributesForFilter"
-                                                  isEditMode
-                                                  :numberOfColumns="3"
-                                                  columnBreakpoint="lg"
-                                                  :showCategoryLabel="false" />
+                        <div class="w-100 mb-2">
+                            <RockLabel v-if="Object.keys(groupMemberAttributesForFilter).length > 0"
+                                       @click="toggleIsGroupMemberFilterDisplayed"
+                                       class="group-member-filter-toggle">
+                                Group Member Filters <i :class="groupMemberFilterIcon"></i>
+                            </RockLabel>
+                            <TransitionVerticalCollapse>
+                                <div v-show="isGroupMemberFilterDisplayed">
+                                    <AttributeValuesContainer v-model="pendingGroupMemberAttributeValuesForFilter"
+
+                                                              :attributes="groupMemberAttributesForFilter"
+                                                              isEditMode
+                                                              :numberOfColumns="3"
+                                                              columnBreakpoint="lg"
+                                                              :showCategoryLabel="false" />
+                                </div>
+                            </TransitionVerticalCollapse>
+                        </div>
                         <RockButton :btnType="BtnType.Action"
                                     :btnSize="BtnSize.ExtraSmall"
                                     @click="applyGroupFilter"
@@ -279,6 +295,12 @@
     max-height: var(--slide-height, 200px);
     opacity: 1;
     padding: 1rem !important;
+}
+
+.group-member-filter-toggle {
+    cursor: pointer;
+    user-select: none;
+    color: var(--color-interface-medium);
 }
 
 .no-people-label {
@@ -794,6 +816,8 @@
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
     import { DetachGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/detachGroupBag";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
 
     // #region Values
     const box = useConfigurationValues<GroupPlacementInitializationBox>();
@@ -818,10 +842,16 @@
 
     const personAttributesForFilter = ref(box.attributeFilters?.registrantAttributesForFilters ?? {});
     const personAttributeValuesForFilter = ref(preferences.getValue(getPersonAttributeFilterKey()) ? JSON.parse(preferences.getValue(getPersonAttributeFilterKey())) : {});
+    const registrantFeeItemsForFilter = ref(box.attributeFilters?.registrantFeeItemsForFilters ?? []);
+    const pendingRegistrantFeeItemValuesForFilter = ref(preferences.getValue(getRegistrantFeeItemValuesFilterKey()) ? JSON.parse(preferences.getValue(getRegistrantFeeItemValuesFilterKey())) : {});
+    const registrantFeeItemValuesForFilter = ref(preferences.getValue(getRegistrantFeeItemValuesFilterKey()) ? JSON.parse(preferences.getValue(getRegistrantFeeItemValuesFilterKey())) : {});
+
     const groupAttributesForFilter = ref(box.attributeFilters?.groupAttributesForFilters ?? {});
     const groupAttributeValuesForFilter = ref(preferences.getValue(getGroupAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupAttributeFilterKey())) : {});
     const groupMemberAttributesForFilter = ref(box.attributeFilters?.groupMemberAttributesForFilters ?? {});
     const groupMemberAttributeValuesForFilter = ref(preferences.getValue(getGroupMemberAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupMemberAttributeFilterKey())) : {});
+
+    const isGroupMemberFilterDisplayed = ref<boolean>(false);
 
     const pendingPersonAttributeValuesForFilter = ref(preferences.getValue(getPersonAttributeFilterKey()) ? JSON.parse(preferences.getValue(getPersonAttributeFilterKey())) : {});
     const pendingGroupAttributeValuesForFilter = ref(preferences.getValue(getGroupAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupAttributeFilterKey())) : {});
@@ -829,6 +859,7 @@
 
     const isPersonSearchVisible = ref<boolean>(false);
     const personSearchText = ref<string>("");
+    const personSearchContainerElement = ref<HTMLElement>();
 
     const areGroupsExpanded = ref(false);
     const isNoPeopleLabelHidden = ref(false);
@@ -861,20 +892,30 @@
 
     const selectedPeopleCount = computed(() => selectedPersonIds.value.size);
 
+    const groupMemberFilterIcon = computed((): string => {
+        return isGroupMemberFilterDisplayed.value ? "fa fa-chevron-up" : "fa fa-chevron-down";
+    });
+
     const filteredAndSortedPeopleToPlace = computed(() => {
+        // TODO - read over person search figma tomorrow again.
         const filteredPeople = peopleToPlace.value.filter(p => {
             const matchesSearchText = personSearchText.value
                 ? p.nickname?.toLowerCase().includes(personSearchText.value.toLowerCase()) ||
                 p.lastName?.toLowerCase().includes(personSearchText.value.toLowerCase())
                 : true;
 
-            const matchesAttributeFilters = p.registrants?.some(r => {
-                if (!box.attributeFilters?.registrantAttributesForFilters || !r.attributeValues) {
-                    return true;
-                }
-                return areAttributeFiltersMet(box.attributeFilters.registrantAttributesForFilters, personAttributeValuesForFilter.value, r.attributeValues);
+            const matchesAttributeAndFeeFilters = p.registrants?.some(r => {
+                const hasMatchingAttributes = !box.attributeFilters?.registrantAttributesForFilters || !r.attributeValues
+                    || areAttributeFiltersMet(box.attributeFilters.registrantAttributesForFilters, personAttributeValuesForFilter.value, r.attributeValues);
+
+                const hasMatchingFees = !registrantFeeItemValuesForFilter.value.length
+                    || Object.keys(r.fees || {}).some(feeItemId =>
+                        registrantFeeItemValuesForFilter.value.includes(feeItemId)
+                    );
+
+                return hasMatchingAttributes && hasMatchingFees;
             });
-            return matchesSearchText && matchesAttributeFilters;
+            return matchesSearchText && matchesAttributeAndFeeFilters;
         });
 
         return getSortedPeople(filteredPeople);
@@ -1244,10 +1285,12 @@
             if (isRemoveSuccess) {
                 // If the person does not have a Registrant in any of the included Registration Instances, then they should not be shown in the People To Place Panel.
                 // This matches with functionality from the old Webforms Block.
+                // TODO - maybe move this to filter computed?
                 var shouldPersonBeDisplayed = groupMember.person.registrants?.some(r => {
                     if (placementConfigurationSettings.value.includedRegistrationInstanceIds?.length === 0) {
                         return true;
                     }
+
                     return placementConfigurationSettings.value.includedRegistrationInstanceIds?.includes(r.registrationInstanceId.toString());
                 });
 
@@ -1339,6 +1382,15 @@
 
     function toggleIsPersonSearchVisible(): void {
         isPersonSearchVisible.value = !isPersonSearchVisible.value;
+        if (isPersonSearchVisible.value) {
+            nextTick(() => {
+                const searchInput = personSearchContainerElement.value?.querySelector("input") as HTMLInputElement | null;
+                searchInput?.focus();
+            });
+        }
+        else {
+            personSearchText.value = "";
+        }
     }
 
     function openAddGroupModal(): void {
@@ -1356,11 +1408,14 @@
 
     function applyPeopleFilter(): void {
         personAttributeValuesForFilter.value = pendingPersonAttributeValuesForFilter.value;
+        registrantFeeItemValuesForFilter.value = pendingRegistrantFeeItemValuesForFilter.value;
     }
 
     function clearPeopleFilters(): void {
         pendingPersonAttributeValuesForFilter.value = {};
         personAttributeValuesForFilter.value = {};
+        pendingRegistrantFeeItemValuesForFilter.value = [];
+        registrantFeeItemValuesForFilter.value = [];
     }
 
     function applyGroupFilter(): void {
@@ -1373,6 +1428,10 @@
         pendingGroupMemberAttributeValuesForFilter.value = {};
         groupAttributeValuesForFilter.value = {};
         groupMemberAttributeValuesForFilter.value = {};
+    }
+
+    function toggleIsGroupMemberFilterDisplayed(): void {
+        isGroupMemberFilterDisplayed.value = !isGroupMemberFilterDisplayed.value;
     }
 
     function getSortOrderKey(): string {
@@ -1401,6 +1460,16 @@
         }
         else if (box.registrationTemplateId) {
             return PreferenceKey.PersonAttributeFilterRegistrationTemplateId.replace("{0}", box.registrationTemplateId.toString());
+        }
+        return "";
+    }
+
+    function getRegistrantFeeItemValuesFilterKey(): string {
+        if (box.registrationInstanceId) {
+            return PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationInstanceId.replace("{0}", box.registrationInstanceId.toString());
+        }
+        else if (box.registrationTemplateId) {
+            return PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationTemplateId.replace("{0}", box.registrationTemplateId.toString());
         }
         return "";
     }
@@ -1622,11 +1691,17 @@
         }
     });
 
+    // watch(isPersonSearchVisible, () => {
+    //     if (!isPersonSearchVisible.value) {
+    //         personSearchText.value = "";
+    //     }
+    // });
 
-    watch([currentSortOrder, isGenderHighlighting, personAttributeValuesForFilter, groupAttributeValuesForFilter, groupMemberAttributeValuesForFilter], async () => {
+    watch([currentSortOrder, isGenderHighlighting, personAttributeValuesForFilter, registrantFeeItemValuesForFilter, groupAttributeValuesForFilter, groupMemberAttributeValuesForFilter], async () => {
         preferences.setValue(getSortOrderKey(), currentSortOrder.value.toString());
         preferences.setValue(getIsGenderHighlightingKey(), isGenderHighlighting.value.toString());
         preferences.setValue(getPersonAttributeFilterKey(), JSON.stringify(personAttributeValuesForFilter.value));
+        preferences.setValue(getRegistrantFeeItemValuesFilterKey(), JSON.stringify(registrantFeeItemValuesForFilter.value));
         preferences.setValue(getGroupAttributeFilterKey(), JSON.stringify(groupAttributeValuesForFilter.value));
         preferences.setValue(getGroupMemberAttributeFilterKey(), JSON.stringify(groupMemberAttributeValuesForFilter.value));
 
