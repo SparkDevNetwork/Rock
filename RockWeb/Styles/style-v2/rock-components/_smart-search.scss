@@ -19,10 +19,14 @@
   background-color:   var(--color-interface-softest);
   border:             1px solid var(--color-interface-stronger);
   border-radius:      var(--rounded-small);
+  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 
   &:focus-within {
     border-color: var(--color-primary) !important;
     box-shadow: var(--input-focus-box-shadow) !important;
+  }
+  &:hover {
+    border-color: var(--color-interface-medium) !important;
   }
 
   input::-moz-placeholder,
