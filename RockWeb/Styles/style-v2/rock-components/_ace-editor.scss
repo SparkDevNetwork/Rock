@@ -1,0 +1,23 @@
+
+// Ace Editor - this is an override of the default Ace Editor theme
+
+
+// =============================================================
+// Table of Content           
+//  + Base style
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.ace-tm .ace_gutter-active-line {
+    background: var(--color-interface-soft) !important;
+}
+
+.ace-tm .ace_marker-layer .ace_active-line {
+    background-color: var(--color-interface-softer) !important;
+}
+
+.ace-tm .ace_gutter {
+    background: var(--color-interface-softer) !important;
+}
+// ====================== END BASE STYLE ======================
