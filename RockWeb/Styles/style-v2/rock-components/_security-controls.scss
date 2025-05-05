@@ -23,6 +23,16 @@
   }
 }
 
+// Override the default ul/ol background-color 
+.nav {
+  .open > a {
+    &,
+    &:hover,
+    &:focus {
+      background-color: transparent;
+    }
+  }
+}
 
 .loginstatus {
   margin: 0;
