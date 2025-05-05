@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,12 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
+using Rock.Enums.Reporting;
+using Rock.Field;
+using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -36,7 +42,7 @@ namespace Rock.Reporting.DataFilter.Workflow
     [Description( "Filter Workflows by their Attribute Values" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Workflow Attributes Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "F0DF027F-65F5-49DE-BA26-25610B83879A")]
+    [Rock.SystemGuid.EntityTypeGuid( "F0DF027F-65F5-49DE-BA26-25610B83879A" )]
     public class WorkflowAttributesFilter : EntityFieldFilter
     {
         #region Settings
@@ -112,6 +118,165 @@ namespace Rock.Reporting.DataFilter.Workflow
             get { return "Additional Filters"; }
         }
 
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Workflow/workflowAttributesFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+
+            var workflowTypeService = new WorkflowTypeService( rockContext );
+
+            var workflowTypes = workflowTypeService.Queryable().OrderBy( a => a.Name ).ToList();
+
+            var workflowTypeGuidsById = new Dictionary<int, Guid>();
+            var fieldFilterSourcesByWorkflowType = new Dictionary<Guid, List<FieldFilterSourceBag>>();
+
+            // Prime the dictionary with empty lists to make it easier to add the entity fields
+            foreach ( var workflowTypeItem in workflowTypes )
+            {
+                workflowTypeGuidsById.Add( workflowTypeItem.Id, workflowTypeItem.Guid );
+                fieldFilterSourcesByWorkflowType.AddOrReplace( workflowTypeItem.Guid, new List<FieldFilterSourceBag>() );
+            }
+
+            // Add a list for when no workflow type is selected
+            fieldFilterSourcesByWorkflowType.AddOrReplace( Guid.Empty, new List<FieldFilterSourceBag>() );
+
+            var attributes = AttributeCache.AllForEntityType<Rock.Model.Workflow>().Where( a => a.IsActive ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            var allEntityFields = new List<EntityField>();
+            EntityHelper.AddEntityFieldsForAttributeList( allEntityFields, attributes );
+
+            // Go through all the entity fields and add them to the dictionary based on content channel type indicated by their entity type qualifier
+            foreach ( var attribute in attributes )
+            {
+                //var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
+                Guid workflowTypeGuid = Guid.Empty;
+
+                if ( attribute.EntityTypeQualifierColumn == "WorkflowTypeId" )
+                {
+                    workflowTypeGuid = workflowTypeGuidsById.GetValueOrDefault( attribute.EntityTypeQualifierValue.AsInteger(), Guid.Empty );
+                }
+
+                var fieldType = attribute.FieldType;
+
+                var source = new FieldFilterSourceBag
+                {
+                    Guid = attribute.Guid,
+                    Type = FieldFilterSourceType.Attribute,
+                    Attribute = new PublicAttributeBag
+                    {
+                        AttributeGuid = attribute.Guid,
+                        ConfigurationValues = fieldType.Field.GetPublicConfigurationValues( attribute.ConfigurationValues, Field.ConfigurationValueUsage.Edit, null ),
+                        Description = attribute.Description,
+                        FieldTypeGuid = fieldType.Guid,
+                        Name = attribute.Name
+                    }
+                };
+
+                // Add to list for specific workflow type
+                if ( workflowTypeGuid != Guid.Empty )
+                {
+                    fieldFilterSourcesByWorkflowType.GetValueOrNull( workflowTypeGuid )?.Add( source );
+                }
+                // Add to each list, because it's global (not specific to a workflow type)
+                else
+                {
+                    foreach ( var filterSourceList in fieldFilterSourcesByWorkflowType )
+                    {
+                        filterSourceList.Value.Add( source );
+                    }
+                }
+
+            }
+
+            data.AddOrReplace( "fieldFilterSources", fieldFilterSourcesByWorkflowType.ToCamelCaseJson( false, true ) );
+
+            if ( selection.IsNullOrWhiteSpace() )
+            {
+                return data;
+            }
+
+            var config = SelectionConfig.Parse( selection );
+
+            if ( config == null )
+            {
+                return data;
+            }
+
+            var workflowType = workflowTypeService.Get( config.WorkflowTypeId ?? 0 );
+            data.AddOrReplace( "workflowType", workflowType?.ToListItemBag().ToCamelCaseJson( false, true ) ?? "" );
+
+            if ( config.AttributeKey.IsNullOrWhiteSpace() )
+            {
+                return data;
+            }
+
+            var entityField = allEntityFields.ToList().FindFromFilterSelection( config.AttributeKey );
+            var filterAttribute = AttributeCache.Get( entityField?.AttributeGuid ?? Guid.Empty );
+            FieldFilterRuleBag filterRule = null;
+
+            if ( entityField == null || filterAttribute == null )
+            {
+                return data;
+            }
+
+            if ( config.AttributeFilterSettings.Count == 0 )
+            {
+                filterRule = FieldVisibilityRule.GetPublicRuleBag( filterAttribute, 0, null );
+            }
+            else if ( config.AttributeFilterSettings.Count == 1 )
+            {
+                filterRule = FieldVisibilityRule.GetPublicRuleBag( filterAttribute, 0, config.AttributeFilterSettings[0] );
+            }
+            else if ( config.AttributeFilterSettings.Count == 2 )
+            {
+                filterRule = FieldVisibilityRule.GetPublicRuleBag(
+                    filterAttribute,
+                    ( ComparisonType ) ( config.AttributeFilterSettings[0].AsInteger() ),
+                    config.AttributeFilterSettings[1] );
+            }
+
+            data.AddOrReplace( "filterRule", filterRule?.ToCamelCaseJson( false, true ) );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = new SelectionConfig();
+
+            var workflowTypeGuid = data.GetValueOrNull( "workflowType" )?.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
+            var workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeGuid.AsGuid() );
+            config.WorkflowTypeId = workflowType?.Id;
+
+            var filterRule = data.GetValueOrNull( "filterRule" ).FromJsonOrNull<FieldFilterRuleBag>();
+            if ( filterRule == null || filterRule.AttributeGuid == null )
+            {
+                return config.ToJson();
+            }
+
+            var attribute = AttributeCache.Get( filterRule.AttributeGuid.Value );
+            var entityField = EntityHelper.GetEntityFieldForAttribute( attribute );
+            var comparisonValue = new ComparisonValue
+            {
+                ComparisonType = filterRule.ComparisonType,
+                Value = filterRule.Value
+            };
+
+            var filterValue = attribute.FieldType.Field.GetPrivateFilterValue( comparisonValue, attribute.ConfigurationValues ).FromJsonOrNull<List<string>>();
+
+            config.AttributeKey = entityField.UniqueName;
+            config.AttributeFilterSettings = filterValue;
+
+            return config.ToJson();
+        }
+
         #endregion
 
         #region Public Methods
@@ -173,6 +338,8 @@ namespace Rock.Reporting.DataFilter.Workflow
 
             return null;
         }
+
+#if WEBFORMS
 
         /// <summary>
         /// Updates the selection from page parameters if there is a page parameter for the selection
@@ -438,6 +605,8 @@ namespace Rock.Reporting.DataFilter.Workflow
                 }
             }
         }
+
+#endif
 
         /// <summary>
         /// Gets the expression.
