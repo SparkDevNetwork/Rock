@@ -66,6 +66,10 @@
 .form-group-sm select.form-control {
   padding-right:  var(--spacing-xlarge);
 }
+
+.input-group-btn > .btn {
+  padding: 6px var(--spacing-medium);
+}
 // ===================== END SIZING =====================
 
 
