@@ -212,10 +212,10 @@
 
   --box-shadow:               rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
   --popup-box-shadow:         0 1rem 3rem rgba(0,0,0,.175);
-  --input-box-shadow:         0 1px 1px rgba(24, 36, 51, 0.06);
-
   --dropdown-box-shadow:      0 4px 8px 0 rgba(145, 158, 171,.12);
+  --input-box-shadow:         0 1px 1px rgba(24, 36, 51, 0.06);
   --input-focus-box-shadow:   0 0 0 2px var(--color-primary-tint);
+  --input-after-box-shadow:     0 .125rem .375rem 0 rgba(var(--color-primary), 0.3);
 
   // BORDER RADIUS
   --rounded-tiny:       2px;

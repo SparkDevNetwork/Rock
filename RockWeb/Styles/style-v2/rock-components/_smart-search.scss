@@ -21,7 +21,8 @@
   border-radius:      var(--rounded-small);
 
   &:focus-within {
-    background:       var(--color-interface-softest);
+    border-color: var(--color-primary) !important;
+    box-shadow: var(--input-focus-box-shadow) !important;
   }
 
   input::-moz-placeholder,
@@ -135,5 +136,3 @@
   }
 }
 // ====================== END BASE STYLE ======================
-
-
