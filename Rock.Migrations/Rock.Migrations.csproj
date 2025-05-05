@@ -121,6 +121,10 @@
     <Compile Include="Migrations\202505021623060_AddCommunicationSummaryAndImproveExistingIndex.Designer.cs">
       <DependentUpon>202505021623060_AddCommunicationSummaryAndImproveExistingIndex.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202505051814300_AlterWorkflowTypeSlugAsNullable.cs" />
+    <Compile Include="Migrations\202505051814300_AlterWorkflowTypeSlugAsNullable.Designer.cs">
+      <DependentUpon>202505051814300_AlterWorkflowTypeSlugAsNullable.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.Designer.cs">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>
@@ -2664,6 +2668,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202505021623060_AddCommunicationSummaryAndImproveExistingIndex.resx">
       <DependentUpon>202505021623060_AddCommunicationSummaryAndImproveExistingIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202505051814300_AlterWorkflowTypeSlugAsNullable.resx">
+      <DependentUpon>202505051814300_AlterWorkflowTypeSlugAsNullable.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.resx">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>

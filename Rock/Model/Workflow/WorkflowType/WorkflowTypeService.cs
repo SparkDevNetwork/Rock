@@ -95,7 +95,6 @@ namespace Rock.Model
             return candidateSlug;
         }
 
-
 #pragma warning disable CS1570 // XML comment has badly formed XML
         /// <summary>
         /// Normalizes and sanitizes a slug string to ensure it conforms to URL-safe and Rock RMS-friendly standards.
