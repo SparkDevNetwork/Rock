@@ -907,6 +907,9 @@ $hamburger-spacing: 4px;
   }
 }
 
+a.rock-bookmark {
+  color: var(--color-interface-strong);
+}
 .rock-bookmark {
   --size: 32px;
   position: relative;
@@ -917,7 +920,6 @@ $hamburger-spacing: 4px;
   height: var(--size);
   margin: 0 0 0 8px;
   font-size: calc(var(--size) * 0.5);
-  color: var(--color-interface-strong);
   background-color: var(--color-interface-soft);
   border: 3px solid var(--color-interface-softer);
   border-radius: 999px;
@@ -929,7 +931,6 @@ $hamburger-spacing: 4px;
   
   &:focus {
     box-shadow: var(--input-focus-box-shadow) !important;
-    // border-color:var(--color-primary) ;
     i {
       color: var(--color-primary) !important;
     }
