@@ -76,7 +76,6 @@ export const EditComponent = defineComponent({
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
-        console.log("INIT FIELD VALUE", props.modelValue, parseModelValue(props.modelValue).split(",").filter(v => v !== ""));
         const internalValue = ref(parseModelValue(props.modelValue));
         const internalValues = ref(parseModelValue(props.modelValue).split(",").filter(v => v !== ""));
         const isShowingAddForm = ref(false);
@@ -122,13 +121,11 @@ export const EditComponent = defineComponent({
         const repeatColumns = computed((): number => toNumber(props.configurationValues[ConfigurationValueKey.RepeatColumns]));
 
         watch(() => props.modelValue, () => {
-            console.log("MODEL PROP CHANGED", props.modelValue, parseModelValue(props.modelValue), parseModelValue(props.modelValue).split(",").filter(v => v !== ""));
             internalValue.value = parseModelValue(props.modelValue);
             internalValues.value = parseModelValue(props.modelValue).split(",").filter(v => v !== "");
         });
 
         watch(() => internalValue.value, () => {
-            console.log("INTERNAL VALUE CHANGED", isMultiple.value, internalValue.value, getClientValue(internalValue.value, valueOptions.value));
             if (!isMultiple.value) {
                 const clientValue = getClientValue(internalValue.value, valueOptions.value);
 
@@ -137,7 +134,6 @@ export const EditComponent = defineComponent({
         });
 
         watch(() => internalValues.value, () => {
-            console.log("INTERNAL VALUES CHANGED", isMultiple.value, internalValues.value, getClientValue(internalValues.value, valueOptions.value));
             if (isMultiple.value) {
                 const clientValue = getClientValue(internalValues.value, valueOptions.value);
 

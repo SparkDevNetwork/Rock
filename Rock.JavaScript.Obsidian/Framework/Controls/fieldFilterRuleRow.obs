@@ -221,8 +221,6 @@
         internalUpdate = false;
     });
 
-    watch(comparisonValue, () => console.log("comparisonValue", comparisonValue.value));
-
     // Watch for changes to our internal values and update the model value.
     watch([selectedFieldKey, comparisonValue], () => {
         const isAttribute = !!currentAttributeSource.value;
