@@ -376,6 +376,8 @@ namespace Rock.Reporting.DataFilter.GroupMember
             return selection;
         }
 
+#if WEBFORMS
+
         /// <summary>
         /// Creates the child controls.
         /// Implement this version of CreateChildControls if your DataFilterComponent supports different FilterModes
@@ -632,6 +634,8 @@ namespace Rock.Reporting.DataFilter.GroupMember
                 }
             }
         }
+
+#endif
 
         /// <summary>
         /// Gets the expression.
