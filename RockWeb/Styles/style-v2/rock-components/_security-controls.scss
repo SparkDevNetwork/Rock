@@ -27,6 +27,21 @@
 .loginstatus {
   margin: 0;
 
+  .loginstatus-wrapper {
+    display:          flex;
+    background:       var(--color-interface-softer);
+    border-radius:    999px;
+    flex-direction:   row-reverse;
+    justify-content:  flex-start;
+    align-items:      center;
+    gap:              var(--spacing-xsmall);
+    padding:          var(--spacing-tiny) var(--spacing-tiny);
+    padding-left:     var(--spacing-small);
+    margin-left:      var(--spacing-xsmall);
+  }
+  & b {
+    margin: 0 var(--spacing-small) 0 var(--spacing-xsmall);
+  }
   & > li {
     min-width:  inherit;
     @media (max-width: $screen-medium) {
