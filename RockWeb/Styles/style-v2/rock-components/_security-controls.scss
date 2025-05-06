@@ -48,6 +48,10 @@
     padding:          var(--spacing-tiny) var(--spacing-tiny);
     padding-left:     var(--spacing-small);
     margin-left:      var(--spacing-xsmall);
+
+    @media (max-width: $screen-small) {
+      padding: var(--spacing-tiny) var(--spacing-tiny);
+    }
   }
   & b {
     margin: 0 var(--spacing-small) 0 var(--spacing-xsmall);

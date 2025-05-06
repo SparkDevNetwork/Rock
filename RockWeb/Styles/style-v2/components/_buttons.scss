@@ -906,6 +906,9 @@ input[type="button"] {
 
 .theme-toggle {
   display: flex;
+  align-items: center;
+  justify-content: center;
+
   margin-left: var(--spacing-xsmall);
   padding: var(--spacing-xsmall) var(--spacing-xsmall);
   font-size: 1.3em ;
@@ -916,6 +919,11 @@ input[type="button"] {
   background-color: var(--color-interface-soft);
 
   transition: .15s ease-in-out,box-shadow .15s ease-in-out;
+
+  @media (max-width: $screen-small) {
+    font-size: 1em;
+    padding: 6px;
+  }
 
   &:hover {
     color: var(--color-interface-stronger);

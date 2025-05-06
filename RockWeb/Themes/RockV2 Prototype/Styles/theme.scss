@@ -404,6 +404,9 @@ $navbar-element-height: 40px;
           display: block;
           color: var(--color-interface-strong);
           font-weight: var(--font-weight-semibold);
+          @media (max-width: ($screen-small)) {
+            display: none;
+          }
         }
 
         .fa-caret-down::before {
