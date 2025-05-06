@@ -36,7 +36,8 @@ using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Utility.ExtensionMethods;
 using Rock.Web.UI;
-
+using Rock.Web;
+    
 namespace Rock.Blocks.Cms
 {
     /// <summary>
@@ -55,7 +56,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "6a7052f9-94df-4244-bbf0-db688c3acbbc" )]
     [Rock.SystemGuid.BlockTypeGuid( "d481ae29-a6aa-49f4-9dbb-d3fdf0995ca3" )]
-    public class MediaElementDetail : RockEntityDetailBlockType<MediaElement, MediaElementBag>
+    public class MediaElementDetail : RockEntityDetailBlockType<MediaElement, MediaElementBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -75,13 +76,45 @@ namespace Rock.Blocks.Cms
         #region Methods
 
         /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var breadCrumbs = new List<IBreadCrumb>();
+                var key = pageReference.GetPageParameter( PageParameterKey.MediaElementId );
+
+                if ( !string.IsNullOrWhiteSpace( key ) )
+                {
+                    var pageParameters = new Dictionary<string, string>();
+                    var name = new MediaElementService( rockContext ).GetSelect( key, t => t.Name );
+
+                    if ( name != null )
+                    {
+                        pageParameters.Add( PageParameterKey.MediaElementId, key );
+                        var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                        var breadCrumb = new BreadCrumbLink( name, breadCrumbPageRef );
+                        breadCrumbs.Add( breadCrumb );
+                    }
+                }
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = breadCrumbs
+                };
+            }
+        }
+
         public override object GetObsidianBlockInitialization()
         {
             var box = new DetailBlockBox<MediaElementBag, MediaElementDetailOptionsBag>();
 
             SetBoxInitialEntityState( box );
 
+            var rootUrl = RequestContext.ResolveRockUrl( "/" );
+
             RequestContext.Response.AddCssLink( "~/Styles/Blocks/Cms/MediaElementDetail.css", true);
+            RequestContext.Response.AddScript( "mediaElementDetail", $"$.getScript('{rootUrl}Scripts/Rock/Controls/MediaElementDetail/mediaElementPlayAnalytics.js');" );
+
             box.Options = GetBoxOptions( box.IsEditable );
 
             return box;
@@ -759,6 +792,61 @@ namespace Rock.Blocks.Cms
             });
         }
 
+        /// <summary>
+        /// Gets detailed video engagement data for a media element
+        /// </summary>
+        /// <param name="mediaElementId">The ID of the media element</param>
+        /// <returns>Detailed video engagement data including watched and rewatched metrics</returns>
+        [BlockAction]
+        public BlockActionResult GetVideoEngagementData( string mediaElementId )
+        {
+            var rockContext = new RockContext();
+            
+            // Try to get the media element ID from the provided string ID
+            int mediaElementIdValue;
+            if ( !int.TryParse( mediaElementId, out mediaElementIdValue ) )
+            {
+                var guidValue = mediaElementId.AsGuidOrNull();
+                if ( guidValue.HasValue )
+                {
+                    mediaElementIdValue = new MediaElementService( rockContext ).Get( guidValue.Value )?.Id ?? 0;
+                }
+                else
+                {
+                    mediaElementIdValue = new MediaElementService( rockContext ).Get( mediaElementId, !PageCache.Layout.Site.DisablePredictableIds )?.Id ?? 0;
+                }
+            }
+
+            // Get the media element
+            var mediaElement = new MediaElementService( rockContext ).Get( mediaElementIdValue );
+            if ( mediaElement == null )
+            {
+                return ActionBadRequest( "Media element not found." );
+            }
+            
+            // Get all the interactions for this media element
+            var interactionChannelId = InteractionChannelCache.Get( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS ).Id;
+            var interactions = GetInteractions( mediaElement, null, rockContext );
+            
+            if ( !interactions.Any() )
+            {
+                return ActionOk( new
+                {
+                    PlayCount = 0,
+                    MinutesWatched = "0",
+                    AverageWatchEngagement = "n/a",
+                    Duration = mediaElement.DurationSeconds ?? 0,
+                    Watched = new int[0],
+                    Rewatched = new int[0]
+                });
+            }
+            
+            // Get the video data
+            var videoData = GetVideoData( mediaElement, interactions );
+            
+            return ActionOk( videoData );
+        }
+
         #endregion
 
         #region Analytics View Support Classes
@@ -822,6 +910,56 @@ namespace Rock.Blocks.Cms
             /// The minutes number of watched for this date.
             /// </value>
             public int MinutesWatched { get; set; }
+        }
+
+        /// <summary>
+        /// Gets detailed video engagement data from interaction data
+        /// </summary>
+        /// <param name="mediaElement">The media element</param>
+        /// <param name="interactions">The list of interactions</param>
+        /// <returns>An object containing detailed video analytics data</returns>
+        private static object GetVideoData( MediaElement mediaElement, List<InteractionData> interactions )
+        {
+            var duration = mediaElement.DurationSeconds ?? 0;
+            var totalCount = interactions.Count;
+            var totalSecondsWatched = 0;
+
+            // Construct the arrays that will hold the value at each second.
+            var engagementMap = new double[duration];
+            var watchedMap = new int[duration];
+            var rewatchedMap = new int[duration];
+
+            totalSecondsWatched += ( int ) interactions.Select( i => i.WatchMap.WatchedPercentage / 100.0 * duration ).Sum();
+
+            // Loop through every second of the video and build the maps.
+            // Be cautious when modifying this code. A 70 minute video is
+            // 4,200 seconds long, and if there are 10,000 watch maps to
+            // process that means we are going to have 42 million calls to
+            // GetCountAtPosition().
+            for ( int second = 0; second < duration; second++ )
+            {
+                var counts = interactions.Select( i => i.WatchMap.GetCountAtPosition( second ) ).ToList();
+
+                watchedMap[second] = counts.Count( a => a > 0 );
+                rewatchedMap[second] = counts.Sum();
+            }
+
+            string averageWatchEngagement = "n/a";
+
+            if ( duration > 0 )
+            {
+                averageWatchEngagement = string.Format( "{0}%", ( int ) ( totalSecondsWatched / duration * totalCount / 100.0 ) );
+            }
+
+            return new
+            {
+                PlayCount = totalCount,
+                MinutesWatched = string.Format( "{0:n0}", totalSecondsWatched / 60 ),
+                AverageWatchEngagement = averageWatchEngagement,
+                Duration = duration,
+                Watched = watchedMap,
+                Rewatched = rewatchedMap
+            };
         }
 
         /// <summary>
