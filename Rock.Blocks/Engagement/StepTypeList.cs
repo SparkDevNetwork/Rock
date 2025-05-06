@@ -208,6 +208,13 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <inheritdoc/>
+        protected override List<StepType> GetListItems( IQueryable<StepType> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+            return items.Where( st => st.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
+        }
+
+        /// <inheritdoc/>
         protected override IQueryable<StepType> GetOrderedListQueryable( IQueryable<StepType> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( b => b.Order ).ThenBy( b => b.Id );
