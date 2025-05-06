@@ -15,28 +15,18 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 
-using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
-    public class RegistrantBag
+    public class GroupPlacementKeysBag
     {
-        public string RegistrantIdKey { get; set; }
-
-        public string RegistrationInstanceName { get; set; }
+        public string RegistrationTemplatePlacementIdKey { get; set; }
 
         public string RegistrationInstanceIdKey { get; set; }
 
-        public DateTimeOffset? CreatedDateTime { get; set; }
-
-        public Dictionary<string, ListItemBag> Fees { get; set; }
-
-        public Dictionary<string, PublicAttributeBag> Attributes {  get; set; }
-
-        public Dictionary<string, string> AttributeValues { get; set; }
+        public string RegistrationTemplateIdKey { get; set; }
     }
 }

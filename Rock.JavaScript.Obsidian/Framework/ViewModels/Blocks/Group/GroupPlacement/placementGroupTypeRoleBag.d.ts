@@ -21,9 +21,8 @@
 // </copyright>
 //
 
-/** The SMS Conversations Initialization Box */
 export type PlacementGroupTypeRoleBag = {
-    id: number;
+    idKey?: string | null;
 
     isLeader: boolean;
 

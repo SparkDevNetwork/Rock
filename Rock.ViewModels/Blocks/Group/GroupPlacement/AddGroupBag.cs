@@ -35,6 +35,10 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 
         public string GroupDescription { get; set; }
 
+        public string GroupTypeIdKey { get; set; }
+
+        public GroupPlacementKeysBag GroupPlacementKeys { get; set; }
+
         public Dictionary<string, string> NewGroupAttributeValues { get; set; }
 
         public List<ListItemBag> ExistingGroupsToAdd { get; set; }

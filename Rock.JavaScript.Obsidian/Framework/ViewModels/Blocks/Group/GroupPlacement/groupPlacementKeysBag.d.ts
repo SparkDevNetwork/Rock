@@ -21,21 +21,10 @@
 // </copyright>
 //
 
-import { Gender } from "@Obsidian/Enums/Crm/gender";
-import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
+export type GroupPlacementKeysBag = {
+    registrationInstanceIdKey?: string | null;
 
-export type PersonBag = {
-    firstName?: string | null;
+    registrationTemplateIdKey?: string | null;
 
-    gender: Gender;
-
-    lastName?: string | null;
-
-    nickname?: string | null;
-
-    personIdKey?: string | null;
-
-    photoUrl?: string | null;
-
-    registrants?: RegistrantBag[] | null;
+    registrationTemplatePlacementIdKey?: string | null;
 };

@@ -26,23 +26,11 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
     /// </summary>
     public class GroupPlacementInitializationBox
     {
-        public int? RegistrationTemplatePlacementId { get; set; }
-
-        public int? RegistrationInstanceId { get; set; }
-
-        public int? RegistrationTemplateId { get; set; }
-
-        public int? RegistrantId { get; set; }
+        public GroupPlacementKeysBag GroupPlacementKeys { get; set; }
 
         public PlacementBag SelectedPlacement { get; set; }
 
         public PlacementGroupTypeBag PlacementGroupType { get; set; }
-
-        public List<PlacementGroupBag> PlacementGroups { get; set; }
-
-        public List<PersonBag> PeopleToPlace { get; set; }
-
-        //public List<PersonBag> PlacementPeople { get; set; }
 
         public string Title { get; set; }
 
@@ -52,13 +40,11 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 
         public bool IsPlacementAllowingMultiple { get; set; }
 
-        public List<PlacementGroupTypeRoleBag> PlacementGroupTypeRoles { get; set; }
+        public PersonBag SourcePerson { get; set; }
 
         public AttributeFiltersBag AttributeFilters { get; set; }
 
         public Dictionary<string, PublicAttributeBag> GroupAttributes { get; set; }
-
-        //public List<PlacementGroupDetailsBag> PlacementGroupDetails { get; set; }
 
         /// <summary>
         /// Gets or sets the navigation urls.

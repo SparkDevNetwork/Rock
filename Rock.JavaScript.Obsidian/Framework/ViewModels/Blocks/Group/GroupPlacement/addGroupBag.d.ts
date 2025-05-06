@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { GroupPlacementKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementKeysBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type AddGroupBag = {
@@ -33,6 +34,10 @@ export type AddGroupBag = {
     groupDescription?: string | null;
 
     groupName?: string | null;
+
+    groupPlacementKeys?: GroupPlacementKeysBag | null;
+
+    groupTypeIdKey?: string | null;
 
     newGroupAttributeValues?: Record<string, string> | null;
 

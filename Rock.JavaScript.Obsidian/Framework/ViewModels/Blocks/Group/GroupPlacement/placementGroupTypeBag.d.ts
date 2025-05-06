@@ -21,11 +21,15 @@
 // </copyright>
 //
 
+import { PlacementGroupTypeRoleBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupTypeRoleBag";
+
 /** The SMS Conversations Initialization Box */
 export type PlacementGroupTypeBag = {
     iconCSSClass?: string | null;
 
-    id?: number | null;
+    idKey?: string | null;
 
     name?: string | null;
+
+    roles?: PlacementGroupTypeRoleBag[] | null;
 };

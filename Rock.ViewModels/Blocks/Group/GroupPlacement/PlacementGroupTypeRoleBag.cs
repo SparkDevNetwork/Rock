@@ -17,12 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
-    /// <summary>
-    /// The SMS Conversations Initialization Box
-    /// </summary>
     public class PlacementGroupTypeRoleBag
     {
-        public int Id { get; set; }
+        public string IdKey { get; set; }
 
         public string Name { get; set; }
 

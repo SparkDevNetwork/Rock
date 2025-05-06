@@ -33,9 +33,9 @@ export type RegistrantBag = {
 
     fees?: Record<string, ListItemBag> | null;
 
-    registrantId: number;
+    registrantIdKey?: string | null;
 
-    registrationInstanceId: number;
+    registrationInstanceIdKey?: string | null;
 
     registrationInstanceName?: string | null;
 };

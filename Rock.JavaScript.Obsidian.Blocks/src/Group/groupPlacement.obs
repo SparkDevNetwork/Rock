@@ -55,7 +55,7 @@
         </template>
 
         <div class="d-flex w-100 h-100">
-            <div class="col-md-4 col-lg-3 p-0 h-100 helper-height">
+            <div class="col-xs-5 col-md-4 col-lg-3 p-0 h-100 helper-height">
                 <Panel type="default"
                        title="People To Place"
                        panelBodyCssClass="h-100 overflow-hidden">
@@ -105,36 +105,43 @@
                     </template>
 
                     <div class="people-to-place-panel-body">
-                        <div class="d-flex justify-content-between align-items-center w-100 p-2 pb-0">
-                            <div class="prevent-clear">
-                                <CheckBox v-model="areAllPeopleSelected"
-                                          label=""
-                                          text="Select All"
-                                          @click="toggleSelectAllCheckbox()" />
+                        <div class="w-100 p-2 pb-0">
+                            <div class="d-flex justify-content-start">
+                                <HighlightLabel v-if="sourcePerson" labelType="custom" customClass="source-person-label">
+                                    {{ sourcePerson.firstName }} {{ sourcePerson.lastName }} <i class="fa fa-times cursor-pointer" @click="removeSourcePerson"></i>
+                                </HighlightLabel>
                             </div>
-                            <span class="text-muted">{{ selectedPeopleCount }} Selected
-                                <i ref="selectionInfoElement"
-                                   class="fa fa-info-circle cursor-pointer"
-                                   data-toggle="tooltip"
-                                   title="Ctrl (Mac: Cmd) + Click to select multiple people.">
-                                </i>
-                            </span>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="prevent-clear">
+                                    <CheckBox v-model="areAllPeopleSelected"
+                                              label=""
+                                              text="Select All"
+                                              @click="toggleSelectAllCheckbox()" />
+                                </div>
+                                <span class="text-muted">{{ selectedPeopleCount }} Selected
+                                    <i ref="selectionInfoElement"
+                                       class="fa fa-info-circle cursor-pointer"
+                                       data-toggle="tooltip"
+                                       title="Ctrl (Mac: Cmd) + Click to select multiple people.">
+                                    </i>
+                                </span>
+                            </div>
                         </div>
                         <div v-drag-source="personDragSourceOptions" v-drag-target="groupMemberDragSourceOptions.id" class="people-to-place-card-container">
                             <template v-for="(person, index) in filteredAndSortedPeopleToPlace" v-if="filteredAndSortedPeopleToPlace.length > 0">
-                                <PersonCard v-if="person.personId"
+                                <PersonCard v-if="person.personIdKey"
                                             :key="index"
-                                            :data-person-id="person.personId"
+                                            :data-person-id-key="person.personIdKey"
                                             :isCardExpanded="arePersonCardsExpanded"
                                             :person="person"
                                             :index="index"
-                                            :isSelected="isSelected(person.personId)"
+                                            :isSelected="isSelected(person.personIdKey)"
                                             :isInstanceDisplayed="placementConfigurationSettings.showRegistrationInstanceName"
                                             :areFeesDisplayed="placementConfigurationSettings.areFeesDisplayed"
                                             :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
                                             :isGenderHighlighting="isGenderHighlighting"
                                             @toggleCardExpansion="toggleCardExpansion"
-                                            @toggleSelection="toggleSelection(person.personId)" />
+                                            @toggleSelection="toggleSelection(person.personIdKey)" />
                             </template>
                             <div v-else-if="arePeopleLoading" class="d-flex align-items-center justify-content-center">
                                 <Loading :isLoading="arePeopleLoading" />
@@ -149,7 +156,7 @@
 
             </div>
 
-            <div class="col-md-8 col-lg-9 p-0 h-100 helper-height">
+            <div class="col-xs-7 col-md-8 col-lg-9 p-0 h-100 helper-height">
                 <Panel type="default" title="Destination Groups" panelBodyCssClass="h-100 overflow-hidden">
                     <template #headerActions>
                         <div class="d-flex gap-1 mr-3">
@@ -218,7 +225,7 @@
                                           :destinationGroup="group"
                                           :arePersonCardsExpanded="arePersonCardsExpanded"
                                           :isGroupExpanded="areGroupsExpanded"
-                                          :groupTypeRoles="box.placementGroupTypeRoles ?? []"
+                                          :groupTypeRoles="box.placementGroupType?.roles ?? []"
                                           :dragTargetId="personDragSourceOptions.id"
                                           :groupMemberDragOptions="groupMemberDragSourceOptions"
                                           :getGroupRoleError="getGroupRoleError"
@@ -388,6 +395,13 @@
     overflow-y: auto;
 }
 
+.source-person-label {
+    background-color: var(--color-interface-soft);
+    color: var(--color-interface-stronger);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+}
+
 :deep(.highlight) {
     background-color: var(--color-interface-soft) !important;
 }
@@ -395,389 +409,6 @@
 :deep(.is-drag-over) {
     display: none;
 }
-
-/* from webforms css */
-
-/* .d-inline-block {
-    display: inline-block
-}
-
-.panel-groupplacement .registrant-area {
-    height: 100%;
-    padding-top: 15px;
-    padding-bottom: 15px
-}
-
-.panel-groupplacement .registrant-area > .row {
-    height: 100%
-}
-
-.dropzone.empty,
-.dropzone:empty {
-    position: relative;
-    padding: 41px 16px;
-    outline-offset: -16px
-}
-
-.dropzone.empty::after,
-.dropzone:empty::after {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    display: block;
-    width: 100%;
-    font-size: 14px;
-    color: rgba(0, 0, 0, 0.4);
-    text-align: center;
-    content: attr(data-empty-label);
-    -webkit-transform: translateY(-50%);
-    -moz-transform: translateY(-50%);
-    -ms-transform: translateY(-50%);
-    transform: translateY(-50%)
-}
-
-.dropzone.droppable:empty {
-    outline: 2px dashed rgba(0, 0, 0, 0.1)
-}
-
-.registrant-search {
-    padding: 12px;
-    background: #fafafa
-}
-
-.group-placement-registrantlist .registrant .flex::before,
-.group-placement-registrantlist .registrant .flex .btn {
-    display: none
-}
-
-.group-placement-registrantlist .registrant.has-note .flex {
-    -ms-flex-direction: column !important;
-    flex-direction: column !important
-}
-
-.placement-capacity-label[data-status="over-capacity"] {
-    background-color: #d4442e
-}
-
-.placement-capacity-label[data-status="at-capacity"] {
-    background-color: #ee7624
-}
-
-.placement-capacity-label[data-status="near-capacity"] {
-    background-color: #ffc870
-}
-
-.placement-capacity-label[data-status="under-capacity"] {
-    background-color: #16c98d
-}
-
-.placement-capacity-label[data-status="none"] {
-    display: none
-}
-
-.gu-transit .container {
-    display: none
-}
-
-.scrollable {
-    position: relative;
-    overflow-x: auto;
-    overflow-y: auto
-}
-
-.group-role-container {
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-wrap: wrap;
-    flex-wrap: wrap
-}
-
-.group-role-container .registrant .details-container {
-    display: none
-}
-
-.group-role-container .registrant.gu-transit,
-.gu-mirror {
-    max-height: 38px
-}
-
-.group-role-container .registrant.gu-transit .hide-dragging,
-.gu-mirror .hide-dragging {
-    display: none
-}
-
-.resource-list {
-    position: sticky !important;
-    top: 16px;
-    max-height: calc(100vh - 32px)
-}
-
-@media (min-width:992px) {
-    .resource-list {
-        top: 96px;
-        max-height: calc(100vh - 112px)
-    }
-}
-
-.is-fullscreen .resource-list {
-    top: 16px;
-    max-height: calc(100vh - 100px)
-}
-
-.resource-list .panel-body {
-    position: relative;
-    display: -ms-flexbox !important;
-    display: flex !important;
-    flex: 0 1 auto !important;
-    -ms-flex-direction: column !important;
-    flex-direction: column !important;
-    overflow: hidden
-}
-
-.resource-list .scroll-list {
-    flex-shrink: 1 !important;
-    flex-grow: 1 !important;
-    height: 100%;
-    min-height: 0;
-    padding: 12px 6px 8px 12px;
-    overflow-y: scroll;
-    background-color: rgba(245, 245, 245, 0.4);
-    -ms-flex-positive: 1 !important;
-    -ms-flex-negative: 1 !important
-}
-
-.resource-list .scroll-list::-webkit-scrollbar {
-    width: 6px;
-    background-color: rgba(245, 245, 245, 0.4)
-}
-
-.resource-list .scroll-list::-webkit-scrollbar-thumb {
-    width: 6px;
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 3px
-}
-
-.resource-list .scroll-list::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(0, 0, 0, 0.3)
-}
-
-.person {
-    display: inline-flex;
-    -ms-flex: 0 0 33%;
-    flex: 0 0 33%;
-    flex-direction: column;
-    max-width: calc(33.333% - 8px);
-    margin: 0 8px 12px 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    color: #343a40;
-    cursor: move;
-    cursor: -webkit-grab;
-    cursor: grab;
-    background-color: #fff;
-    border: 1px solid #dfe0e1;
-    border-radius: 4px;
-    box-shadow: 0 1px 0 #d1d2d7
-}
-
-.registrant-list .person {
-    display: flex;
-    flex-direction: column;
-    min-width: 100%;
-    margin-right: 0
-}
-
-.registrant-list .person[data-person-gender="1"] {
-    color: #4299e1;
-    background-color: #ebf8ff;
-    border-color: #4299e1
-}
-
-.registrant-list .person[data-person-gender="1"]:hover {
-    background-color: #d1efff
-}
-
-.registrant-list .person[data-person-gender="2"] {
-    color: #ed64a6;
-    background-color: #fff5f7;
-    border-color: #ed64a6
-}
-
-.registrant-list .person[data-person-gender="2"]:hover {
-    background-color: #ffdce3
-}
-
-.registrant-list .person .registrant-details {
-    display: block
-}
-
-.registrant-list .person .dropdown {
-    display: none
-}
-
-.placement-groups .person[data-person-gender="1"] {
-    color: #4299e1;
-    background-color: #ebf8ff;
-    border-color: #4299e1
-}
-
-.placement-groups .person[data-person-gender="1"]:hover {
-    background-color: #d1efff
-}
-
-.placement-groups .person[data-person-gender="2"] {
-    color: #ed64a6;
-    background-color: #fff5f7;
-    border-color: #ed64a6
-}
-
-.placement-groups .person[data-person-gender="2"]:hover {
-    background-color: #ffdce3
-}
-
-.person:hover {
-    background: rgba(85, 150, 230, 0.1)
-}
-
-.person[data-has-placement-error] {
-    color: #e55235;
-    background-color: #fcf2f1;
-    border-color: #d4442e
-}
-
-.person .person-container {
-    display: flex;
-    flex-wrap: nowrap;
-    -ms-flex-pack: justify !important;
-    justify-content: space-between !important
-}
-
-.person .details-container {
-    padding: 6px 8px;
-    color: #2d2e31;
-    background: rgba(255, 255, 255, 0.8);
-    border-bottom-right-radius: 3px;
-    border-bottom-left-radius: 3px
-}
-
-.person .details-container > div {
-    margin-top: 8px
-}
-
-.person .details-container > div:first-child {
-    margin-top: 0
-}
-
-.person dl:not(.dl-horizontal) {
-    margin-bottom: 0;
-    font-size: 14px
-}
-
-.person dl:not(.dl-horizontal) dt {
-    margin-top: 8px
-}
-
-.person dl:not(.dl-horizontal) dt:first-child {
-    margin-top: 0
-}
-
-.person .person-name {
-    font-weight: 600;
-    display: inline-block;
-    padding: 6px 8px
-}
-
-.person .btn {
-    height: 100%;
-    padding: 5px 8px;
-    color: #d8d8d8;
-    background: transparent
-}
-
-.person .btn:hover,
-.person .btn:focus,
-.person .btn:active:focus {
-    color: #767676;
-    outline: none
-}
-
-.person .dropdown-menu {
-    font-size: 14px
-}
-
-.person.gu-mirror {
-    cursor: -moz-grabbing !important;
-    cursor: -webkit-grabbing !important;
-    cursor: grabbing !important;
-    background: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 5px 20px 0 rgba(21, 27, 38, 0.08);
-    opacity: 1
-}
-
-.placement-group .panel-drawer > span {
-    display: block;
-    padding: 16px;
-    font-size: 14px;
-    background: #fff;
-    border-bottom: 1px solid #eee
-}
-
-.placement-group .panel-drawer > span dl {
-    margin-bottom: 0
-}
-
-.placement-group .panel-drawer > span dl:empty {
-    display: none
-}
-
-.placement-group .panel-drawer > span dl dt {
-    margin-top: 8px
-}
-
-.placement-group .panel-drawer > span dl dt:first-child {
-    margin-top: 0
-}
-
-.person-id-anchor {
-    position: relative;
-    top: -250px;
-    display: block;
-    visibility: hidden
-}
-
-.panel-inline {
-    margin-bottom: 0 !important;
-    border: none !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    -webkit-bot-shadow: none !important
-}
-
-.panel-inline .panel-heading {
-    padding: 8px 16px;
-    background-color: rgba(245, 245, 245, 0.8);
-    border-top: 1px solid #eee
-}
-
-.panel-inline .panel-title {
-    font-size: 14px;
-    font-weight: 600
-}
-
-.panel-drawer + .group-role-members .panel-heading,
-.group-role-members:first-child .panel-heading {
-    border-top: 0
-}
-
-.btn-overflow {
-    color: #737475
-}
-
-.panel-heading .btn-overflow {
-    width: 20px !important;
-    text-align: right
-} */
-
-/* end */
 </style>
 
 <script setup lang="ts">
@@ -818,12 +449,20 @@
     import { DetachGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/detachGroupBag";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import { AddGroupMembersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupMembersBag";
+
+    /*
+        TODO's
+        1. In the special case where a user overrides the Registration Template Id from the Block Settings AND a the Registration Template Placement Id is not present.
+            then we will display a dropdown on the top bar (similar to Sms Conversations selected system phone number). This dropdown will allow us to select different
+            Registration Template Placements.
+    */
 
     // #region Values
     const box = useConfigurationValues<GroupPlacementInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
-    const exampleBox = ref<string>("");
 
     const arePersonCardsExpanded = ref(false);
     const areAllPeopleSelected = ref(false);
@@ -838,7 +477,7 @@
     const areGroupsLoading = ref<boolean>(true);
     const arePeopleLoading = ref<boolean>(true);
 
-    const selectedPersonIds = ref<Set<number>>(new Set());
+    const selectedPersonIdKeys = ref<Set<string>>(new Set());
 
     const personAttributesForFilter = ref(box.attributeFilters?.registrantAttributesForFilters ?? {});
     const personAttributeValuesForFilter = ref(preferences.getValue(getPersonAttributeFilterKey()) ? JSON.parse(preferences.getValue(getPersonAttributeFilterKey())) : {});
@@ -866,6 +505,8 @@
 
     const groupRoleErrors = ref<Record<number, Record<number, string>>>({});
 
+    const sourcePerson = ref<PersonBag | null | undefined>(box.sourcePerson);
+
     const currentSortOrder = ref<SortTypes>(toNumberOrNull(preferences.getValue(getSortOrderKey())) as SortTypes ?? SortTypes.SortByLastName);
     const sortOptions: Array<[SortTypes, string]> = [
         [SortTypes.SortByLastName, "Last Name, First Name (Default)"],
@@ -885,20 +526,24 @@
     const placementConfigurationSettings = ref<PlacementConfigurationSettingsBag>(preferences.getValue(getPlacementConfigurationSettingsKey()) ? JSON.parse(preferences.getValue(getPlacementConfigurationSettingsKey())) : {} as PlacementConfigurationSettingsBag);
 
     console.log("GroupPlacementInitializationBox", box);
+    console.log("placement config settings: ", placementConfigurationSettings.value);
 
     // #endregion
 
     // #region Computed Values
 
-    const selectedPeopleCount = computed(() => selectedPersonIds.value.size);
+    const selectedPeopleCount = computed(() => selectedPersonIdKeys.value.size);
 
     const groupMemberFilterIcon = computed((): string => {
         return isGroupMemberFilterDisplayed.value ? "fa fa-chevron-up" : "fa fa-chevron-down";
     });
 
     const filteredAndSortedPeopleToPlace = computed(() => {
-        // TODO - read over person search figma tomorrow again.
         const filteredPeople = peopleToPlace.value.filter(p => {
+            if (sourcePerson.value && p.personIdKey !== sourcePerson.value.personIdKey) {
+                return false;
+            }
+
             const matchesSearchText = personSearchText.value
                 ? p.nickname?.toLowerCase().includes(personSearchText.value.toLowerCase()) ||
                 p.lastName?.toLowerCase().includes(personSearchText.value.toLowerCase())
@@ -947,11 +592,11 @@
             const sortedPeople = getSortedPeople(validGroupMembers.map(m => m.person!));
 
             const memberMap = new Map(
-                validGroupMembers.map(m => [m.person!.personId, m])
+                validGroupMembers.map(m => [m.person!.personIdKey, m])
             );
 
             const sortedGroupMembers = sortedPeople
-                .map(p => memberMap.get(p.personId))
+                .map(p => memberMap.get(p.personIdKey))
                 .filter((m): m is typeof validGroupMembers[number] => !!m);
 
             return {
@@ -968,6 +613,11 @@
 
     function areAttributeFiltersMet(attributes: Record<string, PublicAttributeBag>, attributeValuesFromFilter: Record<string, string>, attributeValuesFromEntity: Record<string, string>): boolean {
         return Object.keys(attributeValuesFromFilter).every(attributeKey => {
+            // If we can't find the key in attributes, then it is not being displayed and the filter should not be triggered.
+            if (!attributes[attributeKey]) {
+                return true;
+            }
+
             const fieldType = getFieldType(attributes[attributeKey].fieldTypeGuid);
 
             if (!fieldType) {
@@ -1052,29 +702,29 @@
         });
     }
 
-    function setGroupRoleError(groupId: number, roleId: number, message: string): void {
-        if (!groupRoleErrors.value[groupId]) {
-            groupRoleErrors.value[groupId] = {};
+    function setGroupRoleError(groupIdKey: string, roleIdKey: string, message: string): void {
+        if (!groupRoleErrors.value[groupIdKey]) {
+            groupRoleErrors.value[groupIdKey] = {};
         }
 
-        groupRoleErrors.value[groupId][roleId] = message;
+        groupRoleErrors.value[groupIdKey][roleIdKey] = message;
     }
 
-    function clearGroupRoleError(groupId: number, roleId: number): void {
-        const roleMap = groupRoleErrors.value[groupId];
+    function clearGroupRoleError(groupIdKey: string, roleIdKey: string): void {
+        const roleMap = groupRoleErrors.value[groupIdKey];
 
         if (roleMap) {
-            delete roleMap[roleId];
+            delete roleMap[roleIdKey];
 
             // Clean up empty role maps
             if (Object.keys(roleMap).length === 0) {
-                delete groupRoleErrors.value[groupId];
+                delete groupRoleErrors.value[groupIdKey];
             }
         }
     }
 
-    function getGroupRoleError(groupId: number, roleId: number): string | null {
-        return groupRoleErrors.value[groupId]?.[roleId] ?? null;
+    function getGroupRoleError(groupIdKey: string, roleIdKey: string): string | null {
+        return groupRoleErrors.value[groupIdKey]?.[roleIdKey] ?? null;
     }
 
     function getPersonDragSourceOptions(): IDragSourceOptions {
@@ -1082,7 +732,7 @@
             id: newGuid(),
             copyElement: true,
             dragBegin(operation) {
-                if (selectedPersonIds.value.size > 1) {
+                if (selectedPersonIdKeys.value.size > 1) {
                     nextTick(() => {
                         const mirror = document.querySelector(".gu-mirror") as HTMLElement;
                         if (!mirror) return;
@@ -1124,7 +774,7 @@
                         transit.style = "display: none";
                     });
                 }
-                else if (selectedPersonIds.value.size > 1) {
+                else if (selectedPersonIdKeys.value.size > 1) {
                     nextTick(() => {
                         const transit = document.querySelector(".gu-transit") as HTMLElement;
                         if (!transit) return;
@@ -1167,38 +817,38 @@
                 operation.element.remove();
 
                 var rawGroupSectionId = (operation.targetContainer as HTMLElement)?.dataset.groupSectionId;
-                const [groupId, groupRoleId] = (rawGroupSectionId ?? "").split(":").map(toNumberOrNull);
-                if (!groupId) {
+                const [groupIdKey, groupRoleIdKey] = (rawGroupSectionId ?? "").split("|");
+                if (!groupIdKey) {
                     return;
                 }
-                const placementGroup = placementGroups.value.find(g => g.groupId === groupId);
+                const placementGroup = placementGroups.value.find(g => g.groupIdKey === groupIdKey);
                 if (!placementGroup) {
                     return;
                 }
                 var pendingGroupMembers: GroupMemberBag[] = [];
 
-                if (selectedPersonIds.value.size > 1) {
-                    const selectedPeopleToPlace = peopleToPlace.value.filter(p => p.personId && selectedPersonIds.value.has(p.personId));
+                if (selectedPersonIdKeys.value.size > 1) {
+                    const selectedPeopleToPlace = peopleToPlace.value.filter(p => p.personIdKey && selectedPersonIdKeys.value.has(p.personIdKey));
 
-                    if (selectedPeopleToPlace && groupRoleId && operation.targetIndex !== undefined) {
+                    if (selectedPeopleToPlace && groupRoleIdKey && operation.targetIndex !== undefined) {
                         selectedPeopleToPlace.forEach((person) => {
                             pendingGroupMembers.push({
-                                groupRoleId: groupRoleId,
+                                groupRoleIdKey: groupRoleIdKey,
                                 person: person,
-                                groupMemberId: null
+                                groupMemberIdKey: null
                             });
                         });
                     }
                 }
                 else {
-                    const personId = toNumberOrNull((operation.element as HTMLElement).dataset.personId);
-                    const person = peopleToPlace.value.find(p => p.personId === personId);
+                    const personIdKey = (operation.element as HTMLElement).dataset.personIdKey;
+                    const person = peopleToPlace.value.find(p => p.personIdKey === personIdKey);
 
-                    if (person && groupRoleId && operation.targetIndex !== undefined) {
+                    if (person && groupRoleIdKey && operation.targetIndex !== undefined) {
                         pendingGroupMembers.push({
-                            groupRoleId: groupRoleId,
+                            groupRoleIdKey: groupRoleIdKey,
                             person: person,
-                            groupMemberId: null
+                            groupMemberIdKey: null
                         });
 
                         //TODO - the current display of group members results in incosistency with there array index
@@ -1210,26 +860,26 @@
                 }
 
                 // TODO - what happens on error?
-                var newGroupMembers = await addGroupMembersToGroup(pendingGroupMembers, groupId);
+                var newGroupMembers = await addGroupMembersToGroup(pendingGroupMembers, groupIdKey);
                 newGroupMembers.forEach((groupMember, i) => {
                     // placementGroup.groupMembers!.splice(operation.targetIndex! + i, 0, {
-                    //     groupRoleId: groupMember.groupRoleId,
+                    //     groupRoleIdKey: groupMember.groupRoleIdKey,
                     //     person: groupMember.person,
-                    //     groupMemberId: groupMember.groupMemberId
+                    //     groupMemberIdKey: groupMember.groupMemberIdKey
                     // });
                     // No need to splice because we are always sorting.
                     placementGroup.groupMembers!.push({
-                        groupRoleId: groupMember.groupRoleId,
+                        groupRoleIdKey: groupMember.groupRoleIdKey,
                         person: groupMember.person,
-                        groupMemberId: groupMember.groupMemberId
+                        groupMemberIdKey: groupMember.groupMemberIdKey
                     });
 
                     peopleToPlace.value = peopleToPlace.value.filter(
-                        p => groupMember.person?.personId !== p.personId
+                        p => groupMember.person?.personIdKey !== p.personIdKey
                     );
                 });
 
-                selectedPersonIds.value.clear();
+                selectedPersonIdKeys.value.clear();
             }
         };
     }
@@ -1259,28 +909,28 @@
                 operation.element.remove();
                 isNoPeopleLabelHidden.value = false;
 
-                const groupId = toNumberOrNull((operation.element as HTMLElement).dataset.groupId);
-                const groupMemberId = toNumberOrNull((operation.element as HTMLElement).dataset.groupMemberId);
+                const groupIdKey = (operation.element as HTMLElement).dataset.groupIdKey;
+                const groupMemberIdKey = (operation.element as HTMLElement).dataset.groupMemberIdKey;
 
-                removeGroupMember(groupId, groupMemberId);
+                removeGroupMember(groupIdKey, groupMemberIdKey);
             }
         };
     }
 
-    async function removeGroupMember(groupId: number | null, groupMemberId: number | null): Promise<void> {
-        const placementGroup = placementGroups.value.find(g => g.groupId === groupId);
-        if (!placementGroup?.groupMembers || !groupMemberId) {
+    async function removeGroupMember(groupIdKey: string | undefined, groupMemberIdKey: string | undefined): Promise<void> {
+        const placementGroup = placementGroups.value.find(g => g.groupIdKey === groupIdKey);
+        if (!placementGroup?.groupMembers || !groupMemberIdKey || !placementGroup.groupIdKey) {
             return;
         }
 
-        const groupMember = placementGroup.groupMembers?.find(gm => gm.groupMemberId === groupMemberId);
+        const groupMember = placementGroup.groupMembers?.find(gm => gm.groupMemberIdKey === groupMemberIdKey);
 
         if (groupMember && groupMember.person) {
             if (!peopleToPlace.value) {
                 peopleToPlace.value = [];
             }
 
-            var isRemoveSuccess = await removeGroupMemberFromGroup(groupMemberId, placementGroup.groupId);
+            var isRemoveSuccess = await removeGroupMemberFromGroup(groupMemberIdKey, placementGroup.groupIdKey);
 
             if (isRemoveSuccess) {
                 // If the person does not have a Registrant in any of the included Registration Instances, then they should not be shown in the People To Place Panel.
@@ -1291,7 +941,7 @@
                         return true;
                     }
 
-                    return placementConfigurationSettings.value.includedRegistrationInstanceIds?.includes(r.registrationInstanceId.toString());
+                    return placementConfigurationSettings.value.includedRegistrationInstanceIds?.includes(r.registrationInstanceIdKey ?? "");
                 });
 
                 if (shouldPersonBeDisplayed) {
@@ -1302,18 +952,18 @@
                     peopleToPlace.value.push({ ...groupMember.person });
                 }
 
-                placementGroup.groupMembers = placementGroup.groupMembers?.filter(gm => gm.groupMemberId !== groupMemberId);
+                placementGroup.groupMembers = placementGroup.groupMembers?.filter(gm => gm.groupMemberIdKey !== groupMemberIdKey);
             }
         }
     }
 
-    function editGroup(key: number): void {
+    function editGroup(key: string): void {
         if (box.navigationUrls?.[NavigationUrlKey.GroupDetailPage]) {
             window.location.href = box.navigationUrls[NavigationUrlKey.GroupDetailPage].replace("((Key))", key.toString());
         }
     }
 
-    function editGroupMember(key: number): void {
+    function editGroupMember(key: string): void {
         if (box.navigationUrls?.[NavigationUrlKey.GroupMemberDetailPage]) {
             window.location.href = box.navigationUrls[NavigationUrlKey.GroupMemberDetailPage].replace("((Key))", key.toString());
         }
@@ -1324,31 +974,31 @@
 
         // Only clear if clicked outside a .person-card
         if (!clickedEl.closest(".person-card") && !clickedEl.closest(".prevent-clear")) {
-            selectedPersonIds.value.clear();
+            selectedPersonIdKeys.value.clear();
         }
     }
 
-    function toggleSelection(personId: number) {
-        if (selectedPersonIds.value.has(personId)) {
-            selectedPersonIds.value.delete(personId);
+    function toggleSelection(personIdKey: string) {
+        if (selectedPersonIdKeys.value.has(personIdKey)) {
+            selectedPersonIdKeys.value.delete(personIdKey);
         }
         else {
-            selectedPersonIds.value.add(personId);
+            selectedPersonIdKeys.value.add(personIdKey);
         }
     }
 
-    function isSelected(personId: number): boolean {
-        return selectedPersonIds.value.has(personId);
+    function isSelected(personIdKey: string): boolean {
+        return selectedPersonIdKeys.value.has(personIdKey);
     }
 
     function toggleSelectAllCheckbox() {
         if (areAllPeopleSelected.value) {
-            selectedPersonIds.value.clear();
+            selectedPersonIdKeys.value.clear();
         }
         else {
             for (const person of filteredAndSortedPeopleToPlace.value) {
-                if (person.personId) {
-                    selectedPersonIds.value.add(person.personId);
+                if (person.personIdKey) {
+                    selectedPersonIdKeys.value.add(person.personIdKey);
                 }
             }
         }
@@ -1369,10 +1019,6 @@
 
     function toggleHighlightGender(): void {
         isGenderHighlighting.value = !isGenderHighlighting.value;
-    }
-
-    function toggleDetails(): void {
-        console.log("Toggle details");
     }
 
     function openPlacementConfigSettings(): void {
@@ -1434,66 +1080,70 @@
         isGroupMemberFilterDisplayed.value = !isGroupMemberFilterDisplayed.value;
     }
 
+    function removeSourcePerson(): void {
+        sourcePerson.value = null;
+    }
+
     function getSortOrderKey(): string {
-        if (box.registrationInstanceId) {
-            return PreferenceKey.SortOrderRegistrationInstanceId.replace("{0}", box.registrationInstanceId.toString());
+        if (box.groupPlacementKeys?.registrationInstanceIdKey) {
+            return PreferenceKey.SortOrderRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
         }
-        else if (box.registrationTemplateId) {
-            return PreferenceKey.SortOrderRegistrationTemplateId.replace("{0}", box.registrationTemplateId.toString());
+        else if (box.groupPlacementKeys?.registrationTemplateIdKey) {
+            return PreferenceKey.SortOrderRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
         }
         return "";
     }
 
     function getIsGenderHighlightingKey(): string {
-        if (box.registrationInstanceId) {
-            return PreferenceKey.IsGenderHighlightingRegistrationInstanceId.replace("{0}", box.registrationInstanceId.toString());
+        if (box.groupPlacementKeys?.registrationInstanceIdKey) {
+            return PreferenceKey.IsGenderHighlightingRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
         }
-        else if (box.registrationTemplateId) {
-            return PreferenceKey.IsGenderHighlightingRegistrationTemplateId.replace("{0}", box.registrationTemplateId.toString());
+        else if (box.groupPlacementKeys?.registrationTemplateIdKey) {
+            return PreferenceKey.IsGenderHighlightingRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
         }
         return "";
     }
 
     function getPersonAttributeFilterKey(): string {
-        if (box.registrationInstanceId) {
-            return PreferenceKey.PersonAttributeFilterRegistrationInstanceId.replace("{0}", box.registrationInstanceId.toString());
+        if (box.groupPlacementKeys?.registrationInstanceIdKey) {
+            return PreferenceKey.PersonAttributeFilterRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
         }
-        else if (box.registrationTemplateId) {
-            return PreferenceKey.PersonAttributeFilterRegistrationTemplateId.replace("{0}", box.registrationTemplateId.toString());
+        else if (box.groupPlacementKeys?.registrationTemplateIdKey) {
+            return PreferenceKey.PersonAttributeFilterRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
         }
         return "";
     }
 
     function getRegistrantFeeItemValuesFilterKey(): string {
-        if (box.registrationInstanceId) {
-            return PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationInstanceId.replace("{0}", box.registrationInstanceId.toString());
+        if (box.groupPlacementKeys?.registrationInstanceIdKey) {
+            return PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
         }
-        else if (box.registrationTemplateId) {
-            return PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationTemplateId.replace("{0}", box.registrationTemplateId.toString());
+        else if (box.groupPlacementKeys?.registrationTemplateIdKey) {
+            return PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
         }
         return "";
     }
 
     function getGroupAttributeFilterKey(): string {
-        if (box.placementGroupType?.id) {
-            return PreferenceKey.GroupAttributeFilterGroupTypeId.replace("{0}", box.placementGroupType.id.toString());
+        if (box.placementGroupType?.idKey) {
+            return PreferenceKey.GroupAttributeFilterGroupTypeId.replace("{0}", box.placementGroupType.idKey.toString());
         }
         return "";
     }
 
     function getGroupMemberAttributeFilterKey(): string {
-        if (box.placementGroupType?.id) {
-            return PreferenceKey.GroupMemberAttributeFilterGroupTypeId.replace("{0}", box.placementGroupType.id.toString());
+        if (box.placementGroupType?.idKey) {
+            return PreferenceKey.GroupMemberAttributeFilterGroupTypeId.replace("{0}", box.placementGroupType.idKey.toString());
         }
         return "";
     }
 
     function getPlacementConfigurationSettingsKey(): string {
-        if (box.registrationInstanceId) {
-            return PreferenceKey.PlacementConfigurationJSONRegistrationInstanceId.replace("{0}", box.registrationInstanceId.toString());
+        if (box.groupPlacementKeys?.registrationInstanceIdKey) {
+            return PreferenceKey.PlacementConfigurationJSONRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
         }
-        else if (box.registrationTemplateId) {
-            return PreferenceKey.PlacementConfigurationJSONRegistrationTemplateId.replace("{0}", box.registrationTemplateId.toString());
+        else if (box.groupPlacementKeys?.registrationTemplateIdKey) {
+            return PreferenceKey.PlacementConfigurationJSONRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
         }
         return "";
     }
@@ -1525,7 +1175,7 @@
             }
             if (placementPeople.tempGroups) {
                 placementPeople.tempGroups.forEach(g => {
-                    const placementGroup = placementGroups.value.find(pg => pg.groupId === g.groupId);
+                    const placementGroup = placementGroups.value.find(pg => pg.groupIdKey === g.groupIdKey);
                     if (placementGroup?.groupMembers && g.groupMembers?.length) {
                         placementGroup.groupMembers.push(...g.groupMembers);
                     }
@@ -1557,9 +1207,7 @@
         arePeopleLoading.value = true;
 
         const result = await invokeBlockAction<PlacementPeopleBag>("GetPlacementPeople", {
-            registrationTemplateId: box.registrationTemplateId,
-            registrationInstanceId: box.registrationInstanceId,
-            registrationTemplatePlacementId: box.registrationTemplatePlacementId,
+            groupPlacementKeys: box.groupPlacementKeys
         });
 
         if (result.isSuccess && result.data) {
@@ -1575,9 +1223,7 @@
         areGroupsLoading.value = true;
 
         const result = await invokeBlockAction<PlacementGroupBag[]>("GetDestinationGroups", {
-            registrationTemplateId: box.registrationTemplateId,
-            registrationInstanceId: box.registrationInstanceId,
-            registrationTemplatePlacementId: box.registrationTemplatePlacementId,
+            groupPlacementKeys: box.groupPlacementKeys
         });
 
         if (result.isSuccess && result.data) {
@@ -1589,28 +1235,30 @@
         return [];
     }
 
-    async function addGroupMembersToGroup(pendingGroupMembers: GroupMemberBag[], groupId: number): Promise<GroupMemberBag[]> {
+    async function addGroupMembersToGroup(pendingGroupMembers: GroupMemberBag[], groupIdKey: string): Promise<GroupMemberBag[]> {
         const result = await invokeBlockAction<GroupMemberBag[]>("AddGroupMembersToGroup", {
-            pendingGroupMembers: pendingGroupMembers,
-            registrationTemplatePlacementId: box.registrationTemplatePlacementId ?? "",
-            groupId: groupId
+            addGroupMembersBag: {
+                pendingGroupMembers,
+                groupIdKey,
+                registrationTemplatePlacementIdKey: box.groupPlacementKeys?.registrationTemplatePlacementIdKey
+            } as AddGroupMembersBag
         });
 
         if (result.isSuccess && result.data) {
             return result.data;
         }
         else {
-            if (pendingGroupMembers[0].groupRoleId) {
-                setGroupRoleError(groupId, pendingGroupMembers[0].groupRoleId, result.errorMessage ?? "Unknown error while trying to add a group member.");
+            if (pendingGroupMembers[0].groupRoleIdKey) {
+                setGroupRoleError(groupIdKey, pendingGroupMembers[0].groupRoleIdKey, result.errorMessage ?? "Unknown error while trying to add a group member.");
             }
         }
         return [];
     }
 
-    async function removeGroupMemberFromGroup(groupMemberId: number, groupId: number): Promise<boolean> {
+    async function removeGroupMemberFromGroup(groupMemberIdKey: string, groupIdKey: string): Promise<boolean> {
         const result = await invokeBlockAction<GroupMemberBag[]>("RemoveGroupMemberFromGroup", {
-            groupMemberId: groupMemberId,
-            groupId: groupId
+            groupMemberIdKey: groupMemberIdKey,
+            groupIdKey: groupIdKey
         });
 
         if (result.isSuccess) {
@@ -1625,16 +1273,16 @@
 
     async function addGroup(addGroupBag: AddGroupBag) {
         // TODO - need to make grouptypeid non nullable
-        if (!box.placementGroupType?.id) {
+        if (!box.placementGroupType?.idKey) {
             console.error("Group Type Id required");
             return;
         }
 
+        addGroupBag.groupPlacementKeys = box.groupPlacementKeys;
+        addGroupBag.groupTypeIdKey = box.placementGroupType.idKey;
+
         const result = await invokeBlockAction("AddPlacementGroup", {
-            addGroupBag,
-            groupTypeId: box.placementGroupType.id,
-            registrationInstanceId: box.registrationInstanceId,
-            registrationTemplatePlacementId: box.registrationTemplatePlacementId
+            addGroupBag
         });
 
         if (result.isSuccess) {
@@ -1648,12 +1296,11 @@
         }
     }
 
-    async function detachPlacementGroup(groupId: number): Promise<void> {
+    async function detachPlacementGroup(groupIdKey: string): Promise<void> {
         const result = await invokeBlockAction("DetachPlacementGroup", {
             detachGroupBag: {
-                groupId: groupId,
-                registrationInstanceId: box.registrationInstanceId,
-                registrationTemplatePlacementId: box.registrationTemplatePlacementId
+                groupIdKey: groupIdKey,
+                groupPlacementKeys: box.groupPlacementKeys
             } as DetachGroupBag
         });
 
@@ -1667,9 +1314,9 @@
         }
     }
 
-    async function deletePlacementGroup(groupId: number): Promise<void> {
+    async function deletePlacementGroup(groupIdKey: string): Promise<void> {
         const result = await invokeBlockAction("DeletePlacementGroup", {
-            groupId: groupId
+            groupIdKey: groupIdKey
         });
 
         if (result.isSuccess) {
@@ -1708,14 +1355,14 @@
         await preferences.save();
     });
 
-    watch([selectedPersonIds, filteredAndSortedPeopleToPlace], () => {
+    watch([selectedPersonIdKeys, filteredAndSortedPeopleToPlace], () => {
         if (filteredAndSortedPeopleToPlace.value.length === 0) {
             areAllPeopleSelected.value = false;
         }
         else {
             areAllPeopleSelected.value = filteredAndSortedPeopleToPlace.value.every(person => {
-                if (person.personId) {
-                    return selectedPersonIds.value.has(person.personId);
+                if (person.personIdKey) {
+                    return selectedPersonIdKeys.value.has(person.personIdKey);
                 }
             });
         }
@@ -1726,8 +1373,6 @@
 
     onMounted(async () => {
         document.addEventListener("click", handleOutsideClick);
-
-        console.log(box.registrationTemplateId);
 
         loadPlacementData();
     });

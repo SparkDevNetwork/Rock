@@ -26,13 +26,13 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
     /// </summary>
     public class PlacementGroupBag
     {
-        public int GroupId { get; set; }
+        public string GroupIdKey { get; set; }
 
         public string GroupName { get; set; }
 
         public int GroupOrder { get; set; }
 
-        public int GroupTypeId { get; set; }
+        public string GroupTypeIdKey { get; set; }
 
         public int? GroupCapacity { get; set; }
 

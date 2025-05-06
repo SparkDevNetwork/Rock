@@ -23,10 +23,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
     public class DetachGroupBag
     {
-        public int GroupId { get; set; }
+        public string GroupIdKey { get; set; }
 
-        public int? RegistrationTemplatePlacementId { get; set; }
-
-        public int? RegistrationInstanceId { get; set; }
+        public GroupPlacementKeysBag GroupPlacementKeys { get; set; }
     }
 }

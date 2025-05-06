@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
     /// <summary>
@@ -22,10 +24,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
     /// </summary>
     public class PlacementGroupTypeBag
     {
-        public int? Id { get; set; }
+        public string IdKey { get; set; }
 
         public string Name { get; set; }
 
         public string IconCSSClass { get; set; }
+
+        public List<PlacementGroupTypeRoleBag> Roles { get; set; }
     }
 }

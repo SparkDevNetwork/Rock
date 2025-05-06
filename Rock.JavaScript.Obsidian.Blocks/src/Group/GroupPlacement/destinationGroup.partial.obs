@@ -1,14 +1,16 @@
 <template>
-    <Panel type="default" v-model="isGroupExpanded" :hasCollapse="true" :headerSecondaryActions="secondaryActions">
+    <Panel type="default" v-if="destinationGroup.groupIdKey" v-model="isGroupExpanded" :hasCollapse="true" :headerSecondaryActions="secondaryActions">
         <template #title>
             <div class="d-flex align-items-center gap-2">
                 {{ destinationGroup.groupName }}
                 <Badge :class="[capacityStatusClass]">{{ capacityText }}</Badge>
-                <span v-for="role in groupTypeRoles"
-                      :key="role.id"
-                      :class="['role-count', getRoleCountOverUnderCapacityClass(role.id)]">
-                    {{ pluralize(role.name ?? "") }}: {{ getRoleCount(role.id) }}
-                </span>
+                <template v-for="role in groupTypeRoles">
+                    <span v-if="role.idKey"
+                          :key="role.idKey"
+                          :class="['role-count', getRoleCountOverUnderCapacityClass(role.idKey)]">
+                        {{ pluralize(role.name ?? "") }}: {{ getRoleCount(role.idKey) }}
+                    </span>
+                </template>
             </div>
         </template>
         <template #headerActions v-if="isGenderHighlighting && !isGroupExpanded">
@@ -27,114 +29,150 @@
                                           :showCategoryLabel="false" />
             </div>
         </div>
-        <div v-for="role in groupTypeRoles" :key=role.id class="panel-inline">
-            <div class="panel-heading">
-                <h1 class="panel-title d-inline-block mr-2">
-                    {{ pluralize(role.name ?? "") }}
-                </h1>
-                <span :class="['role-count', getRoleCountOverUnderCapacityClass(role.id)]"
-                      :ref="(el) => addTooltip(el as Element)"
-                      data-toggle="tooltip"
-                      :data-html="true"
-                      :data-original-title="getRoleCountTooltipText(role.id)">
-                    {{ getRoleSubHeaderText(role.id) }}
-                </span>
-            </div>
-            <NotificationBox v-if="getGroupRoleError(destinationGroup.groupId, role.id)"
-                             alertType="danger"
-                             class="m-3"
-                             :dismissible="true"
-                             @dismiss="clearGroupRoleError(destinationGroup.groupId, role.id)">
-                {{ getGroupRoleError(destinationGroup.groupId, role.id) }}
-            </NotificationBox>
-            <template v-if="isGenderHighlighting">
-                <div class="group-role-wrapper"
-                     v-drag-target="dragTargetId"
-                     :data-group-section-id="`${destinationGroup.groupId}:${role.id}`">
-                    <template v-if="getGroupMembersFilteredByRole(role.id).length">
-                        <div class="gender-section">
-                            <div v-if="getGroupMembersFilteredByRoleAndGender(role.id, Gender.Male).length > 0">
-                                <HighlightLabel customClass="gender-highlight-label male-label" labelType="custom">
-                                    Males ({{ getGroupMembersFilteredByRoleAndGender(role.id, Gender.Male).length }})
-                                </HighlightLabel>
-                                <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
-                                    <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.id, Gender.Male)">
-                                        <PersonCard v-if="groupMember.person"
-                                                    :key="index"
-                                                    :isCardExpanded="arePersonCardsExpanded"
-                                                    :person="groupMember.person"
-                                                    :index="index"
-                                                    :isDetailHoverDisabled="true"
-                                                    :data-group-id="destinationGroup.groupId"
-                                                    :data-group-member-id="groupMember.groupMemberId"
-                                                    :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
-                                                    :isGenderHighlighting="isGenderHighlighting"
-                                                    :isInstanceDisplayed="isInstanceDisplayed"
-                                                    :groupMemberAttributes="groupMember.attributes"
-                                                    :groupMemberAttributeValues="groupMember.attributeValues"
-                                                    :isGroupMemberCard="true"
-                                                    :groupMemberId="groupMember.groupMemberId"
-                                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
-                                                    @editGroupMember="editGroupMember"
-                                                    @removeGroupMember="removeGroupMember" />
-                                    </template>
+        <template v-for="role in groupTypeRoles">
+            <div v-if="role.idKey" :key=role.idKey class="panel-inline">
+                <div class="panel-heading">
+                    <h1 class="panel-title d-inline-block mr-2">
+                        {{ pluralize(role.name ?? "") }}
+                    </h1>
+                    <span :class="['role-count', getRoleCountOverUnderCapacityClass(role.idKey)]"
+                          :ref="(el) => addTooltip(el as Element)"
+                          data-toggle="tooltip"
+                          :data-html="true"
+                          :data-original-title="getRoleCountTooltipText(role.idKey)">
+                        {{ getRoleSubHeaderText(role.idKey) }}
+                    </span>
+                </div>
+                <NotificationBox v-if="getGroupRoleError(destinationGroup.groupIdKey, role.idKey)"
+                                 alertType="danger"
+                                 class="m-3"
+                                 :dismissible="true"
+                                 @dismiss="clearGroupRoleError(destinationGroup.groupIdKey, role.idKey)">
+                    {{ getGroupRoleError(destinationGroup.groupIdKey, role.idKey) }}
+                </NotificationBox>
+                <template v-if="isGenderHighlighting">
+                    <div class="group-role-wrapper"
+                         v-drag-target="dragTargetId"
+                         :data-group-section-id="`${destinationGroup.groupIdKey}|${role.idKey}`">
+                        <template v-if="getGroupMembersFilteredByRole(role.idKey).length">
+                            <div class="gender-section">
+                                <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Male).length > 0">
+                                    <HighlightLabel customClass="gender-highlight-label male-label" labelType="custom">
+                                        Males ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Male).length }})
+                                    </HighlightLabel>
+                                    <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
+                                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Male)">
+                                            <PersonCard v-if="groupMember.person"
+                                                        :key="index"
+                                                        :isCardExpanded="arePersonCardsExpanded"
+                                                        :person="groupMember.person"
+                                                        :index="index"
+                                                        :isDetailHoverDisabled="true"
+                                                        :data-group-id-key="destinationGroup.groupIdKey"
+                                                        :data-group-member-id-key="groupMember.groupMemberIdKey"
+                                                        :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                                        :isGenderHighlighting="isGenderHighlighting"
+                                                        :isInstanceDisplayed="isInstanceDisplayed"
+                                                        :groupMemberAttributes="groupMember.attributes"
+                                                        :groupMemberAttributeValues="groupMember.attributeValues"
+                                                        :isGroupMemberCard="true"
+                                                        :groupMemberIdKey="groupMember.groupMemberIdKey"
+                                                        :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                                                        @editGroupMember="editGroupMember"
+                                                        @removeGroupMember="removeGroupMember" />
+                                        </template>
+                                    </div>
+                                </div>
+                                <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Female).length > 0">
+                                    <HighlightLabel customClass="gender-highlight-label female-label" labelType="custom">
+                                        Females ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Female).length }})
+                                    </HighlightLabel>
+                                    <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
+                                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Female)">
+                                            <PersonCard v-if="groupMember.person"
+                                                        :key="index"
+                                                        :isCardExpanded="arePersonCardsExpanded"
+                                                        :person="groupMember.person"
+                                                        :index="index"
+                                                        :isDetailHoverDisabled="true"
+                                                        :data-group-id-key="destinationGroup.groupIdKey"
+                                                        :data-group-member-id-key="groupMember.groupMemberIdKey"
+                                                        :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                                        :isGenderHighlighting="isGenderHighlighting"
+                                                        :isInstanceDisplayed="isInstanceDisplayed"
+                                                        :groupMemberAttributes="groupMember.attributes"
+                                                        :groupMemberAttributeValues="groupMember.attributeValues"
+                                                        :isGroupMemberCard="true"
+                                                        :groupMemberIdKey="groupMember.groupMemberIdKey"
+                                                        :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                                                        @editGroupMember="editGroupMember"
+                                                        @removeGroupMember="removeGroupMember" />
+                                        </template>
+                                    </div>
+                                </div>
+                                <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Unknown).length > 0">
+                                    <HighlightLabel customClass="gender-highlight-label unknown-label" labelType="custom">
+                                        Unknown ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Unknown).length }})
+                                    </HighlightLabel>
+                                    <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
+                                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Unknown)">
+                                            <PersonCard v-if="groupMember.person"
+                                                        :key="index"
+                                                        :isCardExpanded="arePersonCardsExpanded"
+                                                        :person="groupMember.person"
+                                                        :index="index"
+                                                        :isDetailHoverDisabled="true"
+                                                        :data-group-id-key="destinationGroup.groupIdKey"
+                                                        :data-group-member-id-key="groupMember.groupMemberIdKey"
+                                                        :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                                        :isGenderHighlighting="isGenderHighlighting"
+                                                        :isInstanceDisplayed="isInstanceDisplayed"
+                                                        :groupMemberAttributes="groupMember.attributes"
+                                                        :groupMemberAttributeValues="groupMember.attributeValues"
+                                                        :isGroupMemberCard="true"
+                                                        :groupMemberIdKey="groupMember.groupMemberIdKey"
+                                                        :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                                                        @editGroupMember="editGroupMember"
+                                                        @removeGroupMember="removeGroupMember" />
+                                        </template>
+                                    </div>
                                 </div>
                             </div>
-                            <div v-if="getGroupMembersFilteredByRoleAndGender(role.id, Gender.Female).length > 0">
-                                <HighlightLabel customClass="gender-highlight-label female-label" labelType="custom">
-                                    Females ({{ getGroupMembersFilteredByRoleAndGender(role.id, Gender.Female).length }})
-                                </HighlightLabel>
-                                <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
-                                    <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.id, Gender.Female)">
-                                        <PersonCard v-if="groupMember.person"
-                                                    :key="index"
-                                                    :isCardExpanded="arePersonCardsExpanded"
-                                                    :person="groupMember.person"
-                                                    :index="index"
-                                                    :isDetailHoverDisabled="true"
-                                                    :data-group-id="destinationGroup.groupId"
-                                                    :data-group-member-id="groupMember.groupMemberId"
-                                                    :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
-                                                    :isGenderHighlighting="isGenderHighlighting"
-                                                    :isInstanceDisplayed="isInstanceDisplayed"
-                                                    :groupMemberAttributes="groupMember.attributes"
-                                                    :groupMemberAttributeValues="groupMember.attributeValues"
-                                                    :isGroupMemberCard="true"
-                                                    :groupMemberId="groupMember.groupMemberId"
-                                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
-                                                    @editGroupMember="editGroupMember"
-                                                    @removeGroupMember="removeGroupMember" />
-                                    </template>
-                                </div>
-                            </div>
-                            <div v-if="getGroupMembersFilteredByRoleAndGender(role.id, Gender.Unknown).length > 0">
-                                <HighlightLabel customClass="gender-highlight-label unknown-label" labelType="custom">
-                                    Unknown ({{ getGroupMembersFilteredByRoleAndGender(role.id, Gender.Unknown).length }})
-                                </HighlightLabel>
-                                <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
-                                    <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.id, Gender.Unknown)">
-                                        <PersonCard v-if="groupMember.person"
-                                                    :key="index"
-                                                    :isCardExpanded="arePersonCardsExpanded"
-                                                    :person="groupMember.person"
-                                                    :index="index"
-                                                    :isDetailHoverDisabled="true"
-                                                    :data-group-id="destinationGroup.groupId"
-                                                    :data-group-member-id="groupMember.groupMemberId"
-                                                    :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
-                                                    :isGenderHighlighting="isGenderHighlighting"
-                                                    :isInstanceDisplayed="isInstanceDisplayed"
-                                                    :groupMemberAttributes="groupMember.attributes"
-                                                    :groupMemberAttributeValues="groupMember.attributeValues"
-                                                    :isGroupMemberCard="true"
-                                                    :groupMemberId="groupMember.groupMemberId"
-                                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
-                                                    @editGroupMember="editGroupMember"
-                                                    @removeGroupMember="removeGroupMember" />
-                                    </template>
-                                </div>
-                            </div>
+                        </template>
+                        <div v-else-if="arePeopleLoading" class="loading-section">
+                            <Loading :isLoading="arePeopleLoading" />
                         </div>
+                        <div v-else class="empty-drop-zone">
+                            Drag and Drop Here
+                        </div>
+                    </div>
+                </template>
+                <div v-else
+                     class="group-role-wrapper"
+                     v-drag-target="dragTargetId"
+                     :data-group-section-id="`${destinationGroup.groupIdKey}|${role.idKey}`"
+                     v-drag-source="groupMemberDragOptions">
+                    <template v-if="getGroupMembersFilteredByRole(role.idKey).length">
+                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRole(role.idKey)">
+                            <PersonCard v-if="groupMember.person"
+                                        :key="index"
+                                        :isCardExpanded="arePersonCardsExpanded"
+                                        :person="groupMember.person"
+                                        :index="index"
+                                        :isDetailHoverDisabled="true"
+                                        :data-group-id-key="destinationGroup.groupIdKey"
+                                        :data-group-member-id-key="groupMember.groupMemberIdKey"
+                                        :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                        :isGenderHighlighting="isGenderHighlighting"
+                                        :isInstanceDisplayed="isInstanceDisplayed"
+                                        :groupMemberAttributes="groupMember.attributes"
+                                        :groupMemberAttributeValues="groupMember.attributeValues"
+                                        :isGroupMemberCard="true"
+                                        :groupMemberIdKey="groupMember.groupMemberIdKey"
+                                        :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                                        @editGroupMember="editGroupMember"
+                                        @removeGroupMember="removeGroupMember" />
+                        </template>
                     </template>
                     <div v-else-if="arePeopleLoading" class="loading-section">
                         <Loading :isLoading="arePeopleLoading" />
@@ -143,42 +181,8 @@
                         Drag and Drop Here
                     </div>
                 </div>
-            </template>
-            <div v-else
-                 class="group-role-wrapper"
-                 v-drag-target="dragTargetId"
-                 :data-group-section-id="`${destinationGroup.groupId}:${role.id}`"
-                 v-drag-source="groupMemberDragOptions">
-                <template v-if="getGroupMembersFilteredByRole(role.id).length">
-                    <template v-for="(groupMember, index) in getGroupMembersFilteredByRole(role.id)">
-                        <PersonCard v-if="groupMember.person"
-                                    :key="index"
-                                    :isCardExpanded="arePersonCardsExpanded"
-                                    :person="groupMember.person"
-                                    :index="index"
-                                    :isDetailHoverDisabled="true"
-                                    :data-group-id="destinationGroup.groupId"
-                                    :data-group-member-id="groupMember.groupMemberId"
-                                    :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
-                                    :isGenderHighlighting="isGenderHighlighting"
-                                    :isInstanceDisplayed="isInstanceDisplayed"
-                                    :groupMemberAttributes="groupMember.attributes"
-                                    :groupMemberAttributeValues="groupMember.attributeValues"
-                                    :isGroupMemberCard="true"
-                                    :groupMemberId="groupMember.groupMemberId"
-                                    :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
-                                    @editGroupMember="editGroupMember"
-                                    @removeGroupMember="removeGroupMember" />
-                    </template>
-                </template>
-                <div v-else-if="arePeopleLoading" class="loading-section">
-                    <Loading :isLoading="arePeopleLoading" />
-                </div>
-                <div v-else class="empty-drop-zone">
-                    Drag and Drop Here
-                </div>
             </div>
-        </div>
+        </template>
     </Panel>
 </template>
 
@@ -310,31 +314,31 @@
 .group-role-wrapper {
     display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 400px));
+    grid-template-columns: 1fr;
     padding: 16px;
 }
 
 @media (min-width: 1024px) {
     .group-role-wrapper {
-        grid-template-columns: repeat(2, minmax(300px, 400px));
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (min-width: 1440px) {
     .group-role-wrapper {
-        grid-template-columns: repeat(3, minmax(300px, 400px));
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
 @media (min-width: 1800px) {
     .group-role-wrapper {
-        grid-template-columns: repeat(4, minmax(300px, 400px));
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
 @media (min-width: 2000px) {
     .group-role-wrapper {
-        grid-template-columns: repeat(5, minmax(300px, 400px));
+        grid-template-columns: repeat(5, 1fr);
     }
 }
 </style>
@@ -386,11 +390,11 @@
             required: true
         },
         getGroupRoleError: {
-            type: Function as PropType<(groupId: number, roleId: number) => string | null>,
+            type: Function as PropType<(groupIdKey: string, roleIdKey: string) => string | null>,
             required: true
         },
         clearGroupRoleError: {
-            type: Function as PropType<(groupId: number, roleId: number) => void>,
+            type: Function as PropType<(groupIdKey: string, roleIdKey: string) => void>,
             required: true
         },
         currentSortOrder: {
@@ -419,11 +423,11 @@
 
     const emit = defineEmits<{
         (e: "update:isGroupExpanded", value: boolean): void;
-        (e: "editGroup", value: number): void;
-        (e: "detachGroup", value: number): void;
-        (e: "deleteGroup", value: number): void;
-        (e: "editGroupMember", value: number): void;
-        (e: "removeGroupMember", groupId: number, memberId: number): void;
+        (e: "editGroup", value: string): void;
+        (e: "detachGroup", value: string): void;
+        (e: "deleteGroup", value: string): void;
+        (e: "editGroupMember", value: string): void;
+        (e: "removeGroupMember", groupIdKey: string, memberId: string): void;
     }>();
 
     // const destinationGroup = ref<PlacementGroupBag>(props.destinationGroup);
@@ -525,16 +529,16 @@
         return actions;
     });
 
-    function getRoleCount(roleId: number): number {
-        return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleId === roleId).length ?? 0;
+    function getRoleCount(roleIdKey: string): number {
+        return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleIdKey === roleIdKey).length ?? 0;
     }
 
     // Low Priority TODO - there is a ux/ui issue when a panel is collapsed and the secondary actions dropdown is opened
-    function getRoleCountOverUnderCapacityClass(roleId: number): string {
-        const role = groupTypeRoles.value.find(r => r.id === roleId);
+    function getRoleCountOverUnderCapacityClass(roleIdKey: string): string {
+        const role = groupTypeRoles.value.find(r => r.idKey === roleIdKey);
         const roleMax = role?.maxCount;
         const roleMin = role?.minCount;
-        const count = getRoleCount(roleId);
+        const count = getRoleCount(roleIdKey);
 
         if (count == null) {
             return "";
@@ -546,21 +550,21 @@
         return (isOver || isUnder) ? "over-under-role-capacity" : "";
     }
 
-    function getRoleSubHeaderText(roleId: number): string {
-        const role = groupTypeRoles.value.find(r => r.id === roleId);
-        return role?.maxCount ? `${getRoleCount(roleId)}/${role.maxCount}` : `${getRoleCount(roleId)}`;
+    function getRoleSubHeaderText(roleIdKey: string): string {
+        const role = groupTypeRoles.value.find(r => r.idKey === roleIdKey);
+        return role?.maxCount ? `${getRoleCount(roleIdKey)}/${role.maxCount}` : `${getRoleCount(roleIdKey)}`;
     }
 
-    function getGroupMembersFilteredByRole(roleId: number): GroupMemberBag[] {
-        return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleId === roleId) ?? [];
+    function getGroupMembersFilteredByRole(roleIdKey: string): GroupMemberBag[] {
+        return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleIdKey === roleIdKey) ?? [];
     }
 
-    function getGroupMembersFilteredByRoleAndGender(roleId: number, gender: Gender): GroupMemberBag[] {
-        return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleId === roleId && gm.person?.gender === gender) ?? [];
+    function getGroupMembersFilteredByRoleAndGender(roleIdKey: string, gender: Gender): GroupMemberBag[] {
+        return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleIdKey === roleIdKey && gm.person?.gender === gender) ?? [];
     }
 
-    function getRoleCountTooltipText(roleId: number): string {
-        const role = groupTypeRoles.value.find(r => r.id === roleId);
+    function getRoleCountTooltipText(roleIdKey: string): string {
+        const role = groupTypeRoles.value.find(r => r.idKey === roleIdKey);
         if (!role) {
             return "";
         }
@@ -578,24 +582,26 @@
         return parts.join("<br>");
     }
 
-    function editGroupMember(groupMemberId: number): void {
-        emit("editGroupMember", groupMemberId);
+    function editGroupMember(groupMemberIdKey: string): void {
+        emit("editGroupMember", groupMemberIdKey);
     }
 
-    function removeGroupMember(groupMemberId: number) {
-        emit("removeGroupMember", props.destinationGroup.groupId, groupMemberId);
+    // TODO - Verify that bangs are valid.
+
+    function removeGroupMember(groupMemberIdKey: string) {
+        emit("removeGroupMember", props.destinationGroup.groupIdKey!, groupMemberIdKey);
     }
 
     function editGroup(): void {
-        emit("editGroup", props.destinationGroup.groupId);
+        emit("editGroup", props.destinationGroup.groupIdKey!);
     }
 
     function detachGroup(): void {
-        emit("detachGroup", props.destinationGroup.groupId);
+        emit("detachGroup", props.destinationGroup.groupIdKey!);
     }
 
     function deleteGroup(): void {
-        emit("deleteGroup", props.destinationGroup.groupId);
+        emit("deleteGroup", props.destinationGroup.groupIdKey!);
     }
 
     function addTooltip(element: Element | null): void {

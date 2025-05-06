@@ -22,12 +22,11 @@
 //
 
 import { AttributeFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/attributeFiltersBag";
+import { GroupPlacementKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementKeysBag";
 import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
 import { PlacementBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementBag";
 import { PlacementConfigurationSettingOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingOptionsBag";
-import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
 import { PlacementGroupTypeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupTypeBag";
-import { PlacementGroupTypeRoleBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupTypeRoleBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** The SMS Conversations Initialization Box */
@@ -41,6 +40,8 @@ export type GroupPlacementInitializationBox = {
 
     groupAttributes?: Record<string, PublicAttributeBag> | null;
 
+    groupPlacementKeys?: GroupPlacementKeysBag | null;
+
     inTemplateMode: boolean;
 
     isPlacementAllowingMultiple: boolean;
@@ -48,25 +49,13 @@ export type GroupPlacementInitializationBox = {
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 
-    peopleToPlace?: PersonBag[] | null;
-
     placementConfigurationSettingOptions?: PlacementConfigurationSettingOptionsBag | null;
-
-    placementGroups?: PlacementGroupBag[] | null;
 
     placementGroupType?: PlacementGroupTypeBag | null;
 
-    placementGroupTypeRoles?: PlacementGroupTypeRoleBag[] | null;
-
-    registrantId?: number | null;
-
-    registrationInstanceId?: number | null;
-
-    registrationTemplateId?: number | null;
-
-    registrationTemplatePlacementId?: number | null;
-
     selectedPlacement?: PlacementBag | null;
+
+    sourcePerson?: PersonBag | null;
 
     title?: string | null;
 };

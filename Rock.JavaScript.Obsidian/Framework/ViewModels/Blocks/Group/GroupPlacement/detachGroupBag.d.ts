@@ -21,10 +21,10 @@
 // </copyright>
 //
 
+import { GroupPlacementKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementKeysBag";
+
 export type DetachGroupBag = {
-    groupId: number;
+    groupIdKey?: string | null;
 
-    registrationInstanceId?: number | null;
-
-    registrationTemplatePlacementId?: number | null;
+    groupPlacementKeys?: GroupPlacementKeysBag | null;
 };

@@ -32,7 +32,7 @@ export type PlacementGroupBag = {
 
     groupCapacity?: number | null;
 
-    groupId: number;
+    groupIdKey?: string | null;
 
     groupMembers?: GroupMemberBag[] | null;
 
@@ -40,7 +40,7 @@ export type PlacementGroupBag = {
 
     groupOrder: number;
 
-    groupTypeId: number;
+    groupTypeIdKey?: string | null;
 
     isShared: boolean;
 };

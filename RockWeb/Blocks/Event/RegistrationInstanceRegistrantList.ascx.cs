@@ -944,6 +944,8 @@ namespace RockWeb.Blocks.Event
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "RegistrationTemplatePlacementId", registrationTemplatePlacement.Id.ToString() );
                 queryParams.Add( "RegistrationInstanceId", this.RegistrationInstanceId.ToString() );
+                queryParams.Add( "SourcePerson", registrant.PersonAlias.PersonId.ToString() );
+                queryParams.Add( "ReturnUrl", GetCurrentPageUrl() );
 
                 /* NOTE: MDP - 2020-02-12
                   We could add RegistrantId has a parameter, but decided not to do this (yet).
