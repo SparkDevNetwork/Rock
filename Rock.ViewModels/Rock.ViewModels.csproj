@@ -115,6 +115,12 @@
     <Compile Include="Blocks\Cms\ContentChannelTypeList\ContentChannelTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelTypeDetail\ContentChannelTypeBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelTypeDetail\ContentChannelTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LavaApplicationDetail\LavaApplicationBag.cs" />
+    <Compile Include="Blocks\Cms\LavaApplicationDetail\LavaApplicationDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LavaApplicationList\LavaApplicationListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LavaEndpointDetail\LavaEndpointBag.cs" />
+    <Compile Include="Blocks\Cms\LavaEndpointDetail\LavaEndpointDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LavaEndpointList\LavaEndpointListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\LavaShortcodeList\LavaShortcodeListBox.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaElementDetail\MediaElementBag.cs" />

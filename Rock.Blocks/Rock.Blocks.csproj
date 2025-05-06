@@ -115,6 +115,11 @@
     <Compile Include="Cms\ContentChannelList.cs" />
     <Compile Include="Cms\ContentChannelTypeList.cs" />
     <Compile Include="Cms\ContentChannelTypeDetail.cs" />
+    <Compile Include="Cms\LavaApplicationContent.cs" />
+    <Compile Include="Cms\LavaApplicationDetail.cs" />
+    <Compile Include="Cms\LavaApplicationList.cs" />
+    <Compile Include="Cms\LavaEndpointDetail.cs" />
+    <Compile Include="Cms\LavaEndpointList.cs" />
     <Compile Include="Cms\LavaShortcodeList.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaElementDetail.cs" />
