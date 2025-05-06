@@ -333,7 +333,7 @@
     import { areEqual, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { destroyTooltip, showTooltip } from "@Obsidian/Utility/tooltip";
-    import { createEmailSection, createStarterSections, deleteEmailSection, getAllEmailSections } from "./api";
+    import { useApi } from "./api";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
 
     // #region Types
@@ -467,6 +467,8 @@
     // #endregion Constants
 
     // #region Values
+
+    const api = useApi();
 
     const selectedSidePanelMenuItem = ref<SidePanelMenuItemType>("blocks");
     const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
@@ -674,7 +676,7 @@
     }
 
     async function loadEmailSections(): Promise<void> {
-        const result = await getAllEmailSections();
+        const result = await api.getAllEmailSections();
 
         if (result.isSuccess && result.data) {
             emailSections.value = result.data;
@@ -884,7 +886,7 @@
             sourceMarkup: emailSection.sourceMarkup?.replace(emailSection.guid, guid)
         };
 
-        const result = await createEmailSection(bag);
+        const result = await api.createEmailSection(bag);
 
         if (result?.isSuccess && result.data) {
             addEmailSectionToList(result.data, { after: emailSection });
@@ -913,7 +915,7 @@
                 emailSectionGuid: emailSectionToDelete.value.guid
             };
 
-            const result = await deleteEmailSection(bag);
+            const result = await api.deleteEmailSection(bag);
 
             if (result?.isSuccess) {
                 removeEmailSectionFromList(emailSectionToDelete.value);
@@ -996,7 +998,7 @@
                     // Generate starter sections.
                     const document = props.emailDocument ?? props.selectedComponentElement?.ownerDocument;
                     if (document) {
-                        const result = await createStarterSections(document);
+                        const result = await api.createStarterSections(document);
                         if (result.isSuccess && result.data) {
                             result.data.forEach(emailSection => {
                                 addEmailSectionToList(emailSection);

@@ -18,8 +18,7 @@
 namespace Rock.Security.SecurityGrantRules
 {
     /// <summary>
-    /// Grants permission to a specific entity given its entity type identifier
-    /// and its entity identifier.
+    /// Grants permission to use the Obsidian Asset Manager.
     /// </summary>
     /// <seealso cref="Rock.Security.SecurityGrantRule" />
     [Rock.SystemGuid.SecurityGrantRuleGuid( "6fc5fe64-e913-4d73-8047-a0d7a3a800d1" )]

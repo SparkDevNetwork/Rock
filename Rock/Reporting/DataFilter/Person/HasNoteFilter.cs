@@ -122,7 +122,10 @@ namespace Rock.Reporting.DataFilter.Person
                 selectionConfig.NumberOfTimeUnits = dateRangeValues[1].AsIntegerOrNull();
 
                 // DateRange index 2 is the time unit
-                selectionConfig.TimeUnit = dateRangeValues[2].ConvertToEnum<TimeUnitType>();
+                if ( dateRangeValues[2].IsNotNullOrWhiteSpace() )
+                {
+                    selectionConfig.TimeUnit = dateRangeValues[2].ConvertToEnum<TimeUnitType>();
+                }
 
                 // DateRange index 3 is the start date
                 selectionConfig.StartDate = dateRangeValues[3].AsDateTime();
@@ -133,21 +136,14 @@ namespace Rock.Reporting.DataFilter.Person
                     selectionConfig.EndDate = dateRangeValues[4].AsDateTime();
                 }
             }
-            else if ( dateRangeValues.Any() )
+            else
             {
-                // Try to get a DateRange from what we have
-                selectionConfig.DateRangeMode = SlidingDateRangeType.DateRange;
-                selectionConfig.StartDate = dateRangeValues[0].AsDateTime();
-
-                if ( dateRangeValues.Count() > 1 )
-                {
-                    selectionConfig.EndDate = dateRangeValues[1].AsDateTime();
-                    if ( selectionConfig.EndDate.HasValue )
-                    {
-                        // This value would have been from the DatePicker which does not automatically add a day.
-                        selectionConfig.EndDate.Value.AddDays( 1 );
-                    }
-                }
+                // Default
+                selectionConfig.StartDate = null;
+                selectionConfig.EndDate = null;
+                selectionConfig.DateRangeMode = SlidingDateRangeType.All;
+                selectionConfig.TimeUnit = TimeUnitType.Hour;
+                selectionConfig.NumberOfTimeUnits = 1;
             }
 
             return selectionConfig.ToJson();

@@ -784,6 +784,7 @@
     <Compile Include="Core\EntitySearch\IdKeyExpressionVisitor.cs" />
     <Compile Include="Communication\Chat\ChatConfiguration.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171PopulateAttendanceRootGroupType.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV18UpdateCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171UpdateCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171AddCommunicationRecipientIndex.cs" />
     <Compile Include="Model\CRM\UserLogin\UpdateLastLoginArgs.cs" />
@@ -1808,7 +1809,9 @@
     <Compile Include="Plugin\HotFixes\234_MigrationRollupsForV16_10_1.cs" />
     <Compile Include="Plugin\HotFixes\233_UpdateAppleDeviceList.cs" />
     <Compile Include="Plugin\HotFixes\232_UpdateContentFileTypeBlacklist.cs" />
+    <Compile Include="Plugin\HotFixes\244_MigrationRollupsForV17_1_1.cs" />
     <Compile Include="Plugin\HotFixes\243_AddDefaultAllowedGroupTypesToMobileGroupRegistration.cs" />
+    <Compile Include="Plugin\HotFixes\245_UpdateMergeFieldAttributeDescription.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1907,6 +1910,8 @@
     <Compile Include="Security\HistoryLoginRelatedData.cs" />
     <Compile Include="Security\SecurityGrantRules\AddDefinedValueToTypeGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
+    <Compile Include="Security\SecurityGrantRules\ConnectionRequestPickerSecurityGrantRule.cs" />
+    <Compile Include="Security\SecurityGrantRules\EmailEditorSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
     <Compile Include="SystemGuid\EmailSection.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />

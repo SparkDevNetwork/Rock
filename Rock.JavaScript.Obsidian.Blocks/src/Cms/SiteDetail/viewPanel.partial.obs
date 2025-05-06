@@ -78,11 +78,17 @@
         }
 
         if (props.modelValue.siteDomains) {
-            valueBuilder.addTextValue("Domains", props.modelValue.siteDomains);
+            const formattedDomains = props.modelValue.siteDomains.split(/\s+/).join(", ");
+            valueBuilder.addTextValue("Domain(s)", formattedDomains);
         }
 
         if (props.modelValue.theme) {
             valueBuilder.addTextValue("Theme", props.modelValue.theme);
+        }
+
+        if (props.modelValue.defaultPageRoute || props.modelValue.defaultPage) {
+            const pageText = props.modelValue.defaultPageRoute?.text || props.modelValue.defaultPage?.text || "";
+            valueBuilder.addTextValue("Default Page", pageText);
         }
 
         return valueBuilder.build();

@@ -13,33 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
-namespace Rock.Enums.Blocks.Communication.CommunicationEntryWizard
+namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// Type of communication
+    /// Bag containing the information needed to get all Email Sections from the Email Editor control.
     /// </summary>
-    public enum CommunicationType
+    public class EmailEditorGetAllEmailSectionsOptionsBag
     {
         /// <summary>
-        /// Recipient Preference
+        /// Gets or sets the security grant token to use when performing
+        /// authorization checks.
         /// </summary>
-        RecipientPreference = 0,
-
-        /// <summary>
-        /// Email
-        /// </summary>
-        Email = 1,
-
-        /// <summary>
-        /// SMS
-        /// </summary>
-        SMS = 2,
-
-        /// <summary>
-        /// Push Notification
-        /// </summary>
-        PushNotification = 3
+        /// <value>The security grant token.</value>
+        public string SecurityGrantToken { get; set; }
     }
 }

@@ -33,6 +33,11 @@ namespace Rock.Model
 
         #region Public Methods
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="slug"></param>
+        /// <returns></returns>
         public string GetUniqueSlug( string slug )
         {
             return GetUniqueSlugInternal( slug, ( candidateSlug ) =>
@@ -40,6 +45,12 @@ namespace Rock.Model
             );
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="slug"></param>
+        /// <param name="workflowTypeId"></param>
+        /// <returns></returns>
         public string GetUniqueSlug( string slug, int workflowTypeId )
         {
             return GetUniqueSlugInternal( slug, ( candidateSlug ) =>
@@ -84,6 +95,7 @@ namespace Rock.Model
             return candidateSlug;
         }
 
+#pragma warning disable CS1570 // XML comment has badly formed XML
         /// <summary>
         /// Normalizes and sanitizes a slug string to ensure it conforms to URL-safe and Rock RMS-friendly standards.
         /// </summary>
@@ -104,6 +116,7 @@ namespace Rock.Model
         ///   <item><description>Ensures the final slug is within length constraints and does not end with a hyphen.</description></item>
         /// </list>
         /// </remarks>
+#pragma warning restore CS1570 // XML comment has badly formed XML
         private static string MakeSlugValid( string slug )
         {
             slug = slug

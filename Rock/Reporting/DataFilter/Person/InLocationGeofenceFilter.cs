@@ -79,6 +79,13 @@ namespace Rock.Reporting.DataFilter.Person
             var data = new Dictionary<string, string>();
             string[] selectionValues = selection.Split( '|' );
 
+            var locationTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
+                .DefinedValues
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Value );
+
+            data.AddOrReplace( "locationTypeOptions", locationTypes.ToListItemBagList().ToCamelCaseJson( false, true ) );
+
             if ( selectionValues.Length >= 2 )
             {
                 var selectedLocation = new LocationService( rockContext ).Get( selectionValues[0].AsGuid() );
@@ -97,14 +104,9 @@ namespace Rock.Reporting.DataFilter.Person
                 }
 
                 var selectedLocationTypeId = selectionValues[1].AsIntegerOrNull();
-                var locationTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
-                    .DefinedValues
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Value );
 
                 var locationType = locationTypes.Where( lt => lt.Id == selectedLocationTypeId ).FirstOrDefault();
 
-                data.AddOrReplace( "locationTypeOptions", locationTypes.ToListItemBagList().ToCamelCaseJson( false, true ) );
                 data.AddOrReplace( "locationTypeGuid", locationType?.Guid.ToString() );
             }
 

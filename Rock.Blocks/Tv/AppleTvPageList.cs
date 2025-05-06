@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -33,15 +34,16 @@ namespace Rock.Blocks.Tv
     /// <summary>
     /// Displays a list of pages.
     /// </summary>
-    [DisplayName( "Apple TV Page List" )]
+    [DisplayName( "Apple TV Page List (Obsolete)" )]
     [Category( "TV > TV Apps" )]
     [Description( "Lists pages for TV apps (Apple or other)." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
-
+    [SupportedSiteTypes( Model.SiteType.Web )]
+    [RockObsolete( "17.1" )]
+    [Obsolete( "This block type has been replaced by the TvPageList block." )]
     [LinkedPage( "Detail Page",
         Description = "The page that will show the page details.",
-        Key = AttributeKey.DetailPage )]
+        Key = AttributeKey.PageDetail )]
 
     [SystemGuid.EntityTypeGuid( "4e89a96e-88a2-4ca4-a86b-b9ffdcacf49f" )]
     [SystemGuid.BlockTypeGuid( "a759218b-1c72-446c-8994-8559ba72941e" )]
@@ -52,7 +54,7 @@ namespace Rock.Blocks.Tv
 
         private static class AttributeKey
         {
-            public const string DetailPage = "DetailPage";
+            public const string PageDetail = "PageDetail";
         }
 
         private static class NavigationUrlKey
@@ -119,7 +121,7 @@ namespace Rock.Blocks.Tv
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string>()
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.PageDetail, new Dictionary<string, string>()
                 {
                     { PageParameterKey.SitePageId, "((Key))" },
                     { PageParameterKey.SiteId, PageParameter( PageParameterKey.SiteId ) },

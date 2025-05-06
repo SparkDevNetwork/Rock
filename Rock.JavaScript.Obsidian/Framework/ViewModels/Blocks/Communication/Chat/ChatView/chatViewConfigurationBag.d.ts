@@ -32,6 +32,12 @@ export type ChatViewConfigurationBag = {
     /** Gets or sets the public API key for the chat service. */
     publicApiKey?: string | null;
 
+    /** Gets or sets the selected channel ID. */
+    selectedChannelId?: string | null;
+
+    /** Gets or sets the selected message ID. */
+    selectedMessageId?: string | null;
+
     /** Gets or sets the key for the shared channel type. */
     sharedChannelTypeKey?: string | null;
 };

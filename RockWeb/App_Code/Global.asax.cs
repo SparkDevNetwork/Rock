@@ -123,7 +123,7 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Start( object sender, EventArgs e )
         {
-            RockApplicationStartupHelper.ShowDebugTimingMessage( "Application Start" );
+            RockApplicationStartupHelper.ShowDebugTimingMessage( $"Application Start: (App PID: {Rock.WebFarm.RockWebFarm.ProcessId}-{AppDomain.CurrentDomain.Id})" );
 
             Rock.Bus.RockMessageBus.IsRockStarted = false;
             QueueInUse = false;
@@ -191,7 +191,7 @@ namespace RockWeb
 
                 RockApplicationStartupHelper.ShowDebugTimingMessage( "Register Types" );
 
-                RockApplicationStartupHelper.LogStartupMessage( "Application Started Successfully" );
+                RockApplicationStartupHelper.LogStartupMessage( $"Application Started Successfully (App PID: {Rock.WebFarm.RockWebFarm.ProcessId}-{AppDomain.CurrentDomain.Id})" );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} ms] Total Startup Time", ( RockDateTime.Now - RockApp.Current.HostingSettings.ApplicationStartDateTime ).TotalMilliseconds ) );
@@ -731,9 +731,10 @@ namespace RockWeb
                 }
 
                 // Send debug info to debug window
-                System.Diagnostics.Debug.WriteLine( string.Format( "shutdownReason:{0}", shutdownReason ) );
+                System.Diagnostics.Debug.WriteLine( string.Format( "shutdownReason: {0}", shutdownReason ) );
 
-                var shutdownMessage = string.Format( "Application Ended: {0} (Process ID: {1})", shutdownReason, Rock.WebFarm.RockWebFarm.ProcessId );
+                var shutdownMessage = $"Application Ended: {shutdownReason} (App PID: {Rock.WebFarm.RockWebFarm.ProcessId}-{AppDomain.CurrentDomain.Id})";
+                RockApplicationStartupHelper.ShowDebugTimingMessage( shutdownMessage );
                 RockApplicationStartupHelper.LogShutdownMessage( shutdownMessage );
 
                 // Close out jobs infrastructure if running under IIS

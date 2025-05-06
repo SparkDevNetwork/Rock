@@ -393,11 +393,22 @@ namespace Rock.Web.Cache
             Remove( id.ToString() );
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="slug"></param>
+        /// <returns></returns>
         public static WorkflowTypeCache GetBySlug( string slug )
         {
             return GetBySlug( slug, null );
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="slug"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
         public static WorkflowTypeCache GetBySlug( string slug, RockContext rockContext )
         {
             return All().FirstOrDefault( workflowType => workflowType.Slug == slug );
