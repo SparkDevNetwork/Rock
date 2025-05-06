@@ -98,7 +98,11 @@ namespace Rock.Reporting.DataFilter.Person
                 fieldFilterSourcesByStepType.AddOrReplace( stepType.Guid, new List<FieldFilterSourceBag>() );
             }
 
-            var attributes = AttributeCache.AllForEntityType<Rock.Model.Step>().Where( a => a.IsActive ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            var attributes = AttributeCache.AllForEntityType<Rock.Model.Step>()
+                .Where( a => a.IsActive )
+                .Where( a => a.FieldType.Field.HasFilterControl() )
+                .OrderBy( a => a.Order ).ThenBy( a => a.Name )
+                .ToList();
             var allEntityFields = new List<EntityField>();
             EntityHelper.AddEntityFieldsForAttributeList( allEntityFields, attributes );
 
