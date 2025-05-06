@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,7 +26,12 @@ using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Enums.Reporting;
+using Rock.Field;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -38,7 +43,7 @@ namespace Rock.Reporting.DataFilter.Group
     [Description( "Filter group on its attribute values" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Attributes Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "0F4D0B55-EC26-43D5-91CE-D7162ABCDCE6")]
+    [Rock.SystemGuid.EntityTypeGuid( "0F4D0B55-EC26-43D5-91CE-D7162ABCDCE6" )]
     public class GroupAttributesFilter : EntityFieldFilter
     {
         #region Properties
@@ -63,6 +68,158 @@ namespace Rock.Reporting.DataFilter.Group
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Group/groupAttributesFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+
+            var groupTypeService = new GroupTypeService( rockContext );
+
+            var groupTypes = groupTypeService.Queryable().OrderBy( a => a.Name ).ToList();
+
+            var groupTypeGuidsById = new Dictionary<int, Guid>();
+            var fieldFilterSourcesByGroupType = new Dictionary<Guid, List<FieldFilterSourceBag>>();
+
+            // Prime the dictionary with empty lists to make it easier to add the entity fields
+            foreach ( var groupType in groupTypes )
+            {
+                groupTypeGuidsById.Add( groupType.Id, groupType.Guid );
+                fieldFilterSourcesByGroupType.AddOrReplace( groupType.Guid, new List<FieldFilterSourceBag>() );
+            }
+
+            var attributes = AttributeCache.AllForEntityType<Rock.Model.Group>()
+                .Where( a => a.IsActive )
+                .Where( a => a.FieldType.Field.HasFilterControl() )
+                .OrderBy( a => a.Order ).ThenBy( a => a.Name )
+                .ToList();
+            var allEntityFields = new List<EntityField>();
+            EntityHelper.AddEntityFieldsForAttributeList( allEntityFields, attributes );
+
+            // Go through all the entity fields and add them to the dictionary based on content channel type indicated by their entity type qualifier
+            foreach ( var attribute in attributes )
+            {
+                Guid groupTypeGuid = Guid.Empty;
+
+                if ( attribute.EntityTypeQualifierColumn == "GroupTypeId" )
+                {
+                    groupTypeGuid = groupTypeGuidsById.GetValueOrDefault( attribute.EntityTypeQualifierValue.AsInteger(), Guid.Empty );
+                }
+
+                var fieldType = attribute.FieldType;
+
+                var source = new FieldFilterSourceBag
+                {
+                    Guid = attribute.Guid,
+                    Type = FieldFilterSourceType.Attribute,
+                    Attribute = new PublicAttributeBag
+                    {
+                        AttributeGuid = attribute.Guid,
+                        ConfigurationValues = fieldType.Field.GetPublicConfigurationValues( attribute.ConfigurationValues, Field.ConfigurationValueUsage.Edit, null ),
+                        Description = attribute.Description,
+                        FieldTypeGuid = fieldType.Guid,
+                        Name = attribute.Name
+                    }
+                };
+
+                // Add to list for specific group type
+                if ( groupTypeGuid != Guid.Empty )
+                {
+                    fieldFilterSourcesByGroupType.GetValueOrNull( groupTypeGuid )?.Add( source );
+                }
+                // Add to each list, because it's global
+                else
+                {
+                    foreach ( var filterSourceList in fieldFilterSourcesByGroupType )
+                    {
+                        filterSourceList.Value.Add( source );
+                    }
+                }
+
+            }
+
+            data.AddOrReplace( "fieldFilterSources", fieldFilterSourcesByGroupType.ToCamelCaseJson( false, true ) );
+
+            if ( !string.IsNullOrWhiteSpace( selection ) || selection.IsNotNullOrWhiteSpace() )
+            {
+                var values = selection.FromJsonOrNull<List<string>>();
+                if ( values == null || values.Count == 0 )
+                {
+                    return data;
+                }
+
+                var groupType = groupTypeService.Get( values[0]?.AsGuid() ?? Guid.Empty );
+                data.AddOrReplace( "groupType", groupType?.ToListItemBag().ToCamelCaseJson( false, true ) ?? "" );
+
+                if ( values.Count > 1 )
+                {
+                    var entityField = allEntityFields.ToList().FindFromFilterSelection( values[1] );
+
+                    if ( entityField == null )
+                    {
+                        return data;
+                    }
+
+                    var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
+
+                    if ( values.Count == 3 )
+                    {
+                        var filterRule = FieldVisibilityRule.GetPublicRuleBag( attribute, 0, values[2] );
+
+                        data.AddOrReplace( "filterRule", filterRule.ToCamelCaseJson( false, true ) );
+                    }
+                    else if ( values.Count == 4 )
+                    {
+                        var filterRule = FieldVisibilityRule.GetPublicRuleBag( attribute, ( ComparisonType ) ( values[2].AsInteger() ), values[3] );
+
+                        data.AddOrReplace( "filterRule", filterRule.ToCamelCaseJson( false, true ) );
+                    }
+                }
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = new List<string>();
+
+            var groupType = data.GetValueOrNull( "groupType" )?.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
+            if ( groupType.IsNullOrWhiteSpace() )
+            {
+                return selectionValues.ToJson();
+            }
+            selectionValues.Add( groupType );
+
+            var filterRule = data.GetValueOrNull( "filterRule" ).FromJsonOrNull<FieldFilterRuleBag>();
+            if ( filterRule == null || filterRule.AttributeGuid == null )
+            {
+                return selectionValues.ToJson();
+            }
+
+            var attribute = AttributeCache.Get( filterRule.AttributeGuid.Value );
+            var entityField = EntityHelper.GetEntityFieldForAttribute( attribute );
+            var comparisonValue = new ComparisonValue
+            {
+                ComparisonType = filterRule.ComparisonType,
+                Value = filterRule.Value
+            };
+
+            var filterValue = attribute.FieldType.Field.GetPrivateFilterValue( comparisonValue, attribute.ConfigurationValues ).FromJsonOrNull<List<string>>();
+
+            selectionValues.Add( entityField.UniqueName );
+            selectionValues = selectionValues.Concat( filterValue ).ToList();
+
+            return selectionValues.ToJson();
         }
 
         #endregion
@@ -172,7 +329,7 @@ namespace Rock.Reporting.DataFilter.Group
                 // we still need to render the control in order to get the selected GroupTypeId on postback, so just hide it instead
                 groupTypePicker.Style[HtmlTextWriterStyle.Display] = "none";
             }
-            
+
             containerControl.Controls.Add( groupTypePicker );
 
             // set the GroupTypePicker selected value now so we can create the other controls the depending on know the groupTypeid
