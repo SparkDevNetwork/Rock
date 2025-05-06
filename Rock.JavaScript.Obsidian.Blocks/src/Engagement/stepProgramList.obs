@@ -14,7 +14,7 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
-        <ReorderColumn @orderChanged="onOrderChanged" />
+        <ReorderColumn v-if="config.options?.isReOrderColumnVisible" @orderChanged="onOrderChanged" />
 
         <Column name="icon"
                 visiblePriority="xs"
@@ -42,7 +42,7 @@
         <TextColumn name="category"
                     title="Category"
                     field="category"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs"
                     width="20%" />
 
@@ -63,7 +63,7 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <SecurityColumn :itemTitle="'name'" />
+        <SecurityColumn :itemTitle="'name'" isSecurityDisabled='isSecurityDisabled' />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -75,7 +75,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, NumberColumn, numberValueFilter, TextColumn, textValueFilter, pickExistingValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, Column } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { StepProgramListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramList/stepProgramListOptionsBag";
