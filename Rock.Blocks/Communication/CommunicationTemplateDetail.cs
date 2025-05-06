@@ -28,6 +28,7 @@ using Rock.Constants;
 using Rock.Enums.Blocks.Communication.CommunicationTemplateDetail;
 using Rock.Model;
 using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Blocks.Communication.CommunicationTemplateDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -126,7 +127,8 @@ namespace Rock.Blocks.Communication
                 NavigationUrls =
                 {
                     [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
-                }
+                },
+                SecurityGrantToken = GetSecurityGrantToken()
             };
 
             if ( communicationTemplateKey.IsNotNullOrWhiteSpace() && communicationTemplateKey.AsInteger() != 0 )
@@ -567,5 +569,26 @@ namespace Rock.Blocks.Communication
         }
 
         #endregion Block Actions
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</string>
+        private string GetSecurityGrantToken()
+        {
+            var securityGrant = new SecurityGrant();
+
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+            securityGrant.AddRule( new EmailEditorSecurityGrantRule() );
+
+            return securityGrant.ToToken();
+        }
+
+        #endregion
     }
 }

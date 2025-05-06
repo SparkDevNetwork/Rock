@@ -546,7 +546,7 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
-    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues } from "@Obsidian/Utility/block";
     import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { isNullish } from "@Obsidian/Utility/util";
@@ -556,6 +556,8 @@
 
 
     const config = useConfigurationValues<CommunicationTemplateDetailInitializationBox>();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+    provideSecurityGrant(securityGrant);
     const invokeBlockAction = useInvokeCommunicationTemplateDetailBlockAction();
 
     const formId = `communication-template-detail-form-${newGuid()}`;
