@@ -127,11 +127,11 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 
                 <div id="fixed-header" class="header-content" role="navigation">
                     <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
-                    
+                    <div>
+                        <button id="themeSwitchButton" class="theme-toggle" type="button"><i id="theme-icon" class="ti theme-mode-icon"></i></button>
+                    </div>
                     <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
-<div>
-	<button id="themeSwitchButton" class="theme-toggle" type="button"><i id="theme-icon" class="ti theme-mode-icon"></i></button>
-</div>
+
                     <!-- Page Title -->
                     <section id="secPageTitle" class="page-title-display" runat="server">
                         <div class="page-title">

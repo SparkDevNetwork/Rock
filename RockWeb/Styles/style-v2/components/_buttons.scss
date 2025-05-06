@@ -906,16 +906,17 @@ input[type="button"] {
 
 .theme-toggle {
   display: flex;
-  margin-left: var(--spacing-small);
+  margin-left: var(--spacing-xsmall);
   padding: var(--spacing-xsmall) var(--spacing-xsmall);
-  
-  border: 1px solid var(--color-interface-softest);
+  font-size: 1.3em ;
+  border: 4px solid var(--color-interface-softer);
   border-radius: 99px;
 
   color: var(--color-interface-strong);
-  background-color: var(--color-interface-softer);
+  background-color: var(--color-interface-soft);
 
-  transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
+  transition: .15s ease-in-out,box-shadow .15s ease-in-out;
+
   &:hover {
     color: var(--color-interface-stronger);
     background-color: var(--color-interface-soft);
