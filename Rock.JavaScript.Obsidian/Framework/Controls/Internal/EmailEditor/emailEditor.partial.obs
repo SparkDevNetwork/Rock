@@ -2,11 +2,12 @@
 <template>
     <div class="email-editor-wrapper styled-scroll">
         <div class="email-editor">
-            <SidePanel v-model:selectedComponentElement="selectedComponentElement"
+            <SidePanel v-if="ltr" v-model:selectedComponentElement="selectedComponentElement"
                        v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
                        :communicationTemplates="communicationTemplates"
                        :emailDocument="emailDocument"
                        :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
+                       :ltr="ltr"
                        :mergeFields="mergeFields"
                        :recipientPersonIds="recipientPersonIds"
                        :shortLinkCheckToken="shortLinkCheckToken"
@@ -34,6 +35,26 @@
                                :isDisabled="disabled"
                                @emailDocumentUpdated="onEmailDocumentUpdated" />
             </div>
+
+            <SidePanel v-if="!ltr" v-model:selectedComponentElement="selectedComponentElement"
+                       v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
+                       :communicationTemplates="communicationTemplates"
+                       :emailDocument="emailDocument"
+                       :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
+                       :ltr="ltr"
+                       :mergeFields="mergeFields"
+                       :recipientPersonIds="recipientPersonIds"
+                       :shortLinkCheckToken="shortLinkCheckToken"
+                       :shortLinkGetPageId="shortLinkGetPageId"
+                       :shortLinkSites="shortLinkSites"
+                       :shortLinkTokenMinLength="shortLinkTokenMinLength"
+                       :videoProviderNames="videoProviderNames"
+                       @cloneComponent="onCloneComponent"
+                       @completeComponent="onCompleteComponent"
+                       @componentTypeDragStart="onComponentTypeDragStart"
+                       @componentTypeDragEnd="onComponentTypeDragEnd"
+                       @deleteComponent="onDeleteComponent"
+                       @replaceComponent="onReplaceComponent" />
         </div>
     </div>
 </template>
@@ -112,6 +133,11 @@
         },
 
         disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        ltr: {
             type: Boolean as PropType<boolean>,
             default: false
         },
