@@ -235,7 +235,7 @@ namespace Rock.Web.Cache
             StartDate = sourceModel.StartDate;
             // Create a copy of the byte array, otherwise modifications on the entity
             // could affect the cached data.
-            OccurrenceMap = sourceModel.OccurrenceMap.ToArray();
+            OccurrenceMap = sourceModel.OccurrenceMap?.ToArray();
             FirstDayOfWeek = sourceModel.FirstDayOfWeek;
             StructureSettingsJSON = sourceModel.StructureSettingsJSON;
 
