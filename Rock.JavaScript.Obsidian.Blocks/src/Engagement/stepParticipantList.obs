@@ -1,7 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="isVisible"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           personKeyField="personIdKey"
@@ -191,6 +192,7 @@
     import { computed, reactive, ref, nextTick } from "vue";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { useHttp } from "@Obsidian/Utility/http";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<StepParticipantListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -213,6 +215,10 @@
     // #endregion
 
     // #region Computed Values
+
+    const isVisible = computed((): boolean => {
+        return useStore().state.areSecondaryBlocksShown;
+    });
 
     /**
      * The item term, derived from the name of the current step type.

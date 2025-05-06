@@ -41,6 +41,14 @@ namespace Rock.Web.Cache
         private AreaConfigurationData _checkInAreaData;
 
         /// <summary>
+        /// The check-in template purpose identifier. This is cached here because
+        /// there are places in check-in where we need to know if a group type
+        /// is a check-in template, but since most aren't we end up pulling this
+        /// value from cache repeatedly every time that group type is checked.
+        /// </summary>
+        private static int? _checkInTemplateTypeId;
+
+        /// <summary>
         /// The parent group type identifiers.
         /// </summary>
         private List<int> _parentGroupTypeIds;
@@ -1092,9 +1100,12 @@ namespace Rock.Web.Cache
 
             if ( _checkInConfiguration == null )
             {
-                var checkinTemplateTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), rockContext )?.Id;
+                if ( !_checkInTemplateTypeId.HasValue )
+                {
+                    _checkInTemplateTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), rockContext )?.Id;
+                }
 
-                if ( GroupTypePurposeValueId != checkinTemplateTypeId )
+                if ( GroupTypePurposeValueId != _checkInTemplateTypeId )
                 {
                     return null;
                 }

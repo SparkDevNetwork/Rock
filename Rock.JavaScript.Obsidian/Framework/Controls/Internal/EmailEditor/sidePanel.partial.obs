@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="side-panel">
-        <div class="side-panel-menu">
+        <div v-if="ltr" class="side-panel-menu">
             <div v-for="sidePanelMenuItem in sidePanelMenuItems"
                  :key="sidePanelMenuItem.type"
                  :class="[
@@ -138,6 +138,19 @@
                                      :communicationTemplates="communicationTemplates"
                                      :hasScrollableBody="true" />
             </template>
+        </div>
+
+        <div v-if="!ltr" class="side-panel-menu">
+            <div v-for="sidePanelMenuItem in sidePanelMenuItems"
+                 :key="sidePanelMenuItem.type"
+                 :class="[
+                    'side-panel-menu-item',
+                    selectedSidePanelMenuItem === sidePanelMenuItem.type ? 'selected' : ''
+                ]"
+                 @click="onSidePanelButtonClicked(sidePanelMenuItem.type)">
+                <i :class="sidePanelMenuItem.iconCssClass"></i>
+                <span class="side-panel-menu-item-text">{{ sidePanelMenuItem.title }}</span>
+            </div>
         </div>
     </div>
 
@@ -311,7 +324,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, onMounted, PropType, ref, watch } from "vue";
     import ComponentPropertyPanel from "./componentPropertyPanel.partial.obs";
     import EmailSectionModal from "./emailSectionModal.partial.obs";
     import FlatPanel from "./flatPanel.partial.obs";
@@ -373,6 +386,11 @@
         imageComponentBinaryFileTypeGuid: {
             type: String as PropType<Guid>,
             required: true
+        },
+
+        ltr: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         mergeFields: {
@@ -989,26 +1007,35 @@
         }
     });
 
-    watch(() => props.emailDocument, async (newValue) => {
-        if (newValue) {
-            if (emailSections.value.length === 0) {
-                await loadEmailSections();
+    async function loadEmailSectionsIfNotLoaded(document: Document): Promise<void> {
+        // Load the email sections if they are not already loaded.
+        if (emailSections.value.length === 0) {
+            await loadEmailSections();
 
-                if (emailSections.value.length === 0) {
-                    // Generate starter sections.
-                    const document = props.emailDocument ?? props.selectedComponentElement?.ownerDocument;
-                    if (document) {
-                        const result = await api.createStarterSections(document);
-                        if (result.isSuccess && result.data) {
-                            result.data.forEach(emailSection => {
-                                addEmailSectionToList(emailSection);
-                            });
-                        }
+            // If no email sections are loaded, then create starter sections.
+            if (emailSections.value.length === 0) {
+                api.createStarterSections(document).then(result => {
+                    if (result.isSuccess && result.data) {
+                        result.data.forEach(emailSection => {
+                            addEmailSectionToList(emailSection);
+                        });
                     }
-                }
+                });
             }
+        }
+    }
+
+    watch(() => props.emailDocument, async (doc) => {
+        if (doc) {
+            await loadEmailSectionsIfNotLoaded(doc);
         }
     });
 
     // #endregion Watchers
+
+    onMounted(() => {
+        if (props.emailDocument) {
+            loadEmailSectionsIfNotLoaded(props.emailDocument);
+        }
+    });
 </script>
