@@ -538,7 +538,12 @@ namespace RockWeb
                 {
                     HttpContext.Current = thisContext;
                     var currentUserName = UserLogin.GetCurrentUserName();
-                    UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = currentUserName } );
+                    UserLoginService.UpdateLastLogin(
+                        new UpdateLastLoginArgs {
+                            UserName = currentUserName,
+                            ShouldSkipWritingHistoryLog = true
+                        }
+                    );
                 } );
             }
             catch
