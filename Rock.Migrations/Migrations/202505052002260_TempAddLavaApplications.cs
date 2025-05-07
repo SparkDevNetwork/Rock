@@ -857,7 +857,8 @@ WHERE [Guid] = '8af769e9-972c-4f40-8344-89ff4b07fcbd'
 
                     if ( installedPackages != null )
                     {
-                        installedPackages = installedPackages.Where( p => p.PackageId != 0 ).ToList();
+                        // PackageId 208 == Helix Plugin
+                        installedPackages = installedPackages.Where( p => p.PackageId != 209 ).ToList();
                         File.WriteAllText( packageFile, installedPackages.ToJson() );
                     }
                 }
