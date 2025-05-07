@@ -14,7 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Web.Hosting;
+
 using Rock.Model;
+using Rock.Store;
 
 namespace Rock.Migrations
 {
@@ -827,9 +834,58 @@ WHERE [Guid] = '8af769e9-972c-4f40-8344-89ff4b07fcbd'
         private void PluginCleanupUp()
         {
             // Delete PluginMigration values.
+            Sql( "DELETE FROM [PluginMigration] WHERE [PluginAssemblyName] = 'tech.triumph.Lava.Helix'" );
+
+            // Delete the things that won't cause a restart first.
+            try
+            {
+                // Delete the ~/Plugin files.
+                var path = HostingEnvironment.MapPath( "~/Plugins/tech_triumph/LavaHelix" );
+                
+                if ( Directory.Exists( path ) )
+                {
+                    Directory.Delete( path, true );
+                }
+
+                // Remove the plugin from the installed plugins list.
+                var packageFile = HostingEnvironment.MapPath( "~/App_Data/InstalledStorePackages.json" );
+
+                if ( File.Exists( packageFile ) )
+                {
+                    var json = File.ReadAllText( packageFile );
+                    var installedPackages = json.FromJsonOrNull<List<InstalledPackage>>();
+
+                    if ( installedPackages != null )
+                    {
+                        installedPackages = installedPackages.Where( p => p.PackageId != 0 ).ToList();
+                        File.WriteAllText( packageFile, installedPackages.ToJson() );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                System.Diagnostics.Debug.WriteLine( $"Error during Helix cleanup: {ex.Message}" );
+            }
+
             // Delete old files from ~/Bin directory. tech.triumph.Lava.Helix.dll, tech.triumph.Lava.Helix.pdb
-            // Delete old files from ~/Plugins/tech_triumph/LavaHelix directory.
-            // Delete from ~/App_data/????.json
+            try
+            {
+                var path = HostingEnvironment.MapPath( "~/Bin/tech.triumph.Lava.Helix.dll" );
+                if ( File.Exists( path ) )
+                {
+                    File.Delete( path );
+                }
+
+                path = HostingEnvironment.MapPath( "~/Bin/tech.triumph.Lava.Helix.pdb" );
+                if ( File.Exists( path ) )
+                {
+                    File.Delete( path );
+                }
+            }
+            catch ( Exception ex )
+            {
+                System.Diagnostics.Debug.WriteLine( $"Error during Helix cleanup: {ex.Message}" );
+            }
         }
 
         private void PluginCleanupDown()

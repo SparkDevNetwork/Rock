@@ -35,7 +35,7 @@ namespace Rock.Model
     [Table( "LavaApplication" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "FFFE0DE1-B410-435E-9AA8-3A0B18AAF0F7" )]
-    public partial class LavaApplication : Model<LavaApplication>, IRockEntity, ICacheable
+    public partial class LavaApplication : Model<LavaApplication>, ICacheable
     {
         #region Security Verbs
 

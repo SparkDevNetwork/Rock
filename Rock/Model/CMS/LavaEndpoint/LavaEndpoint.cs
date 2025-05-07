@@ -38,7 +38,7 @@ namespace Rock.Model
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "F1BBF7D4-CAFD-450D-A89A-B3312C9738A2" )]
     [DebuggerDisplay( "Endpoint {Id}: {Name} [{HttpMethod}] ({LavaApplication.Slug}/{Slug})" )]
-    public partial class LavaEndpoint : Model<LavaEndpoint>, IRockEntity, ICacheable, IHasAdditionalSettings
+    public partial class LavaEndpoint : Model<LavaEndpoint>, ICacheable, IHasAdditionalSettings
     {
         #region Entity Properties
 
