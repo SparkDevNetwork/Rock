@@ -9161,6 +9161,100 @@ END
         }
         #endregion
 
+        #region Lava Shortcodes
+
+        /// <summary>
+        /// Adds a new or updates an existing LavaShortcode record with the specified values.
+        /// </summary>
+        /// <param name="name">The name of the shortcode.</param>
+        /// <param name="tagName">The tagname (e.g: "campuspicker")</param>
+        /// <param name="description">The description of the shortcode.</param>
+        /// <param name="documentation">The documentation of the shortcode.</param>
+        /// <param name="markup">The markup of the shortcode.</param>
+        /// <param name="parameters">The parameters of the shortcode. This is typically an HTML value.</param>
+        /// <param name="tagType">The TagType. 1 = Inline, 2 = Block</param>
+        /// <param name="categoryGuid">The unique identifier of the category to associate the shortcode with. If null or not valid then no category association will be created.</param>
+        /// <param name="guid">The identifier of the shortcode.</param>
+        public void AddOrUpdateLavaShortcode( string name, string tagName, string description, string documentation, string markup, string parameters, int tagType, string categoryGuid, string guid )
+        {
+            Migration.Sql( $@"
+-- Check if the LavaShortCode already exists by GUID
+IF EXISTS (SELECT 1 FROM [LavaShortcode] WHERE [Guid] = TRY_CONVERT(UNIQUEIDENTIFIER, '{guid}'))
+BEGIN
+    -- Update existing record
+    UPDATE [LavaShortCode]
+    SET [Name] = '{name.Replace( "'", "''" )}',
+        [Description] = '{name.Replace( "'", "''" )}',
+        [Documentation] = '{documentation?.Replace( "'", "''" ) ?? ""}',
+        [Markup] = '{markup.Replace( "'", "''" )}',
+        [TagType] = {tagType},
+        [TagName] = '{tagName.Replace( "'", "''" )}',
+        [Parameters] = '{parameters?.Replace( "'", "''" ) ?? ""}'
+    WHERE [Guid] = '{guid}';
+END
+ELSE
+BEGIN
+    -- Insert new record
+    INSERT INTO [LavaShortcode]
+    (
+        [Name],
+        [Description],
+        [Documentation],
+        [IsSystem],
+        [IsActive],
+        [TagName],
+        [Markup],
+        [TagType],
+        [EnabledLavaCommands],
+        [Parameters],
+        [Guid]
+    )
+    VALUES
+    (
+        '{name.Replace( "'", "''" )}',
+        '{description.Replace( "'", "''" )}',
+        '{documentation?.Replace( "'", "''" ) ?? ""}',
+        1,
+        1,
+        '{tagName.Replace( "'", "''" )}',
+        '{markup.Replace( "'", "''" )}',
+        {tagType},
+        '',
+        '{parameters?.Replace( "'", "''" ) ?? ""}',
+        '{guid}'
+    );
+END
+
+DECLARE @LavaShortcodeId INT = (SELECT [Id] FROM [LavaShortcode] WHERE [Guid] = '{guid}');
+DECLARE @CategoryId INT = (SELECT [Id] FROM [Category] WHERE [Guid] = TRY_CONVERT(UNIQUEIDENTIFIER, '{categoryGuid}'));
+
+IF @CategoryId IS NOT NULL AND @LavaShortcodeId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM [LavaShortcodeCategory] WHERE [LavaShortcodeId] = @LavaShortcodeId AND [CategoryId] = @CategoryId)
+BEGIN
+    INSERT INTO [LavaShortcodeCategory]
+    (
+        [LavaShortcodeId],
+        [CategoryId]
+    )
+    VALUES
+    (
+        @LavaShortcodeId,
+        @CategoryId
+    );
+END
+" );
+        }
+
+        /// <summary>
+        /// Deletes the LavaShortcode record with the specified GUID.
+        /// </summary>
+        /// <param name="guid"></param>
+        public void DeleteLavaShortcode( string guid )
+        {
+            Migration.Sql( $"DELETE FROM [LavaShortcode] WHERE [Guid] = TRY_CONVERT(UNIQUEIDENTIFIER, '{guid}')" );
+        }
+
+        #endregion
+
         /// <summary>
         /// Checks if a table column exists.
         /// </summary>

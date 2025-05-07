@@ -397,6 +397,10 @@ export const EntityType = {
     InteractiveExperienceSchedule: "D23B4DCF-545A-490F-AEAD-BA78A8FB4028",
     /** The EntityType Guid for Rock.Model.InteractiveExperienceScheduleCampus */
     InteractiveExperienceScheduleCampus: "ABEF4137-F25B-4B2E-AF01-2CEFF704FC11",
+    /** The EntityType Guid for Rock.Model.LavaApplication  */
+    LavaApplication: "FFFE0DE1-B410-435E-9AA8-3A0B18AAF0F7",
+    /** The EntityType Guid for Rock.Model.LavaEndpoint  */
+    LavaEndpoint: "F1BBF7D4-CAFD-450D-A89A-B3312C9738A2",
     /** The EntityType Guid for Rock.Model.LavaShortcode (well known as of v14) */
     LavaShortcode: "7574A473-3326-4973-8DF6-C7BF5F64EB36",
     /** The EntityType Guid for LavaShortcodeCategory 'joiner' table Rock.Model.LavaShortcodeConfiguration */

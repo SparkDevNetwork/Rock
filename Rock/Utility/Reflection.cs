@@ -999,7 +999,17 @@ namespace Rock
             string pluginsFolder = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Plugins" );
 
             // blacklist of files that would never have Rock MEF components or Rock types
-            string[] ignoredFileStart = { "Lucene.", "Microsoft.", "msvcr100.", "System.", "JavaScriptEngineSwitcher.", "React.", "CacheManager." };
+            string[] ignoredFileStart = {
+                "Lucene.",
+                "Microsoft.",
+                "msvcr100.",
+                "System.",
+                "JavaScriptEngineSwitcher.",
+                "React.",
+                "CacheManager.",
+                // This was moved into core in v18.0, it can be removed in v19.0
+                "tech.triumph.Lava.Helix.dll"
+            };
 
             // get all *.dll in the bin and plugin directories except for blacklisted ones
             var assemblyFileNames = Directory.EnumerateFiles( binDirectory, "*.dll", SearchOption.AllDirectories ).ToList();

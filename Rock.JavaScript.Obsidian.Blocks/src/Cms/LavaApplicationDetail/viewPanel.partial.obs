@@ -1,0 +1,147 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+                <dl v-if="configurationRigging">
+                    <dt>Configuration Rigging</dt>
+                    <dd>
+                        <RockButton btnType="default" btnSize="sm" @click="onPreviewClick"><i class="fa fa-search"></i></RockButton>
+                        &nbsp;<span v-if="jsonErrorMessage" class="label label-warning"> {{ jsonErrorMessage }}</span>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+        <Modal v-model="isModalOpen" title="Preview the Configuration Rigging JSON" @close="onClose" :cancelText="'OK'">
+            <div v-if="jsonData">
+                <label style="font-weight: normal; font-size: medium;">JSON output</label>
+                <pre>{{ jsonData }}</pre>
+            </div>
+        </Modal>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { LavaApplicationBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaApplicationDetail/lavaApplicationBag";
+    import { LavaApplicationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaApplicationDetail/lavaApplicationDetailOptionsBag";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<LavaApplicationBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<LavaApplicationDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+    const isModalOpen = ref(false);
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+    const configurationRigging = ref(props.modelValue?.configurationRigging);
+    const jsonData = ref("");
+    const jsonErrorMessage = ref("");
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("", props.modelValue.description);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addTextValue("Slug", props.modelValue.slug ? props.modelValue.slug.toString() : "None");
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Preview button has been clicked by the individual.
+     * @param key The key of the row that was selected.
+     */
+    async function onPreviewClick(): Promise<void> {
+        if (props.modelValue?.configurationRigging) {
+            if (isJsonString(props.modelValue.configurationRigging)) {
+                isModalOpen.value = true;
+                jsonData.value = JSON.stringify(JSON.parse(props.modelValue.configurationRigging), undefined, 2);
+            }
+            else {
+                jsonErrorMessage.value = "Invalid JSON Detected";
+            }
+        }
+    }
+
+    function onClose(): void {
+        isModalOpen.value = false;
+    }
+
+    function isJsonString(str): boolean {
+        try {
+            JSON.parse(str);
+        }
+        catch {
+            return false;
+        }
+
+        return true;
+    }
+
+    // #endregion
+</script>
