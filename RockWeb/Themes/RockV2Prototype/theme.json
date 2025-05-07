@@ -15,7 +15,7 @@
                     "name": "Primary Color",
                     "variable": "base-primary",
                     "description": "The primary color used to highlight screen elements, such as the main button.",
-                    "default": "#FF8C3D"
+                    "default": "#FF791D"
                 },
                 {
                     "type": "image",
