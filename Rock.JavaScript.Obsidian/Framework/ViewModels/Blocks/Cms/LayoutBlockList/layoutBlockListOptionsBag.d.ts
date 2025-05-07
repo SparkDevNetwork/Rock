@@ -21,6 +21,6 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Block List block. */
-export type BlockListOptionsBag = {
+/** The additional configuration options for the Layout Block List block. */
+export type LayoutBlockListOptionsBag = {
 };

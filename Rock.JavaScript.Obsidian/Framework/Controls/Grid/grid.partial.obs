@@ -154,7 +154,10 @@
         ColumnFilterValues = "column-filter-values",
 
         /** The preference key that stores the current sort information. */
-        SortDirection = "sort-direction"
+        SortDirection = "sort-direction",
+
+        /** The preference key that stores the preferred grid page size. */
+        PageSize = "page-size-preference"
     }
 
     /*
@@ -1347,6 +1350,26 @@
     }
 
     /**
+     * Sets the current page size value to match what is in the preferences.
+     */
+    function setPageSizeFromPreferences(): void {
+        const gridPageSize = gridPreferences.getValue(PreferenceKey.PageSize);
+
+        if (gridPageSize) {
+            try {
+                const value = JSON.parse(gridPageSize);
+
+                if (typeof value === "number") {
+                    pageSize.value = value;
+                }
+            }
+            catch {
+                // Intentionally ignored, just use default value.
+            }
+        }
+    }
+
+    /**
      * Saves the column filter values to the preference collection and triggers
      * a request to save the preferences.
      */
@@ -1381,6 +1404,25 @@
         }
         else {
             gridPreferences.setValue(PreferenceKey.SortDirection, "");
+        }
+
+        savePreferences();
+    }
+
+    /**
+     * Saves the page size to the preference collection and triggers
+     * a request to save the preferences.
+     */
+    function savePageSizePreferences(): void {
+        if (props.disablePreferences) {
+            return;
+        }
+
+        if (pageSize.value && pageSize.value != 50) {
+            gridPreferences.setValue(PreferenceKey.PageSize, JSON.stringify(pageSize.value));
+        }
+        else {
+            gridPreferences.setValue(PreferenceKey.PageSize, "");
         }
 
         savePreferences();
@@ -1775,8 +1817,6 @@
         overflow.value = false;
     }
 
-
-
     // #endregion
 
     const gridState = createGridState();
@@ -1787,6 +1827,7 @@
     if (!props.disablePreferences) {
         setFilterFromPreferences();
         setSortFromPreferences();
+        setPageSizeFromPreferences();
     }
 
     gridState.setFilters(quickFilterValue.value, columnFilterValues.value);
@@ -1814,6 +1855,7 @@
         if (newValues[1] !== oldValues[1] && currentPage.value !== 1) {
             currentPage.value = 1;
         }
+        savePageSizePreferences();
         updateVisibleRows();
         updatePageCount();
     });

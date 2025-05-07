@@ -26,7 +26,7 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Cms.BlockList;
+using Rock.ViewModels.Blocks.Cms.LayoutBlockList;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
@@ -35,7 +35,7 @@ namespace Rock.Blocks.Cms
     /// Displays a list of blocks.
     /// </summary>
 
-    [DisplayName( "Block List" )]
+    [DisplayName( "Layout Block List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of blocks." )]
     [IconCssClass( "fa fa-list" )]
@@ -44,7 +44,7 @@ namespace Rock.Blocks.Cms
     [Rock.SystemGuid.EntityTypeGuid( "9cf1aa10-24e4-4530-a345-57da4cfe9595" )]
     [Rock.SystemGuid.BlockTypeGuid( "ea8be085-d420-4d1b-a538-2c0d4d116e0a" )]
     [CustomizedGrid]
-    public class BlockList : RockEntityListBlockType<Block>
+    public class LayoutBlockList : RockEntityListBlockType<Block>
     {
         #region Keys
 
@@ -55,7 +55,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var box = new ListBlockBox<BlockListOptionsBag>();
+            var box = new ListBlockBox<LayoutBlockListOptionsBag>();
             var builder = GetGridBuilder();
 
             box.IsDeleteEnabled = true;
@@ -70,9 +70,9 @@ namespace Rock.Blocks.Cms
         /// Gets the box options required for the component to render the list.
         /// </summary>
         /// <returns>The options that provide additional details to the block.</returns>
-        private BlockListOptionsBag GetBoxOptions()
+        private LayoutBlockListOptionsBag GetBoxOptions()
         {
-            var options = new BlockListOptionsBag();
+            var options = new LayoutBlockListOptionsBag();
 
             return options;
         }
@@ -87,13 +87,22 @@ namespace Rock.Blocks.Cms
                     .Include( a => a.Layout )
                     .Include( a => a.Page )
                     .Include( a => a.Site )
-                    .Where( a => a.LayoutId == layoutId ); 
+                    .Where( a => a.LayoutId == layoutId );
             }
             else
             {
                 return new List<Block>().AsQueryable();
             }
         }
+
+        /// <inheritdoc/>
+        protected override IQueryable<Block> GetOrderedListQueryable( IQueryable<Block> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.Zone )
+                    .ThenBy( a => a.Order );
+        }
+
+        /// <inheritdoc/>
 
         /// <inheritdoc/>
         protected override GridBuilder<Block> GetGridBuilder()
@@ -103,6 +112,7 @@ namespace Rock.Blocks.Cms
                 .AddField( "id", a => a.Id )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
+                .AddTextField( "blockTypeName", a => a.BlockType.Name )
                 .AddTextField( "path", a => a.BlockType.Path )
                 .AddTextField( "zone", a => a.Zone )
                 .AddField( "isSystem", a => a.IsSystem )
