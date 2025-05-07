@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Cms;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Cms;
@@ -197,7 +198,7 @@ namespace Rock.Blocks.Cms
                 RateLimitPeriodDurationSeconds = entity.RateLimitPeriodDurationSeconds,
                 SecurityMode = entity.SecurityMode,
                 CacheControlHeaderSettings = entity.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>()?.ToCacheabilityBag(),
-                EnableCrossSiteForgeryProtection = entity.GetAdditionalSettings<LavaEndpointService.EndpointSettings>()?.EnableCrossSiteForgeryProtection ?? true
+                EnableCrossSiteForgeryProtection = entity.GetAdditionalSettings<LavaEndpointAdditionalSettings>()?.EnableCrossSiteForgeryProtection ?? true
             };
 
             return bag;
@@ -306,7 +307,7 @@ namespace Rock.Blocks.Cms
                 } );
 
             // Set additional settings
-            entity.SetAdditionalSettings( new LavaEndpointService.EndpointSettings { EnableCrossSiteForgeryProtection = box.Entity.EnableCrossSiteForgeryProtection } );
+            entity.SetAdditionalSettings( new LavaEndpointAdditionalSettings { EnableCrossSiteForgeryProtection = box.Entity.EnableCrossSiteForgeryProtection } );
 
             return true;
         }
