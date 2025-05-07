@@ -1,7 +1,7 @@
 
 @import "../../../Styles/summernote/summernote.min.css";
-@import "../../../Styles/style-v2/sass-variable";
-@import "../../../Styles/style-v2/core.css";
+@import "../../../Styles/styles-v2-prototype/sass-variable";
+@import "../../../Styles/styles-v2-prototype/core.css";
 
 // @import "../../../Styles/style-v2/icons/fontawesome-icon.css";
 // @import "../../../Styles/style-v2/icons/fontawesome-regular.css"; 
@@ -1240,6 +1240,7 @@ a.rock-bookmark {
 #splash {
   display: flex;
   justify-content: center;
+  align-items: center;;
   height: 100vh;
 
   #content {
@@ -1252,7 +1253,6 @@ a.rock-bookmark {
     padding: var(--spacing-large);
     border-radius: var(--rounded-large);
     gap: var(--spacing-xlarge);
-    margin-top:22vh;
 
     // TO change the height or width of the content
     width: 1000px;
