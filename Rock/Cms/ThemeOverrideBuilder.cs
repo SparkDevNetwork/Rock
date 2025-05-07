@@ -151,7 +151,7 @@ namespace Rock.Cms
             if ( enabledIconSets.HasFlag( ThemeIconSet.FontAwesome ) )
             {
                 // Append the standard FontAwesome CSS file.
-                AddImport( "~/Styles/style-v2/icons/fontawesome-icon.css" );
+                AddImport( "~/Styles/styles-v2-prototype/icons/fontawesome-icon.css" );
 
                 // Append each additional font weight file.
                 if ( customization.AdditionalFontAwesomeWeights != null )
@@ -160,19 +160,19 @@ namespace Rock.Cms
                     {
                         var weightName = weight.ToString().ToLower();
 
-                        AddImport( $"~/Styles/style-v2/icons/fontawesome-{weightName}.css" );
+                        AddImport( $"~/Styles/styles-v2-prototype/icons/fontawesome-{weightName}.css" );
                     }
                 }
 
                 // Append the default font weight file.
                 var defaultFontWeight = customization.DefaultFontAwesomeWeight.ToString().ToLower();
 
-                AddImport( $"~/Styles/style-v2/icons/fontawesome-{defaultFontWeight}.css" );
+                AddImport( $"~/Styles/styles-v2-prototype/icons/fontawesome-{defaultFontWeight}.css" );
             }
 
             if ( enabledIconSets.HasFlag( ThemeIconSet.Tabler ) )
             {
-                AddImport( $"~/Styles/style-v2/icons/tabler-icon.css" );
+                AddImport( $"~/Styles/styles-v2-prototype/icons/tabler-icon.css" );
             }
         }
 

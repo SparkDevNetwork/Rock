@@ -1,0 +1,1120 @@
+//FORM STYLES
+
+
+// =============================================================
+// Table of Content           
+//  + Normalization
+//  + Form control
+//  + Form group, help block, form-inline
+//  + Check box, radio
+//  + Sizing Form control 
+//  + Feedback states
+//  + Horizontal Form
+// =============================================================
+
+
+// ======================= NORMALIZATION =====================
+fieldset {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+legend {
+  display:        block;
+  width:          100%;
+  padding:        0;
+  margin-bottom:  var(--spacing-large);
+  font-size:      var(--font-size-h5);
+  font-weight:    var(--font-weight-medium);
+  line-height:    inherit;
+  border:         0;
+  border-bottom:  1px solid var(--color-interface-medium);
+  color:          var(--color-interface-strongest);
+  border-width:   0;
+}
+
+label {
+  display: inline-block;
+  max-width: 100%; // Force IE8 to wrap long content (see https://github.com/twbs/bootstrap/issues/13141)
+  margin-bottom: var(--spacing-tiny);
+  font-weight: var(--font-weight-semibold);
+}
+
+textarea {
+  resize: vertical;
+}
+
+input[type="search"] {
+  // Override content-box in Normalize (* isn't specific enough)
+  box-sizing: border-box;
+  appearance: none;
+}
+
+// Position radios and checkboxes better
+input[type="radio"],
+input[type="checkbox"] {
+  margin: var(--spacing-tiny) 0 0;
+  margin-top: 1px \9; // IE8-9
+  line-height: normal;
+
+  &[disabled],
+  &.disabled,
+  fieldset[disabled] & {
+    cursor: not-allowed;
+  }
+}
+
+input[type="file"] {
+  display: block;
+}
+
+// Make range inputs behave like textual form controls
+input[type="range"] {
+  display: block;
+  width: 100%;
+}
+
+// Make multiple select elements height not fixed
+select[multiple],
+select[size] {
+  height: auto;
+}
+
+// Focus for file, radio, and checkbox
+input[type="file"]:focus,
+input[type="radio"]:focus,
+input[type="checkbox"]:focus {
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+output {
+  display:      block;
+  padding-top:  (var(--spacing-xsmall) + 1);
+  font-size:    var(--font-size-small);
+  line-height:  var(--line-height-normal);
+  color:        var(--color-interface-stronger);
+}
+// ===================== END NORMALIZATION =====================
+
+
+// ======================= FORM CONTROL =====================
+.form-control {
+  display:            block;
+  width:              100%;
+  height:             38px; // Make inputs at least the height of their button counterpart (base line-height + padding + border)
+  padding:            6px 12px; // Need to hard code for the zoom function on the group scheduler.
+  font-size:          var(--font-size-regular);
+  line-height:        var(--line-height-normal);
+  color:              var(--color-interface-stronger);
+  background-color:   var(--color-interface-softest);
+  background-image:   none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
+  border:             1px solid var(--color-interface-soft);
+  border-radius:      var(--rounded-xsmall); // Note: This has no effect on <select>s in some browsers, due to the limited stylability of <select>s in CSS.
+  // box-shadow:         inset 0 1px 1px rgba(0, 0, 0, .075); // Comment out because in rock the textbox have a box-shadow: none.
+  box-shadow:         var(--input-box-shadow);
+  transition:         border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+
+  // Customize the `:focus` state to imitate native WebKit styles.
+  &:focus {
+    border-color: rgba(238, 119, 37, 0.6);
+    outline:        0;
+    box-shadow:     inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(238, 119, 37, 0.6);
+  }
+
+  // Placeholder
+  &::-moz-placeholder {
+    color:      var(--color-interface-strong);
+    opacity:    1; 
+  }
+  &:-ms-input-placeholder { color: var(--color-interface-strong); } 
+  &::-webkit-input-placeholder  { color: var(--color-interface-strong); }
+
+  // Unstyle the caret on `<select>`s in IE10+.
+  &::-ms-expand {
+    background-color:   transparent;
+    border:             0;
+  }
+
+  // Disabled and read-only inputs
+  &[disabled],
+  &[readonly],
+  fieldset[disabled] & {
+    background-color:   var(--color-interface-softer);
+    opacity:            1; // iOS fix for unreadable disabled content; see https://github.com/twbs/bootstrap/issues/11655
+  }
+
+  &[disabled],
+  fieldset[disabled] & {
+    cursor:     not-allowed;
+  }
+}
+
+ // Reset height for `textarea`s
+ textarea.form-control {
+  height:       auto;
+}
+
+.form-control-group{
+  &,
+  & > .form-row {
+    display:      flex;
+    flex-wrap:    wrap;
+    gap:          var(--spacing-xsmall);
+    margin-right: var(--spacing-medium);
+    align-items:  center;
+  }
+  
+  > .row,
+  > .form-row,
+  > .form-group {
+    width:        100%;
+  }
+
+  > .form-row::before,
+  > .form-row::after {
+    display:      none;
+  }
+
+  // Add spacing so time "to" is centered on Request Filter Detail Block
+  .form-control-static + .timepicker-input {
+    margin-left:  35px;
+  }
+
+  // Nested form controls get too much margin
+  .input-group > .form-control {
+    margin-right: 0;
+  }
+
+  // Defined Value w/ Add
+  &.controls-row {
+    flex-wrap: nowrap;
+    margin-right: 0;
+  }
+
+  & > span {
+    display:        inline-flex;
+    align-items:    center;
+    font-size:      var(--font-size-regular);
+    line-height:    var(--line-height-normal);
+    color:          var(--color-interface-medium);
+  }
+
+  .form-group-auto & {
+    display:    -ms-flexbox;
+    display:    flex;
+
+    .form-control {
+      -ms-flex:   1 1 0;
+      flex:       1 1 0;
+    }
+  }
+}
+
+.form-control-static {
+  min-height:       calc(var(--spacing-large) + var(--font-size-small));
+  // Size it appropriately next to real form controls
+  padding-top:      var(--spacing-xsmall);
+  padding-bottom:   var(--spacing-xsmall);
+  // Remove default margin from `p`
+  margin-bottom:    0;
+
+  &.input-lg,
+  &.input-sm {
+    padding-right:  0;
+    padding-left:   0;
+  }
+}
+
+.form-control-feedback {
+  position:         absolute;
+  top:              0;
+  right:            0;
+  z-index:          2; // Ensure icon is above input groups
+  display:          block;
+  width:            46px;
+  height:           46px;
+  line-height:      46px;
+  text-align:       center;
+  pointer-events:   none;
+}
+
+.form-control.ssn-part {
+  &.ssn-area {
+    width:    50px;
+  }
+  &.ssn-group {
+    width:    45px;
+  }
+  &.ssn-serial {
+    width:    60px;
+  }
+}
+
+.form-no-margin {
+  margin:     0;
+}
+
+.form-right {
+  margin-bottom:  var(--spacing-medium);
+  text-align:     right;
+
+  &:before,
+  &:after {
+    display:  table; 
+    content:  " "; 
+  }
+  &:after {
+    clear:    both;
+  }
+
+  .control-label {
+    display:  block;
+  }
+
+  .input-group {
+    float:    right;
+  }
+}
+
+.form-row {
+  margin-right: calc(var(--spacing-tiny) * -1);
+  margin-left:  calc(var(--spacing-tiny) * -1);
+
+  &:before,
+  &:after {
+    display: table; 
+    content: " "; 
+  }
+  &:after {
+    clear: both;
+  }
+
+  & > .col,
+  & > [class*="col-"] {
+    padding-right:  var(--spacing-tiny);
+    padding-left:   var(--spacing-tiny);
+  }
+
+  .form-control-group & {
+    margin-right:   0;
+    margin-left:    0;
+  }
+}
+
+.form-group.static-control .form-control-static {
+  padding-top: 0;
+}
+
+// Moved from _checkin-core.less 
+.form-group.required {
+  .control-label::after {
+    margin-left:    var(--spacing-tiny);
+    font-family:    'FontAwesome';
+    font-size:      6px;
+    font-weight:    var(--font-weight-black);
+    color:          var(--color-danger-strong);
+    vertical-align: super;
+    content:        '\f111';
+  }
+}
+// ===============
+// ===================== END FORM CONTROL =====================
+
+
+// Select
+select.form-control {
+  padding:                6px 36px 6px 12px;
+  background-image:       url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat:      no-repeat;
+  background-position:    right var(--spacing-medium) center;
+  background-size:        var(--spacing-medium) 12px;
+  border-radius:          var(--rounded-xsmall);
+  appearance:             none;
+
+  &[multiple],
+  &[size]:not([size="1"]) {
+    padding-right:      var(--spacing-medium);
+    background-image:   none;
+  }
+
+  // Remove outline from select box in FF
+  &:-moz-focusring {
+    color:          transparent;
+    text-shadow:    0 0 0 var(--color-interface-strong);
+  }
+
+  &:focus::-ms-value {
+    color:              var(--color-interface-stronger);
+    background-color:   var(--color-interface-softest);
+  }
+}
+
+// Special styles for iOS temporal inputs
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  input[type="month"] {
+    &.form-control {
+      line-height:46px;
+    }
+
+    &.input-sm,
+    .input-group-sm & {
+      line-height: 34px;
+    }
+
+    &.input-lg,
+    .input-group-lg & {
+      line-height: 38px;
+    }
+  }
+}
+
+
+// ======================= FORM GROUP, HELP BLOCK, FORM-INLINE =======================
+.form-group {
+  margin-bottom:  var(--spacing-medium);
+  font-size:      var(--font-size-regular);
+  line-height:    var(--line-height-normal);
+  // Commented out to make the drop space out properly at Rock:LocationPicker
+  // .form-group {
+  //   margin-top:   var(--spacing-medium)
+  // }
+}
+
+.help-block {
+  display:        block; // account for any element using help-block
+  margin-top:     5px;
+  margin-bottom:  10px;
+  color:          var(--color-interface-stronger); // lighten the text some for contrast`
+}
+
+.form-inline {
+
+  // Kick in the inline
+  @media (min-width: $screen-small) {
+    // Inline-block all the things for "inline"
+    .form-group {
+      display:          inline-block;
+      margin-bottom:    0;
+      vertical-align:   middle;
+    }
+
+    // In navbar-form, allow folks to *not* use `.form-group`
+    .form-control {
+      display:        inline-block;
+      width:          auto; // Prevent labels from stacking above inputs in `.form-group`
+      vertical-align: middle;
+    }
+
+    // Make static controls behave like regular ones
+    .form-control-static {
+      display:      inline-block;
+    }
+
+    .input-group {
+      display:        inline-table;
+      vertical-align: middle;
+
+      .input-group-addon,
+      .input-group-btn,
+      .form-control {
+        width: auto;
+      }
+    }
+
+    // Input groups need that 100% width though
+    .input-group > .form-control {
+      width: 100%;
+    }
+
+    .control-label {
+      margin-bottom:    0;
+      vertical-align:   middle;
+    }
+
+    // Remove default margin on radios/checkboxes that were used for stacking, and
+    // then undo the floating of radios and checkboxes to match.
+    .radio,
+    .checkbox {
+      display:          inline-block;
+      margin-top:       0;
+      margin-bottom:    0;
+      vertical-align:   middle;
+
+      label {
+        padding-left: 0;
+      }
+    }
+    .radio input[type="radio"],
+    .checkbox input[type="checkbox"] {
+      position: relative;
+      margin-left: 0;
+    }
+
+    // Re-override the feedback icon.
+    .has-feedback .form-control-feedback {
+      top: 0;
+    }
+  }
+
+  .control-wrapper {
+    display:        inline-table;
+    width:          auto;
+    vertical-align: middle;
+  }
+
+  .date-range-picker .input-group {
+    margin-bottom: 0;
+  }
+}
+
+.form-inline-all {
+  .form-control {
+    display:        inline-block;
+    width:          auto;
+    vertical-align: middle;
+  }
+
+  .form-control-static {
+    display:        inline-block;
+  }
+}
+
+.form-group.captcha {
+  iframe {
+    border: 0;
+  }
+
+  &.has-error {
+    iframe {
+      border:         1px solid var(--color-danger-strong);
+      border-radius:  var(--rounded-xsmall);
+    }
+  }
+}
+
+a.help {
+  margin-left:  6px;
+  color:        var(--color-info-strong);
+  outline:      0;
+}
+
+a.warning {
+  margin-left:    6px;
+  color:          var(--color-warning-strong);
+  outline:        0;
+}
+
+.help-message {
+  font-weight:    var(--font-weight-regular);
+}
+// ===================== END FORM GROUP, HELP BLOCK, FORM-INLINE =====================
+
+
+// ======================= CHECKBOXESAND RADIOS =======================
+.radio,
+.checkbox {
+  position:       relative;
+  display:        block;
+  margin-top:     10px;
+  margin-bottom:  10px;
+
+  // These are used on elements with <label> descendants
+  &.disabled,
+  fieldset[disabled] & {
+    label {
+      cursor: not-allowed;
+    }
+  }
+
+  label {
+    min-height:     var(--spacing-large); // Ensure the input doesn't jump when there is no text
+    padding-left:   20px;
+    margin-bottom:  0;
+    font-weight:    var(--font-weight-regular);
+    cursor:         pointer;
+  }
+}
+
+.radio input[type="radio"],
+.radio-inline input[type="radio"],
+.checkbox input[type="checkbox"],
+.checkbox-inline input[type="checkbox"] {
+  position:         absolute;
+  margin-top:       var(--spacing-tiny) \9;
+  margin-left:      -20px;
+}
+
+.radio + .radio,
+.checkbox + .checkbox {
+  margin-top:       -5px; // Move up sibling radios or checkboxes for tighter spacing
+}
+
+.radio-inline,
+.checkbox-inline {
+  position:         relative;
+  display:          inline-block;
+  padding-left:     20px;
+  margin-bottom:    0;
+  font-weight:      var(--font-weight-regular);
+  vertical-align:   middle;
+  cursor:           pointer;
+
+  // These are used directly on <label>s
+  &.disabled,
+  fieldset[disabled] & {
+    cursor:       not-allowed;
+  }
+}
+
+.radio-inline + .radio-inline,
+.checkbox-inline + .checkbox-inline {
+  margin-top:     0;
+  margin-left:    10px; // space out consecutive inline controls
+}
+// ===================== CHECKBOXES AND RADIOS =====================
+
+
+// ======================= FORM CONTROL SIZING ======================
+.input-sm {
+  height:         34px;
+  padding:        var(--spacing-xsmall) var(--spacing-medium);
+  font-size:      var(--font-size-small);
+  line-height:    16px; // Keep 16px to align with carot
+  border-radius:  var(--rounded-xsmall);
+
+  select & {
+    height:   34px;
+    padding:  var(--spacing-xsmall) 36px var(--spacing-xsmall) var(--spacing-medium); // Modified to BS5
+  }
+
+  textarea &,
+  select[multiple] & {
+    height:   auto;
+  }
+}
+
+.input-lg {
+  // .input-size(38px-large; var(--spacing-xsmall); var(--spacing-medium); var(--font-size-medium); var(--line-height-normal); var(--rounded-xsmall));
+  height:         38px;
+  padding:        var(--spacing-xsmall) var(--spacing-medium);
+  font-size:      var(--font-size-medium);
+  line-height:    var(--line-height-normal);
+  border-radius:  var(--rounded-normal);
+
+  select & {
+    height: 38px;
+    padding:      var(--spacing-xsmall) var(--spacing-medium) var(--spacing-xsmall) var(--spacing-medium); // Modified to BS5
+  }
+
+  textarea &,
+  select[multiple] & {
+    height:   auto;
+  }
+}
+
+.input-lg + .form-control-feedback,
+.input-group-lg + .form-control-feedback,
+.form-group-lg .form-control + .form-control-feedback {
+  width:          var(--line-height-normal);
+  height:         var(--line-height-normal);
+  line-height:    var(--line-height-normal);
+}
+
+.input-sm + .form-control-feedback,
+.input-group-sm + .form-control-feedback,
+.form-group-sm .form-control + .form-control-feedback {
+  width:        34px;
+  height:       34px;
+  line-height:  34px;
+}
+
+.form-group-sm {
+  .form-control {
+    height:         34px;
+    padding:        var(--spacing-xsmall) var(--spacing-medium);
+    font-size:      var(--font-size-small);
+    line-height:    var(--line-height-normal);
+    border-radius:  var(--rounded-xsmall);
+  }
+  select.form-control {
+    height: 34px;
+    line-height: var(--line-height-normal);
+  }
+  textarea.form-control,
+  select[multiple].form-control {
+    height: auto;
+  }
+  .form-control-static {
+    height:         var(--line-height-normal);
+    min-height:     calc(var(--spacing-large) + var(--font-size-small));
+    padding:        calc(var(--spacing-xsmall) + 1) var(--spacing-medium);
+    font-size:      var(--font-size-small);
+    line-height:    var(--line-height-normal);
+  }
+}
+
+.form-group-lg {
+  .form-control {
+    height:         var(--line-height-normal);
+    padding:        var(--spacing-xsmall) var(--spacing-medium);
+    font-size:      var(--font-size-medium);
+    line-height:    var(--line-height-normal);
+    border-radius:  var(--rounded-xsmall);
+  }
+  select.form-control {
+    height:         var(--line-height-normal);
+    line-height:    var(--line-height-normal);
+  }
+  textarea.form-control,
+  select[multiple].form-control {
+    height: auto;
+  }
+  .form-control-static {
+    height:       var(--line-height-normal);
+    min-height:   calc(var(--spacing-large) + var(--font-size-medium));
+    padding:      calc(var(--spacing-xsmall) + 1) var(--spacing-medium);
+    font-size:    var(--font-size-medium);
+    line-height:  var(--line-height-normal);
+  }
+}
+.form-control.input-width-xs,
+.input-group.input-width-xs,
+.form-control-group.input-width-xs input {
+  width: 60px;
+}
+
+.form-control.input-width-sm,
+.input-group.input-width-sm,
+.form-control-group.input-width-sm input {
+  width: 90px;
+}
+
+.form-control.input-width-md,
+.input-group.input-width-md,
+.form-control-group.input-width-md input {
+  width: 150px;
+}
+
+.form-control.input-width-lg,
+.input-group.input-width-lg,
+.form-control-group.input-width-lg input {
+  width: 210px;
+}
+
+.form-control.input-width-xl,
+.input-group.input-width-xl,
+.form-control-group.input-width-xl input {
+  width: 270px;
+}
+
+.form-control.input-width-xxl,
+.input-group.input-width-xxl,
+.form-control-group.input-width-xxl input {
+  width: 530px;
+}
+
+.input-max-w-md {
+  max-width: 50px;
+}
+
+.input-max-w-xl {
+  max-width: 270px;
+}
+// ===================== END FORM CONTROL SIZING =====================
+
+// ======================= feedback states =====================
+.has-feedback {
+  // Enable absolute positioning
+  position: relative;
+
+  // Ensure icons don't overlap text
+  .form-control {
+    padding-right: calc(46px * 1.25);
+  }
+}
+
+.has-success {
+  .help-block,
+  .control-label,
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline,
+  &.radio label,
+  &.checkbox label,
+  &.radio-inline label,
+  &.checkbox-inline label  {
+    color:      var(--color-success-strong);
+  }
+  // Set the border and box shadow on specific inputs to match
+  .form-control {
+    border-color:   var(--color-success-strong);
+    box-shadow:     inset 0 1px 1px rgba(0, 0, 0, .075); // Redeclare so transitions work
+    &:focus {
+      border-color:   var(--color-success-strong); // TODO Darken it by 10%
+      box-shadow:     inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px var(--color-success-strong);
+    }
+  }
+  // Set validation states also for addons
+  .input-group-addon {
+    color:              var(--color-success-strong);
+    background-color:   var(--color-success-soft);
+    border-color:       var(--color-success-strong);
+  }
+  // Optional feedback icon
+  .form-control-feedback {
+    color:      var(--color-success-strong);
+  }
+}
+
+.has-warning {
+  .help-block,
+  .control-label,
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline,
+  &.radio label,
+  &.checkbox label,
+  &.radio-inline label,
+  &.checkbox-inline label  {
+    color:      var(--color-warning-strong);
+  }
+  // Set the border and box shadow on specific inputs to match
+  .form-control {
+    border-color:     var(--color-warning-strong);
+    box-shadow:       inset 0 1px 1px rgba(0, 0, 0, .075); // Redeclare so transitions work
+    &:focus {
+      border-color:   var(--color-warning-strong); // TODO darken it by 10%
+      box-shadow:     inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px var(--color-warning-medium);
+    }
+  }
+  // Set validation states also for addons
+  .input-group-addon {
+    color:              var(--color-warning-strong);
+    background-color:   var(--color-warning-soft);
+    border-color:       var(--color-warning-strong);
+  }
+  // Optional feedback icon
+  .form-control-feedback {
+    color:        var(--color-warning-strong);
+  }
+}
+
+.has-error {
+  .help-block,
+  .control-label,
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline,
+  &.radio label,
+  &.checkbox label,
+  &.radio-inline label,
+  &.checkbox-inline label  {
+    color:    var(--color-danger-strong);
+  }
+  // Set the border and box shadow on specific inputs to match
+  .form-control {
+    border-color:   var(--color-danger-strong);
+    box-shadow:     inset 0 1px 1px rgba(0, 0, 0, .075); // Redeclare so transitions work
+    &:focus {
+      border-color:   var(--color-danger-strong); // TODO darken it by 10%
+      box-shadow:     inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px var(--color-danger-medium);
+    }
+  }
+  // Set validation states also for addons
+  .input-group-addon {
+    color:              var(--color-danger-strong);
+    background-color:   var(--color-danger-soft);
+    border-color:       var(--color-danger-strong);
+  }
+  // Optional feedback icon
+  .form-control-feedback {
+    color:    var(--color-danger-strong);
+  }
+}
+
+.has-feedback label {
+
+  & ~ .form-control-feedback {
+    top:    calc(var(--spacing-large) + 5); // Height of the `label` and its margin
+  }
+  &.sr-only ~ .form-control-feedback {
+    top:    0;
+  }
+}
+// ===================== END FEEDBACK STATES =====================
+
+
+// ======================= HORIZONTAL FORMS =======================
+.form-horizontal {
+
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline {
+    padding-top: calc(var(--spacing-xsmall) + 1); // Default padding plus a border
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .radio,
+  .checkbox {
+    min-height: (var(--spacing-large) + (var(--spacing-xsmall) + 1));
+  }
+
+  .form-group {
+    margin-right: calc($grid-gutter-width / -2);
+    margin-left: calc($grid-gutter-width/ -2);
+
+    .form-control-group,
+    .form-control {
+      float: left;
+    }
+    
+    &:before,
+    &:after {
+      display: table;
+      content: " ";
+    }
+
+    &:after {
+      clear: both;
+    }
+  }
+
+  // Reset spacing and right align labels, but scope to media queries so that
+  // labels on narrow viewports stack the same as a default form example.
+  @media (min-width: $screen-small) {
+    .control-label {
+      padding-top: (var(--spacing-xsmall) + 1); // Default padding plus a border
+      margin-bottom: 0;
+      text-align: right;
+    }
+  }
+
+  // Validation states
+  //
+  // Reposition the icon because it's now within a grid column and columns have
+  // `position: relative;` on them. Also accounts for the grid gutter padding.
+  .has-feedback .form-control-feedback {
+    right: calc($grid-gutter-width / 2);
+  }
+
+  // Form group sizes
+  //
+  // Quick utility class for applying `.input-lg` and `.input-sm` styles to the
+  // inputs and labels within a `.form-group`.
+  .form-group-lg {
+    @media (min-width: $screen-small) {
+      .control-label {
+        padding-top: (var(--spacing-xsmall) + 1);
+        font-size: var(--font-size-medium);
+      }
+    }
+  }
+  .form-group-sm {
+    @media (min-width: $screen-small) {
+      .control-label {
+        padding-top: (var(--spacing-xsmall) + 1);
+        font-size:var(--font-size-small);
+      }
+    }
+  }
+}
+
+// Moved from _form.less `\RockWeb\Styles\_forms.less`
+.form-horizontal {
+  .form-group {
+    .form-control-group,
+    .form-control {
+      float: left;
+    }
+  }
+
+  &[class*="label-"] {
+    .form-group {
+      label {
+        position: relative;
+        min-height: 1px;
+        padding-right: 15px;
+        padding-left: 15px;
+
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((2 / 12) * 100%);
+        }
+
+        @media (min-width: $screen-small) {
+          padding-top: 7px;
+          padding-bottom: 7px;
+          margin-bottom: 0; // Override the `<label>/<legend>` default
+          line-height: var(--line-height-normal);
+          text-align: right;
+        }
+      }
+
+      .control-wrapper {
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+      
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((10 / 12) * 100%);
+        }
+      }
+    }
+  }
+
+  &.label-md {
+    .form-group {
+      label {
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+      
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((4 / 12) * 100%);
+        }
+      }
+      .control-wrapper {
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+      
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((8 / 12) * 100%);
+        }
+      }
+    }
+  }
+
+  &.label-lg {
+    .form-group {
+      label {
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((6 / 12) * 100%);
+        }
+      }
+      .control-wrapper {
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((6 / 12) * 100%);
+        }
+      }
+    }
+  }
+
+  &.label-xl {
+    .form-group {
+      label {
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+      
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((8 / 12) * 100%);
+        }
+      }
+      .control-wrapper {
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+      
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((4 / 12) * 100%);
+        }
+      }
+    }
+  }
+
+  &.label-auto {
+    .form-group {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+      -ms-flex-pack: end;
+      justify-content: flex-end;
+      margin-right: -15px;
+      margin-left: -15px;
+
+      .control-label {
+        width: auto;
+        min-width: 180px;
+        padding-top: 7px;
+        padding-bottom: 7px;
+        margin-bottom: 0; // Override the `<label>/<legend>` default
+        line-height: var(--line-height-normal);
+        text-align: right;
+      }
+      .control-wrapper {
+        -ms-flex: 0 0 auto;
+        flex: 0 0 auto;
+        width: auto;
+        max-width: 100%;
+      }
+    }
+  }
+
+  &.label-min-w-0 {
+    .control-label {
+      min-width: 0 !important;
+    }
+  }
+}
+.list-items-rows .controls-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+// ===============
+// ===================== END HORIZONTAL FORMS =====================
+
+
+

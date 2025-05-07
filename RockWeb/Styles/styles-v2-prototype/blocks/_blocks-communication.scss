@@ -1,0 +1,120 @@
+
+
+//  BLOCK COMMUNICATION STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Communication Entry 
+//  + Communication Detail
+//  + Communication List
+//  + Communication Wizard
+// =============================================================
+
+
+// ======================== COMMUNICATION ENTRY ========================
+.recipients {
+  .recipient {
+    float:                left;
+    width:                100%;
+    @media (min-width: $screen-small) {
+      width:              50%;
+    }
+    @media (min-width: $screen-medium) {
+      width:              25%;
+    }
+
+    &.failed {
+      color:              var(--color-danger-strong);
+    }
+
+    &.opened {
+      color:              var(--color-success-strong);
+    }
+  }
+}
+// ====================== END Contributions ======================
+
+
+// ======================== COMMUNICATION DETAIL ========================
+iframe.email-body {
+  width:                100%;
+  height:               300px;
+  background-color:     var(--color-interface-softest);
+  border:               1px solid var(--color-interface-soft);
+}
+// ======================== END COMMUNICATION DETAIL ========================
+
+// ======================== COMMUNICATION LIST ========================
+.hint {
+  background-color: var(--color-interface-soft);
+  padding: 0 6px;
+  border-radius: var(--rounded-small);
+  color: var(--color-interface-strongest);
+}
+
+.hint-ai {
+  border: 2px solid transparent;
+  border-radius: var(--rounded-small);
+  background: linear-gradient(var(--color-interface-softest), var(--color-interface-softest)) padding-box,
+              linear-gradient(to right, #FBC453, #F7964F, #EF6653) border-box;
+  padding: 0 6px;
+  color: var(--color-primary);
+}
+
+.hint-ai::before {
+  content:'AI';
+}
+// ======================== END COMMUNICATION LIST ========================
+
+
+// ======================== COMMUNICATION WIZARD ========================
+.communication-template {
+  position:             relative;
+  display:              block;
+  height:               192px;
+  padding:              var(--spacing-medium);
+  margin-bottom:        var(--spacing-large);
+  overflow:             hidden;
+  color:                var(--color-interface-stronger);
+  border:               1px solid var(--panel-border);
+  outline-offset:       -1px;
+
+  &:focus,
+  &:hover {
+    color:              var(--color-interface-stronger);
+    outline:            2px solid var(--color-info-strong);
+  }
+
+  label {
+    font-size:          var(--font-size-regular);
+  }
+
+  &.template-selected {
+    outline:            2px solid var(--color-info-strong);
+
+    &:hover {
+      outline:          2px solid var(--color-info-strong);
+    }
+
+    &::before {
+      position:         absolute;
+      top:              -4px;
+      left:             8px;
+      z-index:          1;
+      font-family:      'FontAwesome';
+      font-size:        var(--font-size-h2);
+      font-weight:      var(--font-weight-bold);
+      color:            var(--color-info-strong);
+      content:          '\f058';
+    }
+  }
+}
+
+.step-title {
+  margin-top:           0;
+}
+// ====================== END COMMUNICATION WIZARD ======================
+
+
+
