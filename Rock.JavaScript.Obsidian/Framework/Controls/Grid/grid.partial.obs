@@ -599,7 +599,7 @@
         SortDirection = "sort-direction",
 
         /** The preference key that stores the preferred grid page size. */
-        PageSize = "page-size"
+        PageSize = "page-size-preference"
     }
 
     /*
