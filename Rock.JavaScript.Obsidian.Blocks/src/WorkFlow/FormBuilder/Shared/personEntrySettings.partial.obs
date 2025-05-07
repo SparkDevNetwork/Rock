@@ -268,12 +268,13 @@
 
     // Watch for any changes in our simple field values and update the
     // modelValue.
-    watch([autofillCurrentPerson, hideIfCurrentPersonKnown, recordStatus, connectionStatus, showCampus, includeInactiveCampus, campusType, campusStatus, gender, email, mobilePhone, smsOptIn, birthdate, address, addressType, maritalStatus, spouseEntry, spouseLabel, raceEntry, ethnicityEntry], () => {
+    watch([autofillCurrentPerson, hideIfCurrentPersonKnown, recordStatus, recordSource, connectionStatus, showCampus, includeInactiveCampus, campusType, campusStatus, gender, email, mobilePhone, smsOptIn, birthdate, address, addressType, maritalStatus, spouseEntry, spouseLabel, raceEntry, ethnicityEntry], () => {
         const newValue: FormPersonEntry = {
             ...props.modelValue,
             autofillCurrentPerson: autofillCurrentPerson.value,
             hideIfCurrentPersonKnown: hideIfCurrentPersonKnown.value,
             recordStatus: recordStatus.value,
+            recordSource: recordSource.value,
             connectionStatus: connectionStatus.value,
             showCampus: showCampus.value,
             includeInactiveCampus: includeInactiveCampus.value,
@@ -302,6 +303,7 @@
         autofillCurrentPerson.value = props.modelValue.autofillCurrentPerson ?? false;
         hideIfCurrentPersonKnown.value = props.modelValue.hideIfCurrentPersonKnown ?? false;
         recordStatus.value = props.modelValue.recordStatus ?? "";
+        recordSource.value = props.modelValue.recordSource ?? "";
         connectionStatus.value = props.modelValue.connectionStatus ?? "";
         showCampus.value = props.modelValue.showCampus ?? false;
         includeInactiveCampus.value = props.modelValue.includeInactiveCampus ?? true;
