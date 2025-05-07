@@ -2341,7 +2341,12 @@ Obsidian.onReady(() => {{
             if ( impersonatedByUser != null )
             {
                 Authorization.SignOut();
-                UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = impersonatedByUser.UserName } );
+                UserLoginService.UpdateLastLogin(
+                    new UpdateLastLoginArgs {
+                        UserName = impersonatedByUser.UserName,
+                        ShouldSkipWritingHistoryLog = true
+                    }
+                );
 
                 /*
                     10/23/2023 - JMH

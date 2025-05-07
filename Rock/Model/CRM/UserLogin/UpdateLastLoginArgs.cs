@@ -46,11 +46,16 @@ namespace Rock.Model
         /// Gets or sets whether to skip writing this successful login to the individual's <see cref="HistoryLogin"/> log.
         /// </summary>
         /// <remarks>
-        /// You should only skip writing to the individual's history log if a <see cref="HistoryLogin"/> record will
-        /// already be written elsewhere in Rock, and we need to prevent writing a duplicate record here (e.g. a
-        /// successful OIDC login attempt will result in writing to the individual's history log AFTER an access token
-        /// is issued). If you're unsure, pass <see langword="false"/> for this parameter, at the risk of duplicate
-        /// successful logins being logged.
+        /// You should skip writing to the individual's history log if:
+        /// [1] A <see cref="HistoryLogin"/> record will already be written elsewhere in Rock, and we need to prevent
+        /// writing a duplicate record here (e.g. a successful OIDC login attempt will result in writing to the
+        /// individual's history log AFTER an access token is issued).
+        /// [2] This "login" does not actually represent a true login action taken by the individual, but is instead the
+        /// result of an auth cookie preexisting in the browser or a mobile launch packet being issued.
+        /// <para>
+        /// If you're unsure, pass <see langword="false"/> for this parameter, at the risk of duplicate successful
+        /// logins being logged.
+        /// </para>
         /// </remarks>
         public bool ShouldSkipWritingHistoryLog { get; set; }
     }
