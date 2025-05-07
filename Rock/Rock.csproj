@@ -785,6 +785,7 @@
     <Compile Include="Core\EntitySearch\IdKeyExpressionVisitor.cs" />
     <Compile Include="Communication\Chat\ChatConfiguration.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171PopulateAttendanceRootGroupType.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV18DeleteGroupLocationHistoricalSchedule.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV18UpdateCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171UpdateCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171AddCommunicationRecipientIndex.cs" />
@@ -1633,7 +1634,6 @@
     <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlanConfiguration.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlanConfigurationOptions.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlanConfigurationService.cs" />
-    <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalScheduleService.cs" />
     <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormFieldException.cs" />
     <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateFormService.cs" />
     <Compile Include="Model\Group\GroupLocation\GroupLocation.Logic.cs" />
@@ -2234,7 +2234,6 @@
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.cs" />
     <Compile Include="Model\Group\GroupHistorical\GroupHistorical.cs" />
     <Compile Include="Model\Group\GroupHistorical\GroupHistorical.Logic.cs" />
-    <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalSchedule.cs" />
     <Compile Include="Model\Group\GroupLocationHistorical\GroupLocationHistorical.cs" />
     <Compile Include="Model\Group\GroupLocationHistorical\GroupLocationHistorical.Logic.cs" />
     <Compile Include="Model\Group\GroupLocationHistorical\GroupLocationHistoricalService.cs" />

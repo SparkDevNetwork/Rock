@@ -555,7 +555,6 @@
     <Compile Include="Controllers\CodeGenerated\GroupDemographicTypesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupDemographicValuesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupHistoricalsController.CodeGenerated.cs" />
-    <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalSchedulesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMemberAssignmentsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMemberHistoricalsController.CodeGenerated.cs" />

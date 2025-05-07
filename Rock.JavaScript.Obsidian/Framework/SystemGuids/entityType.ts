@@ -329,8 +329,6 @@ export const EntityType = {
     GroupLocation: "26248EE7-09F3-4578-A1D6-47E01D91D6EF",
     /** The EntityType Guid for Rock.Model.GroupLocationHistorical  */
     GroupLocationHistorical: "03128778-5E7D-4FE4-9C7A-929936E06F90",
-    /** The EntityType Guid for Rock.Model.GroupLocationHistoricalSchedule  */
-    GroupLocationHistoricalSchedule: "3BC646E4-CA5E-47D6-BC6D-4BBFAAEDAD8B",
     /** The guid for the Rock.Model.GroupMember entity. */
     GroupMember: "49668B95-FEDC-43DD-8085-D2B0D6343C48",
     /** The EntityType Guid for Rock.Model.GroupMemberAssignment  */

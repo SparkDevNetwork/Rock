@@ -1485,11 +1485,6 @@ namespace Rock.SystemGuid
         public const string GROUP_LOCATION_HISTORICAL = "03128778-5E7D-4FE4-9C7A-929936E06F90";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.GroupLocationHistoricalSchedule"/> 
-        /// </summary>
-        public const string GROUP_LOCATION_HISTORICAL_SCHEDULE = "3BC646E4-CA5E-47D6-BC6D-4BBFAAEDAD8B";
-
-        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.GroupMemberAssignment"/> 
         /// </summary>
         public const string GROUP_MEMBER_ASSIGNMENT = "22BF14ED-E882-4BB0-9328-D12545BF5F61";

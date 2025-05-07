@@ -125,6 +125,10 @@
     <Compile Include="Migrations\202505051814300_AlterWorkflowTypeSlugAsNullable.Designer.cs">
       <DependentUpon>202505051814300_AlterWorkflowTypeSlugAsNullable.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202505072133213_DeleteGroupLocationHistoricalSchedule.cs" />
+    <Compile Include="Migrations\202505072133213_DeleteGroupLocationHistoricalSchedule.Designer.cs">
+      <DependentUpon>202505072133213_DeleteGroupLocationHistoricalSchedule.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.Designer.cs">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>
@@ -2671,6 +2675,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202505051814300_AlterWorkflowTypeSlugAsNullable.resx">
       <DependentUpon>202505051814300_AlterWorkflowTypeSlugAsNullable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202505072133213_DeleteGroupLocationHistoricalSchedule.resx">
+      <DependentUpon>202505072133213_DeleteGroupLocationHistoricalSchedule.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.resx">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>
