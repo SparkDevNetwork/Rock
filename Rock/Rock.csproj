@@ -1808,6 +1808,7 @@
     <Compile Include="Plugin\HotFixes\243_AddDefaultAllowedGroupTypesToMobileGroupRegistration.cs" />
     <Compile Include="Plugin\HotFixes\245_UpdateMergeFieldAttributeDescription.cs" />
     <Compile Include="Plugin\HotFixes\246_AddProximityCheckInAttribute.cs" />
+    <Compile Include="Plugin\HotFixes\247_UpdateLayoutBlockListNamingObsidian.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
