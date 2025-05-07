@@ -929,8 +929,15 @@ namespace Rock.CheckIn.v2
                 registrationPerson.IfValidProperty( nameof( registrationPerson.Bag.RecordStatus ),
                     () => person.RecordStatusValueId = GetDefinedValueId( registrationPerson.Bag.RecordStatus ) );
 
-                registrationPerson.IfValidProperty( nameof( registrationPerson.Bag.ConnectionStatus ),
-                    () => person.ConnectionStatusValueId = GetDefinedValueId( registrationPerson.Bag.ConnectionStatus ) );
+                if ( registrationPerson.IsValidProperty( nameof( registrationPerson.Bag.ConnectionStatus ) ) )
+                {
+                    person.ConnectionStatusValueId = GetDefinedValueId( registrationPerson.Bag.ConnectionStatus );
+                }
+                else if ( person.Id == 0 )
+                {
+                    // Use configured default from the check-in template.
+                    person.ConnectionStatusValueId = DefinedValueCache.Get( _template.DefaultPersonConnectionStatusGuid, _rockContext )?.Id;
+                }
 
                 registrationPerson.IfValidProperty( nameof( registrationPerson.Bag.Ethnicity ),
                     () => person.EthnicityValueId = GetDefinedValueId( registrationPerson.Bag.Ethnicity ) );

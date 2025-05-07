@@ -99,6 +99,12 @@
 
                 <div class="row">
                     <div class="col-md-6">
+                        <EmailBox v-if="isEmailVisible"
+                                  label="Email"
+                                  v-model="email" />
+                    </div>
+
+                    <div class="col-md-6">
                         <TextBox v-if="isAlternateIdVisible"
                                  label="Alternate ID"
                                  v-model="alternateId" />
@@ -135,6 +141,7 @@
     import DatePartsPicker from "@Obsidian/Controls/datePartsPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import GradePicker from "@Obsidian/Controls/gradePicker.obs";
     import MainPanel from "./mainPanel.partial.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
@@ -189,6 +196,7 @@
     const phoneNumber = ref("");
     const phoneCountryCode = ref("");
     const isSmsDisabled = ref(true);
+    const email = ref("");
     const alternateId = ref("");
     const race = ref<ListItemBag>();
     const ethnicity = ref<ListItemBag>();
@@ -222,6 +230,10 @@
     // #endregion
 
     // #region Computed Visibility Values
+
+    const isEmailVisible = computed((): boolean => {
+        return isAdult.value;
+    });
 
     const isAlternateIdVisible = computed((): boolean => {
         return isAdult.value
@@ -369,6 +381,7 @@
             countryCode: phoneCountryCode.value,
             isMessagingEnabled: !isSmsDisabled.value
         });
+        setPropertiesBoxValue(person, "email", email.value);
         setPropertiesBoxValue(person, "alternateId", alternateId.value);
         setPropertiesBoxValue(person, "race", race.value);
         setPropertiesBoxValue(person, "ethnicity", ethnicity.value);
@@ -400,6 +413,7 @@
         phoneNumber.value = person?.bag.phoneNumber?.number ?? "";
         phoneCountryCode.value = person?.bag.phoneNumber?.countryCode ?? "";
         isSmsDisabled.value = !props.registrationData.isSmsButtonCheckedByDefault;
+        email.value = person?.bag.email ?? "";
         alternateId.value = person?.bag.alternateId ?? "";
         race.value = person?.bag.race ?? undefined;
         ethnicity.value = person?.bag.ethnicity ?? undefined;
