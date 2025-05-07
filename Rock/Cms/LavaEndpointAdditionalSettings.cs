@@ -15,32 +15,17 @@
 // </copyright>
 //
 
-using System;
-
-using Rock.Web.Cache;
-
-namespace Rock.Model
+namespace Rock.Cms
 {
     /// <summary>
-    /// LavaApplication Service class
+    /// Additional settings for the Lava Endpoints.
     /// </summary>
-    public partial class LavaApplicationService
+    internal class LavaEndpointAdditionalSettings
     {
         /// <summary>
-        /// Gets the Guid for the DefinedType that has the specified Id
+        /// Determines if cross-site forgery protection should be enabled.
         /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns></returns>
-        public override Guid? GetGuid( int id )
-        {
-            var cacheItem = LavaApplicationCache.Get( id );
-            if ( cacheItem != null )
-            {
-                return cacheItem.Guid;
-            }
-
-            return null;
-
-        }
+        public bool EnableCrossSiteForgeryProtection { get; set; } = true;
     }
+
 }

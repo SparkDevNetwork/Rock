@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -2045,5 +2045,15 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.EmailSection"/> 
         /// </summary>
         public const string EMAIL_SECTION = "86B2CE94-9DC3-463C-B2B1-DEECAB70474E";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LavaApplication"/> 
+        /// </summary>
+        public const string LAVA_APPLICATION = "FFFE0DE1-B410-435E-9AA8-3A0B18AAF0F7";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LavaEndpoint"/> 
+        /// </summary>
+        public const string LAVA_ENDPOINT = "F1BBF7D4-CAFD-450D-A89A-B3312C9738A2";
     }
 }

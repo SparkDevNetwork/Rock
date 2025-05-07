@@ -396,6 +396,8 @@
     <Compile Include="v2\Models\CodeGenerated\InteractiveExperienceScheduleCampusesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\InteractiveExperienceSchedulesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\InteractiveExperiencesController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\LavaApplicationsController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\LavaEndpointsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\LavaShortcodesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\LayoutsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\LearningActivitiesController.CodeGenerated.cs" />

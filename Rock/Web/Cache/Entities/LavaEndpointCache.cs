@@ -18,6 +18,7 @@
 using System;
 using System.Runtime.Serialization;
 
+using Rock.Cms;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Model;
@@ -237,19 +238,19 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Get's the additional endpoint settings.
         /// </summary>
-        public LavaEndpointService.EndpointSettings EndpointAdditionalSettings
+        internal LavaEndpointAdditionalSettings EndpointAdditionalSettings
         {
             get
             {
                 if ( _endpointSettings == null )
                 {
-                    _endpointSettings = this.GetAdditionalSettings<LavaEndpointService.EndpointSettings>();
+                    _endpointSettings = this.GetAdditionalSettings<LavaEndpointAdditionalSettings>();
                 }
 
                 return _endpointSettings;
             }
         }
-        private LavaEndpointService.EndpointSettings _endpointSettings = null;
+        private LavaEndpointAdditionalSettings _endpointSettings = null;
 
         /// <summary>
         /// Gets whether the cross-site forgery protection is on or not.

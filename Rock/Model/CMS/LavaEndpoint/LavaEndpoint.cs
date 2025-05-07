@@ -36,6 +36,8 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "LavaEndpoint" )]
     [DataContract]
+    [CodeGenerateRest]
+    [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Exclude v1 API controller.
     [Rock.SystemGuid.EntityTypeGuid( "F1BBF7D4-CAFD-450D-A89A-B3312C9738A2" )]
     [DebuggerDisplay( "Endpoint {Id}: {Name} [{HttpMethod}] ({LavaApplication.Slug}/{Slug})" )]
     public partial class LavaEndpoint : Model<LavaEndpoint>, ICacheable, IHasAdditionalSettings

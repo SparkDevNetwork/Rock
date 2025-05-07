@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -34,6 +35,8 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "LavaApplication" )]
     [DataContract]
+    [CodeGenerateRest]
+    [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Exclude v1 API controller.
     [Rock.SystemGuid.EntityTypeGuid( "FFFE0DE1-B410-435E-9AA8-3A0B18AAF0F7" )]
     public partial class LavaApplication : Model<LavaApplication>, ICacheable
     {
