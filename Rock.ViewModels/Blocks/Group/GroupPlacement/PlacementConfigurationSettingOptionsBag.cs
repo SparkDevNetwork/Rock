@@ -26,11 +26,11 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
     /// </summary>
     public class PlacementConfigurationSettingOptionsBag
     {
-        public List<ListItemBag> RegistrantAttributes { get; set; }
+        public List<ListItemBag> SourceAttributes { get; set; }
 
-        public List<ListItemBag> GroupAttributes { get; set; }
+        public List<ListItemBag> DestinationGroupAttributes { get; set; }
 
-        public List<ListItemBag> GroupMemberAttributes { get; set; }
+        public List<ListItemBag> DestinationGroupMemberAttributes { get; set; }
 
         public List<ListItemBag> RegistrationInstances { get; set; }
     }

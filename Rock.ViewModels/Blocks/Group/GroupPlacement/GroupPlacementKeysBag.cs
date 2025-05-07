@@ -28,5 +28,9 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         public string RegistrationInstanceIdKey { get; set; }
 
         public string RegistrationTemplateIdKey { get; set; }
+
+        public string SourceGroupIdKey { get; set; }
+
+        public string DestinationGroupTypeIdKey { get; set; }
     }
 }

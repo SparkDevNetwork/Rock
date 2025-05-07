@@ -22,9 +22,13 @@
 //
 
 export type GroupPlacementKeysBag = {
+    destinationGroupTypeIdKey?: string | null;
+
     registrationInstanceIdKey?: string | null;
 
     registrationTemplateIdKey?: string | null;
 
     registrationTemplatePlacementIdKey?: string | null;
+
+    sourceGroupIdKey?: string | null;
 };

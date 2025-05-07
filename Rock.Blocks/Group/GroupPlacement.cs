@@ -85,10 +85,13 @@ namespace Rock.Blocks.Group
 
         private static class PreferenceKey
         {
+            // TODO - Probably should update preference names to idkey
             public const string PlacementConfigurationJSONRegistrationInstanceId = "PlacementConfigurationJSON_RegistrationInstanceId_{0}";
             public const string PlacementConfigurationJSONRegistrationTemplateId = "PlacementConfigurationJSON_RegistrationTemplateId_{0}";
+            public const string PlacementConfigurationJSONSourceGroupId = "PlacementConfigurationJSON_SourceGroupId_{0}";
             public const string PersonAttributeFilterRegistrationInstanceId = "PersonAttributeFilter_RegistrationInstanceId_{0}";
             public const string PersonAttributeFilterRegistrationTemplateId = "PersonAttributeFilter_RegistrationTemplateId_{0}";
+            public const string PersonAttributeFilterSourceGroupId = "PersonAttributeFilter_SourceGroupId_{0}";
             public const string GroupAttributeFilterGroupTypeId = "GroupAttributeFilter_GroupTypeId_{0}";
             public const string GroupMemberAttributeFilterGroupTypeId = "GroupMemberAttributeFilter_GroupTypeId_{0}";
             public const string RegistrantFeeItemValuesForFiltersJSONRegistrationInstanceId = "RegistrantFeeItemValuesForFiltersJSON_RegistrationInstanceId_{0}";
@@ -102,7 +105,9 @@ namespace Rock.Blocks.Group
             public const string RegistrationTemplatePlacementId = "RegistrationTemplatePlacementId";
             public const string PromptForTemplatePlacement = "PromptForTemplatePlacement";
             public const string SourcePerson = "SourcePerson";
+            public const string SourceGroup = "SourceGroup";
             public const string ReturnUrl = "ReturnUrl";
+            public const string AllowMultiplePlacements = "AllowMultiplePlacements";
         }
 
         private static class NavigationUrlKey
@@ -213,29 +218,12 @@ namespace Rock.Blocks.Group
         private GroupPlacementInitializationBox GetInitializationBox()
         {
             GroupPlacementInitializationBox box = new GroupPlacementInitializationBox();
-            box.PlacementGroupType = new PlacementGroupTypeBag();
-            box.SelectedPlacement = new PlacementBag();
+            box.DestinationGroupType = new DestinationGroupTypeBag();
             box.GroupPlacementKeys = new GroupPlacementKeysBag();
             box.Title = "Group Placement"; // TODO - convert to proper title
             box.NavigationUrls = GetBoxNavigationUrls();
             box.BackPageUrl = GetBackPageUrl();
-
-            var registrationTemplatePlacementId = GetIdFromPageParameter( PageParameterKey.RegistrationTemplatePlacementId );
-            var registrationInstanceId = GetIdFromPageParameter( PageParameterKey.RegistrationInstanceId );
-
-            var registrationTemplateService = new RegistrationTemplateService( RockContext );
-            var registrationInstanceService = new RegistrationInstanceService( RockContext );
-
-            int? registrationTemplateId;
-            Guid? registrationTemplateGuid = GetAttributeValue( AttributeKey.RegistrationTemplate ).AsGuidOrNull();
-            if ( registrationTemplateGuid.HasValue )
-            {
-                registrationTemplateId = registrationTemplateService.GetId( registrationTemplateGuid.Value );
-            }
-            else
-            {
-                registrationTemplateId = GetIdFromPageParameter( PageParameterKey.RegistrationTemplateId );
-            }
+            box.PlacementConfigurationSettingOptions = new PlacementConfigurationSettingOptionsBag();
 
             var sourcePersonId = GetIdFromPageParameter( PageParameterKey.SourcePerson );
             if ( sourcePersonId.HasValue )
@@ -251,10 +239,101 @@ namespace Rock.Blocks.Group
                 };
             }
 
+            int? destinationGroupTypeId = null;
+
+            var sourceGroupId = GetIdFromPageParameter( PageParameterKey.SourceGroup );
+            if ( sourceGroupId.HasValue )
+            {
+                box.GroupPlacementKeys.SourceGroupIdKey = IdHasher.Instance.GetHash( sourceGroupId.Value );
+                box.PlacementMode = PlacementMode.GroupMode;
+
+                box = GetBoxForGroupPlacement( box, sourceGroupId.Value, out destinationGroupTypeId );
+            }
+            else
+            {
+                box = GetBoxForRegistrationPlacement( box, out destinationGroupTypeId );
+            }
+
+            if ( box.ErrorMessage.IsNotNullOrWhiteSpace() )
+            {
+                return box;
+            }
+
+            // If destinationGroupTypeId was null an error message would be returned before this, so we can use .Value here.
+            var groupType = GroupTypeCache.Get( destinationGroupTypeId.Value );
+
+            box.DestinationGroupType.IdKey = destinationGroupTypeId.HasValue ? IdHasher.Instance.GetHash( destinationGroupTypeId.Value ) : null;
+
+            box.DestinationGroupType.Roles = groupType?.Roles
+                .Select( r => new DestinationGroupTypeRoleBag
+                {
+                    IdKey = IdHasher.Instance.GetHash( r.Id ),
+                    Name = r.Name,
+                    MaxCount = r.MaxCount,
+                    MinCount = r.MinCount,
+                    IsLeader = r.IsLeader
+                } )
+                .ToList();
+
+
+            box.DestinationGroupType.IconCSSClass = groupType?.IconCssClass;
+            box.DestinationGroupType.Name = groupType?.GroupTerm?.Pluralize();
+
+            Rock.Model.Group fakeGroup;
+            box.PlacementConfigurationSettingOptions.DestinationGroupAttributes = GetGroupAttributesAsListItems( groupType.Id, out fakeGroup );
+            box.PlacementConfigurationSettingOptions.DestinationGroupMemberAttributes = GetGroupMemberAttributesAsListItems( fakeGroup );
+
+            // TODO - optimize fetching attributes (I'm getting this data 3 different ways currently)
+            box.AttributesForGroupAdd = fakeGroup.GetPublicAttributesForEdit( GetCurrentPerson(), true );
+
+            return box;
+        }
+
+        private GroupPlacementInitializationBox GetBoxForGroupPlacement( GroupPlacementInitializationBox box, int sourceGroupId, out int? destinationGroupTypeId )
+        {
+            var sourceGroup = GroupCache.Get( sourceGroupId );
+
+            box.Title = $"Group Placement - {sourceGroup.Name}";
+            box.IsPlacementAllowingMultiple = PageParameter( PageParameterKey.AllowMultiplePlacements ).AsBoolean();
+
+            Rock.Model.Group fakeGroup = new Rock.Model.Group
+            {
+                GroupTypeId = sourceGroup.GroupTypeId
+            };
+
+            box.PlacementConfigurationSettingOptions.SourceAttributes = box.PlacementConfigurationSettingOptions.DestinationGroupMemberAttributes = GetGroupMemberAttributesAsListItems( fakeGroup );
+
+            destinationGroupTypeId = sourceGroup.GroupTypeId;
+
+            return box;
+        }
+
+        private GroupPlacementInitializationBox GetBoxForRegistrationPlacement( GroupPlacementInitializationBox box, out int? destinationGroupTypeId )
+        {
+            var registrationTemplatePlacementId = GetIdFromPageParameter( PageParameterKey.RegistrationTemplatePlacementId );
+            var registrationInstanceId = GetIdFromPageParameter( PageParameterKey.RegistrationInstanceId );
+
+            var registrationTemplateService = new RegistrationTemplateService( RockContext );
+            var registrationInstanceService = new RegistrationInstanceService( RockContext );
+
+            destinationGroupTypeId = null;
+
+            // Pull Registration Template from Block Attribute if available.
+            int? registrationTemplateId;
+            Guid? registrationTemplateGuid = GetAttributeValue( AttributeKey.RegistrationTemplate ).AsGuidOrNull();
+            if ( registrationTemplateGuid.HasValue )
+            {
+                registrationTemplateId = registrationTemplateService.GetId( registrationTemplateGuid.Value );
+            }
+            else
+            {
+                registrationTemplateId = GetIdFromPageParameter( PageParameterKey.RegistrationTemplateId );
+            }
+
+            // If we are in Registration Instance mode then we'll use the Registration Template from the instance.
             RegistrationInstance registrationInstance = null;
             if ( registrationInstanceId.HasValue )
             {
-                //hfRegistrationInstanceId.Value = registrationInstanceId.ToString(); TODO - come back to hidden field functionality
                 registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
                 if ( registrationInstance != null )
                 {
@@ -263,16 +342,9 @@ namespace Rock.Blocks.Group
             }
 
             // make sure a valid RegistrationTemplate specified (or determined from RegistrationInstanceId )
-            RegistrationTemplate registrationTemplate;
-
-            if ( registrationTemplateId.HasValue )
-            {
-                registrationTemplate = registrationTemplateService.Get( registrationTemplateId.Value );
-            }
-            else
-            {
-                registrationTemplate = null;
-            }
+            var registrationTemplate = registrationTemplateId.HasValue
+                ? registrationTemplateService.Get( registrationTemplateId.Value )
+                : null;
 
             if ( registrationTemplate == null )
             {
@@ -280,9 +352,7 @@ namespace Rock.Blocks.Group
                 return box;
             }
 
-            int? placementGroupTypeId = null;
             RegistrationTemplatePlacement registrationTemplatePlacement = null;
-            int? registrationTemplatePlacementGroupTypeId = null;
             if ( registrationTemplatePlacementId.HasValue )
             {
                 registrationTemplatePlacement = new RegistrationTemplatePlacementService( RockContext ).Get( registrationTemplatePlacementId.Value );
@@ -295,8 +365,7 @@ namespace Rock.Blocks.Group
                 }
                 else
                 {
-                    registrationTemplatePlacementGroupTypeId = registrationTemplatePlacement.GroupTypeId;
-                    placementGroupTypeId = registrationTemplatePlacement.GroupTypeId;
+                    destinationGroupTypeId = registrationTemplatePlacement.GroupTypeId;
                 }
             }
 
@@ -309,68 +378,39 @@ namespace Rock.Blocks.Group
                 if ( !registrationTemplatePlacements.Any() )
                 {
                     box.ErrorMessage = "No Placement Types available for this registration template.";
-                    //rptSelectRegistrationTemplatePlacement.Visible = false;
-                    //nbConfigurationError.Text = "No Placement Types available for this registration template.";
-                    //nbConfigurationError.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
-                    //nbConfigurationError.Visible = true;
-                    //pnlView.Visible = false;
                     return box;
                 }
 
-                placementGroupTypeId = registrationTemplatePlacements.First().GroupTypeId;
-
-                //ReloadPageWithRegistrationTemplatePlacementId( defaultRegistrationTemplatePlacementId );
-                //return;
+                destinationGroupTypeId = registrationTemplatePlacements.First().GroupTypeId;
             }
 
-            // TODO -- handle null issue here.
-            var groupType = GroupTypeCache.Get( registrationTemplatePlacementGroupTypeId.Value );
-
-            box.GroupPlacementKeys.RegistrationInstanceIdKey = registrationInstanceId.HasValue ? IdHasher.Instance.GetHash( registrationInstanceId.Value ) : null;
-            box.GroupPlacementKeys.RegistrationTemplateIdKey = registrationTemplateId.HasValue ? IdHasher.Instance.GetHash( registrationTemplateId.Value ) : null;
-            box.GroupPlacementKeys.RegistrationTemplatePlacementIdKey = registrationTemplatePlacementId.HasValue ? IdHasher.Instance.GetHash( registrationTemplatePlacementId.Value ) : null;
-            box.PlacementGroupType.IdKey = placementGroupTypeId.HasValue ? IdHasher.Instance.GetHash( placementGroupTypeId.Value ) : null;
-
-            box.PlacementGroupType.Roles = groupType?.Roles
-                .Select( r => new PlacementGroupTypeRoleBag
-                {
-                    IdKey = IdHasher.Instance.GetHash( r.Id ),
-                    Name = r.Name,
-                    MaxCount = r.MaxCount,
-                    MinCount = r.MinCount,
-                    IsLeader = r.IsLeader
-                } )
-                .ToList();
+            if ( !destinationGroupTypeId.HasValue )
+            {
+                box.ErrorMessage = "Group Type was not found.";
+                return box;
+            }
 
             if ( !registrationInstanceId.HasValue )
             {
-                box.InTemplateMode = true;
+                box.PlacementMode = PlacementMode.TemplateMode;
                 box.Title = $"Group Placement - {registrationTemplate.Name} - {registrationTemplatePlacement.Name}";
             }
             else
             {
-                box.InTemplateMode = false;
+                box.PlacementMode = PlacementMode.InstanceMode;
                 box.Title = $"Group Placement - {registrationInstance.Name} - {registrationTemplatePlacement.Name}";
             }
 
-            box.SelectedPlacement.IconCSSClass = registrationTemplatePlacement?.IconCssClass;
-            box.SelectedPlacement.Name = registrationTemplatePlacement?.Name;
             box.IsPlacementAllowingMultiple = registrationTemplatePlacement?.AllowMultiplePlacements ?? false; // todo this shouldn't need a null check.
-            box.PlacementGroupType.IconCSSClass = groupType?.IconCssClass;
-            box.PlacementGroupType.Name = groupType?.GroupTerm?.Pluralize();
 
-            Rock.Model.Group fakeGroup;
-            var placementConfigurationSettingOptions = new PlacementConfigurationSettingOptionsBag
-            {
-                RegistrantAttributes = GetRegistrantAttributesAsListItems( registrationTemplateId ),
-                GroupAttributes = GetGroupAttributesAsListItems( groupType.Id, out fakeGroup ),
-                GroupMemberAttributes = GetGroupMemberAttributesAsListItems( fakeGroup )
-            };
+            box.GroupPlacementKeys.RegistrationInstanceIdKey = registrationInstanceId.HasValue ? IdHasher.Instance.GetHash( registrationInstanceId.Value ) : null;
+            box.GroupPlacementKeys.RegistrationTemplateIdKey = registrationTemplateId.HasValue ? IdHasher.Instance.GetHash( registrationTemplateId.Value ) : null;
+            box.GroupPlacementKeys.RegistrationTemplatePlacementIdKey = registrationTemplatePlacementId.HasValue ? IdHasher.Instance.GetHash( registrationTemplatePlacementId.Value ) : null;
+            box.GroupPlacementKeys.DestinationGroupTypeIdKey = IdHasher.Instance.GetHash( destinationGroupTypeId.Value );
 
-            // TODO - optimize fetching attributes (I'm getting this data 3 different ways currently)
-            box.GroupAttributes = fakeGroup.GetPublicAttributesForEdit( GetCurrentPerson(), true );
+            box.PlacementConfigurationSettingOptions.SourceAttributes = GetRegistrantAttributesAsListItems( registrationTemplateId );
 
-            if ( box.InTemplateMode )
+            if ( box.PlacementMode == PlacementMode.TemplateMode )
             {
                 // Get Registration instances... TODO - Optimize to only query once and get both variations of instances.
 
@@ -378,96 +418,15 @@ namespace Rock.Blocks.Group
                     .Where( a => a.RegistrationTemplateId == registrationTemplateId )
                     .OrderBy( a => a.Name )
                     .ToList()
-                    .Select( a => new ListItemBag {
+                    .Select( a => new ListItemBag
+                    {
                         Value = a.IdKey,
                         Text = a.Name
                     } )
                     .ToList();
 
-                placementConfigurationSettingOptions.RegistrationInstances = registrationTemplateInstances;
+                box.PlacementConfigurationSettingOptions.RegistrationInstances = registrationTemplateInstances;
             }
-
-            box.PlacementConfigurationSettingOptions = placementConfigurationSettingOptions;
-
-            var placementConfiguration = GetPlacementConfiguration( box.GroupPlacementKeys );
-            HashSet<int> displayedAttributeIds = new HashSet<int>();
-            HashSet<int> groupAttributeIds = new HashSet<int>();
-            HashSet<int> groupMemberAttributeIds = new HashSet<int>();
-            AttributeFiltersBag attributeFiltersBag = new AttributeFiltersBag();
-
-            if ( placementConfiguration.SourceAttributesToDisplay?.Any() == true )
-            {
-                displayedAttributeIds = placementConfiguration.SourceAttributesToDisplay
-                    .Select( idKey => Rock.Utility.IdHasher.Instance.GetId( idKey ))
-                    .Where( id => id.HasValue )
-                    .Select( id => id.Value )
-                    .ToHashSet();
-
-                // TODO - guarantee that registrationTemplateId is not null
-                RegistrationRegistrant fakeRegistrant = new RegistrationRegistrant
-                {
-                    RegistrationTemplateId = registrationTemplateId.Value
-                };
-
-                fakeRegistrant.LoadAttributes();
-
-                // TODO - Maybe use our method instead.
-                attributeFiltersBag.RegistrantAttributesForFilters = fakeRegistrant.GetPublicAttributesForEdit( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) );
-                attributeFiltersBag.RegistrantAttributeValuesForFilters = fakeRegistrant.GetPublicAttributeValuesForEdit( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) );
-            }
-
-            if ( placementConfiguration.GroupAttributesToDisplay?.Any() == true )
-            {
-                groupAttributeIds = placementConfiguration.GroupAttributesToDisplay
-                    .Select( idKey => Rock.Utility.IdHasher.Instance.GetId( idKey ) )
-                    .Where( id => id.HasValue )
-                    .Select( id => id.Value )
-                    .ToHashSet();
-
-                fakeGroup.LoadAttributes();
-
-                attributeFiltersBag.GroupAttributesForFilters = fakeGroup.GetPublicAttributesForEdit( GetCurrentPerson(), true, attributeFilter: a => groupAttributeIds.Contains( a.Id ) );
-                attributeFiltersBag.GroupAttributeValuesForFilters = fakeGroup.GetPublicAttributeValuesForEdit( GetCurrentPerson(), true, attributeFilter: a => groupAttributeIds.Contains( a.Id ) );
-            }
-
-            if ( placementConfiguration.GroupMemberAttributesToDisplay?.Any() == true )
-            {
-                groupMemberAttributeIds = placementConfiguration.GroupMemberAttributesToDisplay
-                    .Select( idKey => Rock.Utility.IdHasher.Instance.GetId( idKey ) )
-                    .Where( id => id.HasValue )
-                    .Select( id => id.Value )
-                    .ToHashSet();
-
-                // TODO - fakeGroup may be null
-                var fakeGroupMember = new GroupMember
-                {
-                    Group = fakeGroup,
-                    GroupId = fakeGroup.Id
-                };
-
-                fakeGroupMember.LoadAttributes();
-
-                attributeFiltersBag.GroupMemberAttributesForFilters = fakeGroupMember.GetPublicAttributesForEdit( GetCurrentPerson(), true, attributeFilter: a => groupMemberAttributeIds.Contains( a.Id ) );
-                attributeFiltersBag.GroupMemberAttributeValuesForFilters = fakeGroupMember.GetPublicAttributeValuesForEdit( GetCurrentPerson(), true, attributeFilter: a => groupMemberAttributeIds.Contains( a.Id ) );
-            }
-
-            if ( placementConfiguration.AreFeesDisplayed )
-            {
-                var feeItemList = new RegistrationTemplateFeeService( RockContext )
-                    .Queryable()
-                    .Where( f => f.RegistrationTemplateId == registrationTemplateId )
-                    .ToList()                                                               // TODO - to list here is hurting performance potentially.
-                    .SelectMany( fee => fee.FeeItems.Select( item => new ListItemBag
-                    {
-                        Value = item.IdKey,
-                        Text = fee.Name + " - " + item.Name
-                    } ) )
-                    .ToList();
-
-                attributeFiltersBag.RegistrantFeeItemsForFilters = feeItemList;
-            }
-
-            box.AttributeFilters = attributeFiltersBag;
 
             return box;
         }
@@ -767,6 +726,10 @@ namespace Rock.Blocks.Group
                 {
                     placementConfigurationJSON = preferences.GetValue( string.Format( PreferenceKey.PlacementConfigurationJSONRegistrationTemplateId, groupPlacementKeys.RegistrationTemplateIdKey ) );
                 }
+                else if ( groupPlacementKeys.SourceGroupIdKey.IsNotNullOrWhiteSpace() )
+                {
+                    placementConfigurationJSON = preferences.GetValue( string.Format( PreferenceKey.PlacementConfigurationJSONSourceGroupId, groupPlacementKeys.SourceGroupIdKey ) );
+                }
 
                 _placementConfiguration = placementConfigurationJSON.FromJsonOrNull<PlacementConfigurationSettingsBag>() ?? new PlacementConfigurationSettingsBag();
             }
@@ -990,12 +953,13 @@ namespace Rock.Blocks.Group
             var registrationInstanceId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.RegistrationInstanceIdKey );
             var registrationTemplateId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.RegistrationTemplateIdKey );
             var registrationTemplatePlacementId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.RegistrationTemplatePlacementIdKey );
+            var sourceGroupId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.SourceGroupIdKey );
 
-            if ( !registrationTemplateId.HasValue || !registrationTemplatePlacementId.HasValue )
-            {
-                // TODO - refactor how ids are retrieved.
-                return ActionBadRequest("Could not find Registration Template Id");
-            }
+            //if ( !registrationTemplateId.HasValue || !registrationTemplatePlacementId.HasValue )
+            //{
+            //    // TODO - refactor how ids are retrieved.
+            //    return ActionBadRequest("Could not find Registration Template Id");
+            //}
 
             var placementConfiguration = GetPlacementConfiguration( groupPlacementKeys );
             var includedRegistrationInstanceIds = ( placementConfiguration.IncludedRegistrationInstanceIds?.Any() == true )
@@ -1024,7 +988,8 @@ namespace Rock.Blocks.Group
                         @{nameof( groupEntityTypeId )}, 
                         @{nameof( registrationTemplateId )}, 
                         @{nameof( registrationInstanceId )}, 
-                        @{nameof( registrationTemplatePlacementId )}, 
+                        @{nameof( registrationTemplatePlacementId )},
+                        @{nameof( sourceGroupId )},
                         @{nameof( placementMode )},
                         @{nameof( includedRegistrationInstanceIds )},
                         @{nameof( includeFees )},
@@ -1035,13 +1000,14 @@ namespace Rock.Blocks.Group
                     new SqlParameter( nameof( registrationTemplateId ), registrationTemplateId ),
                     new SqlParameter( nameof( registrationInstanceId ), registrationInstanceId.Value ),
                     new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
+                    new SqlParameter( nameof( sourceGroupId ), DBNull.Value ),
                     new SqlParameter( nameof( placementMode ), placementMode ),
                     new SqlParameter( nameof( includedRegistrationInstanceIds ), includedRegistrationInstanceIds ),
                     new SqlParameter( nameof( includeFees ), includeFees ),
                     new SqlParameter( nameof( includedFeeItemIds ), includedFeeItemIds )
                 ).ToList();
             }
-            else
+            else if ( registrationTemplateId.HasValue )
             {
                 placementMode = "TemplateMode";
 
@@ -1052,7 +1018,8 @@ namespace Rock.Blocks.Group
                         @{nameof( groupEntityTypeId )}, 
                         @{nameof( registrationTemplateId )}, 
                         @{nameof( registrationInstanceId )}, 
-                        @{nameof( registrationTemplatePlacementId )}, 
+                        @{nameof( registrationTemplatePlacementId )},
+                        @{nameof( sourceGroupId )},
                         @{nameof( placementMode )},
                         @{ nameof( includedRegistrationInstanceIds )},
                         @{nameof( includeFees )},
@@ -1060,14 +1027,49 @@ namespace Rock.Blocks.Group
                     new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
                     new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
                     new SqlParameter( nameof( groupEntityTypeId ), groupEntityTypeId ),
-                    new SqlParameter( nameof( registrationTemplateId ), registrationTemplateId ),
+                    new SqlParameter( nameof( registrationTemplateId ), registrationTemplateId.Value ),
                     new SqlParameter( nameof( registrationInstanceId ), DBNull.Value ),
                     new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
+                    new SqlParameter( nameof( sourceGroupId ), DBNull.Value ),
                     new SqlParameter( nameof( placementMode ), placementMode ),
                     new SqlParameter( nameof( includedRegistrationInstanceIds ), includedRegistrationInstanceIds ),
                     new SqlParameter( nameof( includeFees ), includeFees ),
                     new SqlParameter( nameof( includedFeeItemIds ), includedFeeItemIds )
                 ).ToList();
+            }
+            else if ( sourceGroupId.HasValue )
+            {
+                placementMode = "GroupMode";
+
+                placementPeopleResults = RockContext.Database.SqlQuery<PlacementPeopleResult>(
+                    $@"EXEC [dbo].[spGetGroupPlacementPeople] 
+                        @{nameof( registrationTemplatePlacementEntityTypeId )}, 
+                        @{nameof( registrationInstanceEntityTypeId )}, 
+                        @{nameof( groupEntityTypeId )}, 
+                        @{nameof( registrationTemplateId )}, 
+                        @{nameof( registrationInstanceId )}, 
+                        @{nameof( registrationTemplatePlacementId )},
+                        @{nameof( sourceGroupId )},
+                        @{nameof( placementMode )},
+                        @{nameof( includedRegistrationInstanceIds )},
+                        @{nameof( includeFees )},
+                        @{nameof( includedFeeItemIds )}",
+                    new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), DBNull.Value ),
+                    new SqlParameter( nameof( registrationInstanceEntityTypeId ), DBNull.Value ),
+                    new SqlParameter( nameof( groupEntityTypeId ), groupEntityTypeId ),
+                    new SqlParameter( nameof( registrationTemplateId ), DBNull.Value ),
+                    new SqlParameter( nameof( registrationInstanceId ), DBNull.Value ),
+                    new SqlParameter( nameof( registrationTemplatePlacementId ), DBNull.Value ),
+                    new SqlParameter( nameof( sourceGroupId ), sourceGroupId.Value ),
+                    new SqlParameter( nameof( placementMode ), placementMode ),
+                    new SqlParameter( nameof( includedRegistrationInstanceIds ), DBNull.Value ),
+                    new SqlParameter( nameof( includeFees ), DBNull.Value ),
+                    new SqlParameter( nameof( includedFeeItemIds ), DBNull.Value )
+                ).ToList();
+            }
+            else
+            {
+                return ActionNotFound( "Missing required keys to get Placement People." );
             }
 
             HashSet<int> displayedRegistrantAttributeIds = null;
@@ -1082,9 +1084,9 @@ namespace Rock.Blocks.Group
                     .ToHashSet();
             }
 
-            if ( placementConfiguration.GroupMemberAttributesToDisplay?.Any() == true )
+            if ( placementConfiguration.DestinationGroupMemberAttributesToDisplay?.Any() == true )
             {
-                displayedGroupMemberAttributeIds = placementConfiguration.GroupMemberAttributesToDisplay
+                displayedGroupMemberAttributeIds = placementConfiguration.DestinationGroupMemberAttributesToDisplay
                     .Select( idKey => Rock.Utility.IdHasher.Instance.GetId( idKey ) )
                     .Where( id => id.HasValue )
                     .Select( id => id.Value )
@@ -1120,8 +1122,13 @@ namespace Rock.Blocks.Group
                         firstResult.Gender,
                         firstResult.RecordTypeValueId,
                         firstResult.AgeClassification
-                    ),
-                    Registrants = personGroup
+                    )
+                };
+
+                // TODO - Institute PlacementMode Enum here.
+                if ( registrationInstanceId.HasValue || registrationTemplateId.HasValue )
+                {
+                    personBag.Registrants = personGroup
                         .Where( r => r.RegistrantId.HasValue )
                         .DistinctBy( r => r.RegistrantId )
                         .Select( r => new RegistrantBag
@@ -1130,12 +1137,26 @@ namespace Rock.Blocks.Group
                             RegistrationInstanceName = r.RegistrationInstanceName,
                             RegistrationInstanceIdKey = r.RegistrationInstanceId.HasValue ? IdHasher.Instance.GetHash( r.RegistrationInstanceId.Value ) : null,
                             CreatedDateTime = r.CreatedDateTime?.ToRockDateTimeOffset(),
-                            Fees = GetFormattedFeesForRegistrant(personGroup, r.RegistrantId.Value),
+                            Fees = GetFormattedFeesForRegistrant( personGroup, r.RegistrantId.Value ),
                             Attributes = GetRegistrantAttributes( r.RegistrantId.Value, registrationTemplateId.Value, displayedRegistrantAttributeIds ),
                             AttributeValues = GetRegistrantAttributeValues( r.RegistrantId.Value, registrationTemplateId.Value, displayedRegistrantAttributeIds )
                         } )
-                        .ToList()
-                };
+                        .ToList();
+                }
+                else if ( sourceGroupId.HasValue )
+                {
+                    var sourceGroup = GroupCache.Get( sourceGroupId.Value );
+
+                    personBag.SourceGroupMember = personGroup
+                        .Where( p => p.GroupMemberId.HasValue && !p.GroupId.HasValue )
+                        .Select( p => new GroupMemberBag
+                        {
+                            GroupMemberIdKey = IdHasher.Instance.GetHash( p.GroupMemberId.Value ),
+                            Attributes = GetGroupMemberAttributes( p.GroupMemberId, sourceGroup.GroupTypeId, displayedGroupMemberAttributeIds ),
+                            AttributeValues = GetGroupMemberAttributeValues( p.GroupMemberId, sourceGroup.GroupTypeId, displayedGroupMemberAttributeIds )
+                        } )
+                        .FirstOrDefault();
+                }
 
                 // If GroupId exists, put them in TempGroups
                 if ( firstResult.GroupId.HasValue )
@@ -1187,12 +1208,13 @@ namespace Rock.Blocks.Group
             var registrationInstanceId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.RegistrationInstanceIdKey );
             var registrationTemplateId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.RegistrationTemplateIdKey );
             var registrationTemplatePlacementId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.RegistrationTemplatePlacementIdKey );
+            var sourceGroupId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.SourceGroupIdKey );
 
-            if ( !registrationTemplatePlacementId.HasValue )
-            {
-                // TODO - refactor how ids are retrieved.
-                return ActionBadRequest( "Could not find Registration Template Id" );
-            }
+            //if ( !registrationTemplatePlacementId.HasValue )
+            //{
+            //    // TODO - refactor how ids are retrieved.
+            //    return ActionBadRequest( "Could not find Registration Template Id" );
+            //}
 
             var placementConfiguration = GetPlacementConfiguration( groupPlacementKeys );
             var includedRegistrationInstanceIds = ( placementConfiguration.IncludedRegistrationInstanceIds?.Any() == true )
@@ -1217,7 +1239,8 @@ namespace Rock.Blocks.Group
                         @{nameof( groupEntityTypeId )}, 
                         @{nameof( registrationTemplateId )}, 
                         @{nameof( registrationInstanceId )}, 
-                        @{nameof( registrationTemplatePlacementId )}, 
+                        @{nameof( registrationTemplatePlacementId )},
+                        @{nameof( sourceGroupId )},
                         @{nameof( placementMode )},
                         @{ nameof( includedRegistrationInstanceIds )}",
                     new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
@@ -1226,11 +1249,12 @@ namespace Rock.Blocks.Group
                     new SqlParameter( nameof( registrationTemplateId ), registrationTemplateId ),
                     new SqlParameter( nameof( registrationInstanceId ), registrationInstanceId.Value ),
                     new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
+                    new SqlParameter( nameof( sourceGroupId ), DBNull.Value ),
                     new SqlParameter( nameof( placementMode ), placementMode ),
                     new SqlParameter( nameof( includedRegistrationInstanceIds ), includedRegistrationInstanceIds )
                 ).ToList();
             }
-            else
+            else if ( registrationTemplateId.HasValue )
             {
                 placementMode = "TemplateMode";
 
@@ -1241,25 +1265,57 @@ namespace Rock.Blocks.Group
                         @{nameof( groupEntityTypeId )}, 
                         @{nameof( registrationTemplateId )}, 
                         @{nameof( registrationInstanceId )}, 
-                        @{nameof( registrationTemplatePlacementId )}, 
+                        @{nameof( registrationTemplatePlacementId )},
+                        @{nameof( sourceGroupId )},
                         @{nameof( placementMode )},
                         @{nameof( includedRegistrationInstanceIds )}",
                     new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
                     new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
                     new SqlParameter( nameof( groupEntityTypeId ), groupEntityTypeId ),
-                    new SqlParameter( nameof( registrationTemplateId ), registrationTemplateId ),
+                    new SqlParameter( nameof( registrationTemplateId ), registrationTemplateId.Value ),
                     new SqlParameter( nameof( registrationInstanceId ), DBNull.Value ),
                     new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
+                    new SqlParameter( nameof( sourceGroupId ), DBNull.Value ),
                     new SqlParameter( nameof( placementMode ), placementMode ),
                     new SqlParameter( nameof( includedRegistrationInstanceIds ), includedRegistrationInstanceIds )
                 ).ToList();
             }
+            else if ( sourceGroupId.HasValue )
+            {
+                placementMode = "GroupMode";
+
+                destinationGroupResults = RockContext.Database.SqlQuery<DestinationGroupResult>(
+                    $@"EXEC [dbo].[spGetDestinationGroups] 
+                        @{nameof( registrationTemplatePlacementEntityTypeId )}, 
+                        @{nameof( registrationInstanceEntityTypeId )}, 
+                        @{nameof( groupEntityTypeId )}, 
+                        @{nameof( registrationTemplateId )}, 
+                        @{nameof( registrationInstanceId )}, 
+                        @{nameof( registrationTemplatePlacementId )},
+                        @{nameof( sourceGroupId )},
+                        @{nameof( placementMode )},
+                        @{nameof( includedRegistrationInstanceIds )}",
+                    new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), DBNull.Value ),
+                    new SqlParameter( nameof( registrationInstanceEntityTypeId ), DBNull.Value ),
+                    new SqlParameter( nameof( groupEntityTypeId ), groupEntityTypeId ),
+                    new SqlParameter( nameof( registrationTemplateId ), DBNull.Value ),
+                    new SqlParameter( nameof( registrationInstanceId ), DBNull.Value ),
+                    new SqlParameter( nameof( registrationTemplatePlacementId ), DBNull.Value ),
+                    new SqlParameter( nameof( sourceGroupId ), sourceGroupId.Value ),
+                    new SqlParameter( nameof( placementMode ), placementMode ),
+                    new SqlParameter( nameof( includedRegistrationInstanceIds ), DBNull.Value )
+                ).ToList();
+            }
+            else
+            {
+                return ActionNotFound( "Missing required keys to get Destination Groups." );
+            }
 
             HashSet<int> groupIdsToDisplay = new HashSet<int>();
 
-            if ( placementConfiguration.GroupAttributesToDisplay?.Any() == true )
+            if ( placementConfiguration.DestinationGroupAttributesToDisplay?.Any() == true )
             {
-                groupIdsToDisplay = placementConfiguration.GroupAttributesToDisplay
+                groupIdsToDisplay = placementConfiguration.DestinationGroupAttributesToDisplay
                     .Select( idKey => Rock.Utility.IdHasher.Instance.GetId( idKey ) )
                     .Where( id => id.HasValue )
                     .Select( id => id.Value )
@@ -1598,6 +1654,121 @@ namespace Rock.Blocks.Group
             RockContext.SaveChanges();
 
             return ActionOk();
+        }
+
+        [BlockAction]
+        public BlockActionResult PopulateAttributeFilters( GroupPlacementKeysBag groupPlacementKeys )
+        {
+            var placementConfiguration = GetPlacementConfiguration( groupPlacementKeys );
+            HashSet<int> displayedAttributeIds = new HashSet<int>();
+            HashSet<int> groupAttributeIds = new HashSet<int>();
+            HashSet<int> groupMemberAttributeIds = new HashSet<int>();
+            AttributeFiltersBag attributeFiltersBag = new AttributeFiltersBag();
+
+            // TODO - I could also pull from page params.
+            var sourceGroupId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.SourceGroupIdKey );
+            var registrationTemplateId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.RegistrationTemplateIdKey );
+            //var registrationInstanceId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.RegistrationInstanceIdKey );
+            var registrationTemplatePlacementId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.RegistrationTemplatePlacementIdKey );
+            var destinationGroupTypeId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.DestinationGroupTypeIdKey );
+
+            Rock.Model.Group fakeGroup = null;
+            if ( destinationGroupTypeId.HasValue )
+            {
+                fakeGroup = new Rock.Model.Group
+                {
+                    GroupTypeId = destinationGroupTypeId.Value
+                };
+            }
+
+            if ( placementConfiguration.SourceAttributesToDisplay?.Any() == true )
+            {
+                displayedAttributeIds = placementConfiguration.SourceAttributesToDisplay
+                    .Select( idKey => Rock.Utility.IdHasher.Instance.GetId( idKey ) )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToHashSet();
+
+                if ( sourceGroupId.HasValue )
+                {
+                    var fakeGroupMember = new GroupMember
+                    {
+                        GroupId = sourceGroupId.Value
+                    };
+
+                    fakeGroupMember.LoadAttributes();
+
+                    attributeFiltersBag.SourceAttributesForFilter = fakeGroupMember.GetPublicAttributesForEdit( GetCurrentPerson(), true, attributeFilter: a => groupMemberAttributeIds.Contains( a.Id ) );
+                    attributeFiltersBag.SourceAttributeValuesForFilter = fakeGroupMember.GetPublicAttributeValuesForEdit( GetCurrentPerson(), true, attributeFilter: a => groupMemberAttributeIds.Contains( a.Id ) );
+                }
+                else if ( registrationTemplateId.HasValue ) // TODO - Think of scenarios where this might be null but we still want data.
+                {
+                    RegistrationRegistrant fakeRegistrant = new RegistrationRegistrant
+                    {
+                        RegistrationTemplateId = registrationTemplateId.Value
+                    };
+
+                    fakeRegistrant.LoadAttributes();
+
+                    // TODO - Maybe use our method instead.
+                    attributeFiltersBag.SourceAttributesForFilter = fakeRegistrant.GetPublicAttributesForEdit( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) );
+                    attributeFiltersBag.SourceAttributeValuesForFilter = fakeRegistrant.GetPublicAttributeValuesForEdit( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) );
+                }
+            }
+
+            if ( placementConfiguration.DestinationGroupAttributesToDisplay?.Any() == true && fakeGroup != null )
+            {
+                groupAttributeIds = placementConfiguration.DestinationGroupAttributesToDisplay
+                    .Select( idKey => Rock.Utility.IdHasher.Instance.GetId( idKey ) )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToHashSet();
+
+                // TODO - Need to talk to Jon about potential Destination Group Id Key from query string.
+                
+                fakeGroup.LoadAttributes();
+
+                attributeFiltersBag.DestinationGroupAttributesForFilter = fakeGroup.GetPublicAttributesForEdit( GetCurrentPerson(), true, attributeFilter: a => groupAttributeIds.Contains( a.Id ) );
+                attributeFiltersBag.DestinationGroupAttributeValuesForFilter = fakeGroup.GetPublicAttributeValuesForEdit( GetCurrentPerson(), true, attributeFilter: a => groupAttributeIds.Contains( a.Id ) );
+            }
+
+            if ( placementConfiguration.DestinationGroupMemberAttributesToDisplay?.Any() == true && fakeGroup != null )
+            {
+                groupMemberAttributeIds = placementConfiguration.DestinationGroupMemberAttributesToDisplay
+                    .Select( idKey => Rock.Utility.IdHasher.Instance.GetId( idKey ) )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToHashSet();
+
+                var fakeGroupMember = new GroupMember
+                {
+                    Group = fakeGroup,
+                    GroupId = fakeGroup.Id // TODO - do i even have this??
+                };
+
+                fakeGroupMember.LoadAttributes();
+
+                attributeFiltersBag.DestinationGroupMemberAttributesForFilter = fakeGroupMember.GetPublicAttributesForEdit( GetCurrentPerson(), true, attributeFilter: a => groupMemberAttributeIds.Contains( a.Id ) );
+                attributeFiltersBag.DestinationGroupMemberAttributeValuesForFilter = fakeGroupMember.GetPublicAttributeValuesForEdit( GetCurrentPerson(), true, attributeFilter: a => groupMemberAttributeIds.Contains( a.Id ) );
+            }
+
+            if ( placementConfiguration.AreFeesDisplayed && registrationTemplateId.HasValue )
+            {
+                var feeItemList = new RegistrationTemplateFeeService( RockContext )
+                    .Queryable()
+                    .Where( f => f.RegistrationTemplateId == registrationTemplateId.Value )
+                    .ToList()                                                               // TODO - to list here is hurting performance potentially.
+                    .SelectMany( fee => fee.FeeItems.Select( item => new ListItemBag
+                    {
+                        Value = item.IdKey,
+                        Text = fee.Name + " - " + item.Name
+                    } ) )
+                    .ToList();
+
+                attributeFiltersBag.RegistrantFeeItemsForFilter = feeItemList;
+            }
+
+            return ActionOk( attributeFiltersBag );
         }
 
         #endregion Block Actions

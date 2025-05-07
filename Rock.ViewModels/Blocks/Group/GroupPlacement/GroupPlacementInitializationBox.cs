@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 
+using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
@@ -28,23 +29,19 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
     {
         public GroupPlacementKeysBag GroupPlacementKeys { get; set; }
 
-        public PlacementBag SelectedPlacement { get; set; }
-
-        public PlacementGroupTypeBag PlacementGroupType { get; set; }
+        public DestinationGroupTypeBag DestinationGroupType { get; set; }
 
         public string Title { get; set; }
 
         public PlacementConfigurationSettingOptionsBag PlacementConfigurationSettingOptions { get; set; }
 
-        public bool InTemplateMode { get; set; }
+        public PlacementMode PlacementMode { get; set; }
 
         public bool IsPlacementAllowingMultiple { get; set; }
 
         public PersonBag SourcePerson { get; set; }
 
-        public AttributeFiltersBag AttributeFilters { get; set; }
-
-        public Dictionary<string, PublicAttributeBag> GroupAttributes { get; set; }
+        public Dictionary<string, PublicAttributeBag> AttributesForGroupAdd { get; set; }
 
         /// <summary>
         /// Gets or sets the navigation urls.

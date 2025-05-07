@@ -37,5 +37,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         public string PhotoUrl { get; set; }
 
         public List<RegistrantBag> Registrants { get; set; }
+
+        public GroupMemberBag SourceGroupMember { get; set; }
     }
 }

@@ -15,15 +15,32 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Group.GroupPlacement
+namespace Rock.Model
 {
     /// <summary>
-    /// The SMS Conversations Initialization Box
+    /// Represents the different Group Placement modes.
     /// </summary>
-    public class PlacementBag
+    [Enums.EnumDomain( "Group" )]
+    public enum PlacementMode
     {
-        public string Name { get; set; }
+        /// <summary>
+        /// The Group Placement Block is in Template Mode.
+        /// </summary>
+        TemplateMode = 0,
 
-        public string IconCSSClass { get; set; }
+        /// <summary>
+        /// The Group Placement Block is in Instance Mode.
+        /// </summary>
+        InstanceMode = 1,
+
+        /// <summary>
+        /// The Group Placement Block is in Group Mode.
+        /// </summary>
+        GroupMode = 2,
+
+        /// <summary>
+        /// The Group Placement Block is in Entity Set Mode.
+        /// </summary>
+        EntitySetMode = 3
     }
 }

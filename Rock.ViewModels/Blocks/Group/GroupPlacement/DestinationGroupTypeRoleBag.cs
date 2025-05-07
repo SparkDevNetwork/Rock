@@ -17,7 +17,7 @@
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
-    public class PlacementGroupTypeRoleBag
+    public class DestinationGroupTypeRoleBag
     {
         public string IdKey { get; set; }
 

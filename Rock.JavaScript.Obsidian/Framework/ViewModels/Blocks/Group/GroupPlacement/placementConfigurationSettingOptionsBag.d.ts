@@ -24,11 +24,11 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type PlacementConfigurationSettingOptionsBag = {
-    groupAttributes?: ListItemBag[] | null;
+    destinationGroupAttributes?: ListItemBag[] | null;
 
-    groupMemberAttributes?: ListItemBag[] | null;
-
-    registrantAttributes?: ListItemBag[] | null;
+    destinationGroupMemberAttributes?: ListItemBag[] | null;
 
     registrationInstances?: ListItemBag[] | null;
+
+    sourceAttributes?: ListItemBag[] | null;
 };

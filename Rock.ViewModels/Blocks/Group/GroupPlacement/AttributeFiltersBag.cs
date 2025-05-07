@@ -24,18 +24,18 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
     public class AttributeFiltersBag
     {
-        public Dictionary<string, PublicAttributeBag> RegistrantAttributesForFilters { get; set; }
+        public Dictionary<string, PublicAttributeBag> SourceAttributesForFilter { get; set; }
 
-        public Dictionary<string, string> RegistrantAttributeValuesForFilters { get; set; }
+        public Dictionary<string, string> SourceAttributeValuesForFilter { get; set; }
 
-        public Dictionary<string, PublicAttributeBag> GroupAttributesForFilters { get; set; }
+        public Dictionary<string, PublicAttributeBag> DestinationGroupAttributesForFilter { get; set; }
 
-        public Dictionary<string, string> GroupAttributeValuesForFilters { get; set; }
+        public Dictionary<string, string> DestinationGroupAttributeValuesForFilter { get; set; }
 
-        public Dictionary<string, PublicAttributeBag> GroupMemberAttributesForFilters { get; set; }
+        public Dictionary<string, PublicAttributeBag> DestinationGroupMemberAttributesForFilter { get; set; }
 
-        public Dictionary<string, string> GroupMemberAttributeValuesForFilters { get; set; }
+        public Dictionary<string, string> DestinationGroupMemberAttributeValuesForFilter { get; set; }
 
-        public List<ListItemBag> RegistrantFeeItemsForFilters { get; set; }
+        public List<ListItemBag> RegistrantFeeItemsForFilter { get; set; }
     }
 }

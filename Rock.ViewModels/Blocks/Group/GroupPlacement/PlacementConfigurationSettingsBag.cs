@@ -79,7 +79,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         /// <value>
         /// The displayed group attribute ids.
         /// </value>
-        public List<string> GroupAttributesToDisplay { get; set; }
+        public List<string> DestinationGroupAttributesToDisplay { get; set; }
 
         /// <summary>
         /// Gets or sets the displayed group member attribute ids.
@@ -87,7 +87,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         /// <value>
         /// The displayed group member attribute ids.
         /// </value>
-        public List<string> GroupMemberAttributesToDisplay { get; set; }
+        public List<string> DestinationGroupMemberAttributesToDisplay { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [hide full groups].

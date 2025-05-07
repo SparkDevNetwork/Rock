@@ -32,14 +32,14 @@ export type PlacementConfigurationSettingsBag = {
 
     areSourceAttributesDisplayedOnDestinationGroupMembers: boolean;
 
-    /** Gets or sets the displayed campus identifier. */
-    displayedCampus?: ListItemBag | null;
-
     /** Gets or sets the displayed group attribute ids. */
-    groupAttributesToDisplay?: string[] | null;
+    destinationGroupAttributesToDisplay?: string[] | null;
 
     /** Gets or sets the displayed group member attribute ids. */
-    groupMemberAttributesToDisplay?: string[] | null;
+    destinationGroupMemberAttributesToDisplay?: string[] | null;
+
+    /** Gets or sets the displayed campus identifier. */
+    displayedCampus?: ListItemBag | null;
 
     /**
      * Gets or sets the included registration instance ids.

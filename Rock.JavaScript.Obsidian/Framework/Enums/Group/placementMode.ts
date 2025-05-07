@@ -21,21 +21,31 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+/** Represents the different Group Placement modes. */
+export const PlacementMode = {
+    /** The Group Placement Block is in Template Mode. */
+    TemplateMode: 0,
 
-export type AttributeFiltersBag = {
-    destinationGroupAttributesForFilter?: Record<string, PublicAttributeBag> | null;
+    /** The Group Placement Block is in Instance Mode. */
+    InstanceMode: 1,
 
-    destinationGroupAttributeValuesForFilter?: Record<string, string> | null;
+    /** The Group Placement Block is in Group Mode. */
+    GroupMode: 2,
 
-    destinationGroupMemberAttributesForFilter?: Record<string, PublicAttributeBag> | null;
+    /** The Group Placement Block is in Entity Set Mode. */
+    EntitySetMode: 3
+} as const;
 
-    destinationGroupMemberAttributeValuesForFilter?: Record<string, string> | null;
+/** Represents the different Group Placement modes. */
+export const PlacementModeDescription: Record<number, string> = {
+    0: "Template Mode",
 
-    registrantFeeItemsForFilter?: ListItemBag[] | null;
+    1: "Instance Mode",
 
-    sourceAttributesForFilter?: Record<string, PublicAttributeBag> | null;
+    2: "Group Mode",
 
-    sourceAttributeValuesForFilter?: Record<string, string> | null;
+    3: "Entity Set Mode"
 };
+
+/** Represents the different Group Placement modes. */
+export type PlacementMode = typeof PlacementMode[keyof typeof PlacementMode];

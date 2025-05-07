@@ -84,8 +84,8 @@
                     </template>
 
                     <!-- TODO: See about adding "Filter" to drawer. -->
-                    <template v-if="Object.keys(personAttributesForFilter).length > 0 || registrantFeeItemsForFilter.length > 0" #drawer>
-                        <AttributeValuesContainer v-model="pendingPersonAttributeValuesForFilter" :attributes="personAttributesForFilter" isEditMode :numberOfColumns="1" />
+                    <template v-if="Object.keys(sourceAttributesForFilter).length > 0 || registrantFeeItemsForFilter.length > 0" #drawer>
+                        <AttributeValuesContainer v-model="pendingSourceAttributeValuesForFilter" :attributes="sourceAttributesForFilter" isEditMode :numberOfColumns="1" />
                         <DropDownList v-model="pendingRegistrantFeeItemValuesForFilter"
                                       label="Fees"
                                       :items="registrantFeeItemsForFilter ?? []"
@@ -178,24 +178,24 @@
                     </template>
 
                     <!-- TODO: See about adding "Filter" to drawer. -->
-                    <template #drawer v-if="Object.keys(groupAttributesForFilter).length > 0 || Object.keys(groupMemberAttributesForFilter).length > 0">
-                        <AttributeValuesContainer v-model="pendingGroupAttributeValuesForFilter"
-                                                  :attributes="groupAttributesForFilter"
+                    <template #drawer v-if="Object.keys(destinationGroupAttributesForFilter).length > 0 || Object.keys(destinationGroupMemberAttributesForFilter).length > 0">
+                        <AttributeValuesContainer v-model="pendingDestinationGroupAttributeValuesForFilter"
+                                                  :attributes="destinationGroupAttributesForFilter"
                                                   isEditMode
                                                   :numberOfColumns="3"
                                                   columnBreakpoint="lg"
                                                   :showCategoryLabel="false" />
                         <div class="w-100 mb-2">
-                            <RockLabel v-if="Object.keys(groupMemberAttributesForFilter).length > 0"
+                            <RockLabel v-if="Object.keys(destinationGroupMemberAttributesForFilter).length > 0"
                                        @click="toggleIsGroupMemberFilterDisplayed"
                                        class="group-member-filter-toggle">
                                 Group Member Filters <i :class="groupMemberFilterIcon"></i>
                             </RockLabel>
                             <TransitionVerticalCollapse>
                                 <div v-show="isGroupMemberFilterDisplayed">
-                                    <AttributeValuesContainer v-model="pendingGroupMemberAttributeValuesForFilter"
+                                    <AttributeValuesContainer v-model="pendingDestinationGroupMemberAttributeValuesForFilter"
 
-                                                              :attributes="groupMemberAttributesForFilter"
+                                                              :attributes="destinationGroupMemberAttributesForFilter"
                                                               isEditMode
                                                               :numberOfColumns="3"
                                                               columnBreakpoint="lg"
@@ -219,13 +219,19 @@
                         <div v-if="areGroupsLoading" class="d-flex align-items-center justify-content-center">
                             <Loading :isLoading="areGroupsLoading" />
                         </div>
+                        <div v-else-if="filteredAndSortedGroups.length === 0" class="h-100 d-flex align-items-center justify-content-center">
+                            <div class="no-groups">
+                                <i class="fa fa-group fa-2x"></i>
+                                <p>No Groups</p>
+                            </div>
+                        </div>
                         <DestinationGroup v-for="(group, index) in filteredAndSortedGroups"
                                           v-else
                                           :key="index"
                                           :destinationGroup="group"
                                           :arePersonCardsExpanded="arePersonCardsExpanded"
                                           :isGroupExpanded="areGroupsExpanded"
-                                          :groupTypeRoles="box.placementGroupType?.roles ?? []"
+                                          :groupTypeRoles="box.destinationGroupType?.roles ?? []"
                                           :dragTargetId="personDragSourceOptions.id"
                                           :groupMemberDragOptions="groupMemberDragSourceOptions"
                                           :getGroupRoleError="getGroupRoleError"
@@ -251,12 +257,12 @@
     <PlacementConfigurationModal v-model="isPlacementConfigModalVisible"
                                  :placementConfigurationSettings="placementConfigurationSettings"
                                  :placementConfigurationSettingOptions="box.placementConfigurationSettingOptions ?? {}"
-                                 :inTemplateMode="box.inTemplateMode"
+                                 :inTemplateMode="box.placementMode === PlacementMode.TemplateMode"
                                  @save="savePlacementCofigSettings" />
 
     <AddGroupModal v-model="isAddGroupModalVisible"
                    ref="addGroupModalElement"
-                   :groupAttributes="box.groupAttributes ?? {}"
+                   :groupAttributes="box.attributesForGroupAdd ?? {}"
                    :errorMessage="addGroupModalErrorText"
                    @save="addGroup"
                    @dismissMessage="addGroupModalErrorText = ''" />
@@ -402,6 +408,15 @@
     font-weight: var(--font-weight-semibold);
 }
 
+.no-groups {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+}
+
 :deep(.highlight) {
     background-color: var(--color-interface-soft) !important;
 }
@@ -451,6 +466,9 @@
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import { AddGroupMembersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupMembersBag";
+    import { AttributeFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/attributeFiltersBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
 
     /*
         TODO's
@@ -479,22 +497,22 @@
 
     const selectedPersonIdKeys = ref<Set<string>>(new Set());
 
-    const personAttributesForFilter = ref(box.attributeFilters?.registrantAttributesForFilters ?? {});
-    const personAttributeValuesForFilter = ref(preferences.getValue(getPersonAttributeFilterKey()) ? JSON.parse(preferences.getValue(getPersonAttributeFilterKey())) : {});
-    const registrantFeeItemsForFilter = ref(box.attributeFilters?.registrantFeeItemsForFilters ?? []);
+    const sourceAttributesForFilter = ref<Record<string, PublicAttributeBag>>({});
+    const sourceAttributeValuesForFilter = ref(preferences.getValue(getPersonAttributeFilterKey()) ? JSON.parse(preferences.getValue(getPersonAttributeFilterKey())) : {});
+    const registrantFeeItemsForFilter = ref<ListItemBag[]>([]);
     const pendingRegistrantFeeItemValuesForFilter = ref(preferences.getValue(getRegistrantFeeItemValuesFilterKey()) ? JSON.parse(preferences.getValue(getRegistrantFeeItemValuesFilterKey())) : {});
     const registrantFeeItemValuesForFilter = ref(preferences.getValue(getRegistrantFeeItemValuesFilterKey()) ? JSON.parse(preferences.getValue(getRegistrantFeeItemValuesFilterKey())) : {});
 
-    const groupAttributesForFilter = ref(box.attributeFilters?.groupAttributesForFilters ?? {});
-    const groupAttributeValuesForFilter = ref(preferences.getValue(getGroupAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupAttributeFilterKey())) : {});
-    const groupMemberAttributesForFilter = ref(box.attributeFilters?.groupMemberAttributesForFilters ?? {});
-    const groupMemberAttributeValuesForFilter = ref(preferences.getValue(getGroupMemberAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupMemberAttributeFilterKey())) : {});
+    const destinationGroupAttributesForFilter = ref<Record<string, PublicAttributeBag>>({});
+    const destinationAttributeValuesForFilter = ref(preferences.getValue(getGroupAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupAttributeFilterKey())) : {});
+    const destinationGroupMemberAttributesForFilter = ref<Record<string, PublicAttributeBag>>({});
+    const destinationMemberAttributeValuesForFilter = ref(preferences.getValue(getGroupMemberAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupMemberAttributeFilterKey())) : {});
 
     const isGroupMemberFilterDisplayed = ref<boolean>(false);
 
-    const pendingPersonAttributeValuesForFilter = ref(preferences.getValue(getPersonAttributeFilterKey()) ? JSON.parse(preferences.getValue(getPersonAttributeFilterKey())) : {});
-    const pendingGroupAttributeValuesForFilter = ref(preferences.getValue(getGroupAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupAttributeFilterKey())) : {});
-    const pendingGroupMemberAttributeValuesForFilter = ref(preferences.getValue(getGroupMemberAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupMemberAttributeFilterKey())) : {});
+    const pendingSourceAttributeValuesForFilter = ref(preferences.getValue(getPersonAttributeFilterKey()) ? JSON.parse(preferences.getValue(getPersonAttributeFilterKey())) : {});
+    const pendingDestinationGroupAttributeValuesForFilter = ref(preferences.getValue(getGroupAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupAttributeFilterKey())) : {});
+    const pendingDestinationGroupMemberAttributeValuesForFilter = ref(preferences.getValue(getGroupMemberAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupMemberAttributeFilterKey())) : {});
 
     const isPersonSearchVisible = ref<boolean>(false);
     const personSearchText = ref<string>("");
@@ -549,18 +567,24 @@
                 p.lastName?.toLowerCase().includes(personSearchText.value.toLowerCase())
                 : true;
 
-            const matchesAttributeAndFeeFilters = p.registrants?.some(r => {
-                const hasMatchingAttributes = !box.attributeFilters?.registrantAttributesForFilters || !r.attributeValues
-                    || areAttributeFiltersMet(box.attributeFilters.registrantAttributesForFilters, personAttributeValuesForFilter.value, r.attributeValues);
+            if (box.placementMode === PlacementMode.TemplateMode || box.placementMode === PlacementMode.InstanceMode) {
+                const matchesAttributeAndFeeFilters = p.registrants?.some(r => {
+                    const hasMatchingAttributes = !sourceAttributesForFilter.value || !r.attributeValues
+                        || areAttributeFiltersMet(sourceAttributesForFilter.value, sourceAttributeValuesForFilter.value, r.attributeValues);
 
-                const hasMatchingFees = !registrantFeeItemValuesForFilter.value.length
-                    || Object.keys(r.fees || {}).some(feeItemId =>
-                        registrantFeeItemValuesForFilter.value.includes(feeItemId)
-                    );
+                    const hasMatchingFees = !registrantFeeItemValuesForFilter.value.length
+                        || Object.keys(r.fees || {}).some(feeItemId =>
+                            registrantFeeItemValuesForFilter.value.includes(feeItemId)
+                        );
 
-                return hasMatchingAttributes && hasMatchingFees;
-            });
-            return matchesSearchText && matchesAttributeAndFeeFilters;
+                    return hasMatchingAttributes && hasMatchingFees;
+                });
+                return matchesSearchText && matchesAttributeAndFeeFilters;
+            }
+            else {
+                return true;
+            }
+
         });
 
         return getSortedPeople(filteredPeople);
@@ -569,10 +593,10 @@
     const filteredAndSortedGroups = computed(() => {
         // TODO - Phone Number Filter seems to be broken
         const filteredPlacementGroups = placementGroups.value.filter(g => {
-            if (!box.attributeFilters?.groupAttributesForFilters || !g.attributeValues) {
+            if (!destinationGroupAttributesForFilter.value || !g.attributeValues) {
                 return true;
             }
-            return areAttributeFiltersMet(box.attributeFilters.groupAttributesForFilters, groupAttributeValuesForFilter.value, g.attributeValues);
+            return areAttributeFiltersMet(destinationGroupAttributesForFilter.value, destinationAttributeValuesForFilter.value, g.attributeValues);
         });
 
         return filteredPlacementGroups.map(group => {
@@ -582,10 +606,10 @@
             }
 
             const validGroupMembers = group.groupMembers.filter(m => {
-                if (!box.attributeFilters?.groupMemberAttributesForFilters || !m.attributeValues) {
+                if (!destinationGroupMemberAttributesForFilter.value || !m.attributeValues) {
                     return true;
                 }
-                return areAttributeFiltersMet(box.attributeFilters.groupMemberAttributesForFilters, groupMemberAttributeValuesForFilter.value, m.attributeValues);
+                return areAttributeFiltersMet(destinationGroupMemberAttributesForFilter.value, destinationMemberAttributeValuesForFilter.value, m.attributeValues);
             });
             console.log("Valid Group Members => ", validGroupMembers);
 
@@ -613,6 +637,7 @@
 
     function areAttributeFiltersMet(attributes: Record<string, PublicAttributeBag>, attributeValuesFromFilter: Record<string, string>, attributeValuesFromEntity: Record<string, string>): boolean {
         return Object.keys(attributeValuesFromFilter).every(attributeKey => {
+            console.log("Here: ", attributes[attributeKey]);
             // If we can't find the key in attributes, then it is not being displayed and the filter should not be triggered.
             if (!attributes[attributeKey]) {
                 return true;
@@ -771,7 +796,9 @@
                     nextTick(() => {
                         const transit = document.querySelector(".gu-transit") as HTMLElement;
                         if (!transit) return;
-                        transit.style = "display: none";
+
+                        transit.style.display = "none";
+                        // transit.style = "display: none";
                     });
                 }
                 else if (selectedPersonIdKeys.value.size > 1) {
@@ -1053,27 +1080,27 @@
     }
 
     function applyPeopleFilter(): void {
-        personAttributeValuesForFilter.value = pendingPersonAttributeValuesForFilter.value;
+        sourceAttributeValuesForFilter.value = pendingSourceAttributeValuesForFilter.value;
         registrantFeeItemValuesForFilter.value = pendingRegistrantFeeItemValuesForFilter.value;
     }
 
     function clearPeopleFilters(): void {
-        pendingPersonAttributeValuesForFilter.value = {};
-        personAttributeValuesForFilter.value = {};
+        pendingSourceAttributeValuesForFilter.value = {};
+        sourceAttributeValuesForFilter.value = {};
         pendingRegistrantFeeItemValuesForFilter.value = [];
         registrantFeeItemValuesForFilter.value = [];
     }
 
     function applyGroupFilter(): void {
-        groupAttributeValuesForFilter.value = pendingGroupAttributeValuesForFilter.value;
-        groupMemberAttributeValuesForFilter.value = pendingGroupMemberAttributeValuesForFilter.value;
+        destinationAttributeValuesForFilter.value = pendingDestinationGroupAttributeValuesForFilter.value;
+        destinationMemberAttributeValuesForFilter.value = pendingDestinationGroupMemberAttributeValuesForFilter.value;
     }
 
     function clearGroupFilters(): void {
-        pendingGroupAttributeValuesForFilter.value = {};
-        pendingGroupMemberAttributeValuesForFilter.value = {};
-        groupAttributeValuesForFilter.value = {};
-        groupMemberAttributeValuesForFilter.value = {};
+        pendingDestinationGroupAttributeValuesForFilter.value = {};
+        pendingDestinationGroupMemberAttributeValuesForFilter.value = {};
+        destinationAttributeValuesForFilter.value = {};
+        destinationMemberAttributeValuesForFilter.value = {};
     }
 
     function toggleIsGroupMemberFilterDisplayed(): void {
@@ -1125,15 +1152,15 @@
     }
 
     function getGroupAttributeFilterKey(): string {
-        if (box.placementGroupType?.idKey) {
-            return PreferenceKey.GroupAttributeFilterGroupTypeId.replace("{0}", box.placementGroupType.idKey.toString());
+        if (box.destinationGroupType?.idKey) {
+            return PreferenceKey.GroupAttributeFilterGroupTypeId.replace("{0}", box.destinationGroupType.idKey.toString());
         }
         return "";
     }
 
     function getGroupMemberAttributeFilterKey(): string {
-        if (box.placementGroupType?.idKey) {
-            return PreferenceKey.GroupMemberAttributeFilterGroupTypeId.replace("{0}", box.placementGroupType.idKey.toString());
+        if (box.destinationGroupType?.idKey) {
+            return PreferenceKey.GroupMemberAttributeFilterGroupTypeId.replace("{0}", box.destinationGroupType.idKey.toString());
         }
         return "";
     }
@@ -1149,11 +1176,23 @@
     }
 
     async function loadPlacementData() {
-        // Start both API calls immediately
+        // Start API calls immediately
+        const attributeFiltersPromise = populateAttributeFilters();
         const groupsPromise = getDestinationGroups();
         const placementPeoplePromise = getPlacementPeople();
 
-        groupsPromise.then(groups => {
+        attributeFiltersPromise.then(attributeFilters => {
+            // TODO - Probably can remove the population of attribute values from the server. We only care about attributes. Values are handled by preferences.
+            sourceAttributesForFilter.value = attributeFilters.sourceAttributesForFilter ?? {};
+            registrantFeeItemsForFilter.value = attributeFilters.registrantFeeItemsForFilter ?? [];
+            destinationGroupAttributesForFilter.value = attributeFilters.destinationGroupAttributesForFilter ?? {};
+            destinationGroupMemberAttributesForFilter.value = attributeFilters.destinationGroupMemberAttributesForFilter ?? {};
+        });
+
+        groupsPromise.then(async groups => {
+            // Wait until attribute filters are loaded
+            await attributeFiltersPromise;
+
             placementGroups.value = groups.map(g => ({
                 ...g,
                 groupMembers: [] // Ensure groupMembers is initialized
@@ -1163,9 +1202,8 @@
         });
 
         placementPeoplePromise.then(async placementPeople => {
-
-
-            // Wait here until groups are loaded
+            // Wait here until groups and attribute filters are loaded
+            await attributeFiltersPromise;
             await groupsPromise;
             console.log("placementGroups: ", placementGroups.value);
             console.log("placementpeople: ", placementPeople);
@@ -1235,6 +1273,22 @@
         return [];
     }
 
+    async function populateAttributeFilters(): Promise<AttributeFiltersBag> {
+        areGroupsLoading.value = true;
+
+        const result = await invokeBlockAction<AttributeFiltersBag>("PopulateAttributeFilters", {
+            groupPlacementKeys: box.groupPlacementKeys
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            console.error(result.errorMessage);
+        }
+        return {};
+    }
+
     async function addGroupMembersToGroup(pendingGroupMembers: GroupMemberBag[], groupIdKey: string): Promise<GroupMemberBag[]> {
         const result = await invokeBlockAction<GroupMemberBag[]>("AddGroupMembersToGroup", {
             addGroupMembersBag: {
@@ -1273,13 +1327,13 @@
 
     async function addGroup(addGroupBag: AddGroupBag) {
         // TODO - need to make grouptypeid non nullable
-        if (!box.placementGroupType?.idKey) {
+        if (!box.destinationGroupType?.idKey) {
             console.error("Group Type Id required");
             return;
         }
 
         addGroupBag.groupPlacementKeys = box.groupPlacementKeys;
-        addGroupBag.groupTypeIdKey = box.placementGroupType.idKey;
+        addGroupBag.groupTypeIdKey = box.destinationGroupType.idKey;
 
         const result = await invokeBlockAction("AddPlacementGroup", {
             addGroupBag
@@ -1344,13 +1398,13 @@
     //     }
     // });
 
-    watch([currentSortOrder, isGenderHighlighting, personAttributeValuesForFilter, registrantFeeItemValuesForFilter, groupAttributeValuesForFilter, groupMemberAttributeValuesForFilter], async () => {
+    watch([currentSortOrder, isGenderHighlighting, sourceAttributeValuesForFilter, registrantFeeItemValuesForFilter, destinationAttributeValuesForFilter, destinationMemberAttributeValuesForFilter], async () => {
         preferences.setValue(getSortOrderKey(), currentSortOrder.value.toString());
         preferences.setValue(getIsGenderHighlightingKey(), isGenderHighlighting.value.toString());
-        preferences.setValue(getPersonAttributeFilterKey(), JSON.stringify(personAttributeValuesForFilter.value));
+        preferences.setValue(getPersonAttributeFilterKey(), JSON.stringify(sourceAttributeValuesForFilter.value));
         preferences.setValue(getRegistrantFeeItemValuesFilterKey(), JSON.stringify(registrantFeeItemValuesForFilter.value));
-        preferences.setValue(getGroupAttributeFilterKey(), JSON.stringify(groupAttributeValuesForFilter.value));
-        preferences.setValue(getGroupMemberAttributeFilterKey(), JSON.stringify(groupMemberAttributeValuesForFilter.value));
+        preferences.setValue(getGroupAttributeFilterKey(), JSON.stringify(destinationAttributeValuesForFilter.value));
+        preferences.setValue(getGroupMemberAttributeFilterKey(), JSON.stringify(destinationMemberAttributeValuesForFilter.value));
 
         await preferences.save();
     });

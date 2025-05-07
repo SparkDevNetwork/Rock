@@ -206,6 +206,7 @@
     <Compile Include="Group\AttendanceRule.cs" />
     <Compile Include="Group\DueDateType.cs" />
     <Compile Include="Group\GroupCapacityRule.cs" />
+    <Compile Include="Group\PlacementMode.cs" />
     <Compile Include="Group\GroupMemberStatus.cs" />
     <Compile Include="Group\MeetsGroupRequirement.cs" />
     <Compile Include="Group\ParticipationType.cs" />

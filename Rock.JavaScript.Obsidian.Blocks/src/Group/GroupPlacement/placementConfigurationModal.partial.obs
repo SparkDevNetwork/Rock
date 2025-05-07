@@ -25,7 +25,7 @@
             <CheckBox v-model="areFeesDisplayed" label="Show Fees" />
             <DropDownList v-model="sourceAttributesToDisplay"
                           label="Displayed Source Attributes"
-                          :items="placementConfigurationSettingOptions.registrantAttributes ?? []"
+                          :items="placementConfigurationSettingOptions.sourceAttributes ?? []"
                           :enhanceForLongLists="true"
                           :multiple="true" />
             <CheckBox v-model="areSourceAttributesDisplayedOnDestinationGroupMembers" text="Display Source Attributes on Destination Group Members" label="" />
@@ -35,9 +35,9 @@
                :hasCollapse="true">
             <div class="row">
                 <div class="col-md-6">
-                    <DropDownList v-model="groupAttributesToDisplay"
+                    <DropDownList v-model="destinationGroupAttributesToDisplay"
                                   label="Displayed Group Attributes"
-                                  :items="placementConfigurationSettingOptions.groupAttributes ?? []"
+                                  :items="placementConfigurationSettingOptions.destinationGroupAttributes ?? []"
                                   :enhanceForLongLists="true"
                                   :multiple="true" />
                 </div>
@@ -45,9 +45,9 @@
                     <CheckBox v-model="areFullGroupsHidden" label="Hide Full Groups" />
                 </div>
             </div>
-            <DropDownList v-model="groupMemberAttributesToDisplay"
+            <DropDownList v-model="destinationGroupMemberAttributesToDisplay"
                           label="Displayed Group Member Attributes"
-                          :items="placementConfigurationSettingOptions.groupMemberAttributes ?? []"
+                          :items="placementConfigurationSettingOptions.destinationGroupMemberAttributes ?? []"
                           :enhanceForLongLists="true"
                           :multiple="true" />
         </Panel>
@@ -98,9 +98,9 @@
     const areFeesDisplayed = ref<boolean>(props.placementConfigurationSettings.areFeesDisplayed ?? false);
     const sourceAttributesToDisplay = ref<string[]>(props.placementConfigurationSettings.sourceAttributesToDisplay ?? []);
     const areSourceAttributesDisplayedOnDestinationGroupMembers = ref<boolean>(props.placementConfigurationSettings.areSourceAttributesDisplayedOnDestinationGroupMembers ?? false);
-    const groupAttributesToDisplay = ref<string[]>(props.placementConfigurationSettings.groupAttributesToDisplay ?? []);
+    const destinationGroupAttributesToDisplay = ref<string[]>(props.placementConfigurationSettings.destinationGroupAttributesToDisplay ?? []);
     const areFullGroupsHidden = ref<boolean>(props.placementConfigurationSettings.areFullGroupsHidden ?? false);
-    const groupMemberAttributesToDisplay = ref<string[]>(props.placementConfigurationSettings.groupMemberAttributesToDisplay ?? []);
+    const destinationGroupMemberAttributesToDisplay = ref<string[]>(props.placementConfigurationSettings.destinationGroupMemberAttributesToDisplay ?? []);
     const showRegistrationInstanceName = ref<boolean>(props.placementConfigurationSettings.showRegistrationInstanceName ?? false);
     const includedRegistrationInstanceIds = ref<string[]>(props.placementConfigurationSettings.includedRegistrationInstanceIds ?? []);
 
@@ -110,9 +110,9 @@
             areFeesDisplayed: areFeesDisplayed.value,
             sourceAttributesToDisplay: sourceAttributesToDisplay.value,
             areSourceAttributesDisplayedOnDestinationGroupMembers: areSourceAttributesDisplayedOnDestinationGroupMembers.value,
-            groupAttributesToDisplay: groupAttributesToDisplay.value,
+            destinationGroupAttributesToDisplay: destinationGroupAttributesToDisplay.value,
             areFullGroupsHidden: areFullGroupsHidden.value,
-            groupMemberAttributesToDisplay: groupMemberAttributesToDisplay.value,
+            destinationGroupMemberAttributesToDisplay: destinationGroupMemberAttributesToDisplay.value,
             showRegistrationInstanceName: showRegistrationInstanceName.value,
             includedRegistrationInstanceIds: includedRegistrationInstanceIds.value
         };

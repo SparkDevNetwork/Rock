@@ -22,7 +22,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
     /// <summary>
     /// The SMS Conversations Initialization Box
     /// </summary>
-    public class PlacementGroupTypeBag
+    public class DestinationGroupTypeBag
     {
         public string IdKey { get; set; }
 
@@ -30,6 +30,6 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 
         public string IconCSSClass { get; set; }
 
-        public List<PlacementGroupTypeRoleBag> Roles { get; set; }
+        public List<DestinationGroupTypeRoleBag> Roles { get; set; }
     }
 }

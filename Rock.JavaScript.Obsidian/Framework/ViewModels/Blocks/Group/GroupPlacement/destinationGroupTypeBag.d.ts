@@ -21,21 +21,15 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { DestinationGroupTypeRoleBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/destinationGroupTypeRoleBag";
 
-export type AttributeFiltersBag = {
-    destinationGroupAttributesForFilter?: Record<string, PublicAttributeBag> | null;
+/** The SMS Conversations Initialization Box */
+export type DestinationGroupTypeBag = {
+    iconCSSClass?: string | null;
 
-    destinationGroupAttributeValuesForFilter?: Record<string, string> | null;
+    idKey?: string | null;
 
-    destinationGroupMemberAttributesForFilter?: Record<string, PublicAttributeBag> | null;
+    name?: string | null;
 
-    destinationGroupMemberAttributeValuesForFilter?: Record<string, string> | null;
-
-    registrantFeeItemsForFilter?: ListItemBag[] | null;
-
-    sourceAttributesForFilter?: Record<string, PublicAttributeBag> | null;
-
-    sourceAttributeValuesForFilter?: Record<string, string> | null;
+    roles?: DestinationGroupTypeRoleBag[] | null;
 };
