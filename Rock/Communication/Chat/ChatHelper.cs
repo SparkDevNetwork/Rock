@@ -1259,6 +1259,7 @@ namespace Rock.Communication.Chat
                             || lastSyncedChannel.IsPublic != currentChannel.IsPublic
                             || lastSyncedChannel.IsAlwaysShown != currentChannel.IsAlwaysShown
                             || lastSyncedChannel.IsActive != currentChannel.IsActive
+                            || lastSyncedChannel.ChatNotificationMode != currentChannel.ChatNotificationMode
                             || lastSyncedChannel.CampusId != currentChannel.CampusId;
                     }
 
@@ -1507,23 +1508,27 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
-        /// Gets the queryable chat channel key for a <see cref="Group"/>.
-        /// This is used to determine the key to use when querying for chat channels in the external chat system.
+        /// Gets the <see cref="ChatChannel.QueryableKey"/> for the specified <see cref="Group"/>.
         /// </summary>
-        /// <param name="groupId">The Rock group to get the key for.</param>
-        /// <returns>The <c>cid</c> of the chat channel.</returns>
+        /// <param name="groupId">
+        /// The identifier of the <see cref="Group"/> for which to get the <see cref="ChatChannel.QueryableKey"/>.
+        /// </param>
+        /// <returns>
+        /// The <see cref="ChatChannel.QueryableKey"/> or an empty string if unable to determine the key.
+        /// </returns>
+        /// <remarks>
+        /// This is used to determine the key to use when querying for <see cref="ChatChannel"/>s in the external chat system.
+        /// </remarks>
         internal string GetQueryableChatChannelKey( int groupId )
         {
-            var group = new GroupService( RockContext ).Get( groupId );
-
+            var group = new GroupService( RockContext ).GetNoTracking( groupId );
             if ( group == null )
             {
                 return string.Empty;
             }
 
             var chatGroup = ConvertGroupToRockChatGroup( group );
-
-            if( chatGroup == null )
+            if ( chatGroup == null )
             {
                 return string.Empty;
             }
@@ -1538,20 +1543,25 @@ namespace Rock.Communication.Chat
         /// <returns>The slimmed-down <see cref="RockChatGroup"/>.</returns>
         internal static RockChatGroup ConvertGroupToRockChatGroup( Group group )
         {
-            var chatChannelKey = ChatHelper.GetChatChannelKey( group.Id, group.ChatChannelKey );
+            if ( group == null )
+            {
+                return null;
+            }
+
+            var chatChannelKey = GetChatChannelKey( group.Id, group.ChatChannelKey );
 
             var avatarImageUrl = string.Empty;
-            var avatarImageGuid = group.GetAttributeValue( ChatHelper.GroupAttributeKey.AvatarImage ).AsGuidOrNull();
+            var avatarImageGuid = group.GetAttributeValue( GroupAttributeKey.AvatarImage ).AsGuidOrNull();
             if ( avatarImageGuid.HasValue )
             {
-                avatarImageUrl = ChatHelper.GetChatChannelAvatarImageUrl( avatarImageGuid.Value );
+                avatarImageUrl = GetChatChannelAvatarImageUrl( avatarImageGuid.Value );
             }
 
             return new RockChatGroup
             {
                 GroupTypeId = group.GroupTypeId,
                 GroupId = group.Id,
-                ChatChannelTypeKey = ChatHelper.GetChatChannelTypeKey( group.GroupTypeId ),
+                ChatChannelTypeKey = GetChatChannelTypeKey( group.GroupTypeId ),
                 ChatChannelKey = chatChannelKey,
                 ShouldSaveChatChannelKeyInRock = group.ChatChannelKey != chatChannelKey,
                 Name = group.Name,
@@ -2440,6 +2450,17 @@ namespace Rock.Communication.Chat
                         );
                     }
 
+                    // A local function to get a chat badge hash for quick comparison.
+                    string GetChatBadgeHash( ChatBadge badge )
+                    {
+                        if ( badge == null )
+                        {
+                            return null;
+                        }
+
+                        return $"{badge.Key}|{badge.Name}|{badge.IconCssClass}|{badge.BackgroundColor}|{badge.ForegroundColor}";
+                    }
+
                     // A local function for quick badge list comparison.
                     bool AreBadgeListsEqual( List<ChatBadge> badges1, List<ChatBadge> badges2 )
                     {
@@ -2449,8 +2470,8 @@ namespace Rock.Communication.Chat
                             return false;
                         }
 
-                        var badgeSet1 = new HashSet<string>( badges1.Select( b => b?.BadgeHash ) );
-                        var badgeSet2 = new HashSet<string>( badges2.Select( b => b?.BadgeHash ) );
+                        var badgeSet1 = new HashSet<string>( badges1.Select( b => GetChatBadgeHash( b ) ) );
+                        var badgeSet2 = new HashSet<string>( badges2.Select( b => GetChatBadgeHash( b ) ) );
 
                         return badgeSet1.SetEquals( badgeSet2 );
                     }
@@ -3384,34 +3405,7 @@ namespace Rock.Communication.Chat
                 groups.LoadFilteredAttributes( a => a.Key == GroupAttributeKey.AvatarImage );
 
                 var dbRockChatGroups = groups
-                    .Select( g =>
-                    {
-                        var chatChannelKey = GetChatChannelKey( g.Id, g.ChatChannelKey );
-
-                        var avatarImageUrl = string.Empty;
-                        var avatarImageGuid = g.GetAttributeValue( GroupAttributeKey.AvatarImage ).AsGuidOrNull();
-                        if ( avatarImageGuid.HasValue )
-                        {
-                            avatarImageUrl = GetChatChannelAvatarImageUrl( avatarImageGuid.Value );
-                        }
-
-                        return new RockChatGroup
-                        {
-                            GroupTypeId = g.GroupTypeId,
-                            GroupId = g.Id,
-                            ChatChannelTypeKey = GetChatChannelTypeKey( g.GroupTypeId ),
-                            ChatChannelKey = chatChannelKey,
-                            ShouldSaveChatChannelKeyInRock = g.ChatChannelKey != chatChannelKey,
-                            Name = g.Name,
-                            AvatarImageUrl = avatarImageUrl,
-                            CampusId = g.CampusId,
-                            IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
-                            IsPublic = g.GetIsChatChannelPublic(),
-                            IsAlwaysShown = g.GetIsChatChannelAlwaysShown(),
-                            IsChatEnabled = g.GetIsChatEnabled(),
-                            IsChatChannelActive = g.GetIsChatChannelActive()
-                        };
-                    } )
+                    .Select( g => ConvertGroupToRockChatGroup( g ) )
                     .ToList();
 
                 var rockChatGroups = new List<RockChatGroup>();
@@ -3758,6 +3752,12 @@ namespace Rock.Communication.Chat
                 ? rockChatGroup.Name
                 : null;
 
+            // Hard-code chat notification mode based on the parent group type.
+            // We'll improve this logic in a future version of Rock.
+            var chatNotificationMode = rockChatGroup.GroupTypeId == ChatSharedChannelGroupTypeId
+                ? ChatNotificationMode.MentionsAndReplies
+                : ChatNotificationMode.AllMessages;
+
             return new ChatChannel
             {
                 Key = key,
@@ -3769,6 +3769,7 @@ namespace Rock.Communication.Chat
                 IsLeavingAllowed = rockChatGroup.IsLeavingAllowed,
                 IsPublic = rockChatGroup.IsPublic,
                 IsAlwaysShown = rockChatGroup.IsAlwaysShown,
+                ChatNotificationMode = chatNotificationMode,
                 IsActive = rockChatGroup.IsChatChannelActive
             };
         }
