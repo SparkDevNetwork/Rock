@@ -29,9 +29,16 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            // Add/Update Obsidian Block Entity Type
-            //  EntityType:Rock.Blocks.Cms.LayoutBlockList
-            RockMigrationHelper.UpdateEntityType( "Rock.Blocks.Cms.LayoutBlockList", "Layout Block List", "Rock.Blocks.Cms.LayoutBlockList, Rock.Blocks, Version=17.1, Culture=neutral, PublicKeyToken=null", false, false, "9CF1AA10-24E4-4530-A345-57DA4CFE9595" );
+            Sql( @"
+UPDATE [EntityType]
+SET 
+    [Name] = 'Rock.Blocks.Cms.LayoutBlockList',
+    [FriendlyName] = 'Layout Block List',
+    [AssemblyName] = 'Rock.Blocks.Cms.LayoutBlockList, Rock.Blocks, Version=17.1, Culture=neutral, PublicKeyToken=null',
+    [IsEntity] = 0,
+    [IsSecured] = 0
+WHERE [Guid] = '9CF1AA10-24E4-4530-A345-57DA4CFE9595';
+" );
 
             // Add/Update Obsidian Block Type
             //  Name: Layout Block List
