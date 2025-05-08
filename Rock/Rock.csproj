@@ -810,6 +810,7 @@
     <Compile Include="Model\CMS\LavaEndpoint\LavaEndpointService.cs" />
     <Compile Include="Model\CodeGenerated\LavaApplicationService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\LavaEndpointService.CodeGenerated.cs" />
+    <Compile Include="Jobs\RunLava.cs" />
     <Compile Include="Model\CRM\UserLogin\UpdateLastLoginArgs.cs" />
     <Compile Include="Data\AttributeValueExpressionVisitor.cs" />
     <Compile Include="Data\EnableAttributeQualificationAttribute.cs" />
