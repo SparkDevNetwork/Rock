@@ -631,7 +631,7 @@ namespace Rock.Model
         {
             if ( IsCheckInEnabled )
             {
-                return GetCheckInTimes( beginDateTime, CheckInStartOffsetMinutes.Value, CheckInEndOffsetMinutes, iCalendarContent, () => GetICalEvent() );
+                return GetCheckInTimes( beginDateTime, CheckInStartOffsetMinutes.Value, CheckInEndOffsetMinutes, CategoryId, iCalendarContent, () => GetICalEvent() );
             }
 
             return new List<CheckInTimes>();
@@ -643,14 +643,15 @@ namespace Rock.Model
         /// <param name="beginDateTime">The begin date time.</param>
         /// <param name="checkInStartOffsetMinutes">The check in start offset minutes.</param>
         /// <param name="checkInEndOffsetMinutes">The check in end offset minutes.</param>
+        /// <param name="categoryId">The ID of the schedule's category.</param>
         /// <param name="iCalendarContent">The raw iCal content.</param>
         /// <param name="calendarEventFactory">The calendar event factory that will return an instance of the <see cref="CalendarEvent"/>.</param>
         /// <returns>A list of <see cref="CheckInTimes"/> objects.</returns>
-        internal static List<CheckInTimes> GetCheckInTimes( DateTime beginDateTime, int checkInStartOffsetMinutes, int? checkInEndOffsetMinutes, string iCalendarContent, Func<CalendarEvent> calendarEventFactory )
+        internal static List<CheckInTimes> GetCheckInTimes( DateTime beginDateTime, int checkInStartOffsetMinutes, int? checkInEndOffsetMinutes, int? categoryId, string iCalendarContent, Func<CalendarEvent> calendarEventFactory )
         {
             var result = new List<CheckInTimes>();
 
-            var occurrences = GetICalOccurrences( beginDateTime, beginDateTime.Date.AddDays( 1 ), null, null, iCalendarContent, calendarEventFactory );
+            var occurrences = GetICalOccurrences( beginDateTime, beginDateTime.Date.AddDays( 1 ), null, categoryId, iCalendarContent, calendarEventFactory );
 
             foreach ( var occurrence in occurrences
                 .Where( a =>
@@ -1018,11 +1019,11 @@ namespace Rock.Model
                        The given time falls outside of the start time to midnight and the midnight to end time windows
                        has to be greater than the end time, which is going to be an earlier time than the start time.
                     */
-                        if ( time.TimeOfDay.TotalSeconds < calEvent.DtStart.Value.TimeOfDay.TotalSeconds
-                            && time.TimeOfDay.TotalSeconds >= calEvent.DtEnd.Value.TimeOfDay.TotalSeconds )
-                        {
-                            return false;
-                        }
+                    if ( time.TimeOfDay.TotalSeconds < calEvent.DtStart.Value.TimeOfDay.TotalSeconds
+                        && time.TimeOfDay.TotalSeconds >= calEvent.DtEnd.Value.TimeOfDay.TotalSeconds )
+                    {
+                        return false;
+                    }
                 }
                 else
                 {

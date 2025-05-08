@@ -107,7 +107,7 @@ namespace Rock.Web.Cache
                 return base.Lifespan;
             }
         }
-        
+
         /// <summary>
         /// Set's the cached objects properties from the model/entities properties.
         /// </summary>
@@ -241,7 +241,7 @@ namespace Rock.Web.Cache
         {
             if ( IsCheckInEnabled )
             {
-                return Schedule.GetCheckInTimes( beginDateTime, CheckInStartOffsetMinutes.Value, CheckInEndOffsetMinutes, CalendarContent, () => GetCalendarEvent() );
+                return Schedule.GetCheckInTimes( beginDateTime, CheckInStartOffsetMinutes.Value, CheckInEndOffsetMinutes, CategoryId, CalendarContent, () => GetCalendarEvent() );
             }
 
             return new List<CheckInTimes>();

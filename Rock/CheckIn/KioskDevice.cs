@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using DotLiquid;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
+
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -585,7 +585,7 @@ namespace Rock.CheckIn
         /// <returns>
         ///   <c>true</c> if the specified key contains key; otherwise, <c>false</c>.
         /// </returns>
-        public bool ContainsKey(object key)
+        public bool ContainsKey( object key )
         {
             return AvailableKeys.Contains( key.ToStringSafe() );
         }
