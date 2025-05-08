@@ -251,18 +251,18 @@
 }
 
 .btn.btn-primary {
-  color:            var(--color-interface-softest);
+  color:            var(--base-interface-softest);
   background-color: var(--color-primary);
   border-color:     var(--color-primary);
 
   &:focus,
   &.focus {
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       background-color: var(--color-primary);
       border-color:     var(--color-primary);
   }
   &:hover {
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       background-color: var(--color-primary-shade);
       border-color:     var(--color-primary-shade);
 
@@ -270,7 +270,7 @@
   &:active,
   &.active,
   .open > .dropdown-toggle & {    
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       background-color: var(--color-primary);         // TODO change when primary hover is available.
       border-color:     var(--color-interface-softest);
       background-image: none;
@@ -278,7 +278,7 @@
       &:hover,
       &:focus,
       &.focus {
-        color:            var(--color-interface-softest);
+        color:            var(--base-interface-softest);
         background-color: var(--color-primary-shade);
         border-color:     var(--color-primary-shade); 
       }

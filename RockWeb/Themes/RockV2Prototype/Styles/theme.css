@@ -6,6 +6,10 @@
 
 @import "../../../Styles/summernote/summernote.min.css";
 @import "../../../Styles/styles-v2-prototype/core.css";
+:root {
+  --panel-body-padding: 16px;
+}
+
 @-ms-viewport {
   width: device-width;
 }
@@ -21,6 +25,10 @@ main {
 body.nav-open,
 body.navbar-side-open {
   overflow: hidden;
+}
+
+.full-work-surface {
+  padding: var(--spacing-medium);
 }
 
 .header-content #page-content {
@@ -65,7 +73,7 @@ body.navbar-side-open {
   padding: var(--spacing-medium) var(--spacing-medium);
 }
 
-.main-footer {
+.main-footer:has(.html-content) {
   background-color: var(--color-interface-softest);
   margin: 24px 0 8px;
   padding: 16px 24px;
@@ -73,7 +81,7 @@ body.navbar-side-open {
   border-radius: var(--rounded-medium);
   border: 1px solid var(--color-interface-soft);
 }
-.main-footer p {
+.main-footer:has(.html-content) p {
   margin: 0;
 }
 
@@ -508,7 +516,7 @@ body.navbar-side-open {
   line-height: 1.4;
   display: flex;
   align-items: center;
-  margin: var(--spacing-xsmall) 0;
+  margin: 0;
   color: var(--color-interface-strong);
   transition: all ease 0.05s;
 }
@@ -680,7 +688,7 @@ body.navbar-side-open {
   }
   .navbar-static-side .nav-childpages .title .item-title {
     color: var(--color-interface-strong);
-    font-size: var(--font-size-h3);
+    font-size: var(--font-size-h5);
   }
   .navbar-static-side .nav-childpages .title .item-title:after {
     display: none;
@@ -828,7 +836,7 @@ a.rock-bookmark {
   }
 }
 .header + .nav-item {
-  margin-top: var(--spacing-medium);
+  margin-top: var(--spacing-tiny);
 }
 
 .drawer-content {
@@ -879,7 +887,7 @@ a.rock-bookmark {
   flex-wrap: wrap;
   align-items: center;
   padding: 5px 18px;
-  margin: -17px;
+  margin: -16px;
   margin-top: 18px;
   border-top: 1px solid var(--color-interface-soft);
 }

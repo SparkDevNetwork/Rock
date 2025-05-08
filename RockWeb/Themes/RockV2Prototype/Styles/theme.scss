@@ -7,7 +7,9 @@
 // @import "../../../Styles/style-v2/icons/fontawesome-regular.css"; 
 // @import "../../../Styles/style-v2/icons/fontawesome-solid.css";
 // @import "../../../Styles/style-v2/icons/tabler-icon.css";
-
+:root {
+  --panel-body-padding: 16px; // This is for communication block use by EmailEditor.css
+}
 
 @-ms-viewport {
   width: device-width;
@@ -25,6 +27,10 @@ main {
 body.nav-open,
 body.navbar-side-open {
   overflow: hidden;
+}
+
+.full-work-surface {
+  padding: var(--spacing-medium);
 }
 
 .header-content {
@@ -79,7 +85,8 @@ body.navbar-side-open {
   padding: var(--spacing-medium) var(--spacing-medium);
 }
 
-.main-footer {
+
+.main-footer:has(.html-content) {
   background-color: var(--color-interface-softest);
   margin: 24px 0 8px;
   padding: 16px 24px;
@@ -582,7 +589,7 @@ $navbar-element-height: 40px;
         line-height: 1.4;
         display: flex;
         align-items: center;
-        margin: var(--spacing-xsmall) 0;
+        margin: 0;
         color: var(--color-interface-strong);
         transition: all ease 0.05s;
 
@@ -791,7 +798,7 @@ $navbar-element-height: 40px;
         .item-title {
           color: var(--color-interface-strong);
           // display: inline-block;
-          font-size: var(--font-size-h3);
+          font-size: var(--font-size-h5);
 
           &:after {
             display: none;
@@ -980,7 +987,7 @@ a.rock-bookmark {
 
 // Miscellaneous
 .header + .nav-item {
-  margin-top: var(--spacing-medium);
+  margin-top: var(--spacing-tiny);
 }
 
 .drawer-content {
@@ -1019,7 +1026,7 @@ a.rock-bookmark {
   flex-wrap: wrap;
   align-items: center;
   padding: 5px 18px;
-  margin: -17px;
+  margin: -16px;
   margin-top: 18px;
   border-top: 1px solid var(--color-interface-soft);
 
