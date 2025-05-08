@@ -20,7 +20,7 @@ namespace Rock.Plugin.HotFixes
     /// Plug-in migration
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 245, "1.17.1" )]
+    [MigrationNumber( 245, "17.1" )]
     public class UpdateMergeFieldAttributeDescription : Migration
     {
         /// <summary>
