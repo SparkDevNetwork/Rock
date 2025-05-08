@@ -16,6 +16,10 @@
   margin-bottom:  var(--spacing-large);
   border:         1px solid transparent;
   border-radius:  var(--rounded-small); 
+  
+  p {
+    color: inherit;
+  }
 
   h4 {
     margin: 0;
