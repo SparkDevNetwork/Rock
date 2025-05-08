@@ -77,6 +77,7 @@ namespace Rock.Communication.Chat
             public const string IsPublic = "rock_public";
             public const string IsAlwaysShown = "rock_always_shown";
             public const string CampusId = "rock_campus_id";
+            public const string NotificationMode = "rock_notification_mode";
         }
 
         /// <summary>
@@ -3460,6 +3461,7 @@ namespace Rock.Communication.Chat
             channelRequest.SetData( ChannelDataKey.IsLeavingAllowed, chatChannel.IsLeavingAllowed );
             channelRequest.SetData( ChannelDataKey.IsPublic, chatChannel.IsPublic );
             channelRequest.SetData( ChannelDataKey.IsAlwaysShown, chatChannel.IsAlwaysShown );
+            channelRequest.SetData( ChannelDataKey.NotificationMode, chatChannel.ChatNotificationMode );
             channelRequest.SetData( ChannelDataKey.Disabled, !chatChannel.IsActive );
 
             return channelRequest;
@@ -3547,6 +3549,7 @@ namespace Rock.Communication.Chat
                 IsLeavingAllowed = channel.GetDataOrDefault( ChannelDataKey.IsLeavingAllowed, false ),
                 IsPublic = channel.GetDataOrDefault( ChannelDataKey.IsPublic, false ),
                 IsAlwaysShown = channel.GetDataOrDefault( ChannelDataKey.IsAlwaysShown, false ),
+                ChatNotificationMode = channel.GetDataOrDefault( ChannelDataKey.NotificationMode, ChatNotificationMode.AllMessages ),
                 IsActive = !isChannelDisabled
             };
         }

@@ -24,10 +24,20 @@ namespace Rock.Communication.Chat.DTO
     /// </summary>
     internal class ChatBadge
     {
-        /// <summary>
-        /// Gets a simple string concatenation hash of this badge's content.
-        /// </summary>
-        public string BadgeHash => $"{Key}|{Name}|{IconCssClass}|{BackgroundColor}|{ForegroundColor}";
+        /*
+            5/8/2025 - JPH
+
+            If any properties are added here, make sure you also add them to the local `GetChatBadgeHash()` function
+            within the `ChatHelper.CreateOrUpdateChatUsersAsync()` method. We used to have a runtime property within
+            this class to build the hash:
+
+            public string BadgeHash => $"{Key}|{Name}|{IconCssClass}|{BackgroundColor}|{ForegroundColor}";
+
+            But this is problematic, as the object ends up getting serialized to JSON and sent to the external chat
+            provider - including this hash property - which unnecessarily increases the payload size.
+
+            Reason: Ensure proper badge comparison while preventing sending noisy data to the external chat provider.
+        */
 
         /// <summary>
         /// Gets or sets the badge key.
