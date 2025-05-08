@@ -284,6 +284,13 @@ body.navbar-side-open {
 }
 .rock-top-header .smartsearch .smartsearch-type {
   order: 10;
+  display: flex;
+  border-top-left-radius: 999px;
+  border-bottom-left-radius: 999px;
+  align-items: center;
+  background-color: var(--color-interface-softest);
+  border-right: 1px solid var(--color-interface-soft);
+  height: 100%;
   width: auto;
 }
 .rock-top-header .smartsearch .dropdown .dropdown-menu {
@@ -785,8 +792,8 @@ a.rock-bookmark {
   height: var(--size);
   margin: 0 0 0 8px;
   font-size: calc(var(--size) * 0.5);
-  background-color: var(--color-interface-soft);
-  border: 4px solid var(--color-interface-softer);
+  background-color: var(--color-interface-softer);
+  border: 1px solid var(--color-interface-soft);
   border-radius: 999px;
   transition: 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
@@ -802,12 +809,11 @@ a.rock-bookmark {
 @media (min-width: 768px) {
   .rock-bookmark {
     --size: 40px;
-    padding: 22px;
+    padding: 20px;
   }
 }
 
 .smartsearch .dropdown .navbar-link {
-  border-right: 1px solid var(--color-interface-soft);
   color: var(--color-interface-strong);
 }
 
@@ -1047,6 +1053,12 @@ a.rock-bookmark {
 }
 .gap .rockbadge {
   margin: 0;
+}
+
+.splash-form-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 #splash {

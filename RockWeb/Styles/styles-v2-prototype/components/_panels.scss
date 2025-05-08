@@ -298,11 +298,12 @@
 
 // ===================== ALTERNATIVE STYLE =====================
 .panel-default {
+  overflow: clip;
   border-color:         var(--color-interface-soft);
 
 & > .panel-heading {
   color:                var(--color-interface-stronger);
-  background-color:     var(--color-interface-softer);
+  background-color:     var(--color-interface-softest);
   border-color:         var(--color-interface-soft);
 
   + .panel-collapse > .panel-body {
@@ -584,12 +585,12 @@
 // ======================= PANEL PERSONDETAILS =====================
 .panel-persondetails {
   // .panel-variant(@panel-border; @panel-heading-text-color; var(--color-interface-softer); @panel-heading-border;);
-  border-color:             var(--color-interface-softer);
+  border-color:             var(--color-interface-soft);
 
   & > .panel-heading {
     color:                  var(--color-interface-stronger);
-    background-color:       var(--color-interface-soft);
-    border-color:           var(--color-interface-softer);
+    background-color:       var(--color-interface-softest);
+    border-color:           var(--color-interface-soft);
 
     + .panel-collapse > .panel-body {
       border-top-color:     var(--color-interface-softer);

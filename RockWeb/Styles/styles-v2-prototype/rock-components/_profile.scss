@@ -11,6 +11,7 @@
 
   @media (min-width: $screen-small) {
     flex-wrap: nowrap;
+    border: 1px solid var(--color-interface-soft);
     justify-content: space-between;
   }
 

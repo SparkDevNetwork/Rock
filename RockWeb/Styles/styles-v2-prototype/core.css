@@ -2871,6 +2871,37 @@ fieldset[disabled] .btn-danger-solid.focus {
   background-color: var(--color-interface-stronger);
 }
 
+.btn-register {
+  color: var(--color-interface-strong);
+  background-color: var(--color-interface-softest);
+  border-color: var(--color-interface-soft);
+}
+.btn-register:focus, .btn-register.focus {
+  color: var(--color-interface-stronger);
+  background-color: var(--color-interface-softer);
+  border-color: var(--color-interface-medium);
+}
+.btn-register:hover {
+  color: var(--color-interface-stronger);
+  background-color: var(--color-interface-softer);
+  border-color: var(--color-interface-soft);
+}
+.btn-register:active, .btn-register.active, .open > .dropdown-toggle .btn-register {
+  color: var(--color-interface-stronger);
+  background-color: var(--color-interface-softer);
+  background-image: none;
+  border-color: var(--color-interface-soft);
+}
+.btn-register:active:hover, .btn-register:active:focus, .btn-register:active.focus, .btn-register.active:hover, .btn-register.active:focus, .btn-register.active.focus, .open > .dropdown-toggle .btn-register:hover, .open > .dropdown-toggle .btn-register:focus, .open > .dropdown-toggle .btn-register.focus {
+  color: var(--color-interface-stronger);
+  background-color: var(--color-interface-softest);
+  border-color: var(--color-interface-medium);
+}
+.btn-register.disabled:hover, .btn-register.disabled:focus, .btn-register.disabled.focus, .btn-register[disabled]:hover, .btn-register[disabled]:focus, .btn-register[disabled].focus, fieldset[disabled] .btn-register:hover, fieldset[disabled] .btn-register:focus, fieldset[disabled] .btn-register.focus {
+  background-color: var(--color-interface-softest);
+  border-color: var(--color-interface-soft);
+}
+
 .btn-square {
   width: 38px;
   padding: 6px 0;
@@ -3090,11 +3121,11 @@ input[type=button].btn-block {
   justify-content: center;
   margin-left: var(--spacing-xsmall);
   padding: var(--spacing-xsmall) var(--spacing-xsmall);
-  font-size: 1.3em;
-  border: 4px solid var(--color-interface-softer);
+  font-size: 1.15em;
+  border: 1px solid var(--color-interface-soft);
   border-radius: 99px;
   color: var(--color-interface-strong);
-  background-color: var(--color-interface-soft);
+  background-color: var(--color-interface-softer);
   transition: 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 @media (max-width: 768px) {
@@ -7570,7 +7601,7 @@ body {
   font-family: var(--font-family-sans);
   font-size: var(--font-size-regular);
   line-height: var(--line-height-normal);
-  color: var(--color-interface-stronger);
+  color: var(--color-interface-strong);
   background-color: var(--color-interface-softer);
 }
 
@@ -7935,11 +7966,12 @@ ul ul, ol ul, ul ol, ol ol {
 }
 
 .panel-default {
+  overflow: clip;
   border-color: var(--color-interface-soft);
 }
 .panel-default > .panel-heading {
   color: var(--color-interface-stronger);
-  background-color: var(--color-interface-softer);
+  background-color: var(--color-interface-softest);
   border-color: var(--color-interface-soft);
 }
 .panel-default > .panel-heading + .panel-collapse > .panel-body {
@@ -8164,13 +8196,13 @@ ul ul, ol ul, ul ol, ol ol {
 }
 
 .panel-persondetails {
-  border-color: var(--color-interface-softer);
+  border-color: var(--color-interface-soft);
   background-color: var(--color-interface-softest);
 }
 .panel-persondetails > .panel-heading {
   color: var(--color-interface-stronger);
-  background-color: var(--color-interface-soft);
-  border-color: var(--color-interface-softer);
+  background-color: var(--color-interface-softest);
+  border-color: var(--color-interface-soft);
 }
 .panel-persondetails > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: var(--color-interface-softer);
@@ -11869,7 +11901,7 @@ div.aspNetDisabled {
   margin-top: var(--spacing-xsmall);
   font-size: var(--font-size-xsmall);
   color: var(--color-interface-stronger);
-  background-color: var(--color-interface-softest);
+  background-color: var(--color-interface-softer);
   border: 1px solid var(--color-interface-stronger);
   border-radius: var(--rounded-small);
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
@@ -12964,6 +12996,7 @@ ul.list-group-panel .list-group-item:first-child,
 .imageupload-group .imageupload-thumbnail .imageupload-thumbnail-image {
   width: 100%;
   height: 100%;
+  background-color: var(--color-interface-soft);
   background-position: 50%;
   background-size: cover;
   border-radius: var(--rounded-xsmall) var(--rounded-xsmall) 0 0;
@@ -16965,6 +16998,7 @@ iframe.file-browser {
 @media (min-width: 768px) {
   .profile-nav {
     flex-wrap: nowrap;
+    border: 1px solid var(--color-interface-soft);
     justify-content: space-between;
   }
 }
@@ -21928,6 +21962,7 @@ body.rock-modal-page {
   position: relative;
   display: flex;
   flex-direction: column;
+  overflow: clip;
   min-width: 0;
   word-wrap: break-word;
   background-color: var(--color-interface-softest);
@@ -21979,8 +22014,8 @@ body.rock-modal-page {
   padding: 0.75rem 1.25rem;
   margin-top: 0;
   margin-bottom: 0;
-  background-color: var(--color-interface-soft);
-  border-bottom: 1px solid var(--color-interface-softer);
+  background-color: var(--color-interface-softest);
+  border-bottom: 1px solid var(--color-interface-soft);
 }
 .card-header:first-child {
   border-radius: calc(var(--rounded-small) - 1px) calc(var(--rounded-small) - 1px) 0 0;
@@ -28372,7 +28407,7 @@ h1, h2, h3, h4, h5, h6,
   font-family: var(--font-family-sans);
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-tight);
-  color: inherit;
+  color: var(--color-interface-stronger);
 }
 h1 small,
 h1 .small, h2 small,
@@ -28455,6 +28490,7 @@ h6, .h6 {
 
 p {
   margin: 0 0 calc(var(--font-size-regular) * var(--line-height-normal) / 2);
+  color: var(--color-interface-strong);
 }
 
 .lead {

@@ -13,7 +13,7 @@ h1, h2, h3, h4, h5, h6,
   font-family: var(--font-family-sans);
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-tight);
-  color: inherit;
+  color: var(--color-interface-stronger);
 
   small,
   .small {
@@ -59,6 +59,7 @@ h6, .h6 { font-size: var(--font-size-h6); }
 
 p {
   margin: 0 0 calc($line-height-computed / 2);
+  color: var(--color-interface-strong);
 }
 
 .lead {
