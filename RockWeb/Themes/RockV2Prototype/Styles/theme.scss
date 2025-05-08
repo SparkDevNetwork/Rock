@@ -82,13 +82,13 @@ body.navbar-side-open {
 }
 
 .main-content {
-  padding: var(--spacing-medium) var(--spacing-medium);
+  padding: var(--spacing-medium) var(--spacing-medium) var(--spacing-xsmall) var(--spacing-medium);
 }
 
 
 .main-footer:has(.html-content) {
   background-color: var(--color-interface-softest);
-  margin: 24px 0 8px;
+  margin: 24px 0 0px;
   padding: 16px 24px;
   box-shadow: var(--box-shadow);
   border-radius: var(--rounded-medium);
