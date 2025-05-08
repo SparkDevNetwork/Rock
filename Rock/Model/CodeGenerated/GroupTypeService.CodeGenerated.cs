@@ -196,6 +196,7 @@ namespace Rock.Model
             target.AttendanceReminderSendStartOffsetMinutes = source.AttendanceReminderSendStartOffsetMinutes;
             target.AttendanceReminderSystemCommunicationId = source.AttendanceReminderSystemCommunicationId;
             target.AttendanceRule = source.AttendanceRule;
+            target.ChatPushNotificationMode = source.ChatPushNotificationMode;
             target.DefaultGroupRoleId = source.DefaultGroupRoleId;
             target.Description = source.Description;
             target.EnableGroupHistory = source.EnableGroupHistory;

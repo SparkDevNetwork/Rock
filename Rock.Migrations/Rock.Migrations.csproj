@@ -133,6 +133,10 @@
     <Compile Include="Migrations\202505072235453_AddLavaApplications.Designer.cs">
       <DependentUpon>202505072235453_AddLavaApplications.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202505082134400_AddChatGroupAndGroupTypeProperties.cs" />
+    <Compile Include="Migrations\202505082134400_AddChatGroupAndGroupTypeProperties.Designer.cs">
+      <DependentUpon>202505082134400_AddChatGroupAndGroupTypeProperties.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.Designer.cs">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>
@@ -2685,6 +2689,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202505072235453_AddLavaApplications.resx">
       <DependentUpon>202505072235453_AddLavaApplications.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202505082134400_AddChatGroupAndGroupTypeProperties.resx">
+      <DependentUpon>202505082134400_AddChatGroupAndGroupTypeProperties.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.resx">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>

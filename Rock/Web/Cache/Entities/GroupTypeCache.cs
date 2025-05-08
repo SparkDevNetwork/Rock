@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.CheckIn.v2;
 using Rock.Data;
 using Rock.Enums.CheckIn;
+using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
 using Rock.Model;
 
@@ -900,6 +901,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool IsChatChannelAlwaysShown { get; private set; }
 
+        /// <inheritdoc cref="GroupType.ChatPushNotificationMode"/>
+        [DataMember]
+        public ChatNotificationMode ChatPushNotificationMode { get; private set; }
+
         /// <summary>
         /// Gets or sets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing
         /// the source of <see cref="GroupMember"/>s added to <see cref="Group"/>s of this type. This can be overridden
@@ -1280,6 +1285,7 @@ namespace Rock.Web.Cache
             IsLeavingChatChannelAllowed = groupType.IsLeavingChatChannelAllowed;
             IsChatChannelPublic = groupType.IsChatChannelPublic;
             IsChatChannelAlwaysShown = groupType.IsChatChannelAlwaysShown;
+            ChatPushNotificationMode = groupType.ChatPushNotificationMode;
             GroupMemberRecordSourceValueId = groupType.GroupMemberRecordSourceValueId;
             AllowGroupSpecificRecordSource = groupType.AllowGroupSpecificRecordSource;
         }

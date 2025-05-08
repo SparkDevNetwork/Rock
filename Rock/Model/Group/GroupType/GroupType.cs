@@ -25,6 +25,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.CheckIn;
+using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
 using Rock.Lava;
 using Rock.Security;
@@ -841,6 +842,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool IsChatChannelAlwaysShown { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ChatNotificationMode"/> to control how push notifications are sent for chat
+        /// channels of this type. This can be overridden by the value of <see cref="Group.ChatPushNotificationModeOverride"/>.
+        /// </summary>
+        /// <value>
+        /// The <see cref="ChatNotificationMode"/> to control how push notifications are sent for chat channels of this type.
+        /// </value>
+        [DataMember]
+        public ChatNotificationMode ChatPushNotificationMode { get; set; }
 
         /// <summary>
         /// Gets or sets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing

@@ -27,6 +27,7 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Communication.Chat;
 using Rock.Data;
+using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
 using Rock.Security;
 using Rock.SystemGuid;
@@ -760,6 +761,28 @@ namespace Rock.Model
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ChatNotificationMode"/> to control how push notifications are sent for this chat channel.
+        /// If <see cref="ChatPushNotificationModeOverride"/> set to <see langword="null"/>, then the value of
+        /// <see cref="GroupType.ChatPushNotificationMode"/> will be used.
+        /// </summary>
+        /// <returns>The <see cref="ChatNotificationMode"/> to control how push notifications are sent for this chat channel.</returns>
+        public ChatNotificationMode GetChatPushNotificationMode()
+        {
+            if ( this.ChatPushNotificationModeOverride.HasValue )
+            {
+                return this.ChatPushNotificationModeOverride.Value;
+            }
+
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+            if ( groupTypeCache != null )
+            {
+                return groupTypeCache.ChatPushNotificationMode;
+            }
+
+            return ChatNotificationMode.AllMessages;
         }
 
         /// <summary>

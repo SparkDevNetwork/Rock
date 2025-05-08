@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 
 using Rock.CheckIn.v2;
 using Rock.Data;
+using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
 using Rock.Model;
 using Rock.Utility.Enums;
@@ -225,6 +226,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool? IsChatChannelAlwaysShownOverride { get; private set; }
 
+        /// <inheritdoc cref="Group.ChatPushNotificationModeOverride"/>
+        [DataMember]
+        public ChatNotificationMode? ChatPushNotificationModeOverride { get; private set; }
+
         /// <inheritdoc cref="Group.ChatChannelKey"/>
         [MaxLength( 100 )]
         [DataMember]
@@ -300,6 +305,22 @@ namespace Rock.Web.Cache
             }
 
             return this.GroupType?.IsChatChannelAlwaysShown ?? false;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ChatNotificationMode"/> to control how push notifications are sent for this chat channel.
+        /// If <see cref="ChatPushNotificationModeOverride"/> set to <see langword="null"/>, then the value of
+        /// <see cref="GroupTypeCache.ChatPushNotificationMode"/> will be used.
+        /// </summary>
+        /// <returns>The <see cref="ChatNotificationMode"/> to control how pushS notifications are sent for this chat channel.</returns>
+        internal ChatNotificationMode GetChatPushNotificationMode()
+        {
+            if ( this.ChatPushNotificationModeOverride.HasValue )
+            {
+                return this.ChatPushNotificationModeOverride.Value;
+            }
+
+            return this.GroupType?.ChatPushNotificationMode ?? ChatNotificationMode.AllMessages;
         }
 
         /// <summary>

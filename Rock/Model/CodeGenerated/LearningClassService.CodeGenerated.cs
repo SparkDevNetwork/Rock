@@ -155,7 +155,9 @@ namespace Rock.Model
             target.ArchivedDateTime = source.ArchivedDateTime;
             target.AttendanceRecordRequiredForCheckIn = source.AttendanceRecordRequiredForCheckIn;
             target.CampusId = source.CampusId;
+            target.ChatChannelAvatarBinaryFileId = source.ChatChannelAvatarBinaryFileId;
             target.ChatChannelKey = source.ChatChannelKey;
+            target.ChatPushNotificationModeOverride = source.ChatPushNotificationModeOverride;
             target.ConfirmationAdditionalDetails = source.ConfirmationAdditionalDetails;
             target.Description = source.Description;
             target.DisableScheduleToolboxAccess = source.DisableScheduleToolboxAccess;
