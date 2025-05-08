@@ -87,6 +87,7 @@
                     <template v-if="Object.keys(sourceAttributesForFilter).length > 0 || registrantFeeItemsForFilter.length > 0" #drawer>
                         <AttributeValuesContainer v-model="pendingSourceAttributeValuesForFilter" :attributes="sourceAttributesForFilter" isEditMode :numberOfColumns="1" />
                         <DropDownList v-model="pendingRegistrantFeeItemValuesForFilter"
+                                      v-if="placementConfigurationSettings.areFeesDisplayed"
                                       label="Fees"
                                       :items="registrantFeeItemsForFilter ?? []"
                                       :enhanceForLongLists="true"
@@ -140,6 +141,7 @@
                                             :areFeesDisplayed="placementConfigurationSettings.areFeesDisplayed"
                                             :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
                                             :isGenderHighlighting="isGenderHighlighting"
+                                            :placementMode="box.placementMode"
                                             @toggleCardExpansion="toggleCardExpansion"
                                             @toggleSelection="toggleSelection(person.personIdKey)" />
                             </template>
@@ -241,6 +243,7 @@
                                           :isInstanceDisplayed="placementConfigurationSettings.showRegistrationInstanceName"
                                           :areSourceAttributesDisplayedOnDestinationGroupMembers="placementConfigurationSettings.areSourceAttributesDisplayedOnDestinationGroupMembers"
                                           :arePeopleLoading="arePeopleLoading"
+                                          :placementMode="box.placementMode"
                                           @editGroup="editGroup"
                                           @detachGroup="detachPlacementGroup"
                                           @deleteGroup="deletePlacementGroup"
@@ -257,7 +260,7 @@
     <PlacementConfigurationModal v-model="isPlacementConfigModalVisible"
                                  :placementConfigurationSettings="placementConfigurationSettings"
                                  :placementConfigurationSettingOptions="box.placementConfigurationSettingOptions ?? {}"
-                                 :inTemplateMode="box.placementMode === PlacementMode.TemplateMode"
+                                 :placementMode="box.placementMode"
                                  @save="savePlacementCofigSettings" />
 
     <AddGroupModal v-model="isAddGroupModalVisible"
@@ -581,10 +584,10 @@
                 });
                 return matchesSearchText && matchesAttributeAndFeeFilters;
             }
-            else {
-                return true;
+            else {  // TODO - Determine if we need else if here (Depends on EntitySetMode)
+                return !p.sourceGroupMember?.attributeValues
+                    || areAttributeFiltersMet(sourceAttributesForFilter.value, sourceAttributeValuesForFilter.value, p.sourceGroupMember.attributeValues);
             }
-
         });
 
         return getSortedPeople(filteredPeople);
@@ -606,22 +609,41 @@
             }
 
             const validGroupMembers = group.groupMembers.filter(m => {
+                if (!m.person) {
+                    return false;
+                }
                 if (!destinationGroupMemberAttributesForFilter.value || !m.attributeValues) {
                     return true;
                 }
                 return areAttributeFiltersMet(destinationGroupMemberAttributesForFilter.value, destinationMemberAttributeValuesForFilter.value, m.attributeValues);
             });
-            console.log("Valid Group Members => ", validGroupMembers);
 
             const sortedPeople = getSortedPeople(validGroupMembers.map(m => m.person!));
 
-            const memberMap = new Map(
-                validGroupMembers.map(m => [m.person!.personIdKey, m])
-            );
+            const memberMap = new Map<string, GroupMemberBag[]>();
 
-            const sortedGroupMembers = sortedPeople
-                .map(p => memberMap.get(p.personIdKey))
-                .filter((m): m is typeof validGroupMembers[number] => !!m);
+            for (const m of validGroupMembers) {
+                const key = m.person?.personIdKey;
+                if (!key || !m.groupMemberIdKey) continue;
+
+                if (!memberMap.has(key)) {
+                    memberMap.set(key, []);
+                }
+
+                memberMap.get(key)!.push(m);
+            }
+
+            const seenGroupMemberIds = new Set<string>();
+
+            const sortedGroupMembers = sortedPeople.flatMap(p => {
+                const members = memberMap.get(p.personIdKey ?? "") ?? [];
+                return members.filter(m => {
+                    if (!m.groupMemberIdKey) return false;
+                    if (seenGroupMemberIds.has(m.groupMemberIdKey)) return false;
+                    seenGroupMemberIds.add(m.groupMemberIdKey);
+                    return true;
+                });
+            });
 
             return {
                 ...group,
@@ -1112,40 +1134,62 @@
     }
 
     function getSortOrderKey(): string {
-        if (box.groupPlacementKeys?.registrationInstanceIdKey) {
+        if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
             return PreferenceKey.SortOrderRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
         }
-        else if (box.groupPlacementKeys?.registrationTemplateIdKey) {
+        else if (box.placementMode === PlacementMode.TemplateMode && box.groupPlacementKeys?.registrationTemplateIdKey) {
             return PreferenceKey.SortOrderRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.GroupMode && box.groupPlacementKeys?.sourceGroupIdKey) {
+            return PreferenceKey.SortOrderSourceGroupId.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
         }
         return "";
     }
 
     function getIsGenderHighlightingKey(): string {
-        if (box.groupPlacementKeys?.registrationInstanceIdKey) {
+        if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
             return PreferenceKey.IsGenderHighlightingRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
         }
-        else if (box.groupPlacementKeys?.registrationTemplateIdKey) {
+        else if (box.placementMode === PlacementMode.TemplateMode && box.groupPlacementKeys?.registrationTemplateIdKey) {
             return PreferenceKey.IsGenderHighlightingRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.GroupMode && box.groupPlacementKeys?.sourceGroupIdKey) {
+            return PreferenceKey.IsGenderHighlightingSourceGroupId.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
         }
         return "";
     }
 
     function getPersonAttributeFilterKey(): string {
-        if (box.groupPlacementKeys?.registrationInstanceIdKey) {
+        if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
             return PreferenceKey.PersonAttributeFilterRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
         }
-        else if (box.groupPlacementKeys?.registrationTemplateIdKey) {
+        else if (box.placementMode === PlacementMode.TemplateMode && box.groupPlacementKeys?.registrationTemplateIdKey) {
             return PreferenceKey.PersonAttributeFilterRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.GroupMode && box.groupPlacementKeys?.sourceGroupIdKey) {
+            return PreferenceKey.PersonAttributeFilterSourceGroupId.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
+        }
+        return "";
+    }
+
+    function getPlacementConfigurationSettingsKey(): string {
+        if (box.groupPlacementKeys?.registrationInstanceIdKey) {
+            return PreferenceKey.PlacementConfigurationJSONRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
+        }
+        else if (box.groupPlacementKeys?.registrationTemplateIdKey) {
+            return PreferenceKey.PlacementConfigurationJSONRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.GroupMode && box.groupPlacementKeys?.sourceGroupIdKey) {
+            return PreferenceKey.PlacementConfigurationJSONSourceGroupId.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
         }
         return "";
     }
 
     function getRegistrantFeeItemValuesFilterKey(): string {
-        if (box.groupPlacementKeys?.registrationInstanceIdKey) {
+        if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
             return PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
         }
-        else if (box.groupPlacementKeys?.registrationTemplateIdKey) {
+        else if (box.placementMode === PlacementMode.TemplateMode && box.groupPlacementKeys?.registrationTemplateIdKey) {
             return PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
         }
         return "";
@@ -1165,14 +1209,26 @@
         return "";
     }
 
-    function getPlacementConfigurationSettingsKey(): string {
-        if (box.groupPlacementKeys?.registrationInstanceIdKey) {
-            return PreferenceKey.PlacementConfigurationJSONRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
-        }
-        else if (box.groupPlacementKeys?.registrationTemplateIdKey) {
-            return PreferenceKey.PlacementConfigurationJSONRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
-        }
-        return "";
+    async function processDestinationGroups(groupsPromise: Promise<PlacementGroupBag[]>): Promise<void> {
+        var groups = await groupsPromise;
+
+        return new Promise((resolve, reject) => {
+            try {
+                // setTimeout(() => {
+                placementGroups.value = groups.map(g => ({
+                    ...g,
+                    groupMembers: [] // Ensure groupMembers is initialized
+                }));
+                areGroupsLoading.value = false;
+                areGroupsExpanded.value = groups.length > 3 ? false : true;
+                console.log("placementGroups: ", placementGroups.value);
+                resolve();
+                // }, 3000);
+            }
+            catch (error) {
+                reject(error);
+            }
+        });
     }
 
     async function loadPlacementData() {
@@ -1187,25 +1243,17 @@
             registrantFeeItemsForFilter.value = attributeFilters.registrantFeeItemsForFilter ?? [];
             destinationGroupAttributesForFilter.value = attributeFilters.destinationGroupAttributesForFilter ?? {};
             destinationGroupMemberAttributesForFilter.value = attributeFilters.destinationGroupMemberAttributesForFilter ?? {};
+            console.log("Attribute Filters: ", attributeFilters);
         });
 
-        groupsPromise.then(async groups => {
-            // Wait until attribute filters are loaded
-            await attributeFiltersPromise;
+        // TODO - Come back to cleanup promise logic
+        const processGroupsPromise = processDestinationGroups(groupsPromise);
 
-            placementGroups.value = groups.map(g => ({
-                ...g,
-                groupMembers: [] // Ensure groupMembers is initialized
-            }));
-            areGroupsLoading.value = false;
-            areGroupsExpanded.value = groups.length > 3 ? false : true;
-        });
 
         placementPeoplePromise.then(async placementPeople => {
             // Wait here until groups and attribute filters are loaded
-            await attributeFiltersPromise;
-            await groupsPromise;
-            console.log("placementGroups: ", placementGroups.value);
+            // await attributeFiltersPromise;
+            await processGroupsPromise;
             console.log("placementpeople: ", placementPeople);
 
             if (placementPeople.peopleToPlace) {
@@ -1294,7 +1342,7 @@
             addGroupMembersBag: {
                 pendingGroupMembers,
                 groupIdKey,
-                registrationTemplatePlacementIdKey: box.groupPlacementKeys?.registrationTemplatePlacementIdKey
+                destinationGroupTypeIdKey: box.destinationGroupType?.idKey
             } as AddGroupMembersBag
         });
 

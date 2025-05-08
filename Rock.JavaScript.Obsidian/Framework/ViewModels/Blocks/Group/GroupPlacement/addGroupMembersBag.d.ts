@@ -24,9 +24,9 @@
 import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
 
 export type AddGroupMembersBag = {
+    destinationGroupTypeIdKey?: string | null;
+
     groupIdKey?: string | null;
 
     pendingGroupMembers?: GroupMemberBag[] | null;
-
-    registrationTemplatePlacementIdKey?: string | null;
 };

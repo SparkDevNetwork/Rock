@@ -25,8 +25,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
     {
         public List<GroupMemberBag> PendingGroupMembers { get; set; }
 
-        public string RegistrationTemplatePlacementIdKey { get; set; }
-
         public string GroupIdKey { get; set; }
+
+        public string DestinationGroupTypeIdKey { get; set; }
     }
 }

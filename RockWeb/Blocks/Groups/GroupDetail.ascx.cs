@@ -2663,7 +2663,8 @@ namespace RockWeb.Blocks.Groups
             string groupPlacementUrl = LinkedPageUrl( AttributeKey.GroupPlacementPage, new Dictionary<string, string>
             {
                 { "SourceGroup", group.Id.ToString() },
-                { "AllowMultiplePlacements", "false" }
+                { "AllowMultiplePlacements", "false" },
+                { "ReturnUrl", GetCurrentPageUrl() }
             } );
             if ( groupPlacementUrl.IsNotNullOrWhiteSpace() )
             {

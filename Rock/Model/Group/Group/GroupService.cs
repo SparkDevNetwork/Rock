@@ -1794,6 +1794,37 @@ namespace Rock.Model
             return groupMember != null;
         }
 
+        #region Group Placement Methods
+
+        /// <summary>
+        /// Gets the placement groups for a specific sourceGroup
+        /// </summary>
+        /// <param name="sourceGroup">The source group for placement.</param>
+        /// <returns></returns>
+        public IQueryable<Group> GetSourceGroupPlacementPlacementGroups( Group sourceGroup )
+        {
+            return this.RelatedEntities.GetRelatedToSourceEntity<Group>( sourceGroup.Id, RelatedEntityPurposeKey.GroupPlacement );
+        }
+
+        /// <summary>
+        /// Adds the source group placement group. Returns false if the group is already a placement group for this source group Placement
+        /// </summary>
+        /// <param name="sourceGroup">The source group placement.</param>
+        /// <param name="group">The group.</param>
+        /// <returns></returns>
+        public bool AddGroupPlacementPlacementGroup( Group sourceGroup, Group group )
+        {
+            if ( !this.RelatedEntities.RelatedToSourceEntityAlreadyExists( sourceGroup.Id, group, RelatedEntityPurposeKey.RegistrationTemplateGroupPlacementTemplate ) )
+            {
+                this.RelatedEntities.AddRelatedToSourceEntity( sourceGroup.Id, group, RelatedEntityPurposeKey.GroupPlacement );
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Group Copy Methods
 
         /// <summary>

@@ -9,7 +9,7 @@
                 <CampusPicker v-model="campus" label="Campus Filter" includeInactive showBlankItem :forceVisible="true" />
             </div>
         </div>
-        <Panel v-if="inTemplateMode"
+        <Panel v-if="placementMode === PlacementMode.TemplateMode"
                :modelValue="true"
                title="Registration Template Configuration"
                :hasCollapse="true">
@@ -22,7 +22,9 @@
         <Panel :modelValue="true"
                title="People To Place Configuration"
                :hasCollapse="true">
-            <CheckBox v-model="areFeesDisplayed" label="Show Fees" />
+            <CheckBox v-if="placementMode === PlacementMode.TemplateMode || placementMode === PlacementMode.InstanceMode"
+                      v-model="areFeesDisplayed"
+                      label="Show Fees" />
             <DropDownList v-model="sourceAttributesToDisplay"
                           label="Displayed Source Attributes"
                           :items="placementConfigurationSettingOptions.sourceAttributes ?? []"
@@ -67,6 +69,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { PlacementConfigurationSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingsBag";
     import { PlacementConfigurationSettingOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingOptionsBag";
+    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
 
     const props = defineProps({
         modelValue: {
@@ -81,10 +84,10 @@
             type: Object as PropType<PlacementConfigurationSettingOptionsBag>,
             required: true
         },
-        inTemplateMode: {
-            type: Boolean as PropType<boolean>,
-            required: true
-        },
+        placementMode: {
+            type: Number as PropType<PlacementMode | null>,
+            required: false
+        }
     });
 
     const emit = defineEmits<{

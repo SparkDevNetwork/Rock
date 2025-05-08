@@ -22,6 +22,7 @@
 //
 
 import { Gender } from "@Obsidian/Enums/Crm/gender";
+import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
 import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
 
 export type PersonBag = {
@@ -38,4 +39,6 @@ export type PersonBag = {
     photoUrl?: string | null;
 
     registrants?: RegistrantBag[] | null;
+
+    sourceGroupMember?: GroupMemberBag | null;
 };
