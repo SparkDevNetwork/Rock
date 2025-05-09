@@ -34,6 +34,20 @@ export type MediaElementBag = {
     /** The close captioning data for the media element. This should be in the format of WebVTT for use by Rock. */
     closeCaption?: string | null;
 
+    /**
+     * Gets the default file URL to use for media playback. This value is
+     * calculated at run time but also stored on the database so it is
+     * available in SQL and LINQ queries as well.
+     */
+    defaultFileUrl?: string | null;
+
+    /**
+     * Gets the default thumbnail URL. This value is calculated at run
+     * time but also stored on the database so it is available in SQL
+     * and LINQ queries as well.
+     */
+    defaultThumbnailUrl?: string | null;
+
     /** Gets or sets a description of the Element. */
     description?: string | null;
 
