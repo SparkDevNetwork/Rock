@@ -369,7 +369,7 @@ $navbar-element-height: 40px;
     }
 
     .nav > li > a {
-      padding: var(--spacing-tiny) var(--spacing-small);
+      padding: var(--spacing-tiny) var(--spacing-medium);
     }
   }
 
@@ -490,6 +490,22 @@ $navbar-element-height: 40px;
   height: 100%;
   color: #FFF; /* Hard coded because in dark mode it looks weird with dark color. */
   background-color: var(--color-primary);
+
+  .zone-navigation {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    &::-webkit-scrollbar {
+      width: 6px;
+      background-color: transparent
+    }
+    &::-webkit-scrollbar-thumb {
+      width: 6px;
+      background-color: rgba(0,0,0,0.2);
+      border-radius: 10px
+    }
+  }
 
   .navbar-side {
     margin-bottom: 84px; // adds space for the admin tool bar and the static top menu item on mobile
@@ -935,7 +951,7 @@ a.rock-bookmark {
   justify-content: center;
   width: var(--size);
   height: var(--size);
-  margin: 0 0 0 8px;
+  margin: 0 0 0 var(--spacing-small);
   font-size: calc(var(--size) * 0.5);
   background-color: var(--color-interface-softer);
   border: 1px solid var(--color-interface-soft);

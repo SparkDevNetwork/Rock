@@ -321,7 +321,7 @@ body.navbar-side-open {
   padding: 0 0 0 var(--spacing-xsmall);
 }
 .rock-top-header .smartsearch .nav > li > a {
-  padding: var(--spacing-tiny) var(--spacing-small);
+  padding: var(--spacing-tiny) var(--spacing-medium);
 }
 .rock-top-header .loginstatus {
   margin: 0;
@@ -429,6 +429,21 @@ body.navbar-side-open {
   height: 100%;
   color: #FFF; /* Hard coded because in dark mode it looks weird with dark color. */
   background-color: var(--color-primary);
+}
+.navbar-static-side .zone-navigation {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.navbar-static-side .zone-navigation::-webkit-scrollbar {
+  width: 6px;
+  background-color: transparent;
+}
+.navbar-static-side .zone-navigation::-webkit-scrollbar-thumb {
+  width: 6px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
 }
 .navbar-static-side .navbar-side {
   margin-bottom: 84px;
@@ -798,7 +813,7 @@ a.rock-bookmark {
   justify-content: center;
   width: var(--size);
   height: var(--size);
-  margin: 0 0 0 8px;
+  margin: 0 0 0 var(--spacing-small);
   font-size: calc(var(--size) * 0.5);
   background-color: var(--color-interface-softer);
   border: 1px solid var(--color-interface-soft);

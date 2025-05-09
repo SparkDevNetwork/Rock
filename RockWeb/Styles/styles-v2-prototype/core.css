@@ -3122,7 +3122,7 @@ input[type=button].btn-block {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: var(--spacing-xsmall);
+  margin-left: var(--spacing-small);
   padding: var(--spacing-xsmall) var(--spacing-xsmall);
   font-size: 1.15em;
   border: 1px solid var(--color-interface-soft);
@@ -12158,8 +12158,8 @@ div.aspNetDisabled {
   align-items: center;
   gap: var(--spacing-xsmall);
   padding: var(--spacing-tiny) var(--spacing-tiny);
-  padding-left: var(--spacing-small);
-  margin-left: var(--spacing-xsmall);
+  padding-left: var(--spacing-medium);
+  margin-left: var(--spacing-small);
 }
 @media (max-width: 768px) {
   .loginstatus .loginstatus-wrapper {
