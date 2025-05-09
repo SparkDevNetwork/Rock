@@ -218,36 +218,40 @@ namespace Rock
         }
 
         /// <summary>
-        /// Use this method to convert an object to a string properly using the InvariantCulture.
-        /// Using only TryParse will used the culture-dependent object-string and ignore any
-        /// CultureInfo.InvariantCulture you'll try passing to the TryParse method.
+        /// Converts an object to a string using InvariantCulture and then attempts to parse it to the specified type.
+        /// This method helps ensure consistent parsing results across different cultures. 
+        /// 
+        /// Standard TryParse methods may ignore the supplied CultureInfo.InvariantCulture if the input is an object,
+        /// because the object's string representation is generated using the current culture by default.
         /// </summary>
-        /// <typeparam name="TOut"></typeparam>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
-        /// <returns></returns>
+        /// <typeparam name="TOut">The target type to parse to.</typeparam>
+        /// <param name="input">The input object to parse.</param>
+        /// <param name="output">When this method returns, contains the parsed value if successful, or the default value of <typeparamref name="TOut"/>.</param>
+        /// <returns><c>true</c> if parsing was successful; otherwise, <c>false</c>.</returns>
         public static bool TryParseInvariant<TOut>( this object input, out TOut output )
         {
             return input.TryParseInvariant( out output, default( TOut ) );
         }
 
         /// <summary>
-        /// Use this method to convert an object to a string properly using the InvariantCulture.
-        /// Using only TryParse will used the culture-dependent object-string and ignore any
-        /// CultureInfo.InvariantCulture you'll try passing to the TryParse method.
+        /// Converts an object to a string using InvariantCulture and then attempts to parse it to the specified type.
+        /// This method helps ensure consistent parsing results across different cultures. 
+        /// 
+        /// Standard TryParse methods may ignore the supplied CultureInfo.InvariantCulture if the input is an object,
+        /// because the object's string representation is generated using the current culture by default.
         /// </summary>
-        /// <typeparam name="TOut"></typeparam>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
-        /// <param name="defaultValue"></param>
-        /// <returns></returns>
+        /// <typeparam name="TOut">The target type to parse to.</typeparam>
+        /// <param name="input">The input object to parse.</param>
+        /// <param name="output">When this method returns, contains the parsed value if successful, or the specified default value.</param>
+        /// <param name="defaultValue">The value to assign to <paramref name="output"/> if parsing fails.</param>
+        /// <returns><c>true</c> if parsing was successful; otherwise, <c>false</c>.</returns>
         public static bool TryParseInvariant<TOut>( this object input, out TOut output, TOut defaultValue )
         {
             output = defaultValue;
 
             // We need to convert the object to a string properly, using the InvariantCulture.
             // Otherwise, attempting to use TryParse will used the culture-dependent object-string
-            // and ignore the CultureInfo.InvariantCulture we're passing to the TryParse. #mindblown
+            // and ignore the CultureInfo.InvariantCulture we're passing to the TryParse.
             var inputString = Convert.ToString( input, CultureInfo.InvariantCulture );
 
             Type type = typeof( TOut );
