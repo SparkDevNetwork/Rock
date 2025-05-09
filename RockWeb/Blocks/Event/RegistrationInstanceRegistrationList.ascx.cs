@@ -523,7 +523,10 @@ namespace RockWeb.Blocks.Event
                     .ThenBy( a => a.Name )
                     .ToAttributeCacheList() )
                 {
-                    availableRegistrationAttributesForGrid.Add( attributeCache );
+                    if ( attributeCache.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    { 
+                        availableRegistrationAttributesForGrid.Add( attributeCache );
+                    }
                 }
 
                 AvailableRegistrationAttributeIdsForGrid = availableRegistrationAttributesForGrid.Select( a => a.Id ).ToArray();

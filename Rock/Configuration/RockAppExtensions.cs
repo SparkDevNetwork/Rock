@@ -14,7 +14,12 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Attribute;
+using Rock.Communication.Chat;
 using Rock.Lava;
 
 namespace Rock.Configuration
@@ -155,5 +160,25 @@ namespace Rock.Configuration
 
             return url;
         }
+
+        #region Service Provider
+
+        /// <summary>
+        /// Gets the <see cref="IChatProvider"/> service from the <see cref="RockApp"/>'s <see cref="IServiceProvider"/>.
+        /// </summary>
+        /// <remarks>
+        /// This will never return <see langword="null"/>, as an exception will be thrown if a <see cref="IChatProvider"/>
+        /// service was not registered with the <see cref="RockApp"/>'s <see cref="IServiceProvider"/>.
+        /// </remarks>
+        /// <param name="rockApp">The <see cref="RockApp"/> from which to get the <see cref="IChatProvider"/>.</param>
+        /// <returns>The <see cref="IChatProvider"/> service that was registered with the <see cref="RockApp"/>'s
+        /// <see cref="IServiceProvider"/>.</returns>
+        /// <exception cref="System.InvalidOperationException">There is no service of type <see cref="IChatProvider"/>.</exception>
+        internal static IChatProvider GetChatProvider( this RockApp rockApp )
+        {
+            return rockApp.GetRequiredService<IChatProvider>();
+        }
+
+        #endregion Service Provider
     }
 }

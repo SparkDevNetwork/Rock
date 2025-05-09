@@ -330,7 +330,10 @@ namespace Rock.SystemKey
         public const string OBSERVABILITY_ENDPOINT = "core_ObservabilityEndpoint";
 
         /// <summary>
-        /// Determines if observability is enabled.
+        /// Determines if observability is enabled. This will contain either an
+        /// integer value that reflects the <see cref="Enums.Observability.FeatureFlags"/>
+        /// selection or a "True"/"False" value that should be taken to mean
+        /// "all" or "none".
         /// </summary>
         public const string OBSERVABILITY_ENABLED = "core_ObservabilityEnabled";
 
@@ -362,6 +365,11 @@ namespace Rock.SystemKey
         /// traces.
         /// </summary>
         public const string OBSERVABILITY_MAX_ATTRIBUTE_LENGTH = "core_ObservabilityMaxAttributeLength";
+
+        /// <summary>
+        /// Determines if observability is enabled.
+        /// </summary>
+        public const string OBSERVABILITY_TRACE_LEVEL = "core_ObservabilityTraceLevel";
 
         /// <summary>
         /// The label text for the SMS Opt-In checkbox
@@ -410,5 +418,25 @@ namespace Rock.SystemKey
         /// Whether the Organization's state should be selected by default.
         /// </summary>
         public const string ENABLE_DEFAULT_ADDRESS_STATE_SELECTION = "core_EnableDefaultAddressStateSelection";
+
+        /// <summary>
+        /// The chat configuration.
+        /// </summary>
+        public const string CHAT_CONFIGURATION = "core_ChatConfiguration";
+
+        /// <summary>
+        /// Job settings for <see cref="Rock.Jobs.ChatSync"/>
+        /// </summary>
+        public const string CHAT_SYNC_JOB_SETTINGS = "core_ChatSyncJobSettings";
+
+        /// <summary>
+        /// App-scoped Stream chat permission grants.
+        /// </summary>
+        public const string CHAT_STREAM_GRANTS_APP_SCOPED = "core_ChatStreamGrantsAppScoped";
+
+        /// <summary>
+        /// Channel Type-scoped Stream chat permission grants.
+        /// </summary>
+        public const string CHAT_STREAM_GRANTS_CHANNEL_TYPE_SCOPED = "core_ChatStreamGrantsChannelTypeScoped";
     }
 }

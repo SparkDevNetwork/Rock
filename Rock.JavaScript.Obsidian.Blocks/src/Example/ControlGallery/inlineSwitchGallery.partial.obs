@@ -1,0 +1,26 @@
+<template>
+    <GalleryAndResult :value="isChecked"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <InlineSwitch label="Inline Switch" v-model="isChecked" :isBold="isBold" />
+
+        <template #settings>
+            <CheckBox label="Is Bold" v-model="isBold" />
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const isBold = ref(false);
+    const isChecked = ref(false);
+    const importCode = getSfcControlImportPath("inlineSwitch");
+    const exampleCode = `<InlineSwitch label="Inline Switch" v-model="value" :isBold="false" />`;
+</script>

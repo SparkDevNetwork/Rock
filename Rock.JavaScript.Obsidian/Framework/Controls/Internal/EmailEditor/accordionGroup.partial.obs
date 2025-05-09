@@ -1,0 +1,90 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="accordion-group">
+        <slot></slot>
+    </div>
+</template>
+
+<style>
+.accordion-group .accordion .panel {
+    height: auto;
+    margin-bottom: 0;
+    border-radius: 0;
+    border: none;
+}
+
+.accordion-group .accordion .panel-heading {
+    border-radius: 0;
+}
+
+.accordion-group .accordion .accordion-group .panel {
+    /* Remove horizontal panel padding from nested accordions. */
+    margin-left: calc(0px - var(--panel-body-padding));
+    margin-right: calc(0px - var(--panel-body-padding));
+}
+
+.accordion-pb-0 > div > .panel > .panel-body,
+.accordion-pb-0 > .panel > .panel-body {
+    padding-bottom: 0;
+}
+
+.accordion-pt-0 > div > .panel > .panel-body,
+.accordion-pt-0 > .panel > .panel-body {
+    padding-top: 0;
+}
+
+.accordion-link > div > .panel > .panel-body,
+.accordion-link > .panel > .panel-body {
+    padding-top: var(--spacing-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { onMounted, PropType, provide, Ref, watch } from "vue";
+    import { AccordionGroupInjectionKey } from "./utils.partial";
+
+    const props = defineProps({
+        isAutoExpandOnInitDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const accordions: Record<string, Ref<boolean>> = {};
+
+    // #region Functions
+
+    function register(key: string, isExpanded: Ref<boolean>): void {
+        // This will overwrite other accordions that use the same key.
+        accordions[key] = isExpanded;
+
+        watch(isExpanded, () => {
+            if (isExpanded.value) {
+                // Collapse other accordions.
+                for (const accordionKey in accordions) {
+                    if (accordionKey !== key) {
+                        accordions[accordionKey].value = false;
+                    }
+                }
+            }
+        });
+    }
+
+    // #endregion
+
+    // #region Hooks
+
+    onMounted(() => {
+        const accordionKeys = Object.keys(accordions);
+
+        if (accordionKeys.length && !props.isAutoExpandOnInitDisabled) {
+            accordions[accordionKeys[0]].value = true;
+        }
+    });
+
+    // #endregion
+
+    provide(AccordionGroupInjectionKey, {
+        register
+    });
+</script>

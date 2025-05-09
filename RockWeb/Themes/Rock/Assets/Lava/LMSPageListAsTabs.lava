@@ -1,0 +1,14 @@
+<style>
+  body.temp-is-edit .temp-page-nav {
+    display: none;
+  }
+</style>
+<div class="mb-3 temp-page-nav">
+  <ul class="nav nav-tabs">
+    {% for childPage in Page.Pages %}
+        <li {% if childPage.Current %}class="active"{% endif %}>
+            <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+        </li>
+    {% endfor %}
+  </ul>
+</div>

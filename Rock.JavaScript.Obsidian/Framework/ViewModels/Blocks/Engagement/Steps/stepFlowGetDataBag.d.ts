@@ -21,14 +21,14 @@
 // </copyright>
 //
 
-import { FlowNodeDiagramEdgeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramEdgeBag";
-import { FlowNodeDiagramNodeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramNodeBag";
+import { SankeyDiagramEdgeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramEdgeBag";
+import { SankeyDiagramNodeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramNodeBag";
 
 /** Class StepFlowGetDataBag. */
 export type StepFlowGetDataBag = {
     /** Gets or sets the list of edges */
-    edges?: FlowNodeDiagramEdgeBag[] | null;
+    edges?: SankeyDiagramEdgeBag[] | null;
 
     /** Gets or sets the list of nodes */
-    nodes?: FlowNodeDiagramNodeBag[] | null;
+    nodes?: SankeyDiagramNodeBag[] | null;
 };

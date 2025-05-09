@@ -100,8 +100,8 @@
 
 <script setup lang="ts">
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-    import { NoteEditBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteEditBag";
-    import { NoteTypeBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteTypeBag";
+    import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
+    import { NoteTypeBag } from "@Obsidian/ViewModels/Controls/noteTypeBag";
     import { showSecurity as showSecurityModal } from "@Obsidian/Utility/dialogs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";

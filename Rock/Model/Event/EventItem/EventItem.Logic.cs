@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
@@ -251,6 +252,30 @@ namespace Rock.Model
         }
 
         #endregion
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            // If there are any event calendar items and any one of them authorizes
+            // this action then allow it. Otherwise fallthrough to default security.
+            if ( EventCalendarItems != null && EventCalendarItems.Count > 0 )
+            {
+                foreach ( var eci in EventCalendarItems )
+                {
+                    var calendar = EventCalendarCache.Get( eci.EventCalendarId );
+
+                    if ( calendar?.IsAuthorized( action, person ) == true )
+                    {
+                        return true;
+                    }
+                }
+            }
+            return base.IsAuthorized( action, person );
+        }
 
         #endregion
     }

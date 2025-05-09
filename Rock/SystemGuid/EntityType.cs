@@ -219,6 +219,11 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE = "53D4BF38-C49E-4A52-8B0E-5E016FB9574E";
 
         /// <summary>
+        /// The guid for Rock.Model.EntitySearch entity.
+        /// </summary>
+        public const string ENTITY_SEARCH = "080374B4-C765-4F90-8B85-BC2635164275";
+
+        /// <summary>
         /// The guid for Rock.Model.EntityType entity.
         /// </summary>
         public const string ENTITY_TYPE = "A2277FBA-D09F-4D07-B0AB-1C650C25A7A7";
@@ -267,6 +272,11 @@ namespace Rock.SystemGuid
         /// The guid for the <see cref="Rock.Model.History">Rock.Model.History</see> entity.
         /// </summary>
         public const string HISTORY = "546D5F43-1184-47C9-8265-2D7BF4E1BCA5";
+
+        /// <summary>
+        /// The guid for the <see cref="Rock.Model.HistoryLogin"/> entity.
+        /// </summary>
+        public const string HISTORY_LOGIN = "B0C039E1-D2B0-460A-A787-83565BCB665C";
 
         /// <summary>
         /// The HTTP module component
@@ -331,17 +341,22 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.LearningActivity"/>
         /// </summary>
-        public const string LEARNING_ACTIVITY = "E82F540C-F483-4D4A-898A-3AE7FF76F75A";
-
-        /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.LearningActivityCompletion"/>
-        /// </summary>
-        public const string LEARNING_ACTIVITY_COMPLETION = "14D1295A-CE9E-4FCB-A63C-6DF04DB5E9B1";
+        public const string LEARNING_ACTIVITY = "98B98FA8-A92D-4E10-AA3E-B3082E61976F";
 
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.LearningClass"/>
         /// </summary>
         public const string LEARNING_CLASS = "EB41E4E1-64B1-4AA1-8F66-F0DFD81557D9";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningClassActivity"/>
+        /// </summary>
+        public const string LEARNING_CLASS_ACTIVITY = "E82F540C-F483-4D4A-898A-3AE7FF76F75A";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningClassActivityCompletion"/>
+        /// </summary>
+        public const string LEARNING_CLASS_ACTIVITY_COMPLETION = "14D1295A-CE9E-4FCB-A63C-6DF04DB5E9B1";
 
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.LearningClassAnnouncement"/>
@@ -688,6 +703,21 @@ namespace Rock.SystemGuid
         /// The GUID for the entity Rock.Blocks.Types.Mobile.CheckIn.CheckIn.
         /// </summary>
         public const string MOBILE_CHECKIN_CHECKIN = "BC0A4B6C-9F6D-4D39-8FFE-B6F9FA4B2F49";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Finance.ScheduledTransactionList.
+        /// </summary>
+        public const string MOBILE_FINANCE_SCHEDULED_TRANSACTION_LIST_BLOCK_TYPE = "7698E529-6834-46B0-BC5A-D466A6BCE4F6";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Finance.TransactionDetail.
+        /// </summary>
+        public const string MOBILE_FINANCE_TRANSACTION_DETAIL_BLOCK_TYPE = "3355006B-4C1F-4F85-8390-7C83C26D5C4A";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Finance.TransactionList.
+        /// </summary>
+        public const string MOBILE_FINANCE_TRANSACTION_LIST_BLOCK_TYPE = "4196280F-0204-4268-A19F-773336B8BEA2";
 
         /// <summary>
         /// The obsidian event registration entry
@@ -1650,6 +1680,11 @@ namespace Rock.SystemGuid
         public const string PERSONALIZATION_SEGMENT = "368A3581-C8C4-4960-901A-9587864226F3";
 
         /// <summary>
+        /// The EntityType Guid for PersonalizationSegmentCategory 'joiner' table <see cref="Rock.Model.PersonalizationSegment"/>
+        /// </summary>
+        public const string PERSONALIZATION_SEGMENT_CATEGORY = "D2026C0C-6C5F-4BB8-B085-9928E373812D";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.PersonalLink"/> 
         /// </summary>
         public const string PERSONAL_LINK = "F858CF72-ECCC-4DC6-AD72-7B82467B3466";
@@ -1967,7 +2002,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Web.HttpModules.RockGateway"/> 
         /// </summary>
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         [Obsolete( "Use HTTP_MODULE_ROCK_GATEWAY instead." )]
         public const string HTTP_MODULE_OBSERVABILITY = "FE7A8295-9383-4FD8-9FB2-FF77A8042462";
 
@@ -2005,5 +2040,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.AIProvider"/> 
         /// </summary>
         public const string AI_PROVIDER = "945A994F-F15E-43AC-B503-A54BDE70F77F";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.EmailSection"/> 
+        /// </summary>
+        public const string EMAIL_SECTION = "86B2CE94-9DC3-463C-B2B1-DEECAB70474E";
     }
 }

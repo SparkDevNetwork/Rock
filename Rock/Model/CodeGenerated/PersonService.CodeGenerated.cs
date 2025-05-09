@@ -164,6 +164,8 @@ namespace Rock.Model
             target.GivingLeaderId = source.GivingLeaderId;
             target.GraduationYear = source.GraduationYear;
             target.InactiveReasonNote = source.InactiveReasonNote;
+            target.IsChatOpenDirectMessageAllowed = source.IsChatOpenDirectMessageAllowed;
+            target.IsChatProfilePublic = source.IsChatProfilePublic;
             target.IsDeceased = source.IsDeceased;
             target.IsEmailActive = source.IsEmailActive;
             target.IsLockedAsChild = source.IsLockedAsChild;
@@ -176,6 +178,7 @@ namespace Rock.Model
             target.NickNamePronunciationOverride = source.NickNamePronunciationOverride;
             target.PhotoId = source.PhotoId;
             target.PreferredLanguageValueId = source.PreferredLanguageValueId;
+            target.PrimaryAliasGuid = source.PrimaryAliasGuid;
             target.PrimaryAliasId = source.PrimaryAliasId;
             target.PrimaryCampusId = source.PrimaryCampusId;
             target.PrimaryFamilyId = source.PrimaryFamilyId;

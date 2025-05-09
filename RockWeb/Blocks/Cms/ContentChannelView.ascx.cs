@@ -710,6 +710,7 @@ $(document).ready(function() {
 
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
                 linkedPages.Add( "DetailPage", LinkedPageRoute( AttributeKey.DetailPage ) );
+                linkedPages.Add( "DetailPageRoute", GetAttributeValue( AttributeKey.DetailPage ) );
 
                 List<ContentChannelItem> contentItemList = null;
                 List<TagModel> tags = null;
@@ -1450,8 +1451,8 @@ $(document).ready(function() {
             }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex );
                 //Don't choke on the filter.
+                ExceptionLogService.LogException( new Exception( $"Error while trying to filter a channel by DataFilterId. This is likely due to a broken DataFilter for the '{channelGuid}' channel for block {this.BlockId} on page {this.RockPage.PageId}.", ex ) );
             }
 
             // If items could be filtered by querystring values, check for filters

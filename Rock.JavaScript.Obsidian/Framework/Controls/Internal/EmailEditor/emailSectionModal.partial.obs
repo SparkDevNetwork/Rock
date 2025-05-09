@@ -1,0 +1,365 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="internalValue"
+           :cancelText="isSaving ? '' : 'Cancel'"
+           :isSaveButtonDisabled="isSaving"
+           :isCloseButtonHidden="isSaving"
+           :saveText="isSystem ? '' : 'Save'"
+           :saveThenAddText="isExisting ? 'Save As New' : ''"
+           saveThenAddBtnType="default"
+           title="Save Section"
+           @save="onSaveEmailSection"
+           @saveThenAdd="onSaveAsNewEmailSection"
+           @closeModal="onCancelEmailSection">
+        <NotificationBox v-if="saveEmailSectionError" alertType="danger">{{ saveEmailSectionError }}</NotificationBox>
+
+        <SectionHeader :title="areEqual(emailSectionGuid, emptyGuid) ? 'Save New Section' : 'Save Section'"
+                       description="This content will be added to your Section library, and can be reused in your email designs." />
+
+        <TextBox v-model="emailSectionName"
+                 :disabled="isSaving"
+                 label="Name"
+                 placeholder="New Section"
+                 rules="required" />
+
+        <TextBox v-model="emailSectionUsageSummary"
+                 :disabled="isSaving"
+                 label="Usage Summary"
+                 placeholder="Insert a quick summary of how this section is used. This summary will be displayed with the section."
+                 rules="required"
+                 textMode="multiline" />
+
+        <CategoryPicker v-model="emailSectionCategory"
+                        blankValue="Select Category"
+                        :disabled="isSaving"
+                        :entityTypeGuid="EntityType.EmailSection"
+                        label="Category"
+                        rules="required" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { Guid } from "@Obsidian/Types";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { areEqual, emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { EmailEditorEmailSectionBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorEmailSectionBag";
+    import { EmailEditorGetEmailSectionOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorGetEmailSectionOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { removeTemporaryAttributes, removeTemporaryElements, removeTemporaryWrappers } from "./utils.partial";
+    import { useApi } from "./api";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        componentElement: {
+            type: Object as PropType<HTMLElement | null | undefined>,
+            required: true
+        },
+
+        emailSection: {
+            type: Object as PropType<EmailEditorEmailSectionBag | null | undefined>,
+            required: true
+        },
+
+        emailDocument: {
+            type: Object as PropType<Document | null | undefined>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "emailSectionSaved", value: EmailEditorEmailSectionBag): void;
+        (e: "emailSectionCanceled"): void;
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    // #region Values
+
+    const api = useApi();
+
+    // UI state.
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const saveEmailSectionError = ref<string | null | undefined>();
+    const isSaving = ref<boolean>(false);
+    const isExisting = ref<boolean>(false);
+    const isSystem = ref<boolean>(false);
+
+    // There's no need to initialize this until the modal is shown.
+    const emailSectionGuid = ref<Guid>(props.emailSection?.guid ?? emptyGuid);
+    const emailSectionName = ref<string>(isSystem.value ? `Copy - ${props.emailSection?.name}` : props.emailSection?.name ?? "");
+    const emailSectionUsageSummary = ref<string>(props.emailSection?.usageSummary ?? "");
+    const emailSectionCategory = ref<ListItemBag | null | undefined>(props.emailSection?.category);
+
+    // #endregion Values
+
+    // #region Functions
+
+    function getFileName(emailSectionName: string): string {
+        return `${emailSectionName.replace(" ", "-")}.png`;
+    }
+
+    function getEmailSectionGuid(): Guid {
+        if (props.componentElement) {
+            let guid = toGuidOrNull(props.componentElement.dataset.emailSectionGuid);
+
+            if (!guid || areEqual(guid, emptyGuid)) {
+                guid = newGuid();
+                props.componentElement.dataset.emailSectionGuid = guid;
+            }
+
+            return guid;
+        }
+        else if (props.emailSection) {
+            return props.emailSection.guid;
+        }
+        else {
+            throw new Error("Either the section component or an existing email section is required.");
+        }
+    }
+
+    function useTemporaryEmailSectionElement(callback: (tempElement: HTMLElement) => void): void {
+        let tempElement: HTMLElement | null | undefined;
+
+        try {
+            if (props.componentElement) {
+                // First, we must clone and clean the HTML so it can be saved without runtime code.
+                tempElement = props.componentElement.cloneNode(true) as HTMLElement;
+                removeTemporaryAttributes(tempElement);
+                removeTemporaryElements(tempElement);
+                removeTemporaryWrappers(tempElement);
+
+                // Add the clone temporarily to the get html2canvas to work.
+                props.componentElement.parentNode?.insertBefore(tempElement, props.componentElement.nextElementSibling);
+            }
+            else if (props.emailSection) {
+                if (props.emailDocument) {
+                    // Generate the element from the email section source markup.
+                    tempElement = props.emailDocument.createElement("div");
+                    tempElement.innerHTML = props.emailSection.sourceMarkup ?? "";
+
+                    // Add the clone temporarily to the get html2canvas to work.
+
+                    // To get the most accurate thumbnail image,
+                    // the temporary element should be
+                    // added where a similar section has been placed.
+                    const tempElementContent = tempElement.textContent ?? "";
+                    const bestElement = Enumerable.from(props.emailDocument.querySelectorAll(".component-section"))
+                        .select(e => {
+                            if (e.textContent && e.textContent.includes(tempElementContent)) {
+                                // Text content matches.
+                                return {
+                                    element: e,
+                                    rank: 0
+                                };
+                            }
+                            else if (!e.textContent && !tempElementContent) {
+                                // Neither has text content.
+                                return {
+                                    element: e,
+                                    rank: 1
+                                };
+                            }
+                            else {
+                                // Text content doesn't match, but they are both section components.
+                                return {
+                                    element: e,
+                                    rank: 2
+                                };
+                            }
+                        })
+                        .orderBy(e => e.rank)
+                        .firstOrDefault();
+
+                    if (bestElement?.element.parentNode) {
+                        // Place it after the best matching element.
+                        bestElement.element.parentNode.insertBefore(tempElement, bestElement.element.nextSibling);
+                    }
+                    else {
+                        // Place it at the end of the document.
+                        props.emailDocument.body.append(tempElement);
+                    }
+                }
+                else {
+                    throw new Error("Email document is required.");
+                }
+            }
+            else {
+                throw new Error("Either the section component or an existing email section is required.");
+            }
+
+            if (tempElement) {
+                callback(tempElement);
+            }
+        }
+        finally {
+            // Remove the temporary element from the DOM.
+            tempElement?.remove();
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    async function onSaveEmailSection(): Promise<void> {
+        saveEmailSectionError.value = null;
+
+        // Generate a new thumbnail image every time the section is saved.
+        useTemporaryEmailSectionElement(async tempElement => {
+            try {
+                isSaving.value = true;
+
+                const thumbnailInfo = await api.createBinaryFileImageFromElement({
+                    element: tempElement,
+                    fileName: getFileName(emailSectionName.value),
+                    binaryFileTypeGuid: BinaryFiletype.CommunicationImage
+                });
+
+                // Save the email section.
+                const bag: EmailEditorEmailSectionBag = {
+                    guid: emailSectionGuid.value,
+                    category: emailSectionCategory.value,
+                    isSystem: false,
+                    name: emailSectionName.value,
+                    sourceMarkup: tempElement.outerHTML,
+                    thumbnailBinaryFile: thumbnailInfo.binaryFile,
+                    usageSummary: emailSectionUsageSummary.value
+                };
+
+                const result = await api.updateEmailSection(bag);
+
+                if (result.isSuccess && result.data) {
+                    if (props.componentElement) {
+                        // Add the email section guid as a data attribute so the layout can be tracked.
+                        props.componentElement.dataset.emailSectionGuid = result.data.guid;
+                    }
+
+                    // Clear all fields.
+                    emailSectionGuid.value = emptyGuid;
+                    emailSectionName.value = "";
+                    emailSectionUsageSummary.value = "";
+                    emailSectionCategory.value = null;
+
+                    // Hide the modal.
+                    internalValue.value = false;
+
+                    emit("emailSectionSaved", result.data);
+                }
+                else {
+                    saveEmailSectionError.value = result.errorMessage;
+                    throw new Error(`Unable to save the Email Section. ${result.errorMessage}`);
+                }
+            }
+            finally {
+                isSaving.value = false;
+            }
+        });
+    }
+
+    async function onSaveAsNewEmailSection(): Promise<void> {
+        saveEmailSectionError.value = null;
+
+        // Generate a new thumbnail image every time the section is saved.
+        useTemporaryEmailSectionElement(async tempElement => {
+            try {
+                isSaving.value = true;
+
+                const thumbnailInfo = await api.createBinaryFileImageFromElement({
+                    element: tempElement,
+                    fileName: getFileName(emailSectionName.value),
+                    binaryFileTypeGuid: BinaryFiletype.CommunicationImage
+                });
+
+                // Save the email section.
+                const bag: EmailEditorEmailSectionBag = {
+                    guid: newGuid(),
+                    category: emailSectionCategory.value,
+                    isSystem: false,
+                    name: emailSectionName.value,
+                    sourceMarkup: tempElement.outerHTML,
+                    thumbnailBinaryFile: thumbnailInfo.binaryFile,
+                    usageSummary: emailSectionUsageSummary.value
+                };
+
+                const result = await api.updateEmailSection(bag);
+
+                if (result.isSuccess && result.data) {
+                    if (props.componentElement) {
+                        // Add the email section guid as a data attribute so the layout can be tracked.
+                        props.componentElement.dataset.emailSectionGuid = result.data.guid;
+                    }
+
+                    // Clear all fields.
+                    emailSectionGuid.value = emptyGuid;
+                    emailSectionName.value = "";
+                    emailSectionUsageSummary.value = "";
+                    emailSectionCategory.value = null;
+
+                    // Hide the modal.
+                    internalValue.value = false;
+
+                    emit("emailSectionSaved", result.data);
+                }
+                else {
+                    saveEmailSectionError.value = result.errorMessage;
+                    throw new Error(`Unable to save the Email Section. ${result.errorMessage}`);
+                }
+            }
+            finally {
+                isSaving.value = false;
+            }
+        });
+    }
+
+    function onCancelEmailSection(): void {
+        // Clear all fields.
+        emailSectionGuid.value = emptyGuid;
+        emailSectionName.value = "";
+        emailSectionUsageSummary.value = "";
+        emailSectionCategory.value = null;
+
+        // Hide the modal.
+        internalValue.value = false;
+
+        emit("emailSectionCanceled");
+    }
+
+    // #endregion Event Handlers
+
+    // #region Hooks
+
+    watch(internalValue, async (newValue) => {
+        if (newValue) {
+            // Load initial data.
+            let guid = getEmailSectionGuid();
+
+            const bag: EmailEditorGetEmailSectionOptionsBag = {
+                emailSectionGuid: guid
+            };
+
+            const emailSection = (await api.getEmailSection(bag))?.data;
+
+            isSystem.value = !!emailSection?.isSystem;
+
+            emailSectionGuid.value = guid;
+            emailSectionName.value = isSystem.value ? `Copy - ${emailSection?.name}` : emailSection?.name ?? "";
+            emailSectionUsageSummary.value = emailSection?.usageSummary ?? "";
+            emailSectionCategory.value = emailSection?.category;
+            isExisting.value = !!emailSection;
+        }
+    });
+
+    // #endregion Hooks
+</script>

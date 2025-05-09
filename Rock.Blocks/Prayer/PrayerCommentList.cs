@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -30,7 +29,6 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Prayer.PrayerCommentList;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using static Rock.Blocks.Finance.FinancialBatchList;
 
 namespace Rock.Blocks.Prayer
 {
@@ -177,11 +175,18 @@ namespace Rock.Blocks.Prayer
 
             var noteTypeService = new NoteTypeService( rockContext );
             var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
-            var qry = new NoteService( rockContext ).GetByNoteTypeId( noteType.Id );
+
+            // Get the prayer comments that meet any one of the conditions below:
+            //  1. Note is approved
+            //  2. NoteType doesn't require approvals
+            //  3. Note was created by the viewer.
+            var qry = new NoteService( rockContext )
+                .GetByNoteTypeId( noteType.Id )
+                .AreViewableBy( GetCurrentPerson()?.Id );
 
             if ( categoryFilter != null )
             {
-                // if filtered by category, only show comments for prayer requests in that category or any of its decendent categories
+                // if filtered by category, only show comments for prayer requests in that category or any of its descendant categories
                 var categoryService = new CategoryService( rockContext );
                 var categories = new CategoryService( rockContext ).GetAllDescendents( categoryFilter.Guid ).Select( a => a.Id ).ToList();
 

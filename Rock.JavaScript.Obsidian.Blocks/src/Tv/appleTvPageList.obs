@@ -176,11 +176,8 @@
     * @param row The row associated with the delete button.
     */
     function onDeleteRowDisabled(row: Record<string, unknown>): boolean {
-        console.info("row:", row);
-        console.info("default Page:", config.options?.defaultPageIdKey);
         return row.idKey === config.options?.defaultPageIdKey;
     }
-
     // #endregion
 
     gridDataSource.value = loadGridData();

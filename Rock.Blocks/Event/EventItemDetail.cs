@@ -234,7 +234,7 @@ namespace Rock.Blocks.Event
                 bag.PhotoUrl = string.Empty;
             }
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -254,12 +254,12 @@ namespace Rock.Blocks.Event
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             var eventAttributes = GetEventAttributes( rockContext, entity.Id.ToString() );
             bag.EventOccurenceAttributes = eventAttributes.ConvertAll( e => new EventItemOccurenceAttributeBag()
             {
-                Attribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( e ),
+                Attribute = PublicAttributeHelper.GetPublicEditableAttribute( e ),
                 FieldType = FieldTypeCache.Get( e.FieldTypeId )?.Name,
             } );
 
@@ -330,7 +330,7 @@ namespace Rock.Blocks.Event
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -346,7 +346,7 @@ namespace Rock.Blocks.Event
         {
             var entity = GetInitialEntity<EventItem, EventItemService>( rockContext, PageParameterKey.EventItemId );
 
-            if ( entity.Id == 0 )
+            if ( entity?.Id == 0 )
             {
                 var idParam = PageParameter( PageParameterKey.EventCalendarId );
                 var calendarId = IdHasher.Instance.GetId( idParam ) ?? PageParameter( PageParameterKey.EventCalendarId ).AsIntegerOrNull();
@@ -593,7 +593,7 @@ namespace Rock.Blocks.Event
                         EventCalendarGuid = eventCalendarItem.EventCalendar?.Guid ?? eventCalendarService.Get( eventCalendarItem.EventCalendarId ).Guid,
                         EventCalendarName = eventCalendarItem.EventCalendar?.Name ?? eventCalendarService.Get( eventCalendarItem.EventCalendarId ).Name,
                         Attributes = eventCalendarItem.GetPublicAttributesForView( GetCurrentPerson(), true ),
-                        AttributeValues = eventCalendarItem.GetPublicAttributeValuesForEdit( GetCurrentPerson(), true )
+                        AttributeValues = eventCalendarItem.GetPublicAttributeValuesForEdit( GetCurrentPerson(), enforceSecurity: true )
                     };
 
                     attributeBags.Add( attributeBag );
@@ -925,7 +925,7 @@ namespace Rock.Blocks.Event
             else
             {
                 var attribute = attributes.Find( a => a.Guid == attributeGuid );
-                editableAttribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute );
+                editableAttribute = PublicAttributeHelper.GetPublicEditableAttribute( attribute );
             }
 
             var reservedKeyNames = new List<string>();

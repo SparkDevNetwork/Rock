@@ -51,11 +51,11 @@
                 <div class="text-md">
                     <div v-if="row.sender">
                         Created on {{ dateTimeText(row.createdDateTime) }} by
-                        <a class='' :href="getPersonLink(row)">{{ formatName(row.sender) }}</a>
+                        <div v-html="getAnchorTag(row, 'senderTag')"></div>
                     </div>
                     <div v-if="row.reviewer">
                         Reviewed on {{ dateTimeText(row.reviewedDateTime) }} by
-                        <a class='' :href='getPersonLink(row)'>{{ formatName(row.reviewer) }}</a>
+                        <div v-html="getAnchorTag(row, 'reviewerTag')"></div>
                     </div>
                 </div>
             </template>
@@ -77,19 +77,19 @@
                 title="Recipients"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <span v-if="row.openedRecipients > 0" class="badge badge-success" title="Opened">
+                <span v-if="row.openedRecipients > 0" class="badge badge-success mr-1" title="Opened">
                     {{ row.openedRecipients }}
                 </span>
-                <span v-if="row.deliveredRecipients > 0" class="badge badge-info" title="Delivered">
+                <span v-if="row.deliveredRecipients > 0" class="badge badge-info mr-1" title="Delivered">
                     {{ row.deliveredRecipients }}
                 </span>
-                <span v-if="row.pendingRecipients > 0" class="badge badge-none" title="Pending">
+                <span v-if="row.pendingRecipients > 0" class="badge badge-none mr-1" title="Pending">
                     {{ row.pendingRecipients }}
                 </span>
-                <span v-if="row.cancelledRecipients > 0" class="badge badge-warning" title="Cancelled">
+                <span v-if="row.cancelledRecipients > 0" class="badge badge-warning mr-1" title="Cancelled">
                     {{ row.cancelledRecipients }}
                 </span>
-                <span v-if="row.failedRecipients > 0" class="badge badge-danger" title="Failed">
+                <span v-if="row.failedRecipients > 0" class="badge badge-danger mr-1" title="Failed">
                     {{ row.failedRecipients }}
                 </span>
             </template>
@@ -276,14 +276,13 @@
      * Generates a link to the current person's profile page.
      * @param row The current row.
      */
-    function getPersonLink(row: Record<string, unknown>): string {
-        const urlTemplate = config.navigationUrls?.[NavigationUrlKey.RootUrl];
-        const idKey = row["idKey"] as string;
-        if (!urlTemplate || !idKey) {
+    function getAnchorTag(row: Record<string, unknown>, key: string): string {
+        const anchorTag = row[key] as string;
+        if (!anchorTag) {
             return "#";
         }
 
-        return `${urlTemplate}Person/${idKey}`;
+        return anchorTag;
     }
 
     /**
@@ -370,7 +369,7 @@
         }
 
         if (reviewer) {
-            details += `Created on ${dateTimeText(reviewedDateTime)}} by ${formatName(reviewer)}`;
+            details += `Created on ${dateTimeText(reviewedDateTime)} by ${formatName(reviewer)}`;
         }
 
         return details;

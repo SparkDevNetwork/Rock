@@ -36,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "NoteType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "337EED57-D4AB-4EED-BBDB-0CB3A467DBCC" )]
     public partial class NoteType : Model<NoteType>, IOrdered, ICacheable, IHasAdditionalSettings
     {
@@ -330,7 +331,7 @@ namespace Rock.Model
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.17.0" )]
+        [RockInternal( "17.0" )]
         public class AIApprovalSettings
         {
             /// <summary>

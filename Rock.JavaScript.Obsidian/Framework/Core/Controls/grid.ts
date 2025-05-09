@@ -608,7 +608,7 @@ export function dateFilterMatches(needle: unknown, haystack: unknown): boolean {
 // #region Entity Sets
 
 /**
- * Gets the entity set bag that can be send to the server to create an entity
+ * Gets the entity set bag that can be sent to the server to create an entity
  * set representing the selected items in the grid.
  *
  * @param grid The grid state that will be used as the source data.
@@ -868,7 +868,16 @@ function getOrAddRowCacheValue<T>(row: Record<string, unknown>, column: ColumnDe
 function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
     const attributes = getVNodeProp<AttributeFieldDefinitionBag[]>(node, "attributes");
     const filter = getVNodeProp<ColumnFilter>(node, "filter");
-    const skeletonComponent = getVNodeProp<Component>(node, "skeletonComponent");
+    const skeletonComponent = getVNodeProp<Component>(node, "skeletonComponent") ?? defaultCell;
+    const formatComponent = getVNodeProp<Component>(node, "formatComponent") ?? defaultCell;
+    const exportValue = getVNodeProp<ExportValueFunction>(node, "exportValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
+    const sortValue = getVNodeProp<SortValueFunction>(node, "sortValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
+    const quickFilterValue = getVNodeProp<QuickFilterValueFunction>(node, "quickFilterValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
+    const filterValue = getVNodeProp<FilterValueFunction>(node, "filterValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
 
     if (!attributes) {
         return;
@@ -883,13 +892,13 @@ function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
             name: attribute.name,
             title: attribute.title ?? undefined,
             field: attribute.name,
-            sortValue: (r, c) => c.field ? String(r[c.field]) : undefined,
-            quickFilterValue: (r, c, g) => getOrAddRowCacheValue(r, c, "quickFilterValue", g, () => c.field ? String(r[c.field]) : undefined),
+            sortValue,
+            quickFilterValue: (r, c, g) => getOrAddRowCacheValue(r, c, "quickFilterValue", g, () => quickFilterValue(r, c, g)),
             filter,
-            filterValue: (r, c) => c.field ? String(r[c.field]) : undefined,
-            exportValue: (r, c) => c.field ? String(r[c.field]) : undefined,
-            formatComponent: defaultCell,
-            condensedComponent: defaultCell,
+            filterValue,
+            exportValue,
+            formatComponent: formatComponent,
+            condensedComponent: formatComponent,
             skeletonComponent,
             hideOnScreen: false,
             excludeFromExport: false,

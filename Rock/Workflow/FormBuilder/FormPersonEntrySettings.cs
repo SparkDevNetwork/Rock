@@ -88,16 +88,6 @@ namespace Rock.Workflow.FormBuilder
         public int? CampusStatusValueId { get; set; }
 
         /// <summary>
-        /// The <see cref="Rock.Model.DefinedValue"/> identifier for the person's race
-        /// </summary>
-        public int? RaceValueId { get; set; }
-
-        /// <summary>
-        /// The <see cref="Rock.Model.DefinedValue"/> identifier for the person's ethnicity
-        /// </summary>
-        public int? EthnicityValueId { get; set; }
-
-        /// <summary>
         /// Determines if the gender control should be hidden, optional or
         /// required when displaying the person entry form.
         /// </summary>

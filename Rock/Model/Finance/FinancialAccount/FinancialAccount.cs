@@ -36,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialAccount" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.FINANCIAL_ACCOUNT )]
     public partial class FinancialAccount : Model<FinancialAccount>, IOrdered, IHasActiveFlag, ICacheable
     {
@@ -225,6 +226,32 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Url { get; set; }
+
+        /// <summary>
+        /// <para>
+        /// Determines if this account will use child account matching logic
+        /// using a campus. When <c>true</c>, a supported block will be able
+        /// to automatically determine the child account to use based on the campus.
+        /// </para>
+        /// <para>
+        /// When possible, use the TODO: <see cref="FinancialAccountCache.GetMappedAccountForCampus(CampusCache)"/>
+        /// method to perform the matching logic.
+        /// </para>
+        /// <para>
+        /// <list type="bullet">
+        ///   <item>If no campus is specified or available, then this (the parent) account will be used.</item>
+        ///   <item>If an active direct child account has a campus that matches the specified campus, then the first matching child account will be used.</item>
+        ///   <item>If no active direct child account matches the specified campus, then this (the parent) account will be used.</item>
+        /// </list>
+        /// </para>
+        /// <remark>
+        /// If this value is <c>true</c> then it implies that the <see cref="CampusId"/>
+        /// on this account is not supported and should be ignored. The UI will
+        /// ensure that both can't be set at the same time.
+        /// </remark>
+        /// </summary>
+        [DataMember]
+        public bool UsesCampusChildAccounts { get; set; }
 
         #endregion Entity Properties
 

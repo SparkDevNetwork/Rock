@@ -135,8 +135,7 @@ namespace Rock.Blocks.Lms
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "description", a => a.Description )
                 .AddField( "scalesCount", a => a.LearningGradingSystemScales.Count() )
-                .AddField( "isActive", a => a.IsActive )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+                .AddField( "isActive", a => a.IsActive );
         }
 
         #endregion

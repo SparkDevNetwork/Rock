@@ -58,6 +58,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Communication.FriendlyTypeName, CommunicationResponse.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<LearningClassActivityCompletion>( Context ).Queryable().Any( a => a.SentNotificationCommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Communication.FriendlyTypeName, LearningClassActivityCompletion.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
@@ -140,6 +146,7 @@ namespace Rock.Model
             target.BCCEmails = source.BCCEmails;
             target.CCEmails = source.CCEmails;
             target.CommunicationTemplateId = source.CommunicationTemplateId;
+            target.CommunicationTopicValueId = source.CommunicationTopicValueId;
             target.CommunicationType = source.CommunicationType;
             target.EmailMetricsReminderOffsetDays = source.EmailMetricsReminderOffsetDays;
             target.EmailMetricsReminderSentDateTime = source.EmailMetricsReminderSentDateTime;
@@ -155,6 +162,7 @@ namespace Rock.Model
             target.Message = source.Message;
             target.MessageMetaData = source.MessageMetaData;
             target.Name = source.Name;
+            target.PersonalizationSegments = source.PersonalizationSegments;
             target.PushData = source.PushData;
             target.PushImageBinaryFileId = source.PushImageBinaryFileId;
             target.PushMessage = source.PushMessage;

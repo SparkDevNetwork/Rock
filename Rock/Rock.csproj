@@ -175,9 +175,6 @@
     <Reference Include="Ical.Net, Version=1.0.0.0, Culture=neutral, PublicKeyToken=65c0446cd019ea53, processorArchitecture=MSIL">
       <HintPath>..\packages\Ical.Net.4.2.0\lib\netstandard2.0\Ical.Net.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=1.4.2.13, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpZipLib.1.4.2\lib\netstandard2.0\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
     <Reference Include="IdentityModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\IdentityModel.3.0.0\lib\net461\IdentityModel.dll</HintPath>
     </Reference>
@@ -243,9 +240,6 @@
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Http.Features, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNetCore.Http.Features.2.1.0\lib\netstandard2.0\Microsoft.AspNetCore.Http.Features.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.WebUtilities, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNetCore.WebUtilities.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.WebUtilities.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.Amqp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.Amqp.2.6.7\lib\net45\Microsoft.Azure.Amqp.dll</HintPath>
@@ -430,8 +424,8 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="PuppeteerSharp, Version=7.0.0.0, Culture=neutral, PublicKeyToken=db12f80f85d8ba23, processorArchitecture=MSIL">
-      <HintPath>..\packages\PuppeteerSharp.7.0.0\lib\netstandard2.0\PuppeteerSharp.dll</HintPath>
+    <Reference Include="PuppeteerSharp, Version=18.1.0.0, Culture=neutral, PublicKeyToken=db12f80f85d8ba23, processorArchitecture=MSIL">
+      <HintPath>..\packages\PuppeteerSharp.18.1.0\lib\netstandard2.0\PuppeteerSharp.dll</HintPath>
     </Reference>
     <Reference Include="QRCoder, Version=1.3.9.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\QRCoder.1.3.9\lib\net40\QRCoder.dll</HintPath>
@@ -477,6 +471,9 @@
     </Reference>
     <Reference Include="SixLabors.ImageSharp.Drawing, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
       <HintPath>..\packages\SixLabors.ImageSharp.Drawing.1.0.0-beta15\lib\net472\SixLabors.ImageSharp.Drawing.dll</HintPath>
+    </Reference>
+    <Reference Include="stream-chat-net, Version=2.10.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\stream-chat-net.2.10.0\lib\net47\stream-chat-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -715,8 +712,80 @@
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ColorSelectorFieldAttribute.cs" />
     <Compile Include="Attribute\CustomSettingsBlockTypeAttribute.cs" />
+    <Compile Include="Attribute\AIProviderFieldAttribute.cs" />
     <Compile Include="Attribute\ImageFieldAttribute.cs" />
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
+    <Compile Include="CheckIn\v2\Labels\Renderers\Zebra64.cs" />
+    <Compile Include="CheckIn\v2\ProximityDirector.cs" />
+    <Compile Include="ClientService\Core\Note\NoteClientService.cs" />
+    <Compile Include="Cms\RestActionMetadata.cs" />
+    <Compile Include="Cms\RestControllerMetadata.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\AlertData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\AlertRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\IStructuredContentBlockLavaRenderer.cs" />
+    <Compile Include="Communication\Chat\DTO\ChatUserAuthentication.cs" />
+    <Compile Include="Communication\Chat\DTO\RockChatGroup.cs" />
+    <Compile Include="Communication\Chat\Exceptions\ChatAccountInvalidException.cs" />
+    <Compile Include="Communication\Chat\Exceptions\ChatAccountSuspendedException.cs" />
+    <Compile Include="Communication\Chat\Exceptions\ChatSyncException.cs" />
+    <Compile Include="Communication\Chat\Exceptions\ChatWebhookParseException.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatSyncBanResult.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatSyncMuteResult.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatUserMessageCountsByChatChannelResult.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatWebhookRequest.cs" />
+    <Compile Include="Communication\Chat\DTO\RockChatGroupMember.cs" />
+    <Compile Include="Communication\Chat\DTO\RockChatUserPerson.cs" />
+    <Compile Include="Communication\Chat\DTO\RockChatUserKey.cs" />
+    <Compile Include="Communication\Chat\Exceptions\MemberChatChannelNotFoundException.cs" />
+    <Compile Include="Communication\Chat\DTO\RockChatBadgeRoster.cs" />
+    <Compile Include="Communication\Chat\Exceptions\InvalidChatWebhookRequestException.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatSyncSetupResult.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatSyncCreateOrUpdateUsersResult.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatSyncCrudResult.cs" />
+    <Compile Include="Communication\Chat\Sync\DeleteChatUsersInRockConfig.cs" />
+    <Compile Include="Communication\Chat\Sync\GetChatChannelMembersResult.cs" />
+    <Compile Include="Communication\Chat\Sync\GetChatChannelsResult.cs" />
+    <Compile Include="Communication\Chat\Sync\GetChatChannelTypesResult.cs" />
+    <Compile Include="Communication\Chat\Sync\GetChatKeysResult.cs" />
+    <Compile Include="Communication\Chat\Sync\GetChatStringResult.cs" />
+    <Compile Include="Communication\Chat\Sync\GetChatToRockSyncCommandsResult.cs" />
+    <Compile Include="Communication\Chat\Sync\GetChatUsersResult.cs" />
+    <Compile Include="Communication\Chat\Sync\RockToChatGroupSyncConfig.cs" />
+    <Compile Include="Communication\Chat\Sync\RockToChatSyncConfig.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatSyncResultBase.cs" />
+    <Compile Include="Communication\Chat\Sync\SyncChatBannedStatusToRockCommand.cs" />
+    <Compile Include="Communication\Chat\Sync\SyncChatChannelMemberToRockCommand.cs" />
+    <Compile Include="Communication\Chat\Sync\SyncChatChannelMutedStatusToRockCommand.cs" />
+    <Compile Include="Communication\Chat\Sync\SyncChatChannelToRockCommand.cs" />
+    <Compile Include="Communication\Chat\Sync\DeleteChatPersonInRockCommand.cs" />
+    <Compile Include="Communication\Chat\Sync\SyncGroupMemberToChatCommand.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatSyncCreateOrUpdateUserResult.cs" />
+    <Compile Include="Communication\Chat\Sync\SyncChannelMembersToChatCommand.cs" />
+    <Compile Include="Communication\Chat\Sync\SyncGroupToChatCommand.cs" />
+    <Compile Include="Communication\Chat\Sync\SyncPersonToChatCommand.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatToRockSyncCommand.cs" />
+    <Compile Include="Communication\Chat\Sync\WebhookValidationResult.cs" />
+    <Compile Include="Core\AttributeDisplaySettings.cs" />
+    <Compile Include="Communication\Chat\ChatHelper.cs" />
+    <Compile Include="Communication\Chat\DTO\ChatBadge.cs" />
+    <Compile Include="Communication\Chat\DTO\ChatChannel.cs" />
+    <Compile Include="Communication\Chat\DTO\ChatChannelMember.cs" />
+    <Compile Include="Communication\Chat\DTO\ChatChannelType.cs" />
+    <Compile Include="Communication\Chat\DTO\ChatUser.cs" />
+    <Compile Include="Communication\Chat\IChatProvider.cs" />
+    <Compile Include="Communication\Chat\Stream\StreamChatProvider.cs" />
+    <Compile Include="Core\EntitySearch\CustomExtensionMethodsExpressionVisitor.cs" />
+    <Compile Include="Core\EntitySearch\DynamicLinqCustomTypeProvider.cs" />
+    <Compile Include="Core\EntitySearch\DynamicLinqQueryExtensionMethods.cs" />
+    <Compile Include="Core\EntitySearch\EntitySearchHelper.cs" />
+    <Compile Include="Core\EntitySearch\EntitySearchSystemQuery.cs" />
+    <Compile Include="Core\EntitySearch\IdKeyExpressionVisitor.cs" />
+    <Compile Include="Communication\Chat\ChatConfiguration.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV171PopulateAttendanceRootGroupType.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV171UpdateCommunicationRecipientIndex.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV171AddCommunicationRecipientIndex.cs" />
+    <Compile Include="Jobs\RunLava.cs" />
+    <Compile Include="Model\CRM\UserLogin\UpdateLastLoginArgs.cs" />
     <Compile Include="Data\AttributeValueExpressionVisitor.cs" />
     <Compile Include="Data\EnableAttributeQualificationAttribute.cs" />
     <Compile Include="Attribute\GroupMemberRequirementFieldAttribute.cs" />
@@ -891,6 +960,10 @@
     <Compile Include="Blocks\Types\Mobile\Crm\PersonProfile.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\LiveExperienceOccurrences.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\LiveExperience.cs" />
+    <Compile Include="Blocks\Types\Mobile\Finance\TransactionDetail.cs" />
+    <Compile Include="Blocks\Types\Mobile\Finance\ScheduledTransactionList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Finance\TransactionList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Finance\Giving.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupSchedulePreference.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleSignUp.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupFinder.cs" />
@@ -950,6 +1023,7 @@
     <Compile Include="CheckIn\v2\Filters\LocationClosedOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationOverflowOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\PreferredGroupsOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Filters\ScheduleRequirementOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\SpecialNeedsOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="CheckIn\v2\Labels\LabelAttendanceDetail.cs" />
@@ -1252,8 +1326,10 @@
     <Compile Include="Field\PersistedValues.cs" />
     <Compile Include="Field\ReferencedEntity.cs" />
     <Compile Include="Field\ReferencedProperty.cs" />
+    <Compile Include="Field\Types\AdaptiveMessageFieldType.cs" />
     <Compile Include="Field\Types\AIProviderFieldType.cs" />
     <Compile Include="Field\Types\ColorSelectorFieldType.cs" />
+    <Compile Include="Field\Types\FinancialTransactionFieldType.cs" />
     <Compile Include="Field\Types\GroupMemberRequirementFieldType.cs" />
     <Compile Include="Field\Types\MediaSelectorFieldType.cs" />
     <Compile Include="Field\Types\PrayerRequestFieldType.cs" />
@@ -1271,22 +1347,90 @@
     <Compile Include="Financial\IScheduledNumberOfPaymentsGateway.cs" />
     <Compile Include="Financial\ISettlementGateway.cs" />
     <Compile Include="Jobs\CalculatePeerNetwork.cs" />
+    <Compile Include="Jobs\ChatSync.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV171MigrateLoginHistory.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17AddAndUpdatePeerNetworkIndexes.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdateHistoryTableEntityTypeIdIndexPostMigration.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV17UpdatePersonPrimaryAliasGuid.cs" />
     <Compile Include="Jobs\UpdateProgramCompletions.cs" />
+    <Compile Include="Lava\Shortcodes\SankeyDiagramShortcode.cs" />
+    <Compile Include="Lms\LearningClassActivityCompletionStatistics.cs" />
+    <Compile Include="Lms\LearningProgramKpis.cs" />
+    <Compile Include="Model\CMS\AdaptiveMessageAdaptationSegment\AdaptiveMessageAdaptationSegment.Logic.cs" />
+    <Compile Include="Model\CMS\ContentChannelItemAssociation\ContentChannelItemAssociation.Logic.cs" />
+    <Compile Include="Model\CMS\ContentChannelItemSlug\ContentChannelItemSlug.Logic.cs" />
+    <Compile Include="Model\CMS\HtmlContent\HtmlContent.Logic.cs" />
+    <Compile Include="Model\CMS\MediaFolder\MediaFolder.Logic.cs" />
+    <Compile Include="Model\CMS\PageRoute\PageRoute.Logic.cs" />
+    <Compile Include="Model\CodeGenerated\EmailSectionService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\HistoryLoginService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningActivityService.CodeGenerated.cs" />
+    <Compile Include="Model\Communication\CommunicationAttachment\CommunicationAttachment.Logic.cs" />
+    <Compile Include="Model\Communication\CommunicationResponseAttachment\CommunicationResponseAttachment.Logic.cs" />
+    <Compile Include="Model\Communication\CommunicationTemplateAttachment\CommunicationTemplateAttachment.Logic.cs" />
+    <Compile Include="Model\Communication\EmailSection\EmailSection.cs" />
+    <Compile Include="Model\Communication\NotificationRecipient\NotificationRecipient.Logic.cs" />
+    <Compile Include="Model\Connection\ConnectionActivityType\ConnectionActivityType.Logic.cs" />
+    <Compile Include="Model\Connection\ConnectionOpportunityCampus\ConnectionOpportunityCampus.Logic.cs" />
+    <Compile Include="Model\Connection\ConnectionOpportunityConnectorGroup\ConnectionOpportunityConnectorGroup.Logic.cs" />
+    <Compile Include="Model\Connection\ConnectionOpportunityGroupConfig\ConnectionOpportunityGroupConfig.Logic.cs" />
+    <Compile Include="Model\Connection\ConnectionOpportunityGroup\ConnectionOpportunityGroup.Logic.cs" />
+    <Compile Include="Model\Connection\ConnectionRequestActivity\ConnectionRequestActivity.Logic.cs" />
+    <Compile Include="Model\Connection\ConnectionRequestWorkflow\ConnectionRequestWorkflow.Logic.cs" />
+    <Compile Include="Model\Connection\ConnectionStatusAutomation\ConnectionStatusAutomation.Logic.cs" />
+    <Compile Include="Model\Connection\ConnectionStatus\ConnectionStatus.Logic.cs" />
     <Compile Include="Model\Core\AttributeMatrixItem\AttributeMatrixItem.SaveHook.cs" />
+    <Compile Include="Model\Core\AttributeMatrix\AttributeMatrix.Logic.cs" />
+    <Compile Include="Model\Core\CampusTopic\CampusTopic.Logic.cs" />
+    <Compile Include="Model\Core\EntityCampusFilter\EntityCampusFilterService.cs" />
+    <Compile Include="Model\Core\FollowingEventNotification\FollowingEventNotification.Logic.cs" />
+    <Compile Include="Model\Core\FollowingEventSubscription\FollowingEventSubscription.Logic.cs" />
+    <Compile Include="Model\Core\FollowingSuggested\FollowingSuggested.Logic.cs" />
+    <Compile Include="Model\Core\NoteAttachment\NoteAttachment.Logic.cs" />
     <Compile Include="Model\Core\Note\NoteExtensionMethods.cs" />
+    <Compile Include="Model\CRM\BackgroundCheck\BackgroundCheck.Logic.cs" />
+    <Compile Include="Model\CRM\Assessment\Assessment.Logic.cs" />
+    <Compile Include="Model\Engagement\StepProgramCompletion\StepProgramCompletion.Logic.cs" />
+    <Compile Include="Model\Engagement\StepTypePrerequisite\StepTypePrerequisite.Logic.cs" />
+    <Compile Include="Model\Engagement\StepWorkflow\StepWorkflow.Logic.cs" />
+    <Compile Include="Model\Event\EventItemAudience\EventItemAudience.Logic.cs" />
+    <Compile Include="Model\Event\EventItemOccurrenceChannelItem\EventItemOccurrenceChannelItem.Logic.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceAction.Logic.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceAnswer\InteractiveExperienceAnswer.Logic.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceScheduleCampus\InteractiveExperienceScheduleCampus.Logic.cs" />
+    <Compile Include="Model\Event\RegistrationSession\RegistrationSession.Logic.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateFee\RegistrationTemplateFee.Logic.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateForm.Logic.cs" />
     <Compile Include="Model\Event\Registration\Registration.SaveHook.cs" />
-    <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.SaveHook.cs" />
+    <Compile Include="Model\Finance\BenevolenceRequestDocument\BenevolenceRequestDocument.Logic.cs" />
+    <Compile Include="Model\Finance\BenevolenceResult\BenevolenceResult.Logic.cs" />
+    <Compile Include="Model\Group\GroupDemographicType\GroupDemographicType.Logic.cs" />
+    <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.Logic.cs" />
+    <Compile Include="Model\Group\GroupMemberAssignment\GroupMemberAssignment.Logic.cs" />
+    <Compile Include="Model\Group\GroupMemberScheduleTemplate\GroupMemberScheduleTemplate.Logic.cs" />
+    <Compile Include="Model\Group\GroupScheduleExclusion\GroupScheduleExclusion.Logic.cs" />
+    <Compile Include="Model\Group\GroupSync\GroupSync.Logic.cs" />
+    <Compile Include="Model\LMS\LearningActivity\LearningActivity.cs" />
+    <Compile Include="Model\LMS\LearningClassActivityCompletion\LearningClassActivityCompletion.SaveHook.cs" />
+    <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncement.Logic.cs" />
     <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncementService.cs" />
+    <Compile Include="Model\LMS\LearningClassContentPage\LearningClassContentPage.Logic.cs" />
+    <Compile Include="Model\LMS\LearningCourseRequirement\LearningCourseRequirement.Logic.cs" />
     <Compile Include="Model\LMS\LearningCourse\LearningCourse.Logic.cs" />
     <Compile Include="Model\LMS\LearningCourse\LearningCourse.SaveHook.cs" />
+    <Compile Include="Model\LMS\LearningGradingSystemScale\LearningGradingSystemScale.Logic.cs" />
     <Compile Include="Model\LMS\LearningGradingSystemScale\LearningGradingSystemScaleService.cs" />
     <Compile Include="Model\LMS\LearningParticipant\LearningParticipant.Logic.cs" />
+    <Compile Include="Model\LMS\LearningParticipant\LearningParticipant.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningParticipant\LearningParticipantExtensionMethods.cs" />
     <Compile Include="Model\LMS\LearningProgramCompletion\LearningProgramCompletion.Logic.cs" />
     <Compile Include="Model\LMS\LearningSemester\LearningSemester.Logic.cs" />
     <Compile Include="Model\Prayer\PrayerRequest\PrayerRequest.SaveHook.cs" />
+    <Compile Include="Model\Reporting\MetricPartition\MetricPartition.Logic.cs" />
+    <Compile Include="Model\Reporting\MetricValuePartition\MetricValuePartition.Logic.cs" />
+    <Compile Include="Model\Reporting\ReportField\ReportField.Logic.cs" />
+    <Compile Include="Model\Security\History\HistoryLogin.cs" />
+    <Compile Include="Model\Security\History\HistoryLogin.Logic.cs" />
     <Compile Include="Net\Geolocation\IpGeoException.cs" />
     <Compile Include="Net\Geolocation\IpGeolocation.cs" />
     <Compile Include="Net\Geolocation\IpGeoLookup.cs" />
@@ -1328,7 +1472,7 @@
     <Compile Include="Jobs\RockJob.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV141DataMigrationsUpdateCurrentSessions1900.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV15DataMigrationsReplaceTransactionEntryBlocksWithUtilityPaymentBlock.cs" />
-    <Compile Include="Jobs\SendLearningActivityNotifications.cs" />
+    <Compile Include="Jobs\SendLearningNotifications.cs" />
     <Compile Include="Jobs\RunNowRockJobListener.cs" />
     <Compile Include="Jobs\SendGroupAttendanceReminders.cs" />
     <Compile Include="Jobs\SendSignUpReminders.cs" />
@@ -1405,6 +1549,7 @@
     <Compile Include="Model\CodeGenerated\ContentTopicDomainService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentTopicService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\EntityIntentService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\EntitySearchService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceActionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceAnswerService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceOccurrenceService.CodeGenerated.cs" />
@@ -1442,6 +1587,9 @@
     <Compile Include="Model\Core\EntityIntent\EntityIntent.cs" />
     <Compile Include="Model\Core\EntityIntent\EntityIntent.Logic.cs" />
     <Compile Include="Model\Core\EntityIntent\EntityIntentService.cs" />
+    <Compile Include="Model\Core\EntitySearch\EntitySearch.cs" />
+    <Compile Include="Model\Core\EntitySearch\EntitySearch.Logic.cs" />
+    <Compile Include="Model\Core\EntitySearch\EntitySearchService.cs" />
     <Compile Include="Model\Core\EntitySet\Options\AddEntitySetActionOptions.cs" />
     <Compile Include="Model\Core\InteractionEntity\InteractionEntity.cs" />
     <Compile Include="Model\Core\InteractionEntity\InteractionEntityService.cs" />
@@ -1493,12 +1641,12 @@
     <Compile Include="Model\Group\GroupSync\GroupSyncResult.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSyncService.cs" />
     <Compile Include="Model\Group\PeerNetwork\PeerNetwork.cs" />
-    <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.cs" />
-    <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.Logic.cs" />
-    <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletionService.cs" />
-    <Compile Include="Model\LMS\LearningActivity\LearningActivity.cs" />
-    <Compile Include="Model\LMS\LearningActivity\LearningActivityService.cs" />
-    <Compile Include="Model\LMS\LearningActivity\LearningActivity.Logic.cs" />
+    <Compile Include="Model\LMS\LearningClassActivityCompletion\LearningClassActivityCompletion.cs" />
+    <Compile Include="Model\LMS\LearningClassActivityCompletion\LearningClassActivityCompletion.Logic.cs" />
+    <Compile Include="Model\LMS\LearningClassActivityCompletion\LearningClassActivityCompletionService.cs" />
+    <Compile Include="Model\LMS\LearningClassActivity\LearningClassActivity.cs" />
+    <Compile Include="Model\LMS\LearningClassActivity\LearningClassActivityService.cs" />
+    <Compile Include="Model\LMS\LearningClassActivity\LearningClassActivity.Logic.cs" />
     <Compile Include="Model\LMS\LearningClassContentPage\LearningClassContentPage.cs" />
     <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncement.cs" />
     <Compile Include="Model\LMS\LearningClass\LearningClass.Logic.cs" />
@@ -1536,12 +1684,12 @@
     <Compile Include="Observability\ObservabilityHelper.cs" />
     <Compile Include="Observability\RockActivitySource.cs" />
     <Compile Include="Observability\RockMetricSource.cs" />
-    <Compile Include="Obsidian\ObsidianComponent.cs" />
     <Compile Include="Obsidian\UI\GridActionUrlKey.cs" />
     <Compile Include="Obsidian\UI\GridBuilder.cs" />
     <Compile Include="Obsidian\UI\GridBuilderExtensions.cs" />
     <Compile Include="Obsidian\UI\GridBuilderGridOptions.cs" />
     <Compile Include="Obsidian\UI\GridHelper.cs" />
+    <Compile Include="Oidc\OidcHelper.cs" />
     <Compile Include="Personalization\PersonalizationRequestFilters\EnvironmentRequestFilter.cs" />
     <Compile Include="Net\IRequest.cs" />
     <Compile Include="Personalization\PersonalizationRequestFilters\GeolocationRequestFilter.cs" />
@@ -1615,6 +1763,14 @@
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
     <Compile Include="Plugin\HotFixes\226_UpdateIndexesForV16_8.cs" />
+    <Compile Include="Plugin\HotFixes\242_UpdateFileAssetManagerDefaultValues.cs" />
+    <Compile Include="Plugin\HotFixes\241_ChatBackendSyncAdditions.cs" />
+    <Compile Include="Plugin\HotFixes\239_AddLoginHistoryPageAndBlocks.cs" />
+    <Compile Include="Plugin\HotFixes\238_ChatSharedChannelDefaultGroupRole.cs" />
+    <Compile Include="Plugin\HotFixes\237_ChatAdminImprovements.cs" />
+    <Compile Include="Plugin\HotFixes\236_MigrationRollupsForV17_1_0.cs" />
+    <Compile Include="Plugin\HotFixes\235_AddChatConfigurationAdminUI.cs" />
+    <Compile Include="Plugin\HotFixes\231_MigrationRollupsForV16_10_0.cs" />
     <Compile Include="Plugin\HotFixes\230_FixVolGenBuildScript_CampusName.cs" />
     <Compile Include="Plugin\HotFixes\228_SetConnectionTypeLinkUrl.cs" />
     <Compile Include="Plugin\HotFixes\227_AddEnableDefaultAddressStateSelectionSetting.cs" />
@@ -1645,6 +1801,15 @@
     <Compile Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks.cs" />
     <Compile Include="Plugin\HotFixes\225_ImprovePeerNetworkCalculations.cs" />
     <Compile Include="Plugin\HotFixes\229_PeerNetworkFitNFinish.cs" />
+    <Compile Include="Plugin\HotFixes\240_FixBlankPreviewCommunicationTemplateVersion.cs" />
+    <Compile Include="Plugin\HotFixes\234_MigrationRollupsForV16_10_1.cs" />
+    <Compile Include="Plugin\HotFixes\233_UpdateAppleDeviceList.cs" />
+    <Compile Include="Plugin\HotFixes\232_UpdateContentFileTypeBlacklist.cs" />
+    <Compile Include="Plugin\HotFixes\244_MigrationRollupsForV17_1_1.cs" />
+    <Compile Include="Plugin\HotFixes\243_AddDefaultAllowedGroupTypesToMobileGroupRegistration.cs" />
+    <Compile Include="Plugin\HotFixes\245_UpdateMergeFieldAttributeDescription.cs" />
+    <Compile Include="Plugin\HotFixes\246_AddProximityCheckInAttribute.cs" />
+    <Compile Include="Plugin\HotFixes\247_UpdateLayoutBlockListNamingObsidian.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1676,7 +1841,7 @@
     <Compile Include="Reporting\FieldFilterExpressionBuilder.cs" />
     <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoAttendanceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoMembersFilter.cs" />
-    <Compile Include="Reporting\DataFilter\Person\HasCompletedActivityFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\HasCompletedClassActivityFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasCompletedCourseFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasCompletedProgramFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAlertsFilter.cs" />
@@ -1736,11 +1901,20 @@
     <Compile Include="Security\Authentication\OneTimePasscode\OneTimePasscodeAuthenticationResult.cs" />
     <Compile Include="Security\Authentication\PasswordlessAuthentication.cs" />
     <Compile Include="Security\Authentication\Passwordless\PasswordlessAuthenticationState.cs" />
+    <Compile Include="Security\ExcludeSecurityActionsAttribute.cs" />
+    <Compile Include="Security\GlobalRestrictedDefault.cs" />
+    <Compile Include="Security\HistoryLoginRelatedData.cs" />
+    <Compile Include="Security\SecurityGrantRules\AddDefinedValueToTypeGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
+    <Compile Include="Security\SecurityGrantRules\ConnectionRequestPickerSecurityGrantRule.cs" />
+    <Compile Include="Security\SecurityGrantRules\EmailEditorSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
+    <Compile Include="SystemGuid\EmailSection.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />
     <Compile Include="SystemKey\GlobalAttributeKey.cs" />
     <Compile Include="Tasks\UpdatePersonAliasPersonalizationData.cs" />
+    <Compile Include="Transactions\HandleChatWebhookTransaction.cs" />
+    <Compile Include="Transactions\RequeueChatToRockSyncCommandTransaction.cs" />
     <Compile Include="UniversalSearch\IndexHelper.cs" />
     <Compile Include="Transactions\AddInteractionEntityTransaction.cs" />
     <Compile Include="Tv\Classes\AppleTvPageSettings.cs" />
@@ -2322,6 +2496,7 @@
     <Compile Include="Utility\ContentLibraryApi\ContentLibraryApiMetadataBox.cs" />
     <Compile Include="Utility\ContentLibraryApi\ContentLibraryApiResult.cs" />
     <Compile Include="Utility\ContentLibraryApi\IContentLibraryApi.cs" />
+    <Compile Include="Utility\EntityReferenceEqualityComparer.cs" />
     <Compile Include="Utility\Enums\PrayerRequestOrder.cs" />
     <Compile Include="Utility\Enums\RockPlatform.cs" />
     <Compile Include="Utility\Enums\TimePeriodOfDay.cs" />
@@ -2347,6 +2522,7 @@
     <Compile Include="Utility\ExtensionMethods\SecurityGrantExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Image.cs" />
     <Compile Include="Utility\ExtensionMethods\DecimalRockExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\SiteTypeExtensions.cs" />
     <Compile Include="Utility\FileUrlHelper.cs" />
     <Compile Include="Utility\IdHasher.cs" />
     <Compile Include="Utility\IWebHostEnvironment.cs" />
@@ -2414,7 +2590,6 @@
     <Compile Include="Media\MediaAccountComponent.cs" />
     <Compile Include="Media\MediaAccountContainer.cs" />
     <Compile Include="Media\MediaElementFileData.cs" />
-    <Compile Include="Media\MediaElementQuality.cs" />
     <Compile Include="Media\SyncOperationResult.cs" />
     <Compile Include="Media\MediaElementThumbnailData.cs" />
     <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttemptService.cs" />
@@ -2604,6 +2779,7 @@
     <Compile Include="Web\Cache\Entities\DeviceCache.cs" />
     <Compile Include="Web\Cache\Entities\DataViewCache.cs" />
     <Compile Include="Web\Cache\Entities\DataViewFilterCache.cs" />
+    <Compile Include="Web\Cache\Entities\EntitySearchCache.cs" />
     <Compile Include="Web\Cache\Entities\FinancialAccountCache.cs" />
     <Compile Include="Web\Cache\Entities\GroupTypeRoleCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractiveExperienceCache.cs" />
@@ -2661,6 +2837,7 @@
     <Compile Include="Web\UI\Controls\MediaPlayer.cs" />
     <Compile Include="Web\UI\Controls\MediaSelector.cs" />
     <Compile Include="Web\UI\Controls\MobileNavigationActionEditor.cs" />
+    <Compile Include="Web\UI\Controls\ObsidianDataComponentWrapper.cs" />
     <Compile Include="Web\UI\Controls\PageNavButtons.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
     <Compile Include="Web\UI\Controls\LocationList.cs" />
@@ -2810,7 +2987,6 @@
     <Compile Include="Blocks\Types\Mobile\Cms\Login.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\ProfileDetails.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\Register.cs" />
-    <Compile Include="Blocks\Types\Mobile\Cms\WorkflowEntry.cs" />
     <Compile Include="Communication\RockSMSMessageRecipient.cs" />
     <Compile Include="Communication\RockPushMessageRecipient.cs" />
     <Compile Include="Communication\RockEmailMessageRecipient.cs" />
@@ -3426,8 +3602,8 @@
     <Compile Include="Model\CodeGenerated\ContentChannelItemSlugService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\GroupSyncService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\LavaShortcodeService.CodeGenerated.cs" />
-    <Compile Include="Model\CodeGenerated\LearningActivityCompletionService.CodeGenerated.cs" />
-    <Compile Include="Model\CodeGenerated\LearningActivityService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningClassActivityCompletionService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningClassActivityService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\LearningClassAnnouncementService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\LearningClassContentPageService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\LearningClassService.CodeGenerated.cs" />
@@ -4632,6 +4808,7 @@
     <Compile Include="Workflow\ActionCategoryAttribute.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />
     <Compile Include="Workflow\ActionContainer.cs" />
+    <Compile Include="Workflow\Action\AI\AICompletion.cs" />
     <Compile Include="Workflow\Action\Assessments\CreateAssessmentRequest.cs" />
     <Compile Include="Workflow\Action\BackgroundCheck\BackgroundCheckRequest.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
@@ -4736,6 +4913,7 @@
     <Compile Include="Workflow\Action\Entity\SetEntityProperty.cs" />
     <Compile Include="Workflow\Action\Utility\UpdatePersistedDataset.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetFileAttributeFromLava.cs" />
+    <Compile Include="Workflow\Action\WorkflowControl\PaymentEntry.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />
     <Compile Include="Workflow\Action\Utility\RunSQL.cs" />
@@ -4784,6 +4962,9 @@
     <Compile Include="Workflow\FormBuilder\FormPersonEntrySettings.cs" />
     <Compile Include="Workflow\FormBuilder\FormSettings.cs" />
     <Compile Include="Workflow\FormBuilder\PersonEntryAdditionalSettings.cs" />
+    <Compile Include="Workflow\IInteractiveAction.cs" />
+    <Compile Include="Workflow\InteractiveActionResult.cs" />
+    <Compile Include="Workflow\WorkflowPersonEntryProcessor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\msvcr100.dll">

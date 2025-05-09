@@ -73,7 +73,7 @@ namespace Rock.Model
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.17.0" )]
+        [RockInternal( "17.0" )]
         public bool AreAnyRelationshipMultipliersCustomized =>
             LeaderToLeaderRelationshipMultiplier != 1m
             || LeaderToNonLeaderRelationshipMultiplier != 1m
@@ -245,7 +245,7 @@ namespace Rock.Model
         /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
         /// <returns>A list of attributes defined in the inheritance tree.</returns>
         [Obsolete( "Use GroupTypeCache.GetInheritedAttributesForQualifier() instead." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public List<AttributeCache> GetInheritedAttributesForQualifier( Rock.Data.RockContext rockContext, int entityTypeId, string entityTypeQualifierColumn )
         {
             var groupTypeIds = GetInheritedGroupTypeIds( rockContext );

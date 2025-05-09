@@ -19,7 +19,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model.Finance.FinancialPersonSavedAccountService.Options;
+using Rock.ViewModels.Finance;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -230,5 +233,223 @@ namespace Rock.Model
 
             return result;
         }
+
+        #region Create From Token
+
+        /// <summary>
+        /// Creates a financial person saved account based on the provided token, gateway, and options.
+        /// </summary>
+        /// <param name="gateway">The financial gateway used for creating the account.</param>
+        /// <param name="options">The token bag containing saved account details.</param>
+        /// <param name="person">The person for whom the account is being created.</param>
+        /// <param name="authorizationTransactionTypeId">The authorization transaction type ID.</param>
+        /// <param name="errorMessage">The error message, if any.</param>
+        /// <param name="siteType">The site type.</param>
+        /// <remarks>For credit card, this uses <see cref="IGatewayComponent.Authorize(FinancialGateway, PaymentInfo, out string)"/> to authorize the card before saving.</remarks>
+        /// <returns>A <see cref="FinancialPersonSavedAccount"/> object or null if an error occurs.</returns>
+        internal FinancialPersonSavedAccount CreateAccountFromToken( FinancialGateway gateway, SavedAccountTokenBag options, Person person, int? authorizationTransactionTypeId, SiteType siteType, out string errorMessage )
+        {
+            var currencyTypeValue = DefinedValueCache.Get( options.CurrencyTypeValueId, false );
+
+            if ( currencyTypeValue == null )
+            {
+                errorMessage = "A currency type is required when creating a new account.";
+                return null;
+            }
+
+            var isAch = currencyTypeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
+            var isCreditCard = currencyTypeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
+
+            if ( isCreditCard )
+            {
+                return CreateCreditCardAccountFromToken( gateway, options, person, authorizationTransactionTypeId, siteType, out errorMessage );
+            }
+            else if ( isAch )
+            {
+                return CreateAchAccountFromToken( gateway, options, person, authorizationTransactionTypeId, siteType, out errorMessage );
+            }
+
+            errorMessage = "Only ACH and Credit Card currency types are supported.";
+            return null;
+        }
+
+        /// <summary>
+        /// Creates a saved account for credit card transactions using the provided token.
+        /// </summary>
+        /// <param name="gateway">The financial gateway used for creating the account.</param>
+        /// <param name="options">The token bag containing saved account details.</param>
+        /// <param name="person">The person for whom the account is being created.</param>
+        /// <param name="authorizationTransactionTypeId">The authorization transaction type ID.</param>
+        /// <param name="errorMessage">The error message, if any.</param>
+        /// <param name="siteType">The site type.</param>
+        /// <returns>A <see cref="FinancialPersonSavedAccount"/> object or null if an error occurs.</returns>
+        internal FinancialPersonSavedAccount CreateCreditCardAccountFromToken( FinancialGateway gateway, SavedAccountTokenBag options, Person person, int? authorizationTransactionTypeId, SiteType siteType, out string errorMessage )
+        {
+            if ( !( gateway.GetGatewayComponent() is IHostedGatewayComponent gatewayComponent ) )
+            {
+                errorMessage = "The gateway does not support saving accounts.";
+                return null;
+            }
+
+            var paymentInfo = new ReferencePaymentInfo
+            {
+                Amount = 0.0M,
+                Comment1 = $"Saved Account for {person.FirstName}",
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+                ReferenceNumber = options.Token,
+                InitialCurrencyTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ),
+                PostalCode = options.PostalCode,
+                Country = "US",
+                Street1 = string.Empty,
+                Street2 = string.Empty,
+                City = string.Empty,
+                State = string.Empty,
+                TransactionTypeValueId = authorizationTransactionTypeId
+            };
+
+            if( siteType == SiteType.Mobile )
+            {
+                paymentInfo.AdditionalParameters = paymentInfo.AdditionalParameters ?? new Dictionary<string, string>();
+                paymentInfo.AdditionalParameters.Add( "RockMobile", true.ToString() );
+            }
+
+            var customerToken = gatewayComponent.CreateCustomerAccount( gateway, paymentInfo, out errorMessage );
+            if ( errorMessage.IsNotNullOrWhiteSpace() || customerToken.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            paymentInfo.GatewayPersonIdentifier = customerToken;
+            var transaction = gatewayComponent.Authorize( gateway, paymentInfo, out errorMessage );
+            if ( transaction == null )
+            {
+                return null;
+            }
+
+            var savedAccount = new FinancialPersonSavedAccount
+            {
+                ReferenceNumber = gatewayComponent.GetReferenceNumber( transaction, out errorMessage ),
+                TransactionCode = transaction.TransactionCode,
+                FinancialGatewayId = gateway.Id,
+                FinancialPaymentDetail = new FinancialPaymentDetail(),
+                GatewayPersonIdentifier = paymentInfo.GatewayPersonIdentifier,
+                PersonAliasId = person.PrimaryAliasId
+            };
+            savedAccount.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gatewayComponent as GatewayComponent, ( RockContext ) Context );
+            savedAccount.FinancialPaymentDetail.AccountNumberMasked = transaction.FinancialPaymentDetail.AccountNumberMasked;
+            savedAccount.FinancialPaymentDetail.NameOnCard = transaction.FinancialPaymentDetail.NameOnCard;
+            savedAccount.FinancialPaymentDetail.ExpirationMonth = transaction.FinancialPaymentDetail.ExpirationMonth;
+            savedAccount.FinancialPaymentDetail.ExpirationYear = transaction.FinancialPaymentDetail.ExpirationYear;
+
+            var creditCardTypeValue = string.Empty;
+
+            if ( transaction.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
+            {
+                var creditCardTypeDefinedValue = DefinedValueCache.Get( transaction.FinancialPaymentDetail.CreditCardTypeValueId.Value );
+                if ( creditCardTypeDefinedValue != null )
+                {
+                    creditCardTypeValue = creditCardTypeDefinedValue.Value;
+                }
+
+                savedAccount.Name = $"{creditCardTypeValue}";
+            }
+
+            if ( savedAccount.Name.IsNullOrWhiteSpace() )
+            {
+                savedAccount.Name = $"Card {string.Join( "", transaction.FinancialPaymentDetail.AccountNumberMasked.TakeLast( 5 ) )}";
+            }
+
+            Add( savedAccount );
+            Context.SaveChanges();
+
+            return savedAccount;
+        }
+
+        /// <summary>
+        /// Creates a saved account for ACH transactions using the provided token.
+        /// </summary>
+        /// <param name="gateway">The financial gateway used for creating the account.</param>
+        /// <param name="options">The token bag containing saved account details.</param>
+        /// <param name="person">The person for whom the account is being created.</param>
+        /// <param name="authorizationTransactionTypeId">The authorization transaction type ID.</param>
+        /// <param name="errorMessage">The error message, if any.</param>
+        /// <param name="siteType">The site type.</param>
+        /// <returns>A <see cref="FinancialPersonSavedAccount"/> object or null if an error occurs.</returns>
+        internal FinancialPersonSavedAccount CreateAchAccountFromToken( FinancialGateway gateway, SavedAccountTokenBag options, Person person, int? authorizationTransactionTypeId, SiteType siteType, out string errorMessage )
+        {
+            if ( !( gateway.GetGatewayComponent() is IHostedGatewayComponent hostedGatewayComponent ) )
+            {
+                errorMessage = "The gateway does not support saving accounts.";
+                return null;
+            }
+
+            if ( options.Street1.IsNullOrWhiteSpace()
+                || options.City.IsNullOrWhiteSpace()
+                || options.State.IsNullOrWhiteSpace()
+                || options.PostalCode.IsNullOrWhiteSpace()
+                || options.Country.IsNullOrWhiteSpace() )
+            {
+                errorMessage = "The address is required for an ACH account.";
+                return null;
+            }
+
+            var paymentInfo = new ReferencePaymentInfo
+            {
+                Amount = 0.0M,
+                Comment1 = $"Saved Account for {person.FirstName}",
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+                ReferenceNumber = options.Token,
+                InitialCurrencyTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ),
+                TransactionTypeValueId = authorizationTransactionTypeId,
+                Street1 = options.Street1,
+                Street2 = string.Empty,
+                City = options.City,
+                State = options.State,
+                PostalCode = options.PostalCode,
+                Country = options.Country
+            };
+
+            if ( siteType == SiteType.Mobile )
+            {
+                paymentInfo.AdditionalParameters = paymentInfo.AdditionalParameters ?? new Dictionary<string, string>();
+                paymentInfo.AdditionalParameters.Add( "RockMobile", true.ToString() );
+            }
+
+            var customerToken = hostedGatewayComponent.CreateCustomerAccount( gateway, paymentInfo, out errorMessage );
+            if ( errorMessage.IsNotNullOrWhiteSpace() || customerToken.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            paymentInfo.GatewayPersonIdentifier = customerToken;
+
+            var savedAccount = new FinancialPersonSavedAccount
+            {
+                FinancialGatewayId = gateway.Id,
+                FinancialPaymentDetail = new FinancialPaymentDetail(),
+                GatewayPersonIdentifier = paymentInfo.GatewayPersonIdentifier,
+                PersonAliasId = person.PrimaryAliasId
+            };
+            savedAccount.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, hostedGatewayComponent as GatewayComponent, ( RockContext ) Context );
+
+            if ( savedAccount.Name.IsNullOrWhiteSpace() )
+            {
+                savedAccount.Name = $"Saved Bank Account";
+            }
+
+            if ( paymentInfo.AdditionalParameters.ContainsKey( "AccountNumberMasked" ) )
+            {
+                savedAccount.FinancialPaymentDetail.AccountNumberMasked = paymentInfo.AdditionalParameters["AccountNumberMasked"];
+            }
+
+            Add( savedAccount );
+            Context.SaveChanges();
+
+            return savedAccount;
+        }
+
+        #endregion
     }
 }

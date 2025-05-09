@@ -17,18 +17,13 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
-using System.Threading.Tasks;
 
 using Rock.Attribute;
-using Rock.Core.NotificationMessageTypes;
-using Rock.Data;
-using Rock.Enums.Core;
+using Rock.ClientService.Core.Note;
 using Rock.Model;
-using Rock.Security;
-using Rock.Utility;
 using Rock.ViewModels.Blocks.Core.Notes;
+using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Core
@@ -178,214 +173,42 @@ namespace Rock.Blocks.Core
                 };
             }
 
+            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson )
+            {
+                AllowBackdatedNotes = GetAttributeValue( AttributeKey.AllowBackdatedNotes ).AsBoolean(),
+                AllowedNoteTypes = GetConfiguredNoteTypes( contextEntity.TypeId )
+            };
             var noteTypes = GetConfiguredNoteTypes( contextEntity.TypeId );
+            var noteTypeIds = noteTypes.Select( nt => nt.Id ).ToList();
 
-            using ( var rockContext = new RockContext() )
+            var noteCollection = noteClientService.GetViewableNotes( contextEntity );
+            var notes = noteClientService.OrderNotes( noteCollection, GetAttributeValue( AttributeKey.DisplayOrder ) == "Descending" ).ToList();
+            var watchedNoteIds = noteClientService.GetWatchedNoteIds( notes );
+
+            notes.LoadAttributes( RockContext );
+
+            return new NotesInitializationBox
             {
-                var noteTypeIds = noteTypes.Select( nt => nt.Id ).ToList();
-
-                var notes = GetViewableNotes( rockContext, RequestContext.CurrentPerson, contextEntity, noteTypeIds );
-                var watchedNoteIds = GetWatchedNoteIds( notes, RequestContext.CurrentPerson, rockContext );
-
-                if ( GetAttributeValue( AttributeKey.DisplayOrder ) == "Descending" )
-                {
-                    notes = notes.OrderByDescending( n => n.IsAlert == true )
-                        .ThenByDescending( n => n.IsPinned == true )
-                        .ThenByDescending( n => n.CreatedDateTime )
-                        .ToList();
-                }
-                else
-                {
-                    notes = notes.OrderByDescending( n => n.IsAlert == true )
-                        .ThenByDescending( n => n.IsPinned == true )
-                        .ThenBy( n => n.CreatedDateTime )
-                        .ToList();
-                }
-
-                notes.LoadAttributes( rockContext );
-
-                return new NotesInitializationBox
-                {
-                    ErrorMessage = ( string ) null,
-                    EntityIdKey = contextEntity.IdKey,
-                    EntityTypeIdKey = EntityTypeCache.Get( contextEntity.TypeId ).IdKey,
-                    Notes = notes.Select( n => GetNoteBag( n, watchedNoteIds, RequestContext.CurrentPerson ) ).ToList(),
-                    NoteTypes = noteTypes.Select( nt => GetNoteTypeBag( nt, RequestContext.CurrentPerson ) ).ToList(),
-                    Title = GetAttributeValue( AttributeKey.Heading ),
-                    TitleIconCssClass = GetAttributeValue( AttributeKey.HeadingIcon ),
-                    ShowAdd = GetAttributeValue( AttributeKey.AllowAnonymous ).AsBoolean() || RequestContext.CurrentPerson != null,
-                    IsDescending = GetAttributeValue( AttributeKey.DisplayOrder ) == "Descending",
-                    NoteLabel = GetAttributeValue( AttributeKey.NoteTerm ),
-                    IsLightMode = GetAttributeValue( AttributeKey.DisplayType ) == "Light",
-                    ShowAlertCheckBox = GetAttributeValue( AttributeKey.ShowAlertCheckbox ).AsBoolean(),
-                    ShowPrivateCheckBox = GetAttributeValue( AttributeKey.ShowPrivateCheckbox ).AsBoolean(),
-                    ShowSecurityButton = GetAttributeValue( AttributeKey.ShowSecurityButton ).AsBoolean(),
-                    AddAlwaysVisible = GetAttributeValue( AttributeKey.AddAlwaysVisible ).AsBoolean(),
-                    ShowCreateDateInput = GetAttributeValue( AttributeKey.AllowBackdatedNotes ).AsBoolean(),
-                    DisplayNoteTypeHeading = GetAttributeValue( AttributeKey.DisplayNoteTypeHeading ).AsBoolean(),
-                    UsePersonIcon = GetAttributeValue( AttributeKey.UsePersonIcon ).AsBoolean(),
-                    ExpandReplies = GetAttributeValue( AttributeKey.ExpandReplies ).AsBoolean(),
-                    PersonAvatarUrl = RequestContext.CurrentPerson?.PhotoUrl
-                };
-            }
-        }
-
-        /// <summary>
-        /// Gets the notes that can be viewed by the person for the specified entity.
-        /// </summary>
-        /// <param name="rockContext">The rock context to use when accessing the database.</param>
-        /// <param name="currentPerson">The current person that the notes will be shown to.</param>
-        /// <param name="entity">The entity that the notes must be attached to.</param>
-        /// <param name="noteTypeIds">The note type identifiers used to limit which notes are included.</param>
-        /// <returns>A list of <see cref="Note"/> objects.</returns>
-        private static List<Note> GetViewableNotes( RockContext rockContext, Person currentPerson, IEntity entity, List<int> noteTypeIds )
-        {
-            var entityTypeId = entity.TypeId;
-
-            var noteService = new NoteService( rockContext );
-            var noteQry = noteService.Queryable()
-                .Include( n => n.CreatedByPersonAlias.Person )
-                .Include( n => n.EditedByPersonAlias.Person )
-                .AreViewableBy( currentPerson?.Id )
-                .AsNoTracking()
-                .Where( n => n.NoteType.EntityTypeId == entityTypeId && n.EntityId == entity.Id );
-
-            // Limit to the selected note types.
-            if ( noteTypeIds != null && noteTypeIds.Count > 0 )
-            {
-                noteQry = noteQry.Where( n => noteTypeIds.Contains( n.NoteTypeId ) );
-            }
-
-            var notes = noteQry.ToList()
-                .Where( n => n.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                .ToList();
-
-            return notes;
-        }
-
-        /// <summary>
-        /// Gets the identifiers of the notes currently being watched by the person.
-        /// </summary>
-        /// <param name="notes">The notes that will be displayed to the person.</param>
-        /// <param name="currentPerson">The current person the notes will be displayed to.</param>
-        /// <param name="rockContext">The rock context to use when accessing the database.</param>
-        /// <returns>A list of identifiers representing which notes are currently being watched.</returns>
-        private static List<int> GetWatchedNoteIds( List<Note> notes, Person currentPerson, RockContext rockContext )
-        {
-            if ( currentPerson == null )
-            {
-                return new List<int>();
-            }
-
-            var noteIds = notes.Select( n => n.Id ).ToList();
-            var noteWatchService = new NoteWatchService( rockContext );
-
-            var watchedNoteIds = noteWatchService.Queryable()
-                .Where( nw => nw.NoteId.HasValue
-                    && noteIds.Contains( nw.NoteId.Value )
-                    && nw.WatcherPersonAlias.PersonId == currentPerson.Id
-                    && nw.IsWatching )
-                .Select( nw => nw.NoteId.Value )
-                .ToList();
-
-            return watchedNoteIds;
-        }
-
-        /// <summary>
-        /// Gets the note bag that will represent the given note.
-        /// </summary>
-        /// <param name="note">The note to be wrapped in a bag.</param>
-        /// <param name="watchedNoteIds">The identifiers of the notes that are being watched.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <returns>An instance of <see cref="NoteBag"/> that represents the note.</returns>
-        private static NoteBag GetNoteBag( Note note, List<int> watchedNoteIds, Person currentPerson )
-        {
-            var noteType = NoteTypeCache.Get( note.NoteTypeId );
-
-            return new NoteBag
-            {
-                IdKey = note.IdKey,
-                NoteTypeIdKey = noteType.IdKey,
-                Caption = note.Caption,
-                Text = note.Text,
-                ApprovalStatus = ( noteType.RequiresApprovals ) ? note.ApprovalStatus : NoteApprovalStatus.Approved,
-                AnchorId = note.NoteAnchorId,
-                IsAlert = note.IsAlert ?? false,
-                IsPinned = note.IsPinned,
-                IsPrivate = note.IsPrivateNote,
-                IsWatching = noteType.AllowsWatching && watchedNoteIds.Contains( note.Id ),
-                IsEditable = note.IsAuthorized( Authorization.EDIT, currentPerson ),
-                IsDeletable = note.IsAuthorized( Authorization.EDIT, currentPerson ),
-                ParentNoteIdKey = note.ParentNoteId.HasValue
-                    ? IdHasher.Instance.GetHash( note.ParentNoteId.Value )
-                    : null,
-                CreatedDateTime = note.CreatedDateTime?.ToRockDateTimeOffset(),
-                CreatedByIdKey = note.CreatedByPersonAlias?.Person.IdKey,
-                CreatedByName = note.CreatedByPersonAlias?.Person.FullName,
-                CreatedByPhotoUrl = note.CreatedByPersonAlias?.Person.PhotoUrl,
-                EditedDateTime = note.EditedDateTime?.ToRockDateTimeOffset(),
-                EditedByName = note.EditedByPersonName,
-                AttributeValues = GetFormattedAttributeValues( note, currentPerson )
-            };
-        }
-
-        /// <summary>
-        /// Gets the formatted attribute values for a note.
-        /// </summary>
-        /// <param name="note">The note.</param>
-        /// <param name="currentPerson">The person that will see the note.</param>
-        /// <returns>A dictionary of attribute keys and the formatted HTML values.</returns>
-        private static Dictionary<string, string> GetFormattedAttributeValues( Note note, Person currentPerson )
-        {
-            var values = new Dictionary<string, string>();
-
-            var items = note.Attributes
-                .Values
-                .OrderBy( a => a.Order )
-                .Where( a => a.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                .Select( a => new
-                {
-                    a.Name,
-                    Value = note.GetAttributeHtmlValue( a.Key )
-                } )
-                .Where( a => a.Value.IsNotNullOrWhiteSpace() );
-
-            foreach ( var item in items )
-            {
-                values.TryAdd( item.Name, item.Value );
-            }
-
-            return values;
-        }
-
-        /// <summary>
-        /// Gets the note type bag that will represent the given note type.
-        /// </summary>
-        /// <param name="noteType">The note type object to be represented.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <returns>A new instance of <see cref="NoteTypeBag"/>.</returns>
-        private static NoteTypeBag GetNoteTypeBag( NoteTypeCache noteType, Person currentPerson )
-        {
-            var note = new Note
-            {
-                NoteTypeId = noteType.Id
-            };
-
-            note.LoadAttributes();
-
-            return new NoteTypeBag
-            {
-                IdKey = noteType.IdKey,
-                Name = noteType.Name,
-                Color = noteType.Color,
-                IconCssClass = noteType.IconCssClass,
-                UserSelectable = noteType.UserSelectable && noteType.IsAuthorized( Authorization.EDIT, currentPerson ),
-                AllowsReplies = noteType.AllowsReplies,
-                MaxReplyDepth = noteType.MaxReplyDepth ?? -1,
-                AllowsWatching = noteType.AllowsWatching,
-                RequiresApprovals = noteType.RequiresApprovals,
-                IsMentionEnabled = noteType.FormatType != NoteFormatType.Unstructured && noteType.IsMentionEnabled,
-                Attributes = note.GetPublicAttributesForEdit( currentPerson )
+                ErrorMessage = ( string ) null,
+                EntityIdKey = contextEntity.IdKey,
+                EntityTypeIdKey = EntityTypeCache.Get( contextEntity.TypeId ).IdKey,
+                Notes = notes.Select( n => noteClientService.GetNoteBag( n, watchedNoteIds ) ).ToList(),
+                NoteTypes = noteTypes.Select( nt => noteClientService.GetNoteTypeBag( nt ) ).ToList(),
+                Title = GetAttributeValue( AttributeKey.Heading ),
+                TitleIconCssClass = GetAttributeValue( AttributeKey.HeadingIcon ),
+                ShowAdd = GetAttributeValue( AttributeKey.AllowAnonymous ).AsBoolean() || RequestContext.CurrentPerson != null,
+                IsDescending = GetAttributeValue( AttributeKey.DisplayOrder ) == "Descending",
+                NoteLabel = GetAttributeValue( AttributeKey.NoteTerm ),
+                IsLightMode = GetAttributeValue( AttributeKey.DisplayType ) == "Light",
+                ShowAlertCheckBox = GetAttributeValue( AttributeKey.ShowAlertCheckbox ).AsBoolean(),
+                ShowPrivateCheckBox = GetAttributeValue( AttributeKey.ShowPrivateCheckbox ).AsBoolean(),
+                ShowSecurityButton = GetAttributeValue( AttributeKey.ShowSecurityButton ).AsBoolean(),
+                AddAlwaysVisible = GetAttributeValue( AttributeKey.AddAlwaysVisible ).AsBoolean(),
+                ShowCreateDateInput = GetAttributeValue( AttributeKey.AllowBackdatedNotes ).AsBoolean(),
+                DisplayNoteTypeHeading = GetAttributeValue( AttributeKey.DisplayNoteTypeHeading ).AsBoolean(),
+                UsePersonIcon = GetAttributeValue( AttributeKey.UsePersonIcon ).AsBoolean(),
+                ExpandReplies = GetAttributeValue( AttributeKey.ExpandReplies ).AsBoolean(),
+                PersonAvatarUrl = RequestContext.CurrentPerson?.PhotoUrl
             };
         }
 
@@ -425,45 +248,28 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult EditNote( EditNoteRequestBag request )
         {
+            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson );
+
             if ( request == null || request.IdKey.IsNullOrWhiteSpace() )
             {
                 return ActionBadRequest( "Request details are not valid." );
             }
 
-            using ( var rockContext = new RockContext() )
+            var note = new NoteService( RockContext ).Get( request.IdKey, false );
+
+            if ( note == null )
             {
-                var noteService = new NoteService( rockContext );
-                Note note = noteService.Get( request.IdKey, false );
-
-                if ( note == null )
-                {
-                    return ActionNotFound( "Note not found." );
-                }
-
-                if ( !note.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionForbidden( "Not authorized to edit note." );
-                }
-
-                note.LoadAttributes( rockContext );
-
-                var editBag = new NoteEditBag
-                {
-                    IdKey = note.IdKey,
-                    ParentNoteIdKey = note.ParentNoteId.HasValue
-                        ? IdHasher.Instance.GetHash( note.ParentNoteId.Value )
-                        : null,
-                    NoteTypeIdKey = IdHasher.Instance.GetHash( note.NoteTypeId ),
-                    Text = note.Text,
-                    IsAlert = note.IsAlert ?? false,
-                    IsPrivate = note.IsPrivateNote,
-                    IsPinned = note.IsPinned,
-                    CreatedDateTime = note.CreatedDateTime?.ToRockDateTimeOffset(),
-                    AttributeValues = note.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson )
-                };
-
-                return ActionOk( editBag );
+                return ActionNotFound( "Note not found." );
             }
+
+            var noteBag = noteClientService.EditNote( note, out var errorMessage );
+
+            if ( noteBag == null )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            return ActionOk( noteBag );
         }
 
         /// <summary>
@@ -474,6 +280,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult SaveNote( SaveNoteRequestBag request )
         {
+            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson );
             var contextEntity = GetContextEntity();
 
             if ( contextEntity == null )
@@ -486,180 +293,14 @@ namespace Rock.Blocks.Core
                 return ActionBadRequest( "Request details are not valid." );
             }
 
-            using ( var rockContext = new RockContext() )
+            var noteBag = noteClientService.SaveNote( request, contextEntity, PageCache.Id, this.GetCurrentPageUrl(), RequestContext, out var errorMessage );
+
+            if ( noteBag == null )
             {
-                var noteService = new NoteService( rockContext );
-                Note note = null;
-                var mentionedPersonIds = new List<int>();
-
-                if ( request.Bag.IdKey.IsNotNullOrWhiteSpace() )
-                {
-                    note = noteService.Get( request.Bag.IdKey, false );
-
-                    if ( note == null )
-                    {
-                        return ActionNotFound( "Note not found." );
-                    }
-
-                    if ( !note.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                    {
-                        return ActionForbidden( "Not authorized to edit note." );
-                    }
-                }
-
-                if ( note == null )
-                {
-                    if ( !request.IsValidProperty( nameof( request.Bag.ParentNoteIdKey ) ) )
-                    {
-                        return ActionBadRequest( "New note details must include parent note identifier." );
-                    }
-
-                    note = new Note
-                    {
-                        EntityId = contextEntity.Id,
-                        ParentNoteId = IdHasher.Instance.GetId( request.Bag.ParentNoteIdKey )
-                    };
-
-                    // If this is a reply, check if a reply is allowed.
-                    if ( note.ParentNoteId.HasValue )
-                    {
-                        var parentNote = noteService.Get( note.ParentNoteId.Value );
-
-                        if ( !noteService.CanReplyToNote( parentNote, out var errorMessage ) )
-                        {
-                            return ActionBadRequest( errorMessage );
-                        }
-                    }
-
-                    noteService.Add( note );
-                }
-
-                if ( request.IsValidProperty( nameof( request.Bag.NoteTypeIdKey ) ) )
-                {
-                    // Find the note type from either the request or the existing note.
-                    var noteTypeId = IdHasher.Instance.GetId( request.Bag.NoteTypeIdKey );
-                    var noteType = noteTypeId.HasValue ? NoteTypeCache.Get( noteTypeId.Value ) : null;
-
-                    if ( noteType == null )
-                    {
-                        return ActionBadRequest( "Note type is invalid." );
-                    }
-
-                    // Check if the specified note type is valid for selection
-                    var isValidNoteType = GetConfiguredNoteTypes( contextEntity.TypeId )
-                            .Any( nt => nt.UserSelectable && nt.Id == noteType.Id );
-
-                    if ( !isValidNoteType )
-                    {
-                        return ActionBadRequest( "Note type is invalid." );
-                    }
-
-                    // If the note has child notes, ensure that they have the same note type as the parent.
-                    SetParentNoteType( note, noteType.Id );
-                }
-
-                request.IfValidProperty( nameof( request.Bag.Text ), () =>
-                {
-                    var noteTypeCache = NoteTypeCache.Get( note.NoteTypeId );
-                    if ( noteTypeCache.FormatType != NoteFormatType.Unstructured && noteTypeCache.IsMentionEnabled )
-                    {
-                        mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( request.Bag.Text, note.Text );
-                    }
-                    note.Text = request.Bag.Text;
-                } );
-
-                request.IfValidProperty( nameof( request.Bag.IsAlert ),
-                    () => note.IsAlert = request.Bag.IsAlert );
-
-                request.IfValidProperty( nameof( request.Bag.IsPrivate ), () =>
-                {
-                    note.IsPrivateNote = request.Bag.IsPrivate;
-
-                    note.UpdateCaption();
-                } );
-
-                request.IfValidProperty( nameof( request.Bag.IsPinned ), () =>
-                {
-                    note.IsPinned = request.Bag.IsPinned;
-                } );
-
-                if ( GetAttributeValue( AttributeKey.AllowBackdatedNotes ).AsBoolean() )
-                {
-                    request.IfValidProperty( nameof( request.Bag.CreatedDateTime ),
-                        () => note.CreatedDateTime = request.Bag.CreatedDateTime?.DateTime );
-                }
-
-                note.EditedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
-                note.EditedDateTime = RockDateTime.Now;
-                note.NoteUrl = this.GetCurrentPageUrl();
-
-                note.LoadAttributes( rockContext );
-                note.SetPublicAttributeValues( request.Bag.AttributeValues, RequestContext.CurrentPerson );
-
-                // If the note was loaded, we checked security. But if it was
-                // a new note, we were not able to check security until after
-                // the NoteTypeId was set.
-                if ( note.Id == 0 && !note.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionForbidden( "Not authorized to edit note." );
-                }
-
-                rockContext.SaveChanges();
-                note.SaveAttributeValues( rockContext );
-
-                // If we have any new mentioned person ids, start a background
-                // task to create the notifications.
-                if ( mentionedPersonIds.Any() )
-                {
-                    Task.Run( () =>
-                    {
-                        foreach ( var personId in mentionedPersonIds )
-                        {
-                            NoteMention.CreateNotificationMessage( note, personId, RequestContext.CurrentPerson.Id, PageCache.Id, RequestContext.GetPageParameters() );
-                        }
-                    } );
-                }
-
-                // Load the entity in a new context to force all the navigation
-                // properties to be valid.
-                using ( var rockContext2 = new RockContext() )
-                {
-                    var savedNote = new NoteService( rockContext2 ).Queryable()
-                        .Include( n => n.CreatedByPersonAlias.Person )
-                        .Include( n => n.EditedByPersonAlias.Person )
-                        .Where( n => n.Id == note.Id )
-                        .FirstOrDefault();
-
-                    var watchedNoteIds = GetWatchedNoteIds( new List<Note> { note }, RequestContext.CurrentPerson, rockContext2 );
-
-                    savedNote.LoadAttributes( rockContext2 );
-
-                    return ActionOk( GetNoteBag( savedNote, watchedNoteIds, RequestContext.CurrentPerson ) );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Sets the note type for a parent note and all child notes.
-        /// </summary>
-        /// <param name="parentNote">The parent note object.</param>
-        /// <param name="noteTypeId">The identifier of the new Note Type.</param>
-        private void SetParentNoteType( Note parentNote, int noteTypeId )
-        {
-            if ( parentNote == null )
-            {
-                return;
+                return ActionBadRequest( errorMessage );
             }
 
-            parentNote.NoteTypeId = noteTypeId;
-
-            if ( parentNote.ChildNotes != null )
-            {
-                foreach ( var childNote in parentNote.ChildNotes )
-                {
-                    SetParentNoteType( childNote, noteTypeId );
-                }
-            }
+            return ActionOk( noteBag );
         }
 
         /// <summary>
@@ -670,34 +311,15 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult DeleteNote( DeleteNoteRequestBag request )
         {
-            if ( request == null || request.IdKey.IsNullOrWhiteSpace() )
+            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson );
+            var note = new NoteService( RockContext ).Get( request.IdKey, false );
+
+            if ( !noteClientService.DeleteNote( note, out var errorMessage ) )
             {
-                return ActionBadRequest( "Action must specify item to delete." );
+                return ActionBadRequest( errorMessage );
             }
 
-            using ( var rockContext = new RockContext() )
-            {
-                var noteService = new NoteService( rockContext );
-                var note = noteService.Get( request.IdKey, false );
-
-                if ( note == null )
-                {
-                    return ActionNotFound( "Not not found." );
-                }
-                else if ( !note.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionForbidden( "You do not have permission to delete that note." );
-                }
-                else if ( !noteService.CanDeleteChildNotes( note, RequestContext.CurrentPerson, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                noteService.Delete( note, true );
-                rockContext.SaveChanges();
-
-                return ActionOk();
-            }
+            return ActionOk();
         }
 
         /// <summary>
@@ -708,52 +330,15 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult WatchNote( WatchNoteRequestBag request )
         {
-            if ( request == null || request.IdKey.IsNullOrWhiteSpace() )
+            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson );
+            var note = new NoteService( RockContext ).Get( request.IdKey, false );
+
+            if ( !noteClientService.WatchNote( note, request.IsWatching, out var errorMessage ) )
             {
-                return ActionBadRequest( "Action must specify item to watch." );
+                return ActionBadRequest( errorMessage );
             }
 
-            if ( RequestContext.CurrentPerson == null )
-            {
-                return ActionForbidden( "Must be logged in to watch notes." );
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var noteService = new NoteService( rockContext );
-                var noteWatchService = new NoteWatchService( rockContext );
-                var note = noteService.Get( request.IdKey, false );
-
-                if ( note == null )
-                {
-                    return ActionNotFound( "Not not found." );
-                }
-                else if ( !note.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
-                {
-                    return ActionForbidden( "You do not have permission to view that note." );
-                }
-
-                var noteWatch = noteWatchService.Queryable()
-                    .Where( nw => nw.NoteId == note.Id
-                        && nw.WatcherPersonAlias.PersonId == RequestContext.CurrentPerson.Id )
-                    .FirstOrDefault();
-
-                if ( noteWatch == null )
-                {
-                    noteWatch = new NoteWatch
-                    {
-                        NoteId = note.Id,
-                        WatcherPersonAliasId = RequestContext.CurrentPerson.PrimaryAliasId
-                    };
-
-                    noteWatchService.Add( noteWatch );
-                }
-
-                noteWatch.IsWatching = request.IsWatching;
-                rockContext.SaveChanges();
-
-                return ActionOk();
-            }
+            return ActionOk();
         }
 
         #endregion

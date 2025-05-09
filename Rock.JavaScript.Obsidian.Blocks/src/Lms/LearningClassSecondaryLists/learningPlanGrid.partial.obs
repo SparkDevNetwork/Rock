@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Grid
-          :definition="emptyDefinition"
+          :definition="gridDefinitionBag"
           :data="gridDataSource"
           keyField="idKey"
           title="Learning Plan"
@@ -64,6 +64,7 @@
                 field="completions"
                 :filter="numberValueFilter"
                 :filterValue="getCompletionsRowValue"
+                width="160px"
                 visiblePriority="md">
             <template #format="{ row }">
                 <span v-html="getCompletionsHtml(row)"></span>
@@ -86,20 +87,9 @@
             </template>
         </Column>
 
-        <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" :disableConfirmation="true" />
+        <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
     </Grid>
 </template>
-<style>
-.student-comments-icon {
-    color: var(--color-info-strong);
-    background-color: var(--color-info-soft);
-}
-
-.attention-needed-icon {
-    color: var(--color-warning-strong);
-    background-color: var(--color-warning-soft);
-}
-</style>
 
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
@@ -111,7 +101,6 @@
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
 
     const invokeBlockAction = useInvokeBlockAction();
-    const emptyDefinition = {} as GridDefinitionBag;
 
     const assignToIcons: Array<string> = ["fa fa-user-graduate", "fa fa-chalkboard-teacher"];
     const assignToColors: Array<string> = ["var(--color-info-strong)", "var(--color-warning-strong)"];
@@ -124,23 +113,19 @@
     }>();
 
     const props = defineProps({
+        gridDefinitionBag: {
+            type: Object as PropType<GridDefinitionBag>,
+            required: true
+        },
 
         isAddEnabled: {
             type: Object as PropType<boolean>,
-            required: true,
             default: false
         },
 
         isDeleteEnabled: {
             type: Object as PropType<boolean>,
-            required: true,
             default: false
-        },
-
-        getDataActionName: {
-            type: Object as PropType<string>,
-            required: true,
-            default: "GetGridData"
         }
     });
 
@@ -151,6 +136,7 @@
 
     const isAddEnabled = ref(props.isAddEnabled);
     const isDeleteEnabled = ref(props.isDeleteEnabled);
+    const gridDefinitionBag = ref(props.gridDefinitionBag);
 
     // #endregion
 
@@ -203,7 +189,7 @@
      * Called when the grid is requesting the row data be loaded.
      */
     async function loadGridData(): Promise<GridDataBag> {
-        const result = await invokeBlockAction<GridDataBag>(props.getDataActionName);
+        const result = await invokeBlockAction<GridDataBag>("GetLearningPlan");
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);

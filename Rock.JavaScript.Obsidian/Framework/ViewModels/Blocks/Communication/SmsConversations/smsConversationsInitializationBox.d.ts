@@ -24,11 +24,14 @@
 import { CommunicationMessageFilter } from "@Obsidian/Enums/Communication/communicationMessageFilter";
 import { ConversationBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsConversations/conversationBag";
 import { SnippetBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsConversations/snippetBag";
-import { NoteTypeBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteTypeBag";
+import { NoteTypeBag } from "@Obsidian/ViewModels/Controls/noteTypeBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The SMS Conversations Initialization Box */
 export type SmsConversationsInitializationBox = {
+    /** Gets or sets the value indicating whether the logged in person can Edit or Administrate. */
+    canEditOrAdministrate: boolean;
+
     /** Gets or sets the list of Conversations */
     conversations?: ConversationBag[] | null;
 

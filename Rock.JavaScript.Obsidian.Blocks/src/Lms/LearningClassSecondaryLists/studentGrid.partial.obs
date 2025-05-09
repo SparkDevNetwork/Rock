@@ -1,6 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :data="gridDataSource"
+    <Grid
+          :definition="gridDefinitionBag"
+          :data="gridDataSource"
           keyField="idKey"
           title="Students"
           itemTerm="Student"
@@ -8,6 +10,7 @@
           :expectedRowCount="10"
           :isCountMessageVisible="false"
           stickyHeader
+          :markInactiveRows="true"
           liveUpdates
           :onSelectItem="onRowClicked"
           :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
@@ -92,6 +95,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -102,18 +106,20 @@
     }>();
 
     const props = defineProps({
+        gridDefinitionBag: {
+            type: Object as PropType<GridDefinitionBag>,
+            required: true
+        },
         isAddEnabled: {
             type: Boolean as PropType<boolean>,
             required: true,
             default: false
         },
-
         isDeleteEnabled: {
             type: Boolean as PropType<boolean>,
             required: true,
             default: false
         },
-
         showGrades: {
             type: Boolean as PropType<boolean>,
             required: true,
@@ -126,6 +132,7 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
+    const gridDefinitionBag = ref(props.gridDefinitionBag);
     const isAddEnabled = ref(props.isAddEnabled);
     const isDeleteEnabled = ref(props.isDeleteEnabled);
 
@@ -184,8 +191,12 @@
     }
 
     function getGradeText(row: Record<string, unknown>): string {
-        if (!row.currentGrade) {
+        if (!row.currentGrade && !row.currentGradePercent) {
             return "";
+        }
+
+        if (!row.currentGrade && row.currentGradePercent) {
+            return `${row.currentGradePercent}%`;
         }
 
         return `${row.currentGrade} (${row.currentGradePercent}%)`;

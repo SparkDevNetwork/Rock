@@ -576,7 +576,7 @@ namespace Rock.Blocks.Security
         /// <param name="userLogin">The user login to authenticate.</param>
         private void AuthenticateUser( UserLogin userLogin )
         {
-            UserLoginService.UpdateLastLogin( userLogin.UserName );
+            UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = userLogin.UserName } );
             var securitySettings = new SecuritySettingsService().SecuritySettings;
 
             // 2FA: An individual is authenticated after registering for a new person
@@ -1098,8 +1098,8 @@ namespace Rock.Blocks.Security
                 currentPerson.LoadAttributes( rockContext );
 
                 accountEntryPersonInfoBag = accountEntryPersonInfoBag ?? new AccountEntryPersonInfoBag();
-                accountEntryPersonInfoBag.Attributes = currentPerson.GetPublicAttributesForEdit( currentPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ), enforceSecurity: false );
-                accountEntryPersonInfoBag.AttributeValues = currentPerson.GetPublicAttributeValuesForEdit( currentPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ), enforceSecurity: false );
+                accountEntryPersonInfoBag.Attributes = currentPerson.GetPublicAttributesForEdit( currentPerson, enforceSecurity: false, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ) );
+                accountEntryPersonInfoBag.AttributeValues = currentPerson.GetPublicAttributeValuesForEdit( currentPerson, enforceSecurity: false, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ) );
             }
 
             return new AccountEntryInitializationBox

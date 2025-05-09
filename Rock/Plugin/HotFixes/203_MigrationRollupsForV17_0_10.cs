@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1265,7 +1265,7 @@ WHERE p.[Guid] IN (
         }
 
         /// <summary>
-        /// Adds a parent and child history category for <see cref="LearningActivityCompletion"/> changes.
+        /// Adds a parent and child history category for <see cref="LearningClassActivityCompletion"/> changes.
         /// </summary>
         private void AddHistoryCategories()
         {
@@ -1301,7 +1301,7 @@ WHERE NOT EXISTS (
         }
 
         /// <summary>
-        /// Removes the parent and child history categories for <see cref="LearningActivityCompletion"/> changes.
+        /// Removes the parent and child history categories for <see cref="LearningClassActivityCompletion"/> changes.
         /// </summary>
         private void RemoveHistoryCategories()
         {

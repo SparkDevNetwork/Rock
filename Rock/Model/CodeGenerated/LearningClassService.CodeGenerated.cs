@@ -53,9 +53,9 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
-            if ( new Service<LearningActivity>( Context ).Queryable().Any( a => a.LearningClassId == item.Id ) )
+            if ( new Service<LearningClassActivity>( Context ).Queryable().Any( a => a.LearningClassId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningClass.FriendlyTypeName, LearningActivity.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningClass.FriendlyTypeName, LearningClassActivity.FriendlyTypeName );
                 return false;
             }
 
@@ -155,6 +155,7 @@ namespace Rock.Model
             target.ArchivedDateTime = source.ArchivedDateTime;
             target.AttendanceRecordRequiredForCheckIn = source.AttendanceRecordRequiredForCheckIn;
             target.CampusId = source.CampusId;
+            target.ChatChannelKey = source.ChatChannelKey;
             target.ConfirmationAdditionalDetails = source.ConfirmationAdditionalDetails;
             target.Description = source.Description;
             target.DisableScheduleToolboxAccess = source.DisableScheduleToolboxAccess;
@@ -171,6 +172,10 @@ namespace Rock.Model
             target.InactiveReasonValueId = source.InactiveReasonValueId;
             target.IsActive = source.IsActive;
             target.IsArchived = source.IsArchived;
+            target.IsChatChannelAlwaysShownOverride = source.IsChatChannelAlwaysShownOverride;
+            target.IsChatChannelPublicOverride = source.IsChatChannelPublicOverride;
+            target.IsChatEnabledOverride = source.IsChatEnabledOverride;
+            target.IsLeavingChatChannelAllowedOverride = source.IsLeavingChatChannelAllowedOverride;
             target.IsPublic = source.IsPublic;
             target.IsSecurityRole = source.IsSecurityRole;
             target.IsSpecialNeeds = source.IsSpecialNeeds;

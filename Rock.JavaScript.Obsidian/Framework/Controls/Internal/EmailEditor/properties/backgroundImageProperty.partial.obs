@@ -1,0 +1,79 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ImageUploaderProperty v-bind="$attrs"
+                           label="Image"
+                           :valueProvider="valueProviderOverride ?? valueProvider!" />
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import ImageUploaderProperty from "./imageUploaderProperty.partial.obs";
+    import { createBackgroundImageProvider } from "../providers.partial";
+    import { ValueProvider } from "../types.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Background Size" as const
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Overrides the value provider.
+         */
+        valueProviderOverride: {
+            type: Object as PropType<ValueProvider<ListItemBag | null | undefined> | undefined>,
+            required: false
+        }
+    });
+
+    // #region Values
+
+    const valueProvider = ref<ValueProvider<ListItemBag | null | undefined> | undefined>(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): ValueProvider<ListItemBag | null | undefined> | undefined {
+        if (props.valueProviderOverride) {
+            return;
+        }
+
+        return createBackgroundImageProvider(props.element, props.copyToElements);
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([() => props.element, () => props.copyToElements], () => {
+        valueProvider.value?.dispose();
+        valueProvider.value = createBackgroundImageProvider(props.element, props.copyToElements);
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        valueProvider.value?.dispose();
+    });
+
+    // #endregion Hooks
+</script>

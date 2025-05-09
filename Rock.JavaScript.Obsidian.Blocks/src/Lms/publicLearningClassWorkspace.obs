@@ -4,9 +4,9 @@
         <div v-html="headerHtml"></div>
 
         <div class="workspace-block-error-notification">
-            <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+            <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-            <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+            <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
         </div>
 
         <div class="workspace-block-container" v-if="!blockError">
@@ -186,7 +186,7 @@
                                   v-model="viewingCompletionBag"
                                   :items="activities"
                                   wrapperClass="workspace-navigation-pane"
-                                  itemKey="learningActivityIdKey"
+                                  itemKey="learningClassActivityIdKey"
                                   :itemClass="getActivityContainerClasses"
                                   :disabledKey="isActivityUnavailable"
                                   :mobileThreshold="767"
@@ -194,6 +194,7 @@
                         <template #placeholder>
                             <p class="text-muted">Tap here to select an activity</p>
                         </template>
+
                         <template #default="{ item }">
                             <div class="activity-item-content"
                                  :ref="(el) => addTooltip(el as Element)"
@@ -206,7 +207,7 @@
                                     <i v-if="!isCompleted(item)" class="fa fa-circle-o fa-2x is-incomplete"></i>
                                 </div>
                                 <div class="activity-item-detail-container">
-                                    <h5 class="activity-name">{{ item?.activityBag?.name }}</h5>
+                                    <h5 class="activity-name">{{ item?.classActivityBag?.name }}</h5>
                                     <div class="activity-item-time">
                                         <div class="text-muted" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">{{ getActivityTimeText(item) }}</div>
                                     </div>
@@ -223,33 +224,49 @@
                             </div>
                         </template>
                     </CustomSelect>
+
                     <div class="workspace-main-content">
-                        <div class="workspace-main-content-header">
-                            <h3 class="workspace-main-content-title">
-                                {{ viewingCompletionBag.activityBag?.name ?? "" }}
-                            </h3>
-                            <div class="activity-time">
-                                {{ getActivityTimeText(viewingCompletionBag) }}
+                        <div v-if="showCompletedScreen"
+                             class="course-completed-content">
+                            <div>
+                                <i class="fa fa-check-circle fa-5x text-success"></i>
                             </div>
+
+                            <h2>Congratulations {{ currentPersonNickName }}!</h2>
+                            <p>You've successfully completed {{ config.courseName }}.</p>
                         </div>
 
-                        <div class="facilitator-comments-container" v-if="viewingCompletionBag.facilitatorComment">
-                            <NotificationBox alertType="info">
-                                <div class="facilitator-comment-label">
-                                    Facilitator Comment:
+                        <template v-else>
+                            <div class="workspace-main-content-header">
+                                <h3 class="workspace-main-content-title">
+                                    {{ viewingCompletionBag.classActivityBag?.name ?? "" }}
+                                </h3>
+                                <div class="activity-time">
+                                    {{ getActivityTimeText(viewingCompletionBag) }}
                                 </div>
-                                <div class="facilitator-comment-text">
-                                    {{ viewingCompletionBag.facilitatorComment }}
-                                </div>
-                            </NotificationBox>
+                            </div>
 
-                        </div>
-                        <activityTypeComponent
-                                               v-model:activityBag="viewingCompletionBag.activityBag"
-                                               v-model:completionBag="viewingCompletionBag"
-                                               :screenToShow="screenToShow"
-                                               @closed="onClosed"
-                                               @completed="onCompleted" />
+                            <div class="facilitator-comments-container" v-if="viewingCompletionBag.facilitatorComment">
+                                <NotificationBox alertType="info">
+                                    <div class="facilitator-comment-label">
+                                        Facilitator Comment:
+                                    </div>
+                                    <div class="facilitator-comment-text">
+                                        {{ viewingCompletionBag.facilitatorComment }}
+                                    </div>
+                                </NotificationBox>
+
+                            </div>
+
+                            <activityTypeComponent v-else
+                                                   :activityBag="viewingCompletionBag.classActivityBag"
+                                                   :completionBag="viewingCompletionBag"
+                                                   :screenToShow="screenToShow"
+                                                   @commentChanged="onCommentChanged"
+                                                   @completionValuesChanged="onCompletionValuesChanged"
+                                                   @closed="onClosed"
+                                                   @completed="onCompleted" />
+                        </template>
                     </div>
 
                 </template>
@@ -265,10 +282,10 @@
     import CustomSelect from "@Obsidian/Controls/customSelect.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
-    import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+    import { LearningClassActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityCompletionDetail/learningClassActivityCompletionBag";
     import { PublicLearningClassWorkspaceBox } from "@Obsidian/ViewModels/Blocks/Lms/PublicLearningClassWorkspace/publicLearningClassWorkspaceBox";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
+    import { CompletionExtraValues, ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
     import { NavigationUrlKey } from "./PublicLearningClassWorkspace/types.partial";
     import { AvailabilityCriteria } from "@Obsidian/Enums/Lms/availabilityCriteria";
@@ -276,9 +293,11 @@
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
     import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<PublicLearningClassWorkspaceBox>();
     const invokeBlockAction = useInvokeBlockAction();
+    const store = useStore();
     onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
@@ -289,21 +308,15 @@
     const backButtonClicked = ref(false);
     const headerHtml = config.headerHtml ?? "";
     const screenToShow = ref(ComponentScreen.Completion);
+    const showCompletedScreen = ref(false);
 
     /** The promise source for the completed event handler.
      *  Ensures the onClosed event handler waits for the onCompleted. */
     let completedPromiseSource = new PromiseCompletionSource<void>();
 
-    const params = new URLSearchParams(window.location.search);
-    const selectedActivityIdKey = params.get("activity") ?? "";
+    const activities = ref<LearningClassActivityCompletionBag[]>(config.activities ?? []);
 
-    const activities = ref<LearningActivityCompletionBag[]>(config.activities ?? []);
-
-    const viewingCompletionBag = ref((
-        selectedActivityIdKey.length > 0 ?
-            activities.value?.find(a => a.learningActivityIdKey === selectedActivityIdKey && a.isAvailable) :
-            activities.value?.find(a => a.isAvailable)
-    ) ?? {} as LearningActivityCompletionBag);
+    const viewingCompletionBag = ref(getInitialActivitySelection());
 
     const announcements = ref(config.announcements ?? []);
     const isAcademicCalendarMode = ref(config.programConfigurationMode === ConfigurationMode.AcademicCalendar);
@@ -343,7 +356,7 @@
     const completedActivitiesCount = computed(() => activities.value.filter(a => isCompleted(a)).length);
 
     /** The activityComponent.componentUrl from the ActivityBag or an empty string. */
-    const componentUrl = computed(() => viewingCompletionBag.value?.activityBag?.activityComponent?.componentUrl ?? "");
+    const componentUrl = computed(() => viewingCompletionBag.value?.classActivityBag?.activityComponent?.componentUrl ?? "");
 
     const currentGradeLabel = computed(() => isClassCompletedAndGraded.value === true ? "Final Grade" : "Current Grade");
 
@@ -357,7 +370,7 @@
     const hasAnnouncementOverflow = computed(() => announcements.value.length > maxOverviewItemsToShow.value);
 
     /** True if the student has completed an activity and that activity doesn't require scoring. */
-    const hasGradedActivities = computed(() => activities.value.some(a => isCompleted(a) && !a.requiresScoring && Number(a.activityBag?.points) > 0));
+    const hasGradedActivities = computed(() => activities.value.some(a => isCompleted(a) && !a.requiresScoring && Number(a.classActivityBag?.points) > 0));
 
     /** Whether there are any notifications. */
     const hasNotifications = computed(() => notifications.value.length > 0);
@@ -402,9 +415,56 @@
                 .filter(t => t.length > 0))
     );
 
+    const currentPersonNickName = computed((): string => {
+        return store.state.currentPerson?.nickName ?? "";
+    });
+
     // #endregion
 
     // #region Functions
+
+    /**
+     * Gets the initial activity selection based on the query string or the
+     * calculated activity based on various criteria.
+     *
+     * @returns The initial activity to be selected.
+     */
+    function getInitialActivitySelection(): LearningClassActivityCompletionBag {
+        const params = new URLSearchParams(window.location.search);
+
+        // First see if everything is completed, if so show the completed screen.
+        if (activities.value.every(a => a.completedDate)) {
+            showCompletedScreen.value = true;
+            return {} as LearningClassActivityCompletionBag;
+        }
+
+        // If they have a selected activity in the query string, use that.
+        if (params.get("activity")) {
+            const paramActivity = activities.value.find(a => a.learningClassActivityIdKey === params.get("activity") && a.isAvailable && !a.completedDate);
+
+            if (paramActivity) {
+                return paramActivity;
+            }
+        }
+
+        // Nothing from the query string, or it wasn't found, so look for the
+        // first available activity.
+        const nextActivity = activities.value.find(a => a.isAvailable && !a.completedDate);
+
+        if (nextActivity) {
+            return nextActivity;
+        }
+
+        // If there are no available activities, look for the last activity
+        // that was completed.
+        const lastCompletedActivity = [...activities.value].reverse().find(a => a.completedDate);
+
+        if (lastCompletedActivity) {
+            return lastCompletedActivity;
+        }
+
+        return {} as LearningClassActivityCompletionBag;
+    }
 
     /**
      * Gets css classes for the index position in an array: index-#, is-first, is-last.
@@ -424,13 +484,13 @@
         return activity.isStudentCompleted || activity.isFacilitatorCompleted;
     }
 
-    function getBadgeText(activity: LearningActivityCompletionBag): string | undefined {
+    function getBadgeText(activity: LearningClassActivityCompletionBag): string | undefined {
         if (isCompleted(activity) && activity.gradeName) {
             return activity.gradeName;
         }
     }
 
-    function getGradeBageStyles(activity: LearningActivityCompletionBag): string | undefined {
+    function getGradeBageStyles(activity: LearningClassActivityCompletionBag): string | undefined {
         if (!activity.gradeColor) {
             return;
         }
@@ -443,17 +503,17 @@
         }
     }
 
-    function isDueSoonAndIncomplete(activity: LearningActivityCompletionBag): boolean {
+    function isDueSoonAndIncomplete(activity: LearningClassActivityCompletionBag): boolean {
         return !isCompleted(activity) && (activity.isDueSoon || activity.isLate);
     }
 
     /** The CSS classes to apply to the activity container. */
-    function getActivityContainerClasses(activity: LearningActivityCompletionBag): string {
+    function getActivityContainerClasses(activity: LearningClassActivityCompletionBag): string {
         const classes = activity.isAvailable === true ? ["available"] : ["not-available"];
 
         classes.push("activity-navigation-item-container");
 
-        if (activity.learningActivityIdKey === viewingCompletionBag.value.learningActivityIdKey) {
+        if (activity.learningClassActivityIdKey === viewingCompletionBag.value.learningClassActivityIdKey) {
             classes.push("is-selected");
         }
 
@@ -480,7 +540,7 @@
     }
 
     /** Classes to apply to the activity icon stack. */
-    function getActivityLabel(activity: LearningActivityCompletionBag): string {
+    function getActivityLabel(activity: LearningClassActivityCompletionBag): string {
         // Needs Grading, Comment Available, Late, Due Today
         if (activity.requiresScoring) {
             return "<span class='label label-info'>Needs Grading</span>";
@@ -504,7 +564,7 @@
     }
 
     /** Gets the text for the activity's relevant time (e.g. completed when, due when etc.). */
-    function getActivityTimeText(activity: LearningActivityCompletionBag): string {
+    function getActivityTimeText(activity: LearningClassActivityCompletionBag): string {
         if (isCompleted(activity) && activity.completedDate) {
             return `Completed: ${getElapsedTime(activity.completedDate?.toString() ?? "")} `;
         }
@@ -515,7 +575,7 @@
         return "";
     }
 
-    function getActivityTooltip(activity: LearningActivityCompletionBag): string {
+    function getActivityTooltip(activity: LearningClassActivityCompletionBag): string {
         if (activity.isAvailable) {
             return "";
         }
@@ -533,10 +593,10 @@
 
     /** The time elapsed since the specified date in a human-readable format. */
     function getElapsedTime(date: string | null | undefined): string {
-        return RockDateTime.parseISO(date ?? "")?.localDateTime.humanizeElapsed() ?? "";
+        return RockDateTime.parseISO(date ?? "")?.localDateTime.toElapsedString() ?? "";
     }
 
-    function isActivityUnavailable(activity: LearningActivityCompletionBag | null): boolean {
+    function isActivityUnavailable(activity: LearningClassActivityCompletionBag | null): boolean {
         return activity?.isAvailable !== true;
     }
 
@@ -544,9 +604,34 @@
 
     // #region Event Handlers
 
+    function onCommentChanged(comment: string): void {
+        const newValue = { ...viewingCompletionBag.value };
+
+        newValue.studentComment = comment;
+
+        viewingCompletionBag.value = newValue;
+    }
+
+    function onCompletionValuesChanged(values: Record<string, string>, extra?: CompletionExtraValues): void {
+        const newValue = { ...viewingCompletionBag.value };
+
+        newValue.completionValues = values;
+
+        if (extra) {
+            // We don't allow student to update points earned, so we don't check
+            // the pointsEarned value.
+
+            if (extra.binaryFile !== undefined) {
+                newValue.binaryFile = extra.binaryFile;
+            }
+        }
+
+        viewingCompletionBag.value = newValue;
+    }
+
     /**
      * Called when the activity component's closed emit is fired. Because completed
-     *  and closed may be called together - this event handler awaits the resolution
+     * and closed may be called together - this event handler awaits the resolution
      * of the completedPromiseSource (if the activity is not yet completed).
      */
     async function onClosed(): Promise<void> {
@@ -554,16 +639,21 @@
             await completedPromiseSource.promise;
         }
 
-        const currentIndex = activities.value.findIndex(a => a.learningActivityIdKey === viewingCompletionBag.value.learningActivityIdKey);
-        let nextAvailableActivity = activities.value?.find((a, i) => i > currentIndex && a.isAvailable);
+        const currentIndex = activities.value.findIndex(a => a.learningClassActivityIdKey === viewingCompletionBag.value.learningClassActivityIdKey);
+        let nextAvailableActivity = activities.value
+            ?.find((a, i) => i > currentIndex && a.isAvailable && !a.completedDate);
 
         // If there was no available activity after our index look for one before it (starting at the beginning).
         if (!nextAvailableActivity) {
-            nextAvailableActivity = activities.value?.find((a, i) => i < currentIndex && a.isAvailable);
+            nextAvailableActivity = activities.value
+                ?.find((a, i) => i < currentIndex && a.isAvailable && !a.completedDate);
         }
 
         if (nextAvailableActivity) {
             viewingCompletionBag.value = nextAvailableActivity;
+        }
+        else if (activities.value.every(a => a.completedDate)) {
+            showCompletedScreen.value = true;
         }
     }
 
@@ -580,20 +670,20 @@
         completedPromiseSource = new PromiseCompletionSource<void>();
 
         if (wasSuccessful) {
-            var result = await invokeBlockAction<LearningActivityCompletionBag>("CompleteActivity", {
+            var result = await invokeBlockAction<LearningClassActivityCompletionBag>("CompleteActivity", {
                 activityCompletionBag: viewingCompletionBag.value
             });
 
             if (result.statusCode === 200 && result.data) {
                 // If the result was successful, update the activity with the new values.
-                const index = activities.value?.findIndex(a => a.learningActivityIdKey === result.data?.learningActivityIdKey) ?? -1;
+                const index = activities.value?.findIndex(a => a.learningClassActivityIdKey === result.data?.learningClassActivityIdKey) ?? -1;
 
                 if (activities.value && index >= 0) {
                     activities.value[index] = result.data;
 
                     // Only set the viewing completion bag to the returned data if it matches.
                     // It's possible the another available activity was selected between submission and response.
-                    if (viewingCompletionBag.value.learningActivityIdKey === result.data.learningActivityIdKey) {
+                    if (viewingCompletionBag.value.learningClassActivityIdKey === result.data.learningClassActivityIdKey) {
                         viewingCompletionBag.value = result.data;
                     }
 
@@ -603,7 +693,7 @@
                     const hasNextActivity = nextActivityIndex < activities.value?.length;
                     const nextActivity = hasNextActivity ? activities.value[nextActivityIndex] : null;
 
-                    if (nextActivity != null && nextActivity.activityBag?.availabilityCriteria === AvailabilityCriteria.AfterPreviousCompleted) {
+                    if (nextActivity != null && nextActivity.classActivityBag?.availabilityCriteria === AvailabilityCriteria.AfterPreviousCompleted) {
                         nextActivity.availableDate = result.data.completedDate;
                         nextActivity.isAvailable = true;
                     }
@@ -650,14 +740,14 @@
      * activityType component are in-sync.
      */
     watch(viewingCompletionBag, (cur, prev) => {
-        const previousIdKey = toValue(prev)?.learningActivityIdKey;
-        const currentIdKey = toValue(cur)?.learningActivityIdKey;
+        const previousIdKey = toValue(prev)?.learningClassActivityIdKey;
+        const currentIdKey = toValue(cur)?.learningClassActivityIdKey;
 
         if (previousIdKey === currentIdKey) {
             return;
         }
 
-        const previousSelectedIndex = activities.value.findIndex(a => a.learningActivityIdKey === previousIdKey);
+        const previousSelectedIndex = activities.value.findIndex(a => a.learningClassActivityIdKey === previousIdKey);
 
         // Update the current selection before moving to the new selection.
         // This ensures that any work completed by the student isn't lost when clicking to another task.
@@ -673,6 +763,8 @@
             queryParams.set("activity", currentIdKey ?? "");
             history.pushState(null, "", "?" + queryParams.toString());
         }
+
+        showCompletedScreen.value = false;
     });
 
     // Handle any initial error conditions or the need to go into edit mode.
@@ -708,7 +800,7 @@
         }
 
         if (idKey) {
-            const newActivitySelection = activities.value.find(a => a.learningActivityIdKey === idKey);
+            const newActivitySelection = activities.value.find(a => a.learningClassActivityIdKey === idKey);
 
             if (newActivitySelection) {
                 viewingCompletionBag.value = newActivitySelection;

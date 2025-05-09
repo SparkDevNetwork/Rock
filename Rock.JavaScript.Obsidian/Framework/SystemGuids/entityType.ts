@@ -235,10 +235,14 @@ export const EntityType = {
     Document: "7CEFA340-9D98-4B2C-B462-313C61944B6C",
     /** The EntityType Guid for Rock.Model.DocumentType  */
     DocumentType: "18CF366F-46B6-49CA-B557-BCABD6BBD175",
+    /** The EntityType Guid for Rock.Model.EmailSection  */
+    EmailSection: "86B2CE94-9DC3-463C-B2B1-DEECAB70474E",
     /** The EntityType Guid for Rock.Model.EntityCampusFilter  */
     EntityCampusFilter: "A736A9FB-F2A5-4458-B126-FAD6BD3F3B78",
     /** The EntityType Guid for Rock.Model.EntityIntent  */
     EntityIntent: "15CE39A3-193F-44E5-80C7-DE47DA3EAF97",
+    /** The guid for Rock.Model.EntitySearch entity. */
+    EntitySearch: "080374B4-C765-4F90-8B85-BC2635164275",
     /** The EntityType Guid for Rock.Model.EntitySet  */
     EntitySet: "50E3F9C8-4010-41AF-8F61-08308DC44640",
     /** The EntityType Guid for Rock.Model.EntitySetItem  */
@@ -353,6 +357,8 @@ export const EntityType = {
     GroupTypeRole: "D155C373-9E47-4C6A-BADD-792F31AF5FBA",
     /** The guid for the Rock.Model.History entity. */
     History: "546D5F43-1184-47C9-8265-2D7BF4E1BCA5",
+    /** The guid for the Rock.Model.HistoryLogin entity. */
+    HistoryLogin: "B0C039E1-D2B0-460A-A787-83565BCB665C",
     /** The EntityType Guid for Rock.Model.HtmlContent  */
     HtmlContent: "FB30EC4C-7DCC-41A4-94AB-E728A8CE537B",
     /** The HTTP module component */
@@ -400,11 +406,13 @@ export const EntityType = {
     /** The EntityType Guid for Rock.Model.Layout */
     Layout: "9DACC861-FED4-47FC-946D-D6A120FF6D56",
     /** The EntityType Guid for Rock.Model.LearningActivity */
-    LearningActivity: "E82F540C-F483-4D4A-898A-3AE7FF76F75A",
-    /** The EntityType Guid for Rock.Model.LearningActivityCompletion */
-    LearningActivityCompletion: "14D1295A-CE9E-4FCB-A63C-6DF04DB5E9B1",
+    LearningActivity: "98B98FA8-A92D-4E10-AA3E-B3082E61976F",
     /** The EntityType Guid for Rock.Model.LearningClass */
     LearningClass: "EB41E4E1-64B1-4AA1-8F66-F0DFD81557D9",
+    /** The EntityType Guid for Rock.Model.LearningClassActivity */
+    LearningClassActivity: "E82F540C-F483-4D4A-898A-3AE7FF76F75A",
+    /** The EntityType Guid for Rock.Model.LearningClassActivityCompletion */
+    LearningClassActivityCompletion: "14D1295A-CE9E-4FCB-A63C-6DF04DB5E9B1",
     /** The EntityType Guid for Rock.Model.LearningClassAnnouncement */
     LearningClassAnnouncement: "D2CE59D3-55E1-4275-9EA1-38C18A05A32B",
     /** The EntityType Guid for Rock.Model.LearningClassContentPage */
@@ -513,6 +521,12 @@ export const EntityType = {
     MobileEventsPrayerSessionBlockType: "BCAF9B7B-2ADE-496B-9303-150F495851FC",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Events.PrayerSessionSetup */
     MobileEventsPrayerSessionSetupBlockType: "51431866-FF92-433C-8B0F-0F6BBAD9BCE7",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.ScheduledTransactionList. */
+    MobileFinanceScheduledTransactionListBlockType: "7698E529-6834-46B0-BC5A-D466A6BCE4F6",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.TransactionDetail. */
+    MobileFinanceTransactionDetailBlockType: "3355006B-4C1F-4F85-8390-7C83C26D5C4A",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.TransactionList. */
+    MobileFinanceTransactionListBlockType: "4196280F-0204-4268-A19F-773336B8BEA2",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupRegistration */
     MobileGroupsGroupAddToGroup: "E0664BDC-9583-44F2-AC8D-23AE48603EAB",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupAttendanceEntry */
@@ -639,6 +653,8 @@ export const EntityType = {
     PersonalLinkSectionOrder: "648325DC-1555-44B7-AFA4-1971E57F7E11",
     /** The EntityType Guid for Rock.Model.PersonalizationSegment  */
     PersonalizationSegment: "368A3581-C8C4-4960-901A-9587864226F3",
+    /** The EntityType Guid for PersonalizationSegmentCategory 'joiner' table Rock.Model.PersonalizationSegment */
+    PersonalizationSegmentCategory: "D2026C0C-6C5F-4BB8-B085-9928E373812D",
     /** The EntityType Guid for Rock.Model.PhoneNumber  */
     PhoneNumber: "AD7E27CB-036D-40C6-B352-81B38BFAE798",
     /** The EntityType Guid for Rock.Model.PluginMigration  */

@@ -1,0 +1,82 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Plug-in migration
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 243, "17.1" )]
+    public class AddDefaultAllowedGroupTypesToMobileGroupRegistration : Migration
+    {
+        /// <summary>
+        /// Up methods
+        /// </summary>
+        public override void Up()
+        {
+            // In v17.1 we fixed the mobile Group Registration block to have a
+            // default value of Small Groups for the Allowed Group Types attribute.
+            // Because we don't want to break existing instances of the block, we
+            // need to enable all group types for existing blocks that don't have
+            // a value for Allowed Group Types set.
+            Sql( @"
+DECLARE @BlockTypeId INT = (SELECT TOP 1 [Id] FROM [BlockType] WHERE [Guid] = '8A42E4FA-9FE1-493C-B6D8-7A766D96E912')
+DECLARE @BlockEntityTypeId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Block')
+DECLARE @AttributeId INT = (SELECT TOP 1 [Id] FROM [Attribute]
+    WHERE [EntityTypeId] = @BlockEntityTypeId
+      AND [EntityTypeQualifierColumn] = 'BlockTypeId'
+      AND [EntityTypeQualifierValue] = @BlockTypeId
+      AND [Key] = 'GroupTypes')
+
+-- Get all Group Type Guids as a comma separated list to store in the Attribute Values.
+DECLARE @GroupTypeGuids NVARCHAR(max) = TRIM(',' FROM (SELECT CAST([Guid] AS NVARCHAR(MAX)) + ',' FROM [GroupType] FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'))
+
+IF @BlockTypeId IS NOT NULL AND @AttributeId IS NOT NULL
+BEGIN
+    -- Update existing values that are blank.
+    UPDATE [AttributeValue]
+    SET [Value] = @GroupTypeGuids
+        , [IsPersistedValueDirty] = 1
+    WHERE [AttributeId] = @AttributeId
+    AND [EntityId] IN (SELECT [Id] FROM [Block] WHERE [BlockTypeId] = @BlockTypeId)
+    AND [Value] = ''
+
+    -- Insert new values for blocks without a current value.
+    INSERT INTO [AttributeValue]
+        ([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [IsPersistedValueDirty])
+        SELECT
+            0,
+            @AttributeId,
+            [B].[Id],
+            @GroupTypeGuids,
+            NEWID(),
+            1
+        FROM [Block] AS [B]
+        WHERE [B].[BlockTypeId] = @BlockTypeId
+        AND [B].[Id] NOT IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = @AttributeId)
+END
+" );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public override void Down()
+        {
+        }
+    }
+}

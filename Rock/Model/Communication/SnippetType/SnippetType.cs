@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "SnippetType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "FD4C72DE-6B5D-4EB5-9438-385E2E15AF05" )]
     public partial class SnippetType : Model<SnippetType>
     {

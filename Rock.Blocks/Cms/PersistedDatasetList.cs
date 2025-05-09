@@ -41,7 +41,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of persisted datasets." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the persisted dataset details.",
@@ -121,7 +121,7 @@ namespace Rock.Blocks.Cms
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "PersistedDatasetId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["PersistedDatasetId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } )
             };
         }
 
@@ -190,7 +190,22 @@ namespace Rock.Blocks.Cms
                 }
                 else
                 {
-                    return ActionBadRequest( "Failed to parse the build script output into valid JSON." );
+                    // Get max preview size from block settings (default 1MB)
+                    var maxPreviewSizeMB = this.GetAttributeValue( AttributeKey.MaxPreviewSizeMB ).AsDecimalOrNull() ?? 1;
+                    maxPreviewSizeMB = Math.Max( 1, maxPreviewSizeMB );
+                    var maxPreviewSizeLength = ( int ) ( maxPreviewSizeMB * 1024 * 1024 );
+
+                    string refreshMaxLengthWarning = result?.WarningMessage?.Length > maxPreviewSizeLength
+                        ? string.Format( "Output size is {0}. Showing first {1}.", result?.WarningMessage?.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() )
+                        : null;
+
+                    var response = new
+                    {
+                        RefreshJson = ( string.Format( "<pre>{0}</pre>", result?.WarningMessage?.TruncateHtml( maxPreviewSizeLength ) ) ),
+                        RefreshMaxLengthWarning = refreshMaxLengthWarning,
+                    };
+
+                    return ActionBadRequest( response.ToCamelCaseJson( false, true ) );
                 }
             }
         }
@@ -219,7 +234,7 @@ namespace Rock.Blocks.Cms
                     result = persistedDataset.UpdateResultData();
                 }
 
-                if ( !result.IsSuccess )
+                if ( !result.IsSuccess && !persistedDataset.ResultData.IsNullOrWhiteSpace() )
                 {
                     return ActionBadRequest( result.WarningMessage );
                 }
@@ -239,6 +254,9 @@ namespace Rock.Blocks.Cms
                 }
 
                 var preViewObject = persistedDataset.ResultData.FromJsonDynamic().ToJson( true );
+                string refreshMaxLengthWarning = preViewObject?.Length < maxPreviewSizeLength
+                    ? string.Format( "JSON size is {0}. Showing first {1}.", preViewObject?.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() )
+                    : null;
 
                 // Truncate data if it exceeds max size
                 var previewData =  preViewObject.Truncate( maxPreviewSizeLength );
@@ -250,7 +268,8 @@ namespace Rock.Blocks.Cms
                 var response = new
                 {
                     PreviewData = previewData,
-                    TimeToBuildMS = persistedDataset.TimeToBuildMS
+                    TimeToBuildMS = persistedDataset.TimeToBuildMS,
+                    RefreshMaxLengthWarning = refreshMaxLengthWarning
                 };
 
                 return ActionOk( response );

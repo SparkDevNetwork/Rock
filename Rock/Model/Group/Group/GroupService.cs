@@ -20,11 +20,14 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Text;
 
+using Rock.Attribute;
+using Rock.Communication.Chat;
+using Rock.Communication.Chat.DTO;
 using Rock.Data;
 using Rock.Model.Groups.Group.Options;
-using Rock.Observability;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
@@ -133,6 +136,112 @@ namespace Rock.Model
         public IQueryable<Group> GetByParentGroupIdAndName( int? parentGroupId, string name )
         {
             return Queryable().Where( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) && t.Name == name );
+        }
+
+        /// <summary>
+        /// Gets a Queryable of chat-specific <see cref="Group"/>s, regardless of whether they're currently chat-enabled.
+        /// </summary>
+        /// <param name="groupTypeId">The optional identifier of the <see cref="GroupType"/> for the <see cref="Group"/>s to query.</param>
+        /// <returns>A Queryable of chat-specific <see cref="Group"/>s.</returns>
+        /// <remarks>This will include archived and inactive, chat-specific <see cref="Group"/>s.</remarks>
+        [RockInternal( "17.1", true )]
+        public IQueryable<Group> GetChatChannelGroupsQuery( int? groupTypeId = null )
+        {
+            var qry = AsNoFilter()
+                .Where( g =>
+                    (
+                        // Even if a group is not currently chat-enabled, include it if it has a chat channel key.
+                        g.ChatChannelKey != null
+                        && g.ChatChannelKey != string.Empty
+                    )
+                    || (
+                        g.GroupType.IsChatAllowed
+                        && (
+                            g.GroupType.IsChatEnabledForAllGroups
+                            || (
+                                g.IsChatEnabledOverride.HasValue
+                                && g.IsChatEnabledOverride.Value
+                            )
+                        )
+                    )
+                );
+
+            if ( groupTypeId.HasValue )
+            {
+                qry = qry.Where( g => g.GroupTypeId == groupTypeId.Value );
+            }
+
+            return qry;
+        }
+
+        /// <summary>
+        /// Gets a Queryable of all <see cref="Group"/>s that are currently chat-enabled.
+        /// </summary>
+        /// <param name="groupTypeId">The optional identifier of the <see cref="GroupType"/> for the <see cref="Group"/>s to query.</param>
+        /// <returns>A Queryable of all <see cref="Group"/>s that are currently chat-enabled.</returns>
+        /// <remarks>This will include archived and inactive, chat-enabled <see cref="Group"/>s.</remarks>
+        internal IQueryable<Group> GetChatEnabledGroupsQuery( int? groupTypeId = null )
+        {
+            var qry = AsNoFilter()
+                .Where( g =>
+                    g.GroupType.IsChatAllowed
+                    && (
+                        g.GroupType.IsChatEnabledForAllGroups
+                        || (
+                            g.IsChatEnabledOverride.HasValue
+                            && g.IsChatEnabledOverride.Value
+                        )
+                    )
+                );
+
+            if ( groupTypeId.HasValue )
+            {
+                qry = qry.Where( g => g.GroupTypeId == groupTypeId.Value );
+            }
+
+            return qry;
+        }
+
+        /// <summary>
+        /// Gets the identifier of the group that represents a chat channel.
+        /// </summary>
+        /// <param name="chatChannelKey">The key that identifies the chat channel.</param>
+        /// <returns>The group identifier or <see langword="null"/> if not found.</returns>
+        public int? GetChatChannelGroupId( string chatChannelKey )
+        {
+            if ( chatChannelKey.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            // Check the key itself first, as the group ID might be embedded within.
+            var groupId = ChatHelper.GetGroupId( chatChannelKey );
+            if ( groupId.HasValue )
+            {
+                return groupId.Value;
+            }
+
+            // Next, check to see if we already have this mapping in the cache.
+            var cacheKey = ChatHelper.GetChatChannelGroupIdCacheKey( chatChannelKey );
+            groupId = RockCache.Get( cacheKey ) as int?;
+            if ( groupId.HasValue )
+            {
+                return groupId.Value;
+            }
+
+            // Fall back to looking in the database and caching if we find it.
+            // We always want to include archived groups, as they'll be considered inactive chat channels.
+            groupId = AsNoFilter()
+                .Where( g => g.ChatChannelKey == chatChannelKey )
+                .Select( g => g.Id )
+                .FirstOrDefault();
+
+            if ( groupId.HasValue )
+            {
+                RockCache.AddOrUpdate( cacheKey, null, groupId.Value, RockDateTime.Now.AddSeconds( 300 ) );
+            }
+
+            return groupId;
         }
 
         #region Geospatial Queries

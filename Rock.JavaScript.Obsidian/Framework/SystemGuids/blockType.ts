@@ -107,6 +107,12 @@ export const BlockType = {
     MobileCrmGroupMembers: "1F1E7598-8D51-4750-8D61-E5791A226FDB",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Crm.PersonProfile. */
     MobileCrmPersonProfile: "F97E2359-BB2D-4534-821D-870F853CA5CC",
+    /** The mobile scheduled transaction list &gt; Scheduled Transaction block type. */
+    MobileFinanceScheduledTransactionList: "CAFF9FD9-A5DD-472B-B303-A53D94183568",
+    /** The mobile transaction detail &gt; Transaction Detail block type. */
+    MobileFinanceTransactionDetail: "01A68151-30CC-4FBC-9FE5-2F20A2C1BB4F",
+    /** The mobile transaction list &gt; Transaction List block type. */
+    MobileFinanceTransactionList: "D29C24EA-A52B-4470-A8D9-D7082FFF19DE",
     /** The mobile Groups &gt; Group Finder block type. */
     MobileGroupsGroupFinder: "BAC6671E-4D6F-4428-A6FA-69B8BEADF55C",
     /** The mobile Groups &gt; Group Registration block type. */

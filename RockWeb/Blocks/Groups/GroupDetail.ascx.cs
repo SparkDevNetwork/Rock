@@ -29,6 +29,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication.Chat;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Group;
@@ -968,6 +969,14 @@ namespace RockWeb.Blocks.Groups
                 checkinDataUpdated = true;
             }
 
+            if ( ChatHelper.IsChatEnabled && group.GroupType?.IsChatAllowed == true )
+            {
+                group.IsChatEnabledOverride = ddlIsChatEnabled.SelectedValue.AsBooleanOrNull();
+                group.IsLeavingChatChannelAllowedOverride = ddlIsLeavingChatChannelAllowed.SelectedValue.AsBooleanOrNull();
+                group.IsChatChannelPublicOverride = ddlIsChatChannelPublic.SelectedValue.AsBooleanOrNull();
+                group.IsChatChannelAlwaysShownOverride = ddlIsChatChannelAlwaysShown.SelectedValue.AsBooleanOrNull();
+            }
+
             // Add/update GroupSyncs
             foreach ( var groupSyncState in GroupSyncState )
             {
@@ -1480,6 +1489,7 @@ namespace RockWeb.Blocks.Groups
                 BindInheritedAttributes( CurrentGroupTypeId, new AttributeService( new RockContext() ) );
                 BindGroupRequirementsGrid();
                 BindAdministratorPerson( group, groupType );
+                SetChatControls( groupType, group );
             }
         }
 
@@ -1976,6 +1986,7 @@ namespace RockWeb.Blocks.Groups
             SetRsvpControls( groupTypeCache, group );
             SetScheduleControls( groupTypeCache, group );
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
+            SetChatControls( groupTypeCache, group );
 
             cbSchedulingMustMeetRequirements.Checked = group.SchedulingMustMeetRequirements;
             cbDisableScheduleToolboxAccess.Checked = group.DisableScheduleToolboxAccess;
@@ -2279,8 +2290,8 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            cbOverrideRelationshipStrength.Checked = group.IsOverridingGroupTypeRelationshipStrength;
-            pnlPeerNetwork.Visible = group.IsOverridingGroupTypeRelationshipStrength;
+            cbOverrideRelationshipStrength.Checked = group.IsOverridingGroupTypePeerNetworkConfiguration;
+            pnlPeerNetwork.Visible = group.IsOverridingGroupTypePeerNetworkConfiguration;
 
             // For relationship strength and growth settings, start by checking if a value is defined for this group,
             // and fall back to the values defined at the group type level.
@@ -2385,6 +2396,52 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Sets the chat controls.
+        /// </summary>
+        /// <param name="groupType">The group type cache.</param>
+        /// <param name="group">The group.</param>
+        private void SetChatControls( GroupTypeCache groupType, Group group )
+        {
+            if ( ChatHelper.IsChatEnabled && groupType?.IsChatAllowed == true )
+            {
+                var isChatEnabled = group.IsChatEnabledOverride.HasValue
+                    ? group.IsChatEnabledOverride.Value ? "y" : "n"
+                    : string.Empty;
+
+                var isLeavingChatChannelAllowed = group.IsLeavingChatChannelAllowedOverride.HasValue
+                    ? group.IsLeavingChatChannelAllowedOverride.Value ? "y" : "n"
+                    : string.Empty;
+
+                var isChatChannelPublic = group.IsChatChannelPublicOverride.HasValue
+                    ? group.IsChatChannelPublicOverride.Value ? "y" : "n"
+                    : string.Empty;
+
+                var isChatChannelAlwaysShown = group.IsChatChannelAlwaysShownOverride.HasValue
+                    ? group.IsChatChannelAlwaysShownOverride.Value ? "y" : "n"
+                    : string.Empty;
+
+                ddlIsChatEnabled.SetValue( isChatEnabled );
+                ddlIsLeavingChatChannelAllowed.SetValue( isLeavingChatChannelAllowed );
+                ddlIsChatChannelPublic.SetValue( isChatChannelPublic );
+                ddlIsChatChannelAlwaysShown.SetValue( isChatChannelAlwaysShown );
+
+                if ( group.IsSystem )
+                {
+                    ddlIsChatEnabled.Enabled = false;
+                    ddlIsLeavingChatChannelAllowed.Enabled = false;
+                    ddlIsChatChannelPublic.Enabled = false;
+                    ddlIsChatChannelAlwaysShown.Enabled = false;
+                }
+
+                wpChat.Visible = true;
+            }
+            else
+            {
+                wpChat.Visible = false;
+            }
+        }
+
+        /// <summary>
         /// Shows the readonly details.
         /// </summary>
         /// <param name="group">The group.</param>
@@ -2435,17 +2492,6 @@ namespace RockWeb.Blocks.Groups
                     var groupTypeRelationshipStrength = groupType.RelationshipStrength;
                     var groupRelationshipStrength = group.RelationshipStrengthOverride;
 
-                    // Technically, the group type's peer network calculations can be overridden at multiple, individual
-                    // levels (strength, growth enabled, multiplier values), but this highlight label is only indicating
-                    // whether the group is overriding the group type if the relationship strength value itself is
-                    // different than that of its parent group type.
-                    //
-                    // Note that when editing the group, ALL of the possible peer network calculation values will be
-                    // considered when indicating whether the group is overriding its parent group type, in order to
-                    // provide full transparency to the Rock admin. We might want to likewise factor in all possible
-                    // override values within this highlight label in the future. If so, simply check the group's
-                    // `IsOverridingGroupTypeRelationshipStrength` property to make this determination, and modify the
-                    // highlight label tooltip accordingly.
                     var isRelationshipStrengthOverridden = groupRelationshipStrength.HasValue
                         && groupRelationshipStrength.Value != groupTypeRelationshipStrength;
 
@@ -2472,11 +2518,15 @@ namespace RockWeb.Blocks.Groups
                         relationshipGrowthTooltip = " The relationship is also set to strengthen over time.";
                     }
 
-                    // Only show the overridden icon and tooltip if the group type's config has been overridden.
-                    if ( isRelationshipStrengthOverridden )
+                    // Show the overridden icon if this group is overriding its parent group type's peer network configuration in any way.
+                    if ( group.IsOverridingGroupTypePeerNetworkConfiguration )
                     {
                         relationshipLabelIconsSb.Append( $@" <i class=""fa fa-star-of-life""></i>" );
+                    }
 
+                    // Only show the overridden tooltip if the relationship strength itself has been overridden.
+                    if ( isRelationshipStrengthOverridden )
+                    {
                         var overriddenStrengthLabel = GetRelationshipStrengthLabel( groupTypeRelationshipStrength );
 
                         relationshipOverrideTooltip = $", overriding the group type's default setting of{( overriddenStrengthLabel.Article.IsNotNullOrWhiteSpace() ? $" {overriddenStrengthLabel.Article}" : string.Empty )} {overriddenStrengthLabel.Relationship} relationship";
@@ -2490,6 +2540,16 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     hlPeerNetwork.Visible = false;
+                }
+
+                if ( ChatHelper.IsChatEnabled && group.GetIsChatEnabled() )
+                {
+                    hlChat.Text = $"Chat-Enabled <i class=\"fa fa-comments-o\"></i>";
+                    hlChat.Visible = true;
+                }
+                else
+                {
+                    hlChat.Visible = false;
                 }
 
                 if ( groupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )

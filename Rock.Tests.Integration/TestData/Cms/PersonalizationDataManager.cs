@@ -24,7 +24,7 @@ using Rock.Personalization;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Crm.Personalization
+namespace Rock.Tests.Integration.TestData.Crm
 {
     /// <summary>
     /// Provides actions to manage data for the Personalization features of Rock.

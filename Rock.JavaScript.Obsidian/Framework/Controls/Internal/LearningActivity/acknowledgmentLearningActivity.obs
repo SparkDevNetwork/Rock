@@ -1,43 +1,48 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel v-if="[ComponentScreen.Configuration, ComponentScreen.Summary].includes(screenToShow)" :title="panelTitle" :hasFullscreen="false" :class="containerClasses">
-        <div v-if="screenToShow === ComponentScreen.Configuration">
-            <div class="header-content-section">
-                <StructuredContentEditor label="Content" v-model="content" :disabled="disabled" help="Text the individual will acknowledge or provide consent for." />
-            </div>
-            <div class="is-required-section">
-                <CheckBox
-                          v-model="isConfirmationRequired"
-                          label="Confirmation Required"
-                          help="Is the individual required to check the checkbox in order to complete the activity."
-                          :disabled="disabled" />
-            </div>
+    <Panel v-if="screenToShow === ComponentScreen.Configuration"
+           :title="panelTitle"
+           :hasFullscreen="false"
+           :class="containerClasses">
+        <StructuredContentEditor v-model="content"
+                                 label="Content"
+                                 :disabled="disabled"
+                                 help="Text the individual will acknowledge or provide consent for. <span class='tip tip-lava'></span>" />
 
-            <div class="footer-content-section">
-                <TextBox v-model="confirmationText"
-                         :disabled="disabled"
-                         label="Confirmation Text"
-                         textMode="multiline"
-                         help="Enter a brief statement individuals will agree to by checking off." />
-            </div>
+        <div class="is-required-section">
+            <CheckBox
+                      v-model="isConfirmationRequired"
+                      label="Confirmation Required"
+                      help="Is the individual required to check the checkbox in order to complete the activity."
+                      :disabled="disabled" />
         </div>
-        <div v-if="screenToShow === ComponentScreen.Summary">
-            <NotificationBox v-if="isCompleted" alertType="success">
-                {{ assignee?.name ?? defaultAssigneeDescription }} completed this activity {{ humanizedCompletionDate }}.
-            </NotificationBox>
-            <NotificationBox v-if="!isCompleted" alertType="warning">
-                {{ assignee?.name ?? defaultAssigneeDescription }} has not checked off this activity.
-            </NotificationBox>
+
+        <div class="footer-content-section">
+            <TextBox v-model="confirmationText"
+                     :disabled="disabled"
+                     label="Confirmation Text"
+                     textMode="multiline"
+                     help="Enter a brief statement individuals will agree to by checking off." />
         </div>
     </Panel>
 
-    <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
+    <Panel v-if="screenToShow === ComponentScreen.Summary"
+           :title="panelTitle"
+           :hasFullscreen="false"
+           :class="containerClasses">
+        <NotificationBox v-if="isCompleted" alertType="success">
+            {{ assignee?.name ?? defaultAssigneeDescription }} completed this activity {{ humanizedCompletionDate }}.
+        </NotificationBox>
 
+        <NotificationBox v-if="!isCompleted" alertType="warning">
+            {{ assignee?.name ?? defaultAssigneeDescription }} has not checked off this activity.
+        </NotificationBox>
+    </Panel>
+
+    <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
         <div class="acknowledgment-container">
-            <div class="header-content-section">
-                <StructuredContentEditor :disabled="true"
-                                         v-model="content" />
-            </div>
+            <div v-if="content" v-html="content"></div>
+
             <div class="is-required-section" v-if="isConfirmationRequired">
                 <CheckBox v-model="isConfirmed" label="" :disabled="completionBag.isStudentCompleted" :text="confirmationText" />
             </div>
@@ -52,12 +57,11 @@
                 {{ completeButtonText }}
             </RockButton>
         </div>
-
     </div>
 </template>
 
 <script setup lang="ts">
-    import { computed, ref, toValue, watch, } from "vue";
+    import { computed, ref, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -66,11 +70,22 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
-    import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
+    import { LearningClassActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityCompletionDetail/learningClassActivityCompletionBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
-    import { AcknowledgmentActivityCompletion, AcknowledgmentActivityConfiguration, AcknowledgmentActivityDefaults } from "./acknowledgmentLearningActivity.partial";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { asBoolean, asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const enum SettingKey {
+        ConfirmationText = "confirmationText",
+        Content = "content",
+        IsConfirmationRequired = "isConfirmationRequired",
+    }
+
+    const enum CompletionKey {
+        PointsPossibleAtCompletion = "pointsPossibleAtCompletion",
+        IsConfirmed = "isConfirmed",
+    }
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
@@ -81,7 +96,7 @@
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
     const activityBag = computed(() => props.activityBag);
-    const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
+    const completionBag = computed(() => props.completionBag ?? {} as LearningClassActivityCompletionBag);
     const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
     const showStudentComment = ref(activityBag.value?.isStudentCommentingEnabled);
     const studentComment = ref(completionBag.value.studentComment ?? "");
@@ -91,25 +106,25 @@
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
         assignee,
-        confirmationText,
         containerClasses,
-        content,
         defaultAssigneeDescription,
         isCompleted,
-        isConfirmed,
-        isConfirmationRequired,
         panelTitle,
-        pointsPossibleAtCompletion
-    } = useLearningComponent<AcknowledgmentActivityConfiguration, AcknowledgmentActivityCompletion>(
+    } = useLearningComponent(
         activityBag,
         completionBag,
-        screenToShow,
-        new AcknowledgmentActivityDefaults()
+        screenToShow
     );
+
+    const isConfirmationRequired = ref(false);
+    const confirmationText = ref("");
+    const content = ref("");
+    const isConfirmed = ref(false);
+    const pointsPossibleAtCompletion = ref<number>();
 
     /** The time elapsed since the specified date in a human-readable format. */
     const humanizedCompletionDate = computed((): string =>
-        RockDateTime.parseISO(completedDate.value)?.localDateTime.humanizeElapsed() ?? ""
+        RockDateTime.parseISO(completedDate.value)?.localDateTime.toElapsedString() ?? ""
     );
 
     const completeButtonText = computed(() => isCompleted.value === true ? "Continue" : "Complete");
@@ -123,39 +138,58 @@
         emits("closed");
     }
 
+    function updateLocalValues(): void {
+        if (props.screenToShow === ComponentScreen.Configuration) {
+            isConfirmationRequired.value = asBooleanOrNull(props.activityBag.componentSettings?.[SettingKey.IsConfirmationRequired]) ?? true;
+            confirmationText.value = props.activityBag.componentSettings?.[SettingKey.ConfirmationText] ?? "";
+            content.value = props.activityBag.componentSettings?.[SettingKey.Content] ?? "";
+        }
+        else {
+            isConfirmationRequired.value = asBooleanOrNull(props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.IsConfirmationRequired]) ?? true;
+            confirmationText.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.ConfirmationText] ?? "";
+            content.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.Content] ?? "";
+
+            pointsPossibleAtCompletion.value = toNumberOrNull(props.completionBag?.completionValues?.[CompletionKey.PointsPossibleAtCompletion]) ?? props.activityBag.points;
+            isConfirmed.value = asBoolean(props.completionBag?.completionValues?.[CompletionKey.IsConfirmed]);
+
+            studentComment.value = props.completionBag?.studentComment ?? "";
+        }
+    }
+
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
-        const updatedActivityBag = {
-            ...toValue(activityBag)
-        } as LearningActivityBag;
+        const newValues = {
+            ...props.activityBag.componentSettings
+        };
 
-        updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
-            content: content.value,
-            confirmationText: confirmationText.value,
-            isConfirmationRequired: isConfirmationRequired.value
-        }) ?? "{}";
+        newValues[SettingKey.Content] = content.value;
+        newValues[SettingKey.ConfirmationText] = confirmationText.value;
+        newValues[SettingKey.IsConfirmationRequired] = asTrueOrFalseString(isConfirmationRequired.value);
 
-        emits("update:activityBag", updatedActivityBag);
+        emits("activitySettingsChanged", newValues);
     });
     watch([content, confirmationText, isConfirmationRequired], () => {
         debouncedActivityBagEmits();
     }, { deep: true });
 
-    /** Watch for modified component completion. */
-    const debouncedCompletionBagEmits = debounce(() => {
-        const updatedCompletionBag = {
-            ...toValue(completionBag)
-        } as LearningActivityCompletionBag;
-
-        updatedCompletionBag.studentComment = studentComment.value;
-
-        updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
-            isConfirmed: isConfirmed.value,
-            pointsPossibleAtCompletion: pointsPossibleAtCompletion?.value ?? activityBag.value.points
-        }) ?? "{}";
-        emits("update:completionBag", updatedCompletionBag);
+    watch(studentComment, () => {
+        emits("commentChanged", studentComment.value);
     });
-    watch([isConfirmed, studentComment], () => {
-        debouncedCompletionBagEmits();
-    }, { deep: true });
+
+    watch([isConfirmed, pointsPossibleAtCompletion], () => {
+        const newValues = {
+            ...props.completionBag?.completionValues
+        };
+
+        newValues[CompletionKey.PointsPossibleAtCompletion] = pointsPossibleAtCompletion.value?.toString() ?? "";
+        newValues[CompletionKey.IsConfirmed] = asTrueOrFalseString(isConfirmed.value);
+
+        emits("completionValuesChanged", newValues);
+    });
+
+    watch(() => [props.activityBag, props.completionBag], () => {
+        updateLocalValues();
+    });
+
+    updateLocalValues();
 </script>

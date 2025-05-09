@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
 using Rock.Model;
 
 namespace Rock.Tests.Shared.Lava
@@ -40,8 +39,7 @@ namespace Rock.Tests.Shared.Lava
             get
             {
                 var options = New
-                    .WithFluidEngine()
-                    .WithRockLiquidEngine();
+                    .WithFluidEngine();
                 return options;
             }
         }
@@ -212,16 +210,6 @@ namespace Rock.Tests.Shared.Lava
         public static LavaTestRenderOptions WithFluidEngine( this LavaTestRenderOptions options )
         {
             return options.WithEngines( new Type[] { typeof( FluidEngine ) } );
-        }
-
-        /// <summary>
-        /// Add the Rock LiquidFluid Engine to the test configuration.
-        /// </summary>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        public static LavaTestRenderOptions WithRockLiquidEngine( this LavaTestRenderOptions options )
-        {
-            return options.WithEngines( new Type[] { typeof( RockLiquidEngine ) } );
         }
 
         /// <summary>

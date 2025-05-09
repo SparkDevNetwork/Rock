@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -49,7 +49,7 @@ namespace Rock.Blocks.Finance
 
     [Rock.SystemGuid.EntityTypeGuid( "feea3b29-3fce-4216-ab28-e1f69c67a574" )]
     [Rock.SystemGuid.BlockTypeGuid( "3d13455f-7e5c-46f7-975a-4a5ce12bd330" )]
-    public class FinancialStatementTemplateDetail : RockDetailBlockType
+    public class FinancialStatementTemplateDetail : RockEntityDetailBlockType<FinancialStatementTemplate, FinancialStatementTemplateBag>
     {
         #region Keys
 
@@ -70,18 +70,14 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<FinancialStatementTemplateBag, FinancialStatementTemplateDetailOptionsBag>();
+            var box = new DetailBlockBox<FinancialStatementTemplateBag, FinancialStatementTemplateDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<FinancialStatementTemplate>();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -89,9 +85,8 @@ namespace Rock.Blocks.Finance
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private FinancialStatementTemplateDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private FinancialStatementTemplateDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new FinancialStatementTemplateDetailOptionsBag();
 
@@ -129,7 +124,6 @@ namespace Rock.Blocks.Finance
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="financialStatementTemplate">The FinancialStatementTemplate to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the FinancialStatementTemplate is valid, <c>false</c> otherwise.</returns>
         private bool ValidateFinancialStatementTemplate( FinancialStatementTemplate financialStatementTemplate, out string errorMessage )
@@ -150,10 +144,9 @@ namespace Rock.Blocks.Finance
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<FinancialStatementTemplateBag, FinancialStatementTemplateDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<FinancialStatementTemplateBag, FinancialStatementTemplateDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -164,7 +157,7 @@ namespace Rock.Blocks.Finance
             var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -172,7 +165,6 @@ namespace Rock.Blocks.Finance
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -184,14 +176,15 @@ namespace Rock.Blocks.Finance
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity, rockContext );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity = GetEntityBagForEdit( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( FinancialStatementTemplate.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -217,12 +210,8 @@ namespace Rock.Blocks.Finance
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="FinancialStatementTemplateBag"/> that represents the entity.</returns>
-        private FinancialStatementTemplateBag GetEntityBagForView( FinancialStatementTemplate entity )
+        /// <inheritdoc/>
+        protected override FinancialStatementTemplateBag GetEntityBagForView( FinancialStatementTemplate entity )
         {
             if ( entity == null )
             {
@@ -261,13 +250,8 @@ namespace Rock.Blocks.Finance
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>A <see cref="FinancialStatementTemplateBag"/> that represents the entity.</returns>
-        private FinancialStatementTemplateBag GetEntityBagForEdit( FinancialStatementTemplate entity, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override FinancialStatementTemplateBag GetEntityBagForEdit( FinancialStatementTemplate entity )
         {
             if ( entity == null )
             {
@@ -294,7 +278,7 @@ namespace Rock.Blocks.Finance
 
             if ( entity.ReportSettings.TransactionSettings.SelectedAccountIds.Any() )
             {
-                var accountList = new FinancialAccountService( rockContext ).GetByIds( entity.ReportSettings.TransactionSettings.SelectedAccountIds )
+                var accountList = new FinancialAccountService( RockContext ).GetByIds( entity.ReportSettings.TransactionSettings.SelectedAccountIds )
                     .Where( a => a.IsActive )
                     .ToList();
                 bag.SelectedAccounts = accountList.ToListItemBagList();
@@ -307,7 +291,7 @@ namespace Rock.Blocks.Finance
 
             if ( entity.ReportSettings.PledgeSettings.AccountIds.Any() )
             {
-                var accountList = new FinancialAccountService( rockContext ).GetByIds( entity.ReportSettings.PledgeSettings.AccountIds )
+                var accountList = new FinancialAccountService( RockContext ).GetByIds( entity.ReportSettings.PledgeSettings.AccountIds )
                     .Where( a => a.IsActive )
                     .ToList();
                 bag.PledgeAccounts = accountList.ToListItemBagList();
@@ -316,76 +300,70 @@ namespace Rock.Blocks.Finance
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( FinancialStatementTemplate entity, DetailBlockBox<FinancialStatementTemplateBag, FinancialStatementTemplateDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( FinancialStatementTemplate entity, ValidPropertiesBox<FinancialStatementTemplateBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.ReportTemplate ),
-                () => entity.ReportTemplate = box.Entity.ReportTemplate );
+            box.IfValidProperty( nameof( box.Bag.ReportTemplate ),
+                () => entity.ReportTemplate = box.Bag.ReportTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.FooterTemplateHtmlFragment ),
-                () => entity.FooterSettings.HtmlFragment = box.Entity.FooterTemplateHtmlFragment );
+            box.IfValidProperty( nameof( box.Bag.FooterTemplateHtmlFragment ),
+                () => entity.FooterSettings.HtmlFragment = box.Bag.FooterTemplateHtmlFragment );
 
             // PDF Settings
-            box.IfValidProperty( nameof( box.Entity.MarginTopMillimeters ),
-                () => entity.ReportSettings.PDFSettings.MarginTopMillimeters = box.Entity.MarginTopMillimeters );
+            box.IfValidProperty( nameof( box.Bag.MarginTopMillimeters ),
+                () => entity.ReportSettings.PDFSettings.MarginTopMillimeters = box.Bag.MarginTopMillimeters );
 
-            box.IfValidProperty( nameof( box.Entity.MarginLeftMillimeters ),
-                () => entity.ReportSettings.PDFSettings.MarginLeftMillimeters = box.Entity.MarginLeftMillimeters );
+            box.IfValidProperty( nameof( box.Bag.MarginLeftMillimeters ),
+                () => entity.ReportSettings.PDFSettings.MarginLeftMillimeters = box.Bag.MarginLeftMillimeters );
 
-            box.IfValidProperty( nameof( box.Entity.MarginRightMillimeters ),
-                () => entity.ReportSettings.PDFSettings.MarginRightMillimeters = box.Entity.MarginRightMillimeters );
+            box.IfValidProperty( nameof( box.Bag.MarginRightMillimeters ),
+                () => entity.ReportSettings.PDFSettings.MarginRightMillimeters = box.Bag.MarginRightMillimeters );
 
-            box.IfValidProperty( nameof( box.Entity.MarginBottomMillimeters ),
-                () => entity.ReportSettings.PDFSettings.MarginBottomMillimeters = box.Entity.MarginBottomMillimeters );
+            box.IfValidProperty( nameof( box.Bag.MarginBottomMillimeters ),
+                () => entity.ReportSettings.PDFSettings.MarginBottomMillimeters = box.Bag.MarginBottomMillimeters );
 
-            box.IfValidProperty( nameof( box.Entity.PaperSize ),
-                () => entity.ReportSettings.PDFSettings.PaperSize = box.Entity.PaperSize.ConvertToEnum<Rock.Financial.FinancialStatementTemplatePDFSettingsPaperSize>() );
+            box.IfValidProperty( nameof( box.Bag.PaperSize ),
+                () => entity.ReportSettings.PDFSettings.PaperSize = box.Bag.PaperSize.ConvertToEnum<Rock.Financial.FinancialStatementTemplatePDFSettingsPaperSize>() );
 
             // Transaction Settings
-            box.IfValidProperty( nameof( box.Entity.CurrencyTypesForCashGifts ),
-                () => entity.ReportSettings.TransactionSettings.CurrencyTypesForCashGiftGuids = box.Entity.CurrencyTypesForCashGifts );
+            box.IfValidProperty( nameof( box.Bag.CurrencyTypesForCashGifts ),
+                () => entity.ReportSettings.TransactionSettings.CurrencyTypesForCashGiftGuids = box.Bag.CurrencyTypesForCashGifts );
 
-            box.IfValidProperty( nameof( box.Entity.CurrencyTypesForNonCashGifts ),
-                () => entity.ReportSettings.TransactionSettings.CurrencyTypesForNonCashGuids = box.Entity.CurrencyTypesForNonCashGifts );
+            box.IfValidProperty( nameof( box.Bag.CurrencyTypesForNonCashGifts ),
+                () => entity.ReportSettings.TransactionSettings.CurrencyTypesForNonCashGuids = box.Bag.CurrencyTypesForNonCashGifts );
 
-            box.IfValidProperty( nameof( box.Entity.TransactionTypes ),
-                () => entity.ReportSettings.TransactionSettings.TransactionTypeGuids = box.Entity.TransactionTypes );
+            box.IfValidProperty( nameof( box.Bag.TransactionTypes ),
+                () => entity.ReportSettings.TransactionSettings.TransactionTypeGuids = box.Bag.TransactionTypes );
 
-            box.IfValidProperty( nameof( box.Entity.HideRefundedTransactions ),
-                () => entity.ReportSettings.TransactionSettings.HideRefundedTransactions = box.Entity.HideRefundedTransactions );
+            box.IfValidProperty( nameof( box.Bag.HideRefundedTransactions ),
+                () => entity.ReportSettings.TransactionSettings.HideRefundedTransactions = box.Bag.HideRefundedTransactions );
 
-            box.IfValidProperty( nameof( box.Entity.HideCorrectedTransactionOnSameData ),
-                () => entity.ReportSettings.TransactionSettings.HideCorrectedTransactionOnSameData = box.Entity.HideCorrectedTransactionOnSameData );
+            box.IfValidProperty( nameof( box.Bag.HideCorrectedTransactionOnSameData ),
+                () => entity.ReportSettings.TransactionSettings.HideCorrectedTransactionOnSameData = box.Bag.HideCorrectedTransactionOnSameData );
 
-            box.IfValidProperty( nameof( box.Entity.IncludeChildAccountsCustom ),
-                () => entity.ReportSettings.TransactionSettings.AccountSelectionOption = GetAccountSelectionOption( box.Entity ) );
+            box.IfValidProperty( nameof( box.Bag.IncludeChildAccountsCustom ),
+                () => entity.ReportSettings.TransactionSettings.AccountSelectionOption = GetAccountSelectionOption( box.Bag ) );
 
             // Pledge Settings
-            box.IfValidProperty( nameof( box.Entity.IncludeChildAccountsPledges ),
-                () => entity.ReportSettings.PledgeSettings.IncludeGiftsToChildAccounts = box.Entity.IncludeChildAccountsPledges );
+            box.IfValidProperty( nameof( box.Bag.IncludeChildAccountsPledges ),
+                () => entity.ReportSettings.PledgeSettings.IncludeGiftsToChildAccounts = box.Bag.IncludeChildAccountsPledges );
 
-            box.IfValidProperty( nameof( box.Entity.IncludeNonCashGiftsPledge ),
-                () => entity.ReportSettings.PledgeSettings.IncludeNonCashGifts = box.Entity.IncludeNonCashGiftsPledge );
+            box.IfValidProperty( nameof( box.Bag.IncludeNonCashGiftsPledge ),
+                () => entity.ReportSettings.PledgeSettings.IncludeNonCashGifts = box.Bag.IncludeNonCashGiftsPledge );
 
             return true;
         }
@@ -411,15 +389,10 @@ namespace Rock.Blocks.Finance
             }
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="FinancialStatementTemplate"/> to be viewed or edited on the page.</returns>
-        private FinancialStatementTemplate GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override FinancialStatementTemplate GetInitialEntity()
         {
-            return GetInitialEntity<FinancialStatementTemplate, FinancialStatementTemplateService>( rockContext, PageParameterKey.FinancialStatementTemplateId );
+            return GetInitialEntity<FinancialStatementTemplate, FinancialStatementTemplateService>( RockContext, PageParameterKey.FinancialStatementTemplateId );
         }
 
         /// <summary>
@@ -435,46 +408,9 @@ namespace Rock.Blocks.Finance
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out FinancialStatementTemplate entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( FinancialStatementTemplate entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out FinancialStatementTemplate entity, out BlockActionResult error )
-        {
-            var entityService = new FinancialStatementTemplateService( rockContext );
+            var entityService = new FinancialStatementTemplateService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -510,10 +446,9 @@ namespace Rock.Blocks.Finance
         /// Marks the old image as temporary.
         /// </summary>
         /// <param name="oldbinaryFileId">The binary file identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void MarkOldImageAsTemporary( int? oldbinaryFileId, int? newBinaryFileId, RockContext rockContext )
+        private void MarkOldImageAsTemporary( int? oldbinaryFileId, int? newBinaryFileId )
         {
-            var binaryFileService = new BinaryFileService( rockContext );
+            var binaryFileService = new BinaryFileService( RockContext );
 
             if ( oldbinaryFileId != newBinaryFileId )
             {
@@ -530,10 +465,9 @@ namespace Rock.Blocks.Finance
         /// Ensures the current image is not marked as temporary.
         /// </summary>
         /// <param name="binaryFileId">The binary file identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private static void EnsureCurrentImageIsNotMarkedAsTemporary( int? binaryFileId, RockContext rockContext )
+        private void EnsureCurrentImageIsNotMarkedAsTemporary( int? binaryFileId )
         {
-            var binaryFileService = new BinaryFileService( rockContext );
+            var binaryFileService = new BinaryFileService( RockContext );
 
             if ( binaryFileId.HasValue )
             {
@@ -558,22 +492,20 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<FinancialStatementTemplateBag, FinancialStatementTemplateDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<FinancialStatementTemplateBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -582,65 +514,75 @@ namespace Rock.Blocks.Finance
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<FinancialStatementTemplateBag, FinancialStatementTemplateDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<FinancialStatementTemplateBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new FinancialStatementTemplateService( RockContext );
+            var financialAccountService = new FinancialAccountService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new FinancialStatementTemplateService( rockContext );
-                var financialAccountService = new FinancialAccountService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                var selectedAccountGuids = box.Entity.SelectedAccounts.ConvertAll( lb => lb.Value.AsGuid() );
-                entity.ReportSettings.TransactionSettings.SelectedAccountIds = financialAccountService.Queryable().Where( fa => selectedAccountGuids.Contains( fa.Guid ) ).Select( fa => fa.Id ).ToList();
-
-                var pledgeAccountGuids = box.Entity.PledgeAccounts.ConvertAll( lb => lb.Value.AsGuid() );
-                entity.ReportSettings.PledgeSettings.AccountIds = financialAccountService.Queryable().Where( fa => pledgeAccountGuids.Contains( fa.Guid ) ).Select( fa => fa.Id ).ToList();
-
-                if ( box.Entity.LogoBinaryFile != null )
-                {
-                    var binaryFileId = box.Entity.LogoBinaryFile.GetEntityId<BinaryFile>( rockContext );
-                    if ( entity.LogoBinaryFileId != binaryFileId )
-                    {
-                        MarkOldImageAsTemporary( entity.LogoBinaryFileId, binaryFileId, rockContext );
-                        entity.LogoBinaryFileId = binaryFileId;
-                        // Ensure that the Image is not set as IsTemporary=True
-                        EnsureCurrentImageIsNotMarkedAsTemporary( entity.LogoBinaryFileId, rockContext );
-                    }
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateFinancialStatementTemplate( entity, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                rockContext.SaveChanges();
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.FinancialStatementTemplateId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            if ( box.Bag.SelectedAccounts != null )
+            {
+                var selectedAccountGuids = box.Bag.SelectedAccounts.ConvertAll( lb => lb.Value.AsGuid() );
+                entity.ReportSettings.TransactionSettings.SelectedAccountIds = financialAccountService.Queryable().Where( fa => selectedAccountGuids.Contains( fa.Guid ) ).Select( fa => fa.Id ).ToList();
+            }
+
+            if ( box.Bag.PledgeAccounts != null )
+            {
+                var pledgeAccountGuids = box.Bag.PledgeAccounts.ConvertAll( lb => lb.Value.AsGuid() );
+                entity.ReportSettings.PledgeSettings.AccountIds = financialAccountService.Queryable().Where( fa => pledgeAccountGuids.Contains( fa.Guid ) ).Select( fa => fa.Id ).ToList();
+            }
+
+            if ( box.Bag.LogoBinaryFile != null )
+            {
+                var binaryFileId = box.Bag.LogoBinaryFile.GetEntityId<BinaryFile>( RockContext );
+                if ( entity.LogoBinaryFileId != binaryFileId )
+                {
+                    MarkOldImageAsTemporary( entity.LogoBinaryFileId, binaryFileId );
+                    entity.LogoBinaryFileId = binaryFileId;
+                    // Ensure that the Image is not set as IsTemporary=True
+                    EnsureCurrentImageIsNotMarkedAsTemporary( entity.LogoBinaryFileId );
+                }
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateFinancialStatementTemplate( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            RockContext.SaveChanges();
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.FinancialStatementTemplateId] = entity.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForView( entity );
+
+            return ActionOk( new ValidPropertiesBox<FinancialStatementTemplateBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -651,79 +593,22 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new FinancialStatementTemplateService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new FinancialStatementTemplateService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<FinancialStatementTemplateBag, FinancialStatementTemplateDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<FinancialStatementTemplateBag, FinancialStatementTemplateDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         #endregion

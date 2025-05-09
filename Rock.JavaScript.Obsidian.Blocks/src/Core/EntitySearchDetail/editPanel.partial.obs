@@ -1,0 +1,277 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <EntityTypePicker v-model="entityType"
+                                  label="Entity Type"
+                                  help="The entity type that will be searched."
+                                  rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <TextBox v-model="key"
+                         label="Key"
+                         help="The friendly key to use when accessing this search query for the entity type."
+                         :rules="keyRules" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBox v-model="isEntitySecurityEnabled"
+                          label="Enable Entity Security"
+                          help="Uses entity security to further filter results. Enabling this will dramatically decrease performance as all entities must be loaded to check security." />
+            </div>
+
+            <div class="col-md-6">
+                <ValueList v-model="includePaths"
+                           label="Include Paths"
+                           help="Defines the property paths that should be initially loaded. This should only specify navigation properties that are being used in the select statement."
+                           fullWidth />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <NumberBox v-model="maximumResults"
+                           label="Maximum Results Per Query"
+                           help="The maximum number of results that can be returned by a single query." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBox v-model="isRefinementAllowed"
+                          label="Allow Query Refinement"
+                          help="If enabled then additional refinement will be allowed when this query is executed." />
+            </div>
+
+            <div class="col-md-6">
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end">
+            <a href="https://community.rockrms.com/developer/dynamic-linq-syntax" target="_blank"><small>Syntax Guide</small></a>
+        </div>
+
+        <SectionContainer v-model="isWhereEnabled"
+                          title="Where"
+                          description="The expression that limits the items that will be included in the results."
+                          toggleText="Enabled">
+            <CodeEditor v-model="whereExpression" />
+        </SectionContainer>
+
+        <SectionContainer v-model="isGroupByEnabled"
+                          title="Grouping"
+                          description="The expression defines how data should be grouped into aggregate information."
+                          toggleText="Enabled">
+            <CodeEditor v-model="groupByExpression" />
+        </SectionContainer>
+
+        <SectionContainer v-model="isSelectEnabled"
+                          title="Select"
+                          description="The expression that specifies what properties are returned by the search."
+                          toggleText="Enabled">
+            <CodeEditor v-model="selectExpression" />
+        </SectionContainer>
+
+        <SectionContainer v-model="isSelectManyEnabled"
+                          title="Select Many"
+                          description="The expression that specifies what properties are returned by the search. This is designed to select multiple child items so that they become the root items, such as querying a set of Groups and wanting all the GroupMembers returned."
+                          toggleText="Enabled">
+            <CodeEditor v-model="selectManyExpression" />
+        </SectionContainer>
+
+        <SectionContainer v-model="isSortEnabled"
+                          title="Ordering"
+                          description="The list of properties that should be used to order the results."
+                          toggleText="Enabled">
+            <TextBox v-model="sortExpression" />
+        </SectionContainer>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import ValueList from "@Obsidian/Controls/valueList.obs";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { EntitySearchBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchBag";
+    import { EntitySearchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchDetailOptionsBag";
+    import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";
+    import { EntitySearchBagAdditions } from "./types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<EntitySearchBag & EntitySearchBagAdditions>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<EntitySearchDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: EntitySearchBag): void
+    }>();
+
+    // #region Values
+
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const entityType = propertyRef(props.modelValue.entityType ?? null, "EntityTypeId");
+    const key = propertyRef(props.modelValue.key ?? "", "Key");
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const maximumResults = propertyRef(props.modelValue.maximumResultsPerQuery ?? null, "MaximumResultsPerQuery");
+    const isEntitySecurityEnabled = propertyRef(props.modelValue.isEntitySecurityEnabled, "IsEntitySecurityEnabled");
+    const includePaths = propertyRef((props.modelValue.includePaths ?? "").split(","), "IncludePaths");
+    const isRefinementAllowed = propertyRef(props.modelValue.isRefinementAllowed, "IsRefinementAllowed");
+    const whereExpression = propertyRef(props.modelValue.whereExpression ?? "", "WhereExpression");
+    const isWhereEnabled = ref(props.modelValue.isWhereEnabled ?? !!whereExpression.value);
+    const groupByExpression = propertyRef(props.modelValue.groupByExpression ?? "", "GroupByExpression");
+    const isGroupByEnabled = ref(props.modelValue.isGroupByEnabled ?? !!groupByExpression.value);
+    const selectExpression = propertyRef(props.modelValue.selectExpression ?? "", "SelectExpression");
+    const isSelectEnabled = ref(props.modelValue.isSelectEnabled ?? !!selectExpression.value);
+    const selectManyExpression = propertyRef(props.modelValue.selectManyExpression ?? "", "SelectManyExpression");
+    const isSelectManyEnabled = ref(props.modelValue.isSelectManyEnabled ?? !!selectManyExpression.value);
+    const sortExpression = propertyRef(props.modelValue.sortExpression ?? "", "SortExpression");
+    const isSortEnabled = ref(props.modelValue.isSortEnabled ?? !!sortExpression.value);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [name, isActive, entityType, key, description, maximumResults, isEntitySecurityEnabled, includePaths, isRefinementAllowed, whereExpression, groupByExpression, selectExpression, selectManyExpression, sortExpression];
+
+    const keyRules: ValidationRule[] = [
+        "required",
+        validateKey
+    ];
+
+    // Only one of Select and SelectMany are supported, not both. Prefer
+    // SelectMany as the priority winner.
+    if (isSelectManyEnabled.value && isSelectEnabled.value) {
+        isSelectEnabled.value = false;
+    }
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Validates the value of the Key input to make sure it follows the
+     * supported format.
+     *
+     * @param value The key value to be validated.
+     *
+     * @returns `true` if it was valid, otherwise an error message.
+     */
+    function validateKey(value: unknown): ValidationResult {
+        if (typeof value !== "string") {
+            return "invalid value";
+        }
+
+        if (value.match(/[^a-zA-Z0-9-]/)) {
+            return "must consist of only alpha-numeric characters and dashes";
+        }
+
+        return true;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    watch(isSelectEnabled, () => {
+        if (isSelectEnabled.value === true) {
+            isSelectManyEnabled.value = false;
+        }
+    });
+
+    watch(isSelectManyEnabled, () => {
+        if (isSelectManyEnabled.value === true) {
+            isSelectEnabled.value = false;
+        }
+    });
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(entityType, props.modelValue.entityType ?? null);
+        updateRefValue(key, key.value ?? "");
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(maximumResults, props.modelValue.maximumResultsPerQuery ?? null);
+        updateRefValue(isEntitySecurityEnabled, props.modelValue.isEntitySecurityEnabled);
+        updateRefValue(includePaths, (props.modelValue.includePaths ?? "").split(","));
+        updateRefValue(isRefinementAllowed, props.modelValue.isRefinementAllowed);
+        updateRefValue(whereExpression, props.modelValue.whereExpression ?? "");
+        updateRefValue(isWhereEnabled, props.modelValue.isWhereEnabled ?? !!whereExpression.value);
+        updateRefValue(groupByExpression, props.modelValue.groupByExpression ?? "");
+        updateRefValue(isGroupByEnabled, props.modelValue.isGroupByEnabled ?? !!groupByExpression.value);
+        updateRefValue(selectExpression, props.modelValue.selectExpression ?? "");
+        updateRefValue(isSelectEnabled, props.modelValue.isSelectEnabled ?? !!selectExpression.value);
+        updateRefValue(selectManyExpression, props.modelValue.selectManyExpression ?? "");
+        updateRefValue(isSelectManyEnabled, props.modelValue.isSelectManyEnabled ?? !!selectManyExpression.value);
+        updateRefValue(sortExpression, props.modelValue.sortExpression ?? "");
+        updateRefValue(isSortEnabled, props.modelValue.isSortEnabled ?? !!sortExpression.value);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs, isWhereEnabled, isGroupByEnabled, isSelectEnabled, isSelectManyEnabled, isSortEnabled], () => {
+        const newValue: EntitySearchBag & EntitySearchBagAdditions = {
+            ...props.modelValue,
+            name: name.value,
+            isActive: isActive.value,
+            entityType: entityType.value,
+            key: key.value,
+            description: description.value,
+            maximumResultsPerQuery: maximumResults.value,
+            isEntitySecurityEnabled: isEntitySecurityEnabled.value,
+            includePaths: includePaths.value.join(","),
+            isRefinementAllowed: isRefinementAllowed.value,
+            whereExpression: whereExpression.value,
+            isWhereEnabled: isWhereEnabled.value,
+            groupByExpression: groupByExpression.value,
+            isGroupByEnabled: isGroupByEnabled.value,
+            selectExpression: selectExpression.value,
+            isSelectEnabled: isSelectEnabled.value,
+            selectManyExpression: selectManyExpression.value,
+            isSelectManyEnabled: isSelectManyEnabled.value,
+            sortExpression: sortExpression.value,
+            isSortEnabled: isSortEnabled.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+</script>

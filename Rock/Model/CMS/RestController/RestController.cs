@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -32,8 +34,9 @@ namespace Rock.Model
     [NotAudited]
     [Table( "RestController" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "65CDFD5B-A9AA-48FA-8D22-669612D5EA7D")]
-    public partial class RestController : Model<RestController>, ICacheable
+    public partial class RestController : Model<RestController>, ICacheable, IHasAdditionalSettings
     {
         #region Entity Properties
 
@@ -56,6 +59,11 @@ namespace Rock.Model
         [MaxLength( 500 )]
         [DataMember]
         public string ClassName { get; set; }
+
+        /// <inheritdoc/>
+        [RockInternal( "17.0" )]
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
 
         #endregion
 

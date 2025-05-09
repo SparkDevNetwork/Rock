@@ -54,9 +54,22 @@ namespace RockWeb.Blocks.Reporting
     [TextField( "PersonIdField", "If this isn't a Person report, but there is a person id field, specify the name of the field", false, "", "CustomSetting" )]
 
     [TextField( "DataFiltersPrePostHtmlConfig", "JSON for the Dictionary<Guid,DataFilterPrePostHtmlConfig>", false, "", "CustomSetting" )]
+
+    [BooleanField(
+        "Use Obsidian Components",
+        Key = AttributeKey.UseObsidianComponents,
+        Description = "Switches the filter components to use Obsidian if supported.",
+        DefaultBooleanValue = true,
+        Category = "Advanced" )]
+
     [Rock.SystemGuid.BlockTypeGuid( "C7C069DB-9EEE-4245-9DF2-34E3A1FF4CCB" )]
     public partial class DynamicReport : RockBlockCustomSettings
     {
+        private static class AttributeKey
+        {
+            public const string UseObsidianComponents = "UseObsidianComponents";
+        }
+
         private List<Guid> _selectedDataFilterGuids = null;
         private List<Guid> _configurableDataFilterGuids = null;
         private List<Guid> _togglableDataFilterGuids = null;
@@ -262,6 +275,7 @@ namespace RockWeb.Blocks.Reporting
                     filterControl.HideFilterCriteria = !filterIsConfigurable;
                     filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
                     filterControl.FilteredEntityTypeName = filteredEntityTypeName;
+                    filterControl.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
 
                     if ( filter.EntityTypeId.HasValue )
                     {

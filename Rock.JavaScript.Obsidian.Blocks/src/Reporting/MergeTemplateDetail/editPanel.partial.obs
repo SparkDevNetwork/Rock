@@ -8,7 +8,8 @@
                          rules="required" />
                 <TextBox v-model="description"
                          label="Description"
-                         textMode="multiline" />
+                         textMode="multiline"
+                         :rows="4" />
                 <ComponentPicker label="Type"
                                  v-model="mergeTemplateTypeEntityType"
                                  :containerType="containerType"

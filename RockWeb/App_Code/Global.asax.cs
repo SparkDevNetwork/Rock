@@ -123,7 +123,19 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Start( object sender, EventArgs e )
         {
-            RockApplicationStartupHelper.ShowDebugTimingMessage( "Application Start" );
+            using ( ObservabilityHelper.StartActivity( "Startup: Application Startup Stage 2" ) )
+            {
+                ApplicationStartupStage2();
+            }
+        }
+
+        /// <summary>
+        /// The second stage of the application startup. This is executed after the
+        /// first stage in <see cref="RockApplicationStartupHelper"/>.
+        /// </summary>
+        private void ApplicationStartupStage2()
+        {
+            RockApplicationStartupHelper.ShowDebugTimingMessage( $"Application Start: (App PID: {Rock.WebFarm.RockWebFarm.ProcessId}-{AppDomain.CurrentDomain.Id})" );
 
             Rock.Bus.RockMessageBus.IsRockStarted = false;
             QueueInUse = false;
@@ -191,7 +203,7 @@ namespace RockWeb
 
                 RockApplicationStartupHelper.ShowDebugTimingMessage( "Register Types" );
 
-                RockApplicationStartupHelper.LogStartupMessage( "Application Started Successfully" );
+                RockApplicationStartupHelper.LogStartupMessage( $"Application Started Successfully (App PID: {Rock.WebFarm.RockWebFarm.ProcessId}-{AppDomain.CurrentDomain.Id})" );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} ms] Total Startup Time", ( RockDateTime.Now - RockApp.Current.HostingSettings.ApplicationStartDateTime ).TotalMilliseconds ) );
@@ -246,25 +258,30 @@ namespace RockWeb
         /// </summary>
         private static void WarmupCache()
         {
-            var sw = Stopwatch.StartNew();
+            Activity.Current = null;
 
-            // These have probably already been loaded, but make sure they are still hot.
-            EntityTypeCache.All();
-            FieldTypeCache.All();
+            using ( var activity = ObservabilityHelper.StartActivity( "Startup: Warmup Cache" ) )
+            {
+                var sw = Stopwatch.StartNew();
 
-            // Load additional cache items that are most likely going to be required for
-            // normal operation.
-            AttributeCache.All();
-            GroupTypeCache.All();
-            BlockTypeCache.All();
-            BlockCache.All();
-            DefinedTypeCache.All();
-            DefinedValueCache.All();
-            CategoryCache.All();
+                // These have probably already been loaded, but make sure they are still hot.
+                EntityTypeCache.All();
+                FieldTypeCache.All();
 
-            sw.Stop();
+                // Load additional cache items that are most likely going to be required for
+                // normal operation.
+                AttributeCache.All();
+                GroupTypeCache.All();
+                BlockTypeCache.All();
+                BlockCache.All();
+                DefinedTypeCache.All();
+                DefinedValueCache.All();
+                CategoryCache.All();
 
-            RockApplicationStartupHelper.ShowDebugTimingMessage( "Warmup Cache", sw.Elapsed.TotalMilliseconds );
+                sw.Stop();
+
+                RockApplicationStartupHelper.ShowDebugTimingMessage( "Warmup Cache", sw.Elapsed.TotalMilliseconds );
+            }
         }
 
         // This is used to cancel our CompileThemesThread and BlockTypeCompilationThread if they aren't done when Rock shuts down
@@ -369,28 +386,35 @@ namespace RockWeb
         {
             BlockTypeCompilationThread = new Thread( () =>
             {
-                // Set to background thread so that this thread doesn't prevent Rock from shutting down.
-                Thread.CurrentThread.IsBackground = true;
+                Activity.Current = null;
 
-                // Set priority to lowest so that RockPage.VerifyBlockTypeInstanceProperties() gets priority
-                Thread.CurrentThread.Priority = ThreadPriority.Lowest;
+                using ( ObservabilityHelper.StartActivity( "Startup: Block Type Compilation" ) )
+                {
+                    // This is used to cancel our BlockTypeCompilationThread if it isn't done when Rock shuts down
+                    _threadCancellationTokenSource = new CancellationTokenSource();
+                    // Set to background thread so that this thread doesn't prevent Rock from shutting down.
+                    Thread.CurrentThread.IsBackground = true;
 
-                Stopwatch stopwatchCompileBlockTypes = Stopwatch.StartNew();
+                    // Set priority to Below Normal. This was origninally set to Lowest so that RockPage.VerifyBlockTypeInstanceProperties() gets priority.
+                    Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
 
-                // get a list of all block types that are used by blocks
-                var allUsedBlockTypeIds = new BlockTypeService( new RockContext() ).Queryable()
-                    .Where( a => a.Blocks.Any() )
-                    .OrderBy( a => a.Category )
-                    .Select( a => a.Id ).ToArray();
+                    Stopwatch stopwatchCompileBlockTypes = Stopwatch.StartNew();
 
-                // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
-                BlockTypeService.VerifyBlockTypeInstanceProperties( allUsedBlockTypeIds, _threadCancellationTokenSource.Token );
+                    // get a list of all block types that are used by blocks
+                    var allUsedBlockTypeIds = new BlockTypeService( new RockContext() ).Queryable()
+                        .Where( a => a.Blocks.Any() )
+                        .OrderBy( a => a.Category )
+                        .Select( a => a.Id ).ToArray();
 
-                // This methods updates the SiteTypeFlags property on the BlockType Table for each block. This logic was introduce to improve performance.
-                // The SiteTypeFlags column stores the flags related to the SiteTypes associated with the Block Types which otherwise needs to be fetched using Reflection.
-                UpdateSiteTypeFlagsOnBlockTypes();
+                    // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
+                    BlockTypeService.VerifyBlockTypeInstanceProperties( allUsedBlockTypeIds, _threadCancellationTokenSource.Token );
 
-                Debug.WriteLine( string.Format( "[{0,5:#} seconds] Block Types Compiled", stopwatchCompileBlockTypes.Elapsed.TotalSeconds ) );
+                    // This methods updates the SiteTypeFlags property on the BlockType Table for each block. This logic was introduce to improve performance.
+                    // The SiteTypeFlags column stores the flags related to the SiteTypes associated with the Block Types which otherwise needs to be fetched using Reflection.
+                    UpdateSiteTypeFlagsOnBlockTypes();
+
+                    Debug.WriteLine( string.Format( "[{0,5:#} seconds] Block Types Compiled", stopwatchCompileBlockTypes.Elapsed.TotalSeconds ) );
+                }
             } );
 
             BlockTypeCompilationThread.Start();
@@ -411,12 +435,30 @@ namespace RockWeb
             foreach ( var blockTypeWithSiteType in blockTypesWithSiteTypes )
             {
                 var type = blockTypeWithSiteType.compiledType;
-                SiteTypeFlags? siteTypes = SiteTypeFlags.None;
+                var siteTypes = SiteTypeFlags.None;
+
                 if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
                 {
-                    siteTypes = type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes
-                        .Select( s => s.ToString().ConvertToEnum<SiteTypeFlags>() )
-                        .Aggregate( SiteTypeFlags.None, ( a, s ) => a | s );
+                    var blockSiteTypes = type.GetCustomAttribute<SupportedSiteTypesAttribute>();
+
+                    if ( blockSiteTypes != null )
+                    {
+                        foreach ( var blockSiteType in blockSiteTypes.SiteTypes )
+                        {
+                            if ( blockSiteType == SiteType.Web )
+                            {
+                                siteTypes |= SiteTypeFlags.Web;
+                            }
+                            else if ( blockSiteType == SiteType.Mobile )
+                            {
+                                siteTypes |= SiteTypeFlags.Mobile;
+                            }
+                            else if ( blockSiteType == SiteType.Tv )
+                            {
+                                siteTypes |= SiteTypeFlags.Tv;
+                            }
+                        }
+                    }
                 }
                 else if ( typeof( IRockObsidianBlockType ).IsAssignableFrom( type ) )
                 {
@@ -439,7 +481,7 @@ namespace RockWeb
                         {
                             continue;
                         }
-                        blockType.SiteTypeFlags = siteTypes ?? SiteTypeFlags.None;
+                        blockType.SiteTypeFlags = siteTypes;
                         rockContext.SaveChanges();
                     }
                 }
@@ -496,7 +538,12 @@ namespace RockWeb
                 {
                     HttpContext.Current = thisContext;
                     var currentUserName = UserLogin.GetCurrentUserName();
-                    UserLoginService.UpdateLastLogin( currentUserName );
+                    UserLoginService.UpdateLastLogin(
+                        new UpdateLastLoginArgs {
+                            UserName = currentUserName,
+                            ShouldSkipWritingHistoryLog = true
+                        }
+                    );
                 } );
             }
             catch
@@ -599,6 +646,27 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Error( object sender, EventArgs e )
         {
+            bool IsIgnoredException( HttpException ex )
+            {
+                if ( ex != null && ex.Message.IsNotNullOrWhiteSpace() && ex.StackTrace.IsNotNullOrWhiteSpace() )
+                {
+                    // Ignore errors from SignalR when writing a response.
+                    if ( ex.Message.Contains( "The remote host closed the connection." ) && ex.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
+                    {
+                        return true;
+                    }
+
+                    // Ignore errors from the browser closing the connection before
+                    // we have finished sending all the data.
+                    if ( ex.Message.Contains( "The remote host closed the connection" ) && ex.StackTrace.Contains( "System.Web.HttpResponse.Flush" ) )
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
             try
             {
                 // Save information before IIS redirects to Error.aspx on an unhandled 500 error (configured in Web.Config).
@@ -620,11 +688,7 @@ namespace RockWeb
                                 return;
                             }
 
-                            // Check for client\remote host disconnection error specifically SignalR or web-socket connections
-                            // Ignore this error as it indicates the server it trying to write a response to a disconnected client.
-                            if ( httpEx.Message.IsNotNullOrWhiteSpace() && httpEx.StackTrace.IsNotNullOrWhiteSpace() &&
-                                httpEx.Message.Contains( "The remote host closed the connection." ) &&
-                                httpEx.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
+                            if ( IsIgnoredException( httpEx ) )
                             {
                                 context.ClearError();
                                 context.Response.StatusCode = 200;
@@ -635,9 +699,7 @@ namespace RockWeb
                     catch
                     {
                         // Check again, but don't access the context.
-                        if ( httpEx != null && httpEx.Message.IsNotNullOrWhiteSpace() && httpEx.StackTrace.IsNotNullOrWhiteSpace() &&
-                        httpEx.Message.Contains( "The remote host closed the connection." ) &&
-                        httpEx.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
+                        if ( httpEx != null && IsIgnoredException( httpEx ) )
                         {
                             return;
                         }
@@ -716,9 +778,10 @@ namespace RockWeb
                 }
 
                 // Send debug info to debug window
-                System.Diagnostics.Debug.WriteLine( string.Format( "shutdownReason:{0}", shutdownReason ) );
+                System.Diagnostics.Debug.WriteLine( string.Format( "shutdownReason: {0}", shutdownReason ) );
 
-                var shutdownMessage = string.Format( "Application Ended: {0} (Process ID: {1})", shutdownReason, Rock.WebFarm.RockWebFarm.ProcessId );
+                var shutdownMessage = $"Application Ended: {shutdownReason} (App PID: {Rock.WebFarm.RockWebFarm.ProcessId}-{AppDomain.CurrentDomain.Id})";
+                RockApplicationStartupHelper.ShowDebugTimingMessage( shutdownMessage );
                 RockApplicationStartupHelper.LogShutdownMessage( shutdownMessage );
 
                 // Close out jobs infrastructure if running under IIS

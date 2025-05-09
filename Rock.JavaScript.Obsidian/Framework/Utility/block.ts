@@ -28,6 +28,7 @@ import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validProperties
 import { IEntity } from "@Obsidian/ViewModels/entity";
 import { debounce } from "./util";
 import { BrowserBus, useBrowserBus } from "./browserBus";
+import { ICancellationToken } from "./cancellation";
 
 const blockReloadSymbol = Symbol();
 const configurationValuesChangedSymbol = Symbol();
@@ -91,11 +92,13 @@ export function useBlockActionUrl(): (actionName: string) => string {
  * @param pageGuid The unique identifier of the page.
  * @param blockGuid The unique identifier of the block.
  * @param pageParameters The parameters to include with the block action calls.
+ * @param sessionGuid The unique identifier of the session from the original page request.
+ * @param interactionGuid The unique identifier of the interaction from the original page request.
  *
  * @returns A function that can be used to provide the invoke block action.
  */
-export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, blockGuid: Guid, pageParameters: Record<string, string>, interactionGuid: Guid): InvokeBlockActionFunc {
-    async function invokeBlockAction<T>(actionName: string, data: HttpBodyData | undefined = undefined, actionContext: BlockActionContextBag | undefined = undefined): Promise<HttpResult<T>> {
+export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, blockGuid: Guid, pageParameters: Record<string, string>, sessionGuid: Guid, interactionGuid: Guid): InvokeBlockActionFunc {
+    async function invokeBlockAction<T>(actionName: string, data: HttpBodyData | undefined = undefined, actionContext: BlockActionContextBag | undefined = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> {
         let context: BlockActionContextBag = {};
 
         if (actionContext) {
@@ -104,11 +107,16 @@ export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, bloc
 
         context.pageParameters = pageParameters;
         context.interactionGuid = interactionGuid;
+        context.sessionGuid = sessionGuid;
 
-        return await post<T>(`/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`, undefined, {
-            __context: context,
-            ...data
-        });
+        return await post<T>(
+            `/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`,
+            undefined,
+            {
+                __context: context,
+                ...data
+            },
+            cancellationToken);
     }
 
     return invokeBlockAction;

@@ -254,7 +254,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -282,17 +282,17 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 {
                     var scheduleBag = GetScheduleBag( s );
 
-                    scheduleBag.AttributeValues = s.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson );
+                    scheduleBag.AttributeValues = s.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: false );
 
                     if ( bag.ScheduleAttributes == null )
                     {
-                        bag.ScheduleAttributes = s.GetPublicAttributesForEdit( RequestContext.CurrentPerson );
+                        bag.ScheduleAttributes = s.GetPublicAttributesForEdit( RequestContext.CurrentPerson, enforceSecurity: false );
                     }
 
                     return scheduleBag;
                 } ).ToList();
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             // If we didn't have anys chedules to load attributes from, use a fake one.
             if ( bag.ScheduleAttributes == null )
@@ -304,7 +304,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
                 schedule.LoadAttributes( rockContext );
 
-                bag.ScheduleAttributes = entity.GetPublicAttributesForEdit( RequestContext.CurrentPerson );
+                bag.ScheduleAttributes = entity.GetPublicAttributesForEdit( RequestContext.CurrentPerson, enforceSecurity: false );
             }
 
             return bag;
@@ -442,7 +442,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             entity.ExperienceSettingsJson = settings.ToJson();
@@ -656,7 +656,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     schedule.Schedule.CheckInStartOffsetMinutes = scheduleBag.EnableMinutesBefore ?? 0;
                     schedule.DataViewId = scheduleBag.DataView.GetEntityId<DataView>( rockContext );
                     schedule.GroupId = scheduleBag.Group.GetEntityId<Rock.Model.Group>( rockContext );
-                    schedule.SetPublicAttributeValues( scheduleBag.AttributeValues, RequestContext.CurrentPerson );
+                    schedule.SetPublicAttributeValues( scheduleBag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
 
                     // Force the cache to refresh if the only thing that
                     // changed was the schedule content.
@@ -750,7 +750,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 IsModerationRequired = action.IsModerationRequired,
                 IsResponseAnonymous = action.IsResponseAnonymous,
                 ResponseVisualizer = action.ResponseVisualEntityType.ToListItemBag(),
-                AttributeValues = action.GetPublicAttributeValuesForEdit( null, false, IsAttributeValueIncluded )
+                AttributeValues = action.GetPublicAttributeValuesForEdit( null, enforceSecurity: false, attributeFilter: IsAttributeValueIncluded )
             };
         }
 
@@ -860,7 +860,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             {
                 action.LoadAttributes( rockContext );
 
-                action.SetPublicAttributeValues( box.Bag.AttributeValues, null, false );
+                action.SetPublicAttributeValues( box.Bag.AttributeValues, null, enforceSecurity: false );
             }
 
             return true;
@@ -894,8 +894,8 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 };
 
                 action.LoadAttributes( null );
-                actionType.Attributes = action.GetPublicAttributesForEdit( null, false, IsActionAttributeIncluded );
-                actionType.DefaultAttributeValues = action.GetPublicAttributeValuesForEdit( null, false, IsVisualizerAttributeIncluded );
+                actionType.Attributes = action.GetPublicAttributesForEdit( null, enforceSecurity: false, attributeFilter: IsActionAttributeIncluded );
+                actionType.DefaultAttributeValues = action.GetPublicAttributeValuesForEdit( null, enforceSecurity: false, attributeFilter: IsVisualizerAttributeIncluded );
 
                 actionTypes.Add( actionType );
             }
@@ -927,8 +927,8 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 };
 
                 action.LoadAttributes( null );
-                visualizerType.Attributes = action.GetPublicAttributesForEdit( null, false, IsVisualizerAttributeIncluded );
-                visualizerType.DefaultAttributeValues = action.GetPublicAttributeValuesForEdit( null, false, IsVisualizerAttributeIncluded );
+                visualizerType.Attributes = action.GetPublicAttributesForEdit( null, enforceSecurity: false, attributeFilter: IsVisualizerAttributeIncluded );
+                visualizerType.DefaultAttributeValues = action.GetPublicAttributeValuesForEdit( null, enforceSecurity: false, attributeFilter: IsVisualizerAttributeIncluded );
 
                 visualizerTypes.Add( visualizerType );
             }

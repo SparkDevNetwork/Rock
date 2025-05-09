@@ -15,10 +15,19 @@
 // </copyright>
 //
 
+using Rock.Security;
+
 namespace Rock.Model
 {
     public partial class GroupMemberRequirement
     {
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => GroupRequirement ?? base.ParentAuthority;
+
+        #endregion
+
         #region Public Methods
 
         /// <summary>

@@ -97,10 +97,14 @@ namespace Rock.Blocks.Lms
             var options = new LearningParticipantDetailOptionsBag();
 
             var learningClass = new LearningClassService( RockContext )
-                .Get( PageParameter( PageParameterKey.LearningClassId ), !PageCache.Layout.Site.DisablePredictableIds );
+                .GetInclude(
+                    PageParameter( PageParameterKey.LearningClassId ),
+                    c => c.LearningCourse.LearningProgram,
+                    !PageCache.Layout.Site.DisablePredictableIds );
 
             options.ClassRoles = new LearningClassService( RockContext ).GetClassRoles( learningClass.Id )?.ToListItemBagList();
             options.CanViewGrades = learningClass.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
+            options.ConfigurationMode = learningClass.LearningCourse.LearningProgram.ConfigurationMode;
 
             return options;
         }
@@ -212,7 +216,7 @@ namespace Rock.Blocks.Lms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -231,7 +235,7 @@ namespace Rock.Blocks.Lms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -271,7 +275,7 @@ namespace Rock.Blocks.Lms
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -571,19 +575,19 @@ namespace Rock.Blocks.Lms
             var canViewGrades = entity.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
 
             // Return all activities for the course.
-            var gridBuilder = new GridBuilder<LearningActivityCompletion>()
+            var gridBuilder = new GridBuilder<LearningClassActivityCompletion>()
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "name", a => a.LearningActivity.Name )
-                .AddField( "type", a => a.LearningActivity.ActivityComponentId )
-                .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.IconCssClass )
-                .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.HighlightColor )
-                .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.Name )
+                .AddTextField( "name", a => a.LearningClassActivity.Name )
+                .AddField( "type", a => a.LearningClassActivity.LearningActivity.ActivityComponentId )
+                .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningClassActivity.LearningActivity.ActivityComponentId ).Value.Value.IconCssClass )
+                .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningClassActivity.LearningActivity.ActivityComponentId ).Value.Value.HighlightColor )
+                .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningClassActivity.LearningActivity.ActivityComponentId ).Value.Value.Name )
                 .AddField( "dateCompleted", a => a.CompletedDateTime )
                 .AddField( "dateAvailable", a => a.AvailableDateTime )
                 .AddField( "dueDate", a => a.DueDate )
                 .AddField( "isPastDue", a => a.DueDate != null && a.DueDate >= now && !a.CompletedDateTime.HasValue )
                 .AddField( "isAvailableNow", a => a.AvailableDateTime != null && now >= a.AvailableDateTime )
-                .AddTextField( "grade", a => !canViewGrades || a.RequiresGrading || a.LearningActivity.Points == 0 ? null : a.GetGradeText( gradeScales ) );
+                .AddTextField( "grade", a => !canViewGrades || a.RequiresGrading || a.LearningClassActivity.Points == 0 ? null : a.GetGradeText( gradeScales ) );
 
             return ActionOk( gridBuilder.Build( learningPlan ) );
         }

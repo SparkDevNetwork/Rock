@@ -1,0 +1,15 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+        <JavaScriptAnchor @click="onClick">This link can run code, but does not link to a page.</JavaScriptAnchor>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const onClick = (): void => alert("Link Clicked");
+    const importCode = getSfcControlImportPath("javaScriptAnchor");
+    const exampleCode = `<JavaScriptAnchor @click="onClick">Link Text</JavaScriptAnchor>`;
+</script>

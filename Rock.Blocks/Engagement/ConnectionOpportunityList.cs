@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -112,7 +112,7 @@ namespace Rock.Blocks.Engagement
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "ConnectionOpportunityId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["ConnectionOpportunityId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } )
             };
         }
 
@@ -120,6 +120,13 @@ namespace Rock.Blocks.Engagement
         protected override IQueryable<ConnectionOpportunity> GetListQueryable( RockContext rockContext )
         {
             return base.GetListQueryable( rockContext );
+        }
+
+        /// <inheritdoc/>
+        protected override List<ConnectionOpportunity> GetListItems( IQueryable<ConnectionOpportunity> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+            return items.Where( co => co.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
         }
 
         /// <inheritdoc/>
@@ -134,6 +141,12 @@ namespace Rock.Blocks.Engagement
                 .AddTextField( "publicName", a => a.PublicName )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddAttributeFields( GetGridAttributes() );
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<ConnectionOpportunity> GetOrderedListQueryable( IQueryable<ConnectionOpportunity> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( co => co.Order ).ThenBy( co => co.Name );
         }
 
         #endregion

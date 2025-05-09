@@ -38,7 +38,7 @@ namespace Rock.Blocks.Lms
     /// <remarks>
     ///     <para>
     ///         This list block was created for use by multiple pages in different contexts.
-    ///         It's design to be used on a page with a Learning Program Detail block or
+    ///         It's designed to be used on a page with a Learning Program Detail block or
     ///         on a page with a Course Detail block which provides additional filtering.
     ///     </para>
     /// </remarks>
@@ -50,31 +50,31 @@ namespace Rock.Blocks.Lms
 
     #region Block Attributes
 
-    [CustomDropdownListField(
+    [BooleanField(
         "Show Location Column",
         Key = AttributeKey.ShowLocationColumn,
-        Description = "Select 'Show' to show the 'Location'.",
-        ListSource = ShowHideListSource,
+        Description = "Determines if the Location column should be visible.",
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         IsRequired = true,
-        DefaultValue = "No",
+        DefaultBooleanValue = false,
         Order = 1 )]
 
-    [CustomDropdownListField(
+    [BooleanField(
         "Show Schedule Column",
         Key = AttributeKey.ShowScheduleColumn,
-        Description = "Select 'Show' to show the 'Schedule' column.",
-        ListSource = ShowHideListSource,
+        Description = "Determines if the Schedule column should be visible.",
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         IsRequired = true,
-        DefaultValue = "No",
+        DefaultBooleanValue = false,
         Order = 2 )]
 
-    [CustomDropdownListField(
+    [BooleanField(
         "Show Semester Column",
         Key = AttributeKey.ShowSemesterColumn,
-        Description = "Select 'Show' to show the 'Semester' column when the configuration is 'Academic Calendar'.",
-        ListSource = ShowHideListSource,
+        Description = "Determines if the Semester column should be visible when the configuration is 'Academic Calendar'.",
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         IsRequired = true,
-        DefaultValue = "No",
+        DefaultBooleanValue = false,
         Order = 3 )]
 
     [LinkedPage( "Detail Page",
@@ -127,9 +127,9 @@ namespace Rock.Blocks.Lms
         {
             var box = new ListBlockBox<LearningClassListOptionsBag>();
 
-            var isEditEnabled = GetIsEditEnabled();
-            box.IsAddEnabled = isEditEnabled;
-            box.IsDeleteEnabled = isEditEnabled;
+            var isAddEnabled = GetIsAddEnabled();
+            box.IsAddEnabled = isAddEnabled;
+            box.IsDeleteEnabled = true;
             box.ExpectedRowCount = 5;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -177,9 +177,12 @@ namespace Rock.Blocks.Lms
         /// Determines if the add button should be enabled in the grid.
         /// <summary>
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsEditEnabled()
+        private bool GetIsAddEnabled()
         {
-            var entity = new LearningClass();
+            var entity = new LearningClass
+            {
+                LearningCourseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId )
+            };
 
             return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
@@ -214,7 +217,7 @@ namespace Rock.Blocks.Lms
                 .Include( c => c.LearningCourse.LearningProgram )
                 .Include( c => c.LearningSemester )
                 .Include( c => c.LearningParticipants )
-                .Include( c => c.LearningParticipants.Select( p => p.LearningActivities ));
+                .Include( c => c.LearningParticipants.Select( p => p.LearningClassActivityCompletions ));
 
             var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
             if ( programId > 0 )
@@ -234,14 +237,21 @@ namespace Rock.Blocks.Lms
                 baseQuery = baseQuery.Where( c => c.IsActive );
             }
 
-            var currentPerson = GetCurrentPerson();
-            return baseQuery.ToList().Where( c => c.IsAuthorized( Authorization.VIEW, currentPerson ) ).AsQueryable();
+            return baseQuery;
         }
 
         /// <inheritdoc/>
         protected override IQueryable<LearningClass> GetOrderedListQueryable( IQueryable<LearningClass> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( c => c.LearningCourse.Name ).ThenBy( c => c.Name );
+        }
+
+        /// <inheritdoc/>
+        protected override List<LearningClass> GetListItems( IQueryable<LearningClass> queryable, RockContext rockContext )
+        {
+            return queryable.ToList()
+                .Where( lc => lc.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .ToList();
         }
 
         /// <inheritdoc/>
@@ -376,7 +386,7 @@ namespace Rock.Blocks.Lms
                 .Queryable()
                 .Any( p =>
                     p.LearningClassId == classId
-                    && p.LearningActivities.Any() );
+                    && p.LearningClassActivityCompletions.Any() );
 
             return ActionOk( hasCompletions );
         }

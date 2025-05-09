@@ -3,7 +3,7 @@
     <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
-    <NotificationBox v-if="warningMessage" alertType="warning">{{ warningMessage }}</NotificationBox>
+    <NotificationBox v-if="warningMessage" alertType="warning" v-html="warningMessage"></NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"

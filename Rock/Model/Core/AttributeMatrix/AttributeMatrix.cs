@@ -49,6 +49,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AttributeMatrix" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "028228F0-B1D9-4DE5-9E6A-F898C34DDAB8")]
     public partial class AttributeMatrix : Model<AttributeMatrix>
     {

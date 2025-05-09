@@ -28,6 +28,7 @@ using Rock.Enums.CheckIn;
 using Rock.Enums.Group;
 using Rock.Lava;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -39,6 +40,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupType" )]
     [DataContract]
+    [CodeGenerateRest]
     [EnableAttributeQualification( nameof( Id ) )]
     [Rock.SystemGuid.EntityTypeGuid( "0DD30B04-01CF-4B38-8E83-BE661E2F7286" )]
     public partial class GroupType : Model<GroupType>, IOrdered, ICacheable
@@ -787,6 +789,58 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public bool IsConcurrentCheckInPrevented { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether groups of this type are allowed to participate in the chat system as a chat channel.
+        /// </summary>
+        /// <value>
+        /// Whether groups of this type are allowed to participate in the chat system as a chat channel.
+        /// </value>
+        [DataMember]
+        public bool IsChatAllowed { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether all groups of this type have the chat feature enabled by default. This can be overridden
+        /// by the value of <see cref="Group.IsChatEnabledOverride"/>.
+        /// </summary>
+        /// <value>
+        /// Whether all groups of this type have the chat feature enabled by default.
+        /// </value>
+        [DataMember]
+        public bool IsChatEnabledForAllGroups { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether individuals are allowed to leave chat channels of this type. If set to
+        /// <see langword="false"/>, then they will only be allowed to mute the channel. This can be overridden by the
+        /// value of <see cref="Group.IsLeavingChatChannelAllowedOverride"/>.
+        /// </summary>
+        /// <value>
+        /// Whether individuals are allowed to leave chat channels of this type.
+        /// </value>
+        [DataMember]
+        public bool IsLeavingChatChannelAllowed { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether chat channels of this type are public. A public channel is visible to everyone when
+        /// performing a search. This also implies that the channel may be joined by any person via the chat application.
+        /// This can be overridden by the value of <see cref="Group.IsChatChannelPublicOverride"/>.
+        /// </summary>
+        /// <value>
+        /// Whether chat channels of this type are public.
+        /// </value>
+        [DataMember]
+        public bool IsChatChannelPublic { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether chat channels of this type are always shown in the channel list even if the person has
+        /// not joined the channel. This also implies that the channel may be joined by any person via the chat
+        /// application. This can be overridden by the value of <see cref="Group.IsChatChannelAlwaysShownOverride"/>.
+        /// </summary>
+        /// <value>
+        /// Whether chat channels of this type are always shown in the channel list.
+        /// </value>
+        [DataMember]
+        public bool IsChatChannelAlwaysShown { get; set; }
 
         #endregion Entity Properties
 

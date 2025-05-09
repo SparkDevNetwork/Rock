@@ -36,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Location" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "0D6410AD-C83C-47AC-AF3D-616D09EDF63B")]
     public partial class Location : Model<Location>, IHasActiveFlag, ICacheable
     {
@@ -331,6 +332,14 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? FirmRoomThreshold { get; set; }
+
+        /// <summary>
+        /// The identifier of the beacon that is associated with this location.
+        /// This is typically used with Bluetooth proximity beacons and allows
+        /// the <see cref="Location"/> to be determined from a beacon.
+        /// </summary>
+        [DataMember]
+        public int? BeaconId { get; set; }
 
         #endregion Entity Properties
 

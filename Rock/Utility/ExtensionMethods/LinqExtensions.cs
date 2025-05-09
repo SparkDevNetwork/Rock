@@ -585,6 +585,8 @@ namespace Rock
         /// <param name="rockContext">The rock context.</param>
         /// <param name="campusId">The campus identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "17.0" )]
+        [Obsolete( "The EntityCampusFilter feature is no longer used and will be removed in the future.")]
         public static IQueryable<T> WhereCampus<T>( this IQueryable<T> source, RockContext rockContext, int campusId ) where T : Entity<T>, new()
         {
             int entityTypeId = EntityTypeCache.GetId( typeof( T ) ) ?? 0;

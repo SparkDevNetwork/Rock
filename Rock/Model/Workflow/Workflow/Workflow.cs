@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "Workflow" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.WORKFLOW )]
     public partial class Workflow : Model<Workflow>
     {

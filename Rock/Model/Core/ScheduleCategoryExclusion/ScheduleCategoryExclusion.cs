@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "ScheduleCategoryExclusion" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "E04681EB-7A85-441B-B794-82B025FFB5D4")]
     public partial class ScheduleCategoryExclusion : Model<ScheduleCategoryExclusion>, ICacheable
     {

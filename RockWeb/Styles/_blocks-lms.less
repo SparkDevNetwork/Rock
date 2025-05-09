@@ -15,6 +15,7 @@
         2.2.4 File Upload
         2.2.5 Video Watch
     3. Course Detail (internal)
+    4. Learning Plan Grid (internal)
 */
 
 
@@ -78,6 +79,11 @@
 
   /* Change order for smaller screens */
   @media (max-width: 768px) {
+   
+    .workspace-navigation-pane .custom-select-expand-icon {
+      margin-right: var(--spacing-large);
+    }
+
     .workspace-class-overview {
       display: flex;
       flex-direction: column;
@@ -258,23 +264,35 @@
     .workspace-block-content {
         display: flex;
     }
+
+    .workspace-navigation-pane {
+      width: 33%;
+      margin-right: var(--spacing-large);
+    }
+
+    .workspace-main-content {
+      width: 67%;
+    }
   }
 
   .workspace-navigation-pane {
-      width: 33%;
       min-width: 300px;
-      margin-right: var(--spacing-large);
       align-self: baseline;
       border-radius: var(--rounded-large) !important;
   }
 
   .workspace-main-content {
-      width: 67%;
       padding: var(--spacing-large);
       border: 1px solid var(--color-interface-soft);
       border-radius: var(--rounded-large);
       display: flex;
       flex-direction: column;
+  }
+
+  .course-completed-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .workspace-main-content-header {
@@ -644,7 +662,7 @@
       }
     }
 
-    // 2.2.3 Acknowledgement
+    // 2.2.3 Acknowledgment
     // -------------------------
 
     .header-content-section {
@@ -662,7 +680,7 @@
     .grading-section {
       margin-top: 12px;
       display: grid;
-      grid-template-columns: 50%;
+      grid-template-columns: 50% 50%;
     }
 
     .file-section {
@@ -675,6 +693,9 @@
         grid-column: 2;
     }
 
+    .lms-completion-container .file-upload-section {
+        margin-top: var(--spacing-medium);
+    }
 
     // 2.2.5 Video Watch
     // -------------------------
@@ -725,9 +746,22 @@
     }
 
 
-// 3. Course Detail (internal)
-// -------------------------
-.course-detail-content {
-    // Ensure there's enough height to push the Edit button below the billboard/image.
-    min-height: 240px;
-}
+    // 3. Course Detail (internal)
+    // -------------------------
+    .course-detail-content {
+        // Ensure there's enough height to push the Edit button below the billboard/image.
+        min-height: 240px;
+    }
+
+
+    // 4. Learning Plan Grid (internal)
+    // -------------------------
+    .student-comments-icon {
+      color: var(--color-info-strong);
+      background-color: var(--color-info-soft);
+    }
+
+    .attention-needed-icon {
+      color: var(--color-warning-strong);
+      background-color: var(--color-warning-soft);
+    }

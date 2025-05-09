@@ -194,6 +194,7 @@ namespace Rock.Blocks.Event
             return new GridBuilder<EventCalendarItem>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
+                .AddTextField( "eventItemIdKey", a => a.EventItem.IdKey )
                 .AddDateTimeField( "date", a => a.EventItem?.NextStartDateTime )
                 .AddTextField( "name", a => a.EventItem?.Name )
                 .AddField( "occurrences", a => GetOccurrences( a.EventItem ) )
@@ -221,7 +222,7 @@ namespace Rock.Blocks.Event
                 var gridAttributes = GetGridAttributes();
                 var gridAttributeIds = gridAttributes.Select( a => a.Id ).ToList();
 
-                Helper.LoadFilteredAttributes( items.Cast<IHasAttributes>(), rockContext, a => gridAttributeIds.Contains( a.Id ) );
+                Helper.LoadFilteredAttributes( items, rockContext, a => gridAttributeIds.Contains( a.Id ) );
             }
 
             return GetGridBuilder().Build( items );

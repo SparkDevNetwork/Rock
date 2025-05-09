@@ -14,13 +14,11 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Lava;
-using Rock.Web.Cache;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -208,5 +206,12 @@ namespace Rock.Model
         }
 
         #endregion Methods
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => Registration ?? base.ParentAuthority;
+
+        #endregion
     }
 }

@@ -51,7 +51,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Peer network group type guid
         /// </summary>
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         [Obsolete( "Peer Networks of this Group Type have been replaced with a formal Peer Network feature." )]
         public const string GROUPTYPE_PEER_NETWORK = "8C0E5852-F08F-4327-9AA5-87800A6AB53E";
 
@@ -119,5 +119,20 @@ namespace Rock.SystemGuid
         /// Sign-up Group group type guid
         /// </summary>
         public const string GROUPTYPE_SIGNUP_GROUP = "499B1367-06B3-4538-9D56-56D53F55DCB1";
+
+        /// <summary>
+        /// Chat Direct Message group type guid
+        /// </summary>
+        public const string GROUPTYPE_CHAT_DIRECT_MESSAGE = "DFDC14A3-D1DC-4342-A012-5CE9E8994B5E";
+
+        /// <summary>
+        /// Chat Shared Channel group type guid
+        /// </summary>
+        public const string GROUPTYPE_CHAT_SHARED_CHANNEL = "268D4802-24C7-4891-890E-71313BEE17B1";
+
+        /// <summary>
+        /// Hidden Application Group group type guid
+        /// </summary>
+        public const string GROUPTYPE_HIDDEN_APPLICATION_GROUP = "2C6F2847-B404-4595-AB35-CE42F2303868";
     }
 }

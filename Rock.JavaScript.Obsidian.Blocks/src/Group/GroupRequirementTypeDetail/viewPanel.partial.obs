@@ -70,7 +70,7 @@
             valueBuilder.addTextValue("Summary", props.modelValue.summary);
         }
 
-        valueBuilder.addTextValue("Can Expire", asTrueOrFalseString(props.modelValue.requirementCheckType));
+        valueBuilder.addTextValue("Can Expire", asTrueOrFalseString(props.modelValue.canExpire));
 
         let duedate = props.options.dueDateOptions?.find(d => d.value == props.modelValue?.dueDateType)?.text;
         if (duedate) {
@@ -107,13 +107,13 @@
         return valueBuilder.build();
     });
 
-        // #endregion
+    // #endregion
 
-        // #region Functions
+    // #region Functions
 
-        // #endregion
+    // #endregion
 
-        // #region Event Handlers
+    // #region Event Handlers
 
-        // #endregion
+    // #endregion
 </script>

@@ -24,32 +24,42 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.ServiceModel.Channels;
 using System.Text;
+#if WEBFORMS
 using System.Web;
 using System.Web.Http;
+#endif
+
+using Microsoft.AspNetCore.Mvc;
 
 using Newtonsoft.Json;
 
 using Rock;
 using Rock.Common.Tv;
 using Rock.Data;
-using Rock.Logging;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.SystemGuid;
+using Rock.Security;
 using Rock.Tv;
 using Rock.Tv.Classes;
 using Rock.Utility;
 using Rock.Web.Cache;
 
-using AppleTvPageSettings = Rock.Tv.AppleTvPageSettings;
+#if WEBFORMS
+using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
+using HttpGetAttribute = System.Web.Http.HttpGetAttribute;
+using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
+using IActionResult = System.Web.Http.IHttpActionResult;
+using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
+using RouteAttribute = System.Web.Http.RouteAttribute;
+#endif
 
 namespace Rock.Rest.v2.Controllers
 {
-
     /// <summary>
     /// Provides API interfaces for TV applications to use when communicating with Rock.
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
+    [RoutePrefix( "api/v2/tv" )]
     [Rock.SystemGuid.RestControllerGuid( "38541064-21B0-4614-A97C-5C9231EBCB4E" )]
     public class TvController : ApiControllerBase
     {
@@ -63,138 +73,35 @@ namespace Rock.Rest.v2.Controllers
         /// <summary>
         /// Get's the launch packet for the application
         /// </summary>
-        /// <seealso cref="Rock.Rest.ApiControllerBase" />
+        /// <returns>The data that describes the application launch details.</returns>
         [HttpGet]
-        [System.Web.Http.Route( "api/v2/tv/apple/GetLaunchPacket" )]
-        [System.Web.Http.Route( "api/v2/tv/roku/GetLaunchPacket" )]
+        [Route( "apple/GetLaunchPacket" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AppleLaunchPacket ) )]
         [Rock.SystemGuid.RestActionGuid( "55D648CD-0533-4FE6-99B1-CE301728DB73" )]
-        public IHttpActionResult GetLaunchPacket()
-        {
-            // Read site Id from the request header
-            var siteId = this.Request.GetHeader( "X-Rock-App-Id" ).AsIntegerOrNull();
+        public IActionResult GetAppleLaunchPacket() => GetCommonLaunchPacket();
 
-            // Get device data from the request header
-            // Get device data
-            var deviceData = JsonConvert.DeserializeObject<DeviceData>( this.Request.GetHeader( "X-Rock-DeviceData" ) );
-            if ( deviceData == null )
-            {
-                StatusCode( HttpStatusCode.InternalServerError );
-            }
-
-            if ( !siteId.HasValue )
-            {
-                return NotFound();
-            }
-
-            var site = SiteCache.Get( siteId.Value );
-
-            // If the site was not found then return 404
-            if ( site == null )
-            {
-                return NotFound();
-            }
-
-            // Return the launch packet
-            try
-            {
-                var rockContext = new RockContext();
-                var person = GetPerson( rockContext );
-
-                var launchPacket = new AppleLaunchPacket();
-                launchPacket.EnablePageViews = site.EnablePageViews;
-
-                if ( person != null )
-                {
-                    var principal = ControllerContext.Request.GetUserPrincipal();
-
-                    launchPacket.CurrentPerson = TvHelper.GetTvPerson( person );
-                    launchPacket.CurrentPerson.AuthToken = TvHelper.GetAuthenticationTokenFromUsername( principal.Identity.Name );
-
-                    UserLoginService.UpdateLastLogin( principal.Identity.Name );
-                }
-
-                // Get or create the personal device.
-                var tvDeviceTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_TV ).Id;
-                var personalDeviceService = new PersonalDeviceService( rockContext );
-                var personalDevice = personalDeviceService.Queryable()
-                    .Where( a => a.DeviceUniqueIdentifier == deviceData.DeviceIdentifier && a.PersonalDeviceTypeValueId == tvDeviceTypeValueId && a.SiteId == site.Id )
-                    .FirstOrDefault();
-
-                if ( personalDevice == null )
-                {
-                    personalDevice = new PersonalDevice
-                    {
-                        DeviceUniqueIdentifier = deviceData.DeviceIdentifier,
-                        PersonalDeviceTypeValueId = tvDeviceTypeValueId,
-                        SiteId = site.Id,
-                        PersonAliasId = person?.PrimaryAliasId,
-                        NotificationsEnabled = true,
-                        Manufacturer = deviceData.Manufacturer,
-                        Model = deviceData.Model,
-                        Name = deviceData.Name,
-                        IsActive = true,
-                        LastSeenDateTime = RockDateTime.Now,
-                        DeviceVersion = deviceData.Version
-                    };
-
-                    personalDeviceService.Add( personalDevice );
-                    rockContext.SaveChanges();
-                }
-                else
-                {
-                    // A change is determined as one of the following:
-                    // 1) A change in Name, Manufacturer, Model, or NotificationsEnabled.
-                    // 2) Device not being active.
-                    // 3) Not seen in 24 hours.
-                    // 4) Signed in with a different person.
-                    var hasDeviceChanged = !personalDevice.IsActive
-                        || personalDevice.Name != deviceData.Name
-                        || personalDevice.Manufacturer != deviceData.Manufacturer
-                        || personalDevice.Model != deviceData.Model
-                        || !personalDevice.LastSeenDateTime.HasValue
-                        || personalDevice.LastSeenDateTime.Value.AddDays( 1 ) < RockDateTime.Now
-                        || ( person != null && personalDevice.PersonAliasId != person.PrimaryAliasId );
-
-                    if ( hasDeviceChanged )
-                    {
-                        personalDevice.IsActive = true;
-                        personalDevice.Manufacturer = deviceData.Manufacturer;
-                        personalDevice.Model = deviceData.Model;
-                        personalDevice.Name = deviceData.Name;
-                        personalDevice.LastSeenDateTime = RockDateTime.Now;
-
-                        // Update the person tied to the device, but never blank it out. 
-                        if ( person != null && personalDevice.PersonAliasId != person.PrimaryAliasId )
-                        {
-                            personalDevice.PersonAliasId = person.PrimaryAliasId;
-                        }
-
-                        rockContext.SaveChanges();
-                    }
-                }
-
-                launchPacket.PersonalDeviceGuid = personalDevice.Guid;
-                launchPacket.HomepageGuid = site.DefaultPage.Guid;
-
-                launchPacket.RockVersion = VersionInfo.VersionInfo.GetRockProductVersionNumber();
-
-                return Ok( launchPacket );
-            }
-            catch ( Exception )
-            {
-                // Ooops...
-                return StatusCode( HttpStatusCode.InternalServerError );
-            }
-        }
+        /// <summary>
+        /// Get's the launch packet for the application
+        /// </summary>
+        /// <returns>The data that describes the application launch details.</returns>
+        [HttpGet]
+        [Route( "roku/GetLaunchPacket" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AppleLaunchPacket ) )]
+        [Rock.SystemGuid.RestActionGuid( "1E8C3F94-98F0-4D2D-A2B3-FA304C77C7C0" )]
+        public IActionResult GetRokuLaunchPacket() => GetCommonLaunchPacket();
 
         /// <summary>
         /// Gets the application JavaScript for the Apple TV App. Note this needs the application id in the
         /// querystring as this is not being called by the default HttpClient in the shell;
         /// </summary>
         /// <param name="applicationId">The application is (site id).</param>
-        /// <returns></returns>
+        /// <returns>The JavaScript that will drive the application.</returns>
         [HttpGet]
-        [System.Web.Http.Route( "api/v2/tv/apple/GetApplicationJavaScript/{applicationId}" )]
+        [Route( "apple/GetApplicationJavaScript/{applicationId}" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Description = "A raw string with the application JavaScript." )]
         [Rock.SystemGuid.RestActionGuid( "A3792A52-0F64-4F55-9C9C-7E02AA96D0F9" )]
         public HttpResponseMessage GetApplicationScript( int applicationId )
         {
@@ -230,9 +137,11 @@ namespace Rock.Rest.v2.Controllers
         /// Gets the TVML for the provided page.
         /// </summary>
         /// <param name="pageGuid">The page unique identifier.</param>
-        /// <returns></returns>
+        /// <returns>The TV Markup Language content for the requested page.</returns>
         [HttpGet]
-        [System.Web.Http.Route( "api/v2/tv/apple/GetTvmlForPage/{pageGuid}" )]
+        [Route( "apple/GetTvmlForPage/{pageGuid}" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AppleTvPageSettings ) )]
         [Rock.SystemGuid.RestActionGuid( "AE76F738-7380-48EB-85BD-C42102E2A4A0" )]
         public HttpResponseMessage GetTvmlForPage( Guid pageGuid )
         {
@@ -359,14 +268,16 @@ namespace Rock.Rest.v2.Controllers
         /// <summary>
         /// Posts the interactions.
         /// </summary>
-        /// <param name="sessions">The sessions.</param>
+        /// <param name="sessions">The sessions that need to be recorded as interactions..</param>
         /// <param name="personalDeviceGuid">The personal device unique identifier.</param>
-        /// <returns></returns>
-        [System.Web.Http.Route( "api/v2/tv/SaveInteractions/{personalDeviceGuid}" )]
+        /// <returns>An empty response.</returns>
         [HttpPost]
+        [Route( "SaveInteractions/{personalDeviceGuid}" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Description = "An empty response indicates the interactions were recorded." )]
         [Rock.SystemGuid.RestActionGuid( "624CDFBB-4688-4312-BCCD-4AEAABB49523" )]
-        public IHttpActionResult PostInteractions( [FromBody] List<TvInteractionSession> sessions, Guid? personalDeviceGuid = null )
+        public IActionResult PostInteractions( [FromBody] List<TvInteractionSession> sessions, Guid? personalDeviceGuid = null )
         {
             var person = GetPerson();
             var ipAddress = System.Web.HttpContext.Current?.Request?.UserHostAddress;
@@ -560,9 +471,12 @@ namespace Rock.Rest.v2.Controllers
         /// <summary>
         /// Starts the authentication session.
         /// </summary>
-        /// <returns></returns>
+        /// <param name="siteId">The identifier of the site/application that the authentication will be completed on.</param>
+        /// <returns>An object that can be used to start an authentication session.</returns>
         [HttpGet]
-        [System.Web.Http.Route( "api/v2/tv/StartAuthenticationSession/{siteId}" )]
+        [Route( "StartAuthenticationSession/{siteId}" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AuthCodeResponse ) )]
         [Rock.SystemGuid.RestActionGuid( "0747D3BF-8BCF-4C4D-A022-4158694DDB1B" )]
         public HttpResponseMessage StartAuthenicationSession( int siteId )
         {
@@ -656,10 +570,15 @@ namespace Rock.Rest.v2.Controllers
         /// Gets the Scenegraph Component Library that represents a page.
         /// </summary>
         /// <param name="pageGuid">The Guid of the page to load.</param>
+        /// <returns>A compressed ZIP file that contains the component library.</returns>
         [HttpGet]
-        [System.Web.Http.Route( "api/v2/tv/GetRokuPageComponent/{pageGuid}" )]
-        [Rock.SystemGuid.RestActionGuid( "103BA971-E7BB-41DE-A12A-1C8B8BF85AD7" )]
+        [Route( "GetRokuPageComponent/{pageGuid}" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Description = "A zip-file that contains the components required for the page to load." )]
+        [ProducesResponseType( HttpStatusCode.NotFound, Description = "The requested page was not found." )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized, Description = "Authenticated user does not have access tot he requested page." )]
+        [Rock.SystemGuid.RestActionGuid( "103BA971-E7BB-41DE-A12A-1C8B8BF85AD7" )]
         public HttpResponseMessage GetRokuPageComponent( Guid pageGuid )
         {
             var response = new HttpResponseMessage();
@@ -807,9 +726,11 @@ namespace Rock.Rest.v2.Controllers
         /// </summary>
         /// <param name="siteId">The site identifier.</param>
         /// <param name="code">The code.</param>
-        /// <returns></returns>
+        /// <returns>An object that describes if the authentication was successful or not.</returns>
         [HttpGet]
-        [System.Web.Http.Route( "api/v2/tv/CheckAuthenticationSession/{siteId}/{code}" )]
+        [Route( "CheckAuthenticationSession/{siteId}/{code}" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AuthCodeCheckResponse ) )]
         [Rock.SystemGuid.RestActionGuid( "35C60489-936F-42F9-8617-18C959ABDB0C" )]
         public HttpResponseMessage CheckAuthenticationSession( int siteId, string code )
         {
@@ -892,6 +813,134 @@ namespace Rock.Rest.v2.Controllers
         }
 
         #region Private Methods
+
+        /// <summary>
+        /// Get's the launch packet for the application
+        /// </summary>
+        private IActionResult GetCommonLaunchPacket()
+        {
+            // Read site Id from the request header
+            var siteId = this.Request.GetHeader( "X-Rock-App-Id" ).AsIntegerOrNull();
+
+            // Get device data from the request header
+            // Get device data
+            var deviceData = JsonConvert.DeserializeObject<DeviceData>( this.Request.GetHeader( "X-Rock-DeviceData" ) );
+            if ( deviceData == null )
+            {
+                StatusCode( HttpStatusCode.InternalServerError );
+            }
+
+            if ( !siteId.HasValue )
+            {
+                return NotFound();
+            }
+
+            var site = SiteCache.Get( siteId.Value );
+
+            // If the site was not found then return 404
+            if ( site == null )
+            {
+                return NotFound();
+            }
+
+            // Return the launch packet
+            try
+            {
+                var rockContext = new RockContext();
+                var person = GetPerson( rockContext );
+
+                var launchPacket = new AppleLaunchPacket();
+                launchPacket.EnablePageViews = site.EnablePageViews;
+
+                if ( person != null )
+                {
+                    var principal = ControllerContext.Request.GetUserPrincipal();
+
+                    launchPacket.CurrentPerson = TvHelper.GetTvPerson( person );
+                    launchPacket.CurrentPerson.AuthToken = TvHelper.GetAuthenticationTokenFromUsername( principal.Identity.Name );
+
+                    UserLoginService.UpdateLastLogin(
+                        new UpdateLastLoginArgs {
+                            UserName = principal.Identity.Name,
+                            SourceSiteIdOverride = site.Id,
+                            ShouldSkipWritingHistoryLog = true
+                        }
+                    );
+                }
+
+                // Get or create the personal device.
+                var tvDeviceTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_TV ).Id;
+                var personalDeviceService = new PersonalDeviceService( rockContext );
+                var personalDevice = personalDeviceService.Queryable()
+                    .Where( a => a.DeviceUniqueIdentifier == deviceData.DeviceIdentifier && a.PersonalDeviceTypeValueId == tvDeviceTypeValueId && a.SiteId == site.Id )
+                    .FirstOrDefault();
+
+                if ( personalDevice == null )
+                {
+                    personalDevice = new PersonalDevice
+                    {
+                        DeviceUniqueIdentifier = deviceData.DeviceIdentifier,
+                        PersonalDeviceTypeValueId = tvDeviceTypeValueId,
+                        SiteId = site.Id,
+                        PersonAliasId = person?.PrimaryAliasId,
+                        NotificationsEnabled = true,
+                        Manufacturer = deviceData.Manufacturer,
+                        Model = deviceData.Model,
+                        Name = deviceData.Name,
+                        IsActive = true,
+                        LastSeenDateTime = RockDateTime.Now,
+                        DeviceVersion = deviceData.Version
+                    };
+
+                    personalDeviceService.Add( personalDevice );
+                    rockContext.SaveChanges();
+                }
+                else
+                {
+                    // A change is determined as one of the following:
+                    // 1) A change in Name, Manufacturer, Model, or NotificationsEnabled.
+                    // 2) Device not being active.
+                    // 3) Not seen in 24 hours.
+                    // 4) Signed in with a different person.
+                    var hasDeviceChanged = !personalDevice.IsActive
+                        || personalDevice.Name != deviceData.Name
+                        || personalDevice.Manufacturer != deviceData.Manufacturer
+                        || personalDevice.Model != deviceData.Model
+                        || !personalDevice.LastSeenDateTime.HasValue
+                        || personalDevice.LastSeenDateTime.Value.AddDays( 1 ) < RockDateTime.Now
+                        || ( person != null && personalDevice.PersonAliasId != person.PrimaryAliasId );
+
+                    if ( hasDeviceChanged )
+                    {
+                        personalDevice.IsActive = true;
+                        personalDevice.Manufacturer = deviceData.Manufacturer;
+                        personalDevice.Model = deviceData.Model;
+                        personalDevice.Name = deviceData.Name;
+                        personalDevice.LastSeenDateTime = RockDateTime.Now;
+
+                        // Update the person tied to the device, but never blank it out. 
+                        if ( person != null && personalDevice.PersonAliasId != person.PrimaryAliasId )
+                        {
+                            personalDevice.PersonAliasId = person.PrimaryAliasId;
+                        }
+
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                launchPacket.PersonalDeviceGuid = personalDevice.Guid;
+                launchPacket.HomepageGuid = site.DefaultPage.Guid;
+
+                launchPacket.RockVersion = VersionInfo.VersionInfo.GetRockProductVersionNumber();
+
+                return Ok( launchPacket );
+            }
+            catch ( Exception )
+            {
+                // Ooops...
+                return StatusCode( HttpStatusCode.InternalServerError );
+            }
+        }
 
         /// <summary>
         /// Randoms the string.

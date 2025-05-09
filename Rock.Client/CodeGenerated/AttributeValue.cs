@@ -152,7 +152,7 @@ namespace Rock.Client
         public int? ValueAsPersonId { get; set; }
 
         /// <summary />
-        public int ValueChecksum { get; set; }
+        public int? ValueChecksum { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

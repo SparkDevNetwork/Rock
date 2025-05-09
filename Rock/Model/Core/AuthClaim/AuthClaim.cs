@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AuthClaim" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "A6924EE0-509B-461E-8127-DBF5C4FE30DA")]
     public partial class AuthClaim : Model<AuthClaim>, IHasActiveFlag
     {

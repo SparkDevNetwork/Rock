@@ -23,8 +23,10 @@ using System.Threading.Tasks;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
+using Rock.Communication.Chat;
 using Rock.Data;
 using Rock.DownhillCss;
 using Rock.Mobile.JsonFields;
@@ -40,7 +42,7 @@ using Authorization = Rock.Security.Authorization;
 namespace Rock.Mobile
 {
     /// <summary>
-    /// 
+    /// A helper class for mobile applications.
     /// </summary>
     public static class MobileHelper
     {
@@ -485,6 +487,8 @@ namespace Rock.Mobile
                 ?? timeZoneMapping.GetValueOrNull( TimeZoneInfo.Local.Id )
                 ?? "GMT";
 
+            var organizationName = GlobalAttributesCache.Value( "OrganizationName" );
+
             // Initialize the base update package settings.
             var package = new UpdatePackage
             {
@@ -506,7 +510,25 @@ namespace Rock.Mobile
                 Auth0ClientDomain = additionalSettings.Auth0Domain,
                 EntraTenantId = additionalSettings.EntraTenantId,
                 EntraClientId = additionalSettings.EntraClientId,
+                OrganizationBeaconGuid = Rock.Web.SystemSettings.GetRockInstanceId(),
+                OrganizationName = organizationName,
             };
+
+            if( ChatHelper.IsChatEnabled )
+            {
+                var sharedChannelGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_SHARED_CHANNEL.AsGuid() );
+                var directMessagingChannelGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE.AsGuid() );
+                var sharedChannelGroupStreamKey = ChatHelper.GetChatChannelTypeKey( sharedChannelGroupTypeId.Value );
+                var directMessagingChannelStreamKey = ChatHelper.GetChatChannelTypeKey( directMessagingChannelGroupTypeId.Value );
+
+                package.ChatConfiguration = new Common.Mobile.ChatConfiguration
+                {
+                    DirectMessageChannelTypeKey = directMessagingChannelStreamKey,
+                    SharedChannelTypeKey = sharedChannelGroupStreamKey,
+                    PublicApiKey = ChatHelper.GetChatConfiguration().ApiKey,
+                    ChatPageGuid = additionalSettings.ChatPageId.HasValue ? PageCache.Get( additionalSettings.ChatPageId.Value )?.Guid : null
+                };
+            }
 
             var useLegacyStyles = additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Legacy || additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Blended;
             var useStandardStyles = additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Standard || additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Blended;
@@ -524,8 +546,9 @@ namespace Rock.Mobile
             package.AppearanceSettings.LockedTabletOrientation = additionalSettings.LockedTabletOrientation;
 
             var applicationColors = additionalSettings.DownhillSettings.ApplicationColors;
+            var darkModeColors = FlipColors( applicationColors );
 
-            if( useStandardStyles )
+            if ( useStandardStyles )
             {
                 // Interface Colors
                 package.AppearanceSettings.PaletteColors.Add( "interface-strongest", applicationColors.InterfaceStrongest );
@@ -536,6 +559,15 @@ namespace Rock.Mobile
                 package.AppearanceSettings.PaletteColors.Add( "interface-softer", applicationColors.InterfaceSofter );
                 package.AppearanceSettings.PaletteColors.Add( "interface-softest", applicationColors.InterfaceSoftest );
 
+                // Dark Interface Colors
+                package.AppearanceSettings.PaletteColors.Add( "interface-strongest-dark", darkModeColors.InterfaceStrongest );
+                package.AppearanceSettings.PaletteColors.Add( "interface-stronger-dark", darkModeColors.InterfaceStronger );
+                package.AppearanceSettings.PaletteColors.Add( "interface-strong-dark", darkModeColors.InterfaceStrong );
+                package.AppearanceSettings.PaletteColors.Add( "interface-medium-dark", darkModeColors.InterfaceMedium );
+                package.AppearanceSettings.PaletteColors.Add( "interface-soft-dark", darkModeColors.InterfaceSoft );
+                package.AppearanceSettings.PaletteColors.Add( "interface-softer-dark", darkModeColors.InterfaceSofter );
+                package.AppearanceSettings.PaletteColors.Add( "interface-softest-dark", darkModeColors.InterfaceSoftest );
+
                 // Accent Colors
                 package.AppearanceSettings.PaletteColors.Add( "app-primary-soft", applicationColors.PrimarySoft );
                 package.AppearanceSettings.PaletteColors.Add( "app-primary-strong", applicationColors.PrimaryStrong );
@@ -543,6 +575,14 @@ namespace Rock.Mobile
                 package.AppearanceSettings.PaletteColors.Add( "app-secondary-strong", applicationColors.SecondaryStrong );
                 package.AppearanceSettings.PaletteColors.Add( "app-brand-soft", applicationColors.BrandSoft );
                 package.AppearanceSettings.PaletteColors.Add( "app-brand-strong", applicationColors.BrandStrong );
+
+                // Dark Accent Colors
+                package.AppearanceSettings.PaletteColors.Add( "app-primary-soft-dark", darkModeColors.PrimarySoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-primary-strong-dark", darkModeColors.PrimaryStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-secondary-soft-dark", darkModeColors.SecondarySoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-secondary-strong-dark", darkModeColors.SecondaryStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-brand-soft-dark", darkModeColors.BrandSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-brand-strong-dark", darkModeColors.BrandStrong );
 
                 // Functional Colors
                 package.AppearanceSettings.PaletteColors.Add( "app-success-soft", applicationColors.SuccessSoft );
@@ -554,11 +594,21 @@ namespace Rock.Mobile
                 package.AppearanceSettings.PaletteColors.Add( "app-warning-soft", applicationColors.WarningSoft );
                 package.AppearanceSettings.PaletteColors.Add( "app-warning-strong", applicationColors.WarningStrong );
 
+                // Dark Functional Colors
+                package.AppearanceSettings.PaletteColors.Add( "app-success-soft-dark", darkModeColors.SuccessSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-success-strong-dark", darkModeColors.SuccessStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-info-soft-dark", darkModeColors.InfoSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-info-strong-dark", darkModeColors.InfoStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-danger-soft-dark", darkModeColors.DangerSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-danger-strong-dark", darkModeColors.DangerStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-warning-soft-dark", darkModeColors.WarningSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-warning-strong-dark", darkModeColors.WarningStrong );
+
                 // This helps maintain backward compatibility.
                 // If someone uses a palette color that no longer exists,
                 // the page will break. So we map our new colors to the
                 // legacy ones.
-                if( !useLegacyStyles )
+                if ( !useLegacyStyles )
                 {
                     package.AppearanceSettings.PaletteColors.Add( "text-color", applicationColors.InterfaceStronger );
                     package.AppearanceSettings.PaletteColors.Add( "heading-color", applicationColors.InterfaceStrongest );
@@ -566,7 +616,7 @@ namespace Rock.Mobile
                     package.AppearanceSettings.PaletteColors.Add( "app-primary", applicationColors.PrimaryStrong );
                     package.AppearanceSettings.PaletteColors.Add( "app-secondary", applicationColors.SecondaryStrong );
                     package.AppearanceSettings.PaletteColors.Add( "app-success", applicationColors.SuccessStrong );
-                    package.AppearanceSettings.PaletteColors.Add( "app-info", applicationColors.InfoStrong);
+                    package.AppearanceSettings.PaletteColors.Add( "app-info", applicationColors.InfoStrong );
                     package.AppearanceSettings.PaletteColors.Add( "app-danger", applicationColors.DangerStrong );
                     package.AppearanceSettings.PaletteColors.Add( "app-warning", applicationColors.WarningStrong );
                     package.AppearanceSettings.PaletteColors.Add( "app-light", applicationColors.InterfaceSofter );
@@ -651,6 +701,13 @@ namespace Rock.Mobile
                     mobileBlockEntity.PageCache = block.Page;
                     mobileBlockEntity.RequestContext = new Net.RockRequestContext();
 
+                    // Set the blocks RockContext here so we have access to it
+                    // when we get the block configuration values.
+                    if ( mobileBlockEntity is RockBlockType rockBlockType )
+                    {
+                        rockBlockType.RockContext = new RockContext();
+                    }
+
                     var mobileBlockTypeGuid = mobileBlockEntity.MobileBlockTypeGuid;
 
                     if ( !mobileBlockTypeGuid.HasValue )
@@ -734,6 +791,53 @@ namespace Rock.Mobile
             }
 
             return package;
+        }
+
+        /// <summary>
+        /// Flips the application colors to the other theme.
+        /// </summary>
+        /// <param name="colors"></param>
+        /// <returns></returns>
+        private static ApplicationColors FlipColors( ApplicationColors colors )
+        {
+            var flippedColors = new ApplicationColors
+            {
+                // Soft = Strong & Strong = Soft
+                BrandSoft = colors.BrandStrong,
+                BrandStrong = colors.BrandSoft,
+
+                SuccessSoft = colors.SuccessStrong,
+                SuccessStrong = colors.SuccessSoft,
+
+                WarningSoft = colors.WarningStrong,
+                WarningStrong = colors.WarningSoft,
+
+                DangerSoft = colors.DangerStrong,
+                DangerStrong = colors.DangerSoft,
+
+                PrimaryStrong = colors.PrimarySoft,
+                PrimarySoft = colors.PrimaryStrong,
+
+                InfoStrong = colors.InfoSoft,
+                InfoSoft = colors.InfoStrong,
+
+                SecondarySoft = colors.SecondaryStrong,
+                SecondaryStrong = colors.SecondarySoft,
+
+                InterfaceStrongest = colors.InterfaceSoftest,
+                InterfaceStronger = colors.InterfaceSofter,
+                InterfaceStrong = colors.InterfaceSoft,
+                InterfaceMedium = colors.InterfaceMedium,
+                InterfaceSoft = colors.InterfaceStrong,
+
+                // These two are an exception
+                // to the traditional swap, we want
+                // the background to be pure black on dark mode.
+                InterfaceSofter = colors.InterfaceStrongest,
+                InterfaceSoftest = colors.InterfaceStronger
+            };
+
+            return flippedColors;
         }
 
         /// <summary>
@@ -952,6 +1056,11 @@ namespace Rock.Mobile
         /// </returns>
         public static string GetEditAttributesXaml( IHasAttributes entity, List<AttributeCache> attributes = null, Dictionary<string, string> postbackParameters = null, bool includeHeader = true, Person person = null )
         {
+            if ( entity == null )
+            {
+                return string.Empty;
+            }
+
             if ( entity.Attributes == null )
             {
                 entity.LoadAttributes();
@@ -966,12 +1075,14 @@ namespace Rock.Mobile
 
             var sb = new StringBuilder();
 
-            sb.AppendLine( "<StackLayout Spacing=\"0\">" );
+            sb.AppendLine( "<StackLayout Spacing=\"24\">" );
 
             if ( includeHeader )
             {
+                sb.AppendLine( "<StackLayout Spacing=\"0\">" );
                 sb.AppendLine( "<Label Text=\"Attributes\" StyleClass=\"h1\" />" );
                 sb.AppendLine( "<BoxView Color=\"#888\" HeightRequest=\"1\" Margin=\"0 0 12 0\" />" );
+                sb.AppendLine( "</StackLayout>" );
             }
 
             foreach ( var attribute in attributes )

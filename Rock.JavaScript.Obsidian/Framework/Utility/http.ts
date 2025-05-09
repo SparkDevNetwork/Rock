@@ -16,10 +16,11 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import axios, { AxiosError, AxiosProgressEvent, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosProgressEvent, AxiosResponse, GenericAbortSignal } from "axios";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { HttpBodyData, HttpMethod, HttpFunctions, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
 import { inject, provide, getCurrentInstance, ref, type Ref } from "vue";
+import { ICancellationToken } from "./cancellation";
 
 
 // #region HTTP Requests
@@ -32,13 +33,28 @@ import { inject, provide, getCurrentInstance, ref, type Ref } from "vue";
  * @param params
  * @param data
  */
-async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlParams, data: HttpBodyData): Promise<AxiosResponse<unknown>> {
+async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlParams, data: HttpBodyData, cancellationToken?: ICancellationToken): Promise<AxiosResponse<unknown>> {
     return await axios({
         method,
         url,
         params,
-        data
+        data,
+        signal: getSignal(cancellationToken)
     });
+}
+
+function getSignal(cancellationToken?: ICancellationToken): GenericAbortSignal | undefined {
+    if (cancellationToken) {
+        const controller = new AbortController();
+
+        cancellationToken.onCancellationRequested(() => {
+            if (controller && controller.signal && !controller.signal.aborted) {
+                controller.abort();
+            }
+        });
+
+        return controller.signal;
+    }
 }
 
 /**
@@ -51,9 +67,9 @@ async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlPara
  * @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
  * @param {any} data This will be the body of the request
  */
-export async function doApiCall<T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> {
+export async function doApiCall<T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> {
     try {
-        const result = await doApiCallRaw(method, url, params, data);
+        const result = await doApiCallRaw(method, url, params, data, cancellationToken);
 
         return {
             data: result.data as T,
@@ -116,8 +132,8 @@ export async function get<T>(url: string, params: HttpUrlParams = undefined): Pr
  * @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
  * @param {any} data This will be the body of the request
  */
-export async function post<T>(url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> {
-    return await doApiCall<T>("POST", url, params, data);
+export async function post<T>(url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> {
+    return await doApiCall<T>("POST", url, params, data, cancellationToken);
 }
 
 const httpFunctionsSymbol = Symbol("http-functions");
@@ -289,7 +305,7 @@ async function uploadFile(url: string, data: FormData, progress: UploadProgressC
             }
         });
     }
-    catch(e) {
+    catch (e) {
         result = (e as AxiosError<FileUploadResponse | string>).response;
     }
 
@@ -361,9 +377,9 @@ export async function uploadAssetProviderFile(file: File, folderPath: string, as
     }
 
     formData.append("file", file);
-        formData.append("StorageId", assetStorageId);
-        formData.append("Key", folderPath);
-        formData.append("IsAssetStorageProviderAsset", "true");
+    formData.append("StorageId", assetStorageId);
+    formData.append("Key", folderPath);
+    formData.append("IsAssetStorageProviderAsset", "true");
 
     const result = await uploadFile(url, formData, options?.progress);
 

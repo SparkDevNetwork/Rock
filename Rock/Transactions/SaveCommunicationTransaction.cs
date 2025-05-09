@@ -30,8 +30,6 @@ namespace Rock.Transactions
     /// <seealso cref="Rock.Transactions.ITransaction" />
     public class SaveCommunicationTransaction : ITransaction
     {
-        private List<string> _recipientEmailAddresses;
-
         /// <summary>
         /// Gets or sets the rock message recipients.
         /// </summary>
@@ -194,6 +192,16 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
+            ExecuteAndReturnCommunicationId();
+        }
+
+        /// <summary>
+        /// Executes the transaction and returns the created communication
+        /// identifier.
+        /// </summary>
+        /// <returns>The identifier of the communication or <c>null</c> if one was not created.</returns>
+        internal int? ExecuteAndReturnCommunicationId()
+        {
             using ( var rockContext = new RockContext() )
             {
                 var personService = new PersonService( rockContext );
@@ -225,12 +233,6 @@ namespace Rock.Transactions
                     }
                 }
 
-                if ( this.Recipients?.Any() != true && _recipientEmailAddresses != null )
-                {
-                    this.Recipients = new List<RockMessageRecipient>();
-                    this.Recipients.AddRange( _recipientEmailAddresses.Select( a => RockEmailMessageRecipient.CreateAnonymous( a, null ) ).ToList() );
-                }
-
                 if ( this.Recipients?.Any() == true )
                 {
                     var emailRecipients = this.Recipients.OfType<RockEmailMessageRecipient>().ToList();
@@ -251,7 +253,7 @@ namespace Rock.Transactions
 
                     var communication = new CommunicationService( rockContext ).CreateEmailCommunication( createEmailCommunicationArgs );
 
-                    if ( communication != null  )
+                    if ( communication != null )
                     {
                         if ( communication.Recipients.Count() == 1 && this.RecipientGuid.HasValue )
                         {
@@ -260,7 +262,11 @@ namespace Rock.Transactions
                     }
 
                     rockContext.SaveChanges();
+
+                    return communication.Id;
                 }
+
+                return null;
             }
         }
     }

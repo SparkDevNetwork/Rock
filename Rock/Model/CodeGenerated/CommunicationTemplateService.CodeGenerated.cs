@@ -143,6 +143,7 @@ namespace Rock.Model
             target.FromName = source.FromName;
             target.ImageFileId = source.ImageFileId;
             target.IsActive = source.IsActive;
+            target.IsStarter = source.IsStarter;
             target.IsSystem = source.IsSystem;
             target.LavaFieldsJson = source.LavaFieldsJson;
             target.LogoBinaryFileId = source.LogoBinaryFileId;
@@ -165,6 +166,7 @@ namespace Rock.Model
             target.SmsFromSystemPhoneNumberId = source.SmsFromSystemPhoneNumberId;
             target.SMSMessage = source.SMSMessage;
             target.Subject = source.Subject;
+            target.Version = source.Version;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

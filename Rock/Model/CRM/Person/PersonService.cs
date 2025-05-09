@@ -27,6 +27,8 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.BulkExport;
+using Rock.Communication.Chat;
+using Rock.Communication.Chat.DTO;
 using Rock.Data;
 using Rock.Security;
 using Rock.SystemKey;
@@ -3564,7 +3566,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         [Obsolete( "Peer Networks can now be found in the PeerNetwork table, and are no longer tied to Groups." )]
         public Group GetPeerNetworkGroup( int personId )
         {
@@ -3974,7 +3976,6 @@ namespace Rock.Model
         /// <param name="filename">The filename.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>The new person profile image (built with the Public Application Root), or an empty string if something went wrong.</returns>
-        [RockInternal( "1.15" )]
         internal static string UpdatePersonProfilePhoto( Guid personGuid, byte[] photoBytes, string filename, RockContext rockContext = null )
         {
             // If rockContext is null, create a new RockContext object.
@@ -4776,6 +4777,26 @@ WHERE Id = @personId",
         }
 
         /// <summary>
+        /// Sets the PrimaryAliasId and PrimaryAliasGuid for the specified person
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="primaryAliasId">The PrimaryAlias identifier.</param>
+        /// <param name="primaryAliasGuid">The PrimaryAlias guid identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdatePrimaryAlias( int personId, int primaryAliasId, Guid primaryAliasGuid, RockContext rockContext )
+        {
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE Person
+SET PrimaryAliasId = @primaryAliasId,
+    PrimaryAliasGuid = @primaryAliasGuid
+WHERE Id = @personId",
+        new System.Data.SqlClient.SqlParameter( "@personId", personId ),
+        new System.Data.SqlClient.SqlParameter( "@primaryAliasId", primaryAliasId ),
+        new System.Data.SqlClient.SqlParameter( "@primaryAliasGuid", primaryAliasGuid ) );
+        }
+
+        /// <summary>
         /// Updates the person's group member role (whether Adult/Child) for the specified person.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
@@ -5156,6 +5177,233 @@ AND GroupTypeId = ${familyGroupType.Id}
                 recipientToInactivate.ModifiedByPersonAliasId = personPrimaryAliasId;
                 recipientToInactivate.ModifiedAuditValuesAlreadyUpdated = true;
             }
+        }
+
+        /// <summary>
+        /// Gets a Queryable of the distinct identifiers of <see cref="Person"/> records for non-deceased individuals
+        /// who have at least one chat-specific <see cref="PersonAlias"/> record.
+        /// </summary>
+        /// <returns>A Queryable of the distinct <see cref="Person"/> identifiers of all non-deceased, chat-enabled individuals.</returns>
+        internal IQueryable<int> GetNonDeceasedChatUserPersonIdsQuery()
+        {
+            var rockContext = this.Context as RockContext;
+
+            var chatAliasQry = new PersonAliasService( rockContext ).GetChatPersonAliasesQuery();
+
+            return Queryable( includeDeceased: false )
+                .Join(
+                    chatAliasQry,
+                    p => p.Id,
+                    pa => pa.PersonId,
+                    ( p, pa ) => p.Id
+                )
+                .Distinct();
+        }
+
+        /// <summary>
+        /// Gets a Queryable of the distinct identifiers of <see cref="Person"/> records for deceased individuals who
+        /// have at least one chat-specific <see cref="PersonAlias"/> record.
+        /// </summary>
+        /// <returns>A Queryable of the distinct <see cref="Person"/> identifiers of all deceased, chat-enabled individuals.</returns>
+        /// <remarks>
+        /// This is useful when determining which <see cref="ChatUser"/>s to delete in the external chat system.
+        /// </remarks>
+        internal IQueryable<int> GetDeceasedChatUserPersonIdsQuery()
+        {
+            var rockContext = this.Context as RockContext;
+
+            var chatAliasQry = new PersonAliasService( rockContext ).GetChatPersonAliasesQuery();
+
+            return Queryable( includeDeceased: true )
+                .Where( p => p.IsDeceased )
+                .Join(
+                    chatAliasQry,
+                    p => p.Id,
+                    pa => pa.PersonId,
+                    ( p, pa ) => p.Id
+                )
+                .Distinct();
+        }
+
+        /// <summary>
+        /// Gets the active <see cref="RockChatUserKey"/> for each provided, non-deceased <see cref="Person"/> identifier.
+        /// </summary>
+        /// <param name="personIds">The list of <see cref="Person"/> identifiers for whom to get <see cref="RockChatUserKey"/>s.</param>
+        /// <returns>
+        /// A list of <see cref="RockChatUserKey"/>s, with one entry for each <see cref="Person"/> who already has a
+        /// chat-specific <see cref="PersonAlias"/> record.</returns>
+        /// <remarks>
+        /// If a <see cref="Person"/> has more than one chat-specific <see cref="PersonAlias"/> record, the earliest
+        /// one will be used to represent the <see cref="ChatUser.Key"/>.
+        /// </remarks>
+        internal List<RockChatUserKey> GetActiveRockChatUserKeys( List<int> personIds )
+        {
+            var rockContext = this.Context as RockContext;
+
+            var personQry = Queryable();
+            var chatAliasQry = new PersonAliasService( rockContext ).GetChatPersonAliasesQuery();
+
+            if ( personIds.Count == 1 )
+            {
+                // Most performant: limit queries to just this person.
+                var firstPersonId = personIds.First();
+                personQry = personQry.Where( p => p.Id == firstPersonId );
+                chatAliasQry = chatAliasQry.Where( pa => pa.PersonId == firstPersonId );
+            }
+            else if ( personIds.Count < 1000 )
+            {
+                // For fewer than 1k people, allow a SQL `WHERE...IN` clause.
+                personQry = personQry.Where( p => personIds.Contains( p.Id ) );
+                chatAliasQry = chatAliasQry.Where( pa => personIds.Contains( pa.PersonId ) );
+            }
+            else
+            {
+                // For 1k or more people, create and join to an entity set.
+                var entitySetOptions = new AddEntitySetActionOptions
+                {
+                    Name = $"{nameof( PersonService )}_{nameof( GetActiveRockChatUserKeys )}",
+                    EntityTypeId = EntityTypeCache.Get<Person>().Id,
+                    EntityIdList = personIds,
+                    ExpiryInMinutes = 20
+                };
+
+                var entitySetService = new EntitySetService( rockContext );
+                var entitySetId = entitySetService.AddEntitySet( entitySetOptions );
+                var entitySetItemQry = entitySetService.GetEntityQuery( entitySetId ).Select( e => e.Id );
+
+                personQry = personQry.Where( p => entitySetItemQry.Contains( p.Id ) );
+                chatAliasQry = chatAliasQry.Where( pa => entitySetItemQry.Contains( pa.PersonId ) );
+            }
+
+            return personQry
+                .GroupJoin(
+                    chatAliasQry,
+                    p => p.Id,
+                    pa => pa.PersonId,
+                    ( p, chatAliases ) => new
+                    {
+                        Person = p,
+                        ChatAliases = chatAliases.Select( ca => new { ca.Id, ca.Guid } )
+                    }
+                )
+                .ToList() // Materialize everything in a single query; we'll perform in-memory sorting of chat aliases below.
+                .Select( p =>
+                {
+                    var firstChatAlias = p.ChatAliases.Any()
+                        ? p.ChatAliases.OrderBy( a => a.Id ).First() // Get the earliest chat alias in the case of multiple.
+                        : null;
+
+                    return new RockChatUserKey
+                    {
+                        PersonId = p.Person.Id,
+                        ChatPersonAliasId = firstChatAlias?.Id,
+                        ChatPersonAliasGuid = firstChatAlias?.Guid
+                    };
+                } )
+                .Where( k => k.ChatPersonAliasGuid.HasValue ) // Only include results that actually have a chat alias guid.
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the per-<see cref="Person"/> lists of <see cref="RockChatUserKey"/>s for individuals who have more than
+        /// one <see cref="ChatUser.Key"/>.
+        /// </summary>
+        /// <param name="personId">
+        /// The optional <see cref="Person"/> identifier, to check if just one particular person has multiple
+        /// <see cref="ChatUser.Key"/>s.
+        /// </param>
+        /// <param name="includeDeceased">
+        /// Whether to include deceased individuals in the results. If <paramref name="personId"/> is provided, this will
+        /// be auto-set to <see langword="true"/>.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Dictionary{TKey, TValue}"/> where the key is the <see cref="Person"/> identifier and the value is
+        /// their list of <see cref="RockChatUserKey"/>s.
+        /// </returns>
+        internal Dictionary<int, List<RockChatUserKey>> GetPeopleWithMultipleChatUserKeys( int? personId = null, bool includeDeceased = false )
+        {
+            var rockContext = this.Context as RockContext;
+
+            // Always include deceased individuals if this query is targeting a specific person.
+            if ( personId.HasValue )
+            {
+                includeDeceased = true;
+            }
+
+            var personQry = Queryable( includeDeceased );
+            if ( personId.HasValue )
+            {
+                personQry = personQry.Where( p => p.Id == personId.Value );
+            }
+
+            var chatAliasQry = new PersonAliasService( rockContext ).GetChatPersonAliasesQuery();
+
+            return personQry
+                .Join(
+                    chatAliasQry,
+                    p => p.Id,
+                    pa => pa.PersonId,
+                    ( p, pa ) => new RockChatUserKey
+                    {
+                        PersonId = p.Id,
+                        ChatPersonAliasId = pa.Id,
+                        ChatPersonAliasGuid = pa.Guid,
+                    }
+                )
+                .GroupBy( p => p.PersonId )
+                .Where( g => g.Count() > 1 )
+                .ToDictionary(
+                    p => p.Key,
+                    p => p.ToList()
+                );
+        }
+
+        /// <summary>
+        /// Gets a Queryable of a chat-enabled <see cref="Person"/>'s complete list of <see cref="RockChatUserKey"/>s,
+        /// including those for deceased individuals.
+        /// </summary>
+        /// <param name="personId">The identifier of the <see cref="Person"/> for whom to get <see cref="RockChatUserKey"/>s.</param>
+        /// <returns>A Queryable of a chat-enabled <see cref="Person"/>'s complete list of <see cref="RockChatUserKey"/>s</returns>
+        /// <remarks>
+        /// This is probably only useful when deleting all of a <see cref="Person"/>'s <see cref="ChatUser"/>s in the
+        /// external chat system.
+        /// </remarks>
+        internal IQueryable<RockChatUserKey> GetAllRockChatUserKeysQuery( int personId )
+        {
+            var rockContext = this.Context as RockContext;
+
+            var chatAliasQry = new PersonAliasService( rockContext ).GetChatPersonAliasesQuery();
+
+            return Queryable( includeDeceased: true )
+                .Where( p => p.Id == personId )
+                .Join(
+                    chatAliasQry,
+                    p => p.Id,
+                    pa => pa.PersonId,
+                    ( p, pa ) => new RockChatUserKey
+                    {
+                        PersonId = p.Id,
+                        ChatPersonAliasId = pa.Id,
+                        ChatPersonAliasGuid = pa.Guid,
+                    }
+                );
+        }
+
+        /// <summary>
+        /// Gets the Rock <see cref="Person"/> for the provided <see cref="ChatUser.Key"/>.
+        /// </summary>
+        /// <param name="chatUserKey">The <see cref="ChatUser.Key"/> of the <see cref="Person"/> to get.</param>
+        /// <returns>The Rock <see cref="Person"/> or <see langword="null"/> if no matching <see cref="Person"/> found.</returns>
+        internal Person GetByChatUserKey( string chatUserKey )
+        {
+            if ( chatUserKey == null )
+            {
+                return null;
+            }
+
+            return Queryable()
+                .Where( p => p.Aliases.Any( a => a.ForeignKey == chatUserKey ) )
+                .FirstOrDefault();
         }
     }
 }

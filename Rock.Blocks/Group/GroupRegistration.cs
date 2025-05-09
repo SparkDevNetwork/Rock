@@ -546,13 +546,13 @@ namespace Rock.Blocks.Group
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="person">The person.</param>
-        /// <param name="workflowType">Type of the workflow.</param>
         /// <param name="groupMembers">The group members.</param>
-        private bool AddPersonToGroup( RockContext rockContext, Person person, WorkflowTypeCache workflowType, List<GroupMember> groupMembers, out string errorMessage )
+        /// <param name="groupMember">The new or existing group member being registered.</param>
+        private bool AddPersonToGroup( RockContext rockContext, Model.Group group, Person person, List<GroupMember> groupMembers, out string errorMessage, out GroupMember groupMember )
         {
-            var group = GetGroup( rockContext );
             var defaultGroupRole = group.GroupType.DefaultGroupRole;
             errorMessage = string.Empty;
+            groupMember = null;
 
             if ( person == null )
             {
@@ -560,7 +560,6 @@ namespace Rock.Blocks.Group
                 return false;
             }
 
-            GroupMember groupMember = null;
             if ( !group.Members
                 .Any( m =>
                     m.PersonId == person.Id &&
@@ -609,19 +608,6 @@ namespace Rock.Blocks.Group
                 }
             }
 
-            if ( groupMember != null && workflowType != null && ( workflowType.IsActive ?? true ) )
-            {
-                try
-                {
-                    var workflow = Rock.Model.Workflow.Activate( workflowType, person.FullName );
-                    new WorkflowService( rockContext ).Process( workflow, groupMember, out List<string> workflowErrors );
-                }
-                catch ( Exception ex )
-                {
-                    ExceptionLogService.LogException( ex );
-                }
-            }
-
             return true;
         }
 
@@ -664,6 +650,22 @@ namespace Rock.Blocks.Group
                 var homeAddressType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                 var isSimple = GetAttributeValue( AttributeKey.Mode ) == "Simple";
                 var isFullWithSpouse = GetAttributeValue( AttributeKey.Mode ) == "FullSpouse";
+
+                var targetGroup = GetGroup( rockContext );
+                var groupTypeGuids = this.GetAttributeValue( AttributeKey.AllowedGroupTypes ).SplitDelimitedValues().AsGuidList();
+                var isFromBlockAttribute = GetAttributeValue( AttributeKey.Group ).AsGuidOrNull() == targetGroup.Guid;
+
+                if ( !isFromBlockAttribute && groupTypeGuids.Any() && !groupTypeGuids.Contains( targetGroup.GroupType.Guid ) )
+                {
+                    return ActionBadRequest( "The group is a restricted group type." );
+                }
+
+                // Just flat out don't allow them to add themselves to a
+                // security role - ever.
+                if ( targetGroup.IsSecurityRole )
+                {
+                    return ActionBadRequest( "The group is a restricted group type." );
+                }
 
                 var isCurrentPerson = RequestContext.CurrentPerson != null
                     && RequestContext.CurrentPerson.NickName.IsNotNullOrWhiteSpace()
@@ -839,6 +841,20 @@ namespace Rock.Blocks.Group
                 }
 
                 string errorMessage = string.Empty;
+                GroupMember newOrExistingGroupMember = null;
+                GroupMember newOrExistingSpouseGroupMember = null;
+
+                // A list containing any new or exisitng Group Members that are currently being registered.
+                List<GroupMember> newOrExistingGroupMembers = new List<GroupMember>();
+
+                // Check to see if a workflow should be launched for each person
+                WorkflowTypeCache workflowType = null;
+                Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+                if ( workflowTypeGuid.HasValue )
+                {
+                    workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
+                }
+
                 // Save the registrations ( and launch workflows )
                 var newGroupMembers = new List<GroupMember>();
                 // Save the person/spouse and change history 
@@ -846,27 +862,21 @@ namespace Rock.Blocks.Group
                 {
                     rockContext.SaveChanges();
 
-                    // Check to see if a workflow should be launched for each person
-                    WorkflowTypeCache workflowType = null;
-                    Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
-                    if ( workflowTypeGuid.HasValue )
-                    {
-                        workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
-                    }
-
-                    bool isAddPersonValid = AddPersonToGroup( rockContext, person, workflowType, newGroupMembers, out errorMessage );
+                    bool isAddPersonValid = AddPersonToGroup( rockContext, targetGroup, person, newGroupMembers, out errorMessage, out newOrExistingGroupMember );
                     if ( !isAddPersonValid )
                     {
                         return false;
                     }
+                    newOrExistingGroupMembers.Add( newOrExistingGroupMember );
 
                     if ( spouse != null )
                     {
-                        isAddPersonValid = AddPersonToGroup( rockContext, spouse, workflowType, newGroupMembers, out errorMessage );
+                        isAddPersonValid = AddPersonToGroup( rockContext, targetGroup, spouse, newGroupMembers, out errorMessage, out newOrExistingSpouseGroupMember );
                         if ( !isAddPersonValid )
                         {
                             return false;
                         }
+                        newOrExistingGroupMembers.Add( newOrExistingSpouseGroupMember );
                     }
 
                     return true;
@@ -874,11 +884,25 @@ namespace Rock.Blocks.Group
 
                 if ( isAddingPeopleToGroupSuccessful )
                 {
-                    var group = GetGroup( rockContext );
+                    foreach ( GroupMember gm in newOrExistingGroupMembers )
+                    {
+                        if ( gm != null && workflowType != null && ( workflowType.IsActive ?? true ) )
+                        {
+                            try
+                            {
+                                var workflow = Rock.Model.Workflow.Activate( workflowType, person.FullName );
+                                new WorkflowService( rockContext ).Process( workflow, gm, out List<string> workflowErrors );
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( ex );
+                            }
+                        }
+                    }
 
                     // Show lava content
                     var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "Group", group );
+                    mergeFields.Add( "Group", targetGroup );
                     mergeFields.Add( "GroupMembers", newGroupMembers );
 
                     string template = GetAttributeValue( "ResultLavaTemplate" );

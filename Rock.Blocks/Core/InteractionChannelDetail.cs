@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.InteractionChannelDetail;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,7 +36,6 @@ namespace Rock.Blocks.Core
     /// <summary>
     /// Displays the details of a particular interaction channel.
     /// </summary>
-
     [DisplayName( "Interaction Channel Detail" )]
     [Category( "Reporting" )]
     [Description( "Displays the details of a particular interaction channel." )]
@@ -86,7 +86,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "9438e0fe-f7ab-48d5-8ab8-d54336d30fbd" )]
     [Rock.SystemGuid.BlockTypeGuid( "2efa1f9d-7062-466a-a8f3-9dcdbff054e9" )]
-    public class InteractionChannelDetail : RockDetailBlockType
+    public class InteractionChannelDetail : RockEntityDetailBlockType<InteractionChannel, InteractionChannelBag>
     {
         #region Keys
 
@@ -112,18 +112,14 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag>();
+            var box = new DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<InteractionChannel>();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -131,9 +127,8 @@ namespace Rock.Blocks.Core
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private InteractionChannelDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private InteractionChannelDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new InteractionChannelDetailOptionsBag();
 
@@ -145,12 +140,17 @@ namespace Rock.Blocks.Core
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="interactionChannel">The InteractionChannel to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the InteractionChannel is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateInteractionChannel( InteractionChannel interactionChannel, RockContext rockContext, out string errorMessage )
+        private bool ValidateInteractionChannel( InteractionChannel interactionChannel, out string errorMessage )
         {
             errorMessage = null;
+
+            if ( !interactionChannel.IsValid )
+            {
+                errorMessage = interactionChannel.ValidationResults.ConvertAll( a => a.ErrorMessage ).AsDelimited( "<br />" );
+                return false;
+            }
 
             return true;
         }
@@ -160,10 +160,9 @@ namespace Rock.Blocks.Core
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -174,7 +173,7 @@ namespace Rock.Blocks.Core
             var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) || entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -182,8 +181,6 @@ namespace Rock.Blocks.Core
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                    box.Entity.CanAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) || entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
                 }
                 else
                 {
@@ -192,11 +189,12 @@ namespace Rock.Blocks.Core
             }
             else
             {
-                // New entity is being created, prepare for edit mode by default.
                 box.ErrorMessage = @"
 <strong>Missing Channel Information </strong>
 <p>Make sure you have navigated to this page from Channel Listing page.</p>";
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -216,10 +214,10 @@ namespace Rock.Blocks.Core
                 IdKey = entity.IdKey,
                 ChannelDetailTemplate = entity.ChannelDetailTemplate,
                 ChannelListTemplate = entity.ChannelListTemplate,
-                ComponentCacheDuration = entity.ComponentCacheDuration.ToString(),
+                ComponentCacheDuration = entity.ComponentCacheDuration,
                 ComponentDetailTemplate = entity.ComponentDetailTemplate,
                 ComponentListTemplate = entity.ComponentListTemplate,
-                EngagementStrength = entity.EngagementStrength.ToString(),
+                EngagementStrength = entity.EngagementStrength,
                 InteractionCustom1Label = entity.InteractionCustom1Label,
                 InteractionCustom2Label = entity.InteractionCustom2Label,
                 InteractionCustomIndexed1Label = entity.InteractionCustomIndexed1Label,
@@ -227,17 +225,13 @@ namespace Rock.Blocks.Core
                 InteractionListTemplate = entity.InteractionListTemplate,
                 IsActive = entity.IsActive,
                 Name = entity.Name,
-                RetentionDuration = entity.RetentionDuration.ToString(),
+                RetentionDuration = entity.RetentionDuration,
                 SessionListTemplate = entity.SessionListTemplate
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="InteractionChannelBag"/> that represents the entity.</returns>
-        private InteractionChannelBag GetEntityBagForView( InteractionChannel entity )
+        /// <inheritdoc/>
+        protected override InteractionChannelBag GetEntityBagForView( InteractionChannel entity )
         {
             if ( entity == null )
             {
@@ -246,7 +240,7 @@ namespace Rock.Blocks.Core
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, GetCurrentPerson() );
             mergeFields.TryAdd( "CurrentPerson", GetCurrentPerson() );
@@ -259,16 +253,13 @@ namespace Rock.Blocks.Core
             }
 
             bag.Content = template.ResolveMergeFields( mergeFields );
+            bag.CanAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) || entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
 
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="InteractionChannelBag"/> that represents the entity.</returns>
-        private InteractionChannelBag GetEntityBagForEdit( InteractionChannel entity )
+        /// <inheritdoc/>
+        protected override InteractionChannelBag GetEntityBagForEdit( InteractionChannel entity )
         {
             if ( entity == null )
             {
@@ -277,90 +268,79 @@ namespace Rock.Blocks.Core
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( InteractionChannel entity, DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( InteractionChannel entity, ValidPropertiesBox<InteractionChannelBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.ChannelDetailTemplate ),
-                () => entity.ChannelDetailTemplate = box.Entity.ChannelDetailTemplate );
+            box.IfValidProperty( nameof( box.Bag.ChannelDetailTemplate ),
+                () => entity.ChannelDetailTemplate = box.Bag.ChannelDetailTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.ChannelListTemplate ),
-                () => entity.ChannelListTemplate = box.Entity.ChannelListTemplate );
+            box.IfValidProperty( nameof( box.Bag.ChannelListTemplate ),
+                () => entity.ChannelListTemplate = box.Bag.ChannelListTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.ComponentCacheDuration ),
-                () => entity.ComponentCacheDuration = box.Entity.ComponentCacheDuration.AsIntegerOrNull() );
+            box.IfValidProperty( nameof( box.Bag.ComponentCacheDuration ),
+                () => entity.ComponentCacheDuration = box.Bag.ComponentCacheDuration );
 
-            box.IfValidProperty( nameof( box.Entity.ComponentDetailTemplate ),
-                () => entity.ComponentDetailTemplate = box.Entity.ComponentDetailTemplate );
+            box.IfValidProperty( nameof( box.Bag.ComponentDetailTemplate ),
+                () => entity.ComponentDetailTemplate = box.Bag.ComponentDetailTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.ComponentListTemplate ),
-                () => entity.ComponentListTemplate = box.Entity.ComponentListTemplate );
+            box.IfValidProperty( nameof( box.Bag.ComponentListTemplate ),
+                () => entity.ComponentListTemplate = box.Bag.ComponentListTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.EngagementStrength ),
-                () => entity.EngagementStrength = box.Entity.EngagementStrength.AsIntegerOrNull() );
+            box.IfValidProperty( nameof( box.Bag.EngagementStrength ),
+                () => entity.EngagementStrength = box.Bag.EngagementStrength );
 
-            box.IfValidProperty( nameof( box.Entity.InteractionCustom1Label ),
-                () => entity.InteractionCustom1Label = box.Entity.InteractionCustom1Label );
+            box.IfValidProperty( nameof( box.Bag.InteractionCustom1Label ),
+                () => entity.InteractionCustom1Label = box.Bag.InteractionCustom1Label );
 
-            box.IfValidProperty( nameof( box.Entity.InteractionCustom2Label ),
-                () => entity.InteractionCustom2Label = box.Entity.InteractionCustom2Label );
+            box.IfValidProperty( nameof( box.Bag.InteractionCustom2Label ),
+                () => entity.InteractionCustom2Label = box.Bag.InteractionCustom2Label );
 
-            box.IfValidProperty( nameof( box.Entity.InteractionCustomIndexed1Label ),
-                () => entity.InteractionCustomIndexed1Label = box.Entity.InteractionCustomIndexed1Label );
+            box.IfValidProperty( nameof( box.Bag.InteractionCustomIndexed1Label ),
+                () => entity.InteractionCustomIndexed1Label = box.Bag.InteractionCustomIndexed1Label );
 
-            box.IfValidProperty( nameof( box.Entity.InteractionDetailTemplate ),
-                () => entity.InteractionDetailTemplate = box.Entity.InteractionDetailTemplate );
+            box.IfValidProperty( nameof( box.Bag.InteractionDetailTemplate ),
+                () => entity.InteractionDetailTemplate = box.Bag.InteractionDetailTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.InteractionListTemplate ),
-                () => entity.InteractionListTemplate = box.Entity.InteractionListTemplate );
+            box.IfValidProperty( nameof( box.Bag.InteractionListTemplate ),
+                () => entity.InteractionListTemplate = box.Bag.InteractionListTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.RetentionDuration ),
-                () => entity.RetentionDuration = box.Entity.RetentionDuration.AsIntegerOrNull() );
+            box.IfValidProperty( nameof( box.Bag.RetentionDuration ),
+                () => entity.RetentionDuration = box.Bag.RetentionDuration );
 
-            box.IfValidProperty( nameof( box.Entity.SessionListTemplate ),
-                () => entity.SessionListTemplate = box.Entity.SessionListTemplate );
+            box.IfValidProperty( nameof( box.Bag.SessionListTemplate ),
+                () => entity.SessionListTemplate = box.Bag.SessionListTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="InteractionChannel"/> to be viewed or edited on the page.</returns>
-        private InteractionChannel GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override InteractionChannel GetInitialEntity()
         {
-            return GetInitialEntity<InteractionChannel, InteractionChannelService>( rockContext, PageParameterKey.InteractionChannelId );
+            return GetInitialEntity<InteractionChannel, InteractionChannelService>( RockContext, PageParameterKey.InteractionChannelId );
         }
 
         /// <summary>
@@ -376,46 +356,9 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out InteractionChannel entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( InteractionChannel entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out InteractionChannel entity, out BlockActionResult error )
-        {
-            var entityService = new InteractionChannelService( rockContext );
+            var entityService = new InteractionChannelService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -460,22 +403,20 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<InteractionChannelBag>()
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -484,51 +425,54 @@ namespace Rock.Blocks.Core
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<InteractionChannelBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new InteractionChannelService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new InteractionChannelService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateInteractionChannel( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.InteractionChannelId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateInteractionChannel( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.InteractionChannelId] = entity.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForView( entity );
+
+            return ActionOk( new ValidPropertiesBox<InteractionChannelBag>()
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -539,84 +483,27 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new InteractionChannelService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new InteractionChannelService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, this.GetCurrentPerson() ) )
-                {
-                    return ActionBadRequest( "You are not authorized to delete this interaction channel." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entity.IsAuthorized( Authorization.EDIT, this.GetCurrentPerson() ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( "You are not authorized to delete this interaction channel." );
             }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         #endregion

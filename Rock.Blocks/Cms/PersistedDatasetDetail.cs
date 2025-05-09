@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Configuration;
 using System.Data.Entity;
 using System.Linq;
 
@@ -32,8 +31,6 @@ using Rock.ViewModels.Blocks.Cms.PersistedDatasetDetail;
 using Rock.ViewModels.Blocks.Core.ScheduleDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-
-using static Rock.Blocks.Cms.PersistedDatasetDetail;
 
 namespace Rock.Blocks.Cms
 {
@@ -614,10 +611,7 @@ namespace Rock.Blocks.Cms
 
                 if ( isNew )
                 {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.PersistedDatasetId] = entity.IdKey
-                    } ) );
+                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl() );
                 }
 
                 return ActionOk( GetEntityBagForView( entity, true ) );

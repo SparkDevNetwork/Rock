@@ -29,6 +29,7 @@ using Humanizer;
 
 using Microsoft.Extensions.Logging;
 
+using PuppeteerSharp.BrowserData;
 using Rock.Attribute;
 using Rock.Core;
 using Rock.Data;
@@ -36,6 +37,7 @@ using Rock.Logging;
 using Rock.Model;
 using Rock.Net.Geolocation;
 using Rock.Observability;
+using Rock.Pdf;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -194,7 +196,7 @@ namespace Rock.Jobs
         /// running from inside a unit test. This includes things like network
         /// operations or steps which modify on-disk content.
         /// </summary>
-        internal bool IsRunningFromUnitTest { get; set; }
+        static internal bool IsRunningFromUnitTest { get; set; }
 
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
@@ -323,7 +325,7 @@ namespace Rock.Jobs
 
             RunCleanupTask( "upcoming event date", () => UpdateEventNextOccurrenceDates() );
 
-            RunCleanupTask( "older chrome engines", () => RemoveOlderChromeEngines() );
+            RunCleanupTask( "non-default chrome engines", () => RemoveNonDefaultChromeEngines() );
 
             RunCleanupTask( "legacy sms phone numbers", () => SynchronizeLegacySmsPhoneNumbers() );
 
@@ -340,8 +342,6 @@ namespace Rock.Jobs
             RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
             RunCleanupTask( "update campus tithe metric", () => UpdateCampusTitheMetric() );
-
-            RunCleanupTask( "update geolocation database", () => UpdateGeolocationDatabase() );
 
             /*
              * 21-APR-2022 DMV
@@ -964,12 +964,13 @@ namespace Rock.Jobs
                 // Update Person records that have an empty or placeholder PrimaryAlias reference.
                 var people = personService.Queryable( personSearchOptions )
                     .Include( p => p.Aliases )
-                    .Where( p => p.PrimaryAliasId == null || p.PrimaryAliasId == 0 )
+                    .Where( p => p.PrimaryAliasId == null || p.PrimaryAliasId == 0 || p.PrimaryAliasGuid == null )
                     .Take( 300 );
 
                 foreach ( var person in people )
                 {
                     person.PrimaryAliasId = person.PrimaryAlias?.Id;
+                    person.PrimaryAliasGuid = person.PrimaryAlias?.Guid;
                     resultCount++;
                 }
 
@@ -1227,6 +1228,7 @@ namespace Rock.Jobs
             var workflowContext = CreateRockContext();
 
             var workflowService = new WorkflowService( workflowContext );
+            var connectionRequestWorkflowService = new ConnectionRequestWorkflowService( workflowContext );
 
             var completedWorkflows = workflowService.Queryable().AsNoTracking()
                 .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && w.CompletedDateTime.HasValue
@@ -1241,7 +1243,7 @@ namespace Rock.Jobs
             {
                 // Verify that the workflow is not being used by something important by letting CanDelete tell
                 // us if it's OK to delete.
-                if ( workflowService.CanDelete( workflow, out _ ) )
+                if ( workflowService.IsEligibleForDelete( workflow, out _ ) )
                 {
                     workflowIdsSafeToDelete.Add( workflow.Id );
                 }
@@ -1249,6 +1251,7 @@ namespace Rock.Jobs
                 // to prevent a SQL complexity exception, do a bulk delete anytime the workflowIdsSafeToDelete gets too big
                 if ( workflowIdsSafeToDelete.Count >= batchAmount )
                 {
+                    BulkDeleteInChunks( connectionRequestWorkflowService.Queryable().Where( c => workflowIdsSafeToDelete.Contains( c.WorkflowId ) ), batchAmount, commandTimeout );
                     totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => workflowIdsSafeToDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
                     workflowIdsSafeToDelete = new List<int>();
                 }
@@ -1256,6 +1259,7 @@ namespace Rock.Jobs
 
             if ( workflowIdsSafeToDelete.Any() )
             {
+                BulkDeleteInChunks( connectionRequestWorkflowService.Queryable().Where( c => workflowIdsSafeToDelete.Contains( c.WorkflowId ) ), batchAmount, commandTimeout );
                 totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => workflowIdsSafeToDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
             }
 
@@ -1365,7 +1369,7 @@ namespace Rock.Jobs
             var avatarCachePath = args.AvatarCachePath;
             var validationMessages = new List<string>();
 
-            if ( System.Web.Hosting.HostingEnvironment.IsHosted || args.HostName == "RockSchedulerIIS" )
+            if ( ( System.Web.Hosting.HostingEnvironment.IsHosted || args.HostName == "RockSchedulerIIS" ) && !args.IsUnitTest )
             {
                 if ( !string.IsNullOrEmpty( cacheDirectoryPath ) )
                 {
@@ -2878,26 +2882,28 @@ WHERE [ModifiedByPersonAliasId] IS NOT NULL
         }
 
         /// <summary>
-        /// Removes older unused versions of the chrome engine
+        /// Removes all installed versions of Chrome that do not match the default browser version, ensuring only the required version remains.
         /// </summary>
         /// <returns></returns>
-        private int RemoveOlderChromeEngines()
+        private int RemoveNonDefaultChromeEngines()
         {
             var options = new PuppeteerSharp.BrowserFetcherOptions()
             {
-                Product = PuppeteerSharp.Product.Chrome,
+                Browser = PuppeteerSharp.SupportedBrowser.Chrome,
                 Path = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/ChromeEngine" )
             };
 
             var browserFetcher = new PuppeteerSharp.BrowserFetcher( options );
-            var olderVersions = browserFetcher.LocalRevisions().Where( r => r != PuppeteerSharp.BrowserFetcher.DefaultChromiumRevision );
+            var olderVersions = browserFetcher.GetInstalledBrowsers().Where( r => r.BuildId != PdfGenerator.BrowserVersion && r.Browser == options.Browser );
+            int totalRemoved = 0;
 
             foreach ( var version in olderVersions )
             {
-                browserFetcher.Remove( version );
+                browserFetcher.Uninstall( version.BuildId );
+                totalRemoved++;
             }
 
-            return olderVersions.Count();
+            return totalRemoved;
         }
 
         /// <summary>
@@ -3548,20 +3554,6 @@ SET @UpdatedCampusCount = @CampusCount;
         }
 
         /// <summary>
-        /// Updates Rock's geolocation database.
-        /// </summary>
-        /// <returns>1 if the database was updated successfully.</returns>
-        private int UpdateGeolocationDatabase()
-        {
-            if ( !IsRunningFromUnitTest )
-            {
-                IpGeoLookup.Instance.UpdateDatabase();
-            }
-
-            return 1;
-        }
-
-        /// <summary>
         /// Creates a new <see cref="RockContext"/> that is properly configured
         /// for use on this instance.
         /// </summary>
@@ -3663,6 +3655,13 @@ SET @UpdatedCampusCount = @CampusCount;
             /// If set to null, all expired files are removed.
             /// </summary>
             public int? CacheMaximumFilesToRemove;
+
+            /// <summary>
+            /// <c>true</c> if the action is being executed from a unit test. This
+            /// disables a few features that are only valid under a full running
+            /// Rock instance (such as mapping IIS paths).
+            /// </summary>
+            public bool IsUnitTest { get; set; }
         }
     }
 }

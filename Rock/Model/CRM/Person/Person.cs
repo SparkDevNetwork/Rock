@@ -38,6 +38,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "Person" )]
     [DataContract]
+    [CodeGenerateRest( ~Enums.CodeGenerateRestEndpoint.DeleteItem, DisableEntitySecurity = true )]
     [Analytics( true, true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PERSON )]
     public partial class Person : Model<Person>, IRockIndexable
@@ -713,6 +714,36 @@ namespace Rock.Model
         }
 
         private int? _primaryAliasId;
+
+        /// <summary>
+        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see> identifier.
+        /// </summary>
+        /// <value>
+        /// The primary alias identifier.
+        /// </value>
+        [DataMember]
+        public Guid? PrimaryAliasGuid
+        {
+            get => _primaryAliasGuid ?? PrimaryAlias?.Guid;
+            set => _primaryAliasGuid = value;
+        }
+
+        private Guid? _primaryAliasGuid;
+
+        /// <summary>
+        /// Gets or sets whether the person's profile is visible in chat. If <see langword="null"/> then the system
+        /// default will be used.
+        /// </summary>
+        [DataMember]
+        public bool? IsChatProfilePublic { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the person can receive direct messages from anybody in the external chat system.
+        /// Otherwise, only people that are members of a shared, non-public chat channel may initiate a new direct
+        /// message with this person. If <see langword="null"/> then the system default will be used.
+        /// </summary>
+        [DataMember]
+        public bool? IsChatOpenDirectMessageAllowed { get; set; }
 
         #endregion
 

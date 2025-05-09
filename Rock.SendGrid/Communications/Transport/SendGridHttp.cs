@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Model;
@@ -175,7 +176,32 @@ namespace Rock.Communication.Transport
 
             if ( rockEmailMessage.ReplyToEmail.IsNotNullOrWhiteSpace() )
             {
-                sendGridMessage.ReplyTo = new EmailAddress( rockEmailMessage.ReplyToEmail );
+                /*
+                    2025-01-21 KBH
+
+                    GitHub Issue: https://github.com/SparkDevNetwork/Rock/issues/6149
+
+                    The EmailAddress constructor is no longer able to parse the result from rockEmailMessage.ReplyToEmail
+                    correctly (i.e. "Admin" <admin@organization.com>). The new approach uses a regular expression to extract
+                    both the name and email address, allowing for the proper construction of the EmailAddress object and avoiding
+                    issues with invalid or improperly formatted ReplyTo fields.
+
+                    Reason: SendGrid is no longer able to parse "Admin" <admin@organization.com> correctly.
+                 */
+                var mailAddressRegex = new Regex( @"^""(?<name>[^""]+)""\s*<(?<email>[\w\.-]+@[\w\.-]+\.\w+)>$" );
+                var match = mailAddressRegex.Match( rockEmailMessage.ReplyToEmail );
+
+                if ( match.Success )
+                {
+                    var name = match.Groups["name"].Value;
+                    var email = match.Groups["email"].Value;
+
+                    sendGridMessage.ReplyTo = new EmailAddress( email, name );
+                }
+                else
+                {
+                    sendGridMessage.ReplyTo = new EmailAddress( rockEmailMessage.ReplyToEmail );
+                }
             }
 
             sendGridMessage.From = new EmailAddress( rockEmailMessage.FromEmail, rockEmailMessage.FromName );

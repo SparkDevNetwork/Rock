@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "AssessmentType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "D17A28AC-F529-4AB0-A790-C21F9E74AC89")]
     public partial class AssessmentType : Model<AssessmentType>, IHasActiveFlag, ICacheable
     {

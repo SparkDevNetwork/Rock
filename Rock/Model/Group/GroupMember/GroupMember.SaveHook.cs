@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Rock.Communication.Chat;
+using Rock.Communication.Chat.Sync;
 using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Tasks;
@@ -418,6 +420,23 @@ namespace Rock.Model
                 }
 
                 SendUpdateGroupMemberMessage();
+
+                if ( RockContext.IsRockToChatSyncEnabled && ChatHelper.IsChatEnabled )
+                {
+                    Task.Run( async () =>
+                    {
+                        using ( var chatHelper = new ChatHelper() )
+                        {
+                            var syncCommand = new SyncGroupMemberToChatCommand
+                            {
+                                GroupId = Entity.GroupId,
+                                PersonId = Entity.PersonId,
+                            };
+
+                            await chatHelper.SyncGroupMembersToChatProviderAsync( new List<SyncGroupMemberToChatCommand> { syncCommand } );
+                        }
+                    } );
+                }
             }
 
             /// <summary>

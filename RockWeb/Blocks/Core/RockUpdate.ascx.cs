@@ -318,7 +318,11 @@ namespace RockWeb.Blocks.Core
             string version = e.CommandArgument.ToString();
 
             hdnInstallVersion.Value = version;
-            litConfirmationMessage.Text = string.Format( "Are you sure you want to upgrade to Rock {0}?", RockVersion( new Version( version ) ) );
+
+            var litPackageDescription = ( Literal ) e.Item.FindControl( "litPackageDescription" );
+            string versionDescription = litPackageDescription?.Text ?? version;
+            litConfirmationMessage.Text = string.Format( "Are you sure you want to upgrade to {0}?", versionDescription );
+
             mdConfirmInstall.Show();
         }
 
@@ -340,7 +344,7 @@ namespace RockWeb.Blocks.Core
                 var installedRelease = rockInstaller.InstallVersion();
 
                 nbSuccess.Text = ConvertToHtmlLiWrappedUl( installedRelease.ReleaseNotes ).ConvertCrLfToHtmlBr();
-                lSuccessVersion.Text = GetRockVersion( installedRelease.SemanticVersion );
+                lSuccessVersion.Text = installedRelease.Description;
             }
             catch ( OutOfMemoryException ex )
             {
@@ -556,31 +560,24 @@ namespace RockWeb.Blocks.Core
         private string CreatePendingRunOnceJobsMessage( List<string> pendingStartupRunOnceJobs, List<string> pendingScheduledRunOnceJobs )
         {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine( "<strong><i class=\"fa fa-exclamation-triangle\"></i> Cannot Update Rock: Migration Jobs Pending</strong>" );
-            stringBuilder.AppendLine( "<p>" );
-            stringBuilder.AppendLine( "The following jobs need to complete before updating to the latest version of Rock.<br>" );
+            stringBuilder.AppendLine( "<strong><i class=\"fa fa-info-circle\"></i> Migration Jobs Pending</strong>" );
+            stringBuilder.AppendLine( "<p>The jobs listed below must finish before you can update to another version of Rock.</p>" );
 
             if ( pendingStartupRunOnceJobs.Any() )
             {
-                stringBuilder.AppendLine( "These jobs run automatically when Rock starts after an update and should finish soon.<br>" );
+                stringBuilder.AppendLine( "<p>These jobs run automatically when Rock starts after an update and typically finish quickly.</p>" );
                 stringBuilder.AppendLine( "<ul>" );
-
                 pendingStartupRunOnceJobs.ForEach( j => stringBuilder.AppendLine( $"<li>{j}</li>" ) );
-
                 stringBuilder.AppendLine( "</ul>" );
             }
 
             if ( pendingScheduledRunOnceJobs.Any() )
             {
-                stringBuilder.AppendLine( "These jobs are scheduled to run at 2 AM when usage is low because they could affect performance. If needed they can be run manually by going to Admin Tools --> System Settings --> Jobs Administration.<br>" );
+                stringBuilder.AppendLine( "<p>These jobs are scheduled to run at 2 AM during low-usage hours to avoid performance issues. If needed, they can be run manually from Admin Tools > System Settings > Jobs Administration.</p>" );
                 stringBuilder.AppendLine( "<ul>" );
-
                 pendingScheduledRunOnceJobs.ForEach( j => stringBuilder.AppendLine( $"<li>{j}</li>" ) );
-
                 stringBuilder.AppendLine( "</ul>" );
             }
-
-            stringBuilder.AppendLine( "</p>" );
 
             return stringBuilder.ToString();
         }

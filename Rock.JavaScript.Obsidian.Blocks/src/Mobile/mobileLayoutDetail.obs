@@ -28,7 +28,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="layoutEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="layoutEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -42,16 +42,15 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./MobileLayoutDetail/editPanel.partial.obs";
     import ViewPanel from "./MobileLayoutDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./MobileLayoutDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { MobileLayoutBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileLayoutDetail/mobileLayoutBag";
     import { MobileLayoutDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileLayoutDetail/mobileLayoutDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<MobileLayoutBag, MobileLayoutDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -59,21 +58,16 @@
     const errorMessage = ref("");
 
     const layoutViewBag = ref(config.entity);
-    const layoutEditBag = ref<MobileLayoutBag>({} as MobileLayoutBag);
+    const layoutEditBag = ref<ValidPropertiesBox<MobileLayoutBag>>({
+        bag: {} as MobileLayoutBag
+    });
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "description",
-        "name",
-        "layoutMobilePhone",
-        "layoutMobileTablet"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(layoutEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: layoutEditBag
+    });
 
     // #endregion
 
@@ -166,35 +160,20 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<MobileLayoutBag, MobileLayoutDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<MobileLayoutBag>>("Edit", {
             key: layoutViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            layoutEditBag.value = result.data.entity;
-
+        if (result.isSuccess && result.data && result.data.bag) {
+            layoutEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
             return true;
         }
         else {
             return false;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -206,14 +185,8 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<MobileLayoutBag, MobileLayoutDetailOptionsBag> = {
-            entity: layoutEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<MobileLayoutBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<MobileLayoutBag> | string>("Save", {
+            box: layoutEditBag.value
         });
 
         if (result.isSuccess && result.data) {
@@ -229,8 +202,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -239,7 +210,7 @@
         blockError.value = "The specified layout could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        layoutEditBag.value = config.entity;
+        layoutEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

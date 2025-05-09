@@ -36,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "RegistrationTemplate" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.REGISTRATION_TEMPLATE )]
     public partial class RegistrationTemplate : Model<RegistrationTemplate>, IHasActiveFlag, ICategorized, ICampusFilterable
     {

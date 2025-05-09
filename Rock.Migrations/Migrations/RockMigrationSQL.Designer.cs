@@ -1612,6 +1612,70 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure updates the peer network for an individual&apos;s following.
+        ///    &lt;/summary&gt;
+        ///    &lt;remarks&gt;
+        ///        FOLLOWING PEER NETWORK NOTES
+        ///        1.  Any already-existing peer network connections will be updated with a current timestamp.
+        ///        2.  Any missing connections will be added.
+        ///        3.  A static relationship score of 5 will be enforced for all such connections.
+        ///        4.  Any no-longer-matching connections will be deleted (if an individual is no l [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202501152224140_ImprovePeerNetworkRelationshipTrends_spPeerNetwork_UpdateFollowing {
+            get {
+                return ResourceManager.GetString("_202501152224140_ImprovePeerNetworkRelationshipTrends_spPeerNetwork_UpdateFollowi" +
+                        "ng", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///        This procedure takes a communication list (group) or communication and returns all of the
+        ///		recipients along with the data needed to determine if the individual can recieve an email,
+        ///		sms or push notification.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		All of the fields needed to drive the communication wizard.
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;ListId&apos; datatype=&apos;int&apos;&gt;The group id of the communication list or the communication id.&lt;/param&gt;
+        ///	&lt;param name=&apos;ListType&apos; datatype=&apos;int&apos;&gt;1 = Communicati [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202503011520245_AddNewCommunicationPreviewPageAndPersonalizationSegments_spCommunicationRecipientDetails {
+            get {
+                return ResourceManager.GetString("_202503011520245_AddNewCommunicationPreviewPageAndPersonalizationSegments_spCommu" +
+                        "nicationRecipientDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///        This procedure takes a communication list (group) or communication and returns all of the
+        ///		recipients along with the data needed to determine if the individual can recieve an email,
+        ///		sms or push notification.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		All of the fields needed to drive the communication wizard.
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;ListId&apos; datatype=&apos;int&apos;&gt;The group id of the communication list or the communication id.&lt;/param&gt;
+        ///	&lt;param name=&apos;ListType&apos; datatype=&apos;int&apos;&gt;1 = Communicati [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP_spCommunicationRecipientDetails {
+            get {
+                return ResourceManager.GetString("_202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP_spComm" +
+                        "unicationRecipientDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {

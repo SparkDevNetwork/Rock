@@ -82,10 +82,6 @@
 
         valueBuilder.addTextValue("Items Require Approval", asYesNoOrNull(props.modelValue.requiresApproval) ?? "No");
 
-        if (props.options.isIndexEnabled === true) {
-            valueBuilder.addTextValue("Is Indexed", asYesNoOrNull(props.modelValue.isIndexEnabled) ?? "No");
-        }
-
         if (props.modelValue.enableRss) {
             if (props.modelValue.channelUrl) {
                 valueBuilder.addTextValue("Channel URL", props.modelValue.channelUrl);
@@ -101,6 +97,10 @@
 
         if (!props.modelValue) {
             return valueBuilder.build();
+        }
+
+        if (props.options.isIndexEnabled === true) {
+            valueBuilder.addTextValue("Is Indexed", asYesNoOrNull(props.modelValue.isIndexEnabled) ?? "No");
         }
 
         if (props.modelValue.enableRss) {

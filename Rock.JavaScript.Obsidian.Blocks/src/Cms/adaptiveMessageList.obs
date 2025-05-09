@@ -25,7 +25,7 @@
                     <div>
                         <span class="text-semibold">{{ row.name }}</span> <span class="text-muted text-xs">{{ row.id }}</span>
                     </div>
-                    <div v-if="row.description">
+                    <div v-if="row.description" class="text-muted">
                         {{ row.description }}
                     </div>
                 </div>
@@ -45,6 +45,7 @@
         <NumberColumn name="views"
                       title="Views"
                       field="views"
+                      headerClass="header-text-right"
                       :filter="numberValueFilter"
                       visiblePriority="sm">
             <template #format="{ row }">
@@ -57,6 +58,7 @@
         <NumberColumn name="adaptations"
                       title="Adaptations"
                       field="adaptations"
+                      headerClass="header-text-right"
                       :filter="numberValueFilter"
                       visiblePriority="xs">
             <template #format="{ row }">
@@ -70,6 +72,12 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
+
+<style scoped>
+:deep(.header-text-right .grid-column-title) {
+    text-align: right;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

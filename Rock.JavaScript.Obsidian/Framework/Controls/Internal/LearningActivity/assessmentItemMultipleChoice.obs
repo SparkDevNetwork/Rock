@@ -64,7 +64,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ComponentScreen } from "./learningActivity";
-    import { AssessmentItem, MultipleChoiceItem } from "./assessmentLearningActivity.partial";
+    import { AssessmentItem } from "./assessmentLearningActivity.partial";
 
     const props = defineProps({
         disabled: {
@@ -74,7 +74,7 @@
 
         /** The assessment item's configuration. */
         modelValue: {
-            type: Object as PropType<MultipleChoiceItem | AssessmentItem>,
+            type: Object as PropType<AssessmentItem>,
             required: true
         },
 
@@ -85,16 +85,14 @@
     });
 
     const emit = defineEmits<{
-        (event: "update:modelValue", value: MultipleChoiceItem | AssessmentItem): void
+        (event: "update:modelValue", value: AssessmentItem): void
     }>();
 
-    const modelValue = ref(props.modelValue as MultipleChoiceItem);
-
-    const question = ref(modelValue.value?.question ?? "");
-    const helpText = ref(modelValue.value?.helpText ?? "");
-    const answers = ref(modelValue.value?.answers ?? []);
-    const response = ref(modelValue.value?.response ?? "");
-    const correctAnswer = ref(modelValue.value?.correctAnswer ?? "");
+    const question = ref(props.modelValue.question ?? "");
+    const helpText = ref(props.modelValue.helpText ?? "");
+    const answers = ref(props.modelValue.answers ?? ["", "", ""]);
+    const response = ref(props.modelValue.response ?? "");
+    const correctAnswer = ref(props.modelValue.correctAnswer ?? "");
     const isCorrect = computed(() => response.value === correctAnswer.value);
 
     const answersWithText = computed(() => answers.value.filter(a => !!a));
@@ -130,14 +128,14 @@
     );
 
     watch([question, helpText, answersWithText, correctAnswer], () => {
-        const newModelValue = {
-            typeName: props.modelValue?.typeName,
+        const newModelValue: AssessmentItem = {
+            ...props.modelValue,
             question: question.value,
             helpText: helpText.value,
             answers: answersWithText.value,
             correctAnswer: correctAnswer.value,
             uniqueId: props.modelValue?.uniqueId
-        } as MultipleChoiceItem;
+        };
 
         emit("update:modelValue", newModelValue);
     }, { deep: true });
@@ -145,10 +143,10 @@
     /** Watch for modified component completion. */
     watch(response, () => {
         const newModelValue = {
-            ...toValue(modelValue.value),
-        } as MultipleChoiceItem;
+            ...props.modelValue,
+            response: response.value
+        };
 
-        newModelValue.response = response.value;
         emit("update:modelValue", newModelValue);
     });
 

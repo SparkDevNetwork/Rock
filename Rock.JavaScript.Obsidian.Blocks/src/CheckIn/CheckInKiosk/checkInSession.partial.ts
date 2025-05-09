@@ -1662,7 +1662,7 @@ export class CheckInSession {
             // in individual mode, and registration is not allowed (meaning no
             // chance to fix an incorrect family anyway) then automatically
             // select this person and move on.
-            if (validAttendees.length === 1 && !this.configuration.kiosk?.isRegistrationModeEnabled) {
+            if (validAttendees.length === 1 && !this.configuration.kiosk?.isEditingFamiliesEnabled) {
                 if (validAttendees[0].person?.id) {
                     let newSession = this.withSelectedAttendees([validAttendees[0].person.id]);
                     newSession = await newSession.withAttendee(validAttendees[0].person.id);

@@ -27,6 +27,10 @@ export const GroupType = {
     GrouptypeApplicationGroup: "3981CF6D-7D15-4B57-AACE-C0E25D28BD49",
     /** Campus Team group type guid */
     GrouptypeCampusTeam: "BADD7A6C-1FB3-4E11-A721-6D1377C6958C",
+    /** Chat Direct Message group type guid */
+    GrouptypeChatDirectMessage: "DFDC14A3-D1DC-4342-A012-5CE9E8994B5E",
+    /** Chat Shared Channel group type guid */
+    GrouptypeChatSharedChannel: "268D4802-24C7-4891-890E-71313BEE17B1",
     /** Communication List group type guid */
     GrouptypeCommunicationlist: "D1D95777-FFA3-CBB3-4A6D-658706DAED33",
     /** Event Attendees group type guid */
@@ -37,6 +41,8 @@ export const GroupType = {
     GrouptypeFundraisingopportunity: "4BE7FC44-332D-40A8-978E-47B7035D7A0C",
     /** General group type guid */
     GrouptypeGeneral: "8400497B-C52F-40AE-A529-3FCCB9587101",
+    /** Hidden Application Group group type guid */
+    GrouptypeHiddenApplicationGroup: "2C6F2847-B404-4595-AB35-CE42F2303868",
     /** Know relationship group type guid */
     GrouptypeKnownRelationships: "E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF",
     /** Learning Management System (LMS) Class group type guid */

@@ -28,7 +28,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="signatureDocumentTemplateEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="signatureDocumentTemplateEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -42,17 +42,16 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./SignatureDocumentTemplateDetail/editPanel.partial.obs";
     import ViewPanel from "./SignatureDocumentTemplateDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, onConfigurationValuesChanged, useReloadBlock, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { onConfigurationValuesChanged, useReloadBlock, useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./SignatureDocumentTemplateDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { SignatureDocumentTemplateBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateDetail/signatureDocumentTemplateBag";
     import { SignatureDocumentTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateDetail/signatureDocumentTemplateDetailOptionsBag";
     import { useStore } from "@Obsidian/PageState";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<SignatureDocumentTemplateBag, SignatureDocumentTemplateDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
     const store = useStore();
 
     // #region Values
@@ -61,31 +60,18 @@
     const errorMessage = ref("");
 
     const signatureDocumentTemplateViewBag = ref(config.entity);
-    const signatureDocumentTemplateEditBag = ref<SignatureDocumentTemplateBag>({} as SignatureDocumentTemplateBag);
+    const signatureDocumentTemplateEditBag = ref<ValidPropertiesBox<SignatureDocumentTemplateBag>>({
+        bag: {} as SignatureDocumentTemplateBag
+    });
 
     const entityTypeGuid = EntityType.SignatureDocumentTemplate;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "binaryFileType",
-        "completionSystemCommunication",
-        "description",
-        "documentTerm",
-        "isActive",
-        "lavaTemplate",
-        "name",
-        "providerEntityType",
-        "providerTemplateKey",
-        "signatureType",
-        "isValidInFuture",
-        "validityDurationInDays"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(signatureDocumentTemplateEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: signatureDocumentTemplateEditBag
+    });
 
     // #endregion
 
@@ -105,7 +91,7 @@
             case DetailPanelMode.Edit:
                 return "Edit Signature Document Template";
             default:
-            return signatureDocumentTemplateViewBag.value?.name ?? "";
+                return signatureDocumentTemplateViewBag.value?.name ?? "";
         }
     });
 
@@ -154,10 +140,6 @@
 
     // #endregion
 
-    // #region Functions
-
-    // #endregion
-
     // #region Event Handlers
 
     /**
@@ -167,7 +149,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!signatureDocumentTemplateEditBag.value?.idKey) {
+        if (!signatureDocumentTemplateEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -208,35 +190,21 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<SignatureDocumentTemplateBag, SignatureDocumentTemplateDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<SignatureDocumentTemplateBag>>("Edit", {
             key: signatureDocumentTemplateViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            signatureDocumentTemplateEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data.bag) {
+            signatureDocumentTemplateEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
 
             return true;
         }
         else {
             return false;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -248,19 +216,13 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<SignatureDocumentTemplateBag, SignatureDocumentTemplateDetailOptionsBag> = {
-            entity: signatureDocumentTemplateEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<SignatureDocumentTemplateBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<SignatureDocumentTemplateBag> | string>("Save", {
+            box: signatureDocumentTemplateEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                signatureDocumentTemplateViewBag.value = result.data;
+                signatureDocumentTemplateViewBag.value = result.data.bag;
 
                 return true;
             }
@@ -276,8 +238,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -286,7 +246,7 @@
         blockError.value = "The specified signature document template could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        signatureDocumentTemplateEditBag.value = config.entity;
+        signatureDocumentTemplateEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 

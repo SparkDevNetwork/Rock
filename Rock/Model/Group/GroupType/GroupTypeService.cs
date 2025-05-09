@@ -315,6 +315,43 @@ namespace Rock.Model
                 .ToList();
         }
 
+        /// <summary>
+        /// Gets a Queryable of the chat-enabled <see cref="GroupType"/>s.
+        /// </summary>
+        /// <returns>A Queryable of the chat-enabled <see cref="GroupType"/>s.</returns>
+        [RockInternal( "17.0" )]
+        public IQueryable<GroupType> GetChatEnabledGroupTypes()
+        {
+            return Queryable().Where( gt => gt.IsChatAllowed );
+        }
+
+        /// <summary>
+        /// Gets the chat-enabled child <see cref="Group"/> count for the provided <see cref="GroupType"/> identifier.
+        /// </summary>
+        /// <param name="groupTypeId">The identifier of the <see cref="GroupType"/> for which to get the chat-enabled
+        /// child <see cref="Group"/> count.</param>
+        /// <returns>The chat-enabled child <see cref="Group"/> count.</returns>
+        [RockInternal( "17.0" )]
+        public int GetChatEnabledGroupCount( int groupTypeId )
+        {
+            var groupTypeCache = GroupTypeCache.Get( groupTypeId );
+            if ( groupTypeCache?.IsChatAllowed != true )
+            {
+                return 0;
+            }
+
+            // Go to the database to count how many of this group type's child groups have chat enabled.
+            // This will include archived and inactive, chat-enabled groups.
+            var rockContext = ( RockContext ) this.Context;
+
+            var count = new GroupService( rockContext )
+                .GetChatEnabledGroupsQuery()
+                .Where( g => g.GroupTypeId == groupTypeId )
+                .Count();
+
+            return count;
+        }
+
         #region Private Methods
 
         /// <summary>

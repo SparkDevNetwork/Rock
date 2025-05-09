@@ -37,8 +37,7 @@ describe("Issue 5610", () => {
 
         const instance = mountBlock(RegistrationEntry,
             getConfigurationValues(),
-            blockActions, {
-        });
+            blockActions);
 
         // Configure registration for 2 registrants.
         await instance.find(".registrationentry-intro .numberincrement-up").trigger("click");
@@ -61,7 +60,7 @@ describe("Issue 5610", () => {
         // this because Ant Select does not have an actual HTML element backing
         // it that we can change to trigger the update.
         instance.get(".registrationentry-registrant > div:nth-child(1)")
-            .findAllComponents({name: "DropDownList"})[0]
+            .findAllComponents({ name: "DropDownList" })[0]
             .vm
             .$emit("update:modelValue", "");
 
@@ -103,7 +102,7 @@ describe("Issue 5610", () => {
         // it that we can change to trigger the update.
         const secondRegistrant = instance.findAllComponents(Registrant)[1];
         instance.get(".registrationentry-registrant > div:nth-child(2)")
-            .findAllComponents({name: "DropDownList"})[0]
+            .findAllComponents({ name: "DropDownList" })[0]
             .vm
             .$emit("update:modelValue", secondRegistrant.vm.familyMemberOptions[0].value);
 
@@ -153,7 +152,7 @@ describe("Issue 5610", () => {
         // this because Ant Select does not have an actual HTML element backing
         // it that we can change to trigger the update.
         instance.get(".registrationentry-registrant > div:nth-child(1)")
-            .findAllComponents({name: "DropDownList"})[0]
+            .findAllComponents({ name: "DropDownList" })[0]
             .vm
             .$emit("update:modelValue", "");
 
@@ -195,7 +194,7 @@ describe("Issue 5610", () => {
         // it that we can change to trigger the update.
         const secondRegistrant = instance.findAllComponents(Registrant)[1];
         instance.get(".registrationentry-registrant > div:nth-child(2)")
-            .findAllComponents({name: "DropDownList"})[0]
+            .findAllComponents({ name: "DropDownList" })[0]
             .vm
             .$emit("update:modelValue", secondRegistrant.vm.familyMemberOptions[0].value);
 
@@ -242,7 +241,7 @@ describe("Issue 5610", () => {
         // this because Ant Select does not have an actual HTML element backing
         // it that we can change to trigger the update.
         instance.get(".registrationentry-registrant > div:nth-child(1)")
-            .findAllComponents({name: "DropDownList"})[0]
+            .findAllComponents({ name: "DropDownList" })[0]
             .vm
             .$emit("update:modelValue", "");
 
@@ -289,7 +288,7 @@ describe("Issue 5610", () => {
         // this because Ant Select does not have an actual HTML element backing
         // it that we can change to trigger the update.
         instance.get(".registrationentry-registrant > div:nth-child(1)")
-            .findAllComponents({name: "DropDownList"})[0]
+            .findAllComponents({ name: "DropDownList" })[0]
             .vm
             .$emit("update:modelValue", "");
 
@@ -469,7 +468,7 @@ const configurationValues: RegistrationEntryInitializationBox = {
     "registrationAttributesStart": [],
     "registrationAttributesEnd": [],
     "maxRegistrants": 10,
-    "registrantsSameFamily": 2,
+    "registrantsSameFamily": 1,
     "forceEmailUpdate": false,
     "registrarOption": 0,
     "cost": 0.00,
@@ -701,5 +700,6 @@ const configurationValues: RegistrationEntryInitializationBox = {
     "showSmsOptIn": false,
     "isPaymentPlanAllowed": false,
     "isPaymentPlanConfigured": false,
-    "disableCaptchaSupport": true
+    "disableCaptchaSupport": true,
+    "areCurrentFamilyMembersShown": true
 };

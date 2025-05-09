@@ -25,6 +25,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication.Chat;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -594,6 +595,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
                         }
 
+                        if ( ChatHelper.IsChatEnabled && Person.HasChatAlias )
+                        {
+                            person.IsChatProfilePublic = ddlIsChatProfilePublic.SelectedValue.AsBooleanOrNull();
+                            person.IsChatOpenDirectMessageAllowed = ddlIsChatOpenDirectMessageAllowed.SelectedValue.AsBooleanOrNull();
+                        }
+
                         person.GivingGroupId = ddlGivingGroup.SelectedValueAsId();
                         person.IsLockedAsChild = cbLockAsChild.Checked;
 
@@ -937,6 +944,26 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rblEmailPreference.SelectedValue = Person.EmailPreference.ConvertToString( false );
             rblCommunicationPreference.SetValue( Person.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
             nbCommunicationPreferenceWarning.Visible = false;
+
+            if ( ChatHelper.IsChatEnabled && Person.HasChatAlias )
+            {
+                var isChatProfilePublic = Person.IsChatProfilePublic.HasValue
+                    ? Person.IsChatProfilePublic.Value ? "y" : "n"
+                    : string.Empty;
+
+                var isChatOpenDirectMessageAllowed = Person.IsChatOpenDirectMessageAllowed.HasValue
+                    ? Person.IsChatOpenDirectMessageAllowed.Value ? "y" : "n"
+                    : string.Empty;
+
+                ddlIsChatProfilePublic.SetValue( isChatProfilePublic );
+                ddlIsChatOpenDirectMessageAllowed.SetValue( isChatOpenDirectMessageAllowed );
+
+                pnlChatPreferences.Visible = true;
+            }
+            else
+            {
+                pnlChatPreferences.Visible = false;
+            }
 
             dvpRecordStatus.SetValue( Person.RecordStatusValueId );
             lRecordStatusReadOnly.Text = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValue.Value : string.Empty;

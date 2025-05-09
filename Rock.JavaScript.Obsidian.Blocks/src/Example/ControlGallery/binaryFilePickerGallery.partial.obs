@@ -1,0 +1,69 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <BinaryFilePicker label="Binary File"
+                          v-model="value"
+                          :multiple="multiple"
+                          :columnCount="columnCount"
+                          :enhanceForLongLists="enhanceForLongLists"
+                          :displayStyle="displayStyle"
+                          :showBlankItem="showBlankItem"
+                          :binaryFileTypeGuid="binaryFileType.value" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+
+                <div class="col-md-4">
+                    <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+                </div>
+
+                <div class="col-md-4">
+                    <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+                </div>
+
+                <div class="col-md-4">
+                    <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+                </div>
+
+                <div class="col-md-4">
+                    <BinaryFileTypePicker label="Binary File Type" v-model="binaryFileType" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import BinaryFilePicker from "@Obsidian/Controls/binaryFilePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
+    import { getSfcControlImportPath, displayStyleItems } from "./common/utils.partial";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+
+    const columnCount = ref(0);
+    const displayStyle = ref(PickerDisplayStyle.Auto);
+    const enhanceForLongLists = ref(false);
+    const multiple = ref(false);
+    const showBlankItem = ref(false);
+    const binaryFileType = ref({ "value": BinaryFiletype.Default });
+    const value = ref({});
+    const importCode = getSfcControlImportPath("binaryFilePicker");
+    const exampleCode = `<BinaryFilePicker label="Binary File" v-model="value" />`;
+</script>

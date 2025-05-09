@@ -20,9 +20,10 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Running;
 
 using Rock.Lava.Fluid;
-using Rock.Tests.Integration.Performance.Modules.Lava;
+using Rock.Tests.Integration.Performance.Lava;
+using Rock.Tests.Lava;
+using Rock.Tests.Lava.Filters;
 using Rock.Tests.Shared.Lava;
-using Rock.Tests.UnitTests.Lava;
 
 namespace Rock.Tests.Integration.Performance.BenchmarkRunners
 {
@@ -90,7 +91,7 @@ namespace Rock.Tests.Integration.Performance.BenchmarkRunners
 
         private static void RunLavaTemplateParse()
         {
-            LavaUnitTestHelper.Initialize( testRockLiquidEngine: false, testDotLiquidEngine: false, testFluidEngine: true );
+            LavaUnitTestHelper.Initialize( testFluidEngine: true );
 
             var tests = new CollectionFilterTests();
             tests.AddToArray_AddToStringCollection_AppendsNewItem();
@@ -98,7 +99,7 @@ namespace Rock.Tests.Integration.Performance.BenchmarkRunners
 
         private static void RunLavaTemplateParse( string[] args )
         {
-            LavaIntegrationTestHelper.Initialize( testRockLiquidEngine:false, testDotLiquidEngine:false, testFluidEngine: true, loadShortcodes: false );
+            LavaIntegrationTestHelper.Initialize( testFluidEngine: true, loadShortcodes: false );
 
             var lavaHelper = LavaIntegrationTestHelper.CurrentInstance;
 

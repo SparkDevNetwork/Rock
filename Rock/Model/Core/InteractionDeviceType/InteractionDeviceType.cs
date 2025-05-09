@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "InteractionDeviceType" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "C1A24534-C77F-41A8-BCA9-73ABA57348E3")]
     public partial class InteractionDeviceType : Model<InteractionDeviceType>
     {

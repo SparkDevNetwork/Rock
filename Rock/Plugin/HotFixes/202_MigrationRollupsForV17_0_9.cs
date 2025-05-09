@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -863,7 +863,7 @@ WHERE [Guid] = '{GIVING_HOUSEHOLDS_BY_CAMPUS_METRIC_GUID}'
         private void AddLmsDataUp()
         {
             RockMigrationHelper.AddOrUpdateEntityType( "Rock.Model.LearningProgram", Rock.SystemGuid.EntityType.LEARNING_PROGRAM, true, false );
-            RockMigrationHelper.AddOrUpdateEntityType( "Rock.Model.LearningActivityCompletion", Rock.SystemGuid.EntityType.LEARNING_ACTIVITY_COMPLETION, true, false );
+            RockMigrationHelper.AddOrUpdateEntityType( "Rock.Model.LearningActivityCompletion", Rock.SystemGuid.EntityType.LEARNING_CLASS_ACTIVITY_COMPLETION, true, false );
             LmsEntityTypesPagesBlocksUp();
             AddSeedData();
             AddOrUpdateSendLearningActivityNotificationsJob();
@@ -882,7 +882,7 @@ WHERE [Guid] = '{GIVING_HOUSEHOLDS_BY_CAMPUS_METRIC_GUID}'
             LmsEntityTypesPagesBlocksDown();
 
             RemoveSeedData();
-            RockMigrationHelper.DeleteEntityType( Rock.SystemGuid.EntityType.LEARNING_ACTIVITY_COMPLETION );
+            RockMigrationHelper.DeleteEntityType( Rock.SystemGuid.EntityType.LEARNING_CLASS_ACTIVITY_COMPLETION );
         }
 
         /// <summary>
@@ -1160,21 +1160,21 @@ WHERE NOT EXISTS (
         }
 
         /// <summary>
-        ///  Deletes the SendLearningActivityNotifications Job based on Guid and Class.
+        ///  Deletes the SendLearningNotifications Job based on Guid and Class.
         /// </summary>
         private void DeleteSendLearningActivityNotificationsJob()
         {
-            var jobClass = "Rock.Jobs.SendLearningActivityNotifications";
+            var jobClass = "Rock.Jobs.SendLearningNotifications";
             Sql( $"DELETE [ServiceJob] WHERE [Class] = '{jobClass}' AND [Guid] = '{SystemGuid.ServiceJob.SEND_LEARNING_ACTIVITY_NOTIFICATIONS}'" );
         }
 
         /// <summary>
-        /// Adds or Updates the SendLearningActivityNotifications Job.
+        /// Adds or Updates the SendLearningNotifications Job.
         /// </summary>
         private void AddOrUpdateSendLearningActivityNotificationsJob()
         {
             var cronSchedule = "0 0 7 1/1 * ? *"; // 7am daily.
-            var jobClass = "Rock.Jobs.SendLearningActivityNotifications";
+            var jobClass = "Rock.Jobs.SendLearningNotifications";
             var name = "Send Learning Activity Notifications";
             var description = "A job that sends notifications to students for newly available activities.";
 

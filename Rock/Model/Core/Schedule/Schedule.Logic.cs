@@ -27,6 +27,7 @@ using Rock.Web.Cache;
 using Ical.Net.CalendarComponents;
 using System.ComponentModel.DataAnnotations;
 using Rock.Attribute;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -361,6 +362,13 @@ namespace Rock.Model
 
         #endregion ICacheable
 
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => Category ?? base.ParentAuthority;
+
+        #endregion
+
         #region Public Methods
 
         /// <summary>
@@ -471,14 +479,28 @@ namespace Rock.Model
                 }
             }
 
+            /*
+                 4/1/2025 - NA
+
+                 This update adjusts the logic to use the full DtStart value —including its time component— when setting the effectiveEndDateTime. 
+                 For example, if a schedule starts on Jan 1 at 11:00 PM and lasts 4 hours, the effectiveEndDateTime becomes Jan 2 at 3:00 AM, while 
+                 the EffectiveEndDate is Jan 2. This behavior aligns with the iCal DTEND value.
+
+                 The EffectiveEndDate is still OK to use to determine when a schedule is no longer to be considered active.
+
+                 Reason: To resolve issue https://github.com/SparkDevNetwork/Rock/issues/6227
+            */
+
             // At this point, if no EffectiveEndDate is set then assume this is a one-time event and set the EffectiveEndDate to the EffectiveStartDate.
             if ( effectiveEndDateTime == DateTime.MaxValue && !adjustEffectiveDateForLastOccurrence )
             {
-                effectiveEndDateTime = effectiveStartDateTime;
+                effectiveEndDateTime = calEvent.DtStart?.Value;
             }
 
             // Add the Duration of the event to ensure that the effective end date corresponds to the day on which the event concludes.
-            if ( effectiveEndDateTime != null && effectiveEndDateTime != DateTime.MaxValue )
+            // (We're only doing this when the adjustEffectiveDateForLastOccurrence is not true, because otherwise the effectiveEndDateTime
+            // already includes the duration of the event.)
+            if ( !adjustEffectiveDateForLastOccurrence && effectiveEndDateTime != null && effectiveEndDateTime != DateTime.MaxValue )
             {
                 effectiveEndDateTime = effectiveEndDateTime.Value.AddMinutes( DurationInMinutes );
             }
@@ -609,7 +631,7 @@ namespace Rock.Model
         {
             if ( IsCheckInEnabled )
             {
-                return GetCheckInTimes( beginDateTime, CheckInStartOffsetMinutes.Value, CheckInEndOffsetMinutes, iCalendarContent, () => GetICalEvent() );
+                return GetCheckInTimes( beginDateTime, CheckInStartOffsetMinutes.Value, CheckInEndOffsetMinutes, CategoryId, iCalendarContent, () => GetICalEvent() );
             }
 
             return new List<CheckInTimes>();
@@ -621,14 +643,15 @@ namespace Rock.Model
         /// <param name="beginDateTime">The begin date time.</param>
         /// <param name="checkInStartOffsetMinutes">The check in start offset minutes.</param>
         /// <param name="checkInEndOffsetMinutes">The check in end offset minutes.</param>
+        /// <param name="categoryId">The ID of the schedule's category.</param>
         /// <param name="iCalendarContent">The raw iCal content.</param>
         /// <param name="calendarEventFactory">The calendar event factory that will return an instance of the <see cref="CalendarEvent"/>.</param>
         /// <returns>A list of <see cref="CheckInTimes"/> objects.</returns>
-        internal static List<CheckInTimes> GetCheckInTimes( DateTime beginDateTime, int checkInStartOffsetMinutes, int? checkInEndOffsetMinutes, string iCalendarContent, Func<CalendarEvent> calendarEventFactory )
+        internal static List<CheckInTimes> GetCheckInTimes( DateTime beginDateTime, int checkInStartOffsetMinutes, int? checkInEndOffsetMinutes, int? categoryId, string iCalendarContent, Func<CalendarEvent> calendarEventFactory )
         {
             var result = new List<CheckInTimes>();
 
-            var occurrences = GetICalOccurrences( beginDateTime, beginDateTime.Date.AddDays( 1 ), null, null, iCalendarContent, calendarEventFactory );
+            var occurrences = GetICalOccurrences( beginDateTime, beginDateTime.Date.AddDays( 1 ), null, categoryId, iCalendarContent, calendarEventFactory );
 
             foreach ( var occurrence in occurrences
                 .Where( a =>
@@ -996,11 +1019,11 @@ namespace Rock.Model
                        The given time falls outside of the start time to midnight and the midnight to end time windows
                        has to be greater than the end time, which is going to be an earlier time than the start time.
                     */
-                        if ( time.TimeOfDay.TotalSeconds < calEvent.DtStart.Value.TimeOfDay.TotalSeconds
-                            && time.TimeOfDay.TotalSeconds >= calEvent.DtEnd.Value.TimeOfDay.TotalSeconds )
-                        {
-                            return false;
-                        }
+                    if ( time.TimeOfDay.TotalSeconds < calEvent.DtStart.Value.TimeOfDay.TotalSeconds
+                        && time.TimeOfDay.TotalSeconds >= calEvent.DtEnd.Value.TimeOfDay.TotalSeconds )
+                    {
+                        return false;
+                    }
                 }
                 else
                 {

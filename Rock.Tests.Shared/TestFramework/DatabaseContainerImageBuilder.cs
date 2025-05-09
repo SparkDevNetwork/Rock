@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,6 +12,8 @@ using Docker.DotNet.Models;
 
 using DotNet.Testcontainers.Containers;
 
+using Rock.Jobs;
+using Rock.Migrations.RockStartup;
 using Rock.Model;
 using Rock.Tests.Shared.Lava;
 using Rock.Utility;
@@ -43,8 +46,11 @@ namespace Rock.Tests.Shared.TestFramework
                     All = true
                 } );
 
+                var currentMigrationNumber = long.Parse( GetTargetMigration().Truncate( 15, false ) );
+
                 var latestImage = images.SelectMany( img => img.RepoTags )
                     .Where( t => t.StartsWith( $"{RepositoryName}:" ) )
+                    .Where( t => long.TryParse( t.Substring( 26 ), out var migrationNumber ) && migrationNumber <= currentMigrationNumber )
                     .OrderByDescending( t => t )
                     .FirstOrDefault();
 
@@ -104,11 +110,13 @@ namespace Rock.Tests.Shared.TestFramework
 
             using ( var connection = new SqlConnection( connectionString ) )
             {
+                var dbName = "Rock";
+
                 await connection.OpenAsync();
 
                 if ( !upgrade )
                 {
-                    await CreateDatabaseAsync( connection, "Rock" );
+                    await CreateDatabaseAsync( connection, dbName );
                 }
 
                 var csb = new SqlConnectionStringBuilder( connectionString )
@@ -123,11 +131,15 @@ namespace Rock.Tests.Shared.TestFramework
 
                 RockDateTimeHelper.SynchronizeTimeZoneConfiguration( RockDateTime.OrgTimeZoneInfo.Id );
 
+                RunDataMigrationJobs();
+
                 // Install the sample data if it is configured.
                 if ( !upgrade && sampleDataUrl.IsNotNullOrWhiteSpace() )
                 {
                     AddSampleData( sampleDataUrl );
                 }
+
+                await CleanupDatabaseAsync( connection, dbName );
 
                 TestHelper.ConfigureRockApp( null );
             }
@@ -148,6 +160,38 @@ namespace Rock.Tests.Shared.TestFramework
                 cmd.CommandText = $@"
 CREATE DATABASE [{dbName}];
 ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
+
+                await cmd.ExecuteNonQueryAsync();
+            }
+        }
+
+        /// <summary>
+        /// Cleans up the database to make it smaller.
+        /// </summary>
+        /// <param name="connection">The connection to execute the command on.</param>
+        /// <param name="dbName">The name of the database to create.</param>
+        /// <returns>A task that indicates when the operation has completed.</returns>
+        private static async Task CleanupDatabaseAsync( SqlConnection connection, string dbName )
+        {
+            connection.ChangeDatabase( dbName );
+
+            // Delete the IdentityVerificationCodes. They take up about 150MB,
+            // which is roughly 30% of the database.
+            using ( var cmd = connection.CreateCommand() )
+            {
+                cmd.CommandTimeout = 180;
+                cmd.CommandText = "DELETE FROM [IdentityVerificationCode]";
+
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            // Shrink the database and log file to save space. When files
+            // are opened on the running image, it does a Copy-on-Write operation
+            // so we want these as small as possible.
+            using ( var cmd = connection.CreateCommand() )
+            {
+                cmd.CommandTimeout = 180;
+                cmd.CommandText = $"DBCC SHRINKDATABASE({dbName})";
 
                 await cmd.ExecuteNonQueryAsync();
             }
@@ -218,6 +262,22 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         }
 
         /// <summary>
+        /// Runs the data migration run-once jobs.
+        /// </summary>
+        private static void RunDataMigrationJobs()
+        {
+            LogHelper.Log( $"Data Migration Jobs: running..." );
+
+            PostInstallDataMigrations.IsRunningFromUnitTest = true;
+            RockCleanup.IsRunningFromUnitTest = true;
+
+            var jobIds = DataMigrationsStartup.GetRunOnceJobIds();
+            DataMigrationsStartup.ExecuteRunOnceJobs( jobIds );
+
+            LogHelper.Log( $"Data Migration Jobs: complete" );
+        }
+
+        /// <summary>
         /// Adds the sample data to the currently configured database container.
         /// </summary>
         /// <param name="sampleDataUrl">The URL to get the sample data from.</param>
@@ -227,9 +287,8 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
 
             // Initialize the Lava Engine first, because it is needed by
             // the sample data loader.
-            LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: false, testDotLiquidEngine: false, testFluidEngine: true, loadShortcodes: false );
+            LavaIntegrationTestHelper.Initialize( testFluidEngine: true, loadShortcodes: false );
             LavaIntegrationTestHelper.GetEngineInstance( typeof( Rock.Lava.Fluid.FluidEngine ) );
-            Rock.Lava.LavaService.RockLiquidIsEnabled = false;
 
             // Make sure all Entity Types are registered.
             // This is necessary because some components are only registered at runtime,
@@ -246,23 +305,18 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 AttendanceCodeIssuedDateTime = RockDateTime.Now.AddDays( -1 )
             };
 
-            factory.CreateFromXmlDocumentFile( sampleDataUrl, args );
-
-            // Run Rock Jobs to ensure calculated fields are updated.
-
-            // We can't run the full PostInstallDataMigrations job because it
-            // tries to get to files within the RockWeb folder that we don't
-            // have. So just run the bit we need manually.
-            new Rock.Jobs.PostInstallDataMigrations().InsertAnalyticsSourceDateData( 300 );
-            ExecuteRockJob<Rock.Jobs.RockCleanup>( null, job => job.IsRunningFromUnitTest = true );
-            ExecuteRockJob<Rock.Jobs.CalculateFamilyAnalytics>();
-            ExecuteRockJob<Rock.Jobs.ProcessBIAnalytics>( new Dictionary<string, string>
+            if ( sampleDataUrl.Equals( "embedded", StringComparison.OrdinalIgnoreCase ) )
             {
-                [Rock.Jobs.ProcessBIAnalytics.AttributeKey.ProcessPersonBIAnalytics] = "true",
-                [Rock.Jobs.ProcessBIAnalytics.AttributeKey.ProcessFamilyBIAnalytics] = "true",
-                [Rock.Jobs.ProcessBIAnalytics.AttributeKey.ProcessAttendanceBIAnalytics] = "true"
-            } );
-            ExecuteRockJob<Rock.Jobs.PostV141UpdateValueAsColumns>();
+                using ( var stream = typeof( DatabaseContainerImageBuilder ).Assembly.GetManifestResourceStream( "Rock.Tests.Shared.TestFramework.sampledata_1_14_1.xml" ) )
+                {
+                    var xmlText = new StreamReader( stream ).ReadToEnd();
+                    factory.CreateFromXmlDocumentText( xmlText, args );
+                }
+            }
+            else
+            {
+                factory.CreateFromXmlDocumentFile( sampleDataUrl, args );
+            }
 
             // Set the sample data identifiers.
             SystemSettings.SetValue( SystemKey.SystemSetting.SAMPLEDATA_DATE, RockDateTime.Now.ToString() );

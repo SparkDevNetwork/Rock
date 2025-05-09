@@ -1,0 +1,47 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <CategorizedValuePicker label="Categorized Defined Value"
+                                v-model="value"
+                                :definedTypeGuid="definedType"
+                                :rules="required ? 'required' : ''" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Required" v-model="required" />
+                </div>
+                <div class="col-md-4">
+                    <TextBox label="Defined Type" v-model="definedType" />
+                </div>
+            </div>
+            <p class="my-4">
+                <strong>NOTE:</strong> This picker will be empty unless you specify a defined type that has
+                categorized values. By default, there aren't any, so you may need to configure a defined type to
+                have categories and add values to those categories in order to see what this control can do.
+            </p>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import CategorizedValuePicker from "@Obsidian/Controls/categorizedValuePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { Guid } from "@Obsidian/Types";
+
+    const multiple = ref(true);
+    const value = ref(null);
+    const required = ref(false);
+    const definedType = ref<Guid>(DefinedType.CampusType);
+    const importCode = getSfcControlImportPath("categorizedValuePicker");
+    const exampleCode = `<CategorizedValuePicker label="Categorized Defined Value" v-model="value" :definedTypeGuid="DefinedType.CampusType" />`;
+</script>

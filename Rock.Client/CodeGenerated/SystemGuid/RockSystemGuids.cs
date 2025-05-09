@@ -1009,6 +1009,7 @@ namespace Rock.Client.SystemGuid
         public const string DOCUMENT_TYPE = "18CF366F-46B6-49CA-B557-BCABD6BBD175";
         public const string ENTITY_CAMPUS_FILTER = "A736A9FB-F2A5-4458-B126-FAD6BD3F3B78";
         public const string ENTITY_INTENT = "15CE39A3-193F-44E5-80C7-DE47DA3EAF97";
+        public const string ENTITY_SEARCH = "080374B4-C765-4F90-8B85-BC2635164275";
         public const string ENTITY_SET = "50E3F9C8-4010-41AF-8F61-08308DC44640";
         public const string ENTITY_SET_ITEM = "1F9D13F9-BF55-48BE-BEA9-0939CD6FDA5B";
         public const string ENTITY_TYPE = "A2277FBA-D09F-4D07-B0AB-1C650C25A7A7";

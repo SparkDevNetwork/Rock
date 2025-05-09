@@ -21,6 +21,7 @@ namespace Rock.Tests.Shared.Lava
         Equal = 0,
         Contains = 1,
         DoesNotContain = 2,
-        RegEx = 3
+        RegEx = 3,
+        Callback = 4
     }
 }

@@ -33,7 +33,6 @@ namespace Rock.Field.Types
     /// </summary>
     [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
-    [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16"">BLANK</svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.HTML )]
     public class HtmlFieldType : FieldType, ISecurityGrantFieldType
     {
@@ -46,6 +45,7 @@ namespace Rock.Field.Types
         private const string CONDENSED_HTML = "condensedHtml";
         private const string ENCRYPTED_DOCUMENT_FOLDER_ROOT = "encrypteddocumentfolderroot";
         private const string ENCRYPTED_IMAGE_FOLDER_ROOT = "encryptedimagefolderroot";
+        private const string ENABLE_ASSET_MANAGER = "enableassetmanager";
 
         #endregion
 
@@ -142,6 +142,7 @@ namespace Rock.Field.Types
             configKeys.Add( DOCUMENT_FOLDER_ROOT );
             configKeys.Add( IMAGE_FOLDER_ROOT );
             configKeys.Add( USER_SPECIFIC_ROOT );
+            configKeys.Add( ENABLE_ASSET_MANAGER );
             return configKeys;
         }
 
@@ -182,6 +183,12 @@ namespace Rock.Field.Types
             cbUserSpecificFolder.CheckedChanged += OnQualifierUpdated;
             cbUserSpecificFolder.Label = "User Specific Folders";
             cbUserSpecificFolder.Help = "Should the root folders be specific to current user?";
+
+            var cbEnableAssetManager = new RockCheckBox();
+            controls.Add( cbEnableAssetManager );
+            cbEnableAssetManager.Label = "Enable Asset Manager";
+            cbEnableAssetManager.Help = "Allows individuals to have access to the asset manager. This includes browsing existing files as well as modifying existing and uploading new files.";
+
             return controls;
         }
 
@@ -197,6 +204,7 @@ namespace Rock.Field.Types
             configurationValues.Add( DOCUMENT_FOLDER_ROOT, new ConfigurationValue( "Document Root Folder", "The folder to use as the root when browsing or uploading documents ( e.g. ~/Content ).", "" ) );
             configurationValues.Add( IMAGE_FOLDER_ROOT, new ConfigurationValue( "Image Root Folder", "The folder to use as the root when browsing or uploading images ( e.g. ~/Content ).", "" ) );
             configurationValues.Add( USER_SPECIFIC_ROOT, new ConfigurationValue( "User Specific Folders", "Should the root folders be specific to current user?", "" ) );
+            configurationValues.Add( ENABLE_ASSET_MANAGER, new ConfigurationValue( "Enable Asset Manager", "Allows individuals to have access to the asset manager. This includes browsing existing files as well as modifying existing and uploading new files.", "" ) );
 
             if ( controls.Count > 0 && controls[0] is RockDropDownList )
             {
@@ -216,6 +224,11 @@ namespace Rock.Field.Types
             if ( controls.Count > 3 && controls[3] is RockCheckBox )
             {
                 configurationValues[USER_SPECIFIC_ROOT].Value = ( ( RockCheckBox ) controls[3] ).Checked.ToString();
+            }
+
+            if ( controls.Count > 4 && controls[4] is RockCheckBox )
+            {
+                configurationValues[ENABLE_ASSET_MANAGER].Value = ( ( RockCheckBox ) controls[4] ).Checked.ToString();
             }
 
             return configurationValues;
@@ -248,6 +261,11 @@ namespace Rock.Field.Types
                 if ( controls.Count > 3 && controls[3] is RockCheckBox && configurationValues.ContainsKey( USER_SPECIFIC_ROOT ) )
                 {
                     ( ( RockCheckBox ) controls[3] ).Checked = configurationValues[USER_SPECIFIC_ROOT].Value.AsBoolean();
+                }
+
+                if ( controls.Count > 4 && controls[4] is RockCheckBox && configurationValues.ContainsKey( ENABLE_ASSET_MANAGER ) )
+                {
+                    ( ( RockCheckBox ) controls[4] ).Checked = configurationValues[ENABLE_ASSET_MANAGER].Value.AsBoolean();
                 }
             }
         }
@@ -288,6 +306,15 @@ namespace Rock.Field.Types
             if ( configurationValues != null && configurationValues.ContainsKey( USER_SPECIFIC_ROOT ) )
             {
                 editor.UserSpecificRoot = configurationValues[USER_SPECIFIC_ROOT].Value.AsBoolean( false );
+            }
+
+            if ( configurationValues != null && configurationValues.ContainsKey( ENABLE_ASSET_MANAGER ) )
+            {
+                editor.EnableAssetManager = configurationValues[ENABLE_ASSET_MANAGER].Value.AsBoolean( false );
+            }
+            else
+            {
+                editor.EnableAssetManager = false;
             }
 
             return editor;
@@ -353,15 +380,12 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
         {
-            AddRulesToSecurityGrant( grant );
-        }
-
-        /// <inheritdoc/>
-        public void AddRulesToSecurityGrant( SecurityGrant grant )
-        {
-            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
-            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
-            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+            if ( privateConfigurationValues.GetValueOrDefault( ENABLE_ASSET_MANAGER, "" ).AsBoolean() )
+            {
+                grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
+                grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
+                grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+            }
         }
     }
 }

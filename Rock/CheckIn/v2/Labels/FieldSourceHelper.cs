@@ -291,6 +291,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Schedule Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
                 ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Schedule.GetNextCheckInStartTime( a.StartDateTime ) )
             } );
 
@@ -530,6 +531,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Schedule Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
                 ValueFunc = ( source, field, printRequest ) => source.Attendance.Schedule?.GetNextCheckInStartTime( source.Attendance.StartDateTime )
             } );
 
@@ -1127,6 +1129,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Schedule Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
                 ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Schedule.GetNextCheckInStartTime( a.StartDateTime ) )
             } );
 
@@ -1137,25 +1140,6 @@ namespace Rock.CheckIn.v2.Labels
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 ValueFunc = ( source, field, printRequest ) => source.SecurityCode
-            } );
-
-
-            dataSources.Add( new MultiValueFieldDataSource<PersonLocationLabelData>
-            {
-                Key = "6fca79e1-5d42-4598-9ec4-bf9c0f727862",
-                Name = "Schedule Name",
-                TextSubType = TextFieldSubType.CheckInInfo,
-                Category = "Common",
-                ValuesFunc = ( source, field, printRequest ) => source.LocationAttendance.Select( a => a.Location.Name )
-            } );
-
-            dataSources.Add( new MultiValueFieldDataSource<PersonLocationLabelData>
-            {
-                Key = "b9e605ed-1b8e-4fee-9c72-44e81dcde985",
-                Name = "Schedule Time",
-                TextSubType = TextFieldSubType.CheckInInfo,
-                Category = "Common",
-                ValuesFunc = ( source, field, printRequest ) => source.LocationAttendance.Select( a => a.Schedule.GetNextCheckInStartTime( a.StartDateTime ) )
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLocationLabelData>
@@ -1617,6 +1601,10 @@ namespace Rock.CheckIn.v2.Labels
                 {
                     type = typeof( CheckoutLabelData );
                 }
+                else if ( labelType == LabelType.PersonLocation )
+                {
+                    type = typeof( PersonLocationLabelData );
+                }
 
                 // This could also check a whitelist of allowed paths to make sure
                 // they are not building filters to things they shouldn't, but since
@@ -1641,11 +1629,18 @@ namespace Rock.CheckIn.v2.Labels
 
                 var entityField = EntityHelper.GetEntityFieldForProperty( property );
 
+                // Do some special checks for property types that are supported
+                // by the CheckInFieldFilterBuilder that aren't supported
+                // normally. Map to the best field type so we can build the UI.
                 if ( entityField.FieldType == null )
                 {
                     if ( typeof( ICollection<string> ).IsAssignableFrom( property.PropertyType ) )
                     {
                         entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.TEXT );
+                    }
+                    else if ( typeof( ICollection<int> ).IsAssignableFrom( property.PropertyType ) )
+                    {
+                        entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.INTEGER );
                     }
                     else if ( property.PropertyType == typeof( double ) || property.PropertyType == typeof( double? ) )
                     {

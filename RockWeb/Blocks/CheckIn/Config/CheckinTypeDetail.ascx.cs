@@ -238,6 +238,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( "core_checkin_HidePhotos", cbHidePhotos.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_PreventDuplicateCheckin", cbPreventDuplicateCheckin.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_PreventInactivePeople", cbPreventInactivePeople.Checked.ToString() );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PROXIMITY_CHECKIN, cbEnableProximityCheckIn.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_CheckInType", ddlType.SelectedValue );
                 groupType.SetAttributeValue( "core_checkin_DisplayLocationCount", cbDisplayLocCount.Checked.ToString() );
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION, rblAbilityLevelDetermination.SelectedValue );
@@ -551,6 +552,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 cbHidePhotos.Checked = groupType.GetAttributeValue( "core_checkin_HidePhotos" ).AsBoolean( true );
                 cbPreventDuplicateCheckin.Checked = groupType.GetAttributeValue( "core_checkin_PreventDuplicateCheckin" ).AsBoolean( true );
                 cbPreventInactivePeople.Checked = groupType.GetAttributeValue( "core_checkin_PreventInactivePeople" ).AsBoolean( true );
+                cbEnableProximityCheckIn.Checked = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PROXIMITY_CHECKIN ).AsBoolean();
                 ddlType.SetValue( groupType.GetAttributeValue( "core_checkin_CheckInType" ) );
                 cbDisplayLocCount.Checked = groupType.GetAttributeValue( "core_checkin_DisplayLocationCount" ).AsBoolean( true );
                 rblAbilityLevelDetermination.SelectedValue = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION );
@@ -706,6 +708,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PROXIMITY_CHECKIN );
 
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_CANCHECKINKNOWNRELATIONSHIPTYPES );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORADULTS );

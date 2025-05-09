@@ -2524,7 +2524,19 @@ namespace RockWeb.Blocks.Connection
             var lGroupName = e.Row.FindControl( "lGroupName" ) as Literal;
             if ( lGroupName != null )
             {
-                lGroupName.Text = connectionRequestViewModel.GroupNameWithRoleAndStatus;
+                if ( connectionRequestViewModel.PlacementGroupRoleId.HasValue )
+                {
+                    var role = GroupTypeRoleCache.Get( connectionRequestViewModel.PlacementGroupRoleId.Value )?.Name;
+                    var statusName = connectionRequestViewModel.PlacementGroupMemberStatus.ConvertToStringSafe();
+                    if ( !string.IsNullOrWhiteSpace( role ) || !string.IsNullOrWhiteSpace( statusName ) )
+                    {
+                        lGroupName.Text = string.Format( "{0} ({1} {2})", connectionRequestViewModel.GroupName, statusName, role );
+                    }
+                }
+                else
+                {
+                    lGroupName.Text = connectionRequestViewModel.GroupNameWithRoleAndStatus;
+                }
             }
 
             var lConnectorPersonFullname = e.Row.FindControl( "lConnectorPersonFullname" ) as Literal;
@@ -3536,14 +3548,6 @@ namespace RockWeb.Blocks.Connection
             // Clear previous results
             cblRequestModalViewModeManualRequirements.Items.Clear();
             lRequestModalViewModeRequirementsLabels.Text = string.Empty;
-
-            // If the connect button will not be shown, then there is no need to show the requirements
-            if ( !request.CanConnect )
-            {
-                cblRequestModalViewModeManualRequirements.Visible = false;
-                rcwRequestModalViewModeRequirements.Visible = false;
-                return;
-            }
 
             // Get the requirements
             var requirementsResults = GetGroupRequirementStatuses( request );

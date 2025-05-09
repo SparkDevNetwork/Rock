@@ -214,7 +214,12 @@ BEGIN
 
     UPDATE [PeerNetwork]
     SET
-        [PeerNetwork].[RelationshipScore] = s.[RelationshipScore]
+        [PeerNetwork].[RelationshipScore] =
+        CASE
+            -- This could happen if the source or target group is deleted.
+            WHEN s.[RelationshipScore] IS NULL THEN 0
+            ELSE s.[RelationshipScore]
+     END
         , [PeerNetwork].[RelationshipScoreLastUpdateValue] = s.[PreviousRelationshipScore]
         , [PeerNetwork].[LastUpdateDateTime] = GETDATE()
         , [PeerNetwork].[RelationshipTrend] =
@@ -230,7 +235,7 @@ BEGIN
             x.*
             , CASE
                 WHEN [IsRelationshipGrowthEnabled] = 1 OR [RelationshipGrowthAdjustmentMultiplier] < 0 THEN
-                    -- If relationship growth is enabled OR it's time to start subtracting this member's score, factor in the growth[/decay] adjustment multiplier.
+                    -- If relationship growth is enabled OR it's time to start subtracting this member's score, factor in the growth[/decay] adjustment and role-based multipliers.
                     CASE
                         WHEN [SourceIsLeader] = 1 AND [TargetIsLeader] = 1 THEN
                             ([RelationshipStrength] + (DATEDIFF(m, [RelationshipGrowthDate], GETDATE()) * [RelationshipGrowthAdjustmentMultiplier])) * [LeaderToLeaderRelationshipMultiplier]
@@ -242,7 +247,7 @@ BEGIN
                             ([RelationshipStrength] + (DATEDIFF(m, [RelationshipGrowthDate], GETDATE()) * [RelationshipGrowthAdjustmentMultiplier])) * [NonLeaderToNonLeaderRelationshipMultiplier]
                     END
                 ELSE
-                    -- If relationship growth is disabled, assign a static score, adjusted only by the "leader/non-leader to leader/non-leader" multiplier.
+                    -- If relationship growth is disabled, assign a static score, adjusted only by the role-based multipliers.
                     CASE
                         WHEN [SourceIsLeader] = 1 AND [TargetIsLeader] = 1 THEN [RelationshipStrength] * [LeaderToLeaderRelationshipMultiplier]
                         WHEN [SourceIsLeader] = 1 AND [TargetIsLeader] = 0 THEN [RelationshipStrength] * [LeaderToNonLeaderRelationshipMultiplier]
@@ -276,7 +281,7 @@ BEGIN
 
                 , CASE
                     WHEN g.[RelationshipStrengthOverride] IS NOT NULL THEN g.[RelationshipStrengthOverride]
-      ELSE gt.[RelationshipStrength]
+                    ELSE gt.[RelationshipStrength]
                   END AS [RelationshipStrength]
 
                 , CASE

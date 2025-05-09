@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "PersonalLinkSection" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "42411FC0-7ACD-42E9-A8A1-BCEA78AF0AAF")]
     public partial class PersonalLinkSection : Model<PersonalLinkSection>, ICacheable
     {

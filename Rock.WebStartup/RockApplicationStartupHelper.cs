@@ -34,6 +34,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Blocks;
 using Rock.Bus;
+using Rock.Communication.Chat;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Configuration;
@@ -43,6 +44,7 @@ using Rock.Lava.Fluid;
 using Rock.Lava.RockLiquid;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net.Geolocation;
 using Rock.Observability;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
@@ -102,6 +104,7 @@ namespace Rock.WebStartup
             LogStartupMessage( "Application Starting" );
 
             InitializeRockApp();
+            Rock.JsonExtensions.ReferenceEqualityComparer = new Rock.Utility.EntityReferenceEqualityComparer();
 
             AppDomain.CurrentDomain.AssemblyResolve += AppDomain_AssemblyResolve;
 
@@ -171,6 +174,21 @@ namespace Rock.WebStartup
             RockLogger.ReloadConfiguration();
             ShowDebugTimingMessage( "RockLogger" );
 
+            using ( ObservabilityHelper.StartActivity( "Startup: Application Startup Stage 1" ) )
+            {
+                RunApplicationStartupStage1( runMigrationFileInfo, ranEFMigrations );
+            }
+        }
+
+        /// <summary>
+        /// Runs the first stage of the application startup that can be traced
+        /// by observability. This requires that EF be configured and that
+        /// observability also be configured.
+        /// </summary>
+        /// <param name="runMigrationFileInfo">The FileInfo that represents the 'Run.Migration' file.</param>
+        /// <param name="ranEFMigrations"><c>true</c> if EF migrations were executed.</param>
+        private static void RunApplicationStartupStage1( FileInfo runMigrationFileInfo, bool ranEFMigrations )
+        {
             // Configure the values for RockDateTime.
             // To avoid the overhead of initializing the GlobalAttributesCache prior to LoadCacheObjects(), load these from the database instead.
             LogStartupMessage( "Configuring Date Settings" );
@@ -281,6 +299,9 @@ namespace Rock.WebStartup
             {
                 LogStartupMessage( "Themes are updated" );
             }
+
+            // Update the geolocation database.
+            Task.Run( () => IpGeoLookup.Instance.UpdateDatabase() );
         }
 
         /// <summary>
@@ -296,6 +317,7 @@ namespace Rock.WebStartup
             sc.AddSingleton<IInitializationSettings, WebFormsInitializationSettings>();
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
             sc.AddSingleton<IHostingSettings, HostingSettings>();
+            sc.AddSingleton<IChatProvider, StreamChatProvider>();
 
             // Register the class to initialize for InitializationSettings. This
             // is transient so that we always get the current values from the

@@ -113,7 +113,9 @@ namespace Rock.Field.Types
         /// <summary>
         /// Gets the context string to include with all API requests. This can
         /// be information you might need in handling the API request so that
-        /// you can return the correct data.
+        /// you can return the correct data. We also recommend you encode any
+        /// context data as a JSON string to future proof yourself from changes
+        /// you might need to make.
         /// </summary>
         /// <param name="privateConfigurationValues">The private configuration values.</param>
         /// <returns>A custom string.</returns>

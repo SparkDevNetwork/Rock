@@ -32,6 +32,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningClassDetail;
 using Rock.ViewModels.Blocks.Lms.LearningParticipantDetail;
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -80,6 +81,13 @@ namespace Rock.Blocks.Lms
         IsRequired = false,
         Order = 5 )]
 
+    [BooleanField( "Show Course Name in Breadcrumb",
+        Description = "If enabled, the breadcrumb will display the course name before the class name.",
+        Key =  AttributeKey.ShowCourseNameInBreadcrumb,
+        DefaultBooleanValue = false,
+        IsRequired = false,
+        Order = 5)]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "08b8da88-be2e-4237-883d-b9a2db5f6260" )]
@@ -96,12 +104,13 @@ namespace Rock.Blocks.Lms
             public const string ContentPageDetailPage = "ContentPageDetailPage";
             public const string ParticipantDetailPage = "ParticipantDetailPage";
             public const string ParentPage = "ParentPage";
+            public const string ShowCourseNameInBreadcrumb = "ShowCourseNameInBreadcrumb";
         }
 
         private static class PageParameterKey
         {
             public const string GroupId = "GroupId";
-            public const string LearningActivityId = "LearningActivityId";
+            public const string LearningClassActivityId = "LearningClassActivityId";
             public const string LearningClassId = "LearningClassId";
             public const string LearningClassContentPageId = "LearningClassContentPageId";
             public const string LearningClassAnnouncementId = "LearningClassAnnouncementId";
@@ -247,6 +256,25 @@ namespace Rock.Blocks.Lms
             }
 
             var locationItem = entity.GroupLocations.Select( gl => gl.Location )?.FirstOrDefault();
+            var locationBag = new LearningClassLocationBag();
+
+            if ( locationItem == null || locationItem.Name != null )
+            {
+                locationBag.NamedLocation = locationItem?.ToListItemBag();
+            }
+            else
+            {
+                locationBag.Address = new ViewModels.Controls.AddressControlBag
+                {
+                    Street1 = locationItem.Street1,
+                    Street2 = locationItem.Street2,
+                    City = locationItem.City,
+                    State = locationItem.State,
+                    Locality = locationItem.County,
+                    PostalCode = locationItem.PostalCode,
+                    Country = locationItem.Country
+                };
+            }
 
             return new LearningClassBag
             {
@@ -256,7 +284,7 @@ namespace Rock.Blocks.Lms
                 DefaultGradingSystem = entity.LearningCourse?.LearningProgram?.DefaultLearningGradingSystem?.ToListItemBag(),
                 Description = entity.Description,
                 GroupCapacity = entity.GroupCapacity,
-                Location = locationItem?.ToListItemBag() ?? new ListItemBag(),
+                Location = locationBag,
                 IsActive = entity.IsActive,
                 IsPublic = entity.IsPublic,
                 CourseCode = entity.LearningCourse?.CourseCode,
@@ -340,7 +368,20 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.Location ),
                 () =>
                 {
-                    var locationId = box.Bag.Location.GetEntityId<Location>( RockContext ).ToIntSafe();
+                    var locationId = 0;
+
+                    if ( box.Bag.Location?.NamedLocation != null )
+                    {
+                        locationId = box.Bag.Location.NamedLocation.GetEntityId<Location>( RockContext ).ToIntSafe();
+                    }
+                    else if ( box.Bag.Location?.Address != null )
+                    {
+                        var locationService = new LocationService( new RockContext() );
+                        var address = box.Bag.Location.Address;
+                        var location = locationService.Get( address.Street1, address.Street2, address.City, address.State, address.Locality, address.PostalCode, address.Country, null );
+                        locationId = location?.Id ?? 0;
+                    }
+
                     var currentLocation = new GroupService( RockContext ).GetSelect( entity.Id, g => g.GroupLocations.FirstOrDefault() );
 
                     if ( currentLocation?.LocationId.ToIntSafe() != locationId )
@@ -419,9 +460,9 @@ namespace Rock.Blocks.Lms
                 var isOnDemandLearning = program.ConfigurationMode == ConfigurationMode.OnDemandLearning;
                 var defaultLearningSemester = isOnDemandLearning ? learningProgramService.GetDefaultSemester( program.Id ) : null;
                 var defaultLearningGradingSystem = program.DefaultLearningGradingSystemId.HasValue ?
-                    new LearningGradingSystemService( RockContext ).Get( (int) program.DefaultLearningGradingSystemId ) :
+                    new LearningGradingSystemService( RockContext ).Get( ( int ) program.DefaultLearningGradingSystemId ) :
                     null;
-                
+
                 /*
                     12/12/2024 - JC
 
@@ -493,7 +534,7 @@ namespace Rock.Blocks.Lms
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
             var currentPageParams = GetCurrentPageParams();
-            var activityParams = GetCurrentPageParams( PageParameterKey.LearningActivityId );
+            var activityParams = GetCurrentPageParams( PageParameterKey.LearningClassActivityId );
             var participantParams = GetCurrentPageParams( PageParameterKey.LearningParticipantId );
             var contentPageParams = GetCurrentPageParams( PageParameterKey.LearningClassContentPageId );
             var announcementParams = GetCurrentPageParams( PageParameterKey.LearningClassAnnouncementId );
@@ -535,9 +576,10 @@ namespace Rock.Blocks.Lms
                 var entityService = new LearningClassService( RockContext );
 
                 // Create a new entity.
-                entity = new LearningClass();
-
-                entity.LearningCourseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
+                entity = new LearningClass
+                {
+                    LearningCourseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId )
+                };
 
                 entityService.Add( entity );
             }
@@ -563,9 +605,9 @@ namespace Rock.Blocks.Lms
             var programId = pageReference.GetPageParameter( PageParameterKey.LearningProgramId ) ?? "";
             var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningClassId ) ?? "";
 
-            var entityName = entityKey.Length > 0 ? new Service<LearningClass>( RockContext ).GetSelect( entityKey, p => p.Name ) : null;
+            var entity = entityKey.Length > 0 ? new Service<LearningClass>( RockContext ).GetSelect( entityKey, p => new { className = p.Name, courseName = p.LearningCourse.Name } ) : null;
 
-            if ( entityName.IsNullOrWhiteSpace() )
+            if ( entity == null || entity.className.IsNullOrWhiteSpace() )
             {
                 return null;
             }
@@ -575,7 +617,10 @@ namespace Rock.Blocks.Lms
             var paramsToInclude = pageReference.Parameters.Where( kv => !excludedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
 
             var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, paramsToInclude );
-            var breadCrumb = new BreadCrumbLink( entityName, breadCrumbPageRef );
+
+            // Vary the 'class name' breadcrumb based on the block setting.
+            var showCourseNameInBreadcrumb = GetAttributeValue( AttributeKey.ShowCourseNameInBreadcrumb ).AsBoolean();
+            var breadCrumb = ( showCourseNameInBreadcrumb ) ? new BreadCrumbLink( $"{entity.courseName} > {entity.className}", breadCrumbPageRef ) : new BreadCrumbLink( entity.className, breadCrumbPageRef );
 
             return new BreadCrumbResult
             {
@@ -730,6 +775,58 @@ namespace Rock.Blocks.Lms
         #region Secondary List/Grid Block Actions
 
         /// <summary>
+        /// Gets the grid definition bag containing the default grid action urls.
+        /// </summary>
+        /// <returns>A GridDefinitionBag with the default grid action urls.</returns>
+        [BlockAction]
+        public BlockActionResult GetSecondaryGridDefinitionBag()
+        {
+            var secondaryGridDefinitionBag = new GridBuilder<LearningParticipant>()
+                .WithBlock( this )
+                .BuildDefinition();
+
+            // Enable the launch workflow by default to mimic the behavior of List blocks.
+            secondaryGridDefinitionBag.EnableLaunchWorkflow = true;
+
+            return ActionOk( secondaryGridDefinitionBag );
+        }
+
+        /// <summary>
+        /// Creates an entity set for the subset of selected rows in a secondary grid.
+        /// <para>
+        /// This method is typically defined in the RockListBlockType, but
+        /// because this detail block uses secondary grids it must provide
+        /// its own endpoint to support Merge Templates.
+        /// </para>
+        /// </summary>
+        /// <returns>An action result that contains the identifier of the entity set.</returns>
+        [BlockAction]
+        public BlockActionResult CreateGridEntitySet( GridEntitySetBag entitySet )
+        {
+            try
+            {
+                if ( entitySet == null )
+                {
+                    return ActionBadRequest( "No entity set data was provided." );
+                }
+
+                var rockEntitySet = GridHelper.CreateEntitySet( entitySet );
+
+                if ( rockEntitySet == null )
+                {
+                    return ActionBadRequest( "No entities were found to create the set." );
+                }
+
+                return ActionOk( rockEntitySet.Id.ToString() );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                return ActionBadRequest( "There was an error while creating the entity set." );
+            }
+        }
+
+        /// <summary>
         /// Deletes the specified activity.
         /// </summary>
         /// <param name="key">The identifier of the entity to be deleted.</param>
@@ -737,17 +834,17 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult DeleteActivity( string key )
         {
-            var entityService = new LearningActivityService( RockContext );
+            var entityService = new LearningClassActivityService( RockContext );
             var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( entity == null )
             {
-                return ActionBadRequest( $"{LearningActivity.FriendlyTypeName} not found." );
+                return ActionBadRequest( $"{LearningClassActivity.FriendlyTypeName} not found." );
             }
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete {LearningActivity.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {LearningClassActivity.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -836,7 +933,7 @@ namespace Rock.Blocks.Lms
             var entityService = new LearningParticipantService( RockContext );
             var entity = entityService.GetInclude(
                 key,
-                p => p.LearningActivities,
+                p => p.LearningClassActivityCompletions,
                 !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( entity == null )
@@ -926,7 +1023,7 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// Gets a list of activities for the current course.
+        /// Gets a list of facilitators for the current course.
         /// </summary>
         /// <returns>A list of Courses</returns>
         [BlockAction]
@@ -949,6 +1046,7 @@ namespace Rock.Blocks.Lms
             var gridBuilder = new GridBuilder<LearningParticipant>()
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddPersonField( "name", a => a.Person )
+                .AddField( "isActive", a => a.GroupMemberStatus != GroupMemberStatus.Inactive )
                 .AddTextField( "note", a => a.Note );
 
             return ActionOk( gridBuilder.Build( facilitators ) );
@@ -978,22 +1076,22 @@ namespace Rock.Blocks.Lms
             var studentCount = new LearningParticipantService( RockContext ).GetStudents( entity.Id ).Count();
 
             // Return all activities for the course.
-            var gridBuilder = new GridBuilder<LearningActivity>()
+            var gridBuilder = new GridBuilder<LearningClassActivity>()
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddField( "assignTo", a => a.AssignTo )
-                .AddField( "type", a => a.ActivityComponentId )
+                .AddField( "type", a => a.LearningActivity.ActivityComponentId )
                 .AddField( "dates", a => a.DatesDescription )
                 .AddField( "isPastDue", a => a.IsPastDue )
                 .AddField( "count", a => studentCount )
-                .AddField( "completedCount", a => a.LearningActivityCompletions.Count( c => c.IsStudentCompleted || c.IsFacilitatorCompleted ) )
-                .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.ActivityComponentId ).Value.IconCssClass )
-                .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.ActivityComponentId ).Value.HighlightColor )
-                .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.ActivityComponentId ).Value.Name )
+                .AddField( "completedCount", a => a.LearningClassActivityCompletions.Count( c => c.IsStudentCompleted || c.IsFacilitatorCompleted ) )
+                .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.IconCssClass )
+                .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.HighlightColor )
+                .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Name )
                 .AddField( "points", a => a.Points )
                 // Ungraded and requires grading or requires a facilitator to complete.
-                .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.RequiresGrading || c.RequiresFacilitatorCompletion ) )
-                .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.HasStudentComment ) );
+                .AddField( "isAttentionNeeded", a => a.LearningClassActivityCompletions.Any( c => c.RequiresGrading || c.RequiresFacilitatorCompletion ) )
+                .AddField( "hasStudentComments", a => a.LearningClassActivityCompletions.Any( c => c.HasStudentComment ) );
 
             var orderedItems = GetOrderedLearningPlan( RockContext, entity.Id ).AsNoTracking();
             return ActionOk( gridBuilder.Build( orderedItems ) );
@@ -1019,28 +1117,28 @@ namespace Rock.Blocks.Lms
             }
 
             // Get the "current assignment" for each student.
-            var activityService = new LearningActivityService( RockContext );
+            var activityService = new LearningClassActivityService( RockContext );
             var activities = activityService.Queryable()
-                    .Include( a => a.LearningActivityCompletions )
+                    .Include( a => a.LearningClassActivityCompletions )
                     .Include( a => a.LearningClass )
                     .Include( a => a.LearningClass.LearningSemester )
                     .Where( a => a.LearningClassId == entity.Id )
                     .Select( a => new
                     {
-                        a.Name,
+                        a.LearningActivity.Name,
                         a.DueDateCriteria,
                         a.DueDateOffset,
                         a.DueDateDefault,
                         a.Order,
                         EnrollmentDate = a.LearningClass.CreatedDateTime,
                         ClassStartDate = a.LearningClass.LearningSemester.StartDate,
-                        CompletedStudentIds = a.LearningActivityCompletions.Select( c => c.StudentId )
+                        CompletedStudentIds = a.LearningClassActivityCompletions.Select( c => c.StudentId )
                     } )
                     .ToList()
                     .Select( a => new
                     {
                         CompletedStudentIds = a.CompletedStudentIds.Distinct(),
-                        DueDate = LearningActivity.CalculateDueDate( a.DueDateCriteria, a.DueDateDefault, a.DueDateOffset, a.ClassStartDate, a.EnrollmentDate ),
+                        DueDate = LearningClassActivity.CalculateDueDate( a.DueDateCriteria, a.DueDateDefault, a.DueDateOffset, a.ClassStartDate, a.EnrollmentDate ),
                         a.Name,
                         a.Order
                     } )
@@ -1063,9 +1161,10 @@ namespace Rock.Blocks.Lms
                 .AddPersonField( "name", p => p.Person )
                 .AddField( "currentGradePercent", p => canViewGrades ? ( decimal? ) Math.Round( p.LearningGradePercent, 1 ) : null )
                 .AddField( "currentGrade", p => canViewGrades ? p.LearningGradingSystemScale?.Name : null )
+                .AddField( "isActive", a => a.GroupMemberStatus != GroupMemberStatus.Inactive )
                 .AddTextField( "note", p => p.Note )
                 .AddTextField( "role", p => p.GroupRole.Name )
-                .AddField( "hasCompletions", p => p.LearningActivities.Any() )
+                .AddField( "hasCompletions", p => p.LearningClassActivityCompletions.Any() )
                 .AddTextField( "currentAssignment", p => p.LearningCompletionDateTime.HasValue ? string.Empty :
                     activities.Where( a => !a.CompletedStudentIds.Contains( p.Id ) ).Select( a => a.Name ).FirstOrDefault() );
 
@@ -1165,7 +1264,7 @@ namespace Rock.Blocks.Lms
                 entity.LoadAttributes( RockContext );
 
                 // Set the attribute values from the bag.
-                entity.SetPublicAttributeValues( participantBag.AttributeValues, RequestContext.CurrentPerson );
+                entity.SetPublicAttributeValues( participantBag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
             }
 
             RockContext.SaveChanges();
@@ -1322,16 +1421,16 @@ namespace Rock.Blocks.Lms
         /// Gets the ordered learning plan for the class specified by the current PageParameter.
         /// </summary>
         /// <param name="rockContext">The RockContex to use for getting the ordered results</param>
-        /// <returns>An IQueryable of ordered <see cref="LearningActivity"/> records.</returns>
-        private IQueryable<LearningActivity> GetOrderedLearningPlan( RockContext rockContext, int classId )
+        /// <returns>An IQueryable of ordered <see cref="LearningClassActivity"/> records.</returns>
+        private IQueryable<LearningClassActivity> GetOrderedLearningPlan( RockContext rockContext, int classId )
         {
             if ( classId > 0 )
             {
-                return new LearningActivityService( rockContext )
+                return new LearningClassActivityService( rockContext )
                     .GetClassLearningPlan( classId );
             }
 
-            return new List<LearningActivity>().AsQueryable();
+            return new List<LearningClassActivity>().AsQueryable();
         }
 
         #endregion

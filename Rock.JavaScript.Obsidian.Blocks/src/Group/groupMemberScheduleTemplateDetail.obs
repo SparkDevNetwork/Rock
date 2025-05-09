@@ -11,7 +11,8 @@
                            :modelValue="groupMemberScheduleTemplateViewBag" />
                 <EditPanel v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit"
                            v-model="groupMemberScheduleTemplateEditBag"
-                           :isEditable="isEditable" />
+                           :isEditable="isEditable"
+                           @propertyChanged="baseBlock.onPropertyChanged" />
 
                 <Modal v-model="showAuditDetailsModal" title="Audit Details">
                     <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
@@ -66,16 +67,17 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
-    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./GroupMemberScheduleTemplateDetail/types.partial";
     import { GroupMemberScheduleTemplateBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberScheduleTemplateDetail/groupMemberScheduleTemplateBag";
-    import { GroupMemberScheduleTemplateBox } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberScheduleTemplateDetail/groupMemberScheduleTemplateBox";
+    import { GroupMemberScheduleTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberScheduleTemplateDetail/groupMemberScheduleTemplateDetailOptionsBag";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 
-    const config = useConfigurationValues<GroupMemberScheduleTemplateBox>();
+    const config = useConfigurationValues<DetailBlockBox<GroupMemberScheduleTemplateBag, GroupMemberScheduleTemplateDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -83,7 +85,9 @@
     const errorMessage = ref("");
 
     const groupMemberScheduleTemplateViewBag = ref(config.entity);
-    const groupMemberScheduleTemplateEditBag = ref<GroupMemberScheduleTemplateBag>(config.entity ?? {} as GroupMemberScheduleTemplateBag);
+    const groupMemberScheduleTemplateEditBag = ref<ValidPropertiesBox<GroupMemberScheduleTemplateBag>>({
+        bag: {} as GroupMemberScheduleTemplateBag
+    });
     const submitForm = ref(false);
     const resetKey = ref("");
     const showAuditDetailsModal = ref(false);
@@ -94,12 +98,10 @@
 
     const panelMode = ref<DetailPanelMode>(isAutoEditMode.value === true ? DetailPanelMode.Edit : DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "name",
-        "schedule"
-    ];
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: groupMemberScheduleTemplateEditBag
+    });
 
     // #endregion
 
@@ -180,12 +182,15 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<void> {
-        const result = await invokeBlockAction<GroupMemberScheduleTemplateBox>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<GroupMemberScheduleTemplateBag>>("Edit", {
             key: groupMemberScheduleTemplateViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            groupMemberScheduleTemplateEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data.bag) {
+            groupMemberScheduleTemplateEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
             panelMode.value = DetailPanelMode.Edit;
         }
     }
@@ -199,18 +204,12 @@
     async function onSave(): Promise<void> {
         errorMessage.value = "";
 
-        const data: GroupMemberScheduleTemplateBox = {
-            entity: groupMemberScheduleTemplateEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<GroupMemberScheduleTemplateBag> | string>("Save", {
+            box: groupMemberScheduleTemplateEditBag.value
         });
 
         if (result.isSuccess && result.data) {
-            if (result.statusCode === 200 && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "string") {
                 window.location.href = makeUrlRedirectSafe(result.data);
             }
         }
@@ -226,8 +225,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -236,7 +233,11 @@
         blockError.value = "The specified group member schedule template could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        groupMemberScheduleTemplateEditBag.value = config.entity;
+        groupMemberScheduleTemplateEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
+    }
+
+    if (isAutoEditMode.value) {
+        onEdit();
     }
 </script>

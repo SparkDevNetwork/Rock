@@ -156,6 +156,8 @@ namespace Rock.Model
             target.GuestCount = source.GuestCount;
             target.InactiveDateTime = source.InactiveDateTime;
             target.IsArchived = source.IsArchived;
+            target.IsChatBanned = source.IsChatBanned;
+            target.IsChatMuted = source.IsChatMuted;
             target.IsNotified = source.IsNotified;
             target.IsSystem = source.IsSystem;
             target.Note = source.Note;

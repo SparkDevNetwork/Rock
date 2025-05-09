@@ -23,14 +23,26 @@
                 <TextBox v-model="ipAddress"
                          help="What is the IP Address or Hostname of this device? Note: when using Hostname to match a Check-in Kiosk to this device, the 'Enable Kiosk Match By Name' setting on the check-in Admin block must be enabled."
                          label="IP Address / Hostname" />
+
                 <DefinedValuePicker v-model="deviceType"
                                     label="Device Type"
                                     rules="required"
                                     help="What type of device is this?"
                                     :definedTypeGuid="DefinedType.DeviceType" />
-                <GeoPicker v-model="geoPoint" label="Point" drawingMode="Point" :mapStyleValueGuid="mapStyleValueGuid" />
-                <GeoPicker v-model="geoFence" label="Geo-fence" drawingMode="Polygon" :mapStyleValueGuid="mapStyleValueGuid" />
+
+                <GeoPicker v-if="isGeoVisible"
+                           v-model="geoPoint"
+                           label="Point"
+                           drawingMode="Point"
+                           :mapStyleValueGuid="mapStyleValueGuid" />
+
+                <GeoPicker v-if="isGeoVisible"
+                           v-model="geoFence"
+                           label="Geo-fence"
+                           drawingMode="Polygon"
+                           :mapStyleValueGuid="mapStyleValueGuid" />
             </div>
+
             <div class="col-md-6">
                 <div v-if="showCheckInKioskSettings">
                     <div class="well">
@@ -57,7 +69,9 @@
                                      label="Kiosk Type"
                                      rules="required" />
                 </div>
-                <CheckBox v-model="hasCamera"
+
+                <CheckBox v-if="isHasCameraVisible"
+                          v-model="hasCamera"
                           label="Has Camera"
                           help="Determines if the device has a camera. This is currently only used for reading barcodes on kiosks." />
 
@@ -75,17 +89,18 @@
             </div>
         </div>
 
-        <h3>Locations</h3>
-        <div>
-            <Grid :data="locationGridData" keyField="key" itemTerm="Location" liveUpdates light @addItem="onAddLocation">
-                <TextColumn name="name" field="name" title="Name" />
-                <DeleteColumn @click="onDeleteLocation" disableConfirmation />
-            </Grid>
-            <Modal v-model="isModalOpen" title="Select Check-in Location" saveText="Save" @save="onSaveLocation">
-                <LocationItemPicker v-model="location" label="Check-in Location" rules="required" />
-            </Modal>
-        </div>
-
+        <template v-if="isLocationsVisible">
+            <h3>Locations</h3>
+            <div>
+                <Grid :data="locationGridData" keyField="key" itemTerm="Location" liveUpdates light @addItem="onAddLocation">
+                    <TextColumn name="name" field="name" title="Name" />
+                    <DeleteColumn @click="onDeleteLocation" disableConfirmation />
+                </Grid>
+                <Modal v-model="isModalOpen" title="Select Check-in Location" saveText="Save" @save="onSaveLocation">
+                    <LocationItemPicker v-model="location" label="Check-in Location" rules="required" />
+                </Modal>
+            </div>
+        </template>
     </fieldset>
 </template>
 
@@ -114,6 +129,7 @@
     import { PrintFrom } from "@Obsidian/Enums/Core/printFrom";
     import { PrintTo } from "@Obsidian/Enums/Core/printTo";
     import { CameraBarcodeConfiguration } from "@Obsidian/Enums/Core/cameraBarcodeConfiguration";
+    import { areEqual } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -181,6 +197,24 @@
 
     const showCameraBarCodeConfiguration = computed((): boolean => {
         return kioskType.value == "0" && hasCamera.value;
+    });
+
+    const isGeoVisible = computed((): boolean => {
+        // Geo-fence and geo-point are not valid for printer devices. They don't
+        // get associated with a specific GPS location.
+        return !areEqual(deviceType.value.value, DefinedValue.DeviceTypePrinter);
+    });
+
+    const isHasCameraVisible = computed((): boolean => {
+        // Printers don't support cameras, don't show the option to keep the
+        // interface clean.
+        return !areEqual(deviceType.value.value, DefinedValue.DeviceTypePrinter);
+    });
+
+    const isLocationsVisible = computed((): boolean => {
+        // Locations are not valid for printer devices. They don't get
+        // associated with a specific location.
+        return !areEqual(deviceType.value.value, DefinedValue.DeviceTypePrinter);
     });
 
     // #endregion

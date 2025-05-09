@@ -93,7 +93,7 @@ namespace Rock.CheckIn.v2
             {
                 activity?.AddTag( "rock.checkin.print_provider", GetType().FullName );
 
-                return PrintLabelsAsync( labels, kiosk, printProvider, cancellationToken, msg =>
+                return PrintLabelsAsync( labels, printProvider, cancellationToken, msg =>
                         checkInResult.Messages.Add( msg ) );
             }
         }
@@ -127,7 +127,7 @@ namespace Rock.CheckIn.v2
             {
                 activity?.AddTag( "rock.checkin.print_provider", GetType().FullName );
 
-                return PrintLabelsAsync( labels, kiosk, printProvider, cancellationToken, msg =>
+                return PrintLabelsAsync( labels, printProvider, cancellationToken, msg =>
                     checkOutResult.Messages.Add( msg ) );
             }
         }
@@ -136,12 +136,11 @@ namespace Rock.CheckIn.v2
         /// Renders all the labels for check-out operation.
         /// </summary>
         /// <param name="labels">The rendered labels that should be printed.</param>
-        /// <param name="kiosk">The kiosk requesting the print or <see langword="null"/> if not known.</param>
         /// <param name="printProvider">The instance that will handle sending data to the physical printers.</param>
         /// <param name="cancellationToken">A token that will be triggered if the operation should be aborted.</param>
         /// <param name="messageCallback">The callback when a print related message needs to be recorded.</param>
         /// <returns>A list of <see cref="RenderedLabel"/> objects that should be printed on the client.</returns>
-        private async Task<List<RenderedLabel>> PrintLabelsAsync( List<RenderedLabel> labels, DeviceCache kiosk, LabelPrintProvider printProvider, CancellationToken cancellationToken, Action<string> messageCallback )
+        private async Task<List<RenderedLabel>> PrintLabelsAsync( List<RenderedLabel> labels, LabelPrintProvider printProvider, CancellationToken cancellationToken, Action<string> messageCallback )
         {
             // Add any error messages from labels that failed to render.
             var errorMessages = labels
@@ -215,6 +214,7 @@ namespace Rock.CheckIn.v2
             attendanceLabels.Select( a => a.Person )
                 .Where( p => p.Attributes == null )
                 .DistinctBy( p => p.Id )
+                .ToList()
                 .LoadAttributes( RockContext );
 
             var sessionFamily = allAttendance.Where( a => a.SearchResultGroupId.HasValue ).FirstOrDefault()?.SearchResultGroup;
@@ -262,6 +262,7 @@ namespace Rock.CheckIn.v2
             attendanceLabels.Select( a => a.Person )
                 .Where( p => p.Attributes == null )
                 .DistinctBy( p => p.Id )
+                .ToList()
                 .LoadAttributes( RockContext );
 
             var sessionFamily = allAttendance.Where( a => a.SearchResultGroupId.HasValue ).FirstOrDefault()?.SearchResultGroup;
@@ -485,7 +486,7 @@ namespace Rock.CheckIn.v2
             var labelData = GetLabelData( label.LabelType, attendanceLabel, attendanceLabels, sessionFamily );
 
             var filter = label.GetConditionalPrintCriteria();
-            var builder = new Reporting.FieldFilterExpressionBuilder();
+            var builder = new CheckInFieldFilterBuilder();
             var fn = builder.GetIsMatchFunction( filter, labelData.GetType() );
 
             if ( !fn( labelData ) )
@@ -522,6 +523,7 @@ namespace Rock.CheckIn.v2
             {
                 people.Where( p => p.Attributes == null )
                     .DistinctBy( p => p.Id )
+                    .ToList()
                     .LoadAttributes( RockContext );
             }
 
@@ -574,11 +576,13 @@ namespace Rock.CheckIn.v2
                 }
 
                 var hasCutter = printer?.GetAttributeValue( DeviceAttributeKey.DEVICE_HAS_CUTTER ).AsBoolean() ?? false;
+                var dpi = printer?.GetAttributeValue( DeviceAttributeKey.DEVICE_PRINTER_DPI ).AsIntegerOrNull();
 
                 var printRequest = new PrintLabelRequest
                 {
                     Capabilities = new PrinterCapabilities
                     {
+                        Dpi = dpi,
                         IsCutterSupported = hasCutter
                     },
                     RockContext = RockContext,

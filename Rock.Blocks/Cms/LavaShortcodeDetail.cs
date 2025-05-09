@@ -200,8 +200,6 @@ namespace Rock.Blocks.Cms
                 TagType = entity.TagType.ToString(),
             };
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
-
             return bag;
         }
 
@@ -219,7 +217,7 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -238,7 +236,7 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
             bag.EnabledCommands = entity.EnabledLavaCommands.SplitDelimitedValues().Select( lc => new ViewModels.Utility.ListItemBag() { Text = lc, Value = lc } ).ToList();
             bag.Parameters = GetParameterValues( entity.Parameters );
 
@@ -303,7 +301,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;

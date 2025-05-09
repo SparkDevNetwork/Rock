@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Workflow.FormBuilder;
 
 namespace Rock.Web.Cache
@@ -388,6 +389,50 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets a list of form actions (buttons) that should be presented
+        /// to the user.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A list of <see cref="ListItemBag"/> objects that represent the buttons.</returns>
+        public List<ListItemBag> GetFormActionButtons( RockContext rockContext )
+        {
+            var buttons = new List<ListItemBag>();
+
+            foreach ( var btn in Actions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                var actionDetails = btn.Split( new char[] { '^' } );
+
+                if ( actionDetails.Length >= 2 )
+                {
+                    DefinedValueCache btnType;
+
+                    if ( !actionDetails[1].IsNullOrWhiteSpace() )
+                    {
+                        btnType = DefinedValueCache.Get( actionDetails[1].AsGuid(), rockContext );
+                    }
+                    else
+                    {
+                        btnType = DefinedTypeCache.Get( SystemGuid.DefinedType.BUTTON_HTML.AsGuid(), rockContext )
+                            .DefinedValues
+                            .OrderBy( a => a.Order )
+                            .FirstOrDefault();
+                    }
+
+                    if ( btnType != null )
+                    {
+                        buttons.Add( new ListItemBag
+                        {
+                            Value = btnType.Value,
+                            Text = actionDetails[0]
+                        } );
+                    }
+                }
+            }
+
+            return buttons;
+        }
+
+        /// <summary>
         /// Copies from model.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -474,7 +519,6 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
 
 }

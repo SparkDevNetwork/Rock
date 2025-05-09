@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Lms;
+using Rock.Lms;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
@@ -311,11 +312,12 @@ namespace Rock.Blocks.Lms
             if ( onlyShowIsGridColumn )
             {
                 bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson,
+                    enforceSecurity: true,
                     attributeFilter: a => a.IsGridColumn );
             }
             else
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
             }
 
             return bag;
@@ -352,7 +354,7 @@ namespace Rock.Blocks.Lms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -439,7 +441,7 @@ namespace Rock.Blocks.Lms
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;

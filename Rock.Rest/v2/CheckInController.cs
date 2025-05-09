@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Labels;
@@ -33,8 +34,7 @@ using Rock.Utility;
 using Rock.ViewModels.Rest.CheckIn;
 using Rock.Web.Cache;
 using Rock.ViewModels.CheckIn.Labels;
-
-
+using Rock.Security;
 
 #if WEBFORMS
 using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
@@ -57,15 +57,25 @@ namespace Rock.Rest.v2
     [Rock.SystemGuid.RestControllerGuid( "52b3c68a-da8d-4374-a199-8bc8368a22bc" )]
     public sealed class CheckInController : ApiControllerBase
     {
+        /// <summary>
+        /// The database context to use for this request.
+        /// </summary>
         private readonly RockContext _rockContext;
+
+        /// <summary>
+        /// The logger to use when writing messages.
+        /// </summary>
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInController"/> class.
         /// </summary>
         /// <param name="rockContext">The database context to use for this request.</param>
-        public CheckInController( RockContext rockContext )
+        /// <param name="logger">The logger to use when writing messages.</param>
+        public CheckInController( RockContext rockContext, ILogger<CheckInController> logger )
         {
             _rockContext = rockContext;
+            _logger = logger;
         }
 
         /// <summary>
@@ -74,10 +84,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>A bag that contains all the configuration items.</returns>
         [HttpPost]
-        [Authenticate]
-        [Secured]
         [Route( "Configuration" )]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( ConfigurationResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "200dd82f-6532-4437-9ba4-a289408b0eb8" )]
         public IActionResult PostConfiguration( [FromBody] ConfigurationOptionsBag options )
         {
@@ -115,10 +127,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>A bag that contains the status.</returns>
         [HttpPost]
-        [Authenticate]
-        [Secured]
         [Route( "KioskStatus" )]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( KioskStatusResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "7fb87711-1ecf-49ca-90cb-3e2e1b02a933" )]
         public IActionResult PostKioskStatus( [FromBody] KioskStatusOptionsBag options )
         {
@@ -159,10 +173,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>A bag that contains all the matched families.</returns>
         [HttpPost]
-        [Authenticate]
-        [Secured]
         [Route( "SearchForFamilies" )]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( SearchForFamiliesResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "2c587733-0e08-4e93-8f2b-3e2518362768" )]
         public IActionResult PostSearchForFamilies( [FromBody] SearchForFamiliesOptionsBag options )
         {
@@ -216,10 +232,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>A bag that contains all the matched families.</returns>
         [HttpPost]
-        [Authenticate]
-        [Secured]
         [Route( "FamilyMembers" )]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( FamilyMembersResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "2bd5afdf-da57-48bb-a6db-7dd9ad1ab8da" )]
         public IActionResult PostFamilyMembers( [FromBody] FamilyMembersOptionsBag options )
         {
@@ -261,7 +279,7 @@ namespace Rock.Rest.v2
                     FamilyId = options.FamilyId,
                     PossibleSchedules = session.GetAllPossibleScheduleBags(),
                     People = session.GetAttendeeBags(),
-                    CurrentlyCheckedInAttendances = session.GetCurrentAttendanceBags()
+                    CurrentlyCheckedInAttendances = session.GetCurrentAttendanceBags( areas, kiosk, null )
                 } );
             }
             catch ( CheckInMessageException ex )
@@ -276,10 +294,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>A bag that contains all the opportunities.</returns>
         [HttpPost]
-        [Authenticate]
-        [Secured]
         [Route( "AttendeeOpportunities" )]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AttendeeOpportunitiesResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "6e77e23d-cccb-46b7-a8e9-95706bbb269a" )]
         public IActionResult PostAttendeeOpportunities( [FromBody] AttendeeOpportunitiesOptionsBag options )
         {
@@ -338,10 +358,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>The results from the save operation.</returns>
         [HttpPost]
-        [Authenticate]
-        [Secured]
         [Route( "SaveAttendance" )]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( SaveAttendanceResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "7ef059cb-99ba-4cf1-b7d5-3723eb320a99" )]
         public async Task<IActionResult> PostSaveAttendance( [FromBody] SaveAttendanceOptionsBag options )
         {
@@ -406,10 +428,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>The results from the confirm operation.</returns>
         [HttpPost]
-        [Authenticate]
-        [Secured]
         [Route( "ConfirmAttendance" )]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( ConfirmAttendanceResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "52070226-289b-442d-a8fe-a8323c0f922c" )]
         public async Task<IActionResult> PostConfirmAttendance( [FromBody] ConfirmAttendanceOptionsBag options )
         {
@@ -469,10 +493,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>The results from the save operation.</returns>
         [HttpPost]
-        [Authenticate]
-        [Secured]
         [Route( "Checkout" )]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( CheckoutResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "733be2ee-dec6-4f7f-92bd-df367c20543d" )]
         public async Task<IActionResult> PostCheckout( [FromBody] CheckoutOptionsBag options )
         {
@@ -519,10 +545,12 @@ namespace Rock.Rest.v2
         /// <param name="sessionGuid">The unique identifier of the session to delete attendance records for.</param>
         /// <returns>The results from the delete operation.</returns>
         [HttpDelete]
-        [Authenticate]
-        [Secured]
         [Route( "PendingAttendance/{sessionGuid}" )]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "f914ffc3-8587-493b-9c8a-ae196b5fe028" )]
         public IActionResult DeletePendingAttendance( Guid sessionGuid )
         {
@@ -549,7 +577,9 @@ namespace Rock.Rest.v2
         /// <returns>The result of the operation.</returns>
         [HttpGet]
         [Route( "CloudPrint/{deviceId}" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.SwitchingProtocols )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "1b4b1d0d-a872-40f7-a49d-666092cf8816" )]
         public IActionResult GetPrinterProxy( string deviceId, [FromQuery] string name = null )
         {
@@ -583,6 +613,66 @@ namespace Rock.Rest.v2
             } );
 
             return ResponseMessage( Request.CreateResponse( HttpStatusCode.SwitchingProtocols ) );
+        }
+
+        /// <summary>
+        /// Notifies server that an individual has entered or left the range
+        /// of one or more proximity beacons.
+        /// </summary>
+        /// <param name="proximity">The data that describes the detected beacons.</param>
+        /// <returns>The result of the operation.</returns>
+        [HttpPost]
+        [Route( "ProximityCheckIn" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.NoContent )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [SystemGuid.RestActionGuid( "2e0e2704-8730-4949-b726-05401930b0e0" )]
+        public IActionResult PostProximityCheckIn( [FromBody] ProximityCheckInOptionsBag proximity )
+        {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
+            var beacon = proximity?.Beacons?.FirstOrDefault();
+
+            if ( beacon == null )
+            {
+                return BadRequest( "No beacons were detected." );
+            }
+
+            if ( _logger.IsEnabled( LogLevel.Information ) )
+            {
+                var beacons = ( proximity.Beacons ?? new List<ProximityBeaconBag>() )
+                    .Select( b => $"{{Major={b.Major}, Minor={b.Minor}, Rssi={b.Rssi}, Accuracy={b.Accuracy}}}" );
+
+                _logger.LogInformation( "ProximityCheckin Uuid={uuid}, Present={present}, PersonalDeviceGuid={personalDeviceGuid}, Beacons=[{beacons:l}]",
+                    proximity.ProximityGuid,
+                    proximity.IsPresent,
+                    proximity.PersonalDeviceGuid,
+                    string.Join( ", ", beacons ) );
+            }
+
+            var proximityDirector = new ProximityDirector( _rockContext );
+
+            if ( proximity.IsPresent )
+            {
+                if ( !proximityDirector.CheckIn( RockRequestContext.CurrentPerson, beacon ) )
+                {
+                    return BadRequest( "No location was available for check-in." );
+                }
+            }
+            else
+            {
+                if ( !proximityDirector.Checkout( RockRequestContext.CurrentPerson, beacon ) )
+                {
+                    return BadRequest( "No location was available for checkout." );
+                }
+            }
+
+            return NoContent();
         }
     }
 }

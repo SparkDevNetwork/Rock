@@ -100,7 +100,7 @@ namespace Rock.CheckIn.v2
                     .OrderByDescending( gm => gm.GroupId == familyIdNumber )
                     .ThenBy( gm => gm.RoleOrder );
 
-            members.Select( fm => fm.Person ).DistinctBy( p => p.Id ).LoadAttributes( RockContext );
+            members.Select( fm => fm.Person ).DistinctBy( p => p.Id ).ToList().LoadAttributes( RockContext );
 
             foreach ( var member in members )
             {
@@ -191,6 +191,7 @@ namespace Rock.CheckIn.v2
                         Person = fm.Person,
                         IsInPrimaryFamily = fm.IsInPrimaryFamily,
                         RecentAttendances = attendeeAttendances,
+                        PreSelectedOpportunities = new List<OpportunitySelectionBag>(),
                         Opportunities = baseOpportunities.Clone()
                     };
                 } )

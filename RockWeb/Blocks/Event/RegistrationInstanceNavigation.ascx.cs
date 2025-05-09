@@ -120,7 +120,9 @@ namespace RockWeb.Blocks.Event
             var showWaitListTab = this.RegistrationInstance.RegistrationTemplate.WaitListEnabled;
 
             var rockContext = new RockContext();
-            var pageList = this.PageCache.ParentPage.GetPages( rockContext ).OrderBy( a => a.Order ).ToList();
+            var pageList = this.PageCache.ParentPage.GetPages( rockContext )
+                .Where( page => page.DisplayInNav( CurrentPerson ) )
+                .OrderBy( a => a.Order ).ToList();
 
             if ( !showWaitListTab && waitListPageGuid.HasValue )
             {

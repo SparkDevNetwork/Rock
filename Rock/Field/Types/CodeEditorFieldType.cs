@@ -24,7 +24,6 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Reporting;
 using Rock.ViewModels.Utility;
-using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -58,6 +57,32 @@ namespace Rock.Field.Types
             configurationProperties[EDITOR_THEME_OPTIONS] = codeEditorThemeOptions.ToCamelCaseJson( false, true );
 
             return configurationProperties;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string internalValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, internalValue );
+
+            ConvertEnumToPublicValue<CodeEditorMode>( privateConfigurationValues, publicConfigurationValues, EDITOR_MODE );
+            ConvertEnumToPublicValue<CodeEditorTheme>( privateConfigurationValues, publicConfigurationValues, EDITOR_THEME );
+
+            return publicConfigurationValues;
+        }
+
+        /// <summary>
+        /// Converts the specified enum value from the private configuration to a public configuration value.
+        /// </summary>
+        /// <typeparam name="TEnum">The type of the enum.</typeparam>
+        /// <param name="privateConfig">The private configuration values.</param>
+        /// <param name="publicConfig">The public configuration values.</param>
+        /// <param name="key">The key of the configuration value to convert.</param>
+        private static void ConvertEnumToPublicValue<TEnum>( Dictionary<string, string> privateConfig, Dictionary<string, string> publicConfig, string key ) where TEnum : struct, Enum
+        {
+            if ( privateConfig.TryGetValue( key, out var value ) && Enum.TryParse( value, out TEnum enumValue ) )
+            {
+                publicConfig[key] = Convert.ToInt32( enumValue ).ToString();
+            }
         }
 
         /// <summary>
@@ -97,37 +122,12 @@ namespace Rock.Field.Types
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="privateValue"></param>
-        /// <param name="privateConfigurationValues"></param>
-        /// <returns></returns>
-        /// <inheritdoc />
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            if ( !privateValue.IsLavaTemplate() )
-            {
-                return privateValue;
-            }
-
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-
-            return privateValue.ResolveMergeFields( mergeFields ).Trim();
-        }
-
-        /// <inheritdoc />
-        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            return GetTextValue( privateValue, privateConfigurationValues );
-        }
-
         /// <inheritdoc/>
         public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             // Encode because if the user typed <span>hello</span> then we want
             // it to display on screen as "<span>hello</span>" rather than "hello".
-            return GetTextValue( privateValue, privateConfigurationValues ).EncodeHtml();
+            return privateValue.EncodeHtml();
         }
 
         /// <inheritdoc/>

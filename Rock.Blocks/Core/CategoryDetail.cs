@@ -190,6 +190,14 @@ namespace Rock.Blocks.Core
             var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
+            if ( entity.Id == 0 )
+            {
+                var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
+                if ( entityTypeGuid.HasValue )
+                {
+                    entity.EntityTypeId = EntityTypeCache.Get( entityTypeGuid.Value ).Id;
+                }
+            }
             entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
@@ -271,7 +279,7 @@ namespace Rock.Blocks.Core
                 bag.IsDeletable = categoryService.CanDelete( entity, out var _ );
             }
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -289,7 +297,7 @@ namespace Rock.Blocks.Core
             if ( entity.Id == 0 )
             {
                 bag.EntityTypeQualifierColumn = GetAttributeValue( AttributeKey.EntityTypeQualifierProperty );
-                bag.EntityTypeQualifierValue = GetAttributeValue( AttributeKey.EntityTypeQualifierProperty );
+                bag.EntityTypeQualifierValue = GetAttributeValue( AttributeKey.EntityTypeQualifierValue );
                 var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
                 if ( entityTypeGuid.HasValue )
                 {
@@ -308,7 +316,7 @@ namespace Rock.Blocks.Core
                 }
             }
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -343,7 +351,7 @@ namespace Rock.Blocks.Core
                 () =>
                 {
                     entity.LoadAttributes( RockContext );
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -401,6 +409,13 @@ namespace Rock.Blocks.Core
             {
                 // Create a new entity.
                 entity = new Category();
+
+                var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
+                if ( entityTypeGuid.HasValue )
+                {
+                    entity.EntityTypeId = EntityTypeCache.Get( entityTypeGuid.Value ).Id;
+                }
+
                 entityService.Add( entity );
             }
 
@@ -513,7 +528,7 @@ namespace Rock.Blocks.Core
                         {
                             ParentGuid = parentGuid
                         } )
-                        .Max( siblingCategory => (int?)siblingCategory.Order );
+                        .Max( siblingCategory => ( int? ) siblingCategory.Order );
 
                     nextOrder = ( maxOrder ?? -1 ) + 1;
                 }
@@ -530,7 +545,19 @@ namespace Rock.Blocks.Core
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();
-                entity.SaveAttributeValues( RockContext );
+
+                if ( box.Bag.DeleteAttributeValues )
+                {
+                    var attributeIds = entity.AttributeValues.Values.ToList().Select( a => a.AttributeId );
+                    var attributeValueService = new AttributeValueService( RockContext );
+                    var attributeValues = attributeValueService.GetByAttributeIdsAndEntityId( attributeIds, entity.Id );
+                    attributeValueService.DeleteRange( attributeValues );
+                    RockContext.SaveChanges();
+                }
+                else
+                {
+                    entity.SaveAttributeValues( RockContext );
+                }
             } );
 
             if ( isNew )
@@ -662,7 +689,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult ReorderChildCategory( string parentCategoryIdKey, string idKey, string beforeIdKey )
         {
-            using (var rockContext = new RockContext() )
+            using ( var rockContext = new RockContext() )
             {
                 // Get the queryable and make sure it is ordered correctly.
                 var items = OrderedChildCategories( parentCategoryIdKey, rockContext );
@@ -723,7 +750,7 @@ namespace Rock.Blocks.Core
         /// </summary>
         /// <param name="idKey">The parent id key hash to use for getting the list of child categories.</param>
         /// <returns>A list of <see cref="Category"/>.</returns>
-        private List<Category> OrderedChildCategories(string idKey, RockContext rockContext )
+        private List<Category> OrderedChildCategories( string idKey, RockContext rockContext )
         {
             var categoryService = new CategoryService( rockContext );
             var parentGuid = categoryService.GetSelect( idKey, c => c.Guid );

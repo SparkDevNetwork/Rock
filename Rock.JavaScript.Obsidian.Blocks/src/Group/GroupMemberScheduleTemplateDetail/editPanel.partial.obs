@@ -22,13 +22,14 @@
     import { PropType, watch } from "vue";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { GroupMemberScheduleTemplateBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberScheduleTemplateDetail/groupMemberScheduleTemplateBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<GroupMemberScheduleTemplateBag>,
+            type: Object as PropType<ValidPropertiesBox<GroupMemberScheduleTemplateBag>>,
             required: true
         },
 
@@ -39,14 +40,14 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: GroupMemberScheduleTemplateBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<GroupMemberScheduleTemplateBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const calendarContent = propertyRef(props.modelValue.calendarContent ?? "", "ScheduleId");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const calendarContent = propertyRef(props.modelValue?.bag?.calendarContent ?? "", "ScheduleId");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -56,18 +57,18 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(calendarContent, props.modelValue.calendarContent ?? "");
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(calendarContent, props.modelValue?.bag?.calendarContent ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([...propRefs], () => {
-        const newValue: GroupMemberScheduleTemplateBag = {
-            ...props.modelValue,
-            name: name.value,
-            calendarContent: calendarContent.value,
+        const newValue: ValidPropertiesBox<GroupMemberScheduleTemplateBag> = {
+            bag: { ...props.modelValue.bag } as GroupMemberScheduleTemplateBag
         };
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "calendarContent", calendarContent.value);
 
         emit("update:modelValue", newValue);
     });

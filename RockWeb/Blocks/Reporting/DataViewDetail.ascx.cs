@@ -80,6 +80,13 @@ namespace RockWeb.Blocks.Reporting
         DefaultIntegerValue = 180,
         Order = 4 )]
 
+    [BooleanField(
+        "Use Obsidian Components",
+        Key = AttributeKey.UseObsidianComponents,
+        Description = "Switches the filter components to use Obsidian if supported.",
+        DefaultBooleanValue = true,
+        Category = "Advanced")]
+
     [Rock.SystemGuid.BlockTypeGuid( "EB279DF9-D817-4905-B6AC-D9883F0DA2E4" )]
     public partial class DataViewDetail : RockBlock
     {
@@ -92,6 +99,7 @@ namespace RockWeb.Blocks.Reporting
             public const string DataViewDetailPage = "DataViewDetailPage";
             public const string ReportDetailPage = "ReportDetailPage";
             public const string GroupDetailPage = "GroupDetailPage";
+            public const string UseObsidianComponents = "UseObsidianComponents";
         }
 
         #endregion Attribute Keys
@@ -106,6 +114,7 @@ namespace RockWeb.Blocks.Reporting
 
             public const string ReportId = "ReportId";
             public const string GroupId = "GroupId";
+            public const string ExpandedIds = "ExpandedIds";
         }
 
         #endregion PageParameterKey
@@ -443,9 +452,14 @@ $(document).ready(function() {
             }
 
             var qryParams = new Dictionary<string, string>();
+            var expandedIds = PageParameter( PageParameterKey.ExpandedIds );
             qryParams[PageParameterKey.DataViewId] = dataView.Id.ToString();
             qryParams[PageParameterKey.ParentCategoryId] = null;
-            NavigateToCurrentPageReference( qryParams );
+            if ( expandedIds.IsNotNullOrWhiteSpace() )
+            {
+                qryParams[PageParameterKey.ExpandedIds] = expandedIds;
+            }
+            NavigateToCurrentPage( qryParams );
         }
 
         /// <summary>
@@ -476,7 +490,7 @@ $(document).ready(function() {
                     qryParams[PageParameterKey.CategoryId] = parentCategoryId.ToString();
                     qryParams[PageParameterKey.DataViewId] = null;
                     qryParams[PageParameterKey.ParentCategoryId] = null;
-                    NavigateToCurrentPageReference( qryParams );
+                    NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
                 {
@@ -541,7 +555,7 @@ $(document).ready(function() {
 
                 qryParams[PageParameterKey.DataViewId] = null;
                 qryParams[PageParameterKey.ParentCategoryId] = null;
-                NavigateToCurrentPageReference( qryParams );
+                NavigateToPage( RockPage.Guid, qryParams );
             }
         }
 
@@ -1349,6 +1363,11 @@ $(document).ready(function() {
             filterField.ID = string.Format( "ff_{0}", filterField.DataViewFilterGuid.ToString( "N" ) );
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             filterField.Expanded = true;
+            filterField.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
+
+            // This is required for Obsidian filters so they can initialize any
+            // data that must be sent from C# to Obsidian.
+            filterField.SetSelection( string.Empty );
         }
 
         /// <summary>
@@ -1475,6 +1494,7 @@ $(document).ready(function() {
                     filterControl.DataViewFilterGuid = filter.Guid;
                     filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
                     filterControl.FilteredEntityTypeName = filteredEntityTypeName;
+                    filterControl.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
                     if ( filter.EntityTypeId.HasValue )
                     {
                         var entityTypeCache = EntityTypeCache.Get( filter.EntityTypeId.Value, rockContext );

@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock v-if="!blockError && !hidePanel"
                  v-model:mode="panelMode"
@@ -29,7 +29,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="groupTypeEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="groupTypeEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -43,17 +43,16 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./CheckinTypeDetail/editPanel.partial.obs";
     import ViewPanel from "./CheckinTypeDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./CheckinTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { CheckinTypeBag } from "@Obsidian/ViewModels/Blocks/Checkin/Config/CheckinTypeDetail/checkinTypeBag";
     import { CheckinTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Checkin/Config/CheckinTypeDetail/checkinTypeDetailOptionsBag";
-import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<CheckinTypeBag, CheckinTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -61,104 +60,19 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     const errorMessage = ref("");
 
     const groupTypeViewBag = ref(config.entity);
-    const groupTypeEditBag = ref<CheckinTypeBag>({} as CheckinTypeBag);
+    const groupTypeEditBag = ref<ValidPropertiesBox<CheckinTypeBag>>({
+        bag: {} as CheckinTypeBag,
+        validProperties: config.options?.validProperties
+    });
 
     const entityTypeGuid = EntityType.GroupType;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "description",
-        "iconCssClass",
-        "name",
-
-        // AdvancedSettings
-        "abilityLevelDetermination",
-        "ageRequired",
-        "displayLocCount",
-        "gradeRequired",
-        "refreshInterval",
-        "searchRegex",
-        "specialNeedsValues",
-
-        // BarcodeSettings
-        "codeAlphaLength",
-        "codeAlphaNumericLength",
-        "codeNumericLength",
-        "codeRandom",
-        "reuseCode",
-
-        // DisplaySettings
-        "familySelectTemplate",
-        "hidePhotos",
-        "personSelectTemplate",
-        "startTemplate",
-        "successTemplate",
-        "successTemplateOverrideDisplayMode",
-
-        // GeneralSettings
-        "checkInType",
-        "allowCheckoutAtKiosk",
-        "allowCheckoutInManager",
-        "enablePresence",
-        "enableManager",
-        "enableOverride",
-        "achievementTypes",
-        "autoSelectDaysBack",
-        "autoSelectOptions",
-        "useSameOptions",
-        "preventInactivePeople",
-        "preventDuplicateCheckin",
-
-        // HeaderText
-        "actionSelectHeaderTemplate",
-        "checkoutPersonSelectHeaderTemplate",
-        "personSelectHeaderTemplate",
-        "multiPersonSelectHeaderTemplate",
-        "groupTypeSelectHeaderTemplate",
-        "timeSelectHeaderTemplate",
-        "abilityLevelSelectHeaderTemplate",
-        "locationSelectHeaderTemplate",
-        "groupSelectHeaderTemplate",
-
-        // Registration Settings
-        "registrationDefaultPersonConnectionStatus",
-        "registrationDisplayAlternateIdFieldForAdults",
-        "registrationDisplayAlternateIdFieldForChildren",
-        "registrationDisplaySmsEnabled",
-        "registrationSmsEnabledByDefault",
-        "enableCheckInAfterRegistration",
-        "knownRelationshipTypes",
-        "sameFamilyKnownRelationshipTypes",
-        "canCheckInKnownRelationshipTypes",
-        "registrationAddFamilyWorkflowTypes",
-        "registrationAddPersonWorkflowTypes",
-        "registrationRequiredAttributesForAdults",
-        "registrationOptionalAttributesForAdults",
-        "registrationRequiredAttributesForChildren",
-        "registrationOptionalAttributesForChildren",
-        "registrationRequiredAttributesForFamilies",
-        "registrationOptionalAttributesForFamilies",
-        "registrationDisplayBirthdateOnAdults",
-        "registrationDisplayBirthdateOnChildren",
-        "registrationDisplayGradeOnChildren",
-        "registrationDisplayRaceOnAdults",
-        "registrationDisplayRaceOnChildren",
-        "registrationDisplayEthnicityOnAdults",
-        "registrationDisplayEthnicityOnChildren",
-
-        // Search Settings
-        "searchType",
-        "maxResults",
-        "minPhoneLength",
-        "maxPhoneLength",
-        "phoneSearchType",
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(groupTypeEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: groupTypeEditBag
+    });
 
     // #endregion
 
@@ -241,7 +155,7 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!groupTypeEditBag.value?.idKey) {
+        if (!groupTypeEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -282,35 +196,21 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<CheckinTypeBag, CheckinTypeDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<CheckinTypeBag>>("Edit", {
             key: groupTypeViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            groupTypeEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data.bag) {
+            groupTypeEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties
+            };
 
             return true;
         }
         else {
             return false;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -322,19 +222,13 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<CheckinTypeBag, CheckinTypeDetailOptionsBag> = {
-            entity: groupTypeEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<CheckinTypeBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<CheckinTypeBag> | string>("Save", {
+            box: groupTypeEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                groupTypeViewBag.value = result.data;
+                groupTypeViewBag.value = result.data.bag;
 
                 return true;
             }
@@ -350,8 +244,6 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -360,7 +252,10 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
         blockError.value = "The specified group type could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        groupTypeEditBag.value = config.entity;
+        groupTypeEditBag.value = {
+            bag: config.entity,
+            validProperties: options.value.validProperties
+        };
         panelMode.value = DetailPanelMode.Add;
     }
 

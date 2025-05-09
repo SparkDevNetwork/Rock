@@ -25,9 +25,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
-using Rock.Lava.DotLiquid;
 using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -51,23 +49,12 @@ namespace Rock.Tests.Shared.Lava
 
         }
         public static bool FluidEngineIsEnabled { get; set; }
-        public static bool DotLiquidEngineIsEnabled { get; set; }
-        public static bool RockLiquidEngineIsEnabled { get; set; }
 
-        private static ILavaEngine _rockliquidEngine = null;
-        private static ILavaEngine _dotliquidEngine = null;
         private static ILavaEngine _fluidEngine = null;
 
-        public static void Initialize( bool testRockLiquidEngine, bool testDotLiquidEngine, bool testFluidEngine, bool loadShortcodes )
+        public static void Initialize( bool testFluidEngine, bool loadShortcodes )
         {
-            // Verify the test environment: RockLiquidEngine and DotLiquidEngine are mutually exclusive test environments.
-            if ( testRockLiquidEngine && testDotLiquidEngine )
-            {
-                throw new Exception( "RockLiquidEngine/DotLiquidEngine cannot be tested simultaneously because they require different global configurations of the DotLiquid library." );
-            }
-
-            RockLiquidEngineIsEnabled = testRockLiquidEngine;
-            DotLiquidEngineIsEnabled = testDotLiquidEngine;
+            LavaService.RockLiquidIsEnabled = false;
             FluidEngineIsEnabled = testFluidEngine;
 
             RegisterLavaEngineFactories();
@@ -80,22 +67,11 @@ namespace Rock.Tests.Shared.Lava
             engineOptions.InitializeDynamicShortcodes = loadShortcodes;
             engineOptions.HostService = new WebsiteLavaHost();
 
-            if ( RockLiquidEngineIsEnabled )
-            {
-                // Initialize the Rock variant of the DotLiquid Engine.
-                _rockliquidEngine = global::Rock.Lava.LavaService.NewEngineInstance( typeof( RockLiquidEngine ), engineOptions );
-            }
-
-            if ( DotLiquidEngineIsEnabled )
-            {
-                // Initialize the Lava library DotLiquid Engine.
-                _dotliquidEngine = global::Rock.Lava.LavaService.NewEngineInstance( typeof( DotLiquidEngine ), engineOptions );
-            }
-
             if ( FluidEngineIsEnabled )
             {
                 // Initialize the Fluid Engine.
                 _fluidEngine = global::Rock.Lava.LavaService.NewEngineInstance( typeof( FluidEngine ), engineOptions );
+                LavaService.SetCurrentEngine( _fluidEngine );
             }
 
             _instance = new LavaIntegrationTestHelper();
@@ -106,52 +82,6 @@ namespace Rock.Tests.Shared.Lava
         /// </summary>
         private static void RegisterLavaEngineFactories()
         {
-            // Register the RockLiquid Engine (pre-v13).
-            LavaService.RegisterEngine( ( engineServiceType, options ) =>
-            {
-                var engine = new RockLiquidEngine();
-                var engineOptions = options as LavaEngineConfigurationOptions;
-
-                engine.Initialize( engineOptions );
-
-                // Initialize the RockLiquid Engine
-                RegisterFilters( engine );
-                RegisterTags( engine );
-                RegisterBlocks( engine );
-
-                RegisterStaticShortcodes( engine );
-
-                if ( engineOptions?.InitializeDynamicShortcodes ?? false )
-                {
-                    RegisterDynamicShortcodes( engine );
-                }
-
-                return engine;
-            } );
-
-            // Register the DotLiquid Engine.
-            LavaService.RegisterEngine( ( engineServiceType, options ) =>
-            {
-                var engine = new DotLiquidEngine();
-                var engineOptions = options as LavaEngineConfigurationOptions;
-
-                engine.Initialize( engineOptions );
-
-                // Initialize the DotLiquid Engine
-                RegisterFilters( engine );
-                RegisterTags( engine );
-                RegisterBlocks( engine );
-
-                RegisterStaticShortcodes( engine );
-
-                if ( engineOptions?.InitializeDynamicShortcodes ?? false )
-                {
-                    RegisterDynamicShortcodes( engine );
-                }
-
-                return engine;
-            } );
-
             // Register the Fluid Engine.
             LavaService.RegisterEngine( ( engineServiceType, options ) =>
             {
@@ -212,17 +142,9 @@ namespace Rock.Tests.Shared.Lava
         {
             ILavaEngine engine = null;
 
-            if ( engineType == typeof( DotLiquidEngine ) )
-            {
-                engine = _dotliquidEngine;
-            }
-            else if ( engineType == typeof( FluidEngine ) )
+            if ( engineType == typeof( FluidEngine ) )
             {
                 engine = _fluidEngine;
-            }
-            else if ( engineType == typeof( RockLiquidEngine ) )
-            {
-                engine = _rockliquidEngine;
             }
 
             if ( engine == null )
@@ -247,91 +169,15 @@ namespace Rock.Tests.Shared.Lava
             return _fluidEngine;
         }
 
-        /// <summary>
-        /// Set a Lava Engine instance to be used for subsequent tests.
-        /// Only one engine of each type can be active at any time.
-        /// </summary>
-        /// <param name="engine"></param>
-        /// <returns></returns>
-        public static ILavaEngine SetEngineInstance( ILavaEngine engine )
-        {
-            var engineType = engine?.GetType();
-
-            if ( engineType == typeof( DotLiquidEngine ) )
-            {
-                _dotliquidEngine = engine;
-            }
-            else if ( engineType == typeof( FluidEngine ) )
-            {
-                _fluidEngine = engine;
-            }
-            else if ( engineType == typeof( RockLiquidEngine ) )
-            {
-                _rockliquidEngine = engine;
-            }
-
-            if ( engine == null )
-            {
-                throw new Exception( $"Lava Engine instance not available. Engine Type \"{engineType}\" is not configured for this test run." );
-            }
-
-            // Set the global instance of the engine to ensure that it is available to Lava components.
-            LavaService.SetCurrentEngine( engine );
-
-            return engine;
-        }
-
         private static void RegisterFilters( ILavaEngine engine )
         {
             // Register the common Rock.Lava filters first, then overwrite with the web-specific filters.
-            if ( engine.GetType() == typeof( RockLiquidEngine ) )
-            {
-                engine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
-                engine.RegisterFilters( typeof( Rock.Lava.RockFilters ) );
-            }
-            else
-            {
-                engine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
-                engine.RegisterFilters( typeof( Rock.Lava.LavaFilters ) );
-            }
+            engine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
+            engine.RegisterFilters( typeof( Rock.Lava.LavaFilters ) );
         }
 
         private static void RegisterTags( ILavaEngine engine )
         {
-            // Get all tags and call OnStartup methods
-            if ( engine.GetType() == typeof( RockLiquidEngine ) )
-            {
-                // Find all tag elements that implement IRockStartup.
-                var elementTypes = Rock.Reflection.FindTypes( typeof( DotLiquid.Tag ) ).Select( a => a.Value ).ToList();
-
-                foreach ( var elementType in elementTypes )
-                {
-                    var instance = Activator.CreateInstance( elementType ) as IRockStartup;
-
-                    if ( instance == null )
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        // RockLiquid blocks register themselves with the DotLiquid framework during their startup process.
-                        instance.OnStartup();
-                    }
-                    catch ( Exception ex )
-                    {
-                        var lavaException = new Exception( string.Format( "Lava component initialization failure. Startup failed for Lava Tag \"{0}\".", elementType.FullName ), ex );
-
-                        ExceptionLogService.LogException( lavaException, null );
-                    }
-                }
-            }
-
-            if ( engine.GetType() == typeof( RockLiquidEngine ) )
-            {
-                return;
-            }
-
             // Get all Lava tags and call the OnStartup method.
             try
             {
@@ -378,76 +224,46 @@ namespace Rock.Tests.Shared.Lava
         private static void RegisterBlocks( ILavaEngine engine )
         {
             // Get all blocks and call OnStartup methods
-            if ( engine.GetType() == typeof( RockLiquidEngine ) )
+            try
             {
-                // Find all tag elements that implement IRockStartup.
-                var elementTypes = Rock.Reflection.FindTypes( typeof( DotLiquid.Block ) ).Select( a => a.Value ).ToList();
+                // Get Lava block components, except shortcodes which are registered separately.
+                var elementTypes = Rock.Reflection.FindTypes( typeof( ILavaBlock ) ).Select( a => a.Value ).ToList();
+
+                elementTypes = elementTypes.Where( x => !( typeof( ILavaShortcode ).IsAssignableFrom( x ) ) ).ToList();
 
                 foreach ( var elementType in elementTypes )
                 {
-                    var instance = Activator.CreateInstance( elementType ) as IRockStartup;
+                    var instance = Activator.CreateInstance( elementType ) as ILavaBlock;
 
-                    if ( instance == null )
+                    var name = instance.SourceElementName;
+
+                    if ( string.IsNullOrWhiteSpace( name ) )
                     {
-                        continue;
+                        name = elementType.Name;
                     }
+
+                    engine.RegisterBlock( name, ( shortcodeName ) =>
+                    {
+                        var shortcode = Activator.CreateInstance( elementType ) as ILavaBlock;
+
+                        return shortcode;
+                    } );
 
                     try
                     {
-                        // RockLiquid blocks register themselves with the DotLiquid framework during their startup process.
-                        instance.OnStartup();
+                        instance.OnStartup( engine );
                     }
                     catch ( Exception ex )
                     {
-                        var lavaException = new Exception( string.Format( "Lava component initialization failure. Startup failed for Lava Tag \"{0}\".", elementType.FullName ), ex );
+                        var lavaException = new Exception( string.Format( "Lava component initialization failure. Startup failed for Lava Block \"{0}\".", elementType.FullName ), ex );
 
                         ExceptionLogService.LogException( lavaException, null );
                     }
                 }
             }
-            else
+            catch ( Exception ex )
             {
-                try
-                {
-                    // Get Lava block components, except shortcodes which are registered separately.
-                    var elementTypes = Rock.Reflection.FindTypes( typeof( ILavaBlock ) ).Select( a => a.Value ).ToList();
-
-                    elementTypes = elementTypes.Where( x => !( typeof( ILavaShortcode ).IsAssignableFrom( x ) ) ).ToList();
-
-                    foreach ( var elementType in elementTypes )
-                    {
-                        var instance = Activator.CreateInstance( elementType ) as ILavaBlock;
-
-                        var name = instance.SourceElementName;
-
-                        if ( string.IsNullOrWhiteSpace( name ) )
-                        {
-                            name = elementType.Name;
-                        }
-
-                        engine.RegisterBlock( name, ( shortcodeName ) =>
-                        {
-                            var shortcode = Activator.CreateInstance( elementType ) as ILavaBlock;
-
-                            return shortcode;
-                        } );
-
-                        try
-                        {
-                            instance.OnStartup( engine );
-                        }
-                        catch ( Exception ex )
-                        {
-                            var lavaException = new Exception( string.Format( "Lava component initialization failure. Startup failed for Lava Block \"{0}\".", elementType.FullName ), ex );
-
-                            ExceptionLogService.LogException( lavaException, null );
-                        }
-                    }
-                }
-                catch ( Exception ex )
-                {
-                    ExceptionLogService.LogException( ex, null );
-                }
+                ExceptionLogService.LogException( ex, null );
             }
         }
 
@@ -780,16 +596,6 @@ namespace Rock.Tests.Shared.Lava
                     {
                         _activeEngines.Add( _fluidEngine );
                     }
-
-                    if ( DotLiquidEngineIsEnabled )
-                    {
-                        _activeEngines.Add( _dotliquidEngine );
-                    }
-
-                    if ( RockLiquidEngineIsEnabled )
-                    {
-                        _activeEngines.Add( _rockliquidEngine );
-                    }
                 }
             }
 
@@ -810,6 +616,15 @@ namespace Rock.Tests.Shared.Lava
         public void AssertTemplateOutput( string expectedOutput, string inputTemplate, LavaTestRenderOptions options = null )
         {
             var requirement = new LavaTestOutputMatchRequirement( expectedOutput, options?.OutputMatchType ?? LavaTestOutputMatchTypeSpecifier.Equal );
+
+            AssertTemplateOutput( new List<LavaTestOutputMatchRequirement> { requirement },
+                inputTemplate,
+                options );
+        }
+
+        public void Execute( string inputTemplate, LavaTestRenderOptions options, Action<string> callback )
+        {
+            var requirement = new LavaTestOutputMatchRequirement( callback );
 
             AssertTemplateOutput( new List<LavaTestOutputMatchRequirement> { requirement },
                 inputTemplate,
@@ -957,6 +772,12 @@ namespace Rock.Tests.Shared.Lava
                          && matchType == LavaTestOutputMatchTypeSpecifier.Equal )
                     {
                         matchType = LavaTestOutputMatchTypeSpecifier.Contains;
+                    }
+
+                    if ( matchType == LavaTestOutputMatchTypeSpecifier.Callback )
+                    {
+                        matchRequirement.Callback( outputText );
+                        return;
                     }
 
                     var expectedOutputText = matchRequirement.MatchValue ?? string.Empty;
@@ -1606,8 +1427,16 @@ namespace Rock.Tests.Shared.Lava
             MatchType = match;
         }
 
+        public LavaTestOutputMatchRequirement( Action<string> callback )
+        {
+            MatchType = LavaTestOutputMatchTypeSpecifier.Callback;
+            Callback = callback;
+        }
+
         public string MatchValue { get; set; }
         public LavaTestOutputMatchTypeSpecifier MatchType { get; set; }
+
+        public Action<string> Callback { get; }
     }
 
     /// <summary>

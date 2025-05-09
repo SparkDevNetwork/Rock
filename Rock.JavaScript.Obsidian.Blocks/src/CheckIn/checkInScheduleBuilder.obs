@@ -29,18 +29,18 @@
                     </div>
                 </div>
             </div>
-            <div class="form-inline row margin-b-md">
-                <div class="d-flex flex-row justify-content-evenly">
-                    <div class="col-md-2" v-if="!groupTypeIdFromParam">
+            <div class="margin-b-md mt-3">
+                <div class="d-flex flex-row flex-sm-row justify-content-md-start">
+                    <div class="col-md-3" v-if="!groupTypeIdFromParam">
                         <GroupTypePicker v-model="groupType" label="Group Type" :showBlankItem="true" blankValue="All" :groupTypes="[...groupTypeItems]" />
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <LocationItemPicker v-model="parentLocation" label="Parent Location" />
                     </div>
-                    <div class="col-md-2" v-if="areaItems.length > 0">
+                    <div class="col-md-3" v-if="areaItems.length > 0">
                         <GroupTypePicker v-model="area" label="Area" :showBlankItem="true" :groupTypes="[...areaItems]" />
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <CategoryPicker v-model="scheduleCategory" label="Schedule Category" :entityTypeGuid="EntityType.Schedule" />
                     </div>
                 </div>
@@ -59,7 +59,7 @@
                         Location
                     </div>
                 </div>
-                <div class="grid-column-header px-1" style="width: 5%; min-width: 75px; max-width: 100px;" v-for="schedule in schedules">
+                <div class="grid-column-header justify-content-center px-1" style="width: 5%; min-width: 75px; max-width: 100px;" v-for="schedule in schedules">
                     <div class="d-flex flex-column align-items-center">
                         <div class="grid-column-title text-center" v-html="getScheduleHtml(schedule)"></div>
                         <a href='#'
@@ -120,7 +120,7 @@
 
     <Modal v-model="showCloneScheduleModal" title="Copy Schedule">
         <RockForm v-model:submit="submitClonedSchedule" @submit="processClonedSchedule">
-            <NotificationBox alertType="info">This will copy all the enabled locations from the source schedule into the destination schedule.</NotificationBox>
+            <NotificationBox alertType="info">This will copy all the enabled locations from the source schedule into the destination schedule. Note: The Schedule Builder will need to be saved after cloning a schedule.</NotificationBox>
             <div class="row">
                 <div class="col-md-3">
                     <SchedulePicker v-model="sourceSchedule" label="Source Schedule" rules="required" />
@@ -133,7 +133,7 @@
         </RockForm>
 
         <template #customButtons>
-            <RockButton btnType="primary" @click="submitClonedSchedule = true">Save</RockButton>
+            <RockButton btnType="primary" @click="submitClonedSchedule = true">Add</RockButton>
         </template>
     </Modal>
 </template>
@@ -472,7 +472,8 @@
     async function processClonedSchedule(): Promise<void> {
         const data: CloneScheduleBag = {
             sourceSchedule: sourceSchedule.value,
-            destinationSchedule: destinationSchedule.value
+            destinationSchedule: destinationSchedule.value,
+            currentScheduleConfiguration: groupLocations.value
         };
 
         const response = await invokeBlockAction<GroupLocationsBag[]>("ProcessClonedSchedule", {

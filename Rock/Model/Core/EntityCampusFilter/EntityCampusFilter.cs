@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,9 @@ namespace Rock.Model
     [NotAudited]
     [Table( "EntityCampusFilter" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.None, DisableEntitySecurity = true )]
+    [RockObsolete( "17.0" )]
+    [System.Obsolete( "This model is no longer used and will be removed in the future." )]
     [Rock.SystemGuid.EntityTypeGuid( "A736A9FB-F2A5-4458-B126-FAD6BD3F3B78")]
     public partial class EntityCampusFilter : Model<EntityCampusFilter>
     {
@@ -95,6 +98,8 @@ namespace Rock.Model
     /// EntityCampusFilterConfiguration class
     /// </summary>
     /// <seealso cref="T:System.Data.Entity.ModelConfiguration.EntityTypeConfiguration{Rock.Model.EntityCampusFilter}" />
+    [RockObsolete( "17.0" )]
+    [System.Obsolete]
     public partial class EntityCampusFilterConfiguration : EntityTypeConfiguration<EntityCampusFilter>
     {
         /// <summary>

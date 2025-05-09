@@ -259,12 +259,6 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
         {
-            AddRulesToSecurityGrant( grant );
-        }
-
-        /// <inheritdoc/>
-        public void AddRulesToSecurityGrant( SecurityGrant grant )
-        {
             grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
             grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
             grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );

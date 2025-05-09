@@ -40,7 +40,7 @@ namespace Rock.Web.Cache
     [Serializable]
     [DataContract]
     [JsonConverter( typeof( Utility.AttributeCacheJsonConverter ) )]
-    public class AttributeCache : ModelCache<AttributeCache, Model.Attribute>
+    public class AttributeCache : ModelCache<AttributeCache, Model.Attribute>, IHasReadOnlyAdditionalSettings
     {
         #region Fields
 
@@ -339,6 +339,11 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool IsActive { get; private set; }
 
+        /// <inheritdoc/>
+        [RockInternal( "1.16.4" )]
+        [DataMember]
+        public string AdditionalSettingsJson { get; private set; }
+
         /// <summary>
         /// Gets or sets the category ids.
         /// </summary>
@@ -572,6 +577,7 @@ namespace Rock.Web.Cache
             ShowOnBulk = attribute.ShowOnBulk;
             IsPublic = attribute.IsPublic;
             IsSuppressHistoryLogging = attribute.IsSuppressHistoryLogging;
+            AdditionalSettingsJson = attribute.AdditionalSettingsJson;
 
             ConfigurationValues = new Dictionary<string, string>( qualifiers );
             QualifierValues = new Dictionary<string, ConfigurationValue>();
@@ -831,7 +837,6 @@ namespace Rock.Web.Cache
         /// and <paramref name="entityQualifierValue"/> values for the <paramref name="entityTypeId"/>.
         /// </summary>
         /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
-        [RockInternal( "1.16" )]
         internal static List<AttributeCache> GetOrderedGridAttributes( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue )
         {
             return GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, false )

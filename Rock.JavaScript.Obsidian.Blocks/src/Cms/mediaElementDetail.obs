@@ -1,0 +1,1356 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+
+    <Panel type="block" :title="panelName" :headerSecondaryActions="blockLabels">
+        <template #headerActions>
+            <div class="mr-3">
+                <template v-if="mediaElementViewBag?.closeCaption">
+                    <a><span ref="closedCaptionIcon" class="label label-info" title="Has Closed Captions"><i class="fa fa-cc fa-lg"></i></span></a>
+                </template>
+                <template v-if="mediaElementViewBag?.durationSeconds">
+                    <span ref="durationLabel" class="label label-default ml-1" title="Media Duration">{{ formatDuration(mediaElementViewBag.durationSeconds) }}</span>
+                </template>
+            </div>
+        </template>
+        <template #default>
+            <!-- Show Edit Panel without tabs when in Add mode -->
+            <RockForm v-if="panelMode === DetailPanelMode.Add" ref="editForm" @submit="onSaveSubmit">
+                <EditPanel
+                           v-model="mediaElementEditBag"
+                           :options="options" />
+            </RockForm>
+
+            <!-- Show tabbed interface when not in Add mode -->
+            <TabbedContent v-else :tabs="tabs" v-model:selectedTab="selectedTab" selectedTabQueryParameterKey="tab">
+                <template #tabpane="{ item }">
+                    <div v-if="item === 'Overview'">
+                        <div class="row">
+                            <div v-if="mediaUrl" class="col-md-6 position-relative">
+                                <div class="video-container">
+                                    <MediaPlayer
+                                                 :key="playerKey"
+                                                 ref="mediaPlayer"
+                                                 :mediaUrl="mediaUrl"
+                                                 :thumbnailUrl="thumbnailUrl"
+                                                 :disableClickToPlay="true"
+                                                 :disablePlay="true"
+                                                 :muted="true"
+                                                 :playerControls="[]" />
+
+                                    <div v-if="videoEngagementData" class="chart-container">
+                                        <canvas ref="watchedChartCanvas" class="chart-canvas"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div :class="{ 'col-md-6': mediaUrl, 'col-md-12': !mediaUrl }">
+                                <div v-if="!showNoStatsMessage">
+                                    <h5 class="mb-2">Rock Media Analytics</h5>
+                                    <Kpi :value="engagementValue" label="Engagement" :tooltip="`The total minutes played divided by the length of the video times the total number of plays.`" iconCssClass="fa fa-broadcast-tower" color="blue" isCard />
+                                    <Kpi :value="playCount" label="Plays" :tooltip="`This video was played ${playCount} times.`" iconCssClass="fa fa-play-circle" color="green" isCard />
+                                    <Kpi :value="minutesWatched" label="Minutes Watched" :tooltip="`A total of ${minutesWatched} minutes were watched.`" iconCssClass="fa fa-clock" color="orange" isCard />
+                                </div>
+                                <div v-else class="alert alert-info mt-2">
+                                    No statistical data is available yet.
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr v-if="!showNoStatsMessage" class="my-3">
+
+                        <div v-if="!showNoStatsMessage" class="row">
+                            <div class="col-md-12">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5>{{ selectedTimePeriod === "90" ? "Plays Per Day" : "Plays Per Week" }}</h5>
+                                    <DropDownList v-model="selectedTimePeriod"
+                                                  :items="timePeriodOptions"
+                                                  :showBlankItem="false"
+                                                  inputClasses="input-width-lg" />
+                                </div>
+                                <div>
+                                    <ul class="trend-chart">
+                                        <li v-for="(item, index) in chartData.formattedItems"
+                                            :key="index"
+                                            ref="chartItems"
+                                            :title="item.tooltip">
+                                            <span :style="{ height: item.heightPercent }"></span>
+                                            <div class="hover-area"></div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr v-if="!showNoStatsMessage" class="my-3">
+
+                        <div v-if="!showNoStatsMessage" class="row">
+                            <div class="col-md-12">
+                                <h5>Individual Plays</h5>
+                                <div id="individualPlaysContainer">
+                                    <div v-if="individualPlaysData && individualPlaysData.items.length > 0">
+                                        <div v-for="(item, index) in individualPlaysData.items" :key="index" class="individual-play-row">
+                                            <div class="individual-play-date">
+                                                <span>{{ formatPlayDate(item.dateTime, 'weekday') }}</span>
+                                                <span>{{ formatPlayDate(item.dateTime, 'date') }}</span>
+                                                <span>{{ formatPlayDate(item.dateTime, 'time') }}</span>
+                                            </div>
+                                            <div class="individual-play-bar">
+                                                <div class="individual-play-person">
+                                                    <div class="individual-play-person-info">
+                                                        <span class="individual-play-person-detail">
+                                                            <div class="photo-icon photo-round photo-round-xs flex-shrink-0 margin-r-sm"
+                                                                 :style="`background-image: url('${item.photoUrl}&w=50'); background-size: cover; background-repeat: no-repeat;`">
+                                                            </div>
+                                                            <span class="text-truncate">{{ item.fullName }}</span>
+                                                        </span>
+                                                        <span class="individual-play-person-location">{{ item.location || '' }}</span>
+                                                    </div>
+                                                    <i :class="`fa fa-${getClientIcon(item.clientType)} fa-lg text-muted o-50 mx-2`" :title="item.clientType"></i>
+                                                    <span class="badge-circle badge-info flex-shrink-0 ml-1" :title="`${item.interactionsCount} Interactions`">{{ item.interactionsCount }}</span>
+                                                </div>
+                                                <div class="position-relative additional-data">
+                                                    <div class="individual-play-interaction">
+                                                        <div class="individual-play-interaction-session">
+                                                            <span>{{ item.isp || '' }}</span>
+                                                            <span>{{ item.operatingSystem }}</span>
+                                                            <span>{{ item.application }}</span>
+                                                        </div>
+                                                        <div class="expander" name="expander"><i class="fa fa-chevron-right text-muted o-50"></i></div>
+                                                    </div>
+                                                </div>
+                                                <div class="individual-play-chart">
+                                                    <div ref="heatMapContainer" :data-watchmap="item.data.watchMap"></div>
+                                                </div>
+                                                <div class="individual-play-percent">{{ Math.floor(item.data.watchedPercentage) }}%</div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3" v-if="individualPlaysData.nextPage">
+                                            <RockButton class="js-load-more btn btn-primary mt-2" :btnType="BtnType.Primary" @click="loadMoreIndividualPlays">
+                                                Load More
+                                            </RockButton>
+                                        </div>
+                                    </div>
+                                    <div v-else class="alert alert-info">
+                                        No individual play data available.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else-if="item === 'Media Assets'">
+                        <ViewPanel v-if="panelMode === DetailPanelMode.View"
+                                   :modelValue="mediaElementViewBag ?? undefined"
+                                   :options="options" />
+                        <RockForm v-else ref="editForm" @submit="onSaveSubmit">
+                            <EditPanel
+                                       v-model="mediaElementEditBag"
+                                       :options="options" />
+                        </RockForm>
+                    </div>
+                    <div v-else-if="item === 'Transcription'">
+                        <TextBox v-model="text" label="Transcription Text" textMode="multiline" size="large" :rows="25" />
+                    </div>
+                </template>
+            </TabbedContent>
+
+            <Modal v-model="showAuditDetailsModal" title="Audit Details">
+                <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
+            </Modal>
+        </template>
+        <template #footerActions>
+            <!-- Add mode buttons -->
+            <div v-if="panelMode === DetailPanelMode.Add">
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Primary"
+                            @click="onStartSubmitForm">
+                    Save
+                </RockButton>
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Link"
+                            @click="onCancelEdit">
+                    Cancel
+                </RockButton>
+            </div>
+            <!-- Edit mode buttons for Media Assets tab -->
+            <div v-else-if="panelMode === DetailPanelMode.Edit && selectedTab === 'Media Assets'">
+                <RockButton v-if="isEditable"
+                            :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Primary"
+                            @click="onStartSubmitForm">
+                    Save
+                </RockButton>
+                <RockButton v-if="isEditable"
+                            :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Link"
+                            @click="onCancelEdit">
+                    Cancel
+                </RockButton>
+            </div>
+            <!-- View mode edit button for Media Assets tab -->
+            <div v-else-if="panelMode === DetailPanelMode.View && isEditable && selectedTab === 'Media Assets'">
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Primary"
+                            @click="onEdit">
+                    Edit
+                </RockButton>
+            </div>
+            <!-- Transcription tab buttons -->
+            <div v-else-if="selectedTab === 'Transcription'">
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Primary"
+                            :isLoading="isSavingTranscription"
+                            @click="onSaveTranscription">
+                    Save Transcription
+                </RockButton>
+            </div>
+        </template>
+    </Panel>
+</template>
+
+<style scoped>
+.chart-container {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 100%;
+    z-index: 10;
+    pointer-events: auto;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch, onMounted } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./MediaElementDetail/editPanel.partial.obs";
+    import ViewPanel from "./MediaElementDetail/viewPanel.partial.obs";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { MediaElementBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementBag";
+    import { MediaElementDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import { NavigationUrlKey } from "./MediaElementDetail/types.partial";
+    import MediaPlayer from "@Obsidian/Controls/mediaPlayer.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { Chart, ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+
+    // Video engagement data type
+    type VideoEngagementData = {
+        segments: number[];
+        totalPlays: number;
+        averagePercentComplete: number;
+        hotspots: Array<{ position: number; count: number }>;
+        dropoffs: Array<{ position: number; count: number }>;
+        duration: number;
+        watched?: number[];
+        rewatched?: number[];
+        playCount: number;
+        minutesWatched: number;
+        averageWatchEngagement: string;
+    };
+
+    type IndividualPlayItem = {
+        dateTime: string;
+        fullName: string;
+        photoUrl: string;
+        platform: string;
+        data: {
+            watchMap: string;
+            watchedPercentage: number;
+        };
+        location: string | null;
+        clientType: string;
+        isp: string | null;
+        operatingSystem: string;
+        application: string;
+        interactionsCount: number;
+    };
+
+    type IndividualPlaysData = {
+        items: Array<IndividualPlayItem>;
+        nextPage: string | null;
+    };
+
+    const config = useConfigurationValues<DetailBlockBox<MediaElementBag, MediaElementDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const editForm = ref<InstanceType<typeof RockForm> | null>(null);
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+    const tabs = ref(["Overview", "Media Assets", "Transcription"]);
+    const selectedTab = ref(new URLSearchParams(window.location.search).get("tab") ?? "Overview");
+    const showAuditDetailsModal = ref(false);
+    const entityTypeGuid = EntityType.MediaElement;
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const mediaElementViewBag = ref(config.entity);
+
+    const mediaElementEditBag = ref<ValidPropertiesBox<MediaElementBag>>({
+        bag: {} as MediaElementBag
+    });
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const text = ref(mediaElementViewBag.value?.transcriptionText ?? "");
+    const isSavingTranscription = ref(false);
+
+    const resetKey = ref("");
+
+    const selectedTimePeriod = ref("90");
+    const timePeriodOptions = ref([
+        { text: "Last 90 Days", value: "90" },
+        { text: "Last 12 Months", value: "365" }
+    ]);
+
+    // Data for chart display
+    const chartData = ref<{ counts: number[], dates: string[], formattedItems: { tooltip: string; heightPercent: string }[] }>({
+        counts: [],
+        dates: [],
+        formattedItems: []
+    });
+
+    // Store individual plays data
+    const individualPlaysData = ref<IndividualPlaysData | null>(null);
+
+    // Chart items ref for tooltip initialization
+    const chartItems = ref<HTMLElement[]>([]);
+
+    // Add refs for the caption and duration labels
+    const closedCaptionIcon = ref<HTMLElement | null>(null);
+    const durationLabel = ref<HTMLElement | null>(null);
+
+    const videoEngagementData = ref<VideoEngagementData | null>(null);
+    const isLoadingEngagementData = ref(false);
+
+    // Chart.js instance reference
+    let watchedChart: Chart | null = null;
+
+    // Chart.js data and options
+    const watchedChartData = ref<ChartData<"line", number[]>>({
+        labels: [],
+        datasets: []
+    });
+
+    const watchedChartOptions = ref<ChartOptions<"line">>({
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+            duration: 500
+        },
+        elements: {
+            point: {
+                radius: 0,
+                hoverRadius: 5
+            },
+            line: {
+                tension: 0.3
+            }
+        },
+        interaction: {
+            mode: "index",
+            intersect: false
+        },
+        scales: {
+            x: {
+                display: false
+            },
+            y: {
+                display: false
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                enabled: true,
+                callbacks: {
+                    title: function (tooltipItems) {
+                        const idx = tooltipItems[0].dataIndex;
+                        const duration = videoEngagementData.value?.duration || 0;
+                        const totalPoints = tooltipItems[0].dataset.data.length;
+                        const seconds = Math.floor((idx / totalPoints) * duration);
+                        return formatTime(seconds);
+                    },
+                    label: function (context) {
+                        const datasetIndex = context.datasetIndex;
+                        const value = context.raw as number;
+
+                        if (datasetIndex === 0) {
+                            return `${value}% engagement`;
+                        }
+                        else {
+                            return `${value} rewatched`;
+                        }
+                    }
+                }
+            }
+        },
+    });
+
+    const mediaPlayer = ref<InstanceType<typeof MediaPlayer> | null>(null);
+    const watchedChartCanvas = ref<HTMLCanvasElement | null>(null);
+    const currentThumbnailUrl = ref<string>("");
+    const playerKey = ref<string>(newGuid());
+
+    onMounted(async () => {
+        await fetchChartData(parseInt(selectedTimePeriod.value));
+
+        if (mediaElementViewBag.value?.idKey) {
+            await loadVideoEngagementData();
+            await loadIndividualPlays();
+            initializeExpanderHoverEventListener();
+            initializeHeatMaps();
+
+            if (videoEngagementData.value && watchedChartCanvas.value) {
+                initializeWatchedChart();
+            }
+        }
+
+        initializeHeaderTooltips();
+
+        setTimeout(() => {
+            if (chartItems.value && chartItems.value.length > 0) {
+                chartItems.value.forEach(el => {
+                    const $ = window["$"];
+                    if ($) {
+                        $(el).tooltip("destroy");
+                    }
+                });
+
+                tooltip(chartItems.value, {
+                    html: false,
+                    delay: { show: 100, hide: 100 }
+                });
+            }
+        }, 100);
+    });
+
+    /**
+     * Initializes the hover event listeners for the expander elements
+     */
+    const initializeExpanderHoverEventListener = function (): void {
+        let interactions = document.querySelectorAll(".individual-play-interaction:not(.no-details)");
+
+        interactions.forEach(interaction => interaction.addEventListener("mouseover", event => {
+            const target = event.target as HTMLElement;
+            if (target && target.getAttribute("name") === "expander") {
+                let icon = target.querySelector(".fa-chevron-right");
+                if (icon) {
+                    icon.classList.add("fa-flip-horizontal");
+                }
+
+                interaction.classList.add("expanded");
+            }
+        }));
+
+        interactions.forEach(interaction => interaction.addEventListener("mouseleave", () => {
+            if (interaction.querySelector(".fa-chevron-right")) {
+                let icon = interaction.querySelector(".fa-chevron-right");
+                if (icon) {
+                    icon.classList.remove("fa-flip-horizontal");
+                }
+
+                interaction.classList.remove("expanded");
+            }
+        }));
+    };
+
+    watch(selectedTimePeriod, async (newValue) => {
+        await fetchChartData(parseInt(newValue));
+
+        setTimeout(() => {
+            if (chartItems.value && chartItems.value.length > 0) {
+                chartItems.value.forEach(el => {
+                    const $ = window["$"];
+                    if ($) {
+                        $(el).tooltip("destroy");
+                    }
+                });
+
+                tooltip(chartItems.value, {
+                    html: false,
+                    delay: { show: 100, hide: 100 }
+                });
+            }
+        }, 100);
+    });
+
+    watch(individualPlaysData, () => {
+        initializeExpanderHoverEventListener();
+
+        setTimeout(() => {
+            initializeHeatMaps();
+        }, 50);
+    });
+
+    /**
+     * Initializes heat maps for all play entries
+     */
+    function initializeHeatMaps(): void {
+        const containers = document.querySelectorAll("[data-watchmap]");
+        containers.forEach(container => {
+            const watchMap = container.getAttribute("data-watchmap");
+            if (watchMap) {
+                const svg = getHeatMap(watchMap);
+                container.innerHTML = "";
+                container.appendChild(svg);
+            }
+        });
+    }
+
+    /**
+     * Generate SVG heatmap from watch map data using legacy method
+     * @param watchMap String in format like "61,502,601,5860"
+     */
+    const getHeatMap = function (watchMap: string): SVGSVGElement {
+        const segments = watchMap.split(",");
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+
+        if (!watchMap || segments.length === 0) {
+            return svg;
+        }
+
+        let totalDuration = 0;
+        for (let i = 0; i < segments.length; i++) {
+            const segment = segments[i];
+            if (!segment || segment.length < 1) continue;
+
+            totalDuration += parseInt(segment.substring(0, segment.length - 1)) || 0;
+        }
+
+        svg.setAttribute("viewBox", "0 0 " + totalDuration + " 60");
+        svg.setAttribute("preserveAspectRatio", "none");
+        svg.setAttribute("version", "1.1");
+
+        let x = 0;
+        for (let j = 0; j < segments.length; j++) {
+            const segment = segments[j];
+            if (!segment || segment.length < 1) continue;
+
+            const duration = parseInt(segment.substring(0, segment.length - 1)) || 0;
+            const bit = parseInt(segment.substring(segment.length - 1)) || 0;
+
+            if (bit === 0) {
+                x += duration;
+                continue;
+            }
+
+            const color = bit === 1 ? "#73c9f0" : "#34b0e9";
+
+            const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            rect.setAttribute("x", x.toString());
+            rect.setAttribute("y", "0");
+            rect.setAttribute("width", duration.toString());
+            rect.setAttribute("height", "60");
+            rect.setAttribute("fill", color);
+
+            svg.appendChild(rect);
+
+            x += duration;
+        }
+
+        return svg;
+    };
+
+    /**
+     * Initializes the chart showing watched segments using Chart.js
+     */
+    function initializeWatchedChart(): void {
+        if (!watchedChartCanvas.value || !videoEngagementData.value) {
+            return;
+        }
+
+        const data = videoEngagementData.value;
+        const watched = data.watched || [];
+        const rewatched = data.rewatched || [];
+
+        if (watched.length === 0) {
+            return;
+        }
+
+        if (watchedChart) {
+            watchedChart.destroy();
+            watchedChart = null;
+        }
+
+        const labels = Array.from({ length: watched.length }, (_, i) => i.toString());
+
+        watchedChartData.value = {
+            labels: labels,
+            datasets: [
+                {
+                    label: "Watched",
+                    data: watched,
+                    borderColor: "rgb(99, 179, 237)",
+                    backgroundColor: "rgba(99, 179, 237, 0.5)",
+                    fill: true,
+                    borderWidth: 2
+                },
+                {
+                    label: "Rewatched",
+                    data: rewatched,
+                    borderColor: "rgb(72, 187, 120)",
+                    backgroundColor: "rgba(72, 187, 120, 0.5)",
+                    fill: true,
+                    borderWidth: 2
+                }
+            ]
+        };
+
+        const ctx = watchedChartCanvas.value.getContext("2d");
+        if (!ctx) {
+            return;
+        }
+
+        watchedChart = new Chart(ctx, {
+            type: "line",
+            data: watchedChartData.value,
+            options: watchedChartOptions.value
+        });
+    }
+
+    /**
+     * Fetches chart data from the server based on the selected time period
+     * @param duration Number of days to fetch data for
+     */
+    async function fetchChartData(duration: number): Promise<void> {
+        const result = await invokeBlockAction<Array<[number, string]>>("GetPlayCount", {
+            duration: duration
+        });
+
+        if (result.isSuccess && result.data) {
+            const counts: number[] = [];
+            const dates: string[] = [];
+            const formattedItems: { tooltip: string; heightPercent: string }[] = [];
+
+            result.data.forEach((item) => {
+                const count = item[0];
+                const date = item[1];
+                counts.push(count);
+                dates.push(date);
+            });
+
+            const maxCount = Math.max(...counts, 1);
+
+            result.data.forEach((item) => {
+                const count = item[0];
+                const date = item[1];
+                let formattedDate = formatChartDate(date);
+
+                const heightPercent = count > 0 ? `${(count / maxCount) * 100}%` : "0%";
+
+                let tooltip = "";
+                if (duration === 365) {
+                    const playsText = count === 1 ? "play" : "plays";
+                    tooltip = `${count} ${playsText} during the week of ${formattedDate}`;
+                }
+                else {
+                    const playsText = count === 1 ? "play" : "plays";
+                    tooltip = `${count} ${playsText} on ${formattedDate}`;
+                }
+
+                formattedItems.push({
+                    tooltip,
+                    heightPercent
+                });
+            });
+
+            chartData.value = {
+                counts,
+                dates,
+                formattedItems
+            };
+
+            setTimeout(() => {
+                if (chartItems.value && chartItems.value.length > 0) {
+                    chartItems.value.forEach((el, index) => {
+                        if (index < formattedItems.length) {
+                            el.setAttribute("title", formattedItems[index].tooltip);
+
+                            el.setAttribute("data-original-title", formattedItems[index].tooltip);
+                        }
+                    });
+                }
+            }, 50);
+        }
+    }
+
+    /**
+     * Format a date string for chart display
+     * @param date The date string to format
+     * @returns Formatted date string in MM/DD/YYYY format
+     */
+    function formatChartDate(date: string): string {
+        if (!date || typeof date !== "string") {
+            return String(date);
+        }
+
+        if (date.includes("-")) {
+            const dateObj = new Date(date);
+
+            if (!isNaN(dateObj.getTime())) {
+                const month = dateObj.getMonth() + 1;
+                const day = dateObj.getDate();
+                const year = dateObj.getFullYear();
+
+                return `${month}/${day}/${year}`;
+            }
+
+            const parts = date.split("-");
+
+            if (parts.length === 3) {
+                const firstPart = parseInt(parts[0]);
+                const secondPart = parseInt(parts[1]);
+                const thirdPart = parseInt(parts[2]);
+
+                if (firstPart > 1000) {
+                    return `${secondPart}/${thirdPart}/${firstPart}`;
+                }
+                else if (thirdPart > 1000) {
+                    return `${firstPart}/${secondPart}/${thirdPart}`;
+                }
+            }
+        }
+
+        return date;
+    }
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return mediaElementViewBag.value?.name ?? "Add Media Element";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return mediaElementViewBag.value?.idKey ?? "";
+    });
+
+    /**
+     * The media URL from the first item in fileDataJson
+     */
+    const mediaUrl = computed((): string => {
+        const viewBag = mediaElementViewBag.value as Record<string, unknown>;
+        if (viewBag?.defaultFileUrl) {
+            return String(viewBag.defaultFileUrl);
+        }
+
+        try {
+            if (mediaElementViewBag.value?.fileDataJson) {
+                const fileData = JSON.parse(mediaElementViewBag.value.fileDataJson);
+                if (Array.isArray(fileData) && fileData.length > 0 && fileData[0].Link) {
+                    return fileData[0].Link;
+                }
+            }
+
+            return "";
+        }
+        catch (error) {
+            return "";
+        }
+    });
+
+    /**
+     * The thumbnail URL from the first item in thumbnailDataJson
+     */
+    const thumbnailUrl = computed((): string => {
+        if (currentThumbnailUrl.value) {
+            return currentThumbnailUrl.value;
+        }
+
+        const viewBag = mediaElementViewBag.value as Record<string, unknown>;
+        if (viewBag?.defaultThumbnailUrl) {
+            return String(viewBag.defaultThumbnailUrl);
+        }
+
+        try {
+            if (mediaElementViewBag.value?.thumbnailDataJson) {
+                const thumbnailData = JSON.parse(mediaElementViewBag.value.thumbnailDataJson);
+                if (Array.isArray(thumbnailData) && thumbnailData.length > 0 && thumbnailData[0].Link) {
+                    currentThumbnailUrl.value = thumbnailData[0].Link;
+                    return thumbnailData[0].Link;
+                }
+            }
+
+            return "";
+        }
+        catch (error) {
+            return "";
+        }
+    });
+
+    /**
+     * Get the engagement value from the bag
+     */
+    const engagementValue = computed((): string => {
+        const viewBag = mediaElementViewBag.value as Record<string, unknown>;
+
+        const rawValue = viewBag?.engagementStat ?? 0;
+
+        const value = parseFloat(String(rawValue));
+        return isNaN(value) ? "0.0%" : `${value.toFixed(1)}%`;
+    });
+
+    /**
+     * Calculate the minutes watched based on durationSeconds from the bag
+     */
+    const minutesWatched = computed((): string => {
+        try {
+
+            if (mediaElementViewBag.value?.minutesWatchedText) {
+                return mediaElementViewBag.value?.minutesWatchedText;
+            }
+
+            const durationSeconds = mediaElementViewBag.value?.durationSeconds;
+
+            if (!durationSeconds) {
+                return "0";
+            }
+
+            const minutes = Math.round(durationSeconds / 60);
+            return minutes.toString();
+        }
+        catch (error) {
+            return "0";
+        }
+    });
+
+    /**
+     * Get the play count from the bag
+     */
+    const playCount = computed((): string => {
+        try {
+            if (mediaElementViewBag.value?.playCountText) {
+                return mediaElementViewBag.value?.playCountText;
+            }
+
+            if (mediaElementViewBag.value?.metricData) {
+                return mediaElementViewBag.value.metricData.toString() || "0";
+            }
+
+            return "0";
+        }
+        catch (error) {
+            return "0";
+        }
+    });
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const actions: PanelAction[] = [];
+
+        if (mediaElementViewBag?.value?.idKey) {
+            actions.push({
+                type: "default",
+                title: "Audit Details",
+                handler: onAuditClick
+            });
+        }
+
+        return actions;
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): MediaElementDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    /**
+     * Determines whether to show the "No statistical data" message
+     */
+    const showNoStatsMessage = computed((): boolean => {
+        try {
+            // Check engagement value
+            const viewBag = mediaElementViewBag.value as Record<string, unknown>;
+            const hasEngagementStat = viewBag && "engagementStat" in viewBag && viewBag.engagementStat !== null && viewBag.engagementStat !== undefined;
+            if (hasEngagementStat) {
+                const engagementValue = parseFloat(String(viewBag.engagementStat));
+                if (!isNaN(engagementValue) && engagementValue > 0) {
+                    return false;
+                }
+            }
+
+            // Check play count
+            const hasPlayCount = viewBag && "playCountText" in viewBag && viewBag.playCountText !== null && viewBag.playCountText !== undefined;
+            if (hasPlayCount) {
+                const playCount = String(viewBag.playCountText).trim();
+                if (playCount !== "" && playCount !== "0") {
+                    return false;
+                }
+            }
+
+            // Check minutes watched
+            const hasMinutesWatched = viewBag && "minutesWatchedText" in viewBag && viewBag.minutesWatchedText !== null && viewBag.minutesWatchedText !== undefined;
+            if (hasMinutesWatched) {
+                const minutesWatched = String(viewBag.minutesWatchedText).trim();
+                if (minutesWatched !== "" && minutesWatched !== "0") {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        catch (error) {
+            return true;
+        }
+    });
+
+    const onAuditClick = (): void => {
+        showAuditDetailsModal.value = true;
+    };
+
+    function resetForm(): void {
+        resetKey.value = newGuid();
+    }
+
+    /**
+     * Resets the panel back to view mode and clears any edits
+     */
+    function resetToViewMode(): void {
+        resetForm();
+        panelMode.value = DetailPanelMode.View;
+        mediaElementEditBag.value = {
+            bag: {} as MediaElementBag
+        };
+    }
+
+    /**
+     * Formats a duration in seconds to a minutes and seconds string.
+     * @param seconds The duration in seconds
+     * @returns A formatted string in the format "Xm Ys" or "Ys" if less than a minute
+     */
+    function formatDuration(seconds: number | null | undefined): string {
+        if (!seconds) {
+            return "";
+        }
+
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+
+        if (minutes > 0) {
+            return `${minutes}m ${remainingSeconds}s`;
+        }
+        else {
+            return `${remainingSeconds}s`;
+        }
+    }
+
+    /**
+     * Event handler for the Save button being clicked. Triggers the form submission.
+     */
+    async function onStartSubmitForm(): Promise<void> {
+        await editForm.value?.submitForm();
+    }
+
+    /**
+     * Loads video engagement data from the server using the GetVideoEngagementData block action
+     */
+    async function loadVideoEngagementData(): Promise<void> {
+        if (!mediaElementViewBag.value?.idKey) {
+            return;
+        }
+
+        isLoadingEngagementData.value = true;
+        const result = await invokeBlockAction<VideoEngagementData>("GetVideoEngagementData", {
+            mediaElementId: mediaElementViewBag.value.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            videoEngagementData.value = result.data;
+
+            if (watchedChartCanvas.value) {
+                initializeWatchedChart();
+            }
+            isLoadingEngagementData.value = false;
+        }
+    }
+
+    /**
+     * Loads individual play data from the server
+     */
+    async function loadIndividualPlays(): Promise<void> {
+        if (!mediaElementViewBag.value?.idKey) {
+            return;
+        }
+
+        const result = await invokeBlockAction<IndividualPlaysData>("LoadIndividualPlays", {
+            mediaElementId: mediaElementViewBag.value.idKey,
+            pageContext: null
+        });
+
+        if (result.isSuccess && result.data) {
+            individualPlaysData.value = result.data;
+        }
+    }
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<void> {
+
+        if (!mediaElementEditBag.value.bag?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.ParentPage]);
+            }
+
+            return;
+        }
+
+        resetToViewMode();
+        return;
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<void> {
+        const result = await invokeBlockAction<ValidPropertiesBox<MediaElementBag>>("Edit", {
+            key: mediaElementViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            mediaElementEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+            panelMode.value = DetailPanelMode.Edit;
+            return;
+        }
+        else {
+            return;
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSaveSubmit(): Promise<void> {
+        errorMessage.value = "";
+
+        try {
+            if (!mediaElementEditBag.value?.validProperties?.length) {
+                errorMessage.value = "No changes detected to save.";
+                return;
+            }
+
+            const result = await invokeBlockAction<ValidPropertiesBox<MediaElementBag> | string>("Save", {
+                box: mediaElementEditBag.value
+            });
+
+            if (result.isSuccess && result.data && result.statusCode === 200 && typeof result.data === "object") {
+                mediaElementViewBag.value = result.data.bag;
+
+                // If we were in Add mode, change to View mode and default to the Overview tab
+                if (panelMode.value === DetailPanelMode.Add) {
+                    selectedTab.value = "Overview";
+                }
+
+                resetToViewMode();
+                return;
+            }
+            else if (result.isSuccess && result.data && result.statusCode == 201 && typeof result.data === "string") {
+                window.location.href = makeUrlRedirectSafe(result.data);
+                return;
+            }
+
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save media element.";
+        }
+        catch (error) {
+            errorMessage.value = "An unexpected error occurred while saving.";
+        }
+    }
+
+    watch(() => mediaElementViewBag.value?.thumbnailDataJson, (newValue) => {
+        playerKey.value = newGuid();
+
+        if (newValue) {
+            try {
+                const thumbnailData = JSON.parse(newValue);
+                if (Array.isArray(thumbnailData) && thumbnailData.length > 0 && thumbnailData[0].Link) {
+                    currentThumbnailUrl.value = thumbnailData[0].Link;
+                }
+                else {
+                    currentThumbnailUrl.value = "";
+                }
+            }
+            catch (error) {
+                currentThumbnailUrl.value = "";
+            }
+        }
+        else {
+            currentThumbnailUrl.value = "";
+        }
+    });
+
+    // Add a watcher to update the text when the view bag changes
+    watch(() => mediaElementViewBag.value?.transcriptionText, (newValue) => {
+        text.value = newValue ?? "";
+    });
+
+    // Watch for tab changes and reset edit mode when leaving Media Assets tab
+    watch(() => selectedTab.value, (newTab, oldTab) => {
+        if (oldTab === "Media Assets" && panelMode.value === DetailPanelMode.Edit) {
+            resetToViewMode();
+        }
+
+        if (newTab === "Overview" && oldTab === "Media Assets") {
+            // Force component re-render
+            playerKey.value = newGuid();
+
+            setTimeout(() => {
+                if (!showNoStatsMessage.value) {
+                    if (chartItems.value && chartItems.value.length > 0) {
+                        tooltip(chartItems.value, {
+                            html: false,
+                            delay: { show: 100, hide: 100 }
+                        });
+                    }
+
+                    if (videoEngagementData.value && watchedChartCanvas.value) {
+                        if (watchedChart) {
+                            watchedChart.resize();
+                        }
+                        else {
+                            initializeWatchedChart();
+                        }
+                    }
+                }
+            }, 250);
+        }
+    });
+
+    // Watch for changes to handle chart redrawing
+    watch(videoEngagementData, () => {
+        if (videoEngagementData.value && watchedChartCanvas.value) {
+            initializeWatchedChart();
+        }
+    });
+
+    // Handle canvas resize
+    window.addEventListener("resize", () => {
+        if (watchedChart && videoEngagementData.value) {
+            watchedChart.resize();
+        }
+    });
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified media element could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        mediaElementEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+
+    watch(chartData, () => {
+        setTimeout(() => {
+            if (chartItems.value && chartItems.value.length > 0) {
+                chartItems.value.forEach(el => {
+                    const $ = window["$"];
+                    if ($) {
+                        $(el).tooltip("destroy");
+                    }
+                });
+
+                tooltip(chartItems.value, {
+                    html: false,
+                    delay: { show: 100, hide: 100 }
+                });
+            }
+        }, 100);
+    });
+
+    /**
+     * Initialize tooltips for the header elements
+     */
+    function initializeHeaderTooltips(): void {
+        setTimeout(() => {
+            if (closedCaptionIcon.value) {
+                tooltip(closedCaptionIcon.value, {
+                    html: false,
+                    delay: { show: 100, hide: 100 }
+                });
+            }
+
+            if (durationLabel.value) {
+                tooltip(durationLabel.value, {
+                    html: false,
+                    delay: { show: 100, hide: 100 }
+                });
+            }
+        }, 100);
+    }
+
+    // Watch for changes to the mediaElementViewBag that might affect the header items
+    watch(() => [mediaElementViewBag.value?.closeCaption, mediaElementViewBag.value?.durationSeconds], () => {
+        initializeHeaderTooltips();
+    });
+
+    const loadMoreIndividualPlays = async (): Promise<void> => {
+        if (!individualPlaysData.value?.nextPage) {
+            return;
+        }
+
+        const result = await invokeBlockAction<IndividualPlaysData>("LoadIndividualPlays", {
+            mediaElementId: mediaElementViewBag.value?.idKey,
+            pageContext: individualPlaysData.value.nextPage
+        });
+
+        if (result.isSuccess && result.data) {
+            if (individualPlaysData.value) {
+                individualPlaysData.value = {
+                    items: [...individualPlaysData.value.items, ...result.data.items],
+                    nextPage: result.data.nextPage
+                };
+
+                // Add additional timeout to ensure DOM is fully updated after adding new items
+                setTimeout(() => {
+                    initializeHeatMaps();
+                }, 100);
+            }
+            else {
+                individualPlaysData.value = result.data;
+            }
+        }
+    };
+
+    /**
+     * Format a date string for display
+     * @param dateTimeString ISO date string
+     * @param format Format to return ('weekday', 'date', or 'time')
+     */
+    function formatPlayDate(dateTimeString: string, format: "weekday" | "date" | "time"): string {
+        if (!dateTimeString) {
+            return "";
+        }
+
+        try {
+            const dateObj = new Date(dateTimeString);
+
+            // Check if date is valid
+            if (isNaN(dateObj.getTime())) {
+                return "";
+            }
+
+            if (format === "weekday") {
+                return dateObj.toLocaleDateString("en-US", { weekday: "long" });
+            }
+            else if (format === "date") {
+                return dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+            }
+            else if (format === "time") {
+                return dateObj.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+            }
+
+            return "";
+        }
+        catch (error) {
+            return "";
+        }
+    }
+
+    /**
+     * Get icon class based on client type
+     */
+    function getClientIcon(clientType: string): string {
+        if (!clientType) {
+            return "desktop";
+        }
+
+        switch (clientType.toLowerCase()) {
+            case "mobile":
+                return "mobile-alt";
+            case "tablet":
+                return "tablet-alt";
+            case "desktop":
+            default:
+                return "desktop";
+        }
+    }
+
+    /**
+     * Event handler for saving the transcription text.
+     */
+    async function onSaveTranscription(): Promise<void> {
+        errorMessage.value = "";
+        isSavingTranscription.value = true;
+
+        try {
+            const updatedBag: MediaElementBag = {
+                idKey: mediaElementViewBag.value?.idKey,
+                transcriptionText: text.value,
+            } as MediaElementBag;
+
+            const result = await invokeBlockAction<ValidPropertiesBox<MediaElementBag>>("Save", {
+                box: {
+                    bag: updatedBag,
+                    validProperties: ["TranscriptionText"]
+                }
+            });
+
+            if (result.isSuccess && result.data && typeof result.data === "object") {
+                mediaElementViewBag.value = result.data.bag;
+                selectedTab.value = "Overview";
+                panelMode.value = DetailPanelMode.View;
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "Unknown error while trying to save transcription.";
+            }
+        }
+        finally {
+            isSavingTranscription.value = false;
+        }
+    }
+
+    /**
+     * Format seconds into MM:SS format
+     */
+    function formatTime(seconds: number): string {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs < 10 ? "0" + secs : secs}`;
+    }
+</script>

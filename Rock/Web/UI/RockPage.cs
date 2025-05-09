@@ -38,6 +38,7 @@ using Rock.Blocks;
 using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Net;
 using Rock.Observability;
@@ -845,6 +846,7 @@ namespace Rock.Web.UI
                 Activity.Current.AddTag( "rock.site.id", this.Site.Id );
                 Activity.Current.AddTag( "rock.page.id", this.PageId );
                 Activity.Current.AddTag( "rock.page.ispostback", this.IsPostBack );
+                Activity.Current.AddTag( "rock.page.issystem", _pageCache?.IsSystem ?? false );
             }
 
             var stopwatchInitEvents = Stopwatch.StartNew();
@@ -1052,7 +1054,7 @@ namespace Rock.Web.UI
                     // don't redirect if this is the change password page
                     if ( Site.ChangePasswordPageReference.PageId != this.PageId )
                     {
-                        Site.RedirectToChangePasswordPage( true, true );
+                        Site.RedirectToChangePasswordPage( true, true, user );
                     }
                 }
 
@@ -1553,6 +1555,7 @@ Obsidian.onReady(() => {{
             pageId: {_pageCache.Id},
             pageGuid: '{_pageCache.Guid}',
             pageParameters: {sanitizedPageParameters.ToJson()},
+            sessionGuid: '{RequestContext.SessionGuid}',
             interactionGuid: '{RequestContext.RelatedInteractionGuid}',
             currentPerson: {currentPersonJson},
             isAnonymousVisitor: {( isAnonymousVisitor ? "true" : "false" )},
@@ -2332,7 +2335,12 @@ Obsidian.onReady(() => {{
             if ( impersonatedByUser != null )
             {
                 Authorization.SignOut();
-                UserLoginService.UpdateLastLogin( impersonatedByUser.UserName );
+                UserLoginService.UpdateLastLogin(
+                    new UpdateLastLoginArgs {
+                        UserName = impersonatedByUser.UserName,
+                        ShouldSkipWritingHistoryLog = true
+                    }
+                );
 
                 /*
                     10/23/2023 - JMH
@@ -2403,7 +2411,8 @@ Obsidian.onReady(() => {{
                         isImpersonated: true,
                         isTwoFactorAuthenticated: true );
                     CurrentUser = impersonatedPerson.GetImpersonatedUser();
-                    UserLoginService.UpdateLastLogin( "rckipid=" + impersonatedPersonKeyParam );
+                    UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = "rckipid=" + impersonatedPersonKeyParam } );
+
 
                     // reload page as the impersonated user (we probably could remove the token from the URL, but some blocks might be looking for rckipid in the PageParameters, so just leave it)
                     Response.Redirect( Request.RawUrl, false );
@@ -2582,6 +2591,12 @@ Sys.Application.add_load(function () {
             }
         }
 
+        /// <inheritdoc/>
+        protected override void Render( HtmlTextWriter writer )
+        {
+            base.Render( writer );
+        }
+
         /// <summary>
         /// Process page view interactions if they are enabled for this website.
         /// </summary>
@@ -2602,7 +2617,7 @@ Sys.Application.add_load(function () {
             // Attempt to retrieve geolocation data.
             var geolocation = this.RequestContext?.ClientInformation?.Geolocation;
 
-            // If we have identified a logged-in user, record the page interaction immediately and return.
+            // If we have identified a logged-in user, record the page interaction immediately and return. (Does not include anonymous visitors)
             if ( CurrentPerson != null )
             {
                 var interactionInfo = new InteractionTransactionInfo
@@ -2686,6 +2701,12 @@ Sys.Application.add_load(function () {
             // If the user is logged in, they are identified by the supplied UserIdKey representing their current PersonAlias.
             // If the user is a visitor, the ROCK_VISITOR_KEY cookie is read from the client browser to obtain the
             // UserIdKey supplied to them. For a first visit, the cookie is set in this response.
+            // Additionally, this script now stores a list of interaction GUIDs in sessionStorage to prevent duplicate interactions.
+            // Each time a new interaction is recorded, the GUID is checked against the stored list in sessionStorage.
+            // If the GUID has already been recorded in the current session, the interaction will not be sent again, ensuring
+            // that only unique interactions are tracked during the session. This additional change was needed to prevent the
+            // scenario where a duplicate interaction would be sent whenever an individual used a browser's back arrow to navigate
+            // back to a page that had already sent an interaction. 
             string script = @"
 Sys.Application.add_load(function () {
     const getCookieValue = (name) => {
@@ -2693,19 +2714,29 @@ Sys.Application.add_load(function () {
 
         return !match ? '' : match.pop();
     };
-    var interactionArgs = <jsonData>;
-    if (!interactionArgs.<userIdProperty>) {
-        interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
+
+    var interactionGuid = '<interactionGuid>';
+    var interactionGuids = JSON.parse(sessionStorage.getItem('interactionGuids')) || [];
+
+    if (!interactionGuids.includes(interactionGuid)) {
+        interactionGuids.push(interactionGuid);
+        sessionStorage.setItem('interactionGuids', JSON.stringify(interactionGuids));
+
+        var interactionArgs = <jsonData>;
+        if (!interactionArgs.<userIdProperty>) {
+            interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
+        }
+        $.ajax({
+            url: '/api/Interactions/RegisterPageInteraction',
+            type: 'POST',
+            data: interactionArgs
+            });
     }
-    $.ajax({
-        url: '/api/Interactions/RegisterPageInteraction',
-        type: 'POST',
-        data: interactionArgs
-        });
 });
 ";
 
             script = script.Replace( "<rockVisitorCookieName>", Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY );
+            script = script.Replace( "<interactionGuid>", pageInteraction.Guid.ToString() );
             script = script.Replace( "<jsonData>", pageInteraction.ToJson() );
             script = script.Replace( "<userIdProperty>", nameof( pageInteraction.UserIdKey ) );
 
@@ -2759,6 +2790,7 @@ Sys.Application.add_load(function () {
             {
                 WebRootPath = AppDomain.CurrentDomain.BaseDirectory
             } );
+            serviceCollection.AddRockLogging();
 
             return serviceCollection.BuildServiceProvider();
         }
@@ -3529,7 +3561,7 @@ Sys.Application.add_load(function () {
         /// Converts the legacy, "structured" context cookies to a simpler, JSON format.
         /// </summary>
         [Obsolete( "Remove this method after a few major versions, hopefully allowing enough time to convert all legacy context cookies." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         private void ConvertLegacyContextCookiesToJSON()
         {
             // Find any cookies whose names start with the legacy cookie name prefix.

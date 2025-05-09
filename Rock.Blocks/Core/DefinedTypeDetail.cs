@@ -203,8 +203,8 @@ namespace Rock.Blocks.Core
             var bag = GetCommonEntityBag( entity );
             bag.Description = entity.Description.ConvertMarkdownToHtml();
 
-            bag.DefinedTypeAttributes = GetAttributes( entity.Id, RockContext ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttributeViewModel( a ) );
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.DefinedTypeAttributes = GetAttributes( entity.Id, RockContext ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttribute( a ) );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
             if ( entity.CategorizedValuesEnabled == true )
             {
                 var reportDetailQueryParams = new Dictionary<string, string>()
@@ -233,7 +233,7 @@ namespace Rock.Blocks.Core
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -272,7 +272,7 @@ namespace Rock.Blocks.Core
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -516,7 +516,7 @@ namespace Rock.Blocks.Core
             string qualifierValue = Rock.Utility.IdHasher.Instance.GetId( idKey ).ToString();
             var entityTypeIdDefinedType = EntityTypeCache.GetId<DefinedValue>();
             var attribute = Helper.SaveAttributeEdits( attributebag, entityTypeIdDefinedType, "DefinedTypeId", qualifierValue, RockContext );
-            attributebag = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute );
+            attributebag = PublicAttributeHelper.GetPublicEditableAttribute( attribute );
             return ActionOk( attributebag );
         }
 

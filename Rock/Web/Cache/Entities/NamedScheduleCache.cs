@@ -80,6 +80,9 @@ namespace Rock.Web.Cache
         /// <inheritdoc cref="Rock.Model.Schedule.IsCheckInEnabled" />
         public bool IsCheckInEnabled { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.Schedule.DurationInMinutes" />/>
+        public int DurationInMinutes { get; private set; }
+
         /// <inheritdoc cref="Rock.Model.Schedule.iCalendarContent" />
         private string CalendarContent { get; set; }
 
@@ -104,7 +107,7 @@ namespace Rock.Web.Cache
                 return base.Lifespan;
             }
         }
-        
+
         /// <summary>
         /// Set's the cached objects properties from the model/entities properties.
         /// </summary>
@@ -130,6 +133,7 @@ namespace Rock.Web.Cache
             this.CheckInStartOffsetMinutes = schedule.CheckInStartOffsetMinutes;
             this.CheckInEndOffsetMinutes = schedule.CheckInEndOffsetMinutes;
             this.IsCheckInEnabled = schedule.IsCheckInEnabled;
+            this.DurationInMinutes = schedule.DurationInMinutes;
         }
 
 
@@ -237,7 +241,7 @@ namespace Rock.Web.Cache
         {
             if ( IsCheckInEnabled )
             {
-                return Schedule.GetCheckInTimes( beginDateTime, CheckInStartOffsetMinutes.Value, CheckInEndOffsetMinutes, CalendarContent, () => GetCalendarEvent() );
+                return Schedule.GetCheckInTimes( beginDateTime, CheckInStartOffsetMinutes.Value, CheckInEndOffsetMinutes, CategoryId, CalendarContent, () => GetCalendarEvent() );
             }
 
             return new List<CheckInTimes>();

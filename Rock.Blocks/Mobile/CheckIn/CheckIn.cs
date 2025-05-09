@@ -388,7 +388,7 @@ namespace Rock.Blocks.Mobile.CheckIn
                     },
                     PossibleSchedules = session.GetAllPossibleScheduleBags(),
                     People = session.GetAttendeeBags(),
-                    CurrentlyCheckedInAttendances = session.GetCurrentAttendanceBags(),
+                    CurrentlyCheckedInAttendances = session.GetCurrentAttendanceBags( areas, kiosk, locations ),
                     ConfigurationTemplate = director.GetConfigurationTemplateBag( configurationGroupType )
                 } );
             }
@@ -719,7 +719,7 @@ namespace Rock.Blocks.Mobile.CheckIn
                 return ActionBadRequest( "Kiosk not found." );
             }
 
-            if ( !kiosk.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean() )
+            if ( !GetAttributeValue( AttributeKey.AllowAddFamilyMember ).AsBoolean() )
             {
                 return ActionBadRequest( "This kiosk does not support family registration." );
             }

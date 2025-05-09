@@ -1,0 +1,16 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template></template>
+
+<script setup lang="ts">
+    defineProps({
+        /**
+         * Supports single-line comments.
+         * @example
+         * <Comment text="This is a comment" />
+         */
+        text: {
+            type: String,
+            default: ""
+        }
+    });
+</script>

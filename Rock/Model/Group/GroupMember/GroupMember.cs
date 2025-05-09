@@ -23,10 +23,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
-using Rock.Web.Cache;
-using Z.EntityFramework.Plus;
 using Rock.Lava;
+using Rock.Utility;
+using Rock.Web.Cache;
+
+using Z.EntityFramework.Plus;
 
 namespace Rock.Model
 {
@@ -44,6 +47,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupMember" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.GROUP_MEMBER )]
     public partial class GroupMember : Model<GroupMember>, ICacheable
     {
@@ -68,6 +72,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [EnableAttributeQualification]
+        [Index( "IX_GroupMemberGroupIdGroupRoleIdGroupMemberStatus", IsUnique = false, Order = 0 )]
         public int GroupId { get; set; }
 
         /// <summary>
@@ -100,6 +105,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [EnableAttributeQualification]
+        [Index( "IX_GroupMemberGroupIdGroupRoleIdGroupMemberStatus", IsUnique = false, Order = 1 )]
         public int GroupRoleId { get; set; }
 
         /// <summary>
@@ -120,6 +126,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Index( "IX_GroupMemberGroupIdGroupRoleIdGroupMemberStatus", IsUnique = false, Order = 2 )]
         public GroupMemberStatus GroupMemberStatus { get; set; } = GroupMemberStatus.Active;
 
         /// <summary>
@@ -238,6 +245,19 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public CommunicationType CommunicationPreference { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether notifications for the chat channel are muted for this person.
+        /// </summary>
+        [DataMember]
+        public bool IsChatMuted { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this person is banned from the chat channel. It should be assumed that external chat providers
+        /// do not remove the member from the channel when they are banned; they just set a banned field to true.
+        /// </summary>
+        [DataMember]
+        public bool IsChatBanned { get; set; }
 
         #endregion
 

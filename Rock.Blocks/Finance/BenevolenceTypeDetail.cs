@@ -56,7 +56,7 @@ namespace Rock.Blocks.Finance
 
     [Rock.SystemGuid.EntityTypeGuid( "b39ba58d-83dd-46e0-ba47-787c4eb4eb69" )]
     [Rock.SystemGuid.BlockTypeGuid( "03397615-ef2b-4d33-bd62-a79186f56ace" )]
-    public class BenevolenceTypeDetail : RockDetailBlockType
+    public class BenevolenceTypeDetail : RockEntityDetailBlockType<BenevolenceType, BenevolenceTypeBag>
     {
         #region Keys
 
@@ -82,17 +82,14 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<BenevolenceTypeBag, BenevolenceTypeDetailOptionsBag>();
+            var box = new DetailBlockBox<BenevolenceTypeBag, BenevolenceTypeDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions();
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -134,17 +131,16 @@ namespace Rock.Blocks.Finance
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="benevolenceType">The BenevolenceType to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the BenevolenceType is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateBenevolenceType( BenevolenceType benevolenceType, RockContext rockContext, out string errorMessage )
+        private bool ValidateBenevolenceType( BenevolenceType benevolenceType, out string errorMessage )
         {
             errorMessage = null;
 
             if ( benevolenceType.Id == 0 )
             {
                 // Check for existing
-                var existingBenevolence = new BenevolenceTypeService( rockContext ).Queryable()
+                var existingBenevolence = new BenevolenceTypeService( RockContext ).Queryable()
                     .Where( d => d.Name == benevolenceType.Name )
                     .FirstOrDefault();
 
@@ -163,10 +159,9 @@ namespace Rock.Blocks.Finance
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<BenevolenceTypeBag, BenevolenceTypeDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<BenevolenceTypeBag, BenevolenceTypeDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -178,14 +173,25 @@ namespace Rock.Blocks.Finance
 
             if ( box.IsEditable )
             {
-                entity.LoadAttributes( rockContext );
-                box.Entity = GetEntityBag( entity );
-                box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                entity.LoadAttributes( RockContext );
+                box.Entity = GetEntityBagForEdit( entity );
             }
             else
             {
                 box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( BenevolenceType.FriendlyTypeName );
             }
+        }
+
+        /// <inheritdoc/>
+        protected override BenevolenceTypeBag GetEntityBagForView( BenevolenceType entity )
+        {
+            return GetEntityBag( entity );
+        }
+
+        /// <inheritdoc/>
+        protected override BenevolenceTypeBag GetEntityBagForEdit( BenevolenceType entity )
+        {
+            return GetEntityBag( entity );
         }
 
         /// <summary>
@@ -219,7 +225,7 @@ namespace Rock.Blocks.Finance
 
             if ( attributeGuidList.Any() )
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag ) );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag ) );
             }
 
             return bag;
@@ -290,61 +296,50 @@ namespace Rock.Blocks.Finance
             return primaryQualifier;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( BenevolenceType entity, DetailBlockBox<BenevolenceTypeBag, BenevolenceTypeDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( BenevolenceType entity, ValidPropertiesBox<BenevolenceTypeBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.RequestLavaTemplate ),
-                () => entity.RequestLavaTemplate = box.Entity.RequestLavaTemplate );
+            box.IfValidProperty( nameof( box.Bag.RequestLavaTemplate ),
+                () => entity.RequestLavaTemplate = box.Bag.RequestLavaTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.ShowFinancialResults ),
-                () => entity.ShowFinancialResults = box.Entity.ShowFinancialResults );
+            box.IfValidProperty( nameof( box.Bag.ShowFinancialResults ),
+                () => entity.ShowFinancialResults = box.Bag.ShowFinancialResults );
 
-            box.IfValidProperty( nameof( box.Entity.Workflows ),
-                () => SaveWorkflows( box.Entity, entity, rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Workflows ),
+                () => SaveWorkflows( box.Bag, entity, RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.MaximumNumberOfDocuments ),
-                () => SaveAdditionalSettings( box.Entity, entity ) );
+            box.IfValidProperty( nameof( box.Bag.MaximumNumberOfDocuments ),
+                () => SaveAdditionalSettings( box.Bag, entity ) );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="BenevolenceType"/> to be viewed or edited on the page.</returns>
-        private BenevolenceType GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override BenevolenceType GetInitialEntity()
         {
-            return GetInitialEntity<BenevolenceType, BenevolenceTypeService>( rockContext, PageParameterKey.BenevolenceTypeId );
+            return GetInitialEntity<BenevolenceType, BenevolenceTypeService>( RockContext, PageParameterKey.BenevolenceTypeId );
         }
 
         /// <summary>
@@ -360,39 +355,9 @@ namespace Rock.Blocks.Finance
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out BenevolenceType entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( BenevolenceType entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out BenevolenceType entity, out BlockActionResult error )
-        {
-            var entityService = new BenevolenceTypeService( rockContext );
+            var entityService = new BenevolenceTypeService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -489,35 +454,32 @@ namespace Rock.Blocks.Finance
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<BenevolenceTypeBag, BenevolenceTypeDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<BenevolenceTypeBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateBenevolenceType( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( RockContext );
-                } );
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateBenevolenceType( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>

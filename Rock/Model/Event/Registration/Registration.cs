@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "Registration" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.REGISTRATION )]
     public partial class Registration : Model<Registration>
     {
@@ -223,6 +224,15 @@ namespace Rock.Model
         public virtual RegistrationInstance RegistrationInstance { get; set; }
 
         /// <summary>
+        /// Gets or sets the registration template.
+        /// </summary>
+        /// <value>
+        /// The registration template.
+        /// </value>
+        [DataMember]
+        public virtual RegistrationTemplate RegistrationTemplate { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
@@ -297,6 +307,7 @@ namespace Rock.Model
         /// </summary>
         public RegistrationConfiguration()
         {
+            this.HasRequired( r => r.RegistrationTemplate ).WithMany().HasForeignKey( r => r.RegistrationTemplateId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.RegistrationInstance ).WithMany( t => t.Registrations ).HasForeignKey( r => r.RegistrationInstanceId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.Group ).WithMany().HasForeignKey( r => r.GroupId ).WillCascadeOnDelete( false );

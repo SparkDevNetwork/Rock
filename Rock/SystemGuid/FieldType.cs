@@ -27,6 +27,11 @@ namespace Rock.SystemGuid
         public const string ACHIEVEMENT_TYPE = "593132CF-BA5D-462F-97F6-94DCC0BFFE6F";
 
         /// <summary>
+        /// Adaptive Message field type
+        /// </summary>
+        public const string ADAPTIVE_MESSAGE = "55CC533A-99D2-418F-B93E-73EA098ABDAE";
+
+        /// <summary>
         /// Address field type
         /// </summary>
         public const string ADDRESS = "0A495222-23B7-41D3-82C8-D484CDB75D17";
@@ -410,6 +415,11 @@ namespace Rock.SystemGuid
         /// Financial Statement Template field type
         /// </summary>
         public const string FINANCIAL_STATEMENT_TEMPLATE = "9E0CD807-D69F-4888-A9BE-BCD11DD083FE";
+
+        /// <summary>
+        /// Financial Transaction field type
+        /// </summary>
+        public const string FINANCIAL_TRANSACTION = "04C66B8E-2DBD-4799-875E-FFFD818EDD91";
 
         /// <summary>
         /// Gender field type

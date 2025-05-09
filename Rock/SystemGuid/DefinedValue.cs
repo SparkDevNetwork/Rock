@@ -130,6 +130,11 @@ namespace Rock.SystemGuid
         public const string BLOCK_TEMPLATE_MOBILE_CORE_SEARCH = "CFEB7FA6-0F19-496B-8DCC-4D200AEEE866";
 
         /// <summary>
+        /// The block template for ScheduledTransactionList block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_FINANCE_SCHEDULED_TRANSACTION_LIST = "4FB77C19-3D70-4051-9FED-DF254B3FB310";
+
+        /// <summary>
         /// The block template mobile daily challenge entry
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_DAILY_CHALLENGE_ENTRY = "30ECA4B6-0869-4656-A4CD-B8729CB29E76";
@@ -1026,6 +1031,11 @@ namespace Rock.SystemGuid
         /// The PBX CDR medium value
         /// </summary>
         public const string PBX_CDR_MEDIUM_VALUE = "B3904B57-62A2-57AC-43EA-94D4DEBA3D51";
+
+        /// <summary>
+        /// Interaction Channel Type: Chat
+        /// </summary>
+        public const string INTERACTIONCHANNELTYPE_CHAT = "0E2EAE2C-957B-4CCB-8826-AA5627C27BBD";
 
         #endregion
 

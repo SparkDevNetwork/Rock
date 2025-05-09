@@ -71,7 +71,7 @@ namespace Rock.Logging
         /// The log level.
         /// </value>
         [Obsolete( "Use StandardLogLevel instead." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public RockLogLevel LogLevel { get; set; }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace Rock.Logging
         /// The domains to log.
         /// </value>
         [Obsolete( "Use StandardCategories instead." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public List<string> DomainsToLog { get; set; }
     }
 }

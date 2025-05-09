@@ -1,0 +1,146 @@
+<template>
+    <GalleryAndResult :value="{ attributes, modelValue: attributeValues }"
+                      hasMultipleValues
+                      :importCode="importCode"
+                      :exampleCode="exampleCode">
+
+        <AttributeValuesContainer v-model="attributeValues"
+                                  :attributes="attributes"
+                                  :isEditMode="isEditMode"
+                                  :showAbbreviatedName="showAbbreviatedName"
+                                  :showEmptyValues="showEmptyValues"
+                                  :displayAsTabs="displayAsTabs"
+                                  :showCategoryLabel="showCategoryLabel"
+                                  :numberOfColumns="numberOfColumns"
+                                  :entityTypeName="entityName"
+                                  :showPrePostHtml="showPrePost" />
+
+        <template #settings>
+            <div class="row">
+                <CheckBox formGroupClasses="col-sm-4" v-model="isEditMode" label="Edit Mode" text="Enable" help="Default: false" />
+                <CheckBox formGroupClasses="col-sm-4" v-model="showAbbreviatedName" label="Abbreviated Name" text="Show" help="Default: false" />
+                <CheckBox formGroupClasses="col-sm-4" v-model="showEmptyValues" label="Empty Values" text="Show" help="Default: true; Only applies if not in edit mode" />
+            </div>
+            <div class="row">
+                <CheckBox formGroupClasses="col-sm-4" v-model="displayAsTabs" label="Category Tabs" text="Show" help="Default: false; If any attributes are in a category, display each category as a tab. Not applicable while editing." />
+                <CheckBox formGroupClasses="col-sm-4" v-model="showCategoryLabel" label="Category Labels" text="Show" help="Default: false; Only applies when not displaying tabs." />
+                <CheckBox formGroupClasses="col-sm-4" v-model="showPrePost" label="Render Pre/Post HTML" text="Show" help="Default: true" />
+            </div>
+            <div class="row">
+                <NumberBox formGroupClasses="col-sm-6" v-model="numberOfColumns" label="Number of Columns" help="Default: 1; Only applies when not displaying tabs." />
+                <TextBox formGroupClasses="col-sm-6" v-model="entityName" label="Entity Type" help="Default: ''; Appears in the heading when category labels are showing." />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { getControlImportPath } from "./common/utils.partial";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const isEditMode = ref(false);
+    const showAbbreviatedName = ref(false);
+    const showEmptyValues = ref(true);
+    const displayAsTabs = ref(false);
+    const showCategoryLabel = ref(true);
+    const numberOfColumns = ref(2);
+    const entityName = ref("Foo Entity");
+
+    const categories = [{
+        guid: newGuid(),
+        name: "Cat A",
+        order: 1
+    },
+    {
+        guid: newGuid(),
+        name: "Cat B",
+        order: 2
+    },
+    {
+        guid: newGuid(),
+        name: "Cat C",
+        order: 3
+    }];
+
+    const attributes = ref<Record<string, PublicAttributeBag>>({
+        text: {
+            attributeGuid: newGuid(),
+            categories: [categories[0]],
+            description: "A text attribute.",
+            fieldTypeGuid: FieldType.Text,
+            isRequired: false,
+            key: "text",
+            name: "Text Attribute",
+            order: 2,
+            configurationValues: {},
+            preHtml: "<div class='bg-primary p-3'>"
+        },
+        color: {
+            attributeGuid: newGuid(),
+            categories: [categories[0], categories[2]],
+            description: "Favorite color? Or just a good one?",
+            fieldTypeGuid: FieldType.Color,
+            isRequired: true,
+            key: "color",
+            name: "Random Color",
+            order: 4,
+            configurationValues: {},
+            postHtml: "</div>"
+        },
+        bool: {
+            attributeGuid: newGuid(),
+            categories: [categories[2]],
+            description: "Are you foo?",
+            fieldTypeGuid: FieldType.Boolean,
+            isRequired: false,
+            key: "bool",
+            name: "Boolean Attribute",
+            order: 3,
+            configurationValues: {}
+        },
+        textagain: {
+            attributeGuid: newGuid(),
+            categories: [categories[1]],
+            description: "Another text attribute.",
+            fieldTypeGuid: FieldType.Text,
+            isRequired: false,
+            key: "textAgain",
+            name: "Some Text",
+            order: 5,
+            configurationValues: {},
+            preHtml: "<h5>PRE HTML!</h5>"
+        },
+        single: {
+            attributeGuid: newGuid(),
+            categories: [],
+            description: "A single select attribute.",
+            fieldTypeGuid: FieldType.SingleSelect,
+            isRequired: false,
+            key: "single",
+            name: "Single Select",
+            order: 1,
+            configurationValues: {
+                values: JSON.stringify([{ value: "1", text: "One" }, { value: "2", text: "Two" }, { value: "3", text: "Three" }])
+            }
+        }
+    });
+
+    const attributeValues = ref<Record<string, string>>({
+        "text": "Default text value",
+        "color": "#336699",
+        "bool": "N",
+        "textAgain": "",
+        single: "1"
+    });
+
+    const showPrePost = ref(false);
+    const importCode = getControlImportPath("attributeValuesContainer");
+    const exampleCode = `<AttributeValuesContainer v-model="attributeValues" :attributes="attributes" :isEditMode="false" :showAbbreviatedName="false" :showEmptyValues="true" :displayAsTabs="false" :showCategoryLabel="true" :numberOfColumns="1" :entityTypeName="entityName" />`;
+</script>
