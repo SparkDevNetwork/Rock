@@ -886,6 +886,7 @@
                     if (selectedPeopleToPlace && groupRoleIdKey && operation.targetIndex !== undefined) {
                         selectedPeopleToPlace.forEach((person) => {
                             pendingGroupMembers.push({
+                                groupMemberId: 0,
                                 groupRoleIdKey: groupRoleIdKey,
                                 person: person,
                                 groupMemberIdKey: null
@@ -899,6 +900,7 @@
 
                     if (person && groupRoleIdKey && operation.targetIndex !== undefined) {
                         pendingGroupMembers.push({
+                            groupMemberId: 0,
                             groupRoleIdKey: groupRoleIdKey,
                             person: person,
                             groupMemberIdKey: null
@@ -922,6 +924,7 @@
                     // });
                     // No need to splice because we are always sorting.
                     placementGroup.groupMembers!.push({
+                        groupMemberId: groupMember.groupMemberId,
                         groupRoleIdKey: groupMember.groupRoleIdKey,
                         person: groupMember.person,
                         groupMemberIdKey: groupMember.groupMemberIdKey
@@ -1045,6 +1048,19 @@
             // If the group placement is allowing multiple then all people are already displayed.
             // So there is no need to display the newly removed group member.
             shouldBeDisplayed = false;
+        }
+
+        if (box.placementMode === PlacementMode.TemplateMode || box.placementMode === PlacementMode.InstanceMode) {
+            // If the group member being removed is not a registrant than they should not be displayed.
+            if (groupMember.person?.registrants?.length === 0) {
+                shouldBeDisplayed = false;
+            }
+        }
+        else if (box.placementMode === PlacementMode.GroupMode) {
+            // If the group member being removed is not part of the source group than they should not be displayed.
+            if (!groupMember.person?.sourceGroupMember?.groupMemberIdKey) {
+                shouldBeDisplayed = false;
+            }
         }
 
         return shouldBeDisplayed;

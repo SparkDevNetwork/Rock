@@ -1,12 +1,18 @@
 <template>
-    <Panel type="default" v-if="destinationGroup.groupIdKey" v-model="isGroupExpanded" :hasCollapse="true" :headerSecondaryActions="secondaryActions">
+    <Panel type="default"
+           v-if="destinationGroup.groupIdKey"
+           v-model="isGroupExpanded"
+           :hasCollapse="true"
+           :headerSecondaryActions="secondaryActions">
         <template #title>
             <div class="d-flex align-items-center gap-2">
                 {{ destinationGroup.groupName }}
-                <Badge :class="[capacityStatusClass]">{{ capacityText }}</Badge>
-                <template v-for="role in groupTypeRoles">
+                <Badge :class="[capacityStatusClass]">
+                    {{ capacityText }}
+                </Badge>
+                <template v-for="role in groupTypeRoles"
+                          :key="role.idKey">
                     <span v-if="role.idKey"
-                          :key="role.idKey"
                           :class="['role-count', getRoleCountOverUnderCapacityClass(role.idKey)]">
                         {{ pluralize(role.name ?? "") }}: {{ getRoleCount(role.idKey) }}
                     </span>
@@ -15,12 +21,19 @@
         </template>
         <template #headerActions v-if="isGenderHighlighting && !isGroupExpanded">
             <div class="d-flex gap-1 mr-3">
-                <Badge class="unknown-badge">{{ genderCounts.unknown }}</Badge>
-                <Badge class="male-badge">{{ genderCounts.males }}</Badge>
-                <Badge class="female-badge">{{ genderCounts.females }}</Badge>
+                <Badge class="unknown-badge">
+                    {{ genderCounts.unknown }}
+                </Badge>
+                <Badge class="male-badge">
+                    {{ genderCounts.males }}
+                </Badge>
+                <Badge class="female-badge">
+                    {{ genderCounts.females }}
+                </Badge>
             </div>
         </template>
-        <div v-if="destinationGroup.attributeValues && destinationGroup.attributes && hasNonEmptyGroupAttributeValue" class="panel-inline">
+        <div v-if="destinationGroup.attributeValues && destinationGroup.attributes && hasNonEmptyGroupAttributeValue"
+             class="panel-inline">
             <div class="panel-heading">
                 <AttributeValuesContainer v-model="destinationGroup.attributeValues"
                                           :attributes="destinationGroup.attributes"
@@ -29,8 +42,10 @@
                                           :showCategoryLabel="false" />
             </div>
         </div>
-        <template v-for="role in groupTypeRoles">
-            <div v-if="role.idKey" :key=role.idKey class="panel-inline">
+        <template v-for="role in groupTypeRoles"
+                  :key=role.idKey>
+            <div v-if="role.idKey"
+                 class="panel-inline">
                 <div class="panel-heading">
                     <h1 class="panel-title d-inline-block mr-2">
                         {{ pluralize(role.name ?? "") }}
@@ -55,92 +70,37 @@
                          v-drag-target="dragTargetId"
                          :data-group-section-id="`${destinationGroup.groupIdKey}|${role.idKey}`">
                         <template v-if="getGroupMembersFilteredByRole(role.idKey).length">
-                            <!-- TODO - put in a partial class -->
                             <div class="gender-section">
-                                <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Male).length > 0">
-                                    <HighlightLabel customClass="gender-highlight-label male-label" labelType="custom">
-                                        Males ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Male).length }})
-                                    </HighlightLabel>
-                                    <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
-                                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Male)">
-                                            <PersonCard v-if="groupMember.person"
-                                                        :key="index"
-                                                        :isCardExpanded="arePersonCardsExpanded"
-                                                        :person="groupMember.person"
-                                                        :index="index"
-                                                        :isDetailHoverDisabled="true"
-                                                        :data-group-id-key="destinationGroup.groupIdKey"
-                                                        :data-group-member-id-key="groupMember.groupMemberIdKey"
-                                                        :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
-                                                        :isGenderHighlighting="isGenderHighlighting"
-                                                        :isInstanceDisplayed="isInstanceDisplayed"
-                                                        :groupMemberAttributes="groupMember.attributes"
-                                                        :groupMemberAttributeValues="groupMember.attributeValues"
-                                                        :isGroupMemberCard="true"
-                                                        :groupMemberIdKey="groupMember.groupMemberIdKey"
-                                                        :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
-                                                        :placementMode="props.placementMode"
-                                                        @editGroupMember="editGroupMember"
-                                                        @removeGroupMember="removeGroupMember" />
-                                        </template>
+                                <template v-for="section in genderSections"
+                                          :key="section.value">
+                                    <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, section.value).length > 0">
+                                        <HighlightLabel :customClass="`gender-highlight-label ${section.class}`"
+                                                        labelType="custom">
+                                            {{ section.label }} ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, section.value).length }})
+                                        </HighlightLabel>
+                                        <div class="group-role-wrapper"
+                                             v-drag-source="groupMemberDragOptions">
+                                            <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.idKey, section.value)"
+                                                      :key="groupMember.groupMemberIdKey">
+                                                <PersonCard v-if="groupMember.person"
+                                                            :isCardExpanded="arePersonCardsExpanded"
+                                                            :person="groupMember.person"
+                                                            :index="index"
+                                                            :isDetailHoverDisabled="true"
+                                                            :data-group-id-key="destinationGroup.groupIdKey"
+                                                            :data-group-member-id-key="groupMember.groupMemberIdKey"
+                                                            :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                                            :isGenderHighlighting="isGenderHighlighting"
+                                                            :isInstanceDisplayed="isInstanceDisplayed"
+                                                            :groupMember="groupMember"
+                                                            :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                                                            :placementMode="props.placementMode"
+                                                            @editGroupMember="editGroupMember"
+                                                            @removeGroupMember="removeGroupMember" />
+                                            </template>
+                                        </div>
                                     </div>
-                                </div>
-                                <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Female).length > 0">
-                                    <HighlightLabel customClass="gender-highlight-label female-label" labelType="custom">
-                                        Females ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Female).length }})
-                                    </HighlightLabel>
-                                    <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
-                                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Female)">
-                                            <PersonCard v-if="groupMember.person"
-                                                        :key="index"
-                                                        :isCardExpanded="arePersonCardsExpanded"
-                                                        :person="groupMember.person"
-                                                        :index="index"
-                                                        :isDetailHoverDisabled="true"
-                                                        :data-group-id-key="destinationGroup.groupIdKey"
-                                                        :data-group-member-id-key="groupMember.groupMemberIdKey"
-                                                        :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
-                                                        :isGenderHighlighting="isGenderHighlighting"
-                                                        :isInstanceDisplayed="isInstanceDisplayed"
-                                                        :groupMemberAttributes="groupMember.attributes"
-                                                        :groupMemberAttributeValues="groupMember.attributeValues"
-                                                        :isGroupMemberCard="true"
-                                                        :groupMemberIdKey="groupMember.groupMemberIdKey"
-                                                        :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
-                                                        :placementMode="props.placementMode"
-                                                        @editGroupMember="editGroupMember"
-                                                        @removeGroupMember="removeGroupMember" />
-                                        </template>
-                                    </div>
-                                </div>
-                                <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Unknown).length > 0">
-                                    <HighlightLabel customClass="gender-highlight-label unknown-label" labelType="custom">
-                                        Unknown ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Unknown).length }})
-                                    </HighlightLabel>
-                                    <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
-                                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Unknown)">
-                                            <PersonCard v-if="groupMember.person"
-                                                        :key="index"
-                                                        :isCardExpanded="arePersonCardsExpanded"
-                                                        :person="groupMember.person"
-                                                        :index="index"
-                                                        :isDetailHoverDisabled="true"
-                                                        :data-group-id-key="destinationGroup.groupIdKey"
-                                                        :data-group-member-id-key="groupMember.groupMemberIdKey"
-                                                        :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
-                                                        :isGenderHighlighting="isGenderHighlighting"
-                                                        :isInstanceDisplayed="isInstanceDisplayed"
-                                                        :groupMemberAttributes="groupMember.attributes"
-                                                        :groupMemberAttributeValues="groupMember.attributeValues"
-                                                        :isGroupMemberCard="true"
-                                                        :groupMemberIdKey="groupMember.groupMemberIdKey"
-                                                        :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
-                                                        :placementMode="props.placementMode"
-                                                        @editGroupMember="editGroupMember"
-                                                        @removeGroupMember="removeGroupMember" />
-                                        </template>
-                                    </div>
-                                </div>
+                                </template>
                             </div>
                         </template>
                         <div v-else-if="arePeopleLoading" class="loading-section">
@@ -157,9 +117,9 @@
                      :data-group-section-id="`${destinationGroup.groupIdKey}|${role.idKey}`"
                      v-drag-source="groupMemberDragOptions">
                     <template v-if="getGroupMembersFilteredByRole(role.idKey).length">
-                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRole(role.idKey)">
+                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRole(role.idKey)"
+                                  :key="index">
                             <PersonCard v-if="groupMember.person"
-                                        :key="index"
                                         :isCardExpanded="arePersonCardsExpanded"
                                         :person="groupMember.person"
                                         :index="index"
@@ -169,10 +129,7 @@
                                         :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
                                         :isGenderHighlighting="isGenderHighlighting"
                                         :isInstanceDisplayed="isInstanceDisplayed"
-                                        :groupMemberAttributes="groupMember.attributes"
-                                        :groupMemberAttributeValues="groupMember.attributeValues"
-                                        :isGroupMemberCard="true"
-                                        :groupMemberIdKey="groupMember.groupMemberIdKey"
+                                        :groupMember="groupMember"
                                         :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
                                         :placementMode="props.placementMode"
                                         @editGroupMember="editGroupMember"
@@ -446,6 +403,12 @@
     // TODO - handle parent edge cases.
     const isGroupExpanded = useVModelPassthrough(props, "isGroupExpanded", emit);
 
+    const genderSections = [
+        { label: "Males", value: Gender.Male, class: "male-label" },
+        { label: "Females", value: Gender.Female, class: "female-label" },
+        { label: "Unknown", value: Gender.Unknown, class: "unknown-label" }
+    ];
+
     const hasNonEmptyGroupAttributeValue = computed(() => {
         const values = props.destinationGroup.attributeValues ?? {};
         return Object.values(values).some(v => !!v && v !== "");
@@ -603,7 +566,9 @@
     }
 
     function editGroup(): void {
-        emit("editGroup", props.destinationGroup.groupIdKey!);
+        // TODO when Group Detail is iconverted to Obsidian use idKey
+        // emit("editGroup", props.destinationGroup.groupIdKey!);
+        emit("editGroup", props.destinationGroup.groupId.toString());
     }
 
     function detachGroup(): void {
@@ -620,3 +585,83 @@
         }
     }
 </script>
+
+<!-- Old Redundant Code -->
+<!--
+                            <div class="gender-section">
+                                <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Male).length > 0">
+                                    <HighlightLabel customClass="gender-highlight-label male-label" labelType="custom">
+                                        Males ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Male).length }})
+                                    </HighlightLabel>
+                                    <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
+                                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Male)">
+                                            <PersonCard v-if="groupMember.person"
+                                                        :key="index"
+                                                        :isCardExpanded="arePersonCardsExpanded"
+                                                        :person="groupMember.person"
+                                                        :index="index"
+                                                        :isDetailHoverDisabled="true"
+                                                        :data-group-id-key="destinationGroup.groupIdKey"
+                                                        :data-group-member-id-key="groupMember.groupMemberIdKey"
+                                                        :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                                        :isGenderHighlighting="isGenderHighlighting"
+                                                        :isInstanceDisplayed="isInstanceDisplayed"
+                                                        :groupMember="groupMember"
+                                                        :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                                                        :placementMode="props.placementMode"
+                                                        @editGroupMember="editGroupMember"
+                                                        @removeGroupMember="removeGroupMember" />
+                                        </template>
+                                    </div>
+                                </div>
+                                <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Female).length > 0">
+                                    <HighlightLabel customClass="gender-highlight-label female-label" labelType="custom">
+                                        Females ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Female).length }})
+                                    </HighlightLabel>
+                                    <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
+                                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Female)">
+                                            <PersonCard v-if="groupMember.person"
+                                                        :key="index"
+                                                        :isCardExpanded="arePersonCardsExpanded"
+                                                        :person="groupMember.person"
+                                                        :index="index"
+                                                        :isDetailHoverDisabled="true"
+                                                        :data-group-id-key="destinationGroup.groupIdKey"
+                                                        :data-group-member-id-key="groupMember.groupMemberIdKey"
+                                                        :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                                        :isGenderHighlighting="isGenderHighlighting"
+                                                        :isInstanceDisplayed="isInstanceDisplayed"
+                                                        :groupMember="groupMember"
+                                                        :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                                                        :placementMode="props.placementMode"
+                                                        @editGroupMember="editGroupMember"
+                                                        @removeGroupMember="removeGroupMember" />
+                                        </template>
+                                    </div>
+                                </div>
+                                <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Unknown).length > 0">
+                                    <HighlightLabel customClass="gender-highlight-label unknown-label" labelType="custom">
+                                        Unknown ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Unknown).length }})
+                                    </HighlightLabel>
+                                    <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
+                                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Unknown)">
+                                            <PersonCard v-if="groupMember.person"
+                                                        :key="index"
+                                                        :isCardExpanded="arePersonCardsExpanded"
+                                                        :person="groupMember.person"
+                                                        :index="index"
+                                                        :isDetailHoverDisabled="true"
+                                                        :data-group-id-key="destinationGroup.groupIdKey"
+                                                        :data-group-member-id-key="groupMember.groupMemberIdKey"
+                                                        :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                                        :isGenderHighlighting="isGenderHighlighting"
+                                                        :isInstanceDisplayed="isInstanceDisplayed"
+                                                        :groupMember="groupMember"
+                                                        :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                                                        :placementMode="props.placementMode"
+                                                        @editGroupMember="editGroupMember"
+                                                        @removeGroupMember="removeGroupMember" />
+                                        </template>
+                                    </div>
+                                </div>
+                            </div> -->

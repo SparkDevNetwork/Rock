@@ -24,6 +24,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
     public class GroupMemberBag
     {
+        /// <summary>
+        /// Gets or sets the group member unique identifier. (TODO: Remove
+        /// this when Group Member Detail is converted to Obsidian.)
+        /// </summary>
+        public int GroupMemberId { get; set; }
+
         // TODO - verfiy that this can be nullable.
         public string GroupMemberIdKey { get; set; }
 

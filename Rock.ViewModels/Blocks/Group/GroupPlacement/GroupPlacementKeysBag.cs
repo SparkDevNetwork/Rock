@@ -31,6 +31,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 
         public string SourceGroupIdKey { get; set; }
 
+        public string EntitySetIdKey { get; set; }
+
         public string DestinationGroupTypeIdKey { get; set; }
     }
 }

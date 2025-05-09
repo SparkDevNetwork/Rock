@@ -32,6 +32,12 @@ export type PlacementGroupBag = {
 
     groupCapacity?: number | null;
 
+    /**
+     * Gets or sets the group unique identifier. (TODO: Remove
+     * this when Group Details is converted to Obsidian.)
+     */
+    groupId: number;
+
     groupIdKey?: string | null;
 
     groupMembers?: GroupMemberBag[] | null;

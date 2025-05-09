@@ -5,14 +5,16 @@
          @click="onPersonCardClick"
          @mouseenter="toggleIsCardExpandedOnHover(true)"
          @mouseleave="toggleIsCardExpandedOnHover(false)">
-        <div class="d-flex justify-content-between align-items-center person-row" :class="{ 'expanded': isCardExpanded }">
+        <div class="d-flex justify-content-between align-items-center person-row"
+             :class="{ 'expanded': isCardExpanded }">
             <div class="d-flex align-items-center flex-grow-1">
                 <div class="mr-3 flex-shrink-0"
                      :style="{ 'width': '32px', 'height': '32px', 'border-radius': '18px', 'background-image': `url('${person.photoUrl}')`, 'background-size': 'cover' }">
                 </div>
                 {{ displayedPersonName }}
             </div>
-            <div v-if="isGroupMemberCard && groupMemberIdKey" :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === index }]">
+            <div v-if="isGroupMemberCard && groupMember?.groupMemberIdKey"
+                 :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === index }]">
                 <button type="button"
                         class="btn btn-xs btn-link btn-overflow"
                         data-toggle="dropdown"
@@ -25,14 +27,14 @@
                     <li>
                         <button type="button"
                                 class="dropdown-item btn-link"
-                                @click.stop="editGroupMember(groupMemberIdKey)">
+                                @click.stop="editGroupMember">
                             Edit
                         </button>
                     </li>
                     <li>
                         <button type="button"
                                 class="dropdown-item btn-link"
-                                @click.stop="removeGroupMember(groupMemberIdKey)">
+                                @click.stop="removeGroupMember">
                             Remove
                         </button>
                     </li>
@@ -40,27 +42,36 @@
             </div>
         </div>
         <TransitionVerticalCollapse>
-            <div v-if="isCardExpanded && (hasGroupMemberDetailsToDisplay || hasRegistrantDetailsToDisplay || hasSourceMemberDetailsToDisplay)" class="details-container">
+            <div v-if="isCardExpanded && (hasGroupMemberDetailsToDisplay || hasRegistrantDetailsToDisplay || hasSourceMemberDetailsToDisplay)"
+                 class="details-container">
                 <template v-if="isGroupMemberCard && hasGroupMemberDetailsToDisplay">
-                    <div class="header">Group Member</div>
+                    <div class="header">
+                        Group Member
+                    </div>
                     <dl>
-                        <template v-for="attribute, key in getAttributesWithCorrespondingValues(groupMemberAttributes!, groupMemberAttributeValues!)" :key="key">
-                            <dt>{{ attribute.name }}</dt>
-                            <dd v-if="groupMemberAttributeValues"
-                                :ref="(el) => addTooltip(el as Element)"
+                        <template v-for="attribute, key in getAttributesWithCorrespondingValues(destinationGroupMemberAttributes, destinationGroupMemberAttributeValues)"
+                                  :key="key">
+                            <dt>
+                                {{ attribute.name }}
+                            </dt>
+                            <dd :ref="(el) => addTooltip(el as Element)"
                                 data-toggle="tooltip"
-                                :data-original-title="getAttributeValueText(groupMemberAttributeValues, attribute, key)">
-                                {{ getAttributeValueText(groupMemberAttributeValues, attribute, key) }}
+                                :data-original-title="getAttributeValueText(destinationGroupMemberAttributeValues, attribute, key)">
+                                {{ getAttributeValueText(destinationGroupMemberAttributeValues, attribute, key) }}
                             </dd>
                         </template>
                     </dl>
                 </template>
                 <template v-if="(!isGroupMemberCard || areSourceAttributesDisplayedOnDestinationGroupMembers) && hasSourceMemberDetailsToDisplay">
-                    <div class="header">Source Group Member</div>
+                    <div class="header">
+                        Source Group Member
+                    </div>
                     <dl>
                         <template v-for="attribute, key in getAttributesWithCorrespondingValues(sourceGroupMemberAttributes, sourceGroupMemberAttributeValues)"
                                   :key="key">
-                            <dt>{{ attribute.name }}</dt>
+                            <dt>
+                                {{ attribute.name }}
+                            </dt>
                             <dd :ref="(el) => addTooltip(el as Element)"
                                 data-toggle="tooltip"
                                 :data-original-title="getAttributeValueText(sourceGroupMemberAttributeValues, attribute, key)">
@@ -72,11 +83,16 @@
                 <!-- If show instance or show registrants attributes is on then we display this. -->
                 <!-- TODO - Come back to this if statement -->
                 <template v-if="(isInstanceDisplayed || areFeesDisplayed || (!isGroupMemberCard || areSourceAttributesDisplayedOnDestinationGroupMembers)) && hasRegistrantDetailsToDisplay">
-                    <div class="header">{{ registrantHeader }}</div>
+                    <div class="header">
+                        {{ registrantHeader }}
+                    </div>
                     <template v-for="registrant in person.registrants">
-                        <dl v-if="registrant.registrantIdKey" :key="registrant.registrantIdKey">
+                        <dl v-if="registrant.registrantIdKey"
+                            :key="registrant.registrantIdKey">
                             <template v-if="isInstanceDisplayed">
-                                <dt>Instance</dt>
+                                <dt>
+                                    Instance
+                                </dt>
                                 <dd :ref="(el) => addTooltip(el as Element)"
                                     data-toggle="tooltip"
                                     :data-original-title="registrant.registrationInstanceName">
@@ -86,7 +102,9 @@
                             <template v-if="(!isGroupMemberCard || areSourceAttributesDisplayedOnDestinationGroupMembers) && registrant.attributes && registrant.attributeValues"
                                       v-for="(attribute, key) in getAttributesWithCorrespondingValues(registrant.attributes, registrant.attributeValues)"
                                       :key="key">
-                                <dt>{{ attribute.name }}</dt>
+                                <dt>
+                                    {{ attribute.name }}
+                                </dt>
                                 <!-- TODO - tooltip isn't top right... have to rework the title as well -->
                                 <dd v-if="registrant.attributeValues"
                                     :ref="(el) => addTooltip(el as Element)"
@@ -247,6 +265,7 @@
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
     import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
+    import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
 
     const props = defineProps({
         isCardExpanded: {
@@ -287,22 +306,9 @@
             type: Boolean as PropType<boolean>,
             default: false,
         },
-        groupMemberAttributes: {
-            type: Object as PropType<Record<string, PublicAttributeBag> | null>,
-            default: {}
-        },
-        groupMemberAttributeValues: {
-            type: Object as PropType<Record<string, string> | null>,
-            default: {}
-        },
-        isGroupMemberCard: {
-            type: Boolean as PropType<boolean>,
-            default: false,
-            required: false
-        },
-        groupMemberIdKey: {
-            type: String as PropType<string | null>,
-            required: false
+        groupMember: {
+            type: Object as PropType<GroupMemberBag>,
+            required: false,
         },
         areSourceAttributesDisplayedOnDestinationGroupMembers: {
             type: Boolean as PropType<boolean>,
@@ -336,7 +342,20 @@
         return `${props.person.lastName}, ${props.person.nickname}`;
     });
 
-    // TODO - do this for group members as well...
+    const destinationGroupMemberAttributes = computed((): Record<string, PublicAttributeBag> => {
+        if (!props.groupMember?.attributes) {
+            return {};
+        }
+        return props.groupMember.attributes;
+    });
+
+    const destinationGroupMemberAttributeValues = computed((): Record<string, string> => {
+        if (!props.groupMember?.attributeValues) {
+            return {};
+        }
+        return props.groupMember.attributeValues;
+    });
+
     const sourceGroupMemberAttributes = computed((): Record<string, PublicAttributeBag> => {
         if (!props.person.sourceGroupMember?.attributes) {
             return {};
@@ -351,14 +370,19 @@
         return props.person.sourceGroupMember.attributeValues;
     });
 
+    const isGroupMemberCard = computed(() => {
+        const gm = props.groupMember;
+        return !!gm && Object.keys(gm).length > 0;
+    });
+
     const registrantHeader = computed(() => props.person.registrants && props.person.registrants.length > 1 ? "Registrants" : "Registrant");
 
     const hasGroupMemberDetailsToDisplay = computed((): boolean => {
-        if (!props.groupMemberAttributes || !props.groupMemberAttributeValues) {
+        if (!props.groupMember?.attributes || !props.groupMember.attributeValues) {
             return false;
         }
 
-        return Object.keys(getAttributesWithCorrespondingValues(props.groupMemberAttributes, props.groupMemberAttributeValues) ?? {}).length > 0;
+        return Object.keys(getAttributesWithCorrespondingValues(props.groupMember.attributes, props.groupMember.attributeValues) ?? {}).length > 0;
     });
 
     const hasRegistrantDetailsToDisplay = computed((): boolean => {
@@ -369,7 +393,7 @@
         return props.person.registrants.some(registrant => {
             const hasInstance = props.isInstanceDisplayed && !!registrant.registrationInstanceName;
             const hasFees = props.areFeesDisplayed && Object.keys(registrant.fees ?? {}).length > 0;
-            const hasAttributes = (!props.isGroupMemberCard || props.areSourceAttributesDisplayedOnDestinationGroupMembers)
+            const hasAttributes = (!isGroupMemberCard.value || props.areSourceAttributesDisplayedOnDestinationGroupMembers)
                 && registrant.attributes
                 && registrant.attributeValues
                 && Object.keys(getAttributesWithCorrespondingValues(registrant.attributes, registrant.attributeValues) ?? {}).length > 0;
@@ -444,12 +468,14 @@
         }
     }
 
-    function editGroupMember(groupMemberIdKey: string) {
-        emit("editGroupMember", groupMemberIdKey);
+    function editGroupMember() {
+        // TOOD: When Group Member Detail is converted to Obsidian use idKey.
+        // emit("editGroupMember", groupMemberIdKey);
+        emit("editGroupMember", props.groupMember?.groupMemberId.toString() ?? "");
         openDropdownIndex.value = null;
     }
-    function removeGroupMember(groupMemberIdKey: string) {
-        emit("removeGroupMember", groupMemberIdKey);
+    function removeGroupMember() {
+        emit("removeGroupMember", props.groupMember?.groupMemberIdKey ?? "");
         openDropdownIndex.value = null;
     }
 

@@ -24,6 +24,8 @@
 export type GroupPlacementKeysBag = {
     destinationGroupTypeIdKey?: string | null;
 
+    entitySetIdKey?: string | null;
+
     registrationInstanceIdKey?: string | null;
 
     registrationTemplateIdKey?: string | null;

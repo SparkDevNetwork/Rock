@@ -26,6 +26,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
     /// </summary>
     public class PlacementGroupBag
     {
+        /// <summary>
+        /// Gets or sets the group unique identifier. (TODO: Remove
+        /// this when Group Details is converted to Obsidian.)
+        /// </summary>
+        public int GroupId { get; set; }
+
         public string GroupIdKey { get; set; }
 
         public string GroupName { get; set; }

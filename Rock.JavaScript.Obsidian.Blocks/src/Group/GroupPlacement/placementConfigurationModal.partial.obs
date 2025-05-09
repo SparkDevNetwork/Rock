@@ -20,6 +20,7 @@
                           :enhanceForLongLists="true" />
         </Panel>
         <Panel :modelValue="true"
+               v-if="placementMode !== PlacementMode.EntitySetMode"
                title="People To Place Configuration"
                :hasCollapse="true">
             <CheckBox v-if="placementMode === PlacementMode.TemplateMode || placementMode === PlacementMode.InstanceMode"
