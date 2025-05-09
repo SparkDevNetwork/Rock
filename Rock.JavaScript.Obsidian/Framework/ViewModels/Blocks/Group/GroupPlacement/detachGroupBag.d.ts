@@ -21,10 +21,13 @@
 // </copyright>
 //
 
+import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
 import { GroupPlacementKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementKeysBag";
 
 export type DetachGroupBag = {
     groupIdKey?: string | null;
 
     groupPlacementKeys?: GroupPlacementKeysBag | null;
+
+    placementMode: PlacementMode;
 };

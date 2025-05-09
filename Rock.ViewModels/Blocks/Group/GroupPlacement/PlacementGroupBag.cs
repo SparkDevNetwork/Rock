@@ -36,6 +36,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 
         public int? GroupCapacity { get; set; }
 
+        public string RegistrationInstanceIdKey { get; set; }
+
         public bool IsShared { get; set; }
 
         public Dictionary<string, PublicAttributeBag> Attributes { get; set; }

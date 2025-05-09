@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 
+using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
@@ -24,6 +25,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
     public class DetachGroupBag
     {
         public string GroupIdKey { get; set; }
+
+        public PlacementMode PlacementMode { get; set; }
 
         public GroupPlacementKeysBag GroupPlacementKeys { get; set; }
     }

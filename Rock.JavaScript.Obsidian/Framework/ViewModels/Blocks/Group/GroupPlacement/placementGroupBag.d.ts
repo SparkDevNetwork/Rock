@@ -43,4 +43,6 @@ export type PlacementGroupBag = {
     groupTypeIdKey?: string | null;
 
     isShared: boolean;
+
+    registrationInstanceIdKey?: string | null;
 };

@@ -596,6 +596,10 @@
     const filteredAndSortedGroups = computed(() => {
         // TODO - Phone Number Filter seems to be broken
         const filteredPlacementGroups = placementGroups.value.filter(g => {
+            if (placementConfigurationSettings.value.areFullGroupsHidden && g.groupCapacity && g.groupMembers && g.groupMembers.length >= g.groupCapacity) {
+                return false;
+            }
+
             if (!destinationGroupAttributesForFilter.value || !g.attributeValues) {
                 return true;
             }
@@ -909,7 +913,7 @@
                 }
 
                 // TODO - what happens on error?
-                var newGroupMembers = await addGroupMembersToGroup(pendingGroupMembers, groupIdKey);
+                var newGroupMembers = await addGroupMembersToGroup(pendingGroupMembers, placementGroup);
                 newGroupMembers.forEach((groupMember, i) => {
                     // placementGroup.groupMembers!.splice(operation.targetIndex! + i, 0, {
                     //     groupRoleIdKey: groupMember.groupRoleIdKey,
@@ -923,9 +927,11 @@
                         groupMemberIdKey: groupMember.groupMemberIdKey
                     });
 
-                    peopleToPlace.value = peopleToPlace.value.filter(
-                        p => groupMember.person?.personIdKey !== p.personIdKey
-                    );
+                    if (!box.isPlacementAllowingMultiple) {
+                        peopleToPlace.value = peopleToPlace.value.filter(
+                            p => groupMember.person?.personIdKey !== p.personIdKey
+                        );
+                    }
                 });
 
                 selectedPersonIdKeys.value.clear();
@@ -985,15 +991,9 @@
                 // If the person does not have a Registrant in any of the included Registration Instances, then they should not be shown in the People To Place Panel.
                 // This matches with functionality from the old Webforms Block.
                 // TODO - maybe move this to filter computed?
-                var shouldPersonBeDisplayed = groupMember.person.registrants?.some(r => {
-                    if (placementConfigurationSettings.value.includedRegistrationInstanceIds?.length === 0) {
-                        return true;
-                    }
+                var isPersonBeDisplayed = shouldPersonBeDisplayed(groupMember);
 
-                    return placementConfigurationSettings.value.includedRegistrationInstanceIds?.includes(r.registrationInstanceIdKey ?? "");
-                });
-
-                if (shouldPersonBeDisplayed) {
+                if (isPersonBeDisplayed) {
                     // peopleToPlace.value.splice(operation.targetIndex, 0, {
                     //     ...groupMember.person,
                     // });
@@ -1017,6 +1017,38 @@
             window.location.href = box.navigationUrls[NavigationUrlKey.GroupMemberDetailPage].replace("((Key))", key.toString());
         }
     }
+
+    const shouldPersonBeDisplayed = (groupMember: GroupMemberBag): boolean => {
+        let shouldBeDisplayed: boolean = true;
+
+        if (box.placementMode === PlacementMode.TemplateMode) {
+            // Default to true if person or registrants were not found for some reason.
+            shouldBeDisplayed = groupMember!.person?.registrants?.some(r => {
+                if (placementConfigurationSettings.value.includedRegistrationInstanceIds?.length === 0) {
+                    return true;
+                }
+
+                return placementConfigurationSettings.value.includedRegistrationInstanceIds!.includes(r.registrationInstanceIdKey ?? "");
+            }) ?? true;
+        }
+
+        if (!box.isPlacementAllowingMultiple) {
+            // If there is another group member present with the same person idkey then the person should not be displayed in people to place.
+            shouldBeDisplayed = !placementGroups.value.some(group =>
+                group.groupMembers?.some(gm =>
+                    gm.groupMemberIdKey !== groupMember.groupMemberIdKey &&
+                    gm.person?.personIdKey === groupMember.person?.personIdKey
+                )
+            );
+        }
+        else {
+            // If the group placement is allowing multiple then all people are already displayed.
+            // So there is no need to display the newly removed group member.
+            shouldBeDisplayed = false;
+        }
+
+        return shouldBeDisplayed;
+    };
 
     function handleOutsideClick(event: MouseEvent) {
         const clickedEl = event.target as HTMLElement;
@@ -1293,10 +1325,12 @@
         arePeopleLoading.value = true;
 
         const result = await invokeBlockAction<PlacementPeopleBag>("GetPlacementPeople", {
-            groupPlacementKeys: box.groupPlacementKeys
+            groupPlacementKeys: box.groupPlacementKeys,
+            isPlacementAllowingMultiple: box.isPlacementAllowingMultiple
         });
 
         if (result.isSuccess && result.data) {
+            console.log("PEOPLE RESULT: ", result.data);
             return result.data;
         }
         else {
@@ -1337,12 +1371,13 @@
         return {};
     }
 
-    async function addGroupMembersToGroup(pendingGroupMembers: GroupMemberBag[], groupIdKey: string): Promise<GroupMemberBag[]> {
+    async function addGroupMembersToGroup(pendingGroupMembers: GroupMemberBag[], placementGroup: PlacementGroupBag): Promise<GroupMemberBag[]> {
         const result = await invokeBlockAction<GroupMemberBag[]>("AddGroupMembersToGroup", {
             addGroupMembersBag: {
                 pendingGroupMembers,
-                groupIdKey,
-                destinationGroupTypeIdKey: box.destinationGroupType?.idKey
+                targetGroup: placementGroup,
+                placementMode: box.placementMode,
+                groupPlacementKeys: box.groupPlacementKeys
             } as AddGroupMembersBag
         });
 
@@ -1351,7 +1386,7 @@
         }
         else {
             if (pendingGroupMembers[0].groupRoleIdKey) {
-                setGroupRoleError(groupIdKey, pendingGroupMembers[0].groupRoleIdKey, result.errorMessage ?? "Unknown error while trying to add a group member.");
+                setGroupRoleError(placementGroup.groupIdKey!, pendingGroupMembers[0].groupRoleIdKey, result.errorMessage ?? "Unknown error while trying to add a group member.");
             }
         }
         return [];
@@ -1402,7 +1437,8 @@
         const result = await invokeBlockAction("DetachPlacementGroup", {
             detachGroupBag: {
                 groupIdKey: groupIdKey,
-                groupPlacementKeys: box.groupPlacementKeys
+                groupPlacementKeys: box.groupPlacementKeys,
+                placementMode: box.placementMode
             } as DetachGroupBag
         });
 

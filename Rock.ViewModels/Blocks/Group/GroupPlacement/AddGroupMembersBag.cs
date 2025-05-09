@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 
+using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
@@ -25,8 +26,10 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
     {
         public List<GroupMemberBag> PendingGroupMembers { get; set; }
 
-        public string GroupIdKey { get; set; }
+        public PlacementGroupBag TargetGroup { get; set; }
 
-        public string DestinationGroupTypeIdKey { get; set; }
+        public GroupPlacementKeysBag GroupPlacementKeys { get; set; }
+
+        public PlacementMode PlacementMode { get; set; }
     }
 }

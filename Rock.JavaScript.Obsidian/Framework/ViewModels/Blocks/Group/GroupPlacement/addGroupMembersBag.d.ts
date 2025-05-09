@@ -21,12 +21,17 @@
 // </copyright>
 //
 
+import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
 import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
+import { GroupPlacementKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementKeysBag";
+import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
 
 export type AddGroupMembersBag = {
-    destinationGroupTypeIdKey?: string | null;
-
-    groupIdKey?: string | null;
+    groupPlacementKeys?: GroupPlacementKeysBag | null;
 
     pendingGroupMembers?: GroupMemberBag[] | null;
+
+    placementMode: PlacementMode;
+
+    targetGroup?: PlacementGroupBag | null;
 };

@@ -1814,13 +1814,23 @@ namespace Rock.Model
         /// <returns></returns>
         public bool AddGroupPlacementPlacementGroup( Group sourceGroup, Group group )
         {
-            if ( !this.RelatedEntities.RelatedToSourceEntityAlreadyExists( sourceGroup.Id, group, RelatedEntityPurposeKey.RegistrationTemplateGroupPlacementTemplate ) )
+            if ( !this.RelatedEntities.RelatedToSourceEntityAlreadyExists( sourceGroup.Id, group, RelatedEntityPurposeKey.GroupPlacement ) )
             {
                 this.RelatedEntities.AddRelatedToSourceEntity( sourceGroup.Id, group, RelatedEntityPurposeKey.GroupPlacement );
                 return true;
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Deletes (detaches) the destination group for the given source group ID.
+        /// </summary>
+        /// <param name="sourceGroup">The source group.</param>
+        /// <param name="group">The group.</param>
+        public void DetachDestinationGroupFromSourceGroup( Group sourceGroup, Group group )
+        {
+            this.RelatedEntities.DeleteTargetEntityFromSourceEntity( sourceGroup.Id, group, RelatedEntityPurposeKey.GroupPlacement );
         }
 
         #endregion
