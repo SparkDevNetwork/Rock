@@ -778,7 +778,7 @@ namespace Rock.Jobs
             }
 
             // Continue by getting existing Rock groups.
-            var existingRockChatGroups = groupService.GetRockChatGroups() ?? new List<RockChatGroup>();
+            var existingRockChatGroups = chatHelper.GetAllRockChatGroups() ?? new List<RockChatGroup>();
 
             // Collect any Rock groups along the way, whose members should be synced.
             var groupsRequiringMemberSync = new List<GroupCache>();
@@ -1051,7 +1051,7 @@ namespace Rock.Jobs
             }
 
             // Get the [chat channel key]-to-[Rock group ID & name] mappings.
-            var rockChatGroups = new GroupService( rockContext ).GetRockChatGroups();
+            var rockChatGroups = chatHelper.GetAllRockChatGroups();
             if ( rockChatGroups?.Any() != true )
             {
                 var taskResult = CreateAndAddNewTaskResult( section, "No Chat Channel Groups found in Rock", TimeSpan.Zero );
