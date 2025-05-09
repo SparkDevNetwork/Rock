@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Media;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -371,6 +372,11 @@ namespace RockWeb.Blocks.Cms
             var mediaFolderService = new MediaFolderService( rockContext );
 
             var mediaFolderId = PageParameter( PageParameterKey.MediaFolderId ).AsIntegerOrNull();
+
+            if ( !mediaFolderId.HasValue )
+            {
+                mediaFolderId = IdHasher.Instance.GetId( PageParameter( PageParameterKey.MediaFolderId ) );
+            }
 
             if ( !mediaFolderId.HasValue )
             {
