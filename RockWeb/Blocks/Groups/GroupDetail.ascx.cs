@@ -32,6 +32,7 @@ using Rock.Attribute;
 using Rock.Communication.Chat;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
 using Rock.Model;
 using Rock.Model.Groups.Group.Options;
@@ -969,12 +970,22 @@ namespace RockWeb.Blocks.Groups
                 checkinDataUpdated = true;
             }
 
+            int? orphanedChatChannelAvatarId = null;
+
             if ( ChatHelper.IsChatEnabled && group.GroupType?.IsChatAllowed == true )
             {
                 group.IsChatEnabledOverride = ddlIsChatEnabled.SelectedValue.AsBooleanOrNull();
                 group.IsLeavingChatChannelAllowedOverride = ddlIsLeavingChatChannelAllowed.SelectedValue.AsBooleanOrNull();
                 group.IsChatChannelPublicOverride = ddlIsChatChannelPublic.SelectedValue.AsBooleanOrNull();
                 group.IsChatChannelAlwaysShownOverride = ddlIsChatChannelAlwaysShown.SelectedValue.AsBooleanOrNull();
+                group.ChatPushNotificationModeOverride = ddlChatPushNotificationMode.SelectedValueAsEnumOrNull<ChatNotificationMode>();
+
+                if ( group.ChatChannelAvatarBinaryFileId != imgChatChannelAvatar.BinaryFileId )
+                {
+                    orphanedChatChannelAvatarId = group.ChatChannelAvatarBinaryFileId;
+                }
+
+                group.ChatChannelAvatarBinaryFileId = imgChatChannelAvatar.BinaryFileId;
             }
 
             // Add/update GroupSyncs
@@ -1342,6 +1353,31 @@ namespace RockWeb.Blocks.Groups
                             {
                                 childGroup.InactiveReasonNote += ": " + tbInactiveNote.Text;
                             }
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+                }
+
+                if ( orphanedChatChannelAvatarId.HasValue || group.ChatChannelAvatarBinaryFileId.HasValue )
+                {
+                    var binaryFileService = new BinaryFileService( rockContext );
+
+                    if ( orphanedChatChannelAvatarId.HasValue )
+                    {
+                        var binaryFile = binaryFileService.Get( orphanedChatChannelAvatarId.Value );
+                        if ( binaryFile != null )
+                        {
+                            binaryFile.IsTemporary = true;
+                        }
+                    }
+
+                    if ( group.ChatChannelAvatarBinaryFileId.HasValue )
+                    {
+                        var binaryFile = binaryFileService.Get( group.ChatChannelAvatarBinaryFileId.Value );
+                        if ( binaryFile != null )
+                        {
+                            binaryFile.IsTemporary = false;
                         }
                     }
 
@@ -2451,10 +2487,18 @@ namespace RockWeb.Blocks.Groups
                     ? group.IsChatChannelAlwaysShownOverride.Value ? "y" : "n"
                     : string.Empty;
 
+                var chatPushNotificationMode = group.ChatPushNotificationModeOverride.HasValue
+                    ? group.ChatPushNotificationModeOverride.Value.ConvertToInt()
+                    : ( int? ) null;
+
                 ddlIsChatEnabled.SetValue( isChatEnabled );
                 ddlIsLeavingChatChannelAllowed.SetValue( isLeavingChatChannelAllowed );
                 ddlIsChatChannelPublic.SetValue( isChatChannelPublic );
                 ddlIsChatChannelAlwaysShown.SetValue( isChatChannelAlwaysShown );
+                ddlChatPushNotificationMode.SetValue( chatPushNotificationMode );
+
+                imgChatChannelAvatar.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+                imgChatChannelAvatar.BinaryFileId = group.ChatChannelAvatarBinaryFileId;
 
                 if ( group.IsSystem )
                 {
@@ -2462,6 +2506,8 @@ namespace RockWeb.Blocks.Groups
                     ddlIsLeavingChatChannelAllowed.Enabled = false;
                     ddlIsChatChannelPublic.Enabled = false;
                     ddlIsChatChannelAlwaysShown.Enabled = false;
+                    ddlChatPushNotificationMode.Enabled = false;
+                    imgChatChannelAvatar.Enabled = false;
                 }
 
                 wpChat.Visible = true;

@@ -663,6 +663,7 @@ namespace RockWeb.Blocks.Groups
                 groupType.IsLeavingChatChannelAllowed = cbIsLeavingChatChannelAllowed.Checked;
                 groupType.IsChatChannelPublic = cbIsChatChannelPublic.Checked;
                 groupType.IsChatChannelAlwaysShown = cbIsChatChannelAlwaysShown.Checked;
+                groupType.ChatPushNotificationMode = ddlChatPushNotificationMode.SelectedValueAsEnum<ChatNotificationMode>();
             }
 
             if ( !groupType.IsValid )
@@ -1099,6 +1100,7 @@ namespace RockWeb.Blocks.Groups
                 cbIsLeavingChatChannelAllowed.Checked = groupType.IsLeavingChatChannelAllowed;
                 cbIsChatChannelPublic.Checked = groupType.IsChatChannelPublic;
                 cbIsChatChannelAlwaysShown.Checked = groupType.IsChatChannelAlwaysShown;
+                ddlChatPushNotificationMode.SetValue( ( int ) groupType.ChatPushNotificationMode );
 
                 SetChatControlsVisibility( groupType.IsChatAllowed );
 
@@ -1109,6 +1111,7 @@ namespace RockWeb.Blocks.Groups
                     cbIsLeavingChatChannelAllowed.Enabled = false;
                     cbIsChatChannelPublic.Enabled = false;
                     cbIsChatChannelAlwaysShown.Enabled = false;
+                    ddlChatPushNotificationMode.Enabled = false;
 
                     nbChatRunSyncJob.Visible = false;
                 }
@@ -3378,6 +3381,7 @@ namespace RockWeb.Blocks.Groups
             cbIsLeavingChatChannelAllowed.Visible = isChatAllowed;
             cbIsChatChannelPublic.Visible = isChatAllowed;
             cbIsChatChannelAlwaysShown.Visible = isChatAllowed;
+            ddlChatPushNotificationMode.Visible = isChatAllowed;
         }
 
         #endregion Chat Controls
