@@ -1110,16 +1110,6 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
-        /// Gets the URL to use for <see cref="ChatChannel.AvatarImageUrl"/>.
-        /// </summary>
-        /// <param name="imageGuid">The unique identifier of the image.</param>
-        /// <returns>The URL to use for <see cref="ChatChannel.AvatarImageUrl"/>.</returns>
-        internal static string GetChatChannelAvatarImageUrl( Guid imageGuid )
-        {
-            return $"{PublicApplicationRootUrl}GetImage.ashx?guid={imageGuid}&maxwidth=120&maxheight=120";
-        }
-
-        /// <summary>
         /// Synchronizes <see cref="Group"/>s from Rock to <see cref="ChatChannel"/>s in the external chat system.
         /// </summary>
         /// <param name="syncCommands">The list of commands for <see cref="Group"/>s to sync.</param>
@@ -1505,74 +1495,6 @@ namespace Rock.Communication.Chat
 
                 return result;
             }
-        }
-
-        /// <summary>
-        /// Gets the <see cref="ChatChannel.QueryableKey"/> for the specified <see cref="Group"/>.
-        /// </summary>
-        /// <param name="groupId">
-        /// The identifier of the <see cref="Group"/> for which to get the <see cref="ChatChannel.QueryableKey"/>.
-        /// </param>
-        /// <returns>
-        /// The <see cref="ChatChannel.QueryableKey"/> or an empty string if unable to determine the key.
-        /// </returns>
-        /// <remarks>
-        /// This is used to determine the key to use when querying for <see cref="ChatChannel"/>s in the external chat system.
-        /// </remarks>
-        internal string GetQueryableChatChannelKey( int groupId )
-        {
-            var group = new GroupService( RockContext ).GetNoTracking( groupId );
-            if ( group == null )
-            {
-                return string.Empty;
-            }
-
-            var chatGroup = ConvertGroupToRockChatGroup( group );
-            if ( chatGroup == null )
-            {
-                return string.Empty;
-            }
-
-            return ChatProvider.GetQueryableChatChannelKey( chatGroup );
-        }
-
-        /// <summary>
-        /// Converts a <see cref="Group"/> to a <see cref="RockChatGroup"/>.
-        /// </summary>
-        /// <param name="group">The group to convert to a <see cref="RockChatGroup"/>.</param>
-        /// <returns>The slimmed-down <see cref="RockChatGroup"/>.</returns>
-        internal static RockChatGroup ConvertGroupToRockChatGroup( Group group )
-        {
-            if ( group == null )
-            {
-                return null;
-            }
-
-            var chatChannelKey = GetChatChannelKey( group.Id, group.ChatChannelKey );
-
-            var avatarImageUrl = string.Empty;
-            var avatarImageGuid = group.GetAttributeValue( GroupAttributeKey.AvatarImage ).AsGuidOrNull();
-            if ( avatarImageGuid.HasValue )
-            {
-                avatarImageUrl = GetChatChannelAvatarImageUrl( avatarImageGuid.Value );
-            }
-
-            return new RockChatGroup
-            {
-                GroupTypeId = group.GroupTypeId,
-                GroupId = group.Id,
-                ChatChannelTypeKey = GetChatChannelTypeKey( group.GroupTypeId ),
-                ChatChannelKey = chatChannelKey,
-                ShouldSaveChatChannelKeyInRock = group.ChatChannelKey != chatChannelKey,
-                Name = group.Name,
-                AvatarImageUrl = avatarImageUrl,
-                CampusId = group.CampusId,
-                IsLeavingAllowed = group.GetIsLeavingChatChannelAllowed(),
-                IsPublic = group.GetIsChatChannelPublic(),
-                IsAlwaysShown = group.GetIsChatChannelAlwaysShown(),
-                IsChatEnabled = group.GetIsChatEnabled(),
-                IsChatChannelActive = group.GetIsChatChannelActive()
-            };
         }
 
         /// <summary>
@@ -3385,6 +3307,78 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
+        /// Gets the complete list of <see cref="RockChatGroup"/>s - lightweight objects which represent all
+        /// <see cref="Group"/>s that correspond to <see cref="ChatChannel"/>s in the external chat system, regardless
+        /// of whether they're currently chat-enabled.
+        /// </summary>
+        /// <returns>
+        /// The complete list of <see cref="RockChatGroup"/>s.
+        /// </returns>
+        /// <remarks>This will include archived, chat-specific <see cref="Group"/>s.</remarks>
+        internal List<RockChatGroup> GetAllRockChatGroups()
+        {
+            var groupQry = new GroupService( RockContext ).GetChatChannelGroupsQuery();
+            return GetRockChatGroups( groupQry );
+        }
+
+        /// <summary>
+        /// Gets <see cref="RockChatGroup"/>s for the provided <see cref="Group"/> Queryable.
+        /// </summary>
+        /// <param name="groupQry">The <see cref="Group"/> Queryable for which to get <see cref="RockChatGroup"/>s.</param>
+        /// <returns>
+        /// A list of <see cref="RockChatGroup"/>s with one entry for each <see cref="Group"/>.
+        /// </returns>
+        internal List<RockChatGroup> GetRockChatGroups( IQueryable<Group> groupQry )
+        {
+            if ( groupQry == null )
+            {
+                return new List<RockChatGroup>();
+            }
+
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Get Rock Chat Groups for Group Queryable" ) )
+            {
+                // Get all groups matching the provided query, along with their chat-specific attributes.
+                var groups = groupQry.AsNoTracking().ToList();
+                groups.LoadFilteredAttributes( a => a.Key == GroupAttributeKey.AvatarImage );
+
+                return groups
+                    .Select( g =>
+                    {
+                        var groupId = g.Id;
+                        var groupTypeId = g.GroupTypeId;
+
+                        var savedChatChannelKey = g.ChatChannelKey;
+                        var runtimeChatChannelKey = GetChatChannelKey( groupId, savedChatChannelKey );
+
+                        var avatarImageUrl = string.Empty;
+                        var avatarImageGuid = g.GetAttributeValue( GroupAttributeKey.AvatarImage ).AsGuidOrNull();
+                        if ( avatarImageGuid.HasValue )
+                        {
+                            avatarImageUrl = $"{PublicApplicationRootUrl}GetImage.ashx?guid={avatarImageGuid.Value}&maxwidth=120&maxheight=120";
+                        }
+
+                        return new RockChatGroup
+                        {
+                            GroupTypeId = groupTypeId,
+                            GroupId = groupId,
+                            ChatChannelTypeKey = GetChatChannelTypeKey( groupTypeId ),
+                            ChatChannelKey = runtimeChatChannelKey,
+                            ShouldSaveChatChannelKeyInRock = savedChatChannelKey != runtimeChatChannelKey,
+                            Name = g.Name,
+                            AvatarImageUrl = avatarImageUrl,
+                            CampusId = g.CampusId,
+                            IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
+                            IsPublic = g.GetIsChatChannelPublic(),
+                            IsAlwaysShown = g.GetIsChatChannelAlwaysShown(),
+                            IsChatEnabled = g.GetIsChatEnabled(),
+                            IsChatChannelActive = g.GetIsChatChannelActive()
+                        };
+                    } )
+                    .ToList();
+            }
+        }
+
+        /// <summary>
         /// Gets <see cref="RockChatGroup"/>s for the provided <see cref="SyncGroupToChatCommand"/>s.
         /// </summary>
         /// <param name="syncCommands">The list of <see cref="SyncGroupToChatCommand"/>s for which to get
@@ -3394,19 +3388,14 @@ namespace Rock.Communication.Chat
         /// </returns>
         private List<RockChatGroup> GetRockChatGroups( List<SyncGroupToChatCommand> syncCommands )
         {
-            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Get Rock Chat Groups" ) )
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Get Rock Chat Groups for Sync Commands" ) )
             {
                 // Get the distinct group IDs represented within the commands, and the corresponding group queryable.
                 var groupIds = syncCommands.Select( c => c.GroupId ).Distinct().ToList();
+
+                // Get all rock chat groups matching the provided commands.
                 var groupQry = GetGroupQuery( groupIds );
-
-                // Get all groups matching the provided commands, along with their chat-specific attributes.
-                var groups = groupQry.ToList();
-                groups.LoadFilteredAttributes( a => a.Key == GroupAttributeKey.AvatarImage );
-
-                var dbRockChatGroups = groups
-                    .Select( g => ConvertGroupToRockChatGroup( g ) )
-                    .ToList();
+                var dbRockChatGroups = GetRockChatGroups( groupQry );
 
                 var rockChatGroups = new List<RockChatGroup>();
 
@@ -3494,6 +3483,28 @@ namespace Rock.Communication.Chat
 
                 return groupQry.Where( g => entitySetItemQry.Contains( g.Id ) );
             }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ChatChannel.QueryableKey"/> for the specified <see cref="Group"/>.
+        /// </summary>
+        /// <param name="groupId">
+        /// The identifier of the <see cref="Group"/> for which to get the <see cref="ChatChannel.QueryableKey"/>.
+        /// </param>
+        /// <returns>
+        /// The <see cref="ChatChannel.QueryableKey"/> or an empty string if unable to determine the key.
+        /// </returns>
+        /// <remarks>
+        /// This is used to determine the key to use when querying for <see cref="ChatChannel"/>s in the external chat system.
+        /// </remarks>
+        internal string GetQueryableChatChannelKey( int groupId )
+        {
+            var groupQry = GetGroupQuery( new List<int> { groupId } );
+            var rockChatGroup = GetRockChatGroups( groupQry ).FirstOrDefault();
+
+            return rockChatGroup != null
+                ? ChatProvider.GetQueryableChatChannelKey( rockChatGroup )
+                : string.Empty;
         }
 
         /// <summary>

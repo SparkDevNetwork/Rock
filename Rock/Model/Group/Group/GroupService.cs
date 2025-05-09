@@ -175,26 +175,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the complete list of <see cref="RockChatGroup"/>s - lightweight objects which represent all
-        /// <see cref="Group"/>s that correspond to <see cref="ChatChannel"/>s in the external chat system, regardless
-        /// of whether they're currently chat-enabled.
-        /// </summary>
-        /// <returns>
-        /// A list of <see cref="RockChatGroup"/>s.
-        /// </returns>
-        /// <remarks>This will include archived, chat-specific <see cref="Group"/>s.</remarks>
-        internal List<RockChatGroup> GetRockChatGroups()
-        {
-            // Get chat groups along with their chat-specific attributes.
-            var groups = GetChatChannelGroupsQuery().ToList();
-            groups.LoadFilteredAttributes( a => a.Key == ChatHelper.GroupAttributeKey.AvatarImage );
-
-            return groups
-                .Select( ChatHelper.ConvertGroupToRockChatGroup )
-                .ToList();
-        }
-
-        /// <summary>
         /// Gets a Queryable of all <see cref="Group"/>s that are currently chat-enabled.
         /// </summary>
         /// <param name="groupTypeId">The optional identifier of the <see cref="GroupType"/> for the <see cref="Group"/>s to query.</param>
