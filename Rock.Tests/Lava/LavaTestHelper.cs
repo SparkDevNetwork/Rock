@@ -364,7 +364,7 @@ namespace Rock.Tests.Lava
                 }
                 catch ( Exception ex )
                 {
-                    Debug.Write( $"**\n** ERROR\n**\n{ex.Message}" );
+                    Debug.Write( $"\n**\n** ERROR\n**\n{ex.Message}" );
 
                     exceptions.Add( new Exception( $"Engine \"{ engine.EngineName }\" reported an error.", ex ) );
                 }

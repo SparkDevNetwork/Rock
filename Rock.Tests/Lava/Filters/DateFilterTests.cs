@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 using Ical.Net;
@@ -65,7 +66,7 @@ namespace Rock.Tests.Lava.Filters
             var today = startDate.Date;
             var nextSaturday = today.GetNextWeekday( DayOfWeek.Saturday );
 
-            var weeklySaturday430 = new Calendar()
+            var weeklySaturday430 = new Ical.Net.Calendar()
             {
                 Events =
                 {
@@ -89,7 +90,7 @@ namespace Rock.Tests.Lava.Filters
         {
             var firstSaturdayOfMonth = startDate.StartOfMonth().GetNextWeekday( DayOfWeek.Saturday );
 
-            var monthlyFirstSaturday = new Calendar()
+            var monthlyFirstSaturday = new Ical.Net.Calendar()
             {
                 Events =
                 {
@@ -174,15 +175,13 @@ namespace Rock.Tests.Lava.Filters
         /// Converts an input value to a date/time value.
         /// </summary>
         [DataTestMethod]
-        [DataRow( "5/1/2018 18:30:00", "01/May/2018 06:30 PM", "en-US" )]
-        public void AsDateTime_UsingInvariantDateFormat_ProducesValidDate( string inputString, string result, string clientCulture )
+        [DataRow( "5/1/2018", "May 1, 2018", "en-US" )]
+        [DataRow( "5/1/2018", "Mai 1, 2018", "de-DE" )] // Note: Mai is May in German
+        public void AsDateTime_DateOnlyUsingInvariantDateFormat_ProducesValidDate( string input, string expectedResult, string clientCulture )
         {
-            var template = "{{ '<inputString>' | AsDateTime }}"
-                .Replace( "<inputString>", inputString );
-
             var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutputDate( result, template );
+                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input + "' | AsDateTime | Date:'MMM d, yyyy' }}" );
                 return null;
             }, clientCulture );
         }
@@ -1849,6 +1848,24 @@ namespace Rock.Tests.Lava.Filters
                 TestHelper.AssertTemplateOutputDate( "1-May-2018 12:00 AM",
                     "{{ '1-May-2018 3:00 PM' | ToMidnight }}" );
             } );
+        }
+
+        /// <summary>
+        /// Converts an input value to a date/time value.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "1-May-2018 3:00 PM", "2018-05-01T00:00", "en-US" )]
+        [DataRow( "1-May-2018 3:00 PM", "2018-05-01T00:00", "de-DE" )]
+        public void ToMidnight_InputDateHasTimeComponent_YieldsMidnight_WithClientCulture( string input, string expectedResult, string clientCulture )
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                LavaTestHelper.ExecuteForTimeZones( tz =>
+                {
+                    TestHelper.AssertTemplateOutputDate( expectedResult, "{{ '" + input + "' | ToMidnight | Date:'yyyy-MM-ddTHH:mm' }}" );
+                } );
+                return null;
+            }, clientCulture );
         }
 
         /// <summary>

@@ -15,10 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Globalization;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava.Fluid;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Lava.Filters
 {
@@ -277,6 +279,26 @@ Guess 3 was 0.5 from the target number!<br>
         }
 
         /// <summary>
+        /// Representations of decimal values should return the correct (invariant) decimal regardless of the culture.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "0.1234", 0.1234, "de-DE" )]
+        [DataRow( "1.1", 1.1, "de-DE" )]
+        [DataRow( "1,234,567.89", 1234567.89, "de-DE" )]
+        [DataRow( "-987.65", -987.65, "de-DE" )]
+        [DataRow( "0", 0, "de-DE" )]
+        public void AsDecimal_InvariantAgainstClientCulture( string input, double expectedResult, string clientCulture )
+        {
+            // Note: We need to set expectedResult to a string using InvariantCulture because the thread where the
+            // assertion is taking place will be using the client culture of the test.
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult.ToString( CultureInfo.InvariantCulture ), "{{ '" + input + "' | AsDecimal }}" );
+                return null;
+            }, clientCulture );
+        }
+
+        /// <summary>
         /// Common text representations of double-precision values should return a double.
         /// </summary>
         [DataTestMethod]
@@ -297,6 +319,26 @@ Guess 3 was 0.5 from the target number!<br>
         public void AsDouble_NonNumericInput_ReturnsEmptyString()
         {
             TestHelper.AssertTemplateOutput( string.Empty, "{{ 'xyzzy' | AsDouble }}" );
+        }
+
+        /// <summary>
+        /// Representations of double-precision values should return the correct (invariant) double regardless of the culture.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "0.1234", 0.1234, "de-DE" )]
+        [DataRow( "1.1", 1.1, "de-DE" )]
+        [DataRow( "1,234,567.89", 1234567.89, "de-DE" )]
+        [DataRow( "-987.65", -987.65, "de-DE" )]
+        [DataRow( "0", 0, "de-DE" )]
+        public void AsDouble_InvariantAgainstClientCulture( string input, double expectedResult, string clientCulture )
+        {
+            // Note: We need to set expectedResult to a string using InvariantCulture because the thread where the
+            // assertion is taking place will be using the client culture of the test.
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult.ToString( CultureInfo.InvariantCulture ), "{{ '" + input + "' | AsDouble }}" );
+                return null;
+            }, clientCulture );
         }
 
         /// <summary>
@@ -321,6 +363,44 @@ Guess 3 was 0.5 from the target number!<br>
         public void AsInteger_NonNumericInput_ReturnsEmptyString()
         {
             TestHelper.AssertTemplateOutput( string.Empty, "{{ 'xyzzy' | AsInteger }}" );
+        }
+
+        /// <summary>
+        /// Representations of integer values should return the correct (invariant) integer regardless of the culture.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "123", 123, "de-DE" )]
+        [DataRow( "-987", -987, "de-DE" )]
+        [DataRow( "0", 0, "de-DE" )]
+        [DataRow( "10.4", 10, "de-DE" )]
+        [DataRow( "1,234,567", 1234567, "de-DE" )]
+        public void AsInteger_InvariantAgainstClientCulture( string input, int expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult.ToString(), "{{ '" + input + "' | AsInteger }}" );
+                return null;
+            }, clientCulture );
+        }
+
+        /// <summary>
+        /// Should divide two strings (containing mixed integers and decimals) and return the correct int or decimal regardless of the culture.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "6", "2", "3", "de-DE" )]
+        [DataRow( "6.0", "2.0", "3", "en-US" )]
+        [DataRow( "6.0", "2.0", "3", "de-DE" )]
+        [DataRow( "6", "2.0", "3", "de-DE" )] 
+        [DataRow( "6", "2.0", "3", "en-US" )]
+        [DataRow( "6.0", "2", "3.0", "de-DE" )] // should preserve the decimal
+        [DataRow( "6.0", "2", "3.0", "en-US" )] // should preserve the decimal
+        public void DividedBy_InvariantAgainstClientCulture( string input1, string input2, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input1 + "' | DividedBy: '" + input2 + "' }}" );
+                return null;
+            }, clientCulture );
         }
 
         /// <summary>
@@ -349,6 +429,23 @@ Guess 3 was 0.5 from the target number!<br>
         }
 
         /// <summary>
+        /// Should subtract two strings (containing mixed integers and decimals) and return the correct int or decimal regardless of the culture.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "3", "2", "1", "de-DE" )]
+        [DataRow( "3.0", "2.0", "1.0", "de-DE" )]
+        [DataRow( "3", "2.0", "1.0", "de-DE" )] // should preserve the decimal
+        [DataRow( "3.0", "2", "1.0", "de-DE" )] // should preserve the decimal
+        public void Minus_InvariantAgainstClientCulture( string input1, string input2, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input1 + "' | Minus: '" + input2 + "' }}" );
+                return null;
+            }, clientCulture );
+        }
+
+        /// <summary>
         /// Valid numeric values should return a numeric result.
         /// </summary>
         [DataTestMethod]
@@ -371,6 +468,23 @@ Guess 3 was 0.5 from the target number!<br>
         {
             // Insert the operands as string values.
             TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input1 + "' | Plus: '" + input2 + "' }}" );
+        }
+
+        /// <summary>
+        /// Should add two strings (containing mixed integers and decimals) and return the correct int or decimal regardless of the culture.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "3", "2", "5", "de-DE" )]
+        [DataRow( "3.0", "2.0", "5.0", "de-DE" )]
+        [DataRow( "3", "2.0", "5.0", "de-DE" )] // should preserve the decimal
+        [DataRow( "3.0", "2", "5.0", "de-DE" )] // should preserve the decimal
+        public void Plus_InvariantAgainstClientCulture( string input1, string input2, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input1 + "' | Plus: '" + input2 + "' }}" );
+                return null;
+            }, clientCulture );
         }
 
         /// <summary>
@@ -406,6 +520,24 @@ Guess 3 was 0.5 from the target number!<br>
         {
             // Insert the operands as string values.
             TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input1 + "' | Times: " + input2 + " }}" );
+        }
+
+        /// <summary>
+        /// Should multiply two strings (containing mixed integers and decimals) and return the correct int or decimal regardless of the culture.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "3", "2", "6", "de-DE" )]
+        [DataRow( "3.0", "2.0", "6.00", "en-US" )] // You might expect this to be 6 or 6.0 but it is 6.00.
+        [DataRow( "3.0", "2.0", "6.00", "de-DE" )] // C# preserves the scale (number of decimals) based on the operands' scales.
+        [DataRow( "3", "2.0", "6.0", "de-DE" )] // should preserve the decimal
+        [DataRow( "3.0", "2", "6.0", "de-DE" )] // should preserve the decimal
+        public void Times_InvariantAgainstClientCulture( string input1, string input2, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input1 + "' | Times: '" + input2 + "' }}" );
+                return null;
+            }, clientCulture );
         }
     }
 

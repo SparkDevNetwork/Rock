@@ -118,14 +118,31 @@ namespace Rock.Tests.Shared
             var tz = GetTestTimeZoneStandard();
             RockDateTime.Initialize( tz );
         }
-
+            
+        /// <summary>
+        /// Executes a method in a new thread with the specified culture.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="methodFunc">The function to execute</param>
+        /// <param name="cultureName">The standard name of the culture (en-US, de-DE, etc.)</param>
+        /// <returns>typically null</returns>
+        /// <exception cref="AggregateException">This will be thrown if the underlying thread execution fails
+        /// (which should happen when a Lava test fails its assertion.</exception>
         public static T ExecuteWithCulture<T>( Func<T> methodFunc, string cultureName )
         {
             T result = default( T );
+            Exception capturedException = null;
 
             var thread = new System.Threading.Thread( () =>
             {
-                result = methodFunc();
+                try
+                {
+                    result = methodFunc();
+                }
+                catch ( Exception ex )
+                {
+                    capturedException = ex;
+                }
             } );
 
             // We MUST preserve the original CurrentCulture otherwise
@@ -141,6 +158,11 @@ namespace Rock.Tests.Shared
             finally
             {
                 thread.CurrentCulture = originalCulture;
+            }
+
+            if ( capturedException != null )
+            {
+                throw new AggregateException( "Exception occurred in culture-scoped thread.", capturedException );
             }
 
             return result;
