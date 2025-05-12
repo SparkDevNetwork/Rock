@@ -20,8 +20,6 @@
                 title="Name"
                 field="name"
                 :filter="textValueFilter"
-                :filterValue="getRowNameFilterValue"
-                :quickFilterValue="getRowNameFilterValue"
                 visiblePriority="xs"
                 width="30%">
             <template #format="{ row }">
@@ -43,16 +41,16 @@
         <TextColumn name="category"
                     title="Category"
                     field="category"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs"
                     width="15%" />
 
         <NumberBadgeColumn name="Usage"
-                title="Usage"
-                :filter="numberValueFilter"
-                visiblePriority="xs"
-                field="blocksCount"
-                width="5%">
+                           title="Usage"
+                           :filter="numberValueFilter"
+                           visiblePriority="xs"
+                           field="blocksCount"
+                           width="5%">
             <template #format="{ row }">
                 <div>
                     <div v-if="row.blocksCount > 1">
@@ -72,8 +70,9 @@
             </template>
         </NumberBadgeColumn>
 
-        <Column name="Status"
+        <Column name="status"
                 title="Status"
+                field="status"
                 :filter="textValueFilter"
                 visiblePriority="xs"
                 width="25%">
@@ -112,12 +111,12 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, Column, NumberBadgeColumn, numberValueFilter, NumberColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, Column, NumberBadgeColumn, numberValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { BlockTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/BlockTypeList/blockTypeListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey, Row } from "./BlockTypeList/types.partial";
+    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./BlockTypeList/types.partial";
     import { computed, ref, watch } from "vue";
     import { GridAction } from "@Obsidian/Types/Controls/grid";
     import GridSettingsModal from "./BlockTypeList/gridSettingsModal.partial.obs";
@@ -135,7 +134,6 @@
     const gridSettings = ref<GridSettingsOptions>({
         name: preferences.getValue(PreferenceKey.FilterName),
         path: preferences.getValue(PreferenceKey.FilterPath),
-        category: preferences.getValue(PreferenceKey.FilterCategory),
         excludeSystemTypes: preferences.getValue(PreferenceKey.FilterSystemTypes) === "true",
         showOnlyObsidian: preferences.getValue(PreferenceKey.FilterObsidianBlocks) === "true",
     });
@@ -161,7 +159,6 @@
     const hasSettingsFilters = computed((): boolean => {
         return !!gridSettings.value.name
             || !!gridSettings.value.path
-            || !!gridSettings.value.category
             || gridSettings.value.excludeSystemTypes
             || gridSettings.value.showOnlyObsidian;
     });
@@ -177,14 +174,12 @@
         // Handle the potential null or undefined values for each setting
         const nameValue = gridSettings.value.name ?? "";
         const pathValue = gridSettings.value.path ?? "";
-        const categoryValue = gridSettings.value.category ?? "";
         const excludeSystemTypesValue = gridSettings.value.excludeSystemTypes ? "true" : "false";
         const showOnlyObsidian = gridSettings.value.showOnlyObsidian ? "true" : "false";
 
         // Set the preferences with the appropriate values
         preferences.setValue(PreferenceKey.FilterName, nameValue);
         preferences.setValue(PreferenceKey.FilterPath, pathValue);
-        preferences.setValue(PreferenceKey.FilterCategory, categoryValue);
         preferences.setValue(PreferenceKey.FilterSystemTypes, excludeSystemTypesValue);
         preferences.setValue(PreferenceKey.FilterObsidianBlocks, showOnlyObsidian);
 
@@ -200,18 +195,6 @@
     // #region Functions
 
     /**
-    * Gets the filter value text to use for the name column.
-     *
-     * @param row The row to be filtered.
-     * @returns The text to use for the filter value.
-     */
-    function getRowNameFilterValue(row: Record<string, unknown>): string {
-        const r = row as Row;
-
-        return `${r.name} ${r.path ?? ""}`;
-    }
-
-    /**
      * Called when the grid is requesting the row data be loaded.
      */
     async function loadGridData(): Promise<GridDataBag> {
@@ -220,7 +203,6 @@
             // Pass in filter settings
             name: gridSettings.value.name,
             path: gridSettings.value.path,
-            category: gridSettings.value.category,
             systemTypes: gridSettings.value.excludeSystemTypes,
             showOnlyObsidian: gridSettings.value.showOnlyObsidian
         });
