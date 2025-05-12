@@ -116,11 +116,13 @@ const ChannelPreviewContent = <
                             </div>
                         </div>
 
-                        {showActions && (
-                            <div className="channel-preview-action-buttons-inline">
-                                <ChannelPreviewActionButtons channel={channel} />
-                            </div>
-                        )}
+                        <div className="channel-preview-actions-wrapper">
+                            {showActions && (
+                                <div className="channel-preview-action-buttons-inline">
+                                    <ChannelPreviewActionButtons channel={channel} />
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </button>
             </div>
