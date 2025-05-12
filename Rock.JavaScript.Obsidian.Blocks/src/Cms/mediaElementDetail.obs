@@ -673,8 +673,7 @@
                     max: maxValue,
                     min: 0,
                     display: false,
-                    suggestedMax: maxValue,
-                    beginAtZero: true
+                    suggestedMax: maxValue
                 },
                 x: {
                     ...watchedChartOptions.value.scales?.x,
