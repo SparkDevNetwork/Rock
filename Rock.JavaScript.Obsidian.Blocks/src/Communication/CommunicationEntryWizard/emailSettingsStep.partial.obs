@@ -72,7 +72,7 @@
                                          help="<span class='tip tip-lava'></span>"
                                          label="Email Subject"
                                          rules="required" />
-                                <ImageUploader v-model="currentAttachment"
+                                <FileUploader v-model="currentAttachment"
                                                :binaryFileTypeGuid="attachmentBinaryFileTypeGuid"
                                                label="Attachments"
                                                :uploadAsTemporary="true"
@@ -144,7 +144,7 @@
     import { nextTick, onMounted, onUnmounted, PropType, ref, watch } from "vue";
     import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
-    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";

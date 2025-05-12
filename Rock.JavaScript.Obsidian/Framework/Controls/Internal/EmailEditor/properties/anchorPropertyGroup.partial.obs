@@ -12,15 +12,23 @@
 
     <div class="row">
         <div class="col-sm-12">
-            <TextBox v-model="href"
-                     label="Link"
-                     @blur="onHrefBlurred">
-                <template #inputGroupPrepend>
-                    <span class="input-group-addon">
-                        <i class="fa fa-link"></i>
-                    </span>
-                </template>
-            </TextBox>
+            <RockForm v-model:submit="submit"
+                      @submit="onFormSubmitted">
+                <EmailBox v-if="linkType === 'email'"
+                          v-model="email"
+                          label="Link"
+                          @blur="onHrefBlurred" />
+
+                <PhoneNumberBox v-if="linkType === 'tel'"
+                                v-model="tel"
+                                label="Link"
+                                @blur="onHrefBlurred" />
+
+                <UrlLinkBox v-if="linkType === 'url'"
+                            v-model="url"
+                            label="Link"
+                            @blur="onHrefBlurred" />
+            </RockForm>
         </div>
     </div>
 </template>
@@ -29,7 +37,10 @@
     import { PropType, ref, watch } from "vue";
     import { get } from "../utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
@@ -58,16 +69,16 @@
 
     // #region Values
 
-    const href = ref<string>(getHrefFromElement(props.element));
-    const linkType = ref<LinkType>(getLinkTypeFromHref(href.value));
+    const submit = ref<boolean>(false);
+    const initialHref = props.element.getAttribute("href") ?? "";
+    const linkType = ref<LinkType>(getLinkTypeFromHref(initialHref));
+    const email = ref<string>(linkType.value === "email" ? initialHref.startsWith("mailto:") ? initialHref.substring(7) : initialHref : "");
+    const tel = ref<string>(linkType.value === "tel" ? initialHref.startsWith("tel:") ? initialHref.substring(4) : initialHref : "");
+    const url = ref<string>(linkType.value === "url" ? initialHref.startsWith("http") ? initialHref : `https://${initialHref}` : "https://");
 
     // #endregion Values
 
     // #region Functions
-
-    function getHrefFromElement(element: HTMLElement): string {
-        return element.getAttribute("href") ?? "";
-    }
 
     function getLinkTypeFromHref(href: string): LinkType {
         if (href.startsWith("mailto:")) {
@@ -81,15 +92,24 @@
         }
     }
 
-    function getHrefProtocolPrefixFromLinkType(linkType: LinkType): string {
-        switch (linkType) {
-            case "email":
-                return "mailto:";
-            case "tel":
-                return "tel:";
-            case "url":
-            default:
-                return "https://";
+    function sanitizePhoneNumber(phone: string): string {
+        return phone.replace(/(?!^\+)[^\d]/g, "");
+    }
+
+    function buildHrefValue(type: LinkType, emailAddress: string, phoneNumber: string, url: string): string {
+        if (type === "email") {
+            return `mailto:${emailAddress}`;
+        }
+        else if (type === "tel") {
+            return `tel:${sanitizePhoneNumber(phoneNumber)}`;
+        }
+        else {
+            if (url.startsWith("http")) {
+                return url;
+            }
+            else {
+                return `https://${url}`;
+            }
         }
     }
 
@@ -98,23 +118,24 @@
     // #region Event Handlers
 
     function onLinkTypeUpdated(): void {
-        // When the link type changes, set the href to the protocol prefix.
-        href.value = getHrefProtocolPrefixFromLinkType(linkType.value);
+        // When the link type changes, clear all fields.
+        email.value = "";
+        tel.value = "";
+        url.value = "https://";
+
+        // Also clear the href attribute on the element.
+        const href = buildHrefValue(linkType.value, email.value, tel.value, url.value);
+        props.element.setAttribute("href", href);
     }
 
     function onHrefBlurred(): void {
-        const expectedProtocolPrefix = getHrefProtocolPrefixFromLinkType(linkType.value);
+        // Trigger the form submission.
+        submit.value = true;
+    }
 
-        if (!href.value) {
-            href.value = expectedProtocolPrefix;
-        }
-        else if (!href.value.startsWith(expectedProtocolPrefix)) {
-            // Prepend the protocol if it is missing.
-            href.value = `${expectedProtocolPrefix}${href.value}`;
-        }
-
-        // Update the element href attribute.
-        props.element.setAttribute("href", href.value);
+    function onFormSubmitted(): void {
+        const href = buildHrefValue(linkType.value, email.value, tel.value, url.value);
+        props.element.setAttribute("href", href);
     }
 
     // #endregion Event Handlers
@@ -122,8 +143,11 @@
     // #region Watchers
 
     watch(() => props.element, () => {
-        linkType.value = getLinkTypeFromHref(props.element.getAttribute("href") ?? "");
-        href.value = props.element.getAttribute("href") || getHrefProtocolPrefixFromLinkType(linkType.value);
+        const href = props.element.getAttribute("href") ?? "";
+        linkType.value = getLinkTypeFromHref(href);
+        email.value = linkType.value === "email" ? href.startsWith("mailto:") ? href.substring(7) : href : "";
+        tel.value = linkType.value === "tel" ? href.startsWith("tel:") ? href.substring(4) : href : "";
+        url.value = linkType.value === "url" ? href.startsWith("http") ? href : `https://${href}` : "https://";
     });
 
     // #endregion

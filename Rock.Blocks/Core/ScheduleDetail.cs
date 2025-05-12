@@ -388,6 +388,7 @@ namespace Rock.Blocks.Core
                 // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
                 var qryParams = new Dictionary<string, string>();
                 qryParams["CategoryId"] = parentCategoryId.ToString();
+                qryParams["ScheduleId"] = null;
                 return this.GetCurrentPageUrl( qryParams );
             }
             else

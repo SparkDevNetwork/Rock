@@ -1055,6 +1055,11 @@ namespace Rock.Mobile
         /// </returns>
         public static string GetEditAttributesXaml( IHasAttributes entity, List<AttributeCache> attributes = null, Dictionary<string, string> postbackParameters = null, bool includeHeader = true, Person person = null )
         {
+            if ( entity == null )
+            {
+                return string.Empty;
+            }
+
             if ( entity.Attributes == null )
             {
                 entity.LoadAttributes();

@@ -183,6 +183,7 @@
     <Compile Include="Controllers\CodeGenerated\ContentTopicsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\EmailSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\EntityIntentsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\HistoryLoginsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractionSessionLocationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractiveExperienceActionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractiveExperienceAnswersController.CodeGenerated.cs" />

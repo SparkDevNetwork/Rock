@@ -613,10 +613,6 @@ const detailBlockGallery = defineComponent({
                 }
             ],
             simulateHelp: computed((): boolean => simulateValues.value.includes("helpContent")),
-            delayedHandler: async () => {
-                await sleep(1000);
-                return true;
-            },
             importCode: getTemplateImportPath("detailBlock"),
             exampleCode: `<DetailBlock name="Sample Entity" :entityTypeGuid="entityTypeGuid" entityTypeName="Entity Type" entityKey="57dc00a3-ff88-4d4c-9878-30ae309117e2" />`
         };
@@ -640,10 +636,7 @@ const detailBlockGallery = defineComponent({
         :isFollowVisible="isFollowVisible"
         :isBadgesVisible="isBadgesVisible"
         :isSecurityHidden="isSecurityHidden"
-        :isTagsVisible="isTagsVisible"
-        @save="delayedHandler"
-        @edit="delayedHandler"
-        @delete="delayedHandler">
+        :isTagsVisible="isTagsVisible">
         <template v-if="simulateHelp" #helpContent>
             This is some help text.
         </template>

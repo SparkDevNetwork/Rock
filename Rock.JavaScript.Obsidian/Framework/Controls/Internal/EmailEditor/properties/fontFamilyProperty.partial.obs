@@ -48,31 +48,31 @@
     const fontFamilies: ListItemBag[] = [
         {
             text: "Arial",
-            value: "Arial"
+            value: "Arial, Helvetica, sans-serif"
         }, {
             text: "Courier New",
-            value: '"Courier New"'
+            value: '"Courier New", Courier, monospace'
         }, {
             text: "Georgia",
-            value: "Georgia"
+            value: "Georgia, serif"
         }, {
             text: "Tahoma",
-            value: "Tahoma"
+            value: "Tahoma, Geneva, sans-serif"
         }, {
             text: "Times New Roman",
-            value: '"Times New Roman"'
+            value: '"Times New Roman", Times, serif'
         }, {
             text: "Trebuchet MS",
-            value: '"Trebuchet MS"'
+            value: '"Trebuchet MS", Helvetica, sans-serif'
         }, {
-            text: "Verana",
-            value: "Verana"
+            text: "Verdana",
+            value: "Verdana, Geneva, sans-serif"
         }, {
             text: "Lucida",
-            value: "Lucida"
+            value: '"Lucida Sans Unicode", "Lucida Grande", sans-serif'
         }, {
             text: "Helvetica Neue",
-            value: '"Helvetica Neue"'
+            value: '"Helvetica Neue", Helvetica, Arial, sans-serif'
         }
     ];
 

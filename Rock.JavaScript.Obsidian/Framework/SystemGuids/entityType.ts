@@ -357,6 +357,8 @@ export const EntityType = {
     GroupTypeRole: "D155C373-9E47-4C6A-BADD-792F31AF5FBA",
     /** The guid for the Rock.Model.History entity. */
     History: "546D5F43-1184-47C9-8265-2D7BF4E1BCA5",
+    /** The guid for the Rock.Model.HistoryLogin entity. */
+    HistoryLogin: "B0C039E1-D2B0-460A-A787-83565BCB665C",
     /** The EntityType Guid for Rock.Model.HtmlContent  */
     HtmlContent: "FB30EC4C-7DCC-41A4-94AB-E728A8CE537B",
     /** The HTTP module component */

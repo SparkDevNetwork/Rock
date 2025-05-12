@@ -88,6 +88,7 @@
                              :recipientPersonIds="emailRecipients.map(e => e.personId)"
                              :recipientsLabel="emailRecipientsLabel"
                              :shortLinkCheckToken="onShortLinkCheckToken"
+                             :shortLinkGetPageId="onShortLinkGetPageId"
                              :shortLinkSites="config.shortLinkSites"
                              :shortLinkTokenMinLength="config.minimumShortLinkTokenLength"
                              :title="step"
@@ -110,6 +111,7 @@
                            :nextStepTitle="nextStep"
                            :recipientsLabel="smsRecipientsLabel"
                            :shortLinkCheckToken="onShortLinkCheckToken"
+                           :shortLinkGetPageId="onShortLinkGetPageId"
                            :shortLinkSites="config.shortLinkSites"
                            :shortLinkTokenMinLength="config.minimumShortLinkTokenLength"
                            :smsAcceptedMimeTypes="config.smsAcceptedMimeTypes"
@@ -152,6 +154,8 @@
                               :communicationType="communicationType"
                               :emailAttachmentNames="emailAttachmentNames"
                               :emailTo="emailTo"
+                              :fromAddress="fromEmail"
+                              :fromName="fromName"
                               :futureSendDateTime="futureSendDateTime"
                               :isBulkCommunication="isBulkCommunication"
                               :message="message"
@@ -822,6 +826,17 @@
         }
     }
 
+    async function onShortLinkGetPageId(pageGuid: Guid): Promise<number | null | undefined> {
+        const result = await invokeBlockAction.getShortLinkPageId(pageGuid);
+
+        if (result.isSuccess) {
+            return result.data;
+        }
+        else {
+            return null;
+        }
+    }
+
     async function onOverwriteExistingCommunicationTemplate(bag: CommunicationEntryWizardCommunicationTemplateDetailBag, blockActionCallbacks: BlockActionCallbacks): Promise<void> {
         const result = await invokeBlockAction.saveCommunicationTemplate(bag);
 
@@ -943,8 +958,9 @@
             callbacks.onSuccess();
         }
         else {
-            console.error(result?.errorMessage ?? "The test communication failed to send.");
-            callbacks.onError();
+            const errorMessage = result?.errorMessage ?? "The test communication failed to send.";
+            console.error(errorMessage);
+            callbacks.onError(errorMessage);
         }
     }
 

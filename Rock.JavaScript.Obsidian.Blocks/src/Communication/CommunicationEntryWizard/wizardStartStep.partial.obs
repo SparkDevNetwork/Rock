@@ -79,7 +79,7 @@
                                                               @update:modelValue="onListGroupGuidUpdated" />
                                             </div>
                                             <div class="form-group">
-                                                <RockLabel v-if="breakpointHelper.isSmOrLarger">&nbsp;</RockLabel>
+                                                <RockLabel>&nbsp;</RockLabel>
                                                 <div class="control-wrapper">
                                                     <RockButton btnSize="sm"
                                                                 :disabled="isFetchingRecipients"

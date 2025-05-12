@@ -59,10 +59,5 @@ namespace Rock.ViewModels.Rest.Controls
         /// </summary>
         /// <value>The security grant token.</value>
         public string SecurityGrantToken { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether integer identifiers should be used in the results.
-        /// </summary>
-        public bool UseIntegerIds { get; set; }
     }
 }

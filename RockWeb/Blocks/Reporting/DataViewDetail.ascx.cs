@@ -490,7 +490,7 @@ $(document).ready(function() {
                     qryParams[PageParameterKey.CategoryId] = parentCategoryId.ToString();
                     qryParams[PageParameterKey.DataViewId] = null;
                     qryParams[PageParameterKey.ParentCategoryId] = null;
-                    NavigateToCurrentPageReference( qryParams );
+                    NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
                 {
@@ -555,7 +555,7 @@ $(document).ready(function() {
 
                 qryParams[PageParameterKey.DataViewId] = null;
                 qryParams[PageParameterKey.ParentCategoryId] = null;
-                NavigateToCurrentPageReference( qryParams );
+                NavigateToPage( RockPage.Guid, qryParams );
             }
         }
 

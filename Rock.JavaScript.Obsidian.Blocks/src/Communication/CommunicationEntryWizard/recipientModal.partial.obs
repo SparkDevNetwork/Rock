@@ -415,7 +415,11 @@
     }
 
     function onSaveClicked(): void {
-        internalRecipients.value = pendingItems.value;
+        // Only update the recipients if this is a manual communication list.
+        if (isManualCommunicationList.value) {
+            internalRecipients.value = pendingItems.value;
+        }
+
         internalIsOpen.value = false;
         clear();
     }

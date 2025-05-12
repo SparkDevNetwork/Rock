@@ -52,6 +52,8 @@ namespace Rock.Model
         public bool CanDelete( UserLogin item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            // ignoring HistoryLogin,UserLoginId
             return true;
         }
     }

@@ -12,7 +12,8 @@
                         <GroupPicker v-model="selectedGroupListItemBag"
                                      :autoExpand="true"
                                      label="RSVP Group"
-                                     :limitToRSVPEnabled="true" />
+                                     :limitToRSVPEnabled="true"
+                                     @update:modelValue="areRsvpRecipientsRegistered = false" />
                     </div>
                 </div>
 
@@ -21,7 +22,8 @@
                         <div class="col-sm-12">
                             <DropDownList v-model="selectedFutureOccurrenceDataOrEmptyString"
                                           label="Occurrence"
-                                          :items="occurrenceItems" />
+                                          :items="occurrenceItems"
+                                          @update:modelValue="areRsvpRecipientsRegistered = false" />
                         </div>
                     </div>
                 </TransitionVerticalCollapse>
@@ -31,7 +33,7 @@
                         <div class="row">
                             <div class="col-sm-12">
                                 <RockButton btnSize="xs"
-                                            :disabled="areRsvpRecipientsRegistering || areRsvpRecipientsRegistered"
+                                            :disabled="isCreatingOccurrence || areRsvpRecipientsRegistering || areRsvpRecipientsRegistered"
                                             @click="onRegisterRecipientsClicked">
                                     <i class="fa fa-user-check"></i> {{ areRsvpRecipientsRegistering ? 'Registering...' : areRsvpRecipientsRegistered ? 'Recipients Registered!' : 'Register Recipients' }}
                                 </RockButton>
@@ -311,6 +313,7 @@
 
     const areRsvpRecipientsRegistering = ref<boolean>(false);
     const areRsvpRecipientsRegistered = ref<boolean>(false);
+    const isCreatingOccurrence = ref<boolean>(false);
 
     const occurrenceItems = ref<ListItemBag[] | undefined>();
 
@@ -395,7 +398,7 @@
         return element;
     }
 
-    function getOrCreateHiddenOccurrenceIdElement(): HTMLInputElement {
+    function getOrCreateHiddenOccurrenceValueElement(): HTMLInputElement {
         let element: HTMLInputElement | null = props.componentElement.querySelector(`input[type="hidden"].rsvp-occurrence-value`) as HTMLInputElement;
 
         if (!element) {
@@ -445,7 +448,8 @@
     async function onRegisterRecipientsClicked(): Promise<void> {
         areRsvpRecipientsRegistering.value = true;
         try {
-            const data = parseFutureOccurrenceData(selectedFutureOccurrenceDataOrEmptyString.value);
+            const occurrenceValueEl = getOrCreateHiddenOccurrenceValueElement();
+            const data = parseFutureOccurrenceData(occurrenceValueEl.value);
 
             if (!data.occurrenceId) {
                 console.error("An occurrence needs to be selected before registering recipients.");
@@ -513,28 +517,33 @@
         }
     });
 
-    watch(selectedFutureOccurrenceDataOrEmptyString, async () => {
-        let serializedOccurrence = selectedFutureOccurrenceDataOrEmptyString.value;
+    watch(selectedFutureOccurrenceDataOrEmptyString, async (serializedOccurrence) => {
         const data = parseFutureOccurrenceData(serializedOccurrence);
 
         if (data.occurrenceId === 0 && !isNullish(data.groupId)) {
-            // Create new occurrence.
-            const result = await createAttendanceOccurrence({
-                groupId: data.groupId,
-                locationId: data.locationId,
-                occurrenceDate: data.occurrenceDate,
-                scheduleId: data.scheduleId
-            });
+            isCreatingOccurrence.value = true;
+            try {
+                // Create new occurrence.
+                const result = await createAttendanceOccurrence({
+                    groupId: data.groupId,
+                    locationId: data.locationId,
+                    occurrenceDate: data.occurrenceDate,
+                    scheduleId: data.scheduleId
+                });
 
-            if (result?.isSuccess && result.data) {
-                serializedOccurrence = serializeAttendanceOccurrence(result.data);
+                if (result?.isSuccess && result.data) {
+                    serializedOccurrence = serializeAttendanceOccurrence(result.data);
+                }
+                else {
+                    console.error(result?.errorMessage ?? "An error occurred while creating the attendance occurrence.");
+                }
             }
-            else {
-                console.error(result?.errorMessage ?? "An error occurred while creating the attendance occurrence.");
+            finally {
+                isCreatingOccurrence.value = false;
             }
         }
 
-        getOrCreateHiddenOccurrenceIdElement().value = serializedOccurrence;
+        getOrCreateHiddenOccurrenceValueElement().value = serializedOccurrence;
         updateRsvpHrefs();
     });
 
@@ -544,7 +553,7 @@
 
     watch(() => props.componentElement, () => {
         const groupIdEl = getOrCreateHiddenGroupIdElement();
-        const occurrenceIdEl = getOrCreateHiddenOccurrenceIdElement();
+        const occurrenceIdEl = getOrCreateHiddenOccurrenceValueElement();
         selectedGroupListItemBag.value = toListItemBagOrNull(toGuidOrNull(groupIdEl.value));
         selectedFutureOccurrenceDataOrEmptyString.value = occurrenceIdEl.value;
 
@@ -567,7 +576,7 @@
 
     onMounted(async () => {
         const groupIdEl = getOrCreateHiddenGroupIdElement();
-        const occurrenceIdEl = getOrCreateHiddenOccurrenceIdElement();
+        const occurrenceValueEl = getOrCreateHiddenOccurrenceValueElement();
         const groupGuid = toGuidOrNull(groupIdEl.value);
         const groupListItemBag = toListItemBagOrNull(groupGuid);
 
@@ -584,7 +593,7 @@
             }
 
             selectedGroupListItemBag.value = groupListItemBag;
-            selectedFutureOccurrenceDataOrEmptyString.value = occurrenceIdEl.value;
+            selectedFutureOccurrenceDataOrEmptyString.value = occurrenceValueEl.value;
 
             updateRsvpHrefs();
         }

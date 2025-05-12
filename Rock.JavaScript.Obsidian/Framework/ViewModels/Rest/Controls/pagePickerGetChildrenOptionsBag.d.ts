@@ -54,7 +54,4 @@ export type PagePickerGetChildrenOptionsBag = {
 
     /** Gets or sets the site type to filter results by. */
     siteType?: number | null;
-
-    /** Gets or sets a value indicating whether integer identifiers should be used in the results. */
-    useIntegerIds: boolean;
 };
