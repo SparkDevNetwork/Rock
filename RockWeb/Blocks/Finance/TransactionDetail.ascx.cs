@@ -1330,7 +1330,7 @@ namespace RockWeb.Blocks.Finance
                 GetForeignCurrencyFields( txn );
                 gpPaymentGateway.Visible = true;
 
-                if ( txn.Batch != null && txn.Batch.Status == BatchStatus.Closed )
+                if ( txn.Batch != null && ( txn.Batch.Status == BatchStatus.Closed || txn.Batch.IsAutomated ) )
                 {
                     batchEditAllowed = false;
                 }
@@ -1346,7 +1346,7 @@ namespace RockWeb.Blocks.Finance
 
             lbEdit.Visible = editAllowed && batchEditAllowed;
             lbRefund.Visible = refundAllowed && txn.RefundDetails == null;
-            lbAddTransaction.Visible = editAllowed && batch != null && batch.Status != BatchStatus.Closed;
+            lbAddTransaction.Visible = editAllowed && batch != null && batch.Status != BatchStatus.Closed && !batch.IsAutomated;
 
             if ( !editAllowed )
             {
@@ -1358,7 +1358,7 @@ namespace RockWeb.Blocks.Finance
                 if ( !batchEditAllowed )
                 {
                     readOnly = true;
-                    nbEditModeMessage.Text = string.Format( "<strong>Note</strong> Because this {0} belongs to a batch that is closed, editing is not enabled.", FinancialTransaction.FriendlyTypeName );
+                    nbEditModeMessage.Text = string.Format( "<strong>Note</strong> Because this {0} belongs to a batch that is either automated or is closed, so editing is not enabled.", FinancialTransaction.FriendlyTypeName );
                 }
             }
 

@@ -2176,7 +2176,8 @@ namespace RockWeb.Blocks.Connection
             // Request attributes
             var request = GetConnectionRequest() ?? new ConnectionRequest
             {
-                ConnectionOpportunityId = ConnectionOpportunityId.Value
+                ConnectionOpportunityId = ConnectionOpportunityId.Value,
+                ConnectionTypeId = new ConnectionOpportunityService( new RockContext() ).Get( ConnectionOpportunityId.Value ).ConnectionTypeId
             };
 
             request.LoadAttributes();
@@ -2523,7 +2524,19 @@ namespace RockWeb.Blocks.Connection
             var lGroupName = e.Row.FindControl( "lGroupName" ) as Literal;
             if ( lGroupName != null )
             {
-                lGroupName.Text = connectionRequestViewModel.GroupNameWithRoleAndStatus;
+                if ( connectionRequestViewModel.PlacementGroupRoleId.HasValue )
+                {
+                    var role = GroupTypeRoleCache.Get( connectionRequestViewModel.PlacementGroupRoleId.Value )?.Name;
+                    var statusName = connectionRequestViewModel.PlacementGroupMemberStatus.ConvertToStringSafe();
+                    if ( !string.IsNullOrWhiteSpace( role ) || !string.IsNullOrWhiteSpace( statusName ) )
+                    {
+                        lGroupName.Text = string.Format( "{0} ({1} {2})", connectionRequestViewModel.GroupName, statusName, role );
+                    }
+                }
+                else
+                {
+                    lGroupName.Text = connectionRequestViewModel.GroupNameWithRoleAndStatus;
+                }
             }
 
             var lConnectorPersonFullname = e.Row.FindControl( "lConnectorPersonFullname" ) as Literal;
@@ -2922,7 +2935,7 @@ namespace RockWeb.Blocks.Connection
             }
 
             activity.ConnectionRequestId = ConnectionRequestId.Value;
-            activity.ConnectorPersonAliasId = ddlRequestModalViewModeAddActivityModeConnector.SelectedValue.AsIntegerOrNull();
+            activity.ConnectorPersonAliasId = ddlRequestModalViewModeAddActivityModeConnector.SelectedValueAsId();
             activity.Note = tbRequestModalViewModeAddActivityModeNote.Text;
             activity.ConnectionActivityTypeId = ddlRequestModalViewModeAddActivityModeType.SelectedValue.AsInteger();
             activity.ConnectionOpportunityId = ConnectionOpportunityId;
@@ -3143,6 +3156,7 @@ namespace RockWeb.Blocks.Connection
                         var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( newOpportunityId.Value );
 
                         connectionRequest.ConnectionOpportunityId = newOpportunityId.Value;
+                        connectionRequest.ConnectionTypeId = newOpportunity.ConnectionTypeId;
                         if ( newOpportunity.ShowStatusOnTransfer && ddlRequestModalViewModeTransferModeStatus.Visible )
                         {
                             var newStatusId = ddlRequestModalViewModeTransferModeStatus.SelectedValueAsId();
@@ -6266,8 +6280,9 @@ namespace RockWeb.Blocks.Connection
             {
                 var rockContext = new RockContext();
                 int entityTypeId = new ConnectionRequest().TypeId;
-                string groupQualifier = _connectionOpportunity.Id.ToString();
-                foreach ( var attribute in new AttributeService( rockContext ).GetByEntityTypeQualifier( entityTypeId, "ConnectionOpportunityId", groupQualifier, true )
+                string opportunityIdQualifier = _connectionOpportunity.Id.ToString();
+                var typeIdQualifier = _connectionOpportunity.ConnectionTypeId.ToString();
+                foreach ( var attribute in new AttributeService( rockContext ).GetByEntityTypeQualifier( entityTypeId, "ConnectionOpportunityId", opportunityIdQualifier, true )
                     .Where( a => a.IsGridColumn )
                     .OrderByDescending( a => a.EntityTypeQualifierColumn )
                     .ThenBy( a => a.Order )
@@ -6279,11 +6294,15 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
-                foreach ( var inheritedGridColumnAttribute in ( new ConnectionRequest() { ConnectionOpportunityId = _connectionOpportunity.Id } ).GetInheritedAttributes( rockContext ).Where( a => a.IsGridColumn == true && a.IsActive == true ).ToList() )
+                foreach ( var attribute in new AttributeService( rockContext ).GetByEntityTypeQualifier( entityTypeId, "ConnectionTypeId", typeIdQualifier, false )
+                    .Where( a => a.IsGridColumn )
+                    .OrderByDescending( a => a.EntityTypeQualifierColumn )
+                    .ThenBy( a => a.Order )
+                    .ThenBy( a => a.Name ).ToAttributeCacheList() )
                 {
-                    if ( inheritedGridColumnAttribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
-                        AvailableAttributes.Add( inheritedGridColumnAttribute );
+                        AvailableAttributes.Add( attribute );
                     }
                 }
             }

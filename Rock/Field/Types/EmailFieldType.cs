@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// Field used to save and display an email address
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M13.25,2.75H2.75A1.75,1.75,0,0,0,1,4.5v7a1.75,1.75,0,0,0,1.75,1.75h10.5A1.75,1.75,0,0,0,15,11.5v-7A1.75,1.75,0,0,0,13.25,2.75ZM2.75,4.06h10.5a.44.44,0,0,1,.44.44v.61L9.13,8.88a1.8,1.8,0,0,1-2.26,0L2.31,5.11V4.5A.44.44,0,0,1,2.75,4.06Zm10.5,7.88H2.75a.44.44,0,0,1-.44-.44V6.82L6,9.92a3.14,3.14,0,0,0,2,.7,3.07,3.07,0,0,0,2-.71l3.72-3.09V11.5A.44.44,0,0,1,13.25,11.94Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.EMAIL )]

@@ -70,7 +70,7 @@ export const EditComponent = defineComponent({
         };
     },
     template: `
-<SlidingDateRangePicker v-model="internalValue" label="Sliding Date Range" :enabledTimeUnits="enabledSlidingDateRangeUnits" :enabledSlidingDateRangeUnits="enabledSlidingDateRangeTypes" previewLocation="Right" />
+<SlidingDateRangePicker v-model="internalValue" label="Sliding Date Range" :enabledTimeUnits="enabledSlidingDateRangeUnits" :enabledSlidingDateRangeUnits="enabledSlidingDateRangeTypes" previewLocation="Top" />
 `
 });
 

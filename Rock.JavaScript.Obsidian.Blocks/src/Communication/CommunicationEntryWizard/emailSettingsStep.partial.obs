@@ -1,0 +1,359 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="emailSettingsStepElement"
+         class="email-settings-step">
+        <Panel :hasFullscreen="true"
+               panelBodyCssClass="panel-body-wizard"
+               :title="title"
+               type="block">
+            <template #default>
+                <div class="panel-body-contents">
+                    <RockForm :id="formId" @submit="onFormSubmitted">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <TextBox v-model="internalFromName"
+                                         help="<span class='tip tip-lava'></span>"
+                                         label="From Name"
+                                         rules="required" />
+                            </div>
+
+                            <div class="col-sm-6">
+                                <EmailBox v-model="internalFromEmail"
+                                          :allowLava="true"
+                                          help="<span class='tip tip-lava'></span>"
+                                          label="From Address"
+                                          rules="required" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <a class="show-options-button"
+                               role="button"
+                               @click="areMoreOptionsShown = !areMoreOptionsShown">
+                                <span class="text-primary">Show {{ areMoreOptionsShown ? 'Less' : 'More' }} Options</span> <i :class="{ 'text-color': true, 'fa fa-chevron-up': areMoreOptionsShown, 'fa fa-chevron-down': !areMoreOptionsShown }"></i>
+                            </a>
+                        </div>
+
+                        <TransitionVerticalCollapse>
+                            <ConditionalWell v-if="areMoreOptionsShown">
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <EmailBox v-model="internalReplyToEmail"
+                                                  :allowLava="true"
+                                                  help="<span class='tip tip-lava'>"
+                                                  label="Reply To Address" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <EmailBox v-model="internalCcEmails"
+                                                  :allowLava="true"
+                                                  :allowMultiple="true"
+                                                  help="Comma-delimited list of email addresses that will be copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>"
+                                                  label="CC List" />
+                                    </div>
+
+                                    <div class="col-sm-4">
+                                        <EmailBox v-model="internalBccEmails"
+                                                  :allowLava="true"
+                                                  :allowMultiple="true"
+                                                  help="Comma-delimited list of email addresses that will be blind copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>"
+                                                  label="BCC List" />
+                                    </div>
+                                </div>
+                                <p class="text-muted note">Note: Because Rock personalizes emails, CC and BCC recipients will receive one email per recipient.</p>
+                            </ConditionalWell>
+                        </TransitionVerticalCollapse>
+
+                        <div class="row">
+                            <div class="col-sm-5">
+                                <TextBox v-model="internalSubject"
+                                         help="<span class='tip tip-lava'></span>"
+                                         label="Email Subject"
+                                         rules="required" />
+                                <FileUploader v-model="currentAttachment"
+                                               :binaryFileTypeGuid="attachmentBinaryFileTypeGuid"
+                                               label="Attachments"
+                                               :uploadAsTemporary="true"
+                                               @update:modelValue="onAttachmentAdded" />
+
+                                <div class="attachment">
+                                    <ul class="attachment-content">
+                                        <li v-for="binaryFileAttachment in internalEmailAttachmentBinaryFiles">
+                                            <a :href="`/GetFile.ashx?guid=${binaryFileAttachment.value}&fileName=${binaryFileAttachment.text}`" target="_blank" rel="noopener noreferrer">{{ binaryFileAttachment.text }}</a> <a><i class="fa fa-times" @click="onAttachmentRemoved(binaryFileAttachment)"></i></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-7">
+                                <TextBox v-if="emailPreviewElement"
+                                         v-model="emailPreviewText"
+                                         help="A short summary of the email which will show in the inbox before the email is opened."
+                                         label="Email Preview"
+                                         textMode="multiline" />
+                            </div>
+
+                            <div class="col-sm-5">
+                            </div>
+                        </div>
+                    </RockForm>
+                </div>
+            </template>
+
+            <template #footerActions>
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowLeft'"
+                            @click="onPreviousClicked">Previous</RockButton>
+            </template>
+
+            <template #footerSecondaryActions>
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowRight'"
+                            btnType="primary"
+                            :form="formId"
+                            type="submit">{{ nextStepTitle ? `Next: ${nextStepTitle}` : 'Next' }}</RockButton>
+            </template>
+        </Panel>
+    </div>
+</template>
+
+<style scoped>
+:deep(.panel-body-wizard) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-body-contents {
+    flex: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.show-options-button {
+    font-size: var(--font-size-small);
+}
+
+.note {
+    font-size: var(--font-size-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { nextTick, onMounted, onUnmounted, PropType, ref, watch } from "vue";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { vShortcut } from "@Obsidian/Directives/shortcut";
+    import { Guid } from "@Obsidian/Types";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { isHTMLElement } from "@Obsidian/Utility/dom";
+
+    const props = defineProps({
+        areNavigationShortcutsDisabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        attachmentBinaryFileTypeGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        bccEmails: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        ccEmails: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        emailAttachmentBinaryFiles: {
+            type: Object as PropType<ListItemBag[] | null | undefined>,
+            required: true
+        },
+
+        fromEmail: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        fromName: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        message: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        nextStepTitle: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        replyToEmail: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        subject: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "nextStep"): void;
+        (e: "previousStep"): void;
+        (e: "update:bccEmails", value: string): void;
+        (e: "update:ccEmails", value: string): void;
+        (e: "update:emailAttachmentBinaryFiles", value: ListItemBag[] | null | undefined): void;
+        (e: "update:fromEmail", value: string): void;
+        (e: "update:fromName", value: string): void;
+        (e: "update:message", value: string): void;
+        (e: "update:replyToEmail", value: string): void;
+        (e: "update:subject", value: string): void;
+    }>();
+
+    const formId = `email-settings-step-form-${newGuid()}`;
+
+    // #region Values
+
+    // UI data.
+    const emailSettingsStepElement = ref<HTMLElement | undefined>();
+    // Set to null to clear the attachment uploader.
+    const currentAttachment = ref<ListItemBag | null | undefined>();
+    const areMoreOptionsShown = ref<boolean>(!!props.replyToEmail || !!props.ccEmails || !!props.bccEmails);
+    const messageIFrameElement = ref<HTMLIFrameElement>(document.createElement("iframe"));
+    const emailPreviewElement = ref<HTMLElement | null | undefined>();
+    const emailPreviewText = ref<string>("");
+
+    // Communication data.
+    const internalBccEmails = useVModelPassthrough(props, "bccEmails", emit);
+    const internalCcEmails = useVModelPassthrough(props, "ccEmails", emit);
+    const internalEmailAttachmentBinaryFiles = useVModelPassthrough(props, "emailAttachmentBinaryFiles", emit);
+    const internalFromEmail = useVModelPassthrough(props, "fromEmail", emit);
+    const internalFromName = useVModelPassthrough(props, "fromName", emit);
+    const internalMessage = useVModelPassthrough(props, "message", emit);
+    const internalReplyToEmail = useVModelPassthrough(props, "replyToEmail", emit);
+    const internalSubject = useVModelPassthrough(props, "subject", emit);
+
+    // #endregion Values
+
+    // #region Functions
+
+    function processMessage(): void {
+        // Check if preview is supported.
+        messageIFrameElement.value.addEventListener("load", () => {
+            const previewElement = messageIFrameElement.value.contentDocument?.querySelector("#preheader-text");
+            if (isHTMLElement(previewElement)) {
+                emailPreviewElement.value = previewElement;
+                emailPreviewText.value = emailPreviewElement.value.innerText;
+            }
+            else {
+                emailPreviewElement.value = null;
+                emailPreviewText.value = "";
+            }
+        }, {
+            once: true
+        });
+
+        messageIFrameElement.value.srcdoc = internalMessage.value;
+        const previewElement = messageIFrameElement.value.contentDocument?.querySelector("#preheader-text");
+        if (isHTMLElement(previewElement)) {
+            emailPreviewElement.value = previewElement;
+            emailPreviewText.value = emailPreviewElement.value.innerText;
+        }
+        else {
+            emailPreviewElement.value = null;
+            emailPreviewText.value = "";
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onPreviousClicked(): void {
+        emit("previousStep");
+    }
+
+    async function onFormSubmitted(): Promise<void> {
+        if (messageIFrameElement.value?.contentDocument && emailPreviewElement.value && emailPreviewText.value) {
+            // Reprocess the HTML to include the preview text.
+            emailPreviewElement.value.innerText = emailPreviewText.value;
+            emit("update:message", messageIFrameElement.value.contentDocument.documentElement.outerHTML);
+
+            // Give the email wizard time to update the message before moving to the next step.
+            await nextTick();
+        }
+
+        emit("nextStep");
+    }
+
+    function onAttachmentAdded(attachment: ListItemBag | null | undefined): void {
+        if (isNullish(attachment)) {
+            return;
+        }
+
+        internalEmailAttachmentBinaryFiles.value = [
+            ...internalEmailAttachmentBinaryFiles.value ?? [],
+            attachment
+        ];
+
+        // Clear the attachment uploader.
+        currentAttachment.value = null;
+    }
+
+    function onAttachmentRemoved(attachment: ListItemBag | null | undefined): void {
+        if (isNullish(attachment)) {
+            return;
+        }
+
+        internalEmailAttachmentBinaryFiles.value = internalEmailAttachmentBinaryFiles.value
+            ?.filter(a => attachment !== a);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(internalMessage, () => {
+        processMessage();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onMounted(() => {
+        messageIFrameElement.value.style.display = "none";
+        document.body.append(messageIFrameElement.value);
+
+        processMessage();
+    });
+
+    onUnmounted(() => {
+        messageIFrameElement.value.remove();
+    });
+
+    // #endregion Hooks
+</script>

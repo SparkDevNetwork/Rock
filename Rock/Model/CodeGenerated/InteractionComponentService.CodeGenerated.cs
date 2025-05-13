@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,24 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( InteractionComponent.InteractionComponentQueryableAttributeValue ), nameof( InteractionComponentAttributeValues ) )]
+    public partial class InteractionComponent
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<InteractionComponentQueryableAttributeValue> InteractionComponentAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class InteractionComponentQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -114,9 +133,6 @@ namespace Rock.Model
             target.ChannelCustom1 = source.ChannelCustom1;
             target.ChannelCustom2 = source.ChannelCustom2;
             target.ChannelCustomIndexed1 = source.ChannelCustomIndexed1;
-            #pragma warning disable 612, 618
-            target.ChannelId = source.ChannelId;
-            #pragma warning restore 612, 618
             target.ComponentData = source.ComponentData;
             target.ComponentSummary = source.ComponentSummary;
             target.EntityId = source.EntityId;

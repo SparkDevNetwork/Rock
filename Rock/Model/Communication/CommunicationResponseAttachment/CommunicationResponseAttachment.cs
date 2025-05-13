@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "CommunicationResponseAttachment" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "2F34E79E-F158-4693-85C4-87FF75D3AFE4")]
     public partial class CommunicationResponseAttachment : Model<CommunicationResponseAttachment>
     {

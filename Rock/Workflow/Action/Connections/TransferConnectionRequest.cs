@@ -161,6 +161,7 @@ namespace Rock.Workflow.Action
             if ( request != null && opportunity != null )
             {
                 request.ConnectionOpportunityId = opportunity.Id;
+                request.ConnectionTypeId = opportunity.ConnectionTypeId;
                 var connectionStatusId = GetAttributeValue( action, AttributeKey.ConnectionStatusId ).AsIntegerOrNull();
                 if ( connectionStatusId.HasValue )
                 {

@@ -38,7 +38,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block to display the benevolence types." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the benevolence type details.",
@@ -110,7 +110,7 @@ namespace Rock.Blocks.Finance
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "BenevolenceTypeId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["BenevolenceTypeId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } )
             };
         }
 
@@ -124,6 +124,13 @@ namespace Rock.Blocks.Finance
         protected override IQueryable<BenevolenceType> GetOrderedListQueryable( IQueryable<BenevolenceType> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( b => b.Name );
+        }
+
+        /// <inheritdoc/>
+        protected override List<BenevolenceType> GetListItems( IQueryable<BenevolenceType> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+            return items.Where( bt => bt.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
         }
 
         /// <inheritdoc/>

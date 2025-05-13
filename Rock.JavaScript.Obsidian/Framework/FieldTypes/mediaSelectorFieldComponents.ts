@@ -35,7 +35,7 @@ function parseKeyValueItemValue(keyValueItemValue: string | undefined): KeyValue
     }
 }
 
-function parseMediaSelectorMode(modeNumber: string | undefined) : MediaSelectorMode {
+function parseMediaSelectorMode(modeNumber: string | undefined): MediaSelectorMode {
     const mediaSelectorModeNumber = toNumber(modeNumber);
     return mediaSelectorModeNumber == 0 ? MediaSelectorMode.Image : MediaSelectorMode.Audio;
 }
@@ -77,10 +77,10 @@ export const EditComponent = defineComponent({
                 return [];
             }
         },
-        itemWidth() : string {
+        itemWidth(): string {
             return this.configurationValues[ConfigurationValueKey.ItemWidth] ?? "";
         },
-        mode() : MediaSelectorMode {
+        mode(): MediaSelectorMode {
             try {
                 return parseMediaSelectorMode(this.configurationValues[ConfigurationValueKey.Mode]);
             }
@@ -153,7 +153,7 @@ export const ConfigurationComponent = defineComponent({
          * @returns true if a new modelValue was emitted to the parent component.
          */
         const maybeUpdateModelValue = (): boolean => {
-            const newValue: Record<string, string> = {...props.modelValue};
+            const newValue: Record<string, string> = { ...props.modelValue };
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
@@ -201,7 +201,7 @@ export const ConfigurationComponent = defineComponent({
 
         // Watch for changes in properties that only require a local UI update.
         watch(mode, () => maybeUpdateConfiguration(ConfigurationValueKey.Mode, mode.toString() ?? MediaSelectorMode.Image));
-        watch(mediaItems, () => maybeUpdateConfiguration(ConfigurationValueKey.MediaItems, JSON.stringify(mediaItems.value) ?? ""), {deep : true});
+        watch(mediaItems, () => maybeUpdateConfiguration(ConfigurationValueKey.MediaItems, JSON.stringify(mediaItems.value) ?? ""), { deep: true });
         watch(itemWidth, () => maybeUpdateConfiguration(ConfigurationValueKey.ItemWidth, itemWidth.value ?? "50px"));
 
         return {
@@ -225,6 +225,8 @@ export const ConfigurationComponent = defineComponent({
 
     <KeyValueList v-model="mediaItems"
         label="Media Items"
+        keyPlaceholder="Key"
+        valuePlaceholder="Value"
         help="The items to display. The key will be the name of the item and the value should be the URL to the media file." />
 </div>
 `

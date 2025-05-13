@@ -18,7 +18,7 @@
 /**
  * This is a helper type that allows you to get intellisense on a value but
  * still allow any other value to be supplied.
- * 
+ *
  * For example, doing LiteralUnion<"success", "fail"> would mean the editor
  * will suggest the value "success" and "fail", but you can still put in any
  * other string value you want.

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Model
     /// </summary>
     [RockDomain( "CRM" )]
     [Table( "IdentityVerification" )]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "C76071B0-0C2F-4A3F-88BF-08B2E006C614")]
     public partial class IdentityVerification : Model<IdentityVerification>
     {

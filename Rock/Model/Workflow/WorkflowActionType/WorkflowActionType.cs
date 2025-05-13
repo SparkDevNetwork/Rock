@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActionType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.WORKFLOW_ACTION_TYPE )]
     public partial class WorkflowActionType : Model<WorkflowActionType>, IOrdered, ICacheable
     {
@@ -73,6 +74,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that the action is operating against.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int EntityTypeId { get; set; }
 
         /// <summary>

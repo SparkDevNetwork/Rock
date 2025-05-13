@@ -15,16 +15,16 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
-using Rock.AI.Classes.TextCompletions;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
 {
     /// <summary>
-    /// The Reponse object for moderation result categories.
+    /// The Response object for moderation result categories.
     /// </summary>
+    /// <remarks>
+    /// See https://platform.openai.com/docs/guides/moderation#content-classifications.
+    /// </remarks>
     internal class OpenAIModerationsResponseResultsCategories
     {
         #region Properties
@@ -36,15 +36,15 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
         public bool Hate { get; set; }
 
         /// <summary>
-        /// Hate/threatening category result
+        /// Harassment/threatening category result
         /// </summary>
-        [JsonProperty( "hate/threatening" )]
+        [JsonProperty( "harassment/threatening" )]
         public bool Threatening { get; set; }
 
         /// <summary>
         /// Self-harm category result
         /// </summary>
-        [JsonProperty( "hate/threatening" )]
+        [JsonProperty( "self-harm" )]
         public bool SelfHarm { get; set; }
 
         /// <summary>

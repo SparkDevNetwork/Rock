@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
 
@@ -33,6 +34,22 @@ namespace Rock.Model
         public IQueryable<AttributeValue> GetByAttributeId( int attributeId )
         {
             return Queryable().Where( t => t.AttributeId == attributeId );
+        }
+        /// <summary>
+        /// Gets an Attribute Value by Attribute Id And Entity Id
+        /// </summary>
+        /// <param name="attributeIds">The IEnumerable{int} of Attribute Ids to get values for.</param>
+        /// <param name="entityId">Entity Id.</param>
+        /// <returns></returns>
+        public IQueryable<AttributeValue> GetByAttributeIdsAndEntityId( IEnumerable<int> attributeIds, int? entityId )
+        {
+            return Queryable()
+                .Where( t =>
+                   attributeIds.Contains( t.AttributeId ) &&
+                    (
+                        ( !t.EntityId.HasValue && !entityId.HasValue ) ||
+                        ( t.EntityId.HasValue && entityId.HasValue && t.EntityId.Value == entityId.Value )
+                    ) );
         }
 
         /// <summary>

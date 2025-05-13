@@ -29,6 +29,9 @@ export type UiSettingsConfigurationBag = {
     /** Gets or sets the captcha site key. */
     captchaSiteKey?: string | null;
 
+    /** Gets or sets the value indicating whether or not default address state selection is enabled. */
+    enableDefaultAddressStateSelection: boolean;
+
     /** Gets or sets the ethnicity label. */
     ethnicityLabel?: string | null;
 

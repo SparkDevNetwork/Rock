@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,9 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
+
 using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Core.Attributes
 {
     /// <summary>

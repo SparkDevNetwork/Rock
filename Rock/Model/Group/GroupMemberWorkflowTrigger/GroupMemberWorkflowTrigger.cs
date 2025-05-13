@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupMemberWorkflowTrigger" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "3CE3406A-1FFE-4CCA-A8D5-916EEF800D76")]
     public partial class GroupMemberWorkflowTrigger : Entity<GroupMemberWorkflowTrigger>, IOrdered, IHasActiveFlag
     {

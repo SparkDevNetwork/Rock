@@ -14,12 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Security;
 using Rock.Web.Cache;
-using System;
-using System.Collections.Generic;
 
 namespace Rock.Model
 {
@@ -186,7 +186,7 @@ namespace Rock.Model
                     // EDIT permission which checks the NoteType.
                     return base.IsAuthorized( Authorization.EDIT, person );
                 }
-                else 
+                else
                 {
                     return base.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, person );
                 }

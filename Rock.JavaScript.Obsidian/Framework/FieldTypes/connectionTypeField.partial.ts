@@ -44,7 +44,7 @@ export class ConnectionTypeField extends FieldTypeBase {
 
         try {
             const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
-            const userValues = value.split(",");
+            const userValues = value.split(",").map(a=>a.toLowerCase());
             const selectedValues = values.filter(v => userValues.includes(v.value ?? ""));
             return selectedValues.map(v => v.text)
                 .map(v => v?.split(":").pop()) // just get the name of the note type

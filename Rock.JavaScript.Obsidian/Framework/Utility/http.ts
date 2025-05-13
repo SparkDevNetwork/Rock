@@ -16,10 +16,11 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosProgressEvent, AxiosResponse, GenericAbortSignal } from "axios";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { HttpBodyData, HttpMethod, HttpFunctions, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
-import { inject, provide, getCurrentInstance } from "vue";
+import { inject, provide, getCurrentInstance, ref, type Ref } from "vue";
+import { ICancellationToken } from "./cancellation";
 
 
 // #region HTTP Requests
@@ -32,13 +33,28 @@ import { inject, provide, getCurrentInstance } from "vue";
  * @param params
  * @param data
  */
-async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlParams, data: HttpBodyData): Promise<AxiosResponse<unknown>> {
+async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlParams, data: HttpBodyData, cancellationToken?: ICancellationToken): Promise<AxiosResponse<unknown>> {
     return await axios({
         method,
         url,
         params,
-        data
+        data,
+        signal: getSignal(cancellationToken)
     });
+}
+
+function getSignal(cancellationToken?: ICancellationToken): GenericAbortSignal | undefined {
+    if (cancellationToken) {
+        const controller = new AbortController();
+
+        cancellationToken.onCancellationRequested(() => {
+            if (controller && controller.signal && !controller.signal.aborted) {
+                controller.abort();
+            }
+        });
+
+        return controller.signal;
+    }
 }
 
 /**
@@ -51,9 +67,9 @@ async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlPara
  * @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
  * @param {any} data This will be the body of the request
  */
-export async function doApiCall<T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> {
+export async function doApiCall<T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> {
     try {
-        const result = await doApiCallRaw(method, url, params, data);
+        const result = await doApiCallRaw(method, url, params, data, cancellationToken);
 
         return {
             data: result.data as T,
@@ -116,8 +132,8 @@ export async function get<T>(url: string, params: HttpUrlParams = undefined): Pr
  * @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
  * @param {any} data This will be the body of the request
  */
-export async function post<T>(url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> {
-    return await doApiCall<T>("POST", url, params, data);
+export async function post<T>(url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> {
+    return await doApiCall<T>("POST", url, params, data, cancellationToken);
 }
 
 const httpFunctionsSymbol = Symbol("http-functions");
@@ -154,6 +170,78 @@ export function useHttp(): HttpFunctions {
     };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ApiCallerOptions<ReturnType, Args extends any[] = []> = {
+    url: string;
+    params?: HttpUrlParams | ((...args: Args) => HttpUrlParams);
+    data?: HttpBodyData | ((...args: Args) => HttpBodyData);
+    onComplete?: ((data: ReturnType, ...args: Args) => void) | null | undefined;
+    method?: "get" | "post" | "GET" | "POST" | undefined;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ApiCallerReturnType<ReturnType, Args extends any[] = []> = {
+    run: (...args: Args) => Promise<ReturnType | undefined>;
+    readonly isLoading: Ref<boolean>;
+    readonly hasError: Ref<boolean>;
+    readonly errorMessage: Ref<string | undefined>;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createApiCaller<ReturnType = unknown, Args extends any[] = []> (options: ApiCallerOptions<ReturnType, Args>): ApiCallerReturnType<ReturnType, Args> {
+    const fetchFunction = useHttp()[(options.method || "post").toLowerCase()];
+    const isLoading = ref(false);
+    const hasError = ref(false);
+    const errorMessage = ref<string>();
+
+    return {
+        isLoading,
+        hasError,
+        errorMessage,
+        async run (...args) {
+            isLoading.value = true;
+            hasError.value = false;
+            errorMessage.value = undefined;
+
+            const params = typeof options.params === "function" ? options.params(...args) : options.params;
+            const data = typeof options.data === "function" ? options.data(...args) : options.data;
+
+            try {
+                const result = (await fetchFunction<ReturnType>(options.url, params, data)) as HttpResult<ReturnType>;
+
+                if (result.isSuccess) {
+                    if (typeof options.onComplete === "function") {
+                        options.onComplete(result.data as ReturnType, ...args);
+                    }
+
+                    return result.data as ReturnType;
+                }
+                else {
+                    hasError.value = true;
+                    errorMessage.value = result.errorMessage ?? undefined;
+                }
+            }
+            catch (e: unknown) {
+                hasError.value = true;
+
+                if (e instanceof Error) {
+                    errorMessage.value = e.message;
+                }
+                else if (typeof e === "string") {
+                    errorMessage.value = e;
+                }
+                else {
+                    errorMessage.value = "An unknown error occurred.";
+                }
+            }
+            finally {
+                isLoading.value = false;
+            }
+        }
+    };
+
+}
+
 // #endregion
 
 // #region File Upload
@@ -185,6 +273,12 @@ export type UploadOptions = {
 
     /** A function to call to report the ongoing progress of the upload. */
     progress: UploadProgressCallback;
+
+    /** The parent entity type identifier */
+    parentEntityTypeId?: number;
+
+    /** The parent entity identifier */
+    parentEntityId?: number;
 };
 
 /**
@@ -198,16 +292,26 @@ export type UploadOptions = {
  * @returns The response from the upload handler.
  */
 async function uploadFile(url: string, data: FormData, progress: UploadProgressCallback | undefined): Promise<FileUploadResponse> {
-    const result = await axios.post<FileUploadResponse | string>(url, data, {
-        headers: {
-            "Content-Type": "multipart/form-data"
-        },
-        onUploadProgress: (event: ProgressEvent) => {
-            if (progress) {
-                progress(event.loaded, event.total, Math.floor(event.loaded * 100 / event.total));
+    let result: AxiosResponse<FileUploadResponse | string> | undefined;
+    try {
+        result = await axios.post<FileUploadResponse | string>(url, data, {
+            headers: {
+                "Content-Type": "multipart/form-data"
+            },
+            onUploadProgress: (event: AxiosProgressEvent) => {
+                if (progress && event.total !== undefined) {
+                    progress(event.loaded, event.total, Math.floor(event.loaded * 100 / event.total));
+                }
             }
-        }
-    });
+        });
+    }
+    catch (e) {
+        result = (e as AxiosError<FileUploadResponse | string>).response;
+    }
+
+    if (!result) {
+        throw new Error("Upload failed.");
+    }
 
     // Check for a "everything went perfectly fine" response.
     if (result.status === 200 && typeof result.data === "object") {
@@ -215,14 +319,14 @@ async function uploadFile(url: string, data: FormData, progress: UploadProgressC
     }
 
     if (result.status === 406) {
-        throw "File type is not allowed.";
+        throw new Error("File type is not allowed.");
     }
 
     if (typeof result.data === "string") {
-        throw result.data;
+        throw new Error(result.data);
     }
 
-    throw "Upload failed.";
+    throw new Error("Upload failed.");
 }
 
 /**
@@ -237,7 +341,7 @@ async function uploadFile(url: string, data: FormData, progress: UploadProgressC
  * @returns A ListItemBag that contains the scrubbed filename that was uploaded.
  */
 export async function uploadContentFile(file: File, encryptedRootFolder: string, folderPath: string, options?: UploadOptions): Promise<ListItemBag> {
-    const url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=${encryptedRootFolder}`;
+    const url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=${encodeURIComponent(encryptedRootFolder)}`;
     const formData = new FormData();
 
     formData.append("file", file);
@@ -245,6 +349,37 @@ export async function uploadContentFile(file: File, encryptedRootFolder: string,
     if (folderPath) {
         formData.append("folderPath", folderPath);
     }
+
+    const result = await uploadFile(url, formData, options?.progress);
+
+    return {
+        value: "",
+        text: result.FileName
+    };
+}
+
+/**
+ * Uploads a file to an asset storage provider.
+ *
+ * @param file The file to be uploaded to the server.
+ * @param folderPath The additional sub-folder path to use inside the root folder.
+ * @param assetStorageId The ID of the asset storage provider that the file is being uploaded to
+ * @param options The options to use when uploading the file.
+ *
+ * @returns A ListItemBag that contains the scrubbed filename that was uploaded.
+ */
+export async function uploadAssetProviderFile(file: File, folderPath: string, assetStorageId: string, options?: UploadOptions): Promise<ListItemBag> {
+    const url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=`;
+    const formData = new FormData();
+
+    if (!assetStorageId) {
+        throw "Asset Storage Id and Key are required.";
+    }
+
+    formData.append("file", file);
+    formData.append("StorageId", assetStorageId);
+    formData.append("Key", folderPath);
+    formData.append("IsAssetStorageProviderAsset", "true");
 
     const result = await uploadFile(url, formData, options?.progress);
 
@@ -274,6 +409,14 @@ export async function uploadBinaryFile(file: File, binaryFileTypeGuid: Guid, opt
     }
     else {
         url += "&isTemporary=True";
+    }
+
+    if (options?.parentEntityTypeId) {
+        url += "&ParentEntityTypeId=" + options.parentEntityTypeId;
+    }
+
+    if (options?.parentEntityId) {
+        url += "&ParentEntityId=" + options.parentEntityId;
     }
 
     const formData = new FormData();

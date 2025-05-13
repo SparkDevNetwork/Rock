@@ -30,6 +30,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONNECTION_TYPES )]
     public class ConnectionTypesFieldType : SelectFromListFieldType, IEntityReferenceFieldType

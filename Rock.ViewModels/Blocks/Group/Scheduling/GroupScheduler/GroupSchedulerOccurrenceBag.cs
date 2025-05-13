@@ -25,12 +25,21 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
     public class GroupSchedulerOccurrenceBag
     {
         /// <summary>
+        /// Gets the unique identifier for this group scheduler occurrence.
+        /// </summary>
+        /// <value>
+        /// The unique identifier for this group scheduler occurrence.
+        /// </value>
+        public Guid Guid { get; } = Guid.NewGuid();
+
+        /// <summary>
         /// Gets or sets the attendance occurrence ID for this occurrence.
+        /// This attendance occurrence might not exist yet.
         /// </summary>
         /// <value>
         /// The attendance occurrence ID for this occurrence.
         /// </value>
-        public int AttendanceOccurrenceId { get; set; }
+        public int? AttendanceOccurrenceId { get; set; }
 
         /// <summary>
         /// Gets or sets the group order for this occurrence.

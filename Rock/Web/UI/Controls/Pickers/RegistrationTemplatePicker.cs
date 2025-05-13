@@ -94,7 +94,7 @@ namespace Rock.Web.UI.Controls
 
                         while ( parentCategory != null )
                         {
-                            parentCategoryIds += parentCategory.Id.ToString() + ",";
+                            parentCategoryIds = parentCategory.Id + "," + parentCategoryIds;
                             parentCategory = parentCategory.ParentCategory;
                         }
                     }

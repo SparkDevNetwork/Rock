@@ -32,11 +32,6 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         public AccountEntryPersonInfoBag PersonInfo { get; set; }
 
         /// <summary>
-        /// Gets or sets the fullname of the person.
-        /// </summary>
-        public string FullName { get; set; }
-
-        /// <summary>
         /// Gets or sets the encrypted state.
         /// </summary>
         /// <remarks>

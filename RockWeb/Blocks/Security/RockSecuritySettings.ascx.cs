@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Humanizer;
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -102,6 +102,24 @@ namespace RockWeb.Blocks.Security
 
             if ( highProfile == null || extremeProfile == null )
             {
+                return;
+            }
+
+            var requireTwoFactorAuthenticationForAccountProtectionProfiles = cblRequireTwoFactorAuthenticationForAccountProtectionProfiles.SelectedValuesAsInt.ConvertAll( a => ( AccountProtectionProfile ) a );
+
+            var disablePasswordlessSignInForAccountProtectionProfiles = cblDisablePasswordlessSignInForAccountProtectionProfiles.SelectedValuesAsInt.ConvertAll( a => ( AccountProtectionProfile ) a ).ToList();
+
+            var lockedOutProtectionProfiles = requireTwoFactorAuthenticationForAccountProtectionProfiles.Intersect( disablePasswordlessSignInForAccountProtectionProfiles ).ToList();
+
+            if ( lockedOutProtectionProfiles.Count > 0 )
+            {
+                var messagePrefix = lockedOutProtectionProfiles.Count == 1
+                    ? $"{lockedOutProtectionProfiles[0]} account Protection Profile has"
+                    : $"{lockedOutProtectionProfiles.Humanize()} account Protection Profiles have";
+                nbSaveResult.Text = $"{messagePrefix} passwordless sign-in disabled while requiring two-factor authentication. If two-factor authentication (2FA) is enabled without Passwordless login, someone could get locked out.";
+                nbSaveResult.NotificationBoxType = NotificationBoxType.Danger;
+                nbSaveResult.Visible = true;
+
                 return;
             }
 

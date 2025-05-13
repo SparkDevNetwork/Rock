@@ -1,0 +1,94 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div class="col-sm-8">
+            <FontFamilyProperty :copyToElements="copyToElements"
+                                :element="element"
+                                :label="label"
+                                :styleSheetMode="styleSheetMode" />
+        </div>
+
+        <div class="col-sm-4 pl-0">
+            <FontSizeProperty :copyToElements="copyToElements"
+                              :element="element"
+                              :styleSheetMode="styleSheetMode" />
+        </div>
+    </div>
+
+    <TextFormatProperty v-if="!visibilityOptions.isTextFormatHidden"
+                        :copyToElements="copyToElements"
+                        :element="element"
+                        label=""
+                        :styleSheetMode="styleSheetMode" />
+
+    <TextTransformProperty v-if="!visibilityOptions.isTextCaseHidden"
+                           :copyToElements="copyToElements"
+                           :element="element"
+                           label=""
+                           :styleSheetMode="styleSheetMode" />
+
+    <TextAlignProperty v-if="!visibilityOptions.isJustifyTextHidden"
+                       :copyToElements="copyToElements"
+                       :element="element"
+                       label="Justify Text"
+                       :styleSheetMode="styleSheetMode" />
+
+    <LineHeightProperty v-if="!visibilityOptions.isLineHeightHidden"
+                        :copyToElements="copyToElements"
+                        :element="element"
+                        :styleSheetMode="styleSheetMode" />
+
+    <ColorProperty v-if="!visibilityOptions.isColorHidden"
+                   :copyToElements="copyToElements"
+                   :element="element"
+                   label="Text Color"
+                   :styleSheetMode="styleSheetMode" />
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import ColorProperty from "./colorProperty.partial.obs";
+    import FontFamilyProperty from "./fontFamilyProperty.partial.obs";
+    import FontSizeProperty from "./fontSizeProperty.partial.obs";
+    import LineHeightProperty from "./lineHeightProperty.partial.obs";
+    import TextAlignProperty from "./textAlignProperty.partial.obs";
+    import TextFormatProperty from "./textFormatProperty.partial.obs";
+    import TextTransformProperty from "./textTransformProperty.partial.obs";
+    import { FontPropertyGroupVisibilityOptions, StyleSheetMode } from "../types.partial";
+
+    defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        /**
+         * This is used as the font family label (the first field in this property group).
+         */
+        label: {
+            type: String as PropType<string>,
+            default: "Font" as const
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Creates and adds a &lt;style&gt; element to the `element` input to host the changes.
+         */
+        styleSheetMode: {
+            type: Object as PropType<StyleSheetMode | undefined>,
+            required: false
+        },
+
+        visibilityOptions: {
+            type: Object as PropType<FontPropertyGroupVisibilityOptions>,
+            default: {}
+        }
+    });
+</script>

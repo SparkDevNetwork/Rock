@@ -216,12 +216,12 @@ namespace Rock.Blocks.Crm
                 MinimumDaysToRetake = entity.MinimumDaysToRetake == 0 ? ( int? ) null : entity.MinimumDaysToRetake,
                 RequiresRequest = entity.RequiresRequest,
                 Title = entity.Title,
-                ValidDuration = entity.ValidDuration
+                ValidDuration = entity.ValidDuration == 0 ? ( int? ) null : entity.ValidDuration,
             };
         }
 
         /// <summary>
-        /// Gets the bag for viewing the specied entity.
+        /// Gets the bag for viewing the specified entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for view purposes.</param>
         /// <param name="loadAttributes"><c>true</c> if attributes and values should be loaded; otherwise <c>false</c>.</param>
@@ -237,7 +237,7 @@ namespace Rock.Blocks.Crm
 
             if ( loadAttributes )
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
             }
 
             return bag;
@@ -260,7 +260,7 @@ namespace Rock.Blocks.Crm
 
             if ( loadAttributes )
             {
-                bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+                bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
             }
 
             return bag;
@@ -301,12 +301,15 @@ namespace Rock.Blocks.Crm
             box.IfValidProperty( nameof( box.Entity.Title ),
                 () => entity.Title = box.Entity.Title );
 
+            box.IfValidProperty( nameof( box.Entity.ValidDuration ),
+                () => entity.ValidDuration = box.Entity.ValidDuration.GetValueOrDefault() );
+
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;

@@ -312,8 +312,11 @@ namespace RockWeb.Blocks.Finance
                 {
                     if ( financialScheduledTransaction.IsActive == false )
                     {
-                        // if GetStatus failed, but the scheduled transaction is inactive, just show Schedule is Inactive
-                        // This takes care of dealing with gateways that delete the scheduled payment vs inactivating them on the gateway side
+                        // Save changes to the database, because financialScheduledTransactionService.GetStatus() may have deactivated this transaction.
+                        rockContext.SaveChanges();
+
+                        // If GetStatus failed, but the scheduled transaction is inactive, just show Schedule is Inactive.
+                        // This takes care of dealing with gateways that delete the scheduled payment vs inactivating them on the gateway side.
                         ShowErrorMessage( "Schedule is inactive" );
                     }
                     else

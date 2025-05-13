@@ -150,7 +150,7 @@ namespace Rock.Web.UI.Controls
         var _this = this;
         setTimeout(function () {
             if (!$('.popover:hover').length) {
-                //$(_this).popover('hide')
+                $(_this).popover('hide')
             }
         }, 100);
     });

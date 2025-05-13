@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a system communication. Stored as SystemCommunication.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SYSTEM_COMMUNICATION )]
     public class SystemCommunicationFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
@@ -342,6 +343,7 @@ namespace Rock.Field.Types
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             var editControl = control as ListControl;
+            
             if ( editControl != null )
             {
                 if ( configurationValues != null )

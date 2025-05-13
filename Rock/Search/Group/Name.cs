@@ -56,6 +56,11 @@ namespace Rock.Search.Group
         /// <returns>A queryable of entity objects that match the search term.</returns>
         private IQueryable<Model.Group> GetSearchResults( string searchTerm )
         {
+            if ( searchTerm.IsSingleSpecialCharacter() )
+            {
+                return Enumerable.Empty<Model.Group>().AsQueryable();
+            }
+
             return new GroupService( new RockContext() ).Queryable()
                 .Where( g => g.GroupType.ShowInNavigation
                     && g.Name.Contains( searchTerm ) );

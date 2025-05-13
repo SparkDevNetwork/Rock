@@ -31,6 +31,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a textbox and a dropdown list of attributes for a specific workflow Type
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.WORKFLOW_TEXT_OR_ATTRIBUTE )]
     public class WorkflowTextOrAttributeFieldType : FieldType

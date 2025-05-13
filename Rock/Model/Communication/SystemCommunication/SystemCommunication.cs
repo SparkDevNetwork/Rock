@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "SystemCommunication" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SYSTEM_COMMUNICATION )]
     public partial class SystemCommunication : Model<SystemCommunication>
     {
@@ -63,6 +64,7 @@ namespace Rock.Model
         /// The category identifier.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? CategoryId { get; set; }
 
         /// <summary>

@@ -142,7 +142,7 @@ export class LineTransformer extends Konva.Group {
             strokeWidth: 1,
             draggable: true,
             visible: false,
-            dragBoundFunc: pos => surface.getBoundedPosition(pos, { x: 0, y: 0 })
+            dragBoundFunc: pos => surface.getBoundedPosition(pos, { x: 0, y: 0 }, false, 0)
         });
 
         this.anchor2 = new Konva.Circle({
@@ -152,7 +152,7 @@ export class LineTransformer extends Konva.Group {
             strokeWidth: 1,
             draggable: true,
             visible: false,
-            dragBoundFunc: pos => surface.getBoundedPosition(pos, { x: 0, y: 0 })
+            dragBoundFunc: pos => surface.getBoundedPosition(pos, { x: 0, y: 0 }, false, 0)
         });
 
         this.anchor1.on("mouseenter", () => this.setCursor());
@@ -464,6 +464,19 @@ function updateTextShapeFromField(shape: Konva.Text, field: LabelFieldBag, surfa
     shape.y(surface.getPixelForOffset(field.top));
     shape.width(surface.getPixelForOffset(field.width));
     shape.height(surface.getPixelForOffset(field.height));
+
+    if (field.rotationAngle === 270) {
+        shape.rotation(-90);
+    }
+    else if (field.rotationAngle === 180) {
+        shape.rotation(180);
+    }
+    else if (field.rotationAngle === 90) {
+        shape.rotation(90);
+    }
+    else {
+        shape.rotation(0);
+    }
 
     // Update configured values.
     shape.fontFamily(asBoolean(config.isCondensed) ? "Roboto Condensed" : "Roboto");

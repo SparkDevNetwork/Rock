@@ -2,13 +2,13 @@
 <template>
     <div style="margin-left: calc(var(--slider-handle-height) / 2); margin-right: calc(var(--slider-handle-height) / 2);">
         <div v-if="showValueBar" class="d-flex align-items-center position-relative justify-content-between mb-1">
-            <span v-if="showMinValue" class="text-muted">{{ min }}</span>
+            <span v-if="showMinValue" class="text-muted">{{ `${min}${valueSuffix}` }}</span>
             <span></span>
-            <span v-if="showMaxValue" class="text-muted">{{ max }}</span>
+            <span v-if="showMaxValue" class="text-muted">{{ `${max}${valueSuffix}` }}</span>
 
             <span class="position-absolute top-0" :style="thumbStyle">
                 <span class="d-block position-absolute" style="background: var(--slider-progress-bg); border-radius: 3px; padding: 1px 5px; color: #fff; font-size: 14px; transform: translateX(-50%);">
-                    {{ internalValue }}
+                    {{ `${internalValue}${valueSuffix}` }}
                 </span>
             </span>
         </div>
@@ -50,6 +50,11 @@
         showValueBar: {
             type: Boolean,
             default: false
+        },
+
+        valueSuffix: {
+            type: String,
+            default: ""
         }
     });
 

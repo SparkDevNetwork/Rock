@@ -51,25 +51,5 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeList
         /// Determines if the amount column should be displayed.
         /// </summary>
         public bool HideAmount { get; set; }
-
-        /// <summary>
-        /// Determines if the person filter should be displayed.
-        /// </summary>
-        public bool ShowPersonFilter { get; set; }
-
-        /// <summary>
-        /// Determines if the account filter should be displayed.
-        /// </summary>
-        public bool ShowAccountFilter { get; set; }
-
-        /// <summary>
-        /// Determines if the date range filter should be displayed.
-        /// </summary>
-        public bool ShowDateRangeFilter { get; set; }
-
-        /// <summary>
-        /// Determines if the last modified date range filter should be displayed.
-        /// </summary>
-        public bool ShowLastModifiedFilter { get; set; }
     }
 }

@@ -29,8 +29,9 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AuthClient" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "CBD66C3A-959A-4A0B-926C-C3ADE43066B1")]
-    public class AuthClient : Model<AuthClient>, IHasActiveFlag
+    public partial class AuthClient : Model<AuthClient>, IHasActiveFlag
     {
 
         /// <summary>

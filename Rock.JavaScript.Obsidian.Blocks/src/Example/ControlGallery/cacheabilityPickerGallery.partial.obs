@@ -1,0 +1,26 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <CacheabilityPicker label="Cacheability" v-model="value" />
+
+        <template #settings>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { RockCacheabilityBag } from "@Obsidian/ViewModels/Controls/rockCacheabilityBag";
+
+    const value = ref<RockCacheabilityBag | null>(null);
+    const importCode = getSfcControlImportPath("cacheabilityPicker");
+    const exampleCode = `<CacheabilityPicker v-model="value" :showBlankItem="false" :multiple="false" />`;
+</script>

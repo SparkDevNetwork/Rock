@@ -11,9 +11,10 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed, onBeforeUnmount, onMounted, ref } from "vue";
+    import { PropType, computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
     import DataCell from "./dataCell.partial.obs";
     import { ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
+    import { tooltip, destroyTooltip } from "@Obsidian/Utility/tooltip";
 
     const props = defineProps({
         /**
@@ -116,6 +117,12 @@
         }
     });
 
+    watch([element, tooltipText], () => {
+        if (tooltipText.value && element.value) {
+            tooltip(element.value, { delay: { show: 500, hide: 100 } });
+        }
+    });
+
     /**
      * Called when a cell is clicked. Check if we have a valid row key and
      * then emit our own clicked event with it.
@@ -143,6 +150,8 @@
     });
 
     onBeforeUnmount(() => {
+        destroyTooltip(element.value!);
+
         if (resizeObserver) {
             resizeObserver.disconnect();
             resizeObserver = undefined;

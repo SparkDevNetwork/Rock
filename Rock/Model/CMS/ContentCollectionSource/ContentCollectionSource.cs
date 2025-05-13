@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentCollectionSource" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONTENT_COLLECTION_SOURCE )]
     public partial class ContentCollectionSource : Model<ContentCollectionSource>, IOrdered, ICacheable
     {

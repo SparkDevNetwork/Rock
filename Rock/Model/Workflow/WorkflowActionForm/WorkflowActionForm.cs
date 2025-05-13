@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActionForm" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "FDAB9AEB-B2AA-4FB5-A35D-83254A9B014C")]
     public partial class WorkflowActionForm : Model<WorkflowActionForm>, ICacheable, IHasAdditionalSettings
     {
@@ -390,7 +391,6 @@ namespace Rock.Model
         #endregion Person entry related Entity Properties
 
         /// <inheritdoc/>
-        [RockInternal( "1.16.6" )]
         [DataMember]
         public string AdditionalSettingsJson { get; set; }
 

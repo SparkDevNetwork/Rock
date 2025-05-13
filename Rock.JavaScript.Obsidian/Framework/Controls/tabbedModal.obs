@@ -1,0 +1,64 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="internalValue">
+        <slot name="prepend"></slot>
+        <TabbedContent :tabs="tabs" v-model:selectedTab="internalSelectedTab" :tabBarClass="{ 'tight-to-modal-sides': true, 'tight-to-modal-top': !$slots.prepend }">
+            <template #tabpane="slotProps">
+                <slot name="tabpane" v-bind="slotProps" />
+            </template>
+        </TabbedContent>
+        <slot name="append"></slot>
+    </Modal>
+</template>
+
+<style>
+.tight-to-modal-top {
+    margin-top: -24px;
+}
+
+.tight-to-modal-sides {
+    margin-right: -24px;
+    margin-left: -24px;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        /** Whether or not the modal is shown */
+        modelValue: {
+            type: Object as PropType<boolean>,
+            required: true
+        },
+
+        /** An array of string for each tab's text. */
+        tabs: {
+            type: Array as PropType<string[]>,
+            required: true
+        },
+
+        /** V-Model of the currently selected tab. */
+        selectedTab: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag): void;
+        (e: "update:selectedTab", value: string): void;
+        // The following events are passed through to the underlying modal.
+        // (e: "closeModal"): void;
+        // (e: "save"): void;
+        // (e: "saveThenAdd"): void;
+        // (e: "update:submit", value: boolean): void;
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const internalSelectedTab = useVModelPassthrough(props, "selectedTab", emit);
+</script>

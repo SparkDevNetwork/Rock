@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -22,6 +23,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.AI;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
@@ -136,7 +138,64 @@ namespace Rock.Blocks.Prayer
                 .AddField( "prayerCount", a => a.PrayerCount )
                 .AddField( "flagCount", a => a.FlagCount )
                 .AddField( "isApproved", a => a.IsApproved )
+                .AddTextField( "moderationFlags", a => GetModerationFlagsText( a.ModerationFlags ) )
                 .AddAttributeFields( GetGridAttributes() );
+        }
+
+        /// <summary>
+        /// Converts a ModerationFlags bitmask to the text that will be displayed as a warning on the Grid.
+        /// </summary>
+        private string GetModerationFlagsText( ModerationFlags flags )
+        {
+            if ( flags == ModerationFlags.None )
+            {
+                return string.Empty;
+            }
+
+            var tooltipText = string.Empty;
+
+            // Iterate through each defined flag and add its name if set.
+            foreach ( ModerationFlags flag in Enum.GetValues( typeof( ModerationFlags ) ) )
+            {
+                if ( flag != ModerationFlags.None && flags.HasFlag( flag ) )
+                {
+                    tooltipText += GetTooltipText( flag );
+                }
+            }
+
+            return tooltipText;
+        }
+
+        /// <summary>
+        /// Get the tooltip text for a given ModerationFlag.
+        /// </summary>
+        /// <param name="flag">The given moderation flag</param>
+        /// <returns>The Tooltip text</returns>
+        private string GetTooltipText( ModerationFlags flag )
+        {
+            switch ( flag )
+            {
+                case ModerationFlags.Hate:
+                    return "Flagged for hate. ";
+
+                case ModerationFlags.Threat:
+                    return "Flagged for threatening content. ";
+
+                case ModerationFlags.SelfHarm:
+                    return "Flagged for self-harm. ";
+
+                case ModerationFlags.Sexual:
+                    return "Flagged for sexual content. ";
+
+                case ModerationFlags.SexualMinor:
+                    return "Flagged for sexual content involving minors. ";
+
+                case ModerationFlags.Violent:
+                    return "Flagged for violent content. ";
+
+                default:
+                    return string.Empty;
+            }
         }
 
         #endregion

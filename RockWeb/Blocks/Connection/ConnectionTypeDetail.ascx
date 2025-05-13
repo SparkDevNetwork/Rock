@@ -98,6 +98,24 @@
                                 Help="If enabled, connection request blocks will have an additional setting allowing security to be applied to individual requests. A special rule is also applied, which automatically allows an assigned connector to view or edit their requests when the connector doesn't have security to the connection opportunity or type. Enabling this setting will noticeably impact performance when there are a significant amount of requests." />
                         </div>
                     </div>
+
+                    <Rock:PanelWidget ID="wpConnectionTypeAttributes" runat="server" Title="Connection Type Attributes" CssClass="connection-type-attribute-panel">
+                        <div class="grid">
+                            <Rock:Grid ID="gConnectionTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Connection Type Attribute">
+                                <Columns>
+                                    <Rock:ReorderField />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                    <Rock:SecurityField TitleField="Name" />
+                                    <Rock:EditField OnClick="gConnectionTypeAttributes_Edit" />
+                                    <Rock:DeleteField OnClick="gConnectionTypeAttributes_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                        <Rock:AttributeValuesContainer ID="avcEditAttributes" runat="server" />
+                    </Rock:PanelWidget>
+
                     <Rock:PanelWidget ID="wpConnectionRequestAttributes" runat="server" Title="Connection Request Attributes" CssClass="connection-request-attribute-panel">
                         <Rock:NotificationBox ID="nbConnectionRequestAttributes" runat="server" NotificationBoxType="Info"
                             Text="Connection Request Attributes apply to all of the connection requests in every Opportunity of this type.  Each connection request will have their own value for these attributes" />
@@ -190,9 +208,15 @@
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgAttribute" runat="server" Title="Connection Opportunity Attributes" OnSaveClick="dlgConnectionTypeAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Attributes">
+        <Rock:ModalDialog ID="dlgAttribute" runat="server" Title="Connection Opportunity Attributes" OnSaveClick="dlgConnectionOpportunityAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Attributes">
             <Content>
                 <Rock:AttributeEditor ID="edtAttributes" runat="server" ShowActions="false" ValidationGroup="Attributes" />
+            </Content>
+        </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="dlgConnectionTypeAttribute" runat="server" Title="Connection Type Attributes" OnSaveClick="dlgConnectionTypeAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ConnectionTypeAttributes">
+            <Content>
+                <Rock:AttributeEditor ID="edtConnectionTypeAttributes" runat="server" ShowActions="false" ValidationGroup="ConnectionTypeAttributes" />
             </Content>
         </Rock:ModalDialog>
 

@@ -182,6 +182,14 @@ namespace Rock.Communication
         string PushOpenMessage { get; set; }
 
         /// <summary>
+        /// Gets or sets the push open message structured content JSON.
+        /// </summary>
+        /// <value>
+        /// The push open message structured content JSON.
+        /// </value>
+        string PushOpenMessageJson { get; set; }
+
+        /// <summary>
         /// Gets or sets the push data.
         /// </summary>
         /// <value>

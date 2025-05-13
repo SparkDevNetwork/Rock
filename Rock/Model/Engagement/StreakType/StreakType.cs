@@ -36,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StreakType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "66203975-2A7A-4000-870E-76457DF3C920")]
     public partial class StreakType : Model<StreakType>, IHasActiveFlag, ICacheable
     {
@@ -119,7 +120,6 @@ namespace Rock.Model
         /// representative of the StartDate. More significant bits (going left) are more recent dates.
         /// </summary>
         [DataMember]
-        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public byte[] OccurrenceMap { get; set; }
 
         /// <summary>

@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// Field used to save and display an image value
     /// Stored as BinaryFile.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M5.16,4.27A1.32,1.32,0,1,0,6.48,5.59,1.32,1.32,0,0,0,5.16,4.27Zm8.09-2.41H2.73A1.76,1.76,0,0,0,1,3.62v8.76a1.75,1.75,0,0,0,1.73,1.76H13.25A1.75,1.75,0,0,0,15,12.38V3.62A1.74,1.74,0,0,0,13.25,1.86Zm.44,10.34L9.94,7.11a.45.45,0,0,0-.39-.21.51.51,0,0,0-.42.21L6.21,11.05l-1-1.26a.5.5,0,0,0-.4-.19.53.53,0,0,0-.41.19L2.32,12.36h0V3.62a.44.44,0,0,1,.44-.44H13.27a.44.44,0,0,1,.44.44V12.2Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.IMAGE )]
@@ -58,6 +59,40 @@ namespace Rock.Field.Types
         /// </summary>
         protected const string DefaultImageTagTemplate = "<img src='{{ ImageUrl }}' class='img-responsive' />";
 
+        /// <summary>
+        /// The image URL generated from the image guid.
+        /// </summary>
+        protected const string IMAGE_URL = "imageUrl";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var publicValues = new Dictionary<string, string>( base.GetPublicConfigurationValues( privateConfigurationValues, usage, value ) );
+
+            if ( publicValues.ContainsKey( IMG_TAG_TEMPLATE ) )
+            {
+                var imageTagTemplate = publicValues[IMG_TAG_TEMPLATE];
+                if ( imageTagTemplate.IsNullOrWhiteSpace() )
+                {
+                    publicValues[IMG_TAG_TEMPLATE] = DefaultImageTagTemplate;
+                }
+            }
+
+            publicValues[IMAGE_URL] = FileUrlHelper.GetImageUrl( value.AsGuid() );
+
+            return publicValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateValues = new Dictionary<string, string>( base.GetPrivateConfigurationValues( publicConfigurationValues ) );
+
+            privateValues.Remove( IMAGE_URL );
+
+            return privateValues;
+        }
+
         #endregion
 
         #region Formatting
@@ -77,6 +112,28 @@ namespace Rock.Field.Types
                 var imageName = new BinaryFileService( rockContext ).GetSelect( imageGuid.Value, bf => bf.FileName );
 
                 return imageName ?? string.Empty;
+            }
+        }
+
+        /// <inheritdoc />
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var imageGuid = privateValue.AsGuidOrNull();
+
+            if ( !imageGuid.HasValue )
+            {
+                return string.Empty;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var imageName = new BinaryFileService( rockContext ).GetSelect( imageGuid.Value, bf => bf.FileName );
+
+                return new ListItemBag()
+                {
+                    Value = imageGuid.ToString(),
+                    Text = imageName,
+                }.ToCamelCaseJson( false, true );
             }
         }
 

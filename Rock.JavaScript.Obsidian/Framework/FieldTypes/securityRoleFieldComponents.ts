@@ -17,7 +17,7 @@
 import { defineComponent, inject } from "vue";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./connectionTypeField.partial";
+import { ConfigurationValueKey } from "./securityRoleField.partial";
 import { getFieldEditorProps } from "./utils";
 
 export const EditComponent = defineComponent({

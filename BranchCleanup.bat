@@ -150,3 +150,9 @@ RMDIR "Applications\Wpf\packages" /S /Q
 RMDIR "Installers\StatementGeneratorInstall\packages" /S /Q
 
 FOR /D %%f in (packages\*) DO RMDIR %%f /S /Q
+
+cd Rock.JavaScript.Obsidian\
+npm ci
+cd ..\Rock.JavaScript.Obsidian.Blocks\
+npm ci
+cd ..\

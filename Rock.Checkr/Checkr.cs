@@ -651,7 +651,6 @@ namespace Rock.Checkr
                 rockContext.SaveChanges();
             }
 
-            DefinedValueCache.Clear();
             return true;
         }
 

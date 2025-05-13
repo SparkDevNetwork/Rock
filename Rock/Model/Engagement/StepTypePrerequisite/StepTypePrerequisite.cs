@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StepTypePrerequisite" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "F2181FCD-1423-4937-9137-099154E1C3EC")]
     public partial class StepTypePrerequisite : Model<StepTypePrerequisite>, IOrdered
     {

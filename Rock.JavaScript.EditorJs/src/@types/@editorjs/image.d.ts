@@ -1,6 +1,12 @@
 declare module "@editorjs/image" {
     import { BlockTool, BlockToolConstructorOptions } from "@editorjs/editorjs";
 
+    export type TunesMenuConfigItem = {
+        name: string
+    };
+
+    export type TunesMenuConfig = TunesMenuConfigItem | TunesMenuConfigItem[];
+
     export interface ImageConfig {
         endpoints?: {
             byFile?: string,
@@ -42,7 +48,7 @@ declare module "@editorjs/image" {
 
         sanitize?: SanitizerConfig;
 
-        renderSettings(): Element;
+        renderSettings(): TunesMenuConfig;
         save(blockWrapper: HTMLDivElement): ImageData;
         render(): HTMLElement;
     }

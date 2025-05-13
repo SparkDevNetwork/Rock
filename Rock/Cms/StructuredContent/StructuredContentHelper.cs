@@ -71,10 +71,19 @@ namespace Rock.Cms.StructuredContent
         /// Initializes a new instance of the <see cref="StructuredContentHelper"/> class.
         /// </summary>
         /// <param name="content">The structured content JSON string.</param>
-        /// <param name="userValues">The user values associated with this structured content.</param>
-        public StructuredContentHelper( string content, Dictionary<string, string> userValues = null )
+        public StructuredContentHelper( string content )
         {
             Content = content;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StructuredContentHelper"/> class.
+        /// </summary>
+        /// <param name="content">The structured content JSON string.</param>
+        /// <param name="userValues">The user values associated with this structured content.</param>
+        public StructuredContentHelper( string content, Dictionary<string, string> userValues )
+            : this( content )
+        {
             UserValues = userValues;
         }
 

@@ -21,9 +21,13 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /**
  * The options that can be passed to the GetEntityTypes API action of
  * the EntityTypePicker control.
  */
 export type EntityTypePickerGetEntityTypesOptionsBag = {
+    /** List of GUIDs of Entity Types that you wish to include in the list. If blank, it will load all. */
+    entityTypeGuids?: Guid[] | null;
 };

@@ -36,6 +36,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as comma-delimited list of Category.Guids
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CATEGORIES )]
     public class CategoriesFieldType : CategoryFieldType, IEntityReferenceFieldType, ISplitMultiValueFieldType

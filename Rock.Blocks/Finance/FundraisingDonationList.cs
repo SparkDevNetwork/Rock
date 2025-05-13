@@ -18,16 +18,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 using Rock;
 using Rock.Attribute;
-using Rock.Blocks.Types.Mobile.Crm;
 using Rock.Data;
-using Rock.Financial;
 using Rock.Model;
 using Rock.Obsidian.UI;
-using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Fundraising.FundraisingDonationList;
@@ -44,7 +40,7 @@ namespace Rock.Blocks.Finance
     [Category("Fundraising")]
     [Description("Lists donations in a grid for the current fundraising opportunity or participant.")]
     [IconCssClass("fa fa-list")]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [CustomCheckboxListField("Hide Grid Columns",
         Key = AttributeKey.HideGridColumns,
@@ -162,7 +158,7 @@ namespace Rock.Blocks.Finance
             // Get the donations for the entire opportunity group or for just the
             // one individual being viewed.
             //
-            if (RequestContext.GetContextEntity<Model.Group>() != null)
+            if ( RequestContext.GetContextEntity<Model.Group>() != null )
             {
                 _group = RequestContext.GetContextEntity<Model.Group>();
 
@@ -201,7 +197,7 @@ namespace Rock.Blocks.Finance
             // Get the donations for the entire opportunity group or for just the
             // one individual being viewed.
             //
-            if (RequestContext.GetContextEntity<Model.Group>() != null)
+            if ( RequestContext.GetContextEntity<Model.Group>() != null )
             {
                 var group = RequestContext.GetContextEntity<Model.Group>();
 
@@ -227,13 +223,13 @@ namespace Rock.Blocks.Finance
             return new GridBuilder<FinancialTransactionDetail>()
                 .WithBlock(this)
                 .AddTextField("idKey", a => a.IdKey)
-                .AddTextField("donorIdKey", a => a.Transaction.AuthorizedPersonAlias.Person.IdKey)
+                .AddTextField("donorIdKey", a => a.Transaction.AuthorizedPersonAlias?.Person?.IdKey)
                 .AddTextField("donor", a => GetDonorText(a))
-                .AddTextField("donorEmail", a => a.Transaction.AuthorizedPersonAlias.Person.Email)
+                .AddTextField("donorEmail", a => a.Transaction.AuthorizedPersonAlias?.Person?.Email)
                 .AddTextField("participant", a => GetParticipantText(a))
                 .AddField("amount", a => a.Amount)
-                .AddTextField("donorAddressHtml", a => a.Transaction.AuthorizedPersonAlias.Person.GetHomeLocation().ToStringSafe().ConvertCrLfToHtmlBr())
-                .AddTextField("donorAddress", a => a.Transaction.AuthorizedPersonAlias.Person.GetHomeLocation().ToStringSafe())
+                .AddTextField("donorAddressHtml", a => a.Transaction.AuthorizedPersonAlias?.Person?.GetHomeLocation().ToStringSafe().ConvertCrLfToHtmlBr())
+                .AddTextField("donorAddress", a => a.Transaction.AuthorizedPersonAlias?.Person?.GetHomeLocation().ToStringSafe())
                 .AddDateTimeField("date", a => a.Transaction.TransactionDateTime);
         }
 
@@ -271,7 +267,7 @@ namespace Rock.Blocks.Finance
             var mergeFields = RequestContext.GetCommonMergeFields(GetCurrentPerson());
 
             mergeFields.AddOrReplace("Group", GetContextEntityGroup());
-            mergeFields.AddOrReplace("Donor", transactionDetail.Transaction.AuthorizedPersonAlias.Person);
+            mergeFields.AddOrReplace("Donor", transactionDetail.Transaction.AuthorizedPersonAlias?.Person);
 
             if (_groupMembers.TryGetValue(transactionDetail.EntityId.Value, out GroupMember groupMember))
             {
@@ -289,7 +285,7 @@ namespace Rock.Blocks.Finance
         {
             if (_group == null)
             {
-                if (RequestContext.GetContextEntity<Model.Group>() != null)
+                if ( RequestContext.GetContextEntity<Model.Group>() != null )
                 {
                     _group = RequestContext.GetContextEntity<Model.Group>();
                 }
@@ -314,10 +310,10 @@ namespace Rock.Blocks.Finance
         {
             var rockContext = new RockContext();
             var group = GetContextEntityGroup();
-            var groupTypeIdFundraising = GroupTypeCache.Get(SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid()).Id;
-            var fundraisingGroupTypeIdList = new GroupTypeService(rockContext).Queryable()
-                .Where(a => a.Id == groupTypeIdFundraising || a.InheritedGroupTypeId == groupTypeIdFundraising)
-                .Select(a => a.Id)
+            var groupTypeIdFundraising = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
+            var fundraisingGroupTypeIdList = new GroupTypeService( rockContext ).Queryable()
+                .Where( a => a.Id == groupTypeIdFundraising || a.InheritedGroupTypeId == groupTypeIdFundraising )
+                .Select( a => a.Id )
                 .ToList();
 
             return group != null && fundraisingGroupTypeIdList.Contains(group.GroupTypeId);

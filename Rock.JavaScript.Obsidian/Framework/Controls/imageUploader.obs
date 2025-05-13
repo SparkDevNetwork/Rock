@@ -1,9 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField
-                   :modelValue="fileGuid"
-                   formGroupClasses="image-uploader"
-                   name="imageuploader">
+    <RockFormField :modelValue="fileGuid" formGroupClasses="image-uploader" name="imageuploader">
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <NotificationBox v-if="uploadErrorMessage" alertType="warning">
@@ -12,7 +9,7 @@
                 </NotificationBox>
 
                 <div ref="dropZoneElement" :id="uniqueId" class="imageupload-group" :style="{ pointerEvents: disabled ? 'none' : undefined }" @click="onSelectFileClick">
-                    <div class="imageupload-thumbnail" style="width: 100px; height: 100px;">
+                    <div class="imageupload-thumbnail" :style="thumbnailWrapperStyle">
                         <a v-if="fileUrl" :href="fileUrl" target="_blank" rel="noopener noreferrer" @click.stop>
                             <div class="imageupload-thumbnail-image" :style="thumbnailStyle"></div>
                         </a>
@@ -30,7 +27,7 @@
                         <div>{{ uploadProgressText }}</div>
                     </div>
 
-                    <div class="imageupload-dropzone">
+                    <div v-if="!disabled" class="imageupload-dropzone">
                         <span>{{ uploadButtonText }}</span>
                         <input ref="fileInputElement" type="file" style="display: none;" @change="onFileChange" @remove="onFileRemove" />
                     </div>
@@ -61,7 +58,7 @@
          * file.
          */
         modelValue: {
-            type: Object as PropType<ListItemBag | null>,
+            type: Object as PropType<ListItemBag | null | undefined>,
             required: false
         },
 
@@ -90,6 +87,26 @@
             default: true
         },
 
+        noPictureUrl: {
+            type: String,
+            default: "/Assets/Images/no-picture.svg"
+        },
+
+        thumbnailHeight: {
+            type: Number,
+            default: 100
+        },
+
+        thumbnailWidth: {
+            type: Number,
+            default: 100
+        },
+
+        uploadUrl: {
+            type: String,
+            default: "/ImageUploader.ashx"
+        },
+
         /**
          * A processor that will allow modification of the image file before
          * it is uploaded to the server. A new file should be created and
@@ -102,7 +119,9 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: ListItemBag | undefined): void;
+        (e: "update:modelValue", value: ListItemBag | null | undefined): void;
+        (e: "imageUploaded"): void;
+        (e: "imageRemoved"): void;
     }>();
 
     const internalValue = ref(props.modelValue);
@@ -120,10 +139,6 @@
         return toGuidOrNull(internalValue.value?.value);
     });
 
-    const fileName = computed<string>(() => {
-        return internalValue.value?.text ?? "";
-    });
-
     /** The URL used to download the file. */
     const fileUrl = computed((): string | null => {
         if (fileGuid.value) {
@@ -136,12 +151,20 @@
         return null;
     });
 
+    /** The CSS styles to use for the thumbnail wrapper element. */
+    const thumbnailWrapperStyle = computed((): Record<string, string> => {
+        return {
+            width: `${props.thumbnailWidth}px`,
+            height: `${props.thumbnailHeight}px`
+        };
+    });
+
     /** The CSS styles to use for the thumbnail element. */
     const thumbnailStyle = computed((): Record<string, string> => {
-        let imageUrl = "/Assets/Images/no-picture.svg";
+        let imageUrl = props.noPictureUrl;
 
         if (fileGuid.value) {
-            imageUrl = `/GetImage.ashx?guid=${fileGuid.value}&width=500`;
+            imageUrl = `/GetImage.ashx?guid=${fileGuid.value}&width=${props.thumbnailWidth}`;
         }
         else if (internalValue.value?.value && internalValue.value.value.startsWith("/")) {
             imageUrl = internalValue.value.value;
@@ -157,6 +180,7 @@
     /** True if the delete button should be visible. */
     const isDeleteVisible = computed((): boolean => {
         return props.showDeleteButton
+            && !props.disabled
             && (!!fileGuid.value || internalValue.value?.value?.startsWith("/") === true);
     });
 
@@ -185,7 +209,7 @@
 
             // Perform the actual file upload using the helper function.
             const result = await uploadBinaryFile(file, props.binaryFileTypeGuid || BinaryFiletype.Default, {
-                baseUrl: "/ImageUploader.ashx",
+                baseUrl: props.uploadUrl,
                 isTemporary: props.uploadAsTemporary,
                 progress: (progress, total, percent) => {
                     uploadProgressText.value = `${percent}%`;
@@ -193,6 +217,7 @@
             });
 
             internalValue.value = result;
+            emit("imageUploaded");
         }
         catch (e) {
             // Show any error message we got.
@@ -219,6 +244,12 @@
      */
     function onRemoveFileClick(): void {
         internalValue.value = null;
+        emit("imageRemoved");
+
+        if (fileInputElement.value) {
+            // Clear the last file(s) from the underlying input.
+            fileInputElement.value.value = "";
+        }
     }
 
     /**
@@ -246,6 +277,11 @@
         }
 
         internalValue.value = null;
+
+        if (fileInputElement.value) {
+            // Clear the last file(s) from the underlying input.
+            fileInputElement.value.value = "";
+        }
     }
 
     // Watch for the drop zone element to become available. Once we have it

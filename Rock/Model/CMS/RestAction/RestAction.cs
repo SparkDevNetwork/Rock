@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Attribute;
 
 namespace Rock.Model
 {
@@ -30,8 +31,9 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "RestAction" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "D4F7F055-5351-4ADF-9F8D-4802CAD6CC9D")]
-    public partial class RestAction : Model<RestAction>, ICacheable
+    public partial class RestAction : Model<RestAction>, ICacheable, IHasAdditionalSettings
     {
         #region Entity Properties
 
@@ -97,6 +99,11 @@ namespace Rock.Model
                 _cacheControlHeaderSettings = value;
             }
         }
+
+        /// <inheritdoc/>
+        [RockInternal( "17.0" )]
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
 
         #endregion
 

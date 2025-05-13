@@ -15,6 +15,9 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+using Rock.Model;
+
 namespace Rock.ViewModels.Blocks.Cms.SiteList
 {
     /// <summary>
@@ -22,5 +25,19 @@ namespace Rock.ViewModels.Blocks.Cms.SiteList
     /// </summary>
     public class SiteListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the site type.
+        /// </summary>
+        public List<SiteType> SiteType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the block title.
+        /// </summary>
+        public string BlockTitle { get; set; }
+
+        /// <summary>
+        /// Boolean value that shows or hides the site icon 
+        /// </summary>
+        public string ShowSiteIcon { get; set; }
     }
 }

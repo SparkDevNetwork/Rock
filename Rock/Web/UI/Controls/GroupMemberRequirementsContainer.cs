@@ -16,15 +16,12 @@
 //
 //
 using System;
-using System.Web;
 using System.Web.UI;
 
 using System.Linq;
 using System.Web.UI.WebControls;
-using System.ComponentModel;
 using System.Collections.Generic;
 using Rock.Model;
-using Rock.Data;
 using System.Web.UI.HtmlControls;
 
 namespace Rock.Web.UI.Controls
@@ -165,7 +162,7 @@ namespace Rock.Web.UI.Controls
                 var categoryId = requirementCategory.CategoryId;
                 HtmlGenericControl categoryControl = new HtmlGenericControl( "div" );
                 categoryControl.AddCssClass( "row d-flex flex-wrap requirement-category requirement-category-" + categoryId.ToString() );
-                
+
 
                 if ( Visible && categoryName.IsNotNullOrWhiteSpace() )
                 {
@@ -212,7 +209,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                
+
                 this.Controls.Add( categoryControl );
             }
         }

@@ -18,6 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -25,6 +28,7 @@ using Rock.Enums.Blocks.Security.Login;
 using Rock.IpAddress;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net.Geolocation;
 using Rock.Security;
 using Rock.Security.Authentication;
 using Rock.Security.Authentication.ExternalRedirectAuthentication;
@@ -650,7 +654,7 @@ namespace Rock.Blocks.Security
                         // Authenticate the user in Rock as if 2FA occurred while logging
                         // an error so administrators can fix the issue without inhibiting a successful login.
                         var errors = passwordlessValidation.GetErrorMessages();
-                        RockLogger.Log.Error( RockLogDomains.Core, "Two-Factor Authentication is required but Passwordless authentication is not configured {Errors}.", errors.JoinStrings( " " ) );
+                        Logger.LogError( $"Two-Factor Authentication is required but Passwordless authentication is not configured {errors.JoinStrings( " " )}." );
 
                         Authenticate(
                             userLogin,
@@ -1061,31 +1065,33 @@ namespace Rock.Blocks.Security
             var systemCommunication = new SystemCommunicationService( new RockContext() ).Get( systemCommunicationGuid.Value );
             if ( systemCommunication == null )
             {
-                RockLogger.Log.Error( RockLogDomains.Core, $"Login Confirmation Alert could not be sent for person {person.Id} because the System Communication {systemCommunicationGuid} does not exist. Please check the login block configuration." );
+                Logger.LogError( "Login Confirmation Alert could not be sent for person @personId, because the System Communication @systemCommunicationGuid does not exist. Please check the login block configuration.", person.Id, systemCommunicationGuid );
             }
 
             var location = string.Empty;
 
-            // If an active IP Address Lookup component is configured, try using it to look up the location.
-            var ipLookupComponent = IpAddressLookupContainer.Instance.Components.Select( a => a.Value.Value ).Where( x => x.IsActive ).FirstOrDefault();
-            if ( ipLookupComponent != null )
+            try
             {
-                try
+                var geoLocation = IpGeoLookup.Instance.GetGeolocation( RequestContext.ClientInformation.IpAddress );
+
+                if ( geoLocation != null && ( geoLocation.City.IsNotNullOrWhiteSpace() || geoLocation.RegionName.IsNotNullOrWhiteSpace() ) )
                 {
-                    var lookupResult = ipLookupComponent.Lookup( RequestContext.ClientInformation.IpAddress, out var resultMsg );
-                    if ( string.IsNullOrEmpty( resultMsg ) )
+                    if ( geoLocation.City.IsNullOrWhiteSpace() )
                     {
-                        location = lookupResult.Location;
+                        location = geoLocation.RegionName;
                     }
-                    else
+
+                    if ( geoLocation.RegionName.IsNullOrWhiteSpace() )
                     {
-                        RockLogger.Log.Error( RockLogDomains.Core, $"Error processing IP Lookup for Login Confirmation Alert: {resultMsg}." );
+                        location = geoLocation.City;
                     }
+
+                    location = $"{geoLocation.City}, {geoLocation.RegionName}";
                 }
-                catch ( SystemException ex )
-                {
-                    ExceptionLogService.LogException( ex );
-                }
+            }
+            catch ( SystemException ex )
+            {
+                ExceptionLogService.LogException( ex );
             }
 
             var mergeFields = GetMergeFields( new Dictionary<string, object>

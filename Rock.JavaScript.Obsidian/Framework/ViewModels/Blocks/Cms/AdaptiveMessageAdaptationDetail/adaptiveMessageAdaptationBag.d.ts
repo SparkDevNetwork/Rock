@@ -33,6 +33,9 @@ export type AdaptiveMessageAdaptationBag = {
     /** Gets or sets the description. */
     description?: string | null;
 
+    /** Gets or sets the end date for this Adaptive Message Adaptation. */
+    endDate?: string | null;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
@@ -47,6 +50,9 @@ export type AdaptiveMessageAdaptationBag = {
 
     /** Gets or sets the segment ids. */
     segments?: string[] | null;
+
+    /** Gets or sets the start date for this Adaptive Message Adaptation. */
+    startDate?: string | null;
 
     /** Gets or sets the view saturation count. */
     viewSaturationCount?: number | null;

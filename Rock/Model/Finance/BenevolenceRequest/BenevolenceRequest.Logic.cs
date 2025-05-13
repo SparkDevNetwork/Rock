@@ -16,6 +16,7 @@
 //
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -72,5 +73,12 @@ namespace Rock.Model
                 return totalAmount;
             }
         }
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => BenevolenceType ?? base.ParentAuthority;
+
+        #endregion
     }
 }

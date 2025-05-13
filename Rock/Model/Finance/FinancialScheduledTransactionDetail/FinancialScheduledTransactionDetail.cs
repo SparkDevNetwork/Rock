@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialScheduledTransactionDetail" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "A206615F-3FB5-48DF-B606-86AE8716FD57")]
     public partial class FinancialScheduledTransactionDetail : Model<FinancialScheduledTransactionDetail>, ITransactionDetail
     {

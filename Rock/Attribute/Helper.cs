@@ -15,9 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
@@ -28,6 +28,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Core;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -42,6 +43,49 @@ namespace Rock.Attribute
     /// </summary>
     public static class Helper
     {
+        /// <summary>
+        /// Contains cached reflection information on for the method to call
+        /// to DbContext.Set&lt;T&gt;() for the given type. Specifically
+        /// the "T" is the attribute value view for accessing attribute values
+        /// via pure SQL.
+        /// </summary>
+        private static readonly ConcurrentDictionary<Type, MethodInfo> _queryableAttributeSetMethods = new ConcurrentDictionary<Type, MethodInfo>();
+
+        /// <summary>
+        /// Gets the DbContext.Set&lt;T&gt;() method for the given entity type
+        /// to retrieve the DbSet for the queryable attributes view.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns>MethodInfo.</returns>
+        private static MethodInfo GetQueryableAttributeSetMethod( Type entityType )
+        {
+            // Cache the reflection lookup as this saves about 400 ticks per
+            // call and this could end up being called a lot.
+            return _queryableAttributeSetMethods.GetOrAdd( entityType, t =>
+            {
+                try
+                {
+                    var hasQueryableAttributeValuesAttribute = entityType
+                        .GetCustomAttribute<HasQueryableAttributesAttribute>();
+                    var attributeValueType = hasQueryableAttributeValuesAttribute?.AttributeValueType;
+
+                    if ( attributeValueType == null )
+                    {
+                        return null;
+                    }
+
+                    var method = typeof( Data.DbContext ).GetMethod( "Set", BindingFlags.Public | BindingFlags.Instance, null, new Type[0], null );
+                    method = method.MakeGenericMethod( attributeValueType );
+
+                    return method;
+                }
+                catch
+                {
+                    return null;
+                }
+            } );
+        }
+
         /// <summary>
         /// Updates the attributes.
         /// </summary>
@@ -125,14 +169,12 @@ namespace Rock.Attribute
                 entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, category: "CustomSetting", defaultValue: true ) );
             }
 
-            bool dynamicAttributesBlock = typeof( Rock.Web.UI.IDynamicAttributesBlock ).IsAssignableFrom( type );
-
             // Create any attributes that need to be created
             foreach ( var entityProperty in entityProperties )
             {
                 try
                 {
-                    attributesUpdated = UpdateAttribute( entityProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, dynamicAttributesBlock, rockContext ) || attributesUpdated;
+                    attributesUpdated = UpdateAttribute( entityProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, rockContext ) || attributesUpdated;
                 }
                 catch ( Exception ex )
                 {
@@ -144,18 +186,14 @@ namespace Rock.Attribute
             try
             {
                 var attributeService = new Model.AttributeService( rockContext );
+                var existingKeys = entityProperties.Select( a => a.Key ).ToList();
 
-                // if the entity is a block that implements IDynamicAttributesBlock, don't delete the attribute
-                if ( !dynamicAttributesBlock )
+                foreach ( var a in attributeService.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).ToList() )
                 {
-                    var existingKeys = entityProperties.Select( a => a.Key ).ToList();
-                    foreach ( var a in attributeService.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).ToList() )
+                    if ( !existingKeys.Contains( a.Key ) )
                     {
-                        if ( !existingKeys.Contains( a.Key ) )
-                        {
-                            attributeService.Delete( a );
-                            attributesDeleted = true;
-                        }
+                        attributeService.Delete( a );
+                        attributesDeleted = true;
                     }
                 }
 
@@ -186,24 +224,6 @@ namespace Rock.Attribute
         /// </remarks>
 
         internal static bool UpdateAttribute( FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext = null )
-        {
-            return UpdateAttribute( property, entityTypeId, entityQualifierColumn, entityQualifierValue, false, rockContext );
-        }
-
-        /// <summary>
-        /// Adds or Updates a <see cref="Rock.Model.Attribute" /> item for the attribute.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
-        /// <param name="entityQualifierValue">The entity qualifier value.</param>
-        /// <param name="dynamicAttributesBlock">if set to <c>true</c> [dynamic attributes block].</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// If a rockContext value is included, this method will save any previous changes made to the context
-        /// </remarks>
-        private static bool UpdateAttribute( FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, bool dynamicAttributesBlock, RockContext rockContext = null )
         {
             bool updated = false;
 
@@ -238,14 +258,10 @@ namespace Rock.Attribute
                 if ( attribute.Name != property.Name ||
                     attribute.DefaultValue != property.DefaultValue ||
                     attribute.Description != property.Description ||
+                    attribute.Order != property.Order ||
                     attribute.FieldType.Assembly != property.FieldTypeAssembly ||
                     attribute.FieldType.Class != property.FieldTypeClass ||
                     attribute.IsRequired != property.IsRequired )
-                {
-                    updated = true;
-                }
-
-                if ( attribute.Order != property.Order && !dynamicAttributesBlock )
                 {
                     updated = true;
                 }
@@ -276,6 +292,13 @@ namespace Rock.Attribute
                     }
                 }
 
+                // Check additional display settings.
+                var displaySettings = attribute.GetAdditionalSettings<AttributeDisplaySettings>();
+
+                if ( displaySettings.SiteTypes != property.SiteTypes )
+                {
+                    updated = true;
+                }
             }
 
             if ( !updated )
@@ -287,13 +310,7 @@ namespace Rock.Attribute
             attribute.Name = property.Name;
             attribute.Description = property.Description;
             attribute.DefaultValue = property.DefaultValue;
-
-            // if the block is IDynamicAttributesBlock, only update the attribute.Order if this is a new attribute 
-            if ( !dynamicAttributesBlock || attribute.Id == 0 )
-            {
-                attribute.Order = property.Order;
-            }
-
+            attribute.Order = property.Order;
             attribute.IsRequired = property.IsRequired;
 
             attribute.Categories.Clear();
@@ -342,6 +359,12 @@ namespace Rock.Attribute
                     f.Assembly == property.FieldTypeAssembly &&
                     f.Class == property.FieldTypeClass );
             }
+
+            // Set all additional settings.
+            attribute.SetAdditionalSettings( new AttributeDisplaySettings
+            {
+                SiteTypes = property.SiteTypes
+            } );
 
             // If this is a new attribute, add it, otherwise remove the exiting one from the cache
             if ( attribute.Id == 0 )
@@ -732,7 +755,14 @@ This can be due to multiple threads updating the same attribute at the same time
                         if ( !String.IsNullOrWhiteSpace( attribute.DefaultValue ) &&
                             String.IsNullOrWhiteSpace( attributeValues[attribute.Key].Value ) )
                         {
-                            attributeValues[attribute.Key].Value = attribute.DefaultValue;
+                            attributeValues[attribute.Key] = new AttributeValueCache( attribute.Id,
+                                entity?.Id,
+                                attribute.DefaultValue,
+                                attribute.DefaultPersistedTextValue,
+                                attribute.DefaultPersistedHtmlValue,
+                                attribute.DefaultPersistedCondensedTextValue,
+                                attribute.DefaultPersistedCondensedHtmlValue,
+                                attribute.IsDefaultPersistedValueDirty );
                         }
                     }
                 }
@@ -745,7 +775,15 @@ This can be due to multiple threads updating the same attribute at the same time
         }
 
         /// <summary>
-        /// Loads the <see cref="IHasAttributes.Attributes" /> and <see cref="IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object with an option to limit to specific attributes
+        /// <para>
+        /// Loads the <see cref="IHasAttributes.Attributes" /> and <see cref="IHasAttributes.AttributeValues" /> of
+        /// any <see cref="IHasAttributes" /> object with an option to limit to specific attributes
+        /// </para>
+        /// <para>
+        /// This method can only operate on lists comprised of a single object type.
+        /// Meaning, you can't mix Person and Group objects and expect to get valid
+        /// attributes back.
+        /// </para>
         /// </summary>
         /// <param name="entities">The entities whose attributes are to be loaded.</param>
         /// <param name="rockContext">The rock context.</param>
@@ -763,7 +801,15 @@ This can be due to multiple threads updating the same attribute at the same time
         }
 
         /// <summary>
-        /// Loads the <see cref="IHasAttributes.Attributes" /> and <see cref="IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object with an option to limit to specific attributes
+        /// <para>
+        /// Loads the <see cref="IHasAttributes.Attributes" /> and <see cref="IHasAttributes.AttributeValues" />
+        /// of any <see cref="IHasAttributes" /> object with an option to limit to specific attributes
+        /// </para>
+        /// <para>
+        /// This method can only operate on lists comprised of a single object type.
+        /// Meaning, you can't mix Person and Group objects and expect to get valid
+        /// attributes back.
+        /// </para>
         /// </summary>
         /// <param name="entities">The entities whose attributes are to be loaded.</param>
         /// <param name="rockContext">The rock context.</param>
@@ -977,7 +1023,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 // Add the value for each attribute defined on the entity type.
                 foreach ( var attribute in entityAttributes )
                 {
-                    if ( allAttributeValues.TryGetValue( ( entity.Id, attribute.Id ), out var value ) )
+                    if ( allAttributeValues.TryGetValue( (entity.Id, attribute.Id), out var value ) )
                     {
                         var attributeValueCache = new AttributeValueCache( attribute.Id, value.EntityId, value.Value, value.PersistedTextValue, value.PersistedHtmlValue, value.PersistedCondensedTextValue, value.PersistedCondensedHtmlValue, value.IsPersistedValueDirty );
 
@@ -1020,7 +1066,14 @@ This can be due to multiple threads updating the same attribute at the same time
                     }
                     else if ( attributeValues[attribute.Key].Value.IsNullOrWhiteSpace() && !attribute.DefaultValue.IsNullOrWhiteSpace() )
                     {
-                        attributeValues[attribute.Key].Value = attribute.DefaultValue;
+                        attributeValues[attribute.Key] = new AttributeValueCache( attribute.Id,
+                            entity?.Id,
+                            attribute.DefaultValue,
+                            attribute.DefaultPersistedTextValue,
+                            attribute.DefaultPersistedHtmlValue,
+                            attribute.DefaultPersistedCondensedTextValue,
+                            attribute.DefaultPersistedCondensedHtmlValue,
+                            attribute.IsDefaultPersistedValueDirty );
                     }
                 }
 
@@ -1029,6 +1082,37 @@ This can be due to multiple threads updating the same attribute at the same time
 
                 entity.AttributeValues = attributeValues;
             }
+        }
+
+        /// <summary>
+        /// Loads the attributes for the specified entity by its identifier.
+        /// This only works if the entity is decorated with <see cref="HasQueryableAttributesAttribute"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is an internal method used for testing. It may be removed or changed at any time.
+        /// It is faster to load the full entity and then call LoadAttributes() on it than
+        /// it is to call this method.
+        /// </remarks>
+        /// <param name="entityType">The type of entity whose attributes should be loaded.</param>
+        /// <param name="id">The identifier of the entity.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>An object that can be used to access the attribute values or <c>null</c> if the entity type is not valid.</returns>
+        [RockInternal( "17.0", true )]
+        public static IHasAttributes LoadAttributes( Type entityType, int id, RockContext rockContext )
+        {
+            var setMethod = GetQueryableAttributeSetMethod( entityType );
+
+            // Entity doesn't support queryable attributes.
+            if ( setMethod == null )
+            {
+                return new QueryableAttributeWrapper( id, new QueryableAttributeValue[0] );
+            }
+
+            // Load all the attributes for this entity.
+            var dbSet = ( IQueryable<QueryableAttributeValue> ) setMethod.Invoke( rockContext, new object[0] );
+            var values = dbSet.Where( v => v.EntityId == id ).ToList();
+
+            return new QueryableAttributeWrapper( id, values );
         }
 
         /// <summary>
@@ -1203,7 +1287,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                 .ToList();
             }
 
-            return items.ToDictionary( i => ( i.RealEntityId, i.AttributeId ), i => i );
+            return items.ToDictionary( i => (i.RealEntityId, i.AttributeId), i => i );
         }
 
         #endregion
@@ -1347,7 +1431,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
         /// <remarks>
         /// If a <paramref name="rockContext"/> is included, this method will save any previous changes made to the context.
         /// </remarks>
-        internal static Rock.Model.Attribute SaveAttributeEdits( PublicEditableAttributeBag attribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
+        public static Rock.Model.Attribute SaveAttributeEdits( PublicEditableAttributeBag attribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
 
@@ -1404,6 +1488,9 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             newAttribute.PostHtml = attribute.PostHtml;
             newAttribute.FieldTypeId = fieldTypeCache.Id;
             newAttribute.DefaultValue = fieldTypeCache.Field.GetPrivateEditValue( attribute.DefaultValue, configurationValues );
+            newAttribute.IsSuppressHistoryLogging = attribute.IsSuppressHistoryLogging;
+            newAttribute.IconCssClass = attribute.IconCssClass;
+            newAttribute.AttributeColor = attribute.AttributeColor;
 
             var categoryGuids = attribute.Categories?.Select( c => c.Value.AsGuid() ).ToList();
             newAttribute.Categories.Clear();
@@ -1904,7 +1991,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
             attributeValue.UpdateValueAsProperties( rockContext );
 
-            var valueAsBooleanParameter = new SqlParameter( "@ValueAsBoolean", (object) attributeValue.ValueAsBoolean ?? DBNull.Value );
+            var valueAsBooleanParameter = new SqlParameter( "@ValueAsBoolean", ( object ) attributeValue.ValueAsBoolean ?? DBNull.Value );
             var valueAsDateTimeParameter = new SqlParameter( "@ValueAsDateTime", ( object ) attributeValue.ValueAsDateTime ?? DBNull.Value );
             var valueAsNumericParameter = new SqlParameter( "@ValueAsNumeric", ( object ) attributeValue.ValueAsNumeric ?? DBNull.Value );
             var valueAsPersonIdParameter = new SqlParameter( "@ValueAsPersonId", ( object ) attributeValue.ValueAsPersonId ?? DBNull.Value );
@@ -2374,7 +2461,7 @@ WHERE [AV].[AttributeId] = @AttributeId
             // We only need to add rows if we have any referenced entities.
             if ( referenceDictionary.Any() )
             {
-                foreach (var kvpReference in referenceDictionary )
+                foreach ( var kvpReference in referenceDictionary )
                 {
                     var valueId = kvpReference.Key;
                     var referencedEntities = kvpReference.Value;
@@ -2836,10 +2923,10 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         /// <param name="addEditControlsOptions">The add edit controls options.</param>
         public static void AddEditControlsForCategory( string categoryName, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, AttributeAddEditControlsOptions addEditControlsOptions )
         {
-            int? numberOfColumns = addEditControlsOptions?.NumberOfColumns;
-            List<AttributeCache> excludedAttributes = addEditControlsOptions?.ExcludedAttributes ?? new List<AttributeCache>();
-            List<AttributeCache> attributes = addEditControlsOptions?.IncludedAttributes ?? item.Attributes.Select( a => a.Value ).Where( a => a.Categories.Any( ( CategoryCache c ) => c.Name == categoryName ) ).ToList();
-            bool showCategoryLabel = addEditControlsOptions?.ShowCategoryLabel ?? true;
+            var numberOfColumns = addEditControlsOptions?.NumberOfColumns;
+            var excludedAttributes = addEditControlsOptions?.ExcludedAttributes ?? new List<AttributeCache>();
+            var attributes = addEditControlsOptions?.IncludedAttributes ?? item.Attributes.Select( a => a.Value ).Where( a => a.Categories.Any( ( CategoryCache c ) => c.Name == categoryName ) ).ToList();
+            var showCategoryLabel = addEditControlsOptions?.ShowCategoryLabel ?? true;
 
             // ensure valid number of columns
             if ( numberOfColumns.HasValue )
@@ -2854,34 +2941,112 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
                 }
             }
 
-            bool parentIsDynamic = parentControl is DynamicControlsPanel || parentControl is DynamicPlaceholder;
-            HtmlGenericControl fieldSet = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "fieldset" ) : new HtmlGenericControl( "fieldset" );
-
-            parentControl.Controls.Add( fieldSet );
+            var parentIsDynamic = parentControl is DynamicControlsPanel || parentControl is DynamicPlaceholder;
+            var fieldSet = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "fieldset" ) : new HtmlGenericControl( "fieldset" );
             fieldSet.Controls.Clear();
-            if ( showCategoryLabel && !string.IsNullOrEmpty( categoryName ) )
+
+            if ( addEditControlsOptions.ShowCategoryPanels )
             {
-                HtmlGenericControl legend = new HtmlGenericControl( "h4" );
+                var panel = new HtmlGenericControl( "div" );
+                panel.AddCssClass( "panel" );
+                panel.AddCssClass( "panel-section" );
+                parentControl.Controls.Add( panel );
 
-                if ( numberOfColumns.HasValue )
+                // Add the category header.
+                if ( showCategoryLabel )
                 {
-                    HtmlGenericControl row = new HtmlGenericControl( "div" );
-                    row.AddCssClass( "row" );
-                    fieldSet.Controls.Add( row );
+                    var panelHeader = new HtmlGenericControl( "div" );
+                    panelHeader.AddCssClass( "panel-heading" );
 
-                    HtmlGenericControl col = new HtmlGenericControl( "div" );
-                    col.AddCssClass( "col-md-12" );
-                    row.Controls.Add( col );
+                    var panelTitle = new HtmlGenericControl( "h4" );
+                    panelTitle.AddCssClass( "panel-title" );
+                    panelTitle.InnerText = categoryName.IsNotNullOrWhiteSpace() ? categoryName.Trim() : addEditControlsOptions.DefaultCategoryName;
 
-                    col.Controls.Add( legend );
+                    HtmlGenericControl panelDescription = null;
+
+                    if ( addEditControlsOptions.CategoryDescription.IsNotNullOrWhiteSpace() )
+                    {
+                        panelDescription = new HtmlGenericControl( "span" );
+                        panelDescription.AddCssClass( "description" );
+                        panelDescription.InnerText = addEditControlsOptions.CategoryDescription.Trim();
+                    }
+
+                    if ( numberOfColumns.HasValue )
+                    {
+                        var row = new HtmlGenericControl( "div" );
+                        row.AddCssClass( "row" );
+                        panelHeader.Controls.Add( row );
+
+                        var col = new HtmlGenericControl( "div" );
+                        col.AddCssClass( "col-md-12" );
+                        row.Controls.Add( col );
+
+                        col.Controls.Add( panelTitle );
+
+                        if ( panelDescription != null )
+                        {
+                            col.Controls.Add( panelDescription );
+                        }
+                    }
+                    else
+                    {
+                        if ( panelDescription != null )
+                        {
+                            // Wrap the title and description in a div before adding to the header
+                            // so they will be on separate lines.
+                            var div = new HtmlGenericControl( "div" );
+                            div.Controls.Add( panelTitle );
+                            div.Controls.Add( panelDescription );
+
+                            panelHeader.Controls.Add( div );
+                        }
+                        else
+                        {
+                            // No need to wrap the title in another div when there is no description.
+                            panelHeader.Controls.Add( panelTitle );
+                        }
+                    }
+
+                    panel.Controls.Add( panelHeader );
                 }
-                else
+
+                var panelBody = new HtmlGenericControl( "div" );
+                panelBody.AddCssClass( "panel-body" );
+                panel.Controls.Add( panelBody );
+
+                // The fieldset should be placed in the panel body.
+                panelBody.Controls.Add( fieldSet );
+            }
+            else
+            {
+                // Add the category header.
+                if ( showCategoryLabel && categoryName.IsNotNullOrWhiteSpace() )
                 {
-                    fieldSet.Controls.Add( legend );
+                    var legend = new HtmlGenericControl( "h4" );
+
+                    if ( numberOfColumns.HasValue )
+                    {
+                        var row = new HtmlGenericControl( "div" );
+                        row.AddCssClass( "row" );
+                        fieldSet.Controls.Add( row );
+
+                        var col = new HtmlGenericControl( "div" );
+                        col.AddCssClass( "col-md-12" );
+                        col.Controls.Add( legend );
+
+                        row.Controls.Add( col );
+                    }
+                    else
+                    {
+                        fieldSet.Controls.Add( legend );
+                    }
+
+                    legend.Controls.Clear();
+                    legend.InnerText = categoryName.Trim();
                 }
 
-                legend.Controls.Clear();
-                legend.InnerText = categoryName.Trim();
+                // The fieldset should be placed directly in the parent control.
+                parentControl.Controls.Add( fieldSet );
             }
 
             HtmlGenericControl attributeRow = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "div" ) : new HtmlGenericControl( "div" );
@@ -3404,5 +3569,29 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///   <c>true</c> if [show category label]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowCategoryLabel { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether attribute categories should be rendered as panels.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if attribute categories should be rendered as panels; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowCategoryPanels { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default category name that is displayed when a category does not have a name or when the category is missing.
+        /// </summary>
+        /// <value>
+        ///   The default category name.
+        /// </value>
+        public string DefaultCategoryName { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the attribute category description.
+        /// </summary>
+        /// <value>
+        ///   The attribute category description.
+        /// </value>
+        public string CategoryDescription { get; set; }
     }
 }

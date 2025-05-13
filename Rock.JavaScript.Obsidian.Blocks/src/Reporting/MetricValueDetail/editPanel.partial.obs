@@ -1,0 +1,142 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="metricValueType" :items="metricValueTypes" label="Type" :disabled="!isEditable" />
+                <DatePicker v-model="metricValueDateTime" label="Value Date" rules="required" :disabled="!isEditable" />
+
+            </div>
+            <div class="col-md-6">
+            </div>
+        </div>
+
+        <div class="row">
+            <NotificationBox v-if="isValidationWarningVisible" alertType="warning" dismissible @dismiss="isValidationWarningVisible = false">
+                {{ validationError }}
+            </NotificationBox>
+            <div class="col-md-6">
+                <div v-for="partition in partitions">
+                    <RockField v-if="partition.attribute"
+                               :attribute="partition.attribute"
+                               :modelValue="partition.value || ''"
+                               @update:modelValue="partition.value = $event"
+                               :isEditMode="isEditable" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <NumberBox v-model="yValue" label="Value" :disabled="!isEditable" />
+                <!-- Hide X Value for now until we implement XValue (In most cases, the Metric.Xaxis is ignored and MetricValueDateTime is used as the X-Axis -->
+                <TextBox v-if="xValue" v-model="xValue" label="XValue" :disabled="!isEditable" />
+            </div>
+            <div class="col-md-6">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <TextBox v-model="note" label="Note" textMode="multiline" :disabled="!isEditable" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import RockField from "@Obsidian/Controls/rockField.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { MetricValueBag } from "@Obsidian/ViewModels/Blocks/Reporting/MetricValueDetail/metricValueBag";
+    import { MetricValueDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Reporting/MetricValueDetail/metricValueDetailOptionsBag";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<MetricValueBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<MetricValueDetailOptionsBag>,
+            required: true
+        },
+
+        isEditable: {
+            type: Object as PropType<boolean>,
+            required: true
+        },
+
+        validationError: {
+            type: Object as PropType<string | null>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<MetricValueBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const metricValueType = propertyRef(props.modelValue.bag?.metricValueType?.toString() ?? "", "MetricValueType");
+    const metricValueDateTime = propertyRef(props.modelValue.bag?.metricValueDateTime ?? "", "MetricValueDateTime");
+    const yValue = propertyRef(props.modelValue.bag?.yValue, "YValue");
+    const xValue = propertyRef(props.modelValue.bag?.xValue ?? "", "XValue");
+    const note = propertyRef(props.modelValue.bag?.note ?? "", "Note");
+    const partitions = ref(props.modelValue.bag?.metricValuePartitions ?? []);
+    const metricValueTypes = ref(props.options.metricValueTypes ?? []);
+    const isValidationWarningVisible = ref(false);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [metricValueType, metricValueDateTime, yValue, xValue, note];
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(metricValueType, props.modelValue.bag?.metricValueType?.toString() ?? "");
+        updateRefValue(metricValueDateTime, props.modelValue.bag?.metricValueDateTime ?? "");
+        updateRefValue(yValue, props.modelValue.bag?.yValue);
+        updateRefValue(xValue, props.modelValue.bag?.xValue ?? "");
+        updateRefValue(note, props.modelValue.bag?.note ?? "");
+        updateRefValue(partitions, props.modelValue.bag?.metricValuePartitions ?? []);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs, partitions], () => {
+
+        const newValue: ValidPropertiesBox<MetricValueBag> = {
+            bag: { ...props.modelValue.bag } as MetricValueBag
+        };
+
+        setPropertiesBoxValue(newValue, "metricValueType", toNumber(metricValueType.value));
+        setPropertiesBoxValue(newValue, "metricValueDateTime", metricValueDateTime.value);
+        setPropertiesBoxValue(newValue, "yValue", yValue.value);
+        setPropertiesBoxValue(newValue, "xValue", xValue.value);
+        setPropertiesBoxValue(newValue, "note", note.value);
+        setPropertiesBoxValue(newValue, "metricValuePartitions", partitions.value);
+
+        emit("update:modelValue", newValue);
+
+    }, { deep: true });
+
+    watch(() => props.validationError, () => {
+        isValidationWarningVisible.value = true;
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

@@ -1067,7 +1067,7 @@ namespace Rock.Web.UI.Controls
             _bdpPersonBirthDate = new BirthdayPicker
             {
                 ID = "bdpPersonBirthDate",
-                Label = "Birthdate",
+                Label = "Birth Date",
                 ValidationGroup = ValidationGroup,
                 FormGroupCssClass = "field-birthdate"
             };
@@ -1192,19 +1192,6 @@ namespace Rock.Web.UI.Controls
 
             return $"{PersonLabelPrefix} {labelText}";
         }
-
-        /// <summary>
-        /// Updates the person fields based on what the values in the PersonBasicEditor are
-        /// (Changes are not saved to the database.)
-        /// </summary>
-        /// <param name="person">The person.</param>
-        [Obsolete( "Use UpdatePerson(Person,RockContext) instead" )]
-        [RockObsolete( "1.12" )]
-        public void UpdatePerson( Person person )
-        {
-            UpdatePerson( person, new RockContext() );
-        }
-
 
         /// <summary>
         /// 

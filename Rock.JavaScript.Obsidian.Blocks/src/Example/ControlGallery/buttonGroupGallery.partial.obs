@@ -1,0 +1,62 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <ButtonGroup v-model="value" :btnSize="btnSize" :selectedBtnType="sbtnType" :unselectedBtnType="ubtnType" :items="buttonOptions" />
+
+        <template #settings>
+            <div class="row">
+                <DropDownList formGroupClasses="col-md-4" label="Button Size" v-model="btnSize" :items="sizeOptions" :showBlankItem="false" />
+                <DropDownList formGroupClasses="col-md-4" label="Selected Button Type" v-model="sbtnType" :items="typeOptions" :showBlankItem="false" />
+                <DropDownList formGroupClasses="col-md-4" label="Unselected Button Type" v-model="ubtnType" :items="typeOptions" :showBlankItem="false" />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    type StandardListItemBag = {
+        [P in keyof Pick<ListItemBag, "text" | "value">]-?: NonNullable<ListItemBag[P]>;
+    };
+
+    const sizeOptions: StandardListItemBag[] = [
+        { text: "Default", value: BtnSize.Default },
+        { text: "ExtraSmall", value: BtnSize.ExtraSmall },
+        { text: "Small", value: BtnSize.Small },
+        { text: "Large", value: BtnSize.Large }
+    ];
+
+    const typeOptions: StandardListItemBag[] = [
+        { text: "Default", value: BtnType.Default },
+        { text: "Primary", value: BtnType.Primary },
+        { text: "Danger", value: BtnType.Danger },
+        { text: "Warning", value: BtnType.Warning },
+        { text: "Success", value: BtnType.Success },
+        { text: "Info", value: BtnType.Info },
+        { text: "Link", value: BtnType.Link },
+    ];
+
+    const buttonOptions: StandardListItemBag[] = [
+        { text: "Mins", value: "1" },
+        { text: "Hours", value: "2" },
+        { text: "Days", value: "3" },
+    ];
+
+    const btnSize = ref(BtnSize.Default);
+    const sbtnType = ref(BtnType.Primary);
+    const ubtnType = ref(BtnType.Default);
+    const value = ref("1");
+    const importCode = getSfcControlImportPath("buttonGroup");
+    const exampleCode = `<ButtonGroup :btnSize="BtnSize.Default" :btnType="BtnType.Default" :items="items" />`;
+</script>

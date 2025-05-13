@@ -4,7 +4,8 @@
                     formGroupClasses="location-item-picker"
                     iconCssClass="fa fa-home"
                     :provider="itemProvider"
-                    :multiple="multiple">
+                    :multiple="multiple"
+                    v-model:showPopup="internalShowPopup">
 
         <template #pickerContentSuperHeader v-if="$slots.pickerContentSuperHeader">
             <slot name="pickerContentSuperHeader" />
@@ -22,16 +23,16 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { PropType } from "vue";
     import { LocationTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
-    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import TreeItemPicker from "./treeItemPicker.obs";
 
     const props = defineProps({
         modelValue: {
             type: Object as PropType<ListItemBag | ListItemBag[] | null>,
-            required: false
+            default: null
         },
 
         multiple: {
@@ -42,25 +43,26 @@
         securityGrantToken: {
             type: String as PropType<string | null>,
             required: false
+        },
+
+        /**
+         * V-Model of whether the popup area is opened.
+         */
+        showPopup: {
+            type: Boolean
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void;
+        (e: "update:showPopup", value: boolean): void
     }>();
 
-    const internalValue = ref(props.modelValue ?? null);
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const internalShowPopup = useVModelPassthrough(props, "showPopup", emit);
 
     // Configure the item provider with our settings. These are not reactive
     // since we don't do lazy loading so there is no point.
     const itemProvider = new LocationTreeItemProvider();
     itemProvider.securityGrantToken = props.securityGrantToken;
-
-    watch(internalValue, () => {
-        emit("update:modelValue", internalValue.value);
-    });
-
-    watch(() => props.modelValue, () => {
-        updateRefValue(internalValue, props.modelValue ?? null);
-    });
 </script>

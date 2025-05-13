@@ -1,0 +1,101 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-sm-6">
+                <DatePicker v-model="startDate"
+                            rules="required"
+                            label="Start Date" />
+            </div>
+
+            <div class="col-sm-6">
+                <DatePicker v-model="endDate"
+                            label="End Date" />
+            </div>
+
+            <div class="col-sm-6">
+                <DropDownList v-model="completionStatus"
+                              horizontal
+                              :items="completionStatusItems"
+                              rules="required"
+                              class="input-width-lg"
+                              label="Completion Status" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, watch } from "vue";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { LearningProgramCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramCompletionDetail/learningProgramCompletionBag";
+    import { LearningProgramCompletionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramCompletionDetail/learningProgramCompletionDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { CompletionStatus, CompletionStatusDescription } from "@Obsidian/Enums/Lms/completionStatus";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<LearningProgramCompletionBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LearningProgramCompletionDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningProgramCompletionBag>): void
+    }>();
+
+    // #region Values
+
+    const startDate = propertyRef(props.modelValue.bag?.startDate ?? null, "StartDate");
+    const endDate = propertyRef(props.modelValue.bag?.endDate ?? null, "EndDate");
+    const completionStatus = propertyRef(props.modelValue.bag?.completionStatus?.toString() ?? "", "CompletionStatus");
+    const completionStatusItems = enumToListItemBag(CompletionStatusDescription);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [startDate, endDate, completionStatus];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(startDate, props.modelValue.bag?.startDate ?? null);
+        updateRefValue(endDate, props.modelValue.bag?.endDate ?? null);
+        updateRefValue(completionStatus, props.modelValue.bag?.completionStatus?.toString() ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: ValidPropertiesBox<LearningProgramCompletionBag> = {
+            bag: { ...props.modelValue.bag } as LearningProgramCompletionBag
+        };
+
+        setPropertiesBoxValue(newValue, "startDate", startDate.value ?? null);
+        setPropertiesBoxValue(newValue, "endDate", endDate.value ?? null);
+        setPropertiesBoxValue(newValue, "completionStatus", parseInt(completionStatus.value?.toString() ?? "") as CompletionStatus);
+
+        emit("update:modelValue", newValue);
+    });
+</script>

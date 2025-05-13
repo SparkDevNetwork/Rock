@@ -31,6 +31,7 @@ namespace Rock.Field.Types
     /// Stored as a comma-delimited pair of integers
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M11.45,2.72h-1l.18-1.05A.58.58,0,0,0,10.11,1a.59.59,0,0,0-.67.47l-.2,1.24H7.53l.18-1.05a.58.58,0,0,0-1.14-.19L6.36,2.72H5.13a.58.58,0,0,0-.58.58.57.57,0,0,0,.58.57h1l-.38,2.3H4.55A.57.57,0,0,0,4,6.75a.56.56,0,0,0,.57.56h1l-.18,1A.58.58,0,0,0,5.89,9a.12.12,0,0,0,.1,0,.57.57,0,0,0,.56-.48l.21-1.24H8.47L8.29,8.39a.57.57,0,0,0,.48.66h.09a.58.58,0,0,0,.57-.48l.21-1.24h1.23a.57.57,0,1,0,0-1.14h-1l.38-2.29h1.24A.57.57,0,0,0,12,3.35.6.6,0,0,0,11.45,2.72ZM8.66,6.17H7l.39-2.3H9.05Z""/><path d=""M13.14,12a.64.64,0,0,1,0,.93l-2.08,1.87a.63.63,0,0,1-.88,0,.64.64,0,0,1,0-.89l.88-.78H4.91l.87.78a.64.64,0,0,1,0,.89.63.63,0,0,1-.88,0L2.87,13a.62.62,0,0,1,0-.93l2.07-1.86a.62.62,0,1,1,.84.92l-.87.78H11.1l-.88-.78a.62.62,0,1,1,.84-.92Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.INTEGER_RANGE )]

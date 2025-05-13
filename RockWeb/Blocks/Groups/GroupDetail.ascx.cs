@@ -19,8 +19,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Humanizer;
 
 using Newtonsoft.Json;
 
@@ -30,6 +33,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Group;
 using Rock.Model;
+using Rock.Model.Groups.Group.Options;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Utility.Enums;
@@ -467,6 +471,8 @@ namespace RockWeb.Blocks.Groups
             {
                 divBadgeContainer.Visible = false;
             }
+
+            rblRelationshipStrength.BindToEnum<RelationshipStrength>();
         }
 
         /// <summary>
@@ -679,15 +685,6 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
-                bool isSecurityRoleGroup = group.IsActive && ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) );
-                if ( isSecurityRoleGroup )
-                {
-                    foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
-                    {
-                        authService.Delete( auth );
-                    }
-                }
-
                 // If group has a non-named schedule, delete the schedule record.
                 if ( group.ScheduleId.HasValue )
                 {
@@ -704,14 +701,16 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // NOTE: groupService.Delete will automatically Archive instead Delete if this Group has GroupHistory enabled, but since this block has UI logic for Archive vs Delete, we can do a direct Archive in btnArchive_Click
-                groupService.Delete( group );
+                if ( group.IsSecurityRoleOrSecurityGroupType() )
+                {
+                    GroupService.DeleteSecurityRoleGroup( group.Id );
+                }
+                else
+                {
+                    groupService.Delete( group );
+                }
 
                 rockContext.SaveChanges();
-
-                if ( isSecurityRoleGroup )
-                {
-                    Rock.Security.Authorization.Clear();
-                }
             }
 
             NavigateAfterDeleteOrArchive( parentGroupId );
@@ -1037,6 +1036,36 @@ namespace RockWeb.Blocks.Groups
             // Don't save inactive properties if the group is active.
             group.InactiveReasonValueId = cbIsActive.Checked ? null : ddlInactiveReason.SelectedValueAsInt();
             group.InactiveReasonNote = cbIsActive.Checked ? null : tbInactiveNote.Text;
+
+            // Save Peer Network settings.
+            if ( group.GroupType.IsPeerNetworkEnabled )
+            {
+                if ( cbOverrideRelationshipStrength.Checked )
+                {
+                    group.RelationshipStrengthOverride = rblRelationshipStrength.SelectedValueAsInt() ?? ( int ) RelationshipStrength.None;
+                    group.RelationshipGrowthEnabledOverride = cbEnableRelationshipGrowth.Checked;
+
+                    // This approach will only apply overrides if they're explicitly assigned (and will allow null values
+                    // so the parent group type's values can take effect where needed).
+                    group.LeaderToLeaderRelationshipMultiplierOverride = tbLeaderToLeaderRelationshipMultiplier.Text.AsDecimalPercentageOrNull( minPercentage: 0, maxPercentage: 100 );
+                    group.LeaderToNonLeaderRelationshipMultiplierOverride = tbLeaderToNonLeaderRelationshipMultiplier.Text.AsDecimalPercentageOrNull( minPercentage: 0, maxPercentage: 100 );
+                    group.NonLeaderToLeaderRelationshipMultiplierOverride = tbNonLeaderToLeaderRelationshipMultiplier.Text.AsDecimalPercentageOrNull( minPercentage: 0, maxPercentage: 100 );
+                    group.NonLeaderToNonLeaderRelationshipMultiplierOverride = tbNonLeaderToNonLeaderRelationshipMultiplier.Text.AsDecimalPercentageOrNull( minPercentage: 0, maxPercentage: 100 );
+                }
+                else
+                {
+                    // Clear out any previous overrides, so the parent group type settings will take full effect.
+                    group.RelationshipStrengthOverride = null;
+                    group.RelationshipGrowthEnabledOverride = null;
+
+                    group.LeaderToLeaderRelationshipMultiplierOverride = null;
+                    group.LeaderToNonLeaderRelationshipMultiplierOverride = null;
+                    group.NonLeaderToLeaderRelationshipMultiplierOverride = null;
+                    group.NonLeaderToNonLeaderRelationshipMultiplierOverride = null;
+                }
+            }
+            // else: leave the group's existing relationship strength overrides (if any) in place, as the calculations
+            // will safely ignore this group's values (since the parent group type has disabled the peer network feature).
 
             // Save RSVP settings.
             if ( group.GroupType.EnableRSVP )
@@ -1388,108 +1417,42 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCopy_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-            var groupService = new GroupService( rockContext );
-            var authService = new AuthService( rockContext );
-            var attributeService = new AttributeService( rockContext );
+            mdCopyGroup.Show();
+        }
 
+        /// <summary>
+        /// Handles the SaveClick event of the mdCopyGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdCopyGroup_SaveClick( object sender, EventArgs e )
+        {
             int groupId = hfGroupId.ValueAsInt();
-            var group = groupService.Queryable( "GroupType" )
-                    .Where( g => g.Id == groupId )
-                    .FirstOrDefault();
+            bool includeChildGroups = cbCopyGroupIncludeChildGroups.Checked;
+            int? newGroupId = null;
 
-            if( group != null && !group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            if ( groupId > 0 )
             {
-                nbEditModeMessage.Visible = true;
-                nbEditModeMessage.Text = "You are not authorized to copy the group";
-                return;
-            }
-
-            if ( group != null )
-            {
-                group.LoadAttributes( rockContext );
-
-                // Clone the group
-                var newGroup = group.CloneWithoutIdentity();
-                newGroup.IsSystem = false;
-                newGroup.Name = group.Name + " - Copy";
-
-                if ( group.ScheduleId.HasValue && group.Schedule.ScheduleType != ScheduleType.Named )
+                var currentGroup = GetGroup( hfGroupId.Value.AsInteger() );
+                if ( currentGroup != null && !currentGroup.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
-                    newGroup.Schedule = new Schedule();
-
-                    // NOTE: Schedule Name should be set to string.Empty to indicate that it is a Custom or Weekly schedule and not a "Named" schedule.
-                    newGroup.Schedule.Name = string.Empty;
-                    newGroup.Schedule.iCalendarContent = group.Schedule.iCalendarContent;
-                    newGroup.Schedule.WeeklyDayOfWeek = group.Schedule.WeeklyDayOfWeek;
-                    newGroup.Schedule.WeeklyTimeOfDay = group.Schedule.WeeklyTimeOfDay;
+                    nbEditModeMessage.Visible = true;
+                    nbEditModeMessage.Text = "You are not authorized to copy the group";
+                    return;
                 }
-
-                var auths = authService.GetByGroup( group.Id );
-                rockContext.WrapTransaction( () =>
+                var copyGroupOptions = new CopyGroupOptions
                 {
-                    groupService.Add( newGroup );
-                    rockContext.SaveChanges();
-
-                    newGroup.LoadAttributes( rockContext );
-
-                    Rock.Attribute.Helper.CopyAttributes( group, newGroup, rockContext );
-
-                    newGroup.SaveAttributeValues( rockContext );
-
-                    /* Take care of Group Member Attributes */
-                    var entityTypeId = EntityTypeCache.Get( typeof( GroupMember ) ).Id;
-                    string qualifierColumn = "GroupId";
-                    string qualifierValue = group.Id.ToString();
-
-                    // Get the existing attributes for this entity type and qualifier value
-                    var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
-
-                    foreach ( var attribute in attributes )
-                    {
-                        var newAttribute = attribute.Clone( false );
-                        newAttribute.Id = 0;
-                        newAttribute.Guid = Guid.NewGuid();
-                        newAttribute.IsSystem = false;
-                        newAttribute.EntityTypeQualifierValue = newGroup.Id.ToString();
-
-                        foreach ( var qualifier in attribute.AttributeQualifiers )
-                        {
-                            var newQualifier = qualifier.Clone( false );
-                            newQualifier.Id = 0;
-                            newQualifier.Guid = Guid.NewGuid();
-                            newQualifier.IsSystem = false;
-
-                            newAttribute.AttributeQualifiers.Add( newQualifier );
-                        }
-
-                        attributeService.Add( newAttribute );
-                    }
-
-                    rockContext.SaveChanges();
-
-                    foreach ( var auth in auths )
-                    {
-                        var newAuth = auth.CloneWithoutIdentity();
-                        newAuth.GroupId = newGroup.Id;
-                        authService.Add( newAuth );
-                    }
-
-                    rockContext.SaveChanges();
-                    Rock.Security.Authorization.Clear();
-
-                    // Copy the group-specific requirements.
-                    foreach ( var groupRequirement in group.GroupRequirements )
-                    {
-                        GroupRequirement newGroupRequirement = groupRequirement.CloneWithoutIdentity();
-                        newGroup.GroupRequirements.Add( newGroupRequirement );
-                    }
-
-                    rockContext.SaveChanges();
-                } );
-
-                NavigateToCurrentPage( new Dictionary<string, string> { { PageParameterKey.GroupId, newGroup.Id.ToString() } } );
+                    GroupId = groupId,
+                    IncludeChildGroups = includeChildGroups,
+                    CreatedByPersonAliasId = CurrentPersonAliasId
+                };
+                newGroupId = GroupService.CopyGroup( copyGroupOptions );
             }
+
+            var qryParams = new Dictionary<string, string>();
+            qryParams[PageParameterKey.GroupId] = newGroupId.HasValue && newGroupId > 0 ? newGroupId.Value.ToString() : groupId.ToString();
+            qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         #endregion
@@ -1510,6 +1473,7 @@ namespace RockWeb.Blocks.Groups
                 var group = new Group { GroupTypeId = CurrentGroupTypeId };
                 var groupType = CurrentGroupTypeCache;
 
+                SetPeerNetworkControls( groupType, group );
                 SetRsvpControls( groupType, null );
                 SetScheduleControls( groupType, null );
                 ShowGroupTypeEditDetails( groupType, group, true );
@@ -2008,6 +1972,7 @@ namespace RockWeb.Blocks.Groups
             BindAdministratorPerson( group, groupTypeCache );
             nbGroupCapacity.Visible = groupTypeCache != null && groupTypeCache.GroupCapacityRule != GroupCapacityRule.None;
             nbGroupCapacity.Help = nbGroupCapacity.Visible ? GetGroupCapacityHelpText( groupTypeCache.GroupCapacityRule ) : string.Empty;
+            SetPeerNetworkControls( groupTypeCache, group );
             SetRsvpControls( groupTypeCache, group );
             SetScheduleControls( groupTypeCache, group );
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
@@ -2299,6 +2264,78 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Sets the Peer Network controls.
+        /// </summary>
+        /// <param name="groupType">The group type cache.</param>
+        /// <param name="group">The group.</param>
+        private void SetPeerNetworkControls( GroupTypeCache groupType, Group group )
+        {
+            var isPeerNetworkOverridable = groupType?.IsPeerNetworkEnabled == true;
+
+            pnlPeerNetworkOverride.Visible = isPeerNetworkOverridable;
+
+            if ( !isPeerNetworkOverridable )
+            {
+                return;
+            }
+
+            cbOverrideRelationshipStrength.Checked = group.IsOverridingGroupTypePeerNetworkConfiguration;
+            pnlPeerNetwork.Visible = group.IsOverridingGroupTypePeerNetworkConfiguration;
+
+            // For relationship strength and growth settings, start by checking if a value is defined for this group,
+            // and fall back to the values defined at the group type level.
+            var relationshipStrength = group.RelationshipStrengthOverride ?? groupType.RelationshipStrength;
+            rblRelationshipStrength.SetValue( relationshipStrength );
+
+            cbEnableRelationshipGrowth.Checked = group.RelationshipGrowthEnabledOverride ?? groupType.RelationshipGrowthEnabled;
+
+            var showPeerNetworkAdvancedSettings = groupType.AreAnyRelationshipMultipliersCustomized || group.AreAnyRelationshipMultipliersCustomized;
+            swShowPeerNetworkAdvancedSettings.Checked = showPeerNetworkAdvancedSettings;
+            pnlPeerNetworkAdvanced.Visible = showPeerNetworkAdvancedSettings;
+
+            // For relationship multipliers, set the group type's values as placeholders on the textboxes, while setting
+            // the group's values as the actual values. This is because the stored procedure that's used to calculate
+            // role-based strengths checks for each individual group-based multiplier override (rather than considering
+            // them ALL to be overridden as a set). By showing the group type multiplier values as placeholders, the
+            // admin can easily see which values they want to override without having to go back to the group type config.
+            tbLeaderToLeaderRelationshipMultiplier.Placeholder = groupType.LeaderToLeaderRelationshipMultiplier.FormatAsPercent();
+            tbLeaderToLeaderRelationshipMultiplier.Text = group.LeaderToLeaderRelationshipMultiplierOverride.HasValue
+                ? group.LeaderToLeaderRelationshipMultiplierOverride.Value.FormatAsPercent()
+                : null;
+
+            tbLeaderToNonLeaderRelationshipMultiplier.Placeholder = groupType.LeaderToNonLeaderRelationshipMultiplier.FormatAsPercent();
+            tbLeaderToNonLeaderRelationshipMultiplier.Text = group.LeaderToNonLeaderRelationshipMultiplierOverride.HasValue
+                ? group.LeaderToNonLeaderRelationshipMultiplierOverride.Value.FormatAsPercent()
+                : null;
+
+            tbNonLeaderToLeaderRelationshipMultiplier.Placeholder = groupType.NonLeaderToLeaderRelationshipMultiplier.FormatAsPercent();
+            tbNonLeaderToLeaderRelationshipMultiplier.Text = group.NonLeaderToLeaderRelationshipMultiplierOverride.HasValue
+                ? group.NonLeaderToLeaderRelationshipMultiplierOverride.Value.FormatAsPercent()
+                : null;
+
+            tbNonLeaderToNonLeaderRelationshipMultiplier.Placeholder = groupType.NonLeaderToNonLeaderRelationshipMultiplier.FormatAsPercent();
+            tbNonLeaderToNonLeaderRelationshipMultiplier.Text = group.NonLeaderToNonLeaderRelationshipMultiplierOverride.HasValue
+                ? group.NonLeaderToNonLeaderRelationshipMultiplierOverride.Value.FormatAsPercent()
+                : null;
+
+            SetPeerNetworkSubControlVisibility( relationshipStrength, showPeerNetworkAdvancedSettings );
+        }
+
+        /// <summary>
+        /// Sets the visibility of peer network secondary controls, based on the provided relationship strength.
+        /// </summary>
+        /// <param name="relationshipStrength">The relationship strength.</param>
+        /// <param name="isAdvancedPanelVisible">Whether the peer network advanced panel is currently visible.</param>
+        private void SetPeerNetworkSubControlVisibility( int relationshipStrength, bool isAdvancedPanelVisible )
+        {
+            var isVisible = relationshipStrength != 0;
+
+            pnlRelationshipGrowth.Visible = isVisible;
+            pnlShowPeerNetworkAdvancedSettings.Visible = isVisible;
+            pnlPeerNetworkAdvanced.Visible = isAdvancedPanelVisible && isVisible;
+        }
+
+        /// <summary>
         /// Sets the RSVP controls.
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
@@ -2392,6 +2429,61 @@ namespace RockWeb.Blocks.Groups
             {
                 groupIconHtml = !string.IsNullOrWhiteSpace( groupType.IconCssClass ) ?
                     string.Format( "<i class='{0}' ></i>", groupType.IconCssClass ) : string.Empty;
+
+                if ( groupType.IsPeerNetworkEnabled )
+                {
+                    var groupTypeRelationshipStrength = groupType.RelationshipStrength;
+                    var groupRelationshipStrength = group.RelationshipStrengthOverride;
+
+                    var isRelationshipStrengthOverridden = groupRelationshipStrength.HasValue
+                        && groupRelationshipStrength.Value != groupTypeRelationshipStrength;
+
+                    var finalRelationshipStrength = isRelationshipStrengthOverridden
+                        ? groupRelationshipStrength.Value
+                        : groupTypeRelationshipStrength;
+
+                    var strengthLabel = GetRelationshipStrengthLabel( finalRelationshipStrength );
+
+                    var isRelationshipGrowthEnabled = group.RelationshipGrowthEnabledOverride.HasValue
+                        ? group.RelationshipGrowthEnabledOverride.Value
+                        : groupType.RelationshipGrowthEnabled;
+
+                    var relationshipGrowthTooltip = string.Empty;
+                    var relationshipOverrideTooltip = string.Empty;
+
+                    var relationshipLabelIconsSb = new StringBuilder();
+
+                    // Only show the growth icon and tooltip if growth enabled AND the strength is not "None".
+                    if ( isRelationshipGrowthEnabled && finalRelationshipStrength > 0 )
+                    {
+                        relationshipLabelIconsSb.Append( $@" <i class=""fa fa-chart-line""></i>" );
+
+                        relationshipGrowthTooltip = " The relationship is also set to strengthen over time.";
+                    }
+
+                    // Show the overridden icon if this group is overriding its parent group type's peer network configuration in any way.
+                    if ( group.IsOverridingGroupTypePeerNetworkConfiguration )
+                    {
+                        relationshipLabelIconsSb.Append( $@" <i class=""fa fa-star-of-life""></i>" );
+                    }
+
+                    // Only show the overridden tooltip if the relationship strength itself has been overridden.
+                    if ( isRelationshipStrengthOverridden )
+                    {
+                        var overriddenStrengthLabel = GetRelationshipStrengthLabel( groupTypeRelationshipStrength );
+
+                        relationshipOverrideTooltip = $", overriding the group type's default setting of{( overriddenStrengthLabel.Article.IsNotNullOrWhiteSpace() ? $" {overriddenStrengthLabel.Article}" : string.Empty )} {overriddenStrengthLabel.Relationship} relationship";
+                    }
+
+                    hlPeerNetwork.Text = $"{strengthLabel.Relationship.Titleize()} Relationships{relationshipLabelIconsSb}";
+                    hlPeerNetwork.ToolTip = $"Individuals in this group share{( strengthLabel.Article.IsNotNullOrWhiteSpace() ? $" {strengthLabel.Article}" : string.Empty )} {strengthLabel.Relationship} relationship{relationshipOverrideTooltip}.{relationshipGrowthTooltip}";
+
+                    hlPeerNetwork.Visible = true;
+                }
+                else
+                {
+                    hlPeerNetwork.Visible = false;
+                }
 
                 if ( groupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
@@ -2538,6 +2630,58 @@ namespace RockWeb.Blocks.Groups
 
             btnSecurity.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.EntityId = group.Id;
+        }
+
+        /// <summary>
+        /// A POCO to provide a friendly label for a given relationship strength.
+        /// </summary>
+        private class RelationshipStrengthLabel
+        {
+            /// <summary>
+            /// The indefinite article to use when describing this relationship.
+            /// </summary>
+            public string Article { get; set; }
+
+            /// <summary>
+            /// The friendly relationship label.
+            /// </summary>
+            public string Relationship { get; set; }
+        }
+
+        /// <summary>
+        /// Gets a friendly label for the provided relationship strength.
+        /// </summary>
+        /// <param name="strength">The integer representation of the relationship strength.</param>
+        /// <returns>A friendly label for the provided relationship strength.</returns>
+        private RelationshipStrengthLabel GetRelationshipStrengthLabel( int strength )
+        {
+            var label = new RelationshipStrengthLabel();
+
+            var relationshipStrength = strength.ToString().ConvertToEnumOrNull<RelationshipStrength>();
+            if ( relationshipStrength == null )
+            {
+                // Since the db holds an int value, it's possible someone could manually set an unrepresented value here
+                // (and the stored procedure performing peer network calculations would still work just fine). Let's at
+                // least use this opportunity to point out to the admin that an unknown strength value is in place.
+                label.Article = "an";
+                label.Relationship = "unknown";
+            }
+            else
+            {
+                switch ( relationshipStrength.Value )
+                {
+                    case RelationshipStrength.None:
+                        label.Article = null;
+                        label.Relationship = "no";
+                        break;
+                    default:
+                        label.Article = "a";
+                        label.Relationship = relationshipStrength.Value.ConvertToString().ToLower();
+                        break;
+                }
+            }
+
+            return label;
         }
 
         /// <summary>
@@ -4642,6 +4786,43 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
+
+        #region Peer Network Controls
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbOverrideRelationshipStrength control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void cbOverrideRelationshipStrength_CheckedChanged( object sender, EventArgs e )
+        {
+            pnlPeerNetwork.Visible = cbOverrideRelationshipStrength.Checked;
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the rblRelationshipStrength control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void rblRelationshipStrength_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var relationshipStrength = rblRelationshipStrength.SelectedValueAsInt() ?? 0;
+            var isAdvancedPanelVisible = swShowPeerNetworkAdvancedSettings.Checked;
+
+            SetPeerNetworkSubControlVisibility( relationshipStrength, isAdvancedPanelVisible );
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the swShowPeerNetworkAdvancedSettings control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void swShowPeerNetworkAdvancedSettings_CheckedChanged( object sender, EventArgs e )
+        {
+            pnlPeerNetworkAdvanced.Visible = swShowPeerNetworkAdvancedSettings.Checked;
+        }
+
+        #endregion Peer Network Controls
 
         /// <summary>
         /// Handles the CheckedChanged event of the cbIsSecurityRole control.

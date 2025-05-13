@@ -4,7 +4,7 @@ import { mountBlock } from "../blocks";
 
 describe("RegistrationEntry", () => {
     it("Displays default not found message when no configuration values sent", () => {
-        const instance = mountBlock(RegistrationEntry, null);
+        const instance = mountBlock(RegistrationEntry, {});
 
         expect(instance.find(".alert-warning > strong").text()).toBe("Sorry");
         expect(instance.find(".alert-warning > p").text()).toBe("The selected registration could not be found or is no longer active.");

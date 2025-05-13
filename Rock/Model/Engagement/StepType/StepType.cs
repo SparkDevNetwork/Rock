@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StepType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "5E795620-9F16-49D2-9030-947C0E348A8E")]
     public partial class StepType : Model<StepType>, IOrdered, IHasActiveFlag, ICacheable
     {
@@ -76,6 +77,7 @@ namespace Rock.Model
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int StepProgramId { get; set; }
 
         /// <summary>
@@ -323,6 +325,21 @@ namespace Rock.Model
         private Dictionary<string, string> _supportedActions;
 
         #endregion Navigation Properties
+
+        #region Public Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        #endregion
 
         #region Entity Configuration
 

@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -58,11 +59,7 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<AuthAuditLog>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, AuthAuditLog.FriendlyTypeName );
-                return false;
-            }
+            // ignoring AuthAuditLog,GroupId
 
             if ( new Service<Campus>( Context ).Queryable().Any( a => a.TeamGroupId == item.Id ) )
             {
@@ -70,11 +67,7 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<Communication>( Context ).Queryable().Any( a => a.ListGroupId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Communication.FriendlyTypeName );
-                return false;
-            }
+            // ignoring Communication,ListGroupId
 
             if ( new Service<ConnectionRequest>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
             {
@@ -175,6 +168,24 @@ namespace Rock.Model
         }
     }
 
+    [HasQueryableAttributes( typeof( Group.GroupQueryableAttributeValue ), nameof( GroupAttributeValues ) )]
+    public partial class Group
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<GroupQueryableAttributeValue> GroupAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class GroupQueryableAttributeValue : QueryableAttributeValue
+        {
+        }
+    }
+
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
@@ -236,6 +247,7 @@ namespace Rock.Model
             target.ArchivedDateTime = source.ArchivedDateTime;
             target.AttendanceRecordRequiredForCheckIn = source.AttendanceRecordRequiredForCheckIn;
             target.CampusId = source.CampusId;
+            target.ChatChannelKey = source.ChatChannelKey;
             target.ConfirmationAdditionalDetails = source.ConfirmationAdditionalDetails;
             target.Description = source.Description;
             target.DisableScheduleToolboxAccess = source.DisableScheduleToolboxAccess;
@@ -252,6 +264,10 @@ namespace Rock.Model
             target.InactiveReasonValueId = source.InactiveReasonValueId;
             target.IsActive = source.IsActive;
             target.IsArchived = source.IsArchived;
+            target.IsChatChannelAlwaysShownOverride = source.IsChatChannelAlwaysShownOverride;
+            target.IsChatChannelPublicOverride = source.IsChatChannelPublicOverride;
+            target.IsChatEnabledOverride = source.IsChatEnabledOverride;
+            target.IsLeavingChatChannelAllowedOverride = source.IsLeavingChatChannelAllowedOverride;
             target.IsPublic = source.IsPublic;
             target.IsSecurityRole = source.IsSecurityRole;
             target.IsSpecialNeeds = source.IsSpecialNeeds;

@@ -59,6 +59,11 @@ namespace Rock.Search.Person
         {
             var recordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
+            if ( searchTerm.IsSingleSpecialCharacter() )
+            {
+                return Enumerable.Empty<Model.Person>().AsQueryable();
+            }
+
             return new PersonService( new RockContext() ).Queryable()
                 .Where( q => q.RecordTypeValueId == recordTypeValueId && q.LastName.Contains( searchTerm ) );
         }

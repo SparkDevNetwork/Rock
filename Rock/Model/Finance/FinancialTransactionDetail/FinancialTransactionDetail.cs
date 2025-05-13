@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialTransactionDetail" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.FINANCIAL_TRANSACTION_DETAIL )]
     public partial class FinancialTransactionDetail : Model<FinancialTransactionDetail>, ITransactionDetail
     {

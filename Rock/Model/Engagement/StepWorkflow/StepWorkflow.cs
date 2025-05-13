@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StepWorkflow" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "9E164DCB-2B3C-49DB-A3DA-E25E24BB23B9")]
     public partial class StepWorkflow : Model<StepWorkflow>
     {

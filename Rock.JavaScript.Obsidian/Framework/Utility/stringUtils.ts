@@ -109,6 +109,65 @@ export function toTitleCase(str: string | null): string {
     });
 }
 
+type KebabCaseOptions = {
+    /** Keep intentional multiple dashes. */
+    preserveMultipleDashes?: boolean;
+    /** Allow a leading dashes. */
+    allowLeadingDashes?: boolean;
+    /** Allow a trailing dashes. */
+    allowTrailingDashes?: boolean;
+    /** Keep special characters (except spaces). */
+    allowSpecialChars?: boolean;
+};
+
+/**
+ * Converts the string to kebab-case.
+ *
+ * @example
+ * toKebabCase("helloWorLd") // "hello-wor-ld"
+ *
+ * @param str
+ */
+export function toKebabCase(str: string, options: KebabCaseOptions = {}): string {
+    const {
+        preserveMultipleDashes = false,
+        allowLeadingDashes = false,
+        allowTrailingDashes = false,
+        allowSpecialChars = false,
+    } = options;
+
+    let result = str.trim();
+
+    // Convert camelCase or PascalCase to kebab-case.
+    result = result.replace(/([a-z])([A-Z])/g, "$1-$2");
+
+    // Replace spaces with dashes.
+    result = result.replace(/\s+/g, "-");
+
+    // Remove special characters (if not allowed).
+    if (!allowSpecialChars) {
+        result = result.replace(/[^a-zA-Z0-9-]/g, "");
+    }
+
+    // Collapse multiple dashes unless explicitly preserved.
+    if (!preserveMultipleDashes) {
+        result = result.replace(/-+/g, "-");
+    }
+
+    // Ensure lowercase.
+    result = result.toLowerCase();
+
+    // Handle leading/trailing dashes.
+    if (!allowLeadingDashes) {
+        result = result.replace(/^-+/, "");
+    }
+    if (!allowTrailingDashes) {
+        result = result.replace(/-+$/, "");
+    }
+
+    return result;
+}
+
 /**
  * Capitalize the first character
  */
@@ -296,6 +355,36 @@ export function containsHtmlTag(value: string): boolean {
     return /<[/0-9a-zA-Z]/.test(value);
 }
 
+
+/**
+ * Create a 32-bit integer hash representation of a string.
+ *
+ * @param str The string to be hashed
+ *
+ * @returns The 32-bit integer hash representation of the string.
+ */
+export function createHash(str: string): number {
+    let hash = 0;
+
+    for (let i = 0; i < str.length; i++) {
+        const chr = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + chr;
+        hash |= 0; // Convert to 32bit integer
+    }
+
+    return hash;
+}
+
+/**
+ * Replaces all instances of `search` in `str` with `replace`.
+ * @param str The source string.
+ * @param search The string to search for.
+ * @param replace The string to replace with.
+ */
+export function replaceAll(str: string, search: string, replace: string): string {
+    return str.replace(new RegExp(search, "g"), replace);
+}
+
 export default {
     asCommaAnd,
     containsHtmlTag,
@@ -304,9 +393,14 @@ export default {
     isNullOrWhiteSpace,
     isWhiteSpace,
     isEmpty,
+    toKebabCase,
     toTitleCase,
+    upperCaseFirstCharacter,
+    pluralize,
     pluralConditional,
     padLeft,
     padRight,
-    truncate
+    truncate,
+    createHash,
+    replaceAll
 };

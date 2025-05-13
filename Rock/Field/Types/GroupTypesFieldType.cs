@@ -30,6 +30,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select 0 or more GroupTypes 
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_TYPES )]
     public class GroupTypesFieldType : SelectFromListFieldType, IEntityReferenceFieldType

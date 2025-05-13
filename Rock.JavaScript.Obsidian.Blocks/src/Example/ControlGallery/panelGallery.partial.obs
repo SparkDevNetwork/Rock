@@ -1,0 +1,182 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode">
+        <Panel v-model="value" v-model:isDrawerOpen="drawerValue" :hasCollapse="collapsibleValue" :hasZoom="hasZoom" :hasFullscreen="hasFullscreen" :isFullscreenPageOnly="isFullscreenPageOnly" title="Panel Title" :headerSecondaryActions="headerSecondaryActions">
+            <template v-if="simulateHelp" #helpContent>
+                This is some help text.
+            </template>
+
+            <template v-if="simulateDrawer" #drawer>
+                <div style="text-align: center;">Drawer Content</div>
+            </template>
+
+            <template v-if="simulateSidebar" #sidebar>
+                <div style="text-align: center;"><img src="https://placehold.co/280x158" /></div>
+            </template>
+
+            <template v-if="simulateHeaderActions" #headerActions>
+                <span class="action">
+                    <i class="fa fa-star-o"></i>
+                </span>
+
+                <span class="action">
+                    <i class="fa fa-user"></i>
+                </span>
+            </template>
+
+            <template v-if="simulateSubheaderLeft" #subheaderLeft>
+                <span class="label label-warning">Warning</span>&nbsp;
+                <span class="label label-default">Default</span>
+            </template>
+
+            <template v-if="simulateSubheaderRight" #subheaderRight>
+                <span class="label label-info">Info</span>&nbsp;
+                <span class="label label-default">Default</span>
+            </template>
+
+            <template v-if="simulateFooterActions" #footerActions>
+                <RockButton btnType="primary">Action 1</RockButton>
+                <RockButton btnType="primary">Action 2</RockButton>
+            </template>
+
+            <template v-if="simulateFooterSecondaryActions" #footerSecondaryActions>
+                <RockButton btnType="default"><i class="fa fa-lock"></i></RockButton>
+                <RockButton btnType="default"><i class="fa fa-unlock"></i></RockButton>
+            </template>
+
+
+            <h4>Romans 11:33-36</h4>
+            <p>
+                Oh, the depth of the riches<br />
+                and the wisdom and the knowledge of God!<br />
+                How unsearchable his judgments<br />
+                and untraceable his ways!<br />
+                For who has known the mind of the Lord?<br />
+                Or who has been his counselor?<br />
+                And who has ever given to God,<br />
+                that he should be repaid?<br />
+                For from him and through him<br />
+                and to him are all things.<br />
+                To him be the glory forever. Amen.
+            </p>
+        </Panel>
+
+        <template #settings>
+            <div class="row">
+                <CheckBox formGroupClasses="col-sm-3" v-model="collapsibleValue" label="Collapsible" />
+                <CheckBox formGroupClasses="col-sm-3" v-model="value" label="Panel Open" />
+                <CheckBox formGroupClasses="col-sm-3" v-model="hasFullscreen" label="Has Fullscreen" />
+                <CheckBox formGroupClasses="col-sm-3" v-model="isFullscreenPageOnly" label="Page Only Fullscreen" />
+                <CheckBox formGroupClasses="col-sm-3" v-model="hasZoom" label="Has Zoom" />
+            </div>
+            <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" horizontal :repeatColumns="4" />
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+
+    const simulateValues = ref<string[]>([]);
+
+    const headerSecondaryActions = computed((): PanelAction[] => {
+        if (!simulateValues.value.includes("headerSecondaryActions")) {
+            return [];
+        }
+
+        return [
+            {
+                iconCssClass: "fa fa-user",
+                title: "Action 1",
+                type: "default",
+                handler: () => alert("Action 1 selected.")
+            },
+            {
+                iconCssClass: "fa fa-group",
+                title: "Action 2",
+                type: "default",
+                handler: () => alert("Action 2 selected.")
+            }
+        ];
+    });
+
+    const collapsibleValue = ref(true);
+    const drawerValue = ref(false);
+    const hasFullscreen = ref(false);
+    const hasZoom = ref(false);
+    const simulateOptions = [
+        {
+            value: "drawer",
+            text: "Drawer"
+        },
+        {
+            value: "sidebar",
+            text: "Sidebar"
+        },
+        {
+            value: "headerActions",
+            text: "Header Actions"
+        },
+        {
+            value: "headerSecondaryActions",
+            text: "Header Secondary Actions"
+        },
+        {
+            value: "subheaderLeft",
+            text: "Subheader Left",
+        },
+        {
+            value: "subheaderRight",
+            text: "Subheader Right"
+        },
+        {
+            value: "footerActions",
+            text: "Footer Actions"
+        },
+        {
+            value: "footerSecondaryActions",
+            text: "Footer Secondary Actions"
+        },
+        {
+            value: "helpContent",
+            text: "Help Content"
+        },
+        {
+            value: "largeBody",
+            text: "Large Body"
+        }
+    ];
+    const simulateDrawer = computed((): boolean => simulateValues.value.includes("drawer"));
+    const simulateSidebar = computed((): boolean => simulateValues.value.includes("sidebar"));
+    const simulateHeaderActions = computed((): boolean => simulateValues.value.includes("headerActions"));
+    const simulateSubheaderLeft = computed((): boolean => simulateValues.value.includes("subheaderLeft"));
+    const simulateSubheaderRight = computed((): boolean => simulateValues.value.includes("subheaderRight"));
+    const simulateFooterActions = computed((): boolean => simulateValues.value.includes("footerActions"));
+    const simulateFooterSecondaryActions = computed((): boolean => simulateValues.value.includes("footerSecondaryActions"));
+    const simulateLargeBody = computed((): boolean => simulateValues.value.includes("largeBody"));
+    const simulateHelp = computed((): boolean => simulateValues.value.includes("helpContent"));
+    const isFullscreenPageOnly = ref(true);
+    const value = ref(true);
+    const importCode = getSfcControlImportPath("panel");
+    const exampleCode = `<Panel v-model="isExanded" v-model:isDrawerOpen="false" title="Panel Title" :hasCollapse="true" :hasFullscreen="false" :isFullscreenPageOnly="true" :headerSecondaryActions="false">
+    <template #helpContent>Help Content</template>
+    <template #sidebar>Sidebar Content</template>
+    <template #drawer>Drawer Content</template>
+    <template #headerActions>Header Actions</template>
+    <template #subheaderLeft>Sub Header Left</template>
+    <template #subheaderRight>Sub Header Right</template>
+    <template #footerActions>Footer Actions</template>
+    <template #footerSecondaryActions>Footer Secondary Actions</template>
+
+    Main Panel Content
+</Panel>`;
+</script>

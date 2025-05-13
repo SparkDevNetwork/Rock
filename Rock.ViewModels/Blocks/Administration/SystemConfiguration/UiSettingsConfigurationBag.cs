@@ -61,5 +61,13 @@ namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
         /// The SMS opt in message.
         /// </value>
         public string SmsOptInMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value indicating whether or not default address state selection is enabled.
+        /// </summary>
+        /// <value>
+        /// The Svalue indicating whether or not default address state selection is enabled.
+        /// </value>
+        public bool EnableDefaultAddressStateSelection {  get; set; }
     }
 }

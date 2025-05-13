@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "Attendance" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Analytics( false, false )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ATTENDANCE )]
     public partial class Attendance : Model<Attendance>

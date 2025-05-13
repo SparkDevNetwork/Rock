@@ -245,8 +245,8 @@ namespace Rock.Blocks.Engagement
         /// <returns></returns>
         private StreakTypeCache GetStreakType()
         {
-            var streakTypeId = PageParameter( PageParameterKey.StreakTypeId ).AsIntegerOrNull();
-
+            var streakTypeIdParam = PageParameter( PageParameterKey.StreakTypeId );
+            var streakTypeId = Rock.Utility.IdHasher.Instance.GetId( streakTypeIdParam ) ?? streakTypeIdParam.AsIntegerOrNull();
             return streakTypeId.HasValue ? StreakTypeCache.Get( streakTypeId.Value ) : null;
         }
 

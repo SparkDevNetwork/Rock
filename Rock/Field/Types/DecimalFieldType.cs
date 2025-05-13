@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a decimal numeric value
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M13.25,12.37H11.5a1.74,1.74,0,0,1-1.75-1.75V5.38A1.74,1.74,0,0,1,11.5,3.63h1.75A1.74,1.74,0,0,1,15,5.38v5.24a1.74,1.74,0,0,1-1.75,1.75Zm-1.75-7v5.24h1.75V5.38Z""/><rect x=""7.12"" y=""10.62"" width=""1.75"" height=""1.75""/><path d=""M4.5,10.62v-7H2.75V4.5H1V6.25H2.75v4.37H1v1.75H6.25V10.62Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DECIMAL )]

@@ -37,6 +37,9 @@ namespace Rock.Tests.Shared
 
     public static class TestFeatures
     {
+        // Tests having this property relate to AI completions.
+        public const string AICompletions = "AI Completions";
+
         // Tests having this property relate to data setup for integration tests.
         public const string DataSetup = "Data Setup (Basic)";
         public const string DataSetupBulk = "Data Setup (Bulk)";

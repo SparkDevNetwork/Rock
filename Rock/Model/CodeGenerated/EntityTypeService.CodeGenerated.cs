@@ -262,6 +262,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<LearningActivity>( Context ).Queryable().Any( a => a.ActivityComponentId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, LearningActivity.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<MediaAccount>( Context ).Queryable().Any( a => a.ComponentEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, MediaAccount.FriendlyTypeName );

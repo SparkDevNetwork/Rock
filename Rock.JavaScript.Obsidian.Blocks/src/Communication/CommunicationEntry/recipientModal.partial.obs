@@ -1,0 +1,365 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="internalIsOpen"
+           :clickBackdropToClose="false"
+           :isSaveButtonDisabled="disabled"
+           saveText="Save"
+           title="Recipient Manager"
+           @save="onSaveClicked"
+           @closeModal="onCloseModal">
+        <div :class="`recipient-modal-body ${breakpointHelper.breakpoint}`">
+            <NotificationBox v-if="disabled && disabledMessage" alertType="warning">
+                {{ disabledMessage }}
+            </NotificationBox>
+
+            <template v-if="!isAddHidden">
+                <div class="d-sm-flex flex-row justify-content-between align-items-center">
+                    <PersonPicker :modelValue="personPickerSelection"
+                                  :disabled="disabled"
+                                  label="Add Recipient"
+                                  @update:modelValue="onPersonPicked" />
+                    <div class="label label-info">Recipients: {{ pendingItems.length }}</div>
+                </div>
+                <hr>
+            </template>
+
+            <TextBox v-model="recipientTextFilterTemp" @update:modelValue="performSearch" label="Filter" placeholder="Filter by name, email or phone number" />
+
+            <Grid :definition="recipientsGridDefinition"
+                  :data="recipientsGridData"
+                  itemTerm="Recipient"
+                  class="recipient-manager-grid"
+                  :disablePreferences="true"
+                  :keyField="getStringKey<CommunicationEntryRecipientBag>('personAliasGuid')"
+                  rowClass="recipient-modal-row">
+
+                <Column :name="getRecipientKey('name')" :field="getRecipientKey('name')" title="Name" :filter="textValueFilter">
+                    <template #format="{ row }">
+                        <div v-if="!(row as CommunicationEntryRecipientBag).isDeceased">
+                            {{ (row as CommunicationEntryRecipientBag).name }}
+                        </div>
+                        <div v-else class="text-muted">
+                            <div>{{ (row as CommunicationEntryRecipientBag).name }}</div>
+                            <small class="font-weight-light">Deceased Won't Send</small>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column :name="getRecipientKey('isEmailAllowed')" :field="getRecipientKey('isEmailAllowed')" title="Email">
+                    <template #format="{ row }">
+                        <span class="communication-medium-status">
+                            <i :class="[
+                                'fa fa-circle',
+                                (row as CommunicationEntryRecipientBag).isDeceased
+                                    ? 'text-muted'
+                                    : (isForBulkCommunication
+                                        ? (row as CommunicationEntryRecipientBag).isBulkEmailAllowed
+                                        : (row as CommunicationEntryRecipientBag).isEmailAllowed)
+                                        ? 'text-success'
+                                        : 'text-danger']"
+                               :data-original-title="getTooltipRef((row as CommunicationEntryRecipientBag), 'email').value"
+                               :ref="applyTooltip"></i><template v-if="breakpointHelper.isSmOrLarger">&nbsp;{{ (row as CommunicationEntryRecipientBag).email }}</template></span>
+                    </template>
+                </Column>
+
+                <Column :name="getRecipientKey('isSmsAllowed')" :field="getRecipientKey('isSmsAllowed')" title="SMS">
+                    <template #format="{ row }">
+                        <span class="communication-medium-status">
+                            <i :class="[
+                                'fa fa-circle',
+                                (row as CommunicationEntryRecipientBag).isDeceased
+                                    ? 'text-muted'
+                                    : (row as CommunicationEntryRecipientBag).isSmsAllowed
+                                        ? 'text-success'
+                                        : 'text-danger']"
+                               :data-original-title="getTooltipRef((row as CommunicationEntryRecipientBag), 'sms').value"
+                               :ref="applyTooltip"></i><template v-if="breakpointHelper.isSmOrLarger">&nbsp;{{ (row as CommunicationEntryRecipientBag).smsNumber }}</template></span>
+                    </template>
+                </Column>
+
+                <Column :name="getRecipientKey('isPushAllowed')" :field="getRecipientKey('isPushAllowed')" title="Push">
+                    <template #format="{ row }">
+                        <span class="communication-medium-status">
+                            <i :class="[
+                                'fa fa-circle',
+                                (row as CommunicationEntryRecipientBag).isDeceased
+                                    ? 'text-muted'
+                                    : (row as CommunicationEntryRecipientBag).isPushAllowed
+                                        ? 'text-success'
+                                        : 'text-danger']"
+                               :data-original-title="getTooltipRef((row as CommunicationEntryRecipientBag), 'push').value"
+                               :ref="applyTooltip"></i>
+                        </span>
+                    </template>
+                </Column>
+
+                <DeleteColumn name="removeRecipient" itemClass="grid-columncommand remove-button" :disableConfirmation="true" @click="onRemoveRecipientClicked" />
+            </Grid>
+        </div>
+    </Modal>
+</template>
+
+<style scoped>
+.communication-medium-status {
+    white-space: nowrap;
+}
+
+/** Only show the remove button on hover OR if on mobile screen size (disable hover behavior if mobile). */
+.recipient-modal-body:not(.xs) :deep(.recipient-modal-row .remove-button) {
+    visibility: hidden;
+}
+
+.recipient-modal-body:not(.xs) :deep(.recipient-modal-row:hover .remove-button) {
+    visibility: visible;
+}
+
+.recipient-manager-grid :deep(.grid-body) {
+    max-height: 400px;
+    height: 400px;
+    overflow: auto;
+}
+
+.recipient-manager-grid :deep(.grid-title-heading) {
+    display: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, Ref, watch, nextTick } from "vue";
+    import { MediumType } from "./types.partial";
+    import { useBreakpointHelper } from "./utils.partial";
+    import Grid, { Column, DeleteColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
+    import { FieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/fieldDefinitionBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<boolean>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** A message to be displayed when `disabled` is `true`. */
+        disabledMessage: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        getTooltipRef: {
+            type: Function as PropType<(value: CommunicationEntryRecipientBag | null, mode: MediumType) => Ref<string>>,
+            default: (_: string) => ""
+        },
+
+        isAddHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isForBulkCommunication: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        recipients: {
+            type: Object as PropType<CommunicationEntryRecipientBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", newValue: boolean): void,
+        (e: "update:recipients", newValue: CommunicationEntryRecipientBag[]): void
+    }>();
+
+    const isRegex: RegExp = /\/(.+)\/(.*)/; // Matches regex strings in the form /<regex>/<flags>
+
+    const recipientsGridDefinition: GridDefinitionBag = {
+        enableLaunchWorkflow: false,
+        enableStickyHeader: false,
+        fields: [
+            createFieldDefinition(getStringKey<CommunicationEntryRecipientBag>("name")),
+            createFieldDefinition(getStringKey<CommunicationEntryRecipientBag>("isEmailAllowed")),
+            createFieldDefinition(getStringKey<CommunicationEntryRecipientBag>("isSmsAllowed")),
+            createFieldDefinition(getStringKey<CommunicationEntryRecipientBag>("isPushAllowed")),
+        ],
+    };
+
+    const breakpointHelper = useBreakpointHelper();
+    const performSearch = debounce(() => {
+        recipientTextFilter.value = recipientTextFilterTemp.value;
+    }, 350);
+
+    const emptyListItemBag: ListItemBag = {};
+
+    //#region Values
+
+    const internalIsOpen = useVModelPassthrough(props, "modelValue", emit);
+    const internalRecipients = useVModelPassthrough(props, "recipients", emit);
+    const pendingItems = ref<CommunicationEntryRecipientBag[]>([...internalRecipients.value]);
+    const recipientTextFilter = ref<string>("");
+    const recipientTextFilterTemp = ref<string>("");
+    const personPickerSelection = ref<ListItemBag | undefined>();
+
+    //#endregion
+
+    //#region Computed Values
+
+    const recipientsGridData = computed<GridDataBag>(() => ({
+        rows: filteredRecipients.value,
+    }));
+
+    const filteredRecipients = computed<CommunicationEntryRecipientBag[]>(() => {
+        const textFilter = recipientTextFilter.value;
+        if (!textFilter) {
+            return pendingItems.value;
+        }
+
+        const regex = tryGetRegExp(textFilter);
+
+        if (regex) {
+            return pendingItems.value.filter(recipient =>
+                (recipient.name && regex.test(recipient.name))
+                || (recipient.email && regex.test(recipient.email))
+                || (recipient.smsNumber && regex.test(recipient.smsNumber))
+            );
+        }
+        else {
+            const textFilterLowerCase = textFilter.toLocaleLowerCase();
+            return pendingItems.value.filter(recipient =>
+                (recipient.name && recipient.name.toLocaleLowerCase().indexOf(textFilterLowerCase) >= 0)
+                || (recipient.email && recipient.email.toLocaleLowerCase().indexOf(textFilterLowerCase) >= 0)
+                || (recipient.smsNumber && recipient.smsNumber.toLocaleLowerCase().indexOf(textFilterLowerCase) >= 0)
+            );
+        }
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    function getStringKey<T>(key: Extract<keyof T, string>): string {
+        return key;
+    }
+
+    function getRecipientKey(key: Extract<keyof CommunicationEntryRecipientBag, string>): string {
+        return getStringKey<CommunicationEntryRecipientBag>(key);
+    }
+
+    function createFieldDefinition(name: string): FieldDefinitionBag {
+        return {
+            name
+        };
+    }
+
+    /**
+     * Applies a tooltip to an element. The element should have an `data-original-title` attribute containing the tooltip text.
+     *
+     * Typical use, `:ref="applyTooltip"`
+     */
+    function applyTooltip(el: unknown): void {
+        const htmlElement = el as HTMLElement;
+        if (htmlElement) {
+            tooltip(htmlElement);
+        }
+    }
+
+    function tryGetRegExp(pattern: string): RegExp | undefined {
+        try {
+            const match = pattern.match(isRegex);
+
+            if (match && match.length) {
+                return new RegExp(match[1], match[2]);
+            }
+        }
+        catch {
+            // The pattern was not valid regex.
+        }
+    }
+
+    function clear(): void {
+        personPickerSelection.value = emptyListItemBag;
+        recipientTextFilterTemp.value = "";
+        recipientTextFilter.value = "";
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    function onRemoveRecipientClicked(personAliasGuid: Guid): void {
+        if (!personAliasGuid) {
+            return;
+        }
+
+        const updatedPendingItems = [...pendingItems.value];
+
+        const index = updatedPendingItems.findIndex(i => i.personAliasGuid === personAliasGuid);
+        if (index !== -1) {
+            updatedPendingItems.splice(index, 1);
+            pendingItems.value = updatedPendingItems;
+        }
+    }
+
+    async function onPersonPicked(value: ListItemBag | undefined): Promise<void> {
+        if (!value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<CommunicationEntryRecipientBag>("GetRecipient", { personAliasGuid: value.value });
+
+        if (!result?.isSuccess || !result.data) {
+            console.error("An unexpected error occurred while retrieving information about the selected person:", result?.errorMessage);
+            return;
+        }
+
+        const updatedPendingItems = [...pendingItems.value];
+        const index = updatedPendingItems.findIndex(i => i.personAliasGuid === result.data?.personAliasGuid);
+        if (index === -1) {
+            updatedPendingItems.push(result.data);
+            pendingItems.value = updatedPendingItems;
+        }
+
+        personPickerSelection.value = emptyListItemBag;
+    }
+
+    function onSaveClicked(): void {
+        internalRecipients.value = pendingItems.value;
+        internalIsOpen.value = false;
+        clear();
+    }
+
+    function onCloseModal(): void {
+        clear();
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    watch(internalIsOpen, (newValue: boolean, oldValue: boolean) => {
+        // If opening the modal, reset the pending items.
+        if (newValue && !oldValue) {
+            pendingItems.value = [...props.recipients];
+        }
+    });
+
+    //#endregion
+</script>

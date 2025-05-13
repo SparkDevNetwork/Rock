@@ -30,7 +30,7 @@
 
         <Panel title="Event Attributes" hasCollapse>
 
-            <Grid :data="eventAttributesGridData" keyField="key" itemTerm="Event Occurrence Attributes" liveUpdates light @addItem="onAddAttribute">
+            <Grid :data="eventAttributesGridData" keyField="key" itemTerm="Event Attributes" liveUpdates light @addItem="onAddAttribute">
                 <ReorderColumn :onOrderChanged="onOrderChanged" />
 
                 <TextColumn name="name"
@@ -65,14 +65,6 @@
             <Modal v-model="isAttributeModalOpen" title="Calendar Event Attribute" saveText="Save" :onSave="onStartSaveAttribute">
                 <hr />
                 <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
-                    <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
-                        Please correct the following:
-                        <ul>
-                            <li v-for="error of attributeErrors">
-                                {{ error }}
-                            </li>
-                        </ul>
-                    </NotificationBox>
                     <AttributeEditor v-model="eventAttribute" :reservedKeyNames="reservedKeyNames" />
                 </RockForm>
             </Modal>
@@ -112,7 +104,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { EventCalendarBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarBag";
     import { EventCalendarDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarDetailOptionsBag";
@@ -128,13 +120,13 @@
     import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { Guid } from "@Obsidian/Types";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<EventCalendarBag>,
+            type: Object as PropType<ValidPropertiesBox<EventCalendarBag>>,
             required: true
         },
 
@@ -145,29 +137,28 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: EventCalendarBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<EventCalendarBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const isIndexEnabled = propertyRef(props.modelValue.isIndexEnabled ?? false, "IsActive");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "iconCssClass");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
+    const isIndexEnabled = propertyRef(props.modelValue?.bag?.isIndexEnabled ?? false, "IsActive");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const iconCssClass = propertyRef(props.modelValue?.bag?.iconCssClass ?? "", "iconCssClass");
     const isContentChannelModalOpen = ref(false);
-    const contentChannelsList = ref(props.modelValue.contentChannels ?? []);
+    const contentChannelsList = ref(props.modelValue?.bag?.contentChannels ?? []);
     const contentChannel = ref("");
-    const savedContentChannels = ref(props.modelValue.savedContentChannels ?? []);
-    const eventAttributes = ref(props.modelValue.eventAttributes ?? []);
+    const savedContentChannels = ref(props.modelValue?.bag?.savedContentChannels ?? []);
+    const eventAttributes = ref(props.modelValue?.bag?.eventAttributes ?? []);
     const isAttributeModalOpen = ref(false);
     const submitEditAttribute = ref(false);
     const eventAttribute = ref<PublicEditableAttributeBag | null>(null);
     const reservedKeyNames = ref<string[]>([]);
-    const attributeErrors = ref<string[]>([]);
     const indexingEnabled = ref(props.options.indexingEnabled);
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -260,11 +251,9 @@
         eventAttribute.value = {} as PublicEditableAttributeBag;
         eventAttribute.value.fieldTypeGuid = FieldTypeGuids.Text;
         isAttributeModalOpen.value = true;
-        attributeErrors.value = [];
     };
 
     const onEditAttribute = async (key: string): Promise<void> => {
-        attributeErrors.value = [];
         const selectedAttribute = eventAttributes.value.find(x => x.attribute?.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedAttribute?.attribute) {
@@ -336,12 +325,7 @@
     };
 
     const onStartSaveAttribute = (): void => {
-        attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(eventAttribute.value?.key ?? "");
-        submitEditAttribute.value = !isExistingKey;
-        if (isExistingKey) {
-            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
-        }
+        submitEditAttribute.value = true;
     };
 
     /**
@@ -352,13 +336,13 @@
     async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
         let isSuccess = false;
 
-        if (props.modelValue?.idKey) {
+        if (props.modelValue?.bag?.idKey) {
             const data: {
                 idKey: string | null | undefined;
                 guid: Guid;
                 beforeGuid: Guid | null | undefined;
             } = {
-                idKey: props.modelValue?.idKey,
+                idKey: props.modelValue?.bag?.idKey,
                 guid: toGuidOrNull(item?.key as string) ?? emptyGuid,
                 beforeGuid: toGuidOrNull(beforeItem?.key as string)
             };
@@ -380,34 +364,46 @@
         return isSuccess;
     }
 
+    watch(isAttributeModalOpen, () => {
+        if (isAttributeModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== eventAttribute.value?.key);
+        }
+        else {
+            if (eventAttribute.value?.key && !reservedKeyNames.value.some(k => k === eventAttribute.value?.key)) {
+                reservedKeyNames.value.push(eventAttribute.value.key);
+            }
+        }
+    });
+
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(isIndexEnabled, props.modelValue.isIndexEnabled ?? false);
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
-        updateRefValue(eventAttributes, props.modelValue.eventAttributes ?? []);
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
+        updateRefValue(isIndexEnabled, props.modelValue?.bag?.isIndexEnabled ?? false);
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(iconCssClass, props.modelValue?.bag?.iconCssClass ?? "");
+        updateRefValue(eventAttributes, props.modelValue?.bag?.eventAttributes ?? []);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, savedContentChannels, eventAttributes, ...propRefs], () => {
-        const newValue: EventCalendarBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            isActive: isActive.value,
-            name: name.value,
-            iconCssClass: iconCssClass.value,
-            savedContentChannels: savedContentChannels.value,
-            eventAttributes: eventAttributes.value,
-            isIndexEnabled: isIndexEnabled.value
+        const newValue: ValidPropertiesBox<EventCalendarBag> = {
+            bag: { ...props.modelValue.bag } as EventCalendarBag
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "savedContentChannels", savedContentChannels.value);
+        setPropertiesBoxValue(newValue, "eventAttributes", eventAttributes.value);
+        setPropertiesBoxValue(newValue, "isIndexEnabled", isIndexEnabled.value);
 
         emit("update:modelValue", newValue);
     });

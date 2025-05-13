@@ -353,7 +353,7 @@ namespace RockWeb.Blocks.WorkFlow
             if ( workflow != null )
             {
                 string errorMessage;
-                if ( !workflowService.CanDelete( workflow, out errorMessage ) )
+                if ( !workflowService.IsEligibleForDelete( workflow, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                     return;

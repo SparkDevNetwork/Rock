@@ -1,0 +1,25 @@
+<template>
+    <GalleryAndResult :value="date"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <DateRangePicker label="Date Range" v-model="date" />
+
+        <template #settings>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const date = ref({});
+    const importCode = getSfcControlImportPath("dateRangePicker");
+    const exampleCode = `<DateRangePicker label="Date Range" v-model="date"
+    :disallowPastDateSelection="false"
+/>`;
+</script>

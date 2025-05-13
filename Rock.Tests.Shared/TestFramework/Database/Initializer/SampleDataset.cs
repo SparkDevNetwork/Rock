@@ -65,7 +65,7 @@ namespace Rock.Tests.Shared.TestFramework.Database.Initializer
             // including the Rock.Bus.Transport.InMemory Type that is required to start the Rock Message Bus.
             EntityTypeService.RegisterEntityTypes();
 
-            LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: true, testDotLiquidEngine: false, testFluidEngine: true, loadShortcodes: false );
+            LavaIntegrationTestHelper.Initialize( testFluidEngine: true, loadShortcodes: false );
 
             var lavaEngine = LavaIntegrationTestHelper.GetEngineInstance<FluidEngine>();
 

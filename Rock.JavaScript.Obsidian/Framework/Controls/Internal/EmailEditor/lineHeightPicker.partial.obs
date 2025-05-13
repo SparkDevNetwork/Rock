@@ -1,0 +1,144 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <SingleSelectButtonGroup v-model="internalLineHeight"
+                             v-bind="standardFieldProps"
+                             :label="label"
+                             @update:modelValue="onLineHeightUpdated">
+        <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('1.2')"
+                        class="btn-line-height"
+                        title="Tight"
+                        @click="selectValue('1.2')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 25 12" fill="none">
+                    <line y1="1" x2="25" y2="1" />
+                    <line y1="6" x2="25" y2="6" />
+                    <line y1="11" x2="25" y2="11" />
+                </svg>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('1.5')"
+                        class="btn-line-height"
+                        title="Normal"
+                        @click="selectValue('1.5')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 25 14" fill="none">
+                    <line y1="1" x2="25" y2="1" />
+                    <line y1="7" x2="25" y2="7" />
+                    <line y1="13" x2="25" y2="13" />
+                </svg>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('1.8')"
+                        class="btn-line-height"
+                        title="Loose"
+                        @click="selectValue('1.8')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 25 16" fill="none">
+                    <line y1="1" x2="25" y2="1" />
+                    <line y1="8" x2="25" y2="8" />
+                    <line y1="15" x2="25" y2="15" />
+                </svg>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('2')"
+                        class="btn-line-height"
+                        title="Very Loose"
+                        @click="selectValue('2')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 25 18" fill="none">
+                    <line y1="1" x2="25" y2="1" />
+                    <line y1="9" x2="25" y2="9" />
+                    <line y1="17" x2="25" y2="17" />
+                </svg>
+            </RockButton>
+        </template>
+
+        <template #afterBtnGroup>
+            <ClearStyleButton v-if="!isNullish(valueProvider.value)"
+                              @click="onClearClicked" />
+        </template>
+    </SingleSelectButtonGroup>
+</template>
+
+<style scoped>
+.btn-line-height {
+    display: inline-flex;
+    align-items: center;
+}
+
+svg {
+    height: 24px;
+    width: 16px;
+    stroke: var(--theme-black);
+    stroke-width: 3px;
+}
+
+.btn-primary svg {
+    stroke: var(--theme-white);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ClearStyleButton from "./clearStyleButton.partial.obs";
+    import SingleSelectButtonGroup from "./singleSelectButtonGroup.partial.obs";
+    import { ValueProvider } from "./types.partial";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        ...standardRockFormFieldProps,
+
+        label: {
+            type: String as PropType<string>,
+            default: "Line Height"
+        },
+
+        valueProvider: {
+            type: Object as PropType<ValueProvider<string | null | undefined>>,
+            required: true
+        }
+    });
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+
+    // #region Computed Properties
+
+    // Set the numeric value from the element OR from the input CSS styles.
+    const internalLineHeight = computed<string>({
+        get(): string {
+            return props.valueProvider.value ?? "";
+        },
+        set(newValue: string): void {
+            props.valueProvider.value = newValue;
+        }
+    });
+
+    // #endregion Computed Properties
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the line height control being updated.
+     */
+    function onLineHeightUpdated(value: string): void {
+        props.valueProvider.value = value || "normal";
+    }
+
+    /**
+     * Event handler for the clear styles button being clicked.
+     *
+     * Deletes the property from the CSS style declarations.
+     */
+    function onClearClicked(): void {
+        props.valueProvider.value = null;
+    }
+
+    // #endregion Event Handlers
+</script>

@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AdaptiveMessageCategory" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ADAPTIVE_MESSAGE_CATEGORY )]
     public partial class AdaptiveMessageCategory : Entity<AdaptiveMessageCategory>, IOrdered, ICategorized
     {
@@ -100,7 +101,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.AdaptiveMessage.SupportedActions;
+                return ( this.AdaptiveMessage ?? new AdaptiveMessage() ).SupportedActions;
             }
         }
 

@@ -38,10 +38,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the primary slug.
+        /// Gets the primary slug. The first occurence of IsPrimary otherwise the first.
         /// </summary>
         /// <value>
-        /// The primary alias.
+        /// The primary slug.
         /// </value>
         [NotMapped]
         [LavaVisible]
@@ -49,7 +49,8 @@ namespace Rock.Model
         {
             get
             {
-                return ContentChannelItemSlugs.Select( a => a.Slug ).FirstOrDefault();
+                // Get the first IsPrimary slug (or the newest if no primary).
+                return ContentChannelItemSlugs.OrderByDescending( a => a.IsPrimary ).Select( a => a.Slug ).FirstOrDefault();
             }
         }
 

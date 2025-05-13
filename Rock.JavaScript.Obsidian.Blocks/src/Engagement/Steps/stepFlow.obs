@@ -20,7 +20,7 @@
                 </div>
             </RockForm>
 
-            <FlowNodeDiagram :flowNodes="flowNodes" :flowEdges="flowEdges" :isLoading="isLoading" :settings="settings" />
+            <SankeyDiagram :flowNodes="flowNodes" :flowEdges="flowEdges" :isLoading="isLoading" nodeTooltipActionLabel="Total Steps Taken" :settings="settings" />
         </template>
 
         <template v-else #default>
@@ -39,13 +39,14 @@
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import FlowNodeDiagram from "./StepFlow/flowNodeDiagram.partial.obs";
+    import SankeyDiagram from "@Obsidian/Controls/internal/SankeyDiagram/sankeyDiagram.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
-    import { FlowNodeDiagramNodeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramNodeBag";
-    import { FlowNodeDiagramEdgeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramEdgeBag";
-    import { FlowNodeDiagramSettingsBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramSettingsBag";
+    import { SankeyDiagramNodeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramNodeBag";
+    import { SankeyDiagramEdgeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramEdgeBag";
+    import { SankeyDiagramSettingsBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramSettingsBag";
     import { StepFlowInitializationBox } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/stepFlowInitializationBox";
     import { StepFlowGetDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/stepFlowGetDataBag";
     import { syncRefsWithQueryParams } from "@Obsidian/Utility/url";
@@ -57,8 +58,8 @@
     const invokeBlockAction = useInvokeBlockAction();
     const configurationValues = useConfigurationValues<StepFlowInitializationBox>();
 
-    const flowNodes = ref<FlowNodeDiagramNodeBag[]>([]);
-    const flowEdges = ref<FlowNodeDiagramEdgeBag[]>([]);
+    const flowNodes = ref<SankeyDiagramNodeBag[]>([]);
+    const flowEdges = ref<SankeyDiagramEdgeBag[]>([]);
 
     const isLoading = ref(false);
 
@@ -77,7 +78,7 @@
         ...(configurationValues.campuses ?? [])
     ]);
 
-    const settings = ref<FlowNodeDiagramSettingsBag>({
+    const settings = ref<SankeyDiagramSettingsBag>({
         nodeWidth: configurationValues.nodeWidth,
         nodeVerticalSpacing: configurationValues.nodeVerticalSpacing,
         chartWidth: configurationValues.chartWidth,

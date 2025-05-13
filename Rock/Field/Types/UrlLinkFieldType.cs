@@ -31,6 +31,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a numeric value
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><g><path d=""M14.08,3.32a3.15,3.15,0,0,0-2.16-.92,3.08,3.08,0,0,0-2.28.92L8.38,4.56a4.07,4.07,0,0,1,.88.61l1.11-1.11a2.07,2.07,0,0,1,1.48-.61A2.1,2.1,0,0,1,13.34,7L10.86,9.51a2.16,2.16,0,0,1-3,0A2.13,2.13,0,0,1,7.28,8,2.1,2.1,0,0,1,7.58,7a1.4,1.4,0,0,0-1-.36h0a3.14,3.14,0,0,0,5,3.65l2.48-2.48A3.32,3.32,0,0,0,15,5.55,3.24,3.24,0,0,0,14.08,3.32Zm-8.45,8.6a2.07,2.07,0,0,1-1.48.61A2.1,2.1,0,0,1,2.66,9L5.14,6.47a2.16,2.16,0,0,1,3,0A2.13,2.13,0,0,1,8.72,8,2.1,2.1,0,0,1,8.42,9a1.45,1.45,0,0,0,.95.36h.05a3.14,3.14,0,0,0-2.8-4.57,3.12,3.12,0,0,0-2.22.92L1.92,8.22A3.15,3.15,0,0,0,4,13.6a3.21,3.21,0,0,0,2.4-.92l1.24-1.24a4.46,4.46,0,0,1-.88-.61Z""/></g></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.URL_LINK )]

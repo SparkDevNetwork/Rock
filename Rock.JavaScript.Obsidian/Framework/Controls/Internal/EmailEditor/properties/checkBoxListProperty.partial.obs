@@ -1,0 +1,53 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <CheckBoxList v-model="internalValue"
+                  v-bind="$attrs"
+                  :items="items">
+        <template #besideLabel>
+            <ClearStyleButton v-if="!isNullish(valueProvider.value)"
+                              @click="onClearClicked" />
+        </template>
+    </CheckBoxList>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ClearStyleButton from "../clearStyleButton.partial.obs";
+    import { ValueProvider } from "../types.partial";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        items: {
+            type: Object as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        valueProvider: {
+            type: Object as PropType<ValueProvider<string[] | null | undefined>>,
+            required: true
+        }
+    });
+
+    // #region Computed Props
+
+    const internalValue = computed<string[] | undefined>({
+        get(): string[] | undefined {
+            return props.valueProvider.value ?? undefined;
+        },
+        set(value: string[] | undefined): void {
+            props.valueProvider.value = value;
+        }
+    });
+
+    // #endregion Computed Props
+
+    // #region Event Handlers
+
+    function onClearClicked(): void {
+        props.valueProvider.value = null;
+    }
+
+    // #endregion Event Handlers
+</script>

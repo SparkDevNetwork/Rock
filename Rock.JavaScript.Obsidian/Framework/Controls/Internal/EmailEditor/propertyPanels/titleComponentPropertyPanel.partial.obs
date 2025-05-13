@@ -1,0 +1,152 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ComponentPropertyPanelBase :componentElement="componentElement"
+                                :componentMigrationHelper="titleComponentHelper"
+                                title="Title"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)">
+        <template v-if="componentHelper?.headingEl">
+            <AccordionGroup>
+                <Accordion title="Text">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <TextContentProperty :element="componentHelper.headingEl" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <DropDownList v-model="headingLevel"
+                                          :items="headingLevels"
+                                          label="Level"
+                                          :showBlankItem="false" />
+                        </div>
+                    </div>
+
+                    <FontPropertyGroup :element="componentHelper.headingEl" />
+                </Accordion>
+
+                <Accordion title="Spacing">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <PaddingProperty :element="componentHelper.marginWrapper.borderWrapper.paddingWrapper.td" />
+                        </div>
+                    </div>
+
+                    <div v-if="componentHelper?.marginWrapper" class="row">
+                        <div class="col-sm-12">
+                            <PaddingProperty :element="componentHelper.marginWrapper.td"
+                                             label="Margin" />
+                        </div>
+                    </div>
+                </Accordion>
+
+                <Accordion title="Border">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <BorderPropertyGroup :element="componentHelper.marginWrapper.borderWrapper.td" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <BorderRadiusProperty :element="componentHelper.marginWrapper.borderWrapper.td" />
+                        </div>
+                    </div>
+                </Accordion>
+            </AccordionGroup>
+        </template>
+    </ComponentPropertyPanelBase>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
+    import Accordion from "../accordion.partial.obs";
+    import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
+    import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
+    import FontPropertyGroup from "../properties/fontPropertyGroup.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import TextContentProperty from "../properties/textContentProperty.partial.obs";
+    import { getBorderWrapperTableCssClass, getMarginWrapperTableCssClass, getPaddingWrapperTableCssClass, getTitleComponentHelper } from "../utils.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+        (e: "migrate", value: Element): void;
+    }>();
+
+    const headingLevels: ListItemBag[] = [
+        {
+            text: "Heading 1",
+            value: "h1"
+        }, {
+            text: "Heading 2",
+            value: "h2"
+        }, {
+            text: "Heading 3",
+            value: "h3"
+        }
+    ];
+
+    type HeadingLevel = "h1" | "h2" | "h3";
+    const supportedHeadingLevels = ["h1", "h2", "h3"] as const;
+
+    // #region Values
+
+    const titleComponentHelper = getTitleComponentHelper();
+    const componentHelper = ref(titleComponentHelper.getElements(props.componentElement));
+    const headingLevel = ref<HeadingLevel>(componentHelper.value?.headingEl?.tagName?.toLowerCase() as HeadingLevel ?? "h1");
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(headingLevel, (value: HeadingLevel, oldValue: HeadingLevel) => {
+        if (!value || !componentHelper.value?.headingEl || componentHelper.value.headingEl.tagName.toLowerCase() === value) {
+            // No need to change heading level.
+            return;
+        }
+
+        const newHeadingElement = props.componentElement.ownerDocument.createElement(value);
+
+        // Copy attributes from old to new heading element.
+        [...componentHelper.value.headingEl.attributes].forEach(attr => {
+            newHeadingElement.setAttribute(attr.name, attr.value);
+        });
+
+        // Copy the inner content from old to new heading element.
+        newHeadingElement.innerHTML = componentHelper.value.headingEl.innerHTML;
+
+        // Replace the old heading element with the new one.
+        componentHelper.value.headingEl.parentNode?.replaceChild(newHeadingElement, componentHelper.value.headingEl);
+
+        // Update the wrapper classes to ensure global and component styles work correctly.
+        componentHelper.value.marginWrapper.table.classList.remove(...supportedHeadingLevels.map(h => getMarginWrapperTableCssClass("title", `-${h}`)));
+        componentHelper.value.marginWrapper.table.classList.add(getMarginWrapperTableCssClass("title", `-${value}`));
+        componentHelper.value.marginWrapper.borderWrapper.table.classList.remove(...supportedHeadingLevels.map(h => getBorderWrapperTableCssClass("title", `-${h}`)));
+        componentHelper.value.marginWrapper.borderWrapper.table.classList.add(getBorderWrapperTableCssClass("title", `-${value}`));
+        componentHelper.value.marginWrapper.borderWrapper.paddingWrapper.table.classList.remove(...supportedHeadingLevels.map(h => getPaddingWrapperTableCssClass("title", `-${h}`)));
+        componentHelper.value.marginWrapper.borderWrapper.paddingWrapper.table.classList.add(getPaddingWrapperTableCssClass("title", `-${value}`));
+    });
+
+    watch(() => props.componentElement, () => {
+        componentHelper.value = titleComponentHelper.getElements(props.componentElement);
+        headingLevel.value = componentHelper.value?.headingEl?.tagName.toLowerCase() as HeadingLevel ?? "h1";
+    });
+
+    // #endregion
+</script>

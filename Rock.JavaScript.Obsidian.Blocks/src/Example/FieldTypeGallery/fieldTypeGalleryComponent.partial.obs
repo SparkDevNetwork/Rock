@@ -26,5 +26,5 @@
 
     const values = { "value1": "", "value2": props.field.initialValue };
 
-    const attributes = getAttributeData(props.field.name, props.field.fieldTypeGuid, props.field.initialConfigValues);
+    const attributes = getAttributeData(props.field.name, props.field.fieldTypeGuid, editorValue);
 </script>

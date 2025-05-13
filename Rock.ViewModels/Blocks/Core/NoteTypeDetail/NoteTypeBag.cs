@@ -103,5 +103,31 @@ namespace Rock.ViewModels.Blocks.Core.NoteTypeDetail
         ///   <c>true</c> if [show entity type picker]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowEntityTypePicker { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [requires approvals].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires approvals]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RequiresApprovals { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enabled AI approvals].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enabled AI approvals]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnabledAIApprovals { get; set; }
+
+        /// <summary>
+        /// Gets or sets the criteria for AI to automatically approve notes. 
+        /// </summary>
+        public string AIApprovalGuidelines { get; set; }
+
+        /// <summary>
+        /// Gets or sets the AI provider to use for AI approvals.
+        /// </summary>
+        public ListItemBag AIProvider { get; set; }
     }
 }

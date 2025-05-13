@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** The additional configuration options for the Rest Controller List block. */
 export type RestControllerListOptionsBag = {
 };

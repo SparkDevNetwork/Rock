@@ -1,0 +1,173 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <FlatPanel :title="title">
+        <template #preTitle>
+            <RockButton btnType="link"
+                        class="text-color"
+                        :isSquare="true"
+                        title="Back"
+                        @click="$emit('complete')">
+                <i class="fa fa-chevron-left"></i>
+            </RockButton>
+        </template>
+
+        <template #postTitle>
+            <div>
+                <RockButton v-if="isSaveButtonShown"
+                            btnType="link"
+                            class="text-color"
+                            :isSquare="true"
+                            title="Save"
+                            @click="$emit('save')">
+                    <i class="far fa-save"></i>
+                </RockButton>
+
+                <RockButton btnType="link"
+                            class="text-color"
+                            :disabled="isCloneDisabled"
+                            :isSquare="true"
+                            title="Clone"
+                            @click="$emit('clone')">
+                    <i class="far fa-clone"></i>
+                </RockButton>
+
+                <RockButton btnType="link"
+                            class="text-danger"
+                            :isSquare="true"
+                            :title="deleteStage.tooltip"
+                            @click="deleteStage.moveNextStage">
+                    <i :class="deleteStage.iconCssClass"></i>
+                </RockButton>
+            </div>
+        </template>
+
+        <template #default>
+            <template v-if="false">
+                <NotificationBox alertType="warning">
+                    This component uses an old structure and may not display correctly.
+                    <RockButton btnType="primary" @click="onMigrateComponentClicked">Migrate Component</RockButton>
+                </NotificationBox>
+            </template>
+            <slot></slot>
+        </template>
+    </FlatPanel>
+</template>
+
+<style scoped>
+.component-property-panel-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-medium);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import FlatPanel from "../flatPanel.partial.obs";
+    import { ComponentMigrationHelper } from "../types.partial";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        isSaveButtonShown: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isCloneDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        componentMigrationHelper: {
+            type: Object as PropType<ComponentMigrationHelper | null | undefined>,
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+        (e: "save"): void;
+        (e: "migrate", value: Element): void;
+    }>();
+
+    type DeleteStage = {
+        iconCssClass: string;
+        tooltip: string;
+
+        moveNextStage(): void;
+    };
+
+    const readyDeleteStage: DeleteStage = {
+        iconCssClass: "fa fa-trash-o",
+        tooltip: "Delete",
+
+        moveNextStage(): void {
+            deleteStage.value = confirmDeleteStage;
+        }
+    };
+
+    const confirmDeleteStage: DeleteStage = {
+        iconCssClass: "fa fa-check-square",
+        tooltip: "Confirm Delete",
+
+        moveNextStage(): void {
+            emit("delete");
+            deleteStage.value = deletedDeleteStage;
+        }
+    };
+
+    const deletedDeleteStage: DeleteStage = {
+        iconCssClass: "fa fa-check",
+        tooltip: "Deleted",
+
+        moveNextStage(): void {
+            // Nothing to do once this stage is reached.
+        }
+    };
+
+    // #region Values
+
+    const deleteStage = ref<DeleteStage>(readyDeleteStage);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onMigrateComponentClicked(): void {
+        if (props.componentMigrationHelper) {
+            const migratedComponent = props.componentMigrationHelper.migrate(props.componentElement);
+
+            if (props.componentElement === migratedComponent) {
+                // No migration was needed.
+            }
+            else {
+                emit("migrate", migratedComponent);
+            }
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.componentElement, () => {
+        deleteStage.value = readyDeleteStage;
+    });
+
+    // #endregion Watchers
+</script>
+

@@ -121,9 +121,12 @@ INNER JOIN (
 		                , NEWID())
                 END
 
-
+                -- This attribute was obsoleted and deleted in v17 -
+                -- if it's not found don't fail the job, but just continue on.
                 DECLARE @LookbackMaximumAttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = 'BF23E452-603F-41F9-A7BF-FB68E8296686')
-                IF NOT EXISTS(SELECT [Id] FROM [dbo].[AttributeValue] WHERE [AttributeId] = @LookbackMaximumAttributeId AND [EntityId] = @EntityId)
+                IF
+                    @LookbackMaximumAttributeId IS NOT NULL
+                    AND NOT EXISTS(SELECT [Id] FROM [dbo].[AttributeValue] WHERE [AttributeId] = @LookbackMaximumAttributeId AND [EntityId] = @EntityId)
                 BEGIN
                     INSERT INTO [AttributeValue] (
                           [IsSystem]
@@ -139,8 +142,12 @@ INNER JOIN (
 		                , NEWID())
                 END
 
+                -- This attribute was obsoleted and deleted in v17 -
+                -- if it's not found don't fail the job, but just continue on.
                 DECLARE @MaximumRecordsAttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = 'C1096F04-0ECF-4519-9ABF-0CBB58BFFEA8')
-                IF NOT EXISTS(SELECT [Id] FROM [dbo].[AttributeValue] WHERE [AttributeId] = @MaximumRecordsAttributeId AND [EntityId] = @EntityId)
+                IF
+                    @MaximumRecordsAttributeId IS NOT NULL
+                    AND NOT EXISTS(SELECT [Id] FROM [dbo].[AttributeValue] WHERE [AttributeId] = @MaximumRecordsAttributeId AND [EntityId] = @EntityId)
                 BEGIN
                     INSERT INTO [AttributeValue] (
                           [IsSystem]

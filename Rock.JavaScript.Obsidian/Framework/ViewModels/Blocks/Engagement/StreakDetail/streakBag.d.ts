@@ -49,6 +49,9 @@ export type StreakBag = {
     /** Gets or sets the IsActive. */
     isActive: boolean;
 
+    /** Is Add Mode */
+    isAddMode: boolean;
+
     /** Gets or sets the Rock.Model.Location. */
     location?: ListItemBag | null;
 

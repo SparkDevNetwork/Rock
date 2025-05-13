@@ -208,10 +208,7 @@ namespace Rock.Blocks.CheckIn.Configuration
             }
             else if ( labelType == LabelType.Attendance )
             {
-                var attendance = new LabelAttendanceDetail
-                {
-                    Person = currentPerson
-                };
+                var attendance = new LabelAttendanceDetail( currentPerson );
 
                 return new AttendanceLabelData( attendance,
                     currentPerson.PrimaryFamily,
@@ -220,10 +217,7 @@ namespace Rock.Blocks.CheckIn.Configuration
             }
             else if ( labelType == LabelType.Checkout )
             {
-                var attendance = new LabelAttendanceDetail
-                {
-                    Person = currentPerson
-                };
+                var attendance = new LabelAttendanceDetail( currentPerson );
 
                 return new CheckoutLabelData( attendance,
                     currentPerson.PrimaryFamily,
@@ -382,7 +376,8 @@ namespace Rock.Blocks.CheckIn.Configuration
                         Capabilities = new PrinterCapabilities(),
                         DataSources = FieldSourceHelper.GetCachedDataSources( checkInLabel.LabelType ),
                         Label = label.LabelData,
-                        LabelData = GetPreviewLabelData( checkInLabel.LabelType, RequestContext.CurrentPerson, RockContext )
+                        LabelData = GetPreviewLabelData( checkInLabel.LabelType, RequestContext.CurrentPerson, RockContext ),
+                        RockContext = RockContext
                     };
 
                     var renderer = new ZplLabelRenderer();

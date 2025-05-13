@@ -44,14 +44,14 @@
     import DateKey from "@Obsidian/Utility/dateKey";
     import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { DatePartsPickerValue } from "@Obsidian/Types/Controls/datePartsPicker";
+    import { DatePartsPickerValueBag } from "@Obsidian/ViewModels/Controls/datePartsPickerValueBag.d";
     import RockFormField from "./rockFormField.obs";
 
 
     const props = defineProps({
         rules: rulesPropType,
         modelValue: {
-            type: Object as PropType<DatePartsPickerValue>,
+            type: Object as PropType<DatePartsPickerValueBag>,
             required: false
         },
         requireYear: {
@@ -85,7 +85,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: DatePartsPickerValue | undefined): void;
+        (e: "update:modelValue", value: DatePartsPickerValueBag | undefined): void;
     }>();
 
     const internalDay = ref("0");
@@ -93,8 +93,8 @@
     const internalYear = ref("0");
     const days = ref<string[]>([]);
 
-    function getValue(): DatePartsPickerValue | undefined {
-        const value: DatePartsPickerValue = {
+    function getValue(): DatePartsPickerValueBag | undefined {
+        const value: DatePartsPickerValueBag = {
             day: toNumber(internalDay.value),
             month: toNumber(internalMonth.value),
             year: toNumber(internalYear.value)

@@ -1,0 +1,392 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel>
+        <template #title>
+            <i :class="panelIconCssClass"></i>
+            <span>{{ panelTitle }}</span>
+            <HighlightLabel labelType="info" v-model="assessmentDate" />
+        </template>
+
+        <template #footerActions>
+            <a v-if="hasPreviousQuestions && isQuestionsSectionVisible" @click.prevent="onPreviousClick" class="btn btn-default">Previous</a>
+        </template>
+        <template #footerSecondaryActions v-if="!blockErrorMessage">
+            <a @click.prevent="onStartClick" v-if="isInstructionSectionVisible" class="btn btn-primary">Start <i class="fa fa-chevron-right"></i></a>
+            <a @click.prevent="onNextClick" v-if="isQuestionsSectionVisible && !isLastPage" type="submit" class="btn btn-primary">Next</a>
+            <a @click.prevent="onFinishClick" v-if="isQuestionsSectionVisible && isLastPage" type="submit" class="btn btn-primary">Finish</a>
+        </template>
+
+        <template #default>
+            <NotificationBox v-if="blockErrorMessage" v-text="blockErrorMessage" alertType="danger" />
+            <NotificationBox v-if="infoMessage" v-text="infoMessage" alertType="info" />
+            <div class="d-flex flex-column justify-content-around flex-full" v-if="!blockErrorMessage">
+                <div class="instructions-section mb-4" v-if="isInstructionSectionVisible" v-html="instructions"></div>
+
+                <div ref="questionsContainer" class="question-section d-flex flex-column justify-content-between" v-if="isQuestionsSectionVisible">
+                    <NotificationBox v-text="'Select the statement that you identify with most and least for each group.'" alertType="info" />
+                    <ProgressBar :percent="percentComplete" :showCompletionText="true" />
+
+                    <div class="disc-row" v-for="(response, index) in pageQuestions" :key="response.questionNumber ?? index">
+                        <table class="table table-striped table-hover assessment disc-assessment">
+                            <thead>
+                                <tr>
+                                    <th class="disc-question"></th>
+                                    <th class="disc-answer grid-select-field disc-more">Most</th>
+                                    <th class="disc-answer grid-select-field disc-less">Least</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr v-for="(question, key) in response.questions" :key="key">
+                                    <td class="disc-question">{{ question }}</td>
+                                    <td class="disc-answer grid-select-field disc-more">
+                                        <div class="radio">
+                                            <RadioButton v-if="response.mostScore !== null" v-model="response.mostScore" v-on:update:modelValue="onMostSelectionChange(response)" :value="key.toString()" :name="'most-' + response.questionNumber" />
+                                        </div>
+                                    </td>
+                                    <td class="disc-answer grid-select-field disc-less">
+                                        <div class="radio">
+                                            <RadioButton v-if="response.leastScore !== null" v-model="response.leastScore" v-on:update:modelValue="onLeastSelectionChange(response)" :value="key.toString()" :name="'least-' + response.questionNumber" />
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div v-if="isResultsSectionVisible" class="result-section d-flex flex-column justify-content-between">
+                    <div v-if="isAsessmentForCurrentPerson" class='alert alert-success' role='alert'><strong>Tip!</strong> Consider printing this page out for future reference.</div>
+                    <div class='disc-heading'>
+                        <h1>{{ targetPersonName }}</h1>
+                        <h4>Personality Type: {{ personalityType }}</h4>
+                    </div>
+
+                    <ul class="discchart">
+                        <li class="discchart-midpoint"></li>
+                        <li style="height: 100%; width: 0;"></li>
+                        <li class="discbar discbar-d" :class="{ 'discbar-primary': dIsPrimary }" :style="{ height: dScoreAsPercent + '%' }" :title="dScore.toString()">
+                            <div class="discbar-label">D</div>
+                        </li>
+                        <li class="discbar discbar-i" :class="{ 'discbar-primary': iIsPrimary }" :style="{ height: iScoreAsPercent + '%' }" :title="iScore.toString()">
+                            <div class="discbar-label">I</div>
+                        </li>
+                        <li class="discbar discbar-s" :class="{ 'discbar-primary': sIsPrimary }" :style="{ height: sScoreAsPercent + '%' }" :title="sScore.toString()">
+                            <div class="discbar-label">S</div>
+                        </li>
+                        <li class="discbar discbar-c" :class="{ 'discbar-primary': cIsPrimary }" :style="{ height: cScoreAsPercent + '%' }" :title="cScore.toString()">
+                            <div class="discbar-label">C</div>
+                        </li>
+                    </ul>
+
+                    <h3>Description</h3>
+                    {{ personalityDescription }}
+
+                    <h3>Strengths</h3>
+                    {{ strengths }}
+
+                    <h3>Challenges</h3>
+                    {{ challenges }}
+
+                    <div>
+                        <h3>Under Pressure</h3>
+                        {{ underPressure }}
+
+                        <h3>Motivation</h3>
+                        {{ motivation }}
+
+                        <h3>Team Contribution</h3>
+                        {{ teamContribution }}
+
+                        <h3>Leadership Style</h3>
+                        {{ leadershipStyle }}
+
+                        <h3>Follower Style</h3>
+                        {{ followerStyle }}
+                    </div>
+
+                    <div class="actions margin-t-lg margin-b-lg">
+                        <RockButton v-if="canRetakeTest" class="btn btn-default">Retake Test</RockButton>
+                    </div>
+
+                </div>
+
+                <div class="error-section">
+                    <NotificationBox v-if="errorMessage" v-text="errorMessage" alertType="danger" />
+                </div>
+            </div>
+        </template>
+    </Panel>
+</template>
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import RadioButton from "@Obsidian/Controls/radioButton.obs";
+    import ProgressBar from "@Obsidian/Controls/progressBar.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { DiscInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/Disc/discInitializationBox";
+    import { AssessmentResponseBag } from "@Obsidian/ViewModels/Blocks/Crm/Disc/assessmentResponseBag";
+
+    const initialBox = useConfigurationValues<DiscInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
+
+    const defaultPageSize = 5;
+    const questionsContainer = ref<HTMLElement>();
+
+    const errorMessage = ref("");
+    const box = ref(initialBox);
+
+    const initialResponses = box.value?.responses ?? [];
+
+    initialResponses.forEach(r => {
+        if (r.leastScore === null) {
+            r.leastScore = undefined;
+        }
+
+        if (r.mostScore === null) {
+            r.mostScore = undefined;
+        }
+    });
+    const responses = ref(box.value?.responses ?? []);
+
+    const currentPage = ref(1);
+
+    const hasAssessmentResults = computed(() => (box.value?.personalityType ?? "").length > 0);
+    const isInstructionSectionVisible = ref(hasAssessmentResults.value === false && !errorMessage.value);
+    const isQuestionsSectionVisible = ref(hasAssessmentResults.value === false && isInstructionSectionVisible.value === false && !errorMessage.value);
+    const isResultsSectionVisible = computed(() => hasAssessmentResults.value && !errorMessage.value);
+
+    //#region Computed Values
+
+    const blockErrorMessage = computed(() => box.value?.errorMessage ?? "");
+
+    /** The info message to be shown to the individual. */
+    const infoMessage = computed(() => box.value?.infoMessage ?? "");
+
+    /** The panel icon CSS class configured by the block settings. */
+    const panelIconCssClass = computed(() => box.value?.panelIcon ?? "");
+
+    /** The panel title configured by the block settings. */
+    const panelTitle = computed(() => box.value?.panelTitle ?? "");
+
+    /** The instructions configured by the block settings. */
+    const instructions = computed(() => box.value?.instructions ?? "");
+
+    /** The results of the DISC assessment. */
+    const results = computed(() => box.value?.results);
+
+    /** The page size configuration from the block settings. */
+    const pageSize = computed(() => box.value?.pageSize ?? defaultPageSize);
+
+    /** True if the current person viewing the assessment is the individual the assessment is for. */
+    const isAsessmentForCurrentPerson = computed(() => box.value?.isAsessmentForCurrentPerson);
+
+    /** The individual the assessment is for. */
+    const targetPersonName = computed(() => box.value?.targetPersonBag?.text ?? "");
+
+    /** The 1-2 character personality type code for the DISC results. */
+    const personalityType = computed(() => box.value?.personalityType ?? results.value?.personalityType);
+
+    /** The description of the personality based on the DISC results. */
+    const personalityDescription = computed(() => box.value?.discPersonalityDescription ?? "");
+
+    /** The description of the strengths based on the DISC results. */
+    const strengths = computed(() => box.value?.discStrengths ?? "");
+
+    /** The description of the challenges style based on the DISC results. */
+    const challenges = computed(() => box.value?.discChallenges ?? "");
+
+    /** The description of the under pressure style based on the DISC results. */
+    const underPressure = computed(() => box.value?.discUnderPressure ?? "");
+
+    /** The description of the motivation style based on the DISC results. */
+    const motivation = computed(() => box.value?.discMotivation ?? "");
+
+    /** The description of the team contribution style based on the DISC results. */
+    const teamContribution = computed(() => box.value?.discTeamContribution ?? "");
+
+    /** The description of the leadership style based on the DISC results. */
+    const leadershipStyle = computed(() => box.value?.discLeadershipStyle ?? "");
+
+    /** The description of the follower style based on the DISC results. */
+    const followerStyle = computed(() => box.value?.discFollowerStyle ?? "");
+
+    /** True if individual is allowed to retake a completed test. */
+    const canRetakeTest = computed(() => box.value?.canRetakeTest ?? false);
+
+    /** The date the assessment was last updated by the individual. */
+    const assessmentDate = computed(() => box.value?.lastSavedDate ?? "");
+
+    /** The responses that have both a most and least score. */
+    const answeredQuestions = computed(() => responses.value.filter(r => r.mostScore && r.leastScore));
+
+    /** The percent of responses that are answered. */
+    const percentComplete = computed(() => responses.value.length > 0 ? Math.round(answeredQuestions.value.length / responses.value.length * 100) : 0);
+
+    /** The ending index for the current page of questions. */
+    const pageEndIndex = computed(() => pageSize.value * currentPage.value);
+
+    /** The starting index for the current page of questions. */
+    const pageStartIndex = computed(() => pageEndIndex.value - pageSize.value);
+
+    /** The list of questions for the current page. */
+    const pageQuestions = computed(() => responses.value.filter((r, i) => i >= pageStartIndex.value && i < pageEndIndex.value));
+
+    /** True if we're not on the first page. */
+    const hasPreviousQuestions = computed(() => currentPage.value > 1);
+
+    /** True if there are no more questions after the current page. */
+    const isLastPage = computed(() => pageEndIndex.value >= responses.value.length);
+
+    /** The score of the 'D' personality trait. */
+    const dScore = computed(() => results.value?.naturalBehaviorD ?? 0);
+
+    /** The score of the 'I' personality trait. */
+    const iScore = computed(() => results.value?.naturalBehaviorI ?? 0);
+
+    /** The score of the 'S' personality trait. */
+    const sScore = computed(() => results.value?.naturalBehaviorS ?? 0);
+
+    /** The score of the 'C' personality trait. */
+    const cScore = computed(() => results.value?.naturalBehaviorC ?? 0);
+
+    /** The max scale used for the bar chart. */
+    const maxScale = 100;
+
+    /** The 'D' score as a percentage of the max scale. */
+    const dScoreAsPercent = computed(() => Math.floor(dScore.value / maxScale * 100));
+
+    /** The 'I' score as a percentage of the max scale. */
+    const iScoreAsPercent = computed(() => Math.floor(iScore.value / maxScale * 100));
+
+    /** The 'S' score as a percentage of the max scale. */
+    const sScoreAsPercent = computed(() => Math.floor(sScore.value / maxScale * 100));
+
+    /** The 'C' score as a percentage of the max scale. */
+    const cScoreAsPercent = computed(() => Math.floor(cScore.value / maxScale * 100));
+
+    /** Returns the highest score of the 4. */
+    const highestScore = computed(() =>
+        [dScore.value, iScore.value, sScore.value, cScore.value]
+            .reduce((prev, cur) => cur > prev ? cur : prev)
+    );
+
+    /** Determines if the 'D' score is the highest. */
+    const dIsPrimary = computed(() => dScore.value === highestScore.value);
+
+    /** Determines if the 'I' score is the highest. */
+    const iIsPrimary = computed(() => iScore.value === highestScore.value);
+
+    /** Determines if the 'S' score is the highest. */
+    const sIsPrimary = computed(() => sScore.value === highestScore.value);
+
+    /** Determines if the 'C' score is the highest. */
+    const cIsPrimary = computed(() => cScore.value === highestScore.value);
+
+    //#endregion
+
+    //#region Functions
+
+    /** Determines if the response has the same selection for both a 'Most' and 'Least' agree statement. */
+    function bothSelectionsAreSame(response: AssessmentResponseBag): boolean {
+        return response.leastScore === response.mostScore;
+    }
+
+    /** Scrolls to the first question. */
+    function scrollToFirstQuestion(): void {
+        if (!questionsContainer.value) {
+            return;
+        }
+
+        questionsContainer.value.scrollIntoView({
+            behavior: "smooth",
+        });
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /** Event handler for the Finish button click. */
+    async function onFinishClick(): Promise<void> {
+        const hasUnansweredQuestions = pageQuestions.value.some(r => !r.leastScore || !r.mostScore);
+
+        if (hasUnansweredQuestions) {
+            errorMessage.value = "Please answer question(s) before proceeding further.";
+        }
+        else {
+            errorMessage.value = "";
+
+            const boxToSend: DiscInitializationBox = {
+                ...box.value
+            };
+
+            boxToSend.responses = responses.value;
+
+            const result = await invokeBlockAction<DiscInitializationBox>("Save", {
+                box: boxToSend
+            });
+
+            if (result.isSuccess && result.data) {
+                box.value = result.data ?? box.value;
+
+                isQuestionsSectionVisible.value = false;
+                isInstructionSectionVisible.value = false;
+            }
+            else if (result.errorMessage || result.isError) {
+                errorMessage.value = result.errorMessage ?? "Unable to save assessment results";
+            }
+        }
+    }
+
+    /** Event handler for a change made to a 'Least' agree statement. */
+    function onLeastSelectionChange(response: AssessmentResponseBag): void {
+        // If both selections are the same then un-select the previous selection
+        // retaining the selection that was just made.
+        if (bothSelectionsAreSame(response)) {
+            response.mostScore = undefined;
+        }
+    }
+
+    /** Event handler for a change made to a 'Most' agree statement. */
+    function onMostSelectionChange(response: AssessmentResponseBag): void {
+        // If both selections are the same then un-select the previous selection
+        // retaining the selection that was just made.
+        if (bothSelectionsAreSame(response)) {
+            response.leastScore = undefined;
+        }
+    }
+
+    /** Event handler for the Next (set of questions) button click. */
+    function onNextClick(): void {
+        const hasUnansweredQuestions = pageQuestions.value.some(r => !r.leastScore || !r.mostScore);
+
+        if (hasUnansweredQuestions) {
+            errorMessage.value = "Please answer question(s) before proceeding further.";
+        }
+        else {
+            errorMessage.value = "";
+            currentPage.value = currentPage.value + 1;
+
+            scrollToFirstQuestion();
+        }
+    }
+
+    /** Event handler for the previous button click. */
+    function onPreviousClick(): void {
+        currentPage.value = currentPage.value - 1;
+    }
+
+    /** Event handler for the Start button click. */
+    function onStartClick(): void {
+        isQuestionsSectionVisible.value = true;
+        isInstructionSectionVisible.value = false;
+    }
+
+    //#endregion
+
+</script>

@@ -32,6 +32,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "InteractionChannel" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "08606092-5FF5-4A34-A7A6-3DEE43F2843A")]
     public partial class InteractionChannel : Model<InteractionChannel>, IHasActiveFlag, ICacheable
     {
@@ -125,6 +126,9 @@ namespace Rock.Model
         ///     <description><see cref="Rock.Model.ContentChannel" /> Id</description></item>
         /// <item>
         ///     <term>System Events, like Workflow Form Entry (<see cref="Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_SYSTEM_EVENTS" />)</term>
+        ///     <description>null, only one Channel</description></item>
+        /// <item>
+        ///     <term>Chat Events, like chat message counts (<see cref="Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CHAT" />)</term>
         ///     <description>null, only one Channel</description></item>
         /// </list>
         /// </summary>

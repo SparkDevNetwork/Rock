@@ -22,6 +22,13 @@ namespace Rock.CheckIn.v2.Filters
     /// </summary>
     internal class LocationClosedOpportunityFilter : OpportunityFilter
     {
+        #region Properties
+
+        /// <inheritdoc/>
+        public override bool IsSkippedDuringOverride => false;
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>

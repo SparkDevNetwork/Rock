@@ -19,7 +19,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+
 using DotLiquid.Util;
+
+using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Cms;
@@ -37,6 +40,7 @@ namespace Rock.Model
     /// <summary>
     /// Manually created Service methods for ContentChannelItem
     /// </summary>
+    [RockLoggingCategory]
     public partial class ContentChannelItemService
     {
         /// <summary>
@@ -281,7 +285,7 @@ namespace Rock.Model
                         }
                         catch ( Exception ex )
                         {
-                            RockLogger.Log.Error( RockLogDomains.Cms, ex, "Failed to download Content Library Item image at {Url}", contentLibraryItem.ImageDownloadUrl );
+                            Logger.LogError( ex, "Failed to download Content Library Item image at {Url}", contentLibraryItem.ImageDownloadUrl );
 
                             // Although the Content Library item image failed to download,
                             // the rest of the data was downloaded successfully.

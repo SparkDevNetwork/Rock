@@ -1,0 +1,21 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <a class="warning" href="#" tabindex="-1" role="button" @click.prevent="toggleWarning"><i class="fa fa-exclamation-triangle"></i></a>
+    <TransitionVerticalCollapse>
+        <NotificationBox v-if="showWarning" alertType="warning">
+            <slot />
+        </NotificationBox>
+    </TransitionVerticalCollapse>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+
+    const showWarning = ref(false);
+
+    function toggleWarning(): void {
+        showWarning.value = !showWarning.value;
+    }
+</script>

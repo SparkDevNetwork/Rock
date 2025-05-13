@@ -50,13 +50,14 @@
     import { ConfigurationResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationResponseBag";
     import { SavedKioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/savedKioskConfigurationBag";
     import { deepEqual } from "@Obsidian/Utility/util";
+    import { SavedCheckInConfigurationSettingsBag } from "@Obsidian/ViewModels/CheckIn/savedCheckInConfigurationSettingsBag";
 
     const blockConfiguration = useConfigurationValues<CheckInKioskOptionsBag>();
     const invokeBlockAction = useInvokeBlockAction();
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<SavedKioskConfigurationBag>,
+            type: Object as PropType<SavedCheckInConfigurationSettingsBag>,
             required: false
         },
 
@@ -70,7 +71,7 @@
         (e: "update:modelValue", value: SavedKioskConfigurationBag | undefined): void;
     }>();
 
-    const theme = ref(props.modelValue?.theme ?? blockConfiguration.currentTheme ?? "");
+    const theme = ref(props.modelValue?.themeName ?? blockConfiguration.currentTheme ?? "");
     const templateId = ref<string>(props.modelValue?.templateId ?? "");
     const areaItems = ref<ConfigurationAreaBag[]>([]);
     const primaryAreaIds = ref<string[]>([]);
@@ -147,9 +148,9 @@
     }
 
     watch([theme, templateId, primaryAreaIds, secondaryAreaIds], () => {
-        const newValue: SavedKioskConfigurationBag = {
+        const newValue: SavedCheckInConfigurationSettingsBag = {
             ...props.modelValue,
-            theme: theme.value,
+            themeName: theme.value,
             templateId: templateId.value,
             areaIds: [...primaryAreaIds.value, ...secondaryAreaIds.value]
         };

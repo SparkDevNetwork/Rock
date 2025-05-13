@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupSync" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "1C011499-1122-4429-9AFA-6578798E18A9")]
     public partial class GroupSync : Model<GroupSync>
     {

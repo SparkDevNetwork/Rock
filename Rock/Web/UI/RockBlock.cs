@@ -17,14 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock.Attribute;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
@@ -39,6 +41,15 @@ namespace Rock.Web.UI
     /// </summary>
     public abstract class RockBlock : UserControl
     {
+        #region Fields
+
+        /// <summary>
+        /// The logger backing field for the <see cref="Logger"/> property.
+        /// </summary>
+        private ILogger _logger;
+
+        #endregion
+
         #region Public Properties
 
         /// <summary>
@@ -289,6 +300,31 @@ namespace Rock.Web.UI
         /// In this mode, only those elements needed to configure the block should be rendered - the block content should be omitted.
         /// </summary>
         public bool ConfigurationRenderModeIsEnabled { get; set; }
+
+        /// <summary>
+        /// Gets the logger instance that can be used to write log messages for
+        /// this block.
+        /// </summary>
+        /// <value>The logger instance.</value>
+        public ILogger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    if ( GetType().FullName.StartsWith( "ASP" ) )
+                    {
+                        _logger = RockLogger.LoggerFactory.CreateLogger( GetType().BaseType.FullName );
+                    }
+                    else
+                    {
+                        _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                    }
+                }
+
+                return _logger;
+            }
+        }
 
         #endregion
 

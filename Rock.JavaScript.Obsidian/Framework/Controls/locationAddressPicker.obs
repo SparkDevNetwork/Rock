@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentDropDownPicker
-                           v-bind="formFieldProps"
+    <ContentDropDownPicker v-bind="formFieldProps"
                            :modelValue="pickerValue"
                            iconCssClass="fa fa-map-marker"
                            :showClear="!!pickerValue"
@@ -11,7 +10,7 @@
                            pickerContentBoxHeight="auto"
                            disablePickerContentBoxScroll
                            disableAutoCloseOnPrimaryAction
-                           v-model:showPopup="showPopup">
+                           v-model:showPopup="internalShowPopup">
 
         <template #innerLabel>
             <span class="selected-names" v-html="pickerLabel"></span>
@@ -41,7 +40,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import ContentDropDownPicker from "./contentDropDownPicker.obs";
     import AddressControl from "./addressControl.obs";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
@@ -56,11 +55,19 @@
         modelValue: {
             type: Object as PropType<AddressControlBag>,
             required: true
+        },
+
+        /**
+         * V-Model of whether the popup area is opened.
+         */
+        showPopup: {
+            type: Boolean
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: AddressControlBag): void
+        (e: "update:showPopup", value: boolean): void
     }>();
 
     // #region Values
@@ -73,7 +80,7 @@
     const pickerLabel = ref("");
     const errors = ref<FormError[]>([]);
     const isLoading = ref(false);
-    const showPopup = ref(false);
+    const internalShowPopup = useVModelPassthrough(props, "showPopup", emit);
 
     const formFieldProps = useStandardRockFormFieldProps(props);
 
@@ -91,7 +98,7 @@
                 pickerValue.value = { ...response.data.address } as AddressControlBag;
                 controlValue.value = { ...response.data.address } as AddressControlBag;
                 pickerLabel.value = response.data.addressString ?? "";
-                showPopup.value = false;
+                internalShowPopup.value = false;
             }
             else {
                 errors.value = [{ name: "Invalid", text: response.data.errorMessage ?? "Please enter a valid address." }];
@@ -119,7 +126,6 @@
     // #region Watchers
 
     watch(() => props.modelValue, async () => {
-        console.log("Address Value Set");
         updateRefValue(controlValue, { ...props.modelValue });
         updateRefValue(pickerValue, { ...props.modelValue });
         pickerLabel.value = (await getAddressString(props.modelValue))?.data ?? "";

@@ -1,0 +1,413 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockButton type="button" isSquare @click="showModal" title="Add Reminder" :btnSize="btnSize"><i class="fa fa-bell"></i></RockButton>
+
+    <Modal v-model="isModalShown" :title="reminderTitle" :saveText="hasFetchError ? '' : saveText" @save="saveForm" @closeModal="resetForm" :isSaveButtonDisabled="isSaving">
+        <Loading :isLoading="isLoading">
+            <NotificationBox v-if="hasFetchError" alertType="danger" :heading="`Error Getting Reminders`">
+                <p class="d-flex align-items-center">
+                    An error occurred while retrieving reminder data.
+                    <RockButton @click="getInitialData()" btnType="link">Retry</RockButton>
+                </p>
+            </NotificationBox>
+            <template v-if="reminders.length > 0 && !hasFetchError">
+                <!-- Existing Reminders -->
+                <div>
+                    <h4 class="mt-0">Existing Reminders</h4>
+                    <p>
+                        You currently have {{ reminderQuantityText }} for this {{ entityTypeName }}. The most {{ reminderQuantityRecentText }} listed below.
+                        <a :href="viewRemindersUrl" v-if="reminders.length > 2 && viewRemindersUrl">See your reminders settings for a complete list</a>
+                    </p>
+                </div>
+
+                <Loading :isLoading="isReminderActionLoading">
+                    <NotificationBox v-if="hasReminderActionError" alertType="danger" :heading="`Error Completing that Action`">
+                        <p class="d-flex align-items-center">
+                            An error occurred while attempting that action. Please try again later.
+                        </p>
+                    </NotificationBox>
+                    <template v-for="(reminder, index) in remindersToShow" :key="reminder.guid">
+                        <div class="row d-flex flex-wrap flex-sm-nowrap margin-b-sm">
+                            <div class="col-xs-6 col-sm flex-grow-0">
+                                <span class="label label-default">{{ reminder.reminderDate }}</span>
+                            </div>
+                            <div class="col-xs-12 col-sm mw-100 order-3 order-sm-2">
+                                <div class="note reminder-note">
+                                    <div class="meta">
+                                        <div class="meta-body">
+                                            <span class="note-details">
+                                                <span class="tag-flair">
+                                                    <span class="tag-color" :style="`background-color: ${reminder.highlightColor}`"></span>
+                                                    <span class="tag-label">{{ reminder.reminderTypeName }}</span>
+                                                </span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="note-content">{{ reminder.note }}</div>
+                                </div>
+                            </div>
+
+                            <div class="col-xs-6 col-sm order-2 order-sm-3 flex-grow-0 text-right text-nowrap">
+                                <i v-if="reminder.isRenewing" class="fa fa-clock-o" title="Recurring Reminder" style="vertical-align: middle;"></i>
+
+                                <DropDownMenu class="ml-1 btn-group" :items="reminderActions[index]" align="right" />
+                            </div>
+                        </div>
+                        <hr>
+                    </template>
+                </Loading>
+
+            </template>
+
+            <template v-if="!hasFetchError">
+                <!-- Add Reminder Form -->
+                <h4>{{ reminderTitle }}</h4>
+
+                <NotificationBox v-if="hasSaveError" alertType="danger" :heading="`Error Saving Reminder`">
+                    <p class="d-flex align-items-center">
+                        An error occurred while creating the new reminder. Please try again later.
+                    </p>
+                </NotificationBox>
+
+                <DatePicker label="Reminder Date" v-model="reminderDate" required="true" rules="required" disallowPastDateSelection />
+
+                <TextBox label="Note" v-model="reminderNote" textMode="MultiLine" />
+
+                <DropDownList label="Reminder Type" v-model="reminderType" rules="required" :items="reminderTypes" :showBlankItem="false" />
+
+                <RockButton v-if="!areAdditionalOptionsShown" type="button" :btnType="BtnType.Link" class="mx-0 px-0" @click="areAdditionalOptionsShown = true">Additional Options</RockButton>
+
+                <TransitionVerticalCollapse>
+                    <div v-if="areAdditionalOptionsShown">
+                        <div>
+                            <PersonPicker label="Assign Reminder To" v-model="assignedTo" rules="required" enableSelfSelection />
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <NumberBox label="Repeat Every" v-model="repeatDays" help="Will repeat the reminder the provided number of days after the completion.">
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">days</span>
+                                    </template>
+                                </NumberBox>
+                            </div>
+                            <div class="col-md-6">
+                                <NumberBox label="Number of Times to Repeat" v-model="repeatTimes" help="The number of times to repeat.  Leave blank to repeat indefinitely.">
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">times</span>
+                                    </template>
+                                </NumberBox>
+                            </div>
+                        </div>
+                    </div>
+                </TransitionVerticalCollapse>
+            </template>
+        </Loading>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import RockButton from "../rockButton.obs";
+    import Modal from "../modal.obs";
+    import Loading from "../loading.obs";
+    import NotificationBox from "../notificationBox.obs";
+    import DropDownMenu from "../dropDownMenu.obs";
+    import DatePicker from "../datePicker.obs";
+    import TextBox from "../textBox.obs";
+    import DropDownList from "../dropDownList.obs";
+    import TransitionVerticalCollapse from "../transitionVerticalCollapse.obs";
+    import PersonPicker from "../personPicker.obs";
+    import NumberBox from "../numberBox.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
+    import { ReminderButtonGetRemindersOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/reminderButtonGetRemindersOptionsBag";
+    import { ReminderButtonAddReminderOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/reminderButtonAddReminderOptionsBag";
+    import { ReminderButtonReminderActionOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/reminderButtonReminderActionOptionsBag";
+    import { ReminderButtonGetRemindersReminderBag } from "@Obsidian/ViewModels/Rest/Controls/reminderButtonGetRemindersReminderBag";
+    import { ReminderButtonGetRemindersResultsBag } from "@Obsidian/ViewModels/Rest/Controls/reminderButtonGetRemindersResultsBag";
+    import { useStore } from "@Obsidian/PageState";
+    import { Page } from "@Obsidian/SystemGuids/page";
+    import { createApiCaller } from "@Obsidian/Utility/http";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+
+    const props = defineProps({
+        contextEntityGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        contextEntityTypeGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        viewRemindersPage: {
+            type: String as PropType<Guid>,
+            default: Page.ReminderList
+        },
+
+        editReminderPage: {
+            type: String as PropType<Guid>,
+            default: Page.ReminderEdit
+        },
+
+        btnSize: {
+            type: String as PropType<BtnSize>,
+            default: BtnSize.Default
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "addSuccess"): void;
+    }>();
+
+    // #region Modal
+
+    function showModal(): void {
+        isModalShown.value = true;
+    }
+
+    const isModalShown = ref(false);
+
+    // #endregion
+
+    // #region Existing Reminders
+
+    const reminders = ref<ReminderButtonGetRemindersReminderBag[]>([]);
+    const reminderTypes = ref<ListItemBag[]>([]);
+    const entityName = ref("");
+    const entityTypeName = ref("");
+
+    const viewRemindersUrl = ref<string>();
+    const editReminderUrl = ref<string>();
+
+    const reminderTitle = computed(() => {
+        return entityName.value ? `Reminder for ${entityName.value}` : "Reminder";
+    });
+
+    const remindersToShow = computed(() => {
+        return reminders.value.length > 2 ? reminders.value.slice(0, 2) : reminders.value;
+    });
+
+    const reminderQuantityText = computed(() => {
+        return reminders.value.length === 1 ? "a reminder" : "reminders";
+    });
+    const reminderQuantityRecentText = computed(() => {
+        return reminders.value.length === 1 ? "recent is" : "recent 2 are";
+    });
+
+    const isReminderActionLoading = computed(() => {
+        return isCompletionLoading.value || isDeletionLoading.value;
+    });
+
+    const hasReminderActionError = computed(() => {
+        return hasCompletionError.value || hasDeletionError.value;
+    });
+
+    const reminderActions = computed(() => {
+        return remindersToShow.value.map(reminder => {
+            const actions: MenuAction[] = [];
+
+            actions.push({
+                title: "Mark Complete",
+                type: "default",
+                handler: () => {
+                    markComplete(reminder.guid);
+                }
+            });
+
+            if (reminder.isRenewing) {
+                actions.push({
+                    title: "Cancel Reoccurrence",
+                    type: "default",
+                    handler: () => {
+                        cancelReminder(reminder.guid);
+                    }
+                });
+            }
+
+            if (editReminderUrl.value) {
+                actions.push({
+                    title: "Edit",
+                    type: "default",
+                    handler: () => {
+                        const params = new URLSearchParams({ "ReminderId": reminder.id.toString() });
+
+                        if (editReminderUrl.value && editReminderUrl.value.indexOf("?") !== -1) {
+                            window.location.href = editReminderUrl.value + `&${params.toString()}`;
+                        }
+                        else {
+                            window.location.href = editReminderUrl.value + `?${params.toString()}`;
+                        }
+                    }
+                });
+            }
+
+            actions.push({
+                title: "Delete",
+                type: "danger",
+                handler: () => {
+                    deleteReminder(reminder.guid);
+                }
+            });
+
+            return actions;
+        });
+    });
+
+    /**
+     * Mark the given reminder as complete.
+     */
+    const {
+        run: markComplete,
+        isLoading: isCompletionLoading,
+        hasError: hasCompletionError
+    } = createApiCaller<ReminderButtonGetRemindersReminderBag[], [Guid]>({
+        url: `/api/v2/Controls/ReminderButtonCompleteReminder`,
+        data: (reminderGuid) => ({
+            entityGuid: props.contextEntityGuid,
+            entityTypeGuid: props.contextEntityTypeGuid,
+            reminderGuid
+        } satisfies ReminderButtonReminderActionOptionsBag),
+        onComplete: (data) => {
+            reminders.value = data;
+        }
+    });
+
+    /**
+     * Delete the given reminder.
+     */
+    const {
+        run: deleteReminder,
+        isLoading: isDeletionLoading,
+        hasError: hasDeletionError
+    } = createApiCaller<ReminderButtonGetRemindersReminderBag[], [Guid]>({
+        url: `/api/v2/Controls/ReminderButtonDeleteReminder`,
+        data: (reminderGuid) => ({
+            entityGuid: props.contextEntityGuid,
+            entityTypeGuid: props.contextEntityTypeGuid,
+            reminderGuid
+        } satisfies ReminderButtonReminderActionOptionsBag),
+        onComplete: (data) => {
+            reminders.value = data;
+        }
+    });
+
+    /**
+     * Delete the given reminder.
+     */
+    const {
+        run: cancelReminder,
+        isLoading: isCancelationLoading,
+        hasError: hasCancelationError
+    } = createApiCaller<ReminderButtonGetRemindersReminderBag[], [Guid]>({
+        url: `/api/v2/Controls/ReminderButtonCancelReminder`,
+        data: (reminderGuid) => ({
+            entityGuid: props.contextEntityGuid,
+            entityTypeGuid: props.contextEntityTypeGuid,
+            reminderGuid
+        } satisfies ReminderButtonReminderActionOptionsBag),
+        onComplete: (data) => {
+            reminders.value = data;
+        }
+    });
+
+    /**
+     * Retrieve the initial data from the server to populate the modal.
+     */
+    const {
+        run: getInitialData,
+        isLoading,
+        hasError: hasFetchError
+    } = createApiCaller<ReminderButtonGetRemindersResultsBag>({
+        url: `/api/v2/Controls/ReminderButtonGetReminders`,
+        data: () => ({
+            entityGuid: props.contextEntityGuid,
+            entityTypeGuid: props.contextEntityTypeGuid,
+            viewRemindersPage: props.viewRemindersPage,
+            editReminderPage: props.editReminderPage,
+        } satisfies ReminderButtonGetRemindersOptionsBag),
+        onComplete: (data) => {
+            reminderTypes.value = data.reminderTypes!;
+            reminders.value = data.reminders!;
+            entityName.value = data.entityName!;
+            entityTypeName.value = data.entityTypeName!;
+            viewRemindersUrl.value = data.viewUrl!;
+            editReminderUrl.value = data.editUrl!;
+        }
+    });
+
+    watch(isModalShown, () => {
+        if (isModalShown.value) {
+            getInitialData();
+        }
+    });
+
+    // #endregion
+
+    // #region New Reminder Form
+
+    const pageState = useStore().state;
+
+    const reminderNote = ref("");
+    const reminderDate = ref<string>("");
+    const reminderType = ref<string>("");
+    const areAdditionalOptionsShown = ref(false);
+    const assignedTo = ref<ListItemBag>(pageState ? {
+        value: pageState.currentPerson?.guid,
+        text: pageState.currentPerson?.fullName
+    } : {});
+    const repeatDays = ref<number>();
+    const repeatTimes = ref<number>();
+
+    const saveText = computed(() => {
+        return isSaving.value ? "Saving ..." : "Save";
+    });
+
+    async function saveForm(): Promise<void> {
+        const isSuccessful = await addReminder();
+        if (isSuccessful) {
+            resetForm();
+            emit("addSuccess");
+            isModalShown.value = false;
+        }
+    }
+
+    /**
+     * Retrieve the initial data from the server to populate the modal.
+     */
+    const {
+        run: addReminder,
+        isLoading: isSaving,
+        hasError: hasSaveError
+    } = createApiCaller<string>({
+        url: `/api/v2/Controls/ReminderButtonAddReminder`,
+        data: () => ({
+            entityGuid: props.contextEntityGuid,
+            entityTypeGuid: props.contextEntityTypeGuid,
+            reminderTypeGuid: reminderType.value,
+            note: reminderNote.value,
+            reminderDate: reminderDate.value,
+            renewPeriodDays: repeatDays.value,
+            renewMaxCount: repeatTimes.value,
+            assignedToGuid: assignedTo.value.value ?? ""
+        } satisfies ReminderButtonAddReminderOptionsBag)
+    });
+
+    function resetForm(): void {
+        reminderNote.value = "";
+        reminderDate.value = "";
+        repeatDays.value = undefined;
+        repeatTimes.value = undefined;
+        assignedTo.value = pageState ? {
+            value: pageState.currentPerson?.guid,
+            text: pageState.currentPerson?.fullName
+        } : {};
+        areAdditionalOptionsShown.value = false;
+    }
+
+    // #endregion
+
+</script>

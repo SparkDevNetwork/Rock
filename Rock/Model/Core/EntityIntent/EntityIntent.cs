@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "EntityIntent" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ENTITY_INTENT )]
     public partial class EntityIntent : Model<EntityIntent>, ICacheable
     {

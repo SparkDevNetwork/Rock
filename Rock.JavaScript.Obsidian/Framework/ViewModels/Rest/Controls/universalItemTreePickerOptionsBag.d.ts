@@ -28,7 +28,8 @@
 export type UniversalItemTreePickerOptionsBag = {
     /**
      * Gets or sets the general purpose context provided by the field
-     * type control.
+     * type control. We also recommend you encode any context data as a
+     * JSON string to future proof yourself from changes you might need to make.
      */
     context?: string | null;
 

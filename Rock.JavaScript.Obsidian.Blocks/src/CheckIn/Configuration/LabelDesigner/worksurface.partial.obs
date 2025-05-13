@@ -1052,7 +1052,9 @@
                 pixelPos.y += 1;
             }
 
-            pixelPos = surface.getBoundedPosition(pixelPos, pixelSize, true);
+            const rotation = findNodeForField(field)?.rotation() ?? 0;
+
+            pixelPos = surface.getBoundedPosition(pixelPos, pixelSize, true, rotation);
 
             field.left = surface.getOffsetForPixel(pixelPos.x);
             field.top = surface.getOffsetForPixel(pixelPos.y);
@@ -1094,6 +1096,21 @@
             field.top = surface.getOffsetForPixel(e.target.y());
             field.width = surface.getOffsetForPixel(e.target.width());
             field.height = surface.getOffsetForPixel(e.target.height());
+
+            const rotation = Math.round(e.target.rotation());
+
+            if (rotation === -90) {
+                field.rotationAngle = 270;
+            }
+            else if (rotation === 180) {
+                field.rotationAngle = 180;
+            }
+            else if (rotation === 90) {
+                field.rotationAngle = 90;
+            }
+            else {
+                field.rotationAngle = 0;
+            }
         });
     }
 

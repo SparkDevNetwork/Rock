@@ -1,0 +1,65 @@
+<template>
+    <GalleryAndResult :value="{ account, folder, modelValue: value }"
+                      hasMultipleValues
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <MediaElementPicker label="Media Element"
+                            v-model="value"
+                            v-model:account="account"
+                            v-model:folder="folder"
+                            :multiple="multiple"
+                            :showBlankItem="showBlankItem"
+                            :hideRefreshButtons="hideRefresh"
+                            :rules="required ? 'required' : ''"
+                            :hideAccountPicker="hideAccountPicker"
+                            :hideFolderPicker="hideFolderPicker"
+                            :hideMediaPicker="hideMediaPicker" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox v-model="multiple" label="Multiple" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="hideRefresh" label="Hide Refresh Buttons" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="required" label="Required" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="hideAccountPicker" label="Hide Account Picker" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="hideFolderPicker" label="Hide Folder Picker" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="hideMediaPicker" label="Hide Media Picker" />
+                </div>
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref(null);
+    const account = ref(null);
+    const folder = ref(null);
+    const multiple = ref(false);
+    const showBlankItem = ref(false);
+    const hideRefresh = ref(false);
+    const required = ref(false);
+    const hideAccountPicker = ref(false);
+    const hideFolderPicker = ref(false);
+    const hideMediaPicker = ref(false);
+    const importCode = getSfcControlImportPath("mediaElementPicker");
+    const exampleCode = `<MediaElementPicker label="Media" v-model="value" :isRefreshDisallowed="false" :hideAccountPicker="hideAccountPicker" :hideFolderPicker="hideFolderPicker" :hideMediaPicker="hideMediaPicker" />`;
+</script>

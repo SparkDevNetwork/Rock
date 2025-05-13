@@ -14,8 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+
 import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -61,5 +63,9 @@ export class SecurityRoleFieldType extends FieldTypeBase {
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override getSupportedComparisonTypes(): ComparisonType {
+        return ComparisonType.IsBlank | ComparisonType.IsNotBlank;
     }
 }

@@ -1,0 +1,25 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <MonthDayPicker label="Month and Day" v-model="value" />
+
+        <template #settings>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import MonthDayPicker from "@Obsidian/Controls/monthDayPicker.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref({ month: 0, day: 0 });
+    const importCode = getSfcControlImportPath("monthDayPicker");
+    const exampleCode = `<MonthDayPicker label="Month and Day" v-model="value" :showBlankItem="false" :multiple="false" />`;
+</script>

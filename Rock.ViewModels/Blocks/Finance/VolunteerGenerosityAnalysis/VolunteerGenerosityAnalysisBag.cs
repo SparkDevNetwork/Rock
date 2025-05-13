@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Finance.VolunteerGenerosityAnalysis
 {
@@ -86,6 +87,10 @@ namespace Rock.ViewModels.Blocks.Finance.VolunteerGenerosityAnalysis
         /// Gets or sets the Campus Short Code
         /// </summary>
         public string CampusShortCode { get; set; }
+        /// <summary>
+        /// Gets or sets the Campus Name
+        /// </summary>
+        public string CampusName { get; set; }
         /// <summary>
         /// Gets or sets the IsActive flag.
         /// </summary>
@@ -156,7 +161,7 @@ namespace Rock.ViewModels.Blocks.Finance.VolunteerGenerosityAnalysis
         /// <summary>
         /// Gets or sets the list of unique campuses.
         /// </summary>
-        public List<string> UniqueCampuses { get; set; }
+        public List<ListItemBag> UniqueCampuses { get; set; }
         /// <summary>
         /// Gets or sets the list of unique groups 
         /// </summary>

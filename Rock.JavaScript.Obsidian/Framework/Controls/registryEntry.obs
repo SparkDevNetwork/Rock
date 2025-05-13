@@ -9,7 +9,7 @@
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <slot name="prepend" :isInputGroupSupported="false" />
-                <div class="form-control-group row form-row">
+                <div class="row form-row">
                     <div class="col-sm-4">
                         <input v-model="volume" :id="uniqueId" type="text" class="form-control" v-bind="field" placeholder="Volume" inputmode="numeric" pattern="[0-9]*" />
                     </div>
@@ -152,6 +152,6 @@
         return "is invalid. " + errs.join(" and ") + " should be " + (errs.length == 1 ? "a number" : "numbers") + " greater than zero.";
     }
 
-            // #endregion
+    // #endregion
 
 </script>

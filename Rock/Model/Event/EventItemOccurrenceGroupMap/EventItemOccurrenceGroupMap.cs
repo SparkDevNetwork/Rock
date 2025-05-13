@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "EventItemOccurrenceGroupMap" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "1479D2B7-65C0-4E98-9E70-0848422FA00C")]
     public partial class EventItemOccurrenceGroupMap : Model<EventItemOccurrenceGroupMap>
     {

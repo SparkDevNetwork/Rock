@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as a delimited list of FinancialAccount Guids
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.FINANCIAL_ACCOUNTS )]
     public class AccountsFieldType : FieldType, IEntityReferenceFieldType

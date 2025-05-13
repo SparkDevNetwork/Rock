@@ -20,6 +20,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Microsoft.Extensions.Logging;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -251,7 +254,7 @@ namespace RockWeb.Blocks.Security
             catch ( Exception ex )
             {
                 ShowWarningMessage( ex.Message );
-                RockLogger.Log.Error( RockLogDomains.Core, ex );
+                Logger.LogError( ex, ex.Message );
                 ExceptionLogService.LogException( ex );
             }
         }

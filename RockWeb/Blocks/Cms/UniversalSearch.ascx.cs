@@ -788,11 +788,16 @@ namespace RockWeb.Blocks.Cms
 
             ddlSearchType.BindToEnum<SearchType>();
             ddlSearchType.SelectedValue = GetAttributeValue( AttributeKey.SearchType );
+            var searchType = PageParameter( PageParameterKey.SearchType );
 
-            // override the block setting if passed in the query string
-            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.SearchType ) ) )
+            // override the block setting if passed in the query string and valid search type.
+            if ( !string.IsNullOrWhiteSpace( searchType ) )
             {
-                ddlSearchType.SelectedValue = PageParameter( PageParameterKey.SearchType );
+                var searchTypeValue = searchType.ConvertToEnumOrNull<SearchType>();
+                if ( searchTypeValue.HasValue )
+                {
+                    ddlSearchType.SelectedValue = searchTypeValue.Value.ConvertToInt().ToString();
+                }
             }
 
             // set setting values from query string

@@ -47,6 +47,7 @@ using Rock.Transactions;
 using Rock.Utility;
 using Rock.ViewModels.Crm;
 using Rock.Web.Cache;
+using Rock.Web.HttpModules;
 using Rock.Web.UI.Controls;
 
 using Page = System.Web.UI.Page;
@@ -84,6 +85,11 @@ namespace Rock.Web.UI
         /// </summary>
         private bool _pageNeedsObsidian = false;
 
+        /// <summary>
+        /// Will be <c>true</c> if the page has any Obsidian blocks to initialize.
+        /// </summary>
+        private bool _pageHasObsidianBlock = false;
+
         private readonly string _obsidianPageTimingControlId = "lObsidianPageTimings";
         private readonly List<DebugTimingViewModel> _debugTimingViewModels = new List<DebugTimingViewModel>();
         private Stopwatch _onLoadStopwatch = null;
@@ -108,6 +114,11 @@ namespace Rock.Web.UI
         /// </summary>
         private readonly List<IServiceScope> _pageServiceScopes = new List<IServiceScope>();
 
+        /// <summary>
+        /// The currently running Rock version.
+        /// </summary>
+        private static string _rockVersion = "";
+        
         /// <summary>
         /// A list of blocks (their paths) that will force the obsidian libraries to be loaded.
         /// This is particularly useful when a block has a settings dialog that is dependent on
@@ -645,6 +656,7 @@ namespace Rock.Web.UI
         static RockPage()
         {
             InitializeObsidianFingerprint();
+            _rockVersion = "Rock v" + typeof( Rock.Web.UI.RockPage ).Assembly.GetName().Version.ToString();
         }
 
         #endregion
@@ -910,10 +922,9 @@ namespace Rock.Web.UI
 
             // Add a Rock version meta tag
             Page.Trace.Warn( "Adding Rock metatag" );
-            string version = typeof( Rock.Web.UI.RockPage ).Assembly.GetName().Version.ToString();
             HtmlMeta rockVersion = new HtmlMeta();
             rockVersion.Attributes.Add( "name", "generator" );
-            rockVersion.Attributes.Add( "content", string.Format( "Rock v{0}", version ) );
+            rockVersion.Attributes.Add( "content", _rockVersion );
             AddMetaTag( this.Page, rockVersion );
 
             if ( _showDebugTimings )
@@ -1085,10 +1096,10 @@ namespace Rock.Web.UI
                 }
 
                 // Add CSS class to body
-                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) && this.Master != null )
+                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) )
                 {
                     // attempt to find the body tag
-                    var body = ( HtmlGenericControl ) this.Master.FindControl( "body" );
+                    var body = ( HtmlGenericControl ) this.Master?.FindControl( "body" );
                     if ( body != null )
                     {
                         // determine if we need to append or add the class
@@ -1100,6 +1111,11 @@ namespace Rock.Web.UI
                         {
                             body.Attributes.Add( "class", this.BodyCssClass );
                         }
+                    }
+                    else
+                    {
+                        var bodyClasses = BodyCssClass.Split( new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries ).ToJson();
+                        ClientScript.RegisterStartupScript( GetType(), "initialize-body-class", $"document.body.classList.add(...{bodyClasses});\n", true );
                     }
                 }
 
@@ -1314,6 +1330,8 @@ Rock.settings.initialize({{
                         AddGoogleAnalytics( _pageCache.Layout.Site.GoogleAnalyticsCode );
                     }
 
+                    AddJesusHook();
+
                     // Flag indicating if user has rights to administer one or more of the blocks on page
                     bool canAdministrateBlockOnPage = false;
 
@@ -1415,6 +1433,7 @@ Rock.settings.initialize({{
                                         if ( blockEntity is IRockObsidianBlockType )
                                         {
                                             _pageNeedsObsidian = true;
+                                            _pageHasObsidianBlock = true;
                                         }
                                     }
 
@@ -1491,12 +1510,6 @@ Rock.settings.initialize({{
 
                         Page.Trace.Warn( "Initializing Obsidian" );
 
-                        var body = ( HtmlGenericControl ) this.Master?.FindControl( "body" );
-                        if ( body != null )
-                        {
-                            body.AddCssClass( "obsidian-loading" );
-                        }
-
                         if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
                         {
                             var currentPersonJson = "null";
@@ -1550,6 +1563,11 @@ Obsidian.onReady(() => {{
 
 Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
 ";
+
+                            if ( _pageHasObsidianBlock )
+                            {
+                                script = "document.body.classList.add(\"obsidian-loading\")\n" + script;
+                            }
 
                             ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-init", script, true );
                         }
@@ -1698,38 +1716,22 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             iPageSecurity.Attributes.Add( "class", "fa fa-lock" );
 
                             // ShortLink Properties
-                            HtmlGenericControl aShortLink = new HtmlGenericControl( "a" );
-                            buttonBar.Controls.Add( aShortLink );
-                            aShortLink.ID = "aShortLink";
-                            aShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                            aShortLink.Attributes.Add( "class", "btn properties" );
-                            aShortLink.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" +
-                                ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&Url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.UrlProxySafe().AbsoluteUri.ToString() ) ) )
-                                + "')" );
-                            aShortLink.Attributes.Add( "Title", "Add Short Link" );
-                            HtmlGenericControl iShortLink = new HtmlGenericControl( "i" );
-                            aShortLink.Controls.Add( iShortLink );
-                            iShortLink.Attributes.Add( "class", "fa fa-link" );
-
-                            // Obsidian ShortLink Properties - TO BE UNCOMMENTED IN v17
-/*
                             var administratorShortlinkScript = $@"Obsidian.onReady(() => {{
     System.import('@Obsidian/Templates/rockPage.js').then(module => {{
         module.showShortLink('{ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&Url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.UrlProxySafe().AbsoluteUri.ToString() ) ) )}');
     }});
 }});";
-                            HtmlGenericControl aObsidianShortLink = new HtmlGenericControl( "a" );
-                            buttonBar.Controls.Add( aObsidianShortLink );
-                            aObsidianShortLink.ID = "aObsidianShortLink";
-                            aObsidianShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                            aObsidianShortLink.Attributes.Add( "class", "btn properties" );
-                            aObsidianShortLink.Attributes.Add( "href", "#" );
-                            aObsidianShortLink.Attributes.Add( "onclick", $"event.preventDefault(); {administratorShortlinkScript}" );
-                            aObsidianShortLink.Attributes.Add( "Title", "Add Obsidian Short Link" );
-                            HtmlGenericControl iObsidianShortLink = new HtmlGenericControl( "i" );
-                            aObsidianShortLink.Controls.Add( iObsidianShortLink );
-                            iObsidianShortLink.Attributes.Add( "class", "fa fa-link" );
-*/
+                            HtmlGenericControl aShortLink = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aShortLink );
+                            aShortLink.ID = "aShortLink";
+                            aShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                            aShortLink.Attributes.Add( "class", "btn properties" );
+                            aShortLink.Attributes.Add( "href", "#" );
+                            aShortLink.Attributes.Add( "onclick", $"event.preventDefault(); {administratorShortlinkScript}" );
+                            aShortLink.Attributes.Add( "Title", "Add Short Link" );
+                            HtmlGenericControl iShortLink = new HtmlGenericControl( "i" );
+                            aShortLink.Controls.Add( iShortLink );
+                            iShortLink.Attributes.Add( "class", "fa fa-link" );
 
                             // System Info
                             HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );
@@ -1800,7 +1802,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     Page.Header.Controls.Add( new LiteralControl( "<meta name=\"robots\" content=\"noindex, nofollow\"/>" ) );
                 }
 
-                // Add reponse headers to request that the client tell us if they prefer dark mode
+                // Add response headers to request that the client tell us if they prefer dark mode
                 Response.Headers.Add( "Accept-CH", "Sec-CH-Prefers-Color-Scheme" );
                 Response.Headers.Add( "Vary", "Sec-CH-Prefers-Color-Scheme" );
                 Response.Headers.Add( "Critical-CH", "Sec-CH-Prefers-Color-Scheme" );
@@ -2448,7 +2450,7 @@ Obsidian.onReady(() => {{
         {
             var googleAPIKey = GlobalAttributesCache.Get().GetValue( "GoogleAPIKey" );
             string keyParameter = string.IsNullOrWhiteSpace( googleAPIKey ) ? "" : string.Format( "key={0}&", googleAPIKey );
-            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}libraries=drawing,visualization,geometry", keyParameter );
+            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}libraries=drawing,visualization,geometry,marker", keyParameter );
 
             // first, add it to the page to handle cases where the api is needed on first page load
             if ( this.Page != null && this.Page.Header != null )
@@ -2580,6 +2582,12 @@ Sys.Application.add_load(function () {
             }
         }
 
+        /// <inheritdoc/>
+        protected override void Render( HtmlTextWriter writer )
+        {
+            base.Render( writer );
+        }
+
         /// <summary>
         /// Process page view interactions if they are enabled for this website.
         /// </summary>
@@ -2597,6 +2605,9 @@ Sys.Application.add_load(function () {
                 return;
             }
 
+            // Attempt to retrieve geolocation data.
+            var geolocation = this.RequestContext?.ClientInformation?.Geolocation;
+
             // If we have identified a logged-in user, record the page interaction immediately and return. (Does not include anonymous visitors)
             if ( CurrentPerson != null )
             {
@@ -2606,6 +2617,17 @@ Sys.Application.add_load(function () {
                     InteractionTimeToServe = _tsDuration.TotalSeconds,
                     InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(),
                     InteractionChannelCustom2 = Request.UrlReferrerSearchTerms(),
+                    GeolocationIpAddress = geolocation?.IpAddress,
+                    GeolocationLookupDateTime = geolocation?.LookupDateTime,
+                    City = geolocation?.City,
+                    RegionName = geolocation?.RegionName,
+                    RegionCode = geolocation?.RegionCode,
+                    RegionValueId = geolocation?.RegionValueId,
+                    CountryCode = geolocation?.CountryCode,
+                    CountryValueId = geolocation?.CountryValueId,
+                    PostalCode = geolocation?.PostalCode,
+                    Latitude = geolocation?.Latitude,
+                    Longitude = geolocation?.Longitude,
                     InteractionChannelCustom1 = Activity.Current?.TraceId.ToString()
                 };
 
@@ -2652,7 +2674,18 @@ Sys.Application.add_load(function () {
                 UrlReferrerSearchTerms = Request.UrlReferrerSearchTerms(),
                 UserAgent = Request.UserAgent.SanitizeHtml(),
                 UserHostAddress = GetClientIpAddress().SanitizeHtml(),
-                UserIdKey = CurrentPersonAlias?.IdKey
+                UserIdKey = CurrentPersonAlias?.IdKey,
+                GeolocationIpAddress = geolocation?.IpAddress,
+                GeolocationLookupDateTime = geolocation?.LookupDateTime,
+                City = geolocation?.City,
+                RegionName = geolocation?.RegionName,
+                RegionCode = geolocation?.RegionCode,
+                RegionValueId = geolocation?.RegionValueId,
+                CountryCode = geolocation?.CountryCode,
+                CountryValueId = geolocation?.CountryValueId,
+                PostalCode = geolocation?.PostalCode,
+                Latitude = geolocation?.Latitude,
+                Longitude = geolocation?.Longitude
             };
 
             // This script adds a callback to record a View interaction for this page.
@@ -2948,6 +2981,21 @@ Sys.Application.add_load(function () {
                 // Log any error but still let the page load.
                 LogException( ex );
             }
+        }
+
+        /// <summary>
+        /// Adds the Crafting Code For Christ script.
+        /// </summary>
+        private void AddJesusHook()
+        {
+            var script = $@"
+    <script>
+      console.info(
+        '%cCrafting Code For Christ | Col. 3:23-24',
+        'background: #ee7625; border-radius:0.5em; padding:0.2em 0.5em; color: white; font-weight: bold');
+      console.info('{_rockVersion}');
+    </script>";
+            AddScriptToHead( this.Page, script, false );
         }
 
         /// <summary>
@@ -4637,7 +4685,13 @@ Sys.Application.add_load(function () {
         /// <returns></returns>
         public static string GetClientIpAddress()
         {
-            return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current?.Request ) );
+            var request = HttpContext.Current?.Request;
+            if ( request == null )
+            {
+                return string.Empty;
+            }
+
+            return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper(request) );
         }
 
         #endregion

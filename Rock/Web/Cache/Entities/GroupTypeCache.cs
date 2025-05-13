@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Attribute;
 using Rock.CheckIn.v2;
 using Rock.Data;
 using Rock.Enums.CheckIn;
@@ -867,7 +868,67 @@ namespace Rock.Web.Cache
 
         /// <inheritdoc cref="Rock.Model.Group.ScheduleCoordinatorNotificationTypes" />
         [DataMember]
-        public ScheduleCoordinatorNotificationType? ScheduleCoordinatorNotificationTypes { get; set; }
+        public ScheduleCoordinatorNotificationType? ScheduleCoordinatorNotificationTypes { get; private set; }
+
+        /// <inheritdoc cref="GroupType.IsPeerNetworkEnabled"/>
+        [DataMember]
+        public bool IsPeerNetworkEnabled { get; private set; }
+
+        /// <inheritdoc cref="GroupType.RelationshipGrowthEnabled"/>
+        [DataMember]
+        public bool RelationshipGrowthEnabled { get; private set; }
+
+        /// <inheritdoc cref="GroupType.RelationshipStrength"/>
+        [DataMember]
+        public int RelationshipStrength { get; private set; }
+
+        /// <inheritdoc cref="GroupType.LeaderToLeaderRelationshipMultiplier"/>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal LeaderToLeaderRelationshipMultiplier { get; private set; }
+
+        /// <inheritdoc cref="GroupType.LeaderToNonLeaderRelationshipMultiplier"/>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal LeaderToNonLeaderRelationshipMultiplier { get; private set; }
+
+        /// <inheritdoc cref="GroupType.NonLeaderToNonLeaderRelationshipMultiplier"/>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal NonLeaderToNonLeaderRelationshipMultiplier { get; private set; }
+
+        /// <inheritdoc cref="GroupType.NonLeaderToLeaderRelationshipMultiplier"/>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal NonLeaderToLeaderRelationshipMultiplier { get; private set; }
+
+        /// <inheritdoc cref="GroupType.AreAnyRelationshipMultipliersCustomized"/>
+        [RockInternal( "17.0" )]
+        public bool AreAnyRelationshipMultipliersCustomized =>
+            LeaderToLeaderRelationshipMultiplier != 1m
+            || LeaderToNonLeaderRelationshipMultiplier != 1m
+            || NonLeaderToLeaderRelationshipMultiplier != 1m
+            || NonLeaderToNonLeaderRelationshipMultiplier != 1m;
+
+        /// <inheritdoc cref="GroupType.IsChatAllowed"/>
+        [DataMember]
+        public bool IsChatAllowed { get; private set; }
+
+        /// <inheritdoc cref="GroupType.IsChatEnabledForAllGroups"/>
+        [DataMember]
+        public bool IsChatEnabledForAllGroups { get; private set; }
+
+        /// <inheritdoc cref="GroupType.IsLeavingChatChannelAllowed"/>
+        [DataMember]
+        public bool IsLeavingChatChannelAllowed { get; private set; }
+
+        /// <inheritdoc cref="GroupType.IsChatChannelPublic"/>
+        [DataMember]
+        public bool IsChatChannelPublic { get; private set; }
+
+        /// <inheritdoc cref="GroupType.IsChatChannelAlwaysShown"/>
+        [DataMember]
+        public bool IsChatChannelAlwaysShown { get; private set; }
 
         #endregion
 
@@ -884,6 +945,19 @@ namespace Rock.Web.Cache
         {
             var groupTypeIds = GetInheritedGroupTypeIds();
 
+            return GetInheritedAttributesForQualifier( groupTypeIds, entityTypeId, entityTypeQualifierColumn );
+        }
+
+        /// <summary>
+        /// Gets a list of all attributes defined for the GroupTypes specified that
+        /// match the entityTypeQualifierColumn and the GroupType Ids.
+        /// </summary>
+        /// <param name="groupTypeIds">The list of group type ids that must be matched.</param>
+        /// <param name="entityTypeId">The Entity Type Id for which Attributes to load.</param>
+        /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
+        /// <returns>A list of attributes defined in the inheritance tree.</returns>
+        internal static List<AttributeCache> GetInheritedAttributesForQualifier( List<int> groupTypeIds, int entityTypeId, string entityTypeQualifierColumn )
+        {
             var inheritedAttributes = new Dictionary<int, List<AttributeCache>>();
             groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<AttributeCache>() ) );
 
@@ -1064,6 +1138,18 @@ namespace Rock.Web.Cache
             GroupsRequireCampus = groupType.GroupsRequireCampus;
             ScheduleCoordinatorNotificationTypes = groupType.ScheduleCoordinatorNotificationTypes;
             IsConcurrentCheckInPrevented = groupType.IsConcurrentCheckInPrevented;
+            IsPeerNetworkEnabled = groupType.IsPeerNetworkEnabled;
+            RelationshipGrowthEnabled = groupType.RelationshipGrowthEnabled;
+            RelationshipStrength = groupType.RelationshipStrength;
+            LeaderToLeaderRelationshipMultiplier = groupType.LeaderToLeaderRelationshipMultiplier;
+            LeaderToNonLeaderRelationshipMultiplier = groupType.LeaderToNonLeaderRelationshipMultiplier;
+            NonLeaderToLeaderRelationshipMultiplier = groupType.NonLeaderToLeaderRelationshipMultiplier;
+            NonLeaderToNonLeaderRelationshipMultiplier = groupType.NonLeaderToNonLeaderRelationshipMultiplier;
+            IsChatAllowed = groupType.IsChatAllowed;
+            IsChatEnabledForAllGroups = groupType.IsChatEnabledForAllGroups;
+            IsLeavingChatChannelAllowed = groupType.IsLeavingChatChannelAllowed;
+            IsChatChannelPublic = groupType.IsChatChannelPublic;
+            IsChatChannelAlwaysShown = groupType.IsChatChannelAlwaysShown;
         }
 
         /// <summary>

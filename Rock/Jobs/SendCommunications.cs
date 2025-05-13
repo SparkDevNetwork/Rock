@@ -23,11 +23,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -68,6 +71,7 @@ namespace Rock.Jobs
 
     #endregion
 
+    [RockLoggingCategory]
     public class SendCommunications : RockJob
     {
         #region Keys
@@ -84,12 +88,18 @@ namespace Rock.Jobs
 
         #endregion
 
+        #region Constructors
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SendCommunications"/> class.
         /// </summary>
         public SendCommunications()
         {
         }
+
+        #endregion
+
+        #region Methods
 
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
@@ -111,7 +121,7 @@ namespace Rock.Jobs
                     .ToList();
             }
 
-            Log( RockLogLevel.Info, "Retrieved {queuedCommunicationsCount} queued communications.", startDateTime, stopWatch.ElapsedMilliseconds, sendCommunications.Count );
+            Log( LogLevel.Information, $"Retrieved {sendCommunications.Count} queued communications.", startDateTime, stopWatch.ElapsedMilliseconds );
 
             if ( sendCommunications == null )
             {
@@ -173,7 +183,7 @@ namespace Rock.Jobs
                 }
             }
 
-            Log( RockLogLevel.Info, "Sent {communicationsSentCount} communications.", startDateTime, stopWatch.ElapsedMilliseconds, communicationsSent );
+            Log( LogLevel.Information, $"Sent {communicationsSent} communications.", startDateTime, stopWatch.ElapsedMilliseconds );
 
             if ( communicationsSent > 0 )
             {
@@ -211,11 +221,196 @@ namespace Rock.Jobs
                 rockContext.BulkUpdate( qryExpiredRecipients, c => new CommunicationRecipient { Status = CommunicationRecipientStatus.Failed, StatusNote = "Communication was not sent before the expire window (possibly due to delayed approval)." } );
             }
 
-            Log( RockLogLevel.Info, @"Updated expired communication recipients' status to ""Failed"".", startDateTime, stopWatch.ElapsedMilliseconds );
+            Log( LogLevel.Information, @"Updated expired communication recipients' status to ""Failed"".", startDateTime, stopWatch.ElapsedMilliseconds );
+
+            var statusMessage = SendEmailMetricsReminders();
+
+            if ( statusMessage.IsNotNullOrWhiteSpace() )
+            {
+                this.Result += Environment.NewLine + statusMessage;
+            }
         }
 
         /// <summary>
-        /// The resulte of the Send communication request.
+        /// Sends the communication asynchronous.
+        /// </summary>
+        /// <param name="comm">The comm.</param>
+        /// <param name="mutex">The mutex.</param>
+        /// <returns></returns>
+        private async Task<SendCommunicationAsyncResult> SendCommunicationAsync( Model.Communication comm, SemaphoreSlim mutex )
+        {
+            var communicationResult = new SendCommunicationAsyncResult
+            {
+                Communication = comm
+            };
+
+            var startDateTime = RockDateTime.Now;
+            var communicationStopWatch = Stopwatch.StartNew();
+            Log( LogLevel.Debug, $"Starting to send {comm.Name}.", startDateTime );
+            try
+            {
+                await Model.Communication.SendAsync( comm ).ConfigureAwait( false );
+            }
+            catch ( Exception ex )
+            {
+                communicationResult.Exception = ex;
+            }
+
+            Log( LogLevel.Information, $"{comm.Name} sent.", startDateTime, communicationStopWatch.ElapsedMilliseconds );
+            mutex.Release();
+            return communicationResult;
+        }
+
+        /// <summary>
+        /// Sends the pending email metrics reminders.
+        /// </summary>
+        /// <returns></returns>
+        private string SendEmailMetricsReminders()
+        {
+            var startDateTime = RockDateTime.Now;
+            var stopWatch = Stopwatch.StartNew();
+
+            using ( var rockContext = new RockContext() )
+            {
+                // Get the communications for which to send email metrics reminders.
+                var emailMetricsReminders = new CommunicationService( rockContext )
+                    .Queryable()
+                    .Include( c => c.SenderPersonAlias.Person )
+
+                    // Filter communications that have been sent (unsent communications will not have metrics).
+                    .Where( c => c.SendDateTime.HasValue && c.SendDateTime.Value <= RockDateTime.Now )
+
+                    // Filter communications that have a sender (this person will receive the email metrics reminders, so it cannot be null).
+                    .Where( c => c.SenderPersonAliasId.HasValue )
+
+                    // Filter communications that qualify for a metrics reminder.
+                    .Where( c =>
+                        c.EmailMetricsReminderOffsetDays.HasValue
+                        && !c.EmailMetricsReminderSentDateTime.HasValue
+                        && DbFunctions.AddDays( c.SendDateTime.Value, c.EmailMetricsReminderOffsetDays.Value ) <= RockDateTime.Now )
+
+                    .Select( c => new SendEmailMetricsReminderData
+                    {
+                        Communication = c,
+                        RecipientsCount = c.Recipients.Count,
+                        EmailMetricsReminderRecipient = c.SenderPersonAlias.Person
+                    } )
+                    .ToList();
+
+                if ( !emailMetricsReminders.Any() )
+                {
+                    var statusMessage = "No email metrics reminders to send";
+                    Log( LogLevel.Information, statusMessage, startDateTime, stopWatch.ElapsedMilliseconds );
+                    return statusMessage;
+                }
+
+                var communicationPage = PageCache.Get( SystemGuid.Page.NEW_COMMUNICATION.AsGuid(), rockContext );
+                var communicationPageRoute = communicationPage?.GetBestMatchingRoute( new Dictionary<string, string> { ["CommunicationId"] = "0" } );
+
+                if ( communicationPage == null || communicationPageRoute == null )
+                {
+                    var statusMessage = $@"Unable to send {emailMetricsReminders.Count} email metrics {( emailMetricsReminders.Count == 1 ? "reminder" : "reminders" )} because the internal communication page could not be found";
+                    Log( LogLevel.Error, statusMessage, startDateTime, stopWatch.ElapsedMilliseconds );
+                    return statusMessage;
+                }
+
+                var errorMessages = new List<string>();
+                var pendingChanges = 0;
+                var successCount = 0;
+
+                foreach ( var emailMetricsReminder in emailMetricsReminders )
+                {
+                    if ( SendEmailMetricsReminder( emailMetricsReminder, communicationPage.Id, communicationPageRoute.Id, out var reminderErrorMessages ) )
+                    {
+                        successCount++;
+                        emailMetricsReminder.Communication.EmailMetricsReminderSentDateTime = RockDateTime.Now;
+                        pendingChanges++;
+
+                        if ( pendingChanges >= 1000 )
+                        {
+                            rockContext.SaveChanges();
+                            pendingChanges = 0;
+                        }
+                    }
+                    else
+                    {
+                        string errorMessage;
+                        if ( reminderErrorMessages?.Any() == true )
+                        {
+                            errorMessage = $"{( reminderErrorMessages.Count > 1 ? "Errors" : "Error" )} sending email metrics reminder for communication #{emailMetricsReminder.Communication.Id}:{Environment.NewLine}    {reminderErrorMessages.AsDelimited( Environment.NewLine + "    " )}";
+                        }
+                        else
+                        {
+                            errorMessage = $"Unknown error sending email metrics reminder for communication #:{emailMetricsReminder.Communication.Id}";
+                        }
+
+                        if ( !errorMessages.Contains( errorMessage ) )
+                        {
+                            errorMessages.Add( errorMessage );
+                        }
+
+                        Log( LogLevel.Error, errorMessage, startDateTime, stopWatch.ElapsedMilliseconds );
+                    }
+                }
+
+                if ( pendingChanges > 0 )
+                {
+                    rockContext.SaveChanges();
+                    pendingChanges = 0;
+                }
+
+                var statusMessages = new List<string>();
+
+                if ( successCount > 0 )
+                {
+                    // Add the success message first...
+                    statusMessages.Add( $"Sent {successCount:N0} email metrics {( successCount == 1 ? "reminder" : "reminders" )}" );
+                }
+
+                // ... then add the error messages.
+                statusMessages.AddRange( errorMessages );
+
+                return statusMessages.AsDelimited( Environment.NewLine );
+            }
+        }
+
+        /// <summary>
+        /// Sends an email metrics reminder.
+        /// </summary>
+        private bool SendEmailMetricsReminder( SendEmailMetricsReminderData data, int communicationPageId, int communicationPageRouteId, out List<string> errorMessages )
+        {
+            var internalApplicationRoot = GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" );
+            var communicationPage = new Rock.Web.PageReference( communicationPageId, communicationPageRouteId )
+            {
+                Parameters = new Dictionary<string, string>
+                {
+                    ["CommunicationId"] = data.Communication.Id.ToString()
+                }
+            };
+            var metricsUrl = internalApplicationRoot.EnsureTrailingForwardslash() + communicationPage.BuildUrl().RemoveLeadingForwardslash();
+                
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+            mergeFields.Add( "Person", data.EmailMetricsReminderRecipient );
+            mergeFields.AddOrReplace( "MetricsUrl", metricsUrl );
+            mergeFields.AddOrReplace( "Communication", data.Communication );
+            mergeFields.AddOrReplace( "RecipientsCount", data.RecipientsCount );
+
+            var message = new Rock.Communication.RockEmailMessage( SystemGuid.SystemCommunication.COMMUNICATION_EMAIL_METRICS_REMINDER.AsGuid() );
+            message.SetRecipients( new List<Rock.Communication.RockEmailMessageRecipient>
+            {
+                new Rock.Communication.RockEmailMessageRecipient( data.EmailMetricsReminderRecipient, mergeFields )
+            } );
+            message.CreateCommunicationRecord = false;
+
+            return message.Send( out errorMessages );
+        }
+
+        #endregion
+
+        #region Helper Classes
+
+        /// <summary>
+        /// The result of the Send communication request.
         /// </summary>
         private class SendCommunicationAsyncResult
         {
@@ -237,33 +432,26 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Sends the communication asynchronous.
+        /// The data for sending an email metrics reminder.
         /// </summary>
-        /// <param name="comm">The comm.</param>
-        /// <param name="mutex">The mutex.</param>
-        /// <returns></returns>
-        private async Task<SendCommunicationAsyncResult> SendCommunicationAsync( Model.Communication comm, SemaphoreSlim mutex )
+        private class SendEmailMetricsReminderData
         {
-            var communicationResult = new SendCommunicationAsyncResult
-            {
-                Communication = comm
-            };
+            /// <summary>
+            /// Gets or sets the communication.
+            /// </summary>
+            public Model.Communication Communication { get; set; }
 
-            var startDateTime = RockDateTime.Now;
-            var communicationStopWatch = Stopwatch.StartNew();
-            Log( RockLogLevel.Debug, "Starting to send {communicationName}.", startDateTime, propertyValues: comm.Name );
-            try
-            {
-                await Model.Communication.SendAsync( comm ).ConfigureAwait( false );
-            }
-            catch ( Exception ex )
-            {
-                communicationResult.Exception = ex;
-            }
+            /// <summary>
+            /// Gets or sets the communication recipients count.
+            /// </summary>
+            public int RecipientsCount { get; set; }
 
-            Log( RockLogLevel.Info, "{communicationName} sent.", startDateTime, communicationStopWatch.ElapsedMilliseconds, comm.Name );
-            mutex.Release();
-            return communicationResult;
+            /// <summary>
+            /// Gets or sets the person who will receive the email metrics reminder.
+            /// </summary>
+            public Person EmailMetricsReminderRecipient { get; set; }
         }
+
+        #endregion
     }
 }

@@ -24,11 +24,12 @@ using Rock.Enums.Lms;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a course .
+    /// Represents a course requirement.
     /// </summary>
     [RockDomain( "LMS" )]
     [Table( "LearningCourseRequirement" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_COURSE_REQUIREMENT )]
     public partial class LearningCourseRequirement : Model<LearningCourseRequirement>
     {

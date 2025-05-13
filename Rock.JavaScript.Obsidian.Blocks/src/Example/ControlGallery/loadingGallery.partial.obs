@@ -1,0 +1,25 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <Loading :isLoading="isLoading">Check the box below to start loading</Loading>
+
+        <template #settings>
+            <div class="row mb-3">
+                <CheckBox formGroupClasses="col-md-3" label="Is Loading" v-model="isLoading" />
+            </div>
+            <p>Internally, this uses the <a href="#LoadingIndicatorGallery">LoadingIndicator</a> component.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const isLoading = ref(false);
+    const importCode = getSfcControlImportPath("loading");
+    const exampleCode = `<Loading :isLoading="isLoading">Content to show when not loading</Loading>`;
+</script>

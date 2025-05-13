@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "LMS" )]
     [Table( "LearningClassContentPage" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_CLASS_CONTENT_PAGE )]
     public partial class LearningClassContentPage : Model<LearningClassContentPage>
     {

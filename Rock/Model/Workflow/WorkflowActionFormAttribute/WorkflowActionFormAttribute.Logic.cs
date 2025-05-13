@@ -14,14 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
-using Rock.Lava;
-using Rock.Web.Cache;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
-using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
+
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -81,6 +78,13 @@ namespace Rock.Model
             WorkflowActionFormCache.UpdateCachedEntity( this.WorkflowActionFormId, EntityState.Modified );
             WorkflowActionFormAttributeCache.UpdateCachedEntity( this.Id, entityState );
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => WorkflowActionForm ?? base.ParentAuthority;
 
         #endregion
     }

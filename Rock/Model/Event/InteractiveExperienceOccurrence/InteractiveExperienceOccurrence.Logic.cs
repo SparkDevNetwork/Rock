@@ -19,6 +19,7 @@ using System;
 using System.Linq;
 
 using Rock.Enums.Event;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -108,6 +109,13 @@ namespace Rock.Model
 
             return null;
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => InteractiveExperienceSchedule ?? base.ParentAuthority;
 
         #endregion
     }

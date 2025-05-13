@@ -1,0 +1,37 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <AdaptiveMessagePicker label="Adaptive Message"
+                               v-model="value"
+                               :multiple="multiple" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import AdaptiveMessagePicker from "@Obsidian/Controls/adaptiveMessagePicker.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+
+    const value = ref<ListItemBag | ListItemBag[] | null>(null);
+    const multiple = ref(true);
+
+    const importCode = getSfcControlImportPath("adaptiveMessagePicker");
+    const exampleCode = computed(() => {
+        return `<AdaptiveMessagePicker label="Adaptve Message" v-model="value" :multiple="${multiple.value}" />`;
+    });
+</script>

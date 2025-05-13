@@ -15,17 +15,18 @@
 // </copyright>
 //
 using System;
+using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
+
+using Rock;
 using Rock.Data;
 using Rock.Model;
-using System.Data.Entity;
-using Rock;
-using Rock.Web.Cache;
+using Rock.Tests.Integration.TestData.Core;
 using Rock.Tests.Shared;
-using Rock.Tests.Integration.TestData;
+using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Crm.Prayer
+namespace Rock.Tests.Integration.TestData.Engagement
 {
     /// <summary>
     /// Create and manage test data for the Prayer Requests feature.

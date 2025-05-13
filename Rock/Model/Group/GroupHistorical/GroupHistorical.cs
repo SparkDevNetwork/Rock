@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupHistorical" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly )]
     [Rock.SystemGuid.EntityTypeGuid( "422A2EF2-9D74-4308-8CDB-D5FA4B6A01FF")]
     public partial class GroupHistorical : Model<GroupHistorical>, IHistoricalTracking
     {

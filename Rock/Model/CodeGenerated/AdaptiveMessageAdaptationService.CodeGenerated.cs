@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,24 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( AdaptiveMessageAdaptation.AdaptiveMessageAdaptationQueryableAttributeValue ), nameof( AdaptiveMessageAdaptationAttributeValues ) )]
+    public partial class AdaptiveMessageAdaptation
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<AdaptiveMessageAdaptationQueryableAttributeValue> AdaptiveMessageAdaptationAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class AdaptiveMessageAdaptationQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -113,11 +132,13 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AdaptiveMessageId = source.AdaptiveMessageId;
             target.Description = source.Description;
+            target.EndDate = source.EndDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.Name = source.Name;
             target.Order = source.Order;
+            target.StartDate = source.StartDate;
             target.ViewSaturationCount = source.ViewSaturationCount;
             target.ViewSaturationInDays = source.ViewSaturationInDays;
             target.CreatedDateTime = source.CreatedDateTime;

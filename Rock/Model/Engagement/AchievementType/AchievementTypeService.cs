@@ -345,37 +345,16 @@ namespace Rock.Model
         public int AchievementTypeId { get; }
 
         /// <summary>
-        /// Gets or sets the streak type achievement type identifier.
-        /// </summary>
-        [Obsolete( "Use AchievementTypeId instead." )]
-        [RockObsolete( "1.12" )]
-        public int StreakTypeAchievementTypeId => AchievementTypeId;
-
-        /// <summary>
         /// Gets or sets the name of the streak type achievement type.
         /// </summary>
         [LavaVisible]
         public string AchievementTypeName { get; }
 
         /// <summary>
-        /// Gets or sets the name of the streak type achievement type.
-        /// </summary>
-        [Obsolete( "Use AchievementTypeName instead." )]
-        [RockObsolete( "1.12" )]
-        public string StreakTypeAchievementTypeName => AchievementTypeName;
-
-        /// <summary>
         /// Gets or sets the streak type achievement type description.
         /// </summary>
         [LavaVisible]
         public string AchievementTypeDescription { get; }
-
-        /// <summary>
-        /// Gets or sets the streak type achievement type description.
-        /// </summary>
-        [Obsolete( "Use AchievementTypeDescription instead." )]
-        [RockObsolete( "1.12" )]
-        public string StreakTypeAchievementTypeDescription => AchievementTypeDescription;
 
         /// <summary>
         /// Gets or sets the success count.

@@ -151,14 +151,14 @@ namespace Rock.Jobs
             var exceptionMsgs = new List<string>();
             var scheduledPaymentsProcessed = 0;
 
-            Guid? receiptEmail = GetAttributeValue( AttributeKey.ReceiptEmail ).AsGuidOrNull();
-            Guid? failedPaymentEmail = GetAttributeValue( AttributeKey.FailedPaymentEmail ).AsGuidOrNull();
-            Guid? failedPaymentWorkflowType = GetAttributeValue( AttributeKey.FailedPaymentWorkflow ).AsGuidOrNull();
-            int daysBack = GetAttributeValue( AttributeKey.DaysBack ).AsIntegerOrNull() ?? 1;
-            bool verboseLogging = GetAttributeValue( AttributeKey.VerboseLogging ).AsBoolean( true );
+            var receiptEmail = GetAttributeValue( AttributeKey.ReceiptEmail ).AsGuidOrNull();
+            var failedPaymentEmail = GetAttributeValue( AttributeKey.FailedPaymentEmail ).AsGuidOrNull();
+            var failedPaymentWorkflowType = GetAttributeValue( AttributeKey.FailedPaymentWorkflow ).AsGuidOrNull();
+            var daysBack = GetAttributeValue( AttributeKey.DaysBack ).AsIntegerOrNull() ?? 1;
+            var verboseLogging = GetAttributeValue( AttributeKey.VerboseLogging ).AsBoolean( true );
 
-            DateTime today = RockDateTime.Today;
-            TimeSpan daysBackTimeSpan = new TimeSpan( daysBack, 0, 0, 0 );
+            var today = RockDateTime.Today;
+            var daysBackTimeSpan = new TimeSpan( daysBack, 0, 0, 0 );
 
             string batchNamePrefix = GetAttributeValue( AttributeKey.BatchNamePrefix );
             Dictionary<FinancialGateway, string> processedPaymentsSummary = new Dictionary<FinancialGateway, string>();
@@ -185,15 +185,15 @@ namespace Rock.Jobs
                             continue;
                         }
 
-                        DateTime endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
+                        var endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
 
                         // If the calculated end time has not yet occurred, use the previous day.
                         endDateTime = RockDateTime.Now.CompareTo( endDateTime ) >= 0 ? endDateTime : endDateTime.AddDays( -1 );
 
-                        DateTime startDateTime = endDateTime.Subtract( daysBackTimeSpan );
+                        var startDateTime = endDateTime.Subtract( daysBackTimeSpan );
 
-                        string errorMessage = string.Empty;
-                        List<Financial.Payment> payments = gateway.GetPayments( financialGateway, startDateTime, endDateTime, out errorMessage );
+                        var errorMessage = string.Empty;
+                        var payments = gateway.GetPayments( financialGateway, startDateTime, endDateTime, out errorMessage );
 
                         if ( string.IsNullOrWhiteSpace( errorMessage ) )
                         {

@@ -332,7 +332,14 @@ namespace RockWeb.Blocks.Cms
             if ( GetAttributeValue( AttributeKey.ValidateMarkup ).AsBoolean() )
             {
                 HtmlDocument doc = new HtmlDocument();
-                doc.LoadHtml( newContent );
+                if ( LavaHelper.IsLavaTemplate( newContent ) )
+                {
+                    doc.LoadHtml( newContent.SanitizeLava() );
+                }
+                else
+                {
+                    doc.LoadHtml( newContent );
+                }
 
                 if ( doc.ParseErrors.Count() > 0 && !nbInvalidHtml.Visible )
                 {

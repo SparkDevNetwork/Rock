@@ -29,7 +29,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Attributes
 
         internal string Label { get; set; }
 
-       internal OpenAIModelProperties( string label, int maxTokens )
+        internal OpenAIModelProperties( string label, int maxTokens )
         {
             MaxTokens = maxTokens;
             Label = label;

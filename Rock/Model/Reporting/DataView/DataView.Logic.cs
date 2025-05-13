@@ -169,36 +169,6 @@ namespace Rock.Model
         /// </summary>
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="paramExpression">The parameter expression.</param>
-        /// <param name="errorMessages">The error messages.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetExpression( IService serviceInstance, ParameterExpression paramExpression )" )]
-        public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression, out List<string> errorMessages )
-        {
-            return this.GetExpression( serviceInstance, paramExpression, null, out errorMessages );
-        }
-
-        /// <summary>
-        /// Gets the expression.
-        /// </summary>
-        /// <param name="serviceInstance">The service instance.</param>
-        /// <param name="paramExpression">The parameter expression.</param>
-        /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
-        /// <param name="errorMessages">The error messages.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetExpression( IService serviceInstance, ParameterExpression paramExpression )" )]
-        public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression, DataViewFilterOverrides dataViewFilterOverrides, out List<string> errorMessages )
-        {
-            errorMessages = new List<string>();
-            return GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides );
-        }
-
-        /// <summary>
-        /// Gets the expression.
-        /// </summary>
-        /// <param name="serviceInstance">The service instance.</param>
-        /// <param name="paramExpression">The parameter expression.</param>
         /// <returns></returns>
         public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression )
         {

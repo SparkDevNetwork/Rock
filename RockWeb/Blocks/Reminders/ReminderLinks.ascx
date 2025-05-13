@@ -126,7 +126,7 @@
         }
     }
 
-    Sys.Application.add_load(function () {
+    Sys.Application.add_load(function (sender, args) {
         readCounts();
 
         // Refresh every 10 minutes if they are just sitting on the page.
@@ -139,7 +139,10 @@
             checkAddReminderVisibility();
         });
 
-        Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(pageReloaded);
+        var isPostBack = args.get_isPartialLoad();
+        if (!isPostBack) {
+            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(pageReloaded);
+        }
     });
 
     // Executed when all page content is refreshed, full page or async postback: https://msdn.microsoft.com/en-us/library/bb397523.aspx

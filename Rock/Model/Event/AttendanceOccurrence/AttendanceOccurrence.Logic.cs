@@ -81,35 +81,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the percent members attended.
-        /// </summary>
-        /// <value>
-        /// The percent members attended is the number of attendance records marked as did attend
-        /// divided by the total number of members in the group.
-        /// </value>
-        [RockObsolete( "1.10" )]
-        [System.Obsolete( "Use Attendance Rate instead.", true )]
-        public double PercentMembersAttended
-        {
-            get
-            {
-                var groupMemberCount = Group.Members
-                                    .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
-                                    .Where( m => !m.IsArchived )
-                                    .Count();
-
-                if ( groupMemberCount > 0 )
-                {
-                    return ( double ) ( DidAttendCount ) / ( double ) groupMemberCount;
-                }
-                else
-                {
-                    return 0.0d;
-                }
-            }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>

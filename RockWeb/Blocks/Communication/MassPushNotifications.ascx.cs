@@ -565,6 +565,7 @@ namespace RockWeb.Blocks.Communication
                 PushMessage = communicationTemplate.PushMessage,
                 PushTitle = communicationTemplate.PushTitle,
                 PushOpenMessage = communicationTemplate.PushOpenMessage,
+                PushOpenMessageJson = communicationTemplate.PushOpenMessageJson,
                 PushOpenAction = communicationTemplate.PushOpenAction
             };
 

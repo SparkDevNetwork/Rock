@@ -22,14 +22,19 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Data;
+using Rock.Logging;
 
 namespace Rock.Model
 {
     /// <summary>
     /// The data access/service class for <see cref="Rock.Model.ExceptionLog"/> entity type objects.
     /// </summary>
-    public partial class ExceptionLogService 
+    [RockLoggingCategory]
+    public partial class ExceptionLogService
     {
         #region Fields
 
@@ -52,7 +57,7 @@ namespace Rock.Model
         {
             return Queryable().Where( t => ( t.ParentId == parentId || ( parentId == null && t.ParentId == null ) ) );
         }
-        
+
         /// <summary>
         /// Gets a collection of <see cref="Rock.Model.ExceptionLog"/> entities by the Id of the <see cref="Rock.Model.Site"/> that they occurred on.
         /// </summary>
@@ -121,12 +126,13 @@ namespace Rock.Model
 
         /// <summary>
         /// Remove all records from the Exception Log.
+        /// This method is declared static as it is not using any properties of the class.
         /// </summary>
-        public void TruncateLog()
+        public static void TruncateLog()
         {
-            int recordsDeleted = DbService.ExecuteCommand( "TRUNCATE TABLE ExceptionLog" );
-
-            // TODO: We should record the log truncation action in an appropriate application log.
+            DbService.ExecuteCommand( "TRUNCATE TABLE ExceptionLog" );
+            RockLogger.LoggerFactory.CreateLogger<ExceptionLogService>()
+                .LogInformation( "The Exception Log Table has been truncated." );
         }
 
         /// <summary>
@@ -363,6 +369,43 @@ namespace Rock.Model
                 {
                 }
             }
+
+#if WEBFORMS
+            if ( request.Properties["MS_HttpContext"] is System.Web.HttpContextWrapper httpContext )
+            {
+                var serverVars = new StringBuilder();
+
+                // 'serverVarList[serverVar]' throws an exception if the value is empty, even if the key exists,
+                // so make a copy of the request server variables to help avoid that error
+                var serverVarList = new NameValueCollection( httpContext.Request.ServerVariables );
+                var serverVarListString = serverVarList.ToString();
+
+                var serverVarKeys = httpContext.Request.ServerVariables.AllKeys;
+                if ( serverVarList.Count > 0 )
+                {
+                    serverVars.Append( "<table class=\"server-variables exception-table\">" );
+
+                    foreach ( string serverVar in serverVarList )
+                    {
+                        string val = string.Empty;
+                        try
+                        {
+                            val = serverVarList[serverVar].ToStringSafe().EncodeHtml();
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
+
+                        serverVars.Append( $"<tr><td><b>{serverVar}</b></td><td>{val}</td></tr>" );
+                    }
+
+                    serverVars.Append( "</table>" );
+
+                    exceptionLog.ServerVariables = serverVars.ToString();
+                }
+            }
+#endif
 
             try
             {

@@ -152,20 +152,6 @@ namespace Rock.Model
                 }
             }
         }
-
-        /// <summary>
-        /// Gets or sets the option.
-        /// </summary>
-        /// <value>
-        /// The option.
-        /// </value>
-        [RockObsolete( "1.9" )]
-        [Obsolete( "Use FeeItemName instead", true )]
-        public string Option
-        {
-            get => FeeItemOption;
-            set => FeeItemOption = value;
-        }
        
         /// <summary>
         /// Gets or sets the fee item option.

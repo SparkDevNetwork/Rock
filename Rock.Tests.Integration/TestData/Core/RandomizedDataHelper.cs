@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Rock.Tests.Integration.TestData
+namespace Rock.Tests.Integration.TestData.Core
 {
     public static class RandomizedDataHelper
     {

@@ -70,7 +70,7 @@ namespace Rock.Tests.Shared.TestFramework
                     var dbConfig = RockApp.Current.GetDatabaseConfiguration() as DatabaseConfiguration;
                     dbConfig.IsDatabaseAvailable = true;
 
-                    LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: true, testDotLiquidEngine: false, testFluidEngine: true, loadShortcodes: true );
+                    LavaIntegrationTestHelper.Initialize( testFluidEngine: true, loadShortcodes: true );
 
                     LogHelper.Log( $"Initializing Lava Database Elements: completed." );
                 }

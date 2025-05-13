@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a workflow type picker. Stored as WorkflowType guid. 
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.WORKFLOW_TYPE )]
     public class WorkflowTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

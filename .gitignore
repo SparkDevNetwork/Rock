@@ -23,12 +23,15 @@ StyleCop.Cache
 **/[Bb]in/[Rr]elease
 **/[Oo]bj/[Dd]ebug
 **/[Oo]bj/[Rr]elease
+**/[Oo]bj/*.nuget.*
+**/[Oo]bj/project.assets.json
 
 #specific folders
 RockWeb/Cache/*
 RockWeb/Content/ASM_Thumbnails
 RockWeb/App_Data/PackageStaging
 RockWeb/App_Data/MobileAppBundles
+RockWeb/App_Data/Geolocation
 RockWeb/Obsidian/
 RockWeb/Scripts/Rock/UI/structuredcontenteditor/
 /scaffolding.config

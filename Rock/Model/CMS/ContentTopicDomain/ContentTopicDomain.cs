@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentTopicDomain" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.None )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONTENT_TOPIC_DOMAIN )]
     public partial class ContentTopicDomain : Model<ContentTopicDomain>, IOrdered
     {

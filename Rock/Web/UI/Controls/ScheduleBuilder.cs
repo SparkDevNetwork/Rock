@@ -1637,7 +1637,7 @@ END:VCALENDAR
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radDailyEveryXDays.Text = "Every";
             _radDailyEveryXDays.RenderControl( writer );
-            _tbDailyEveryXDays.AddCssClass( "margin-l-sm" );
+
             _tbDailyEveryXDays.RenderControl( writer );
             writer.RenderEndTag();
 
@@ -1710,7 +1710,7 @@ END:VCALENDAR
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radMonthlyDayX.Text = "Day";
             _radMonthlyDayX.RenderControl( writer );
-            _tbMonthlyDayX.AddCssClass( "margin-l-sm" );
+
             _tbMonthlyDayX.RenderControl( writer );
             writer.Write( "<span> of every </span>" );
             _tbMonthlyXMonths.RenderControl( writer );
@@ -1725,11 +1725,10 @@ END:VCALENDAR
 
             writer.AddAttribute( "class", "input-group input-width-xl" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _lbMonthlyNth.AddCssClass( "margin-l-sm" );
+
             _lbMonthlyNth.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.Write( "<span> </span>" );
             _ddlMonthlyDayName.RenderControl( writer );
             writer.RenderEndTag();
 
@@ -1765,7 +1764,7 @@ END:VCALENDAR
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radEndByDate.Text = "End by ";
             _radEndByDate.RenderControl( writer );
-            _dpEndBy.AddCssClass( "margin-l-sm" );
+
             _dpEndBy.RenderControl( writer );
             writer.RenderEndTag();
 
@@ -1773,7 +1772,7 @@ END:VCALENDAR
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radEndByOccurrenceCount.Text = "End after ";
             _radEndByOccurrenceCount.RenderControl( writer );
-            _tbEndByOccurrenceCount.AddCssClass( "margin-l-sm" );
+
             _tbEndByOccurrenceCount.RenderControl( writer );
             writer.Write( "<span> occurrences</span>" );
             writer.RenderEndTag();
@@ -1818,7 +1817,7 @@ END:VCALENDAR
             _dpExclusionDateRange.RenderControl( writer );
             writer.Write( @"
                 <div class='control-actions'>
-                    <a class='btn btn-primary btn-xs add-exclusion-daterange-ok'>
+                    <a class='btn btn-primary btn-xs add-exclusion-daterange-ok ml-3'>
                         <span>OK</span>
                     </a>
                     <a class='btn btn-link btn-xs add-exclusion-daterange-cancel'>

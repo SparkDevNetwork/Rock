@@ -18,6 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+using Microsoft.Extensions.Logging;
+
 using Quartz;
 
 using Rock.Data;
@@ -70,10 +73,42 @@ namespace Rock.Jobs
         internal Quartz.IScheduler Scheduler { get; private set; }
 
         /// <summary>
+        /// <para>
         /// Gets or sets the logger used to capture output messages.
-        /// If not set, the default logger is used.
+        /// If set to <c>null</c> then the default logger will be used.
+        /// </para>
+        /// <para>
+        /// The log message will be prefixed with:
+        /// <code>
+        /// Job ID: [ServiceJob.Id], Job Name: [ServiceJob.Name], 
+        /// </code>
+        /// </para>
         /// </summary>
-        internal IRockLogger Logger { get; set; }
+        protected internal ILogger Logger
+        {
+            get => _logger;
+            internal set
+            {
+                if ( value != null )
+                {
+                    _logger = new RockJobLogger( value, ServiceJobId, ServiceJobName );
+                }
+                else
+                {
+                    _logger = new RockJobLogger( RockLogger.LoggerFactory.CreateLogger( GetType().FullName ), ServiceJobId, ServiceJobName );
+                }
+            }
+        }
+        private RockJobLogger _logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockJob"/> class.
+        /// </summary>
+        public RockJob()
+        {
+            // Initialize the logger with a default instance.
+            Logger = null;
+        }
 
         /// <summary>
         /// Executes this instance.
@@ -92,6 +127,9 @@ namespace Rock.Jobs
             ServiceJob = new ServiceJobService( rockContext ).Get( serviceJobId );
             ServiceJob.LoadAttributes();
             Scheduler = context.Scheduler;
+
+            _logger.JobId = ServiceJobId;
+            _logger.JobName = ServiceJobName;
         }
 
         /// <summary>
@@ -111,7 +149,7 @@ namespace Rock.Jobs
         /// <param name="statusMessage">The status message.</param>
         public void UpdateLastStatusMessage( string statusMessage )
         {
-            Log( RockLogLevel.Debug, statusMessage );
+            Logger.LogDebug( statusMessage );
 
             Result = statusMessage;
             using ( var rockContext = new RockContext() )
@@ -225,13 +263,12 @@ namespace Rock.Jobs
         /// </para>
         /// </summary>
         /// <param name="logLevel">The log level.</param>
-        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="message">The message to be logged.</param>
         /// <param name="start">The optional start date time for the process described by this message.</param>
         /// <param name="elapsedMs">The optional elapsed time (in milliseconds) for the process described by this message.</param>
-        /// <param name="propertyValues">The property values to enrich the message template, if any.</param>
-        internal void Log( RockLogLevel logLevel, string messageTemplate, DateTime? start = null, long? elapsedMs = null, params object[] propertyValues )
+        internal void Log( LogLevel logLevel, string message, DateTime? start = null, long? elapsedMs = null )
         {
-            Log( logLevel, null, messageTemplate, start, elapsedMs, propertyValues );
+            Log( logLevel, null, message, start, elapsedMs );
         }
 
         /// <summary>
@@ -253,55 +290,35 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="logLevel">The log level.</param>
         /// <param name="exception">The exception.</param>
-        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="message">The message to be logged.</param>
         /// <param name="start">The optional start date time for the process described by this message.</param>
         /// <param name="elapsedMs">The optional elapsed time (in milliseconds) for the process described by this message.</param>
-        /// <param name="propertyValues">The property values to enrich the message template, if any.</param>
-        internal void Log( RockLogLevel logLevel, Exception exception, string messageTemplate, DateTime? start = null, long? elapsedMs = null, params object[] propertyValues )
+        internal void Log( LogLevel logLevel, Exception exception, string message, DateTime? start = null, long? elapsedMs = null )
         {
-            if ( messageTemplate.IsNullOrWhiteSpace() )
+            if ( message.IsNullOrWhiteSpace() )
             {
                 return;
             }
 
-            var messageTemplateSb = new StringBuilder( "Job ID: {jobId}" );
-
-            var propValues = new List<object>
-            {
-                this.ServiceJobId,
-            };
-
-            if (!string.IsNullOrWhiteSpace( this.ServiceJobName ) )
-            {
-                messageTemplateSb.Append( ", Job Name: {jobName}" );
-                propValues.Add( this.ServiceJobName );
-            }
+            var prefix = new StringBuilder();
 
             if ( start.HasValue )
             {
-                messageTemplateSb.Append( ", Start: {start}" );
-                propValues.Add( start.Value );
+                prefix.Append( $"Start: {start}" );
 
                 if ( elapsedMs.HasValue )
                 {
-                    messageTemplateSb.Append( ", End: {end}, Time To Run: {elapsedMs}ms" );
-                    propValues.Add( start.Value.AddMilliseconds( elapsedMs.Value ) );
-                    propValues.Add( elapsedMs.Value );
+                    prefix.Append( $", End: {start.Value.AddMilliseconds( elapsedMs.Value )}, Time To Run: {elapsedMs}ms" );
                 }
             }
 
-            propertyValues = propValues
-                .Concat( propertyValues ?? new object[0] )
-                .ToArray();
+            var logger = Logger ?? RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
 
-            var logger = this.Logger ?? RockLogger.Log;
-             logger.WriteToLog(
-                logLevel,
-                exception,
-                RockLogDomains.Jobs,
-                $"{messageTemplateSb}, {messageTemplate}",
-                propertyValues
-            );
+            logger.Log(
+               logLevel,
+               exception,
+               prefix.Length > 0 ? $"{prefix}, {message}" : message
+           );
         }
     }
 }

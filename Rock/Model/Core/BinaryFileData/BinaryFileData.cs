@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "BinaryFileData" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.None, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "EA647542-1E0F-4DAE-9537-65E3FFEE8792")]
     public partial class BinaryFileData : Model<BinaryFileData>
     {
@@ -49,7 +50,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
-        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public byte[] Content { get; set; }
 
         #endregion

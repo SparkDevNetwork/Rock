@@ -37,5 +37,10 @@ export const ConfigurationModeDescription: Record<number, string> = {
     1: "On Demand Learning"
 };
 
+// Add the __order property hidden so it doesn't get enumerated.
+Object.defineProperty(ConfigurationModeDescription, "__order", {
+    value: [1, 0],
+});
+
 /** Determines the configuration mode of a LearningProgram. */
 export type ConfigurationMode = typeof ConfigurationMode[keyof typeof ConfigurationMode];

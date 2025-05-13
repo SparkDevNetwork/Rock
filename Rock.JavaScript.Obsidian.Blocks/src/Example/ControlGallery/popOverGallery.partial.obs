@@ -1,0 +1,61 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <div class="text-center">
+            <PopOver v-model:isVisible="show" :placement="placement" v-model:triggerUpdate="triggerUpdate">
+                This is the content that shows up in the popOver
+                <template #activator="props">
+                    <strong v-bind="props">Hover Me</strong>
+                </template>
+            </PopOver>
+        </div>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox v-model="show" label="Show PopOver" />
+                </div>
+                <div class="col-md-4">
+                    <DropDownList v-model="placement" :items="placementOptions" label="Pop Over Placement" :showBlankItem="false" />
+                </div>
+            </div>
+        </template>
+
+        <template #syntaxNotes>
+            <p class="font-italic"><strong>Important Notes:</strong> The <code>activator</code> slot's contents must be an HTML element. Putting a component there will not work. Also,
+                you must bind the activator slot's props to that element. This allows the popOver to attach the event listeners so it can detect if
+                it is being hovered.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import PopOver from "@Obsidian/Controls/popOver.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const placement = ref<"right" | "top" | "bottom" | "left">("right");
+    const triggerUpdate = ref(false);
+
+    watch(placement, () => {
+        triggerUpdate.value = true;
+    });
+
+    const placementOptions = [
+        { text: "Top", value: "top" },
+        { text: "Right (Default)", value: "right" },
+        { text: "Bottom", value: "bottom" },
+        { text: "Left", value: "left" },
+    ];
+    const show = ref(false);
+    const importCode = getSfcControlImportPath("popOver");
+    const exampleCode = `<PopOver v-model:isVisible="isVisible" placement="right">
+    This is the content that shows up in the popOver
+    <template #activator="props">
+        <strong v-bind="props">Hover Me</strong>
+    </template>
+</PopOver>`;
+</script>

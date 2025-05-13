@@ -23,6 +23,8 @@ using System.Web;
 using System.Web.Compilation;
 using System.Web.Routing;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus.Message;
 using Rock.Cms.Utm;
 using Rock.Logging;
@@ -37,6 +39,7 @@ namespace Rock.Web
     /// <summary>
     /// Rock custom route handler
     /// </summary>
+    [RockLoggingCategory]
     public sealed class RockRouteHandler : IRouteHandler
     {
         /// <summary>
@@ -363,7 +366,8 @@ namespace Rock.Web
 
                     var defaultLayoutPath = PageCache.FormatPath( theme, layout );
 
-                    RockLogger.Log.Error( RockLogDomains.Cms, $"Page Layout \"{ layoutPath }\" is invalid. Reverting to default layout \"{ defaultLayoutPath }\"..." );
+                    RockLogger.LoggerFactory.CreateLogger<RockRouteHandler>()
+                        .LogError( $"Page Layout \"{ layoutPath }\" is invalid. Reverting to default layout \"{ defaultLayoutPath }\"..." );
 
                     return CreateRockPage( page, defaultLayoutPath, routeId, parms, routeHttpRequest );
                 }

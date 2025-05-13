@@ -35,7 +35,7 @@ namespace Rock.Jobs
     /// </summary>
     [DisplayName( "Send Prayer Request Comments Notifications" )]
     [Category( "Prayer" )]
-    [Description( "Sends an email notification to all prayer request authors with a list of comments from those who have prayed for their requests." )]
+    [Description( "Sends an email notification to all prayer request authors with a list of (approved) comments from those who have prayed for their requests." )]
 
     #region Job Attributes
 
@@ -619,7 +619,10 @@ namespace Rock.Jobs
 
             var noteService = new NoteService( rockContext );
 
-            var prayerCommentsQuery = noteService.GetByNoteTypeId( noteType.Id );
+            // Get the prayer comments that are approved or don't require approval.
+            var prayerCommentsQuery = noteService
+                .GetByNoteTypeId( noteType.Id )
+                .AreViewableBy( null );
 
             // Filter Comments by Entity and exclude if marked as Private.
             prayerCommentsQuery = prayerCommentsQuery.Where( a => a.EntityId.HasValue && prayerRequestIdList.Contains( a.EntityId.Value ) && !a.IsPrivateNote );

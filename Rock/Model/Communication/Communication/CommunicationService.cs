@@ -34,57 +34,6 @@ namespace Rock.Model
         /// <summary>
         /// Creates the email communication
         /// </summary>
-        /// <param name="recipientEmails">A list of email addresses to use for finding which people to send the email to</param>
-        /// <param name="fromName">From name.</param>
-        /// <param name="fromAddress">From address.</param>
-        /// <param name="replyTo">The reply to.</param>
-        /// <param name="subject">The subject.</param>
-        /// <param name="message">The message.</param>
-        /// <param name="bulkCommunication">if set to <c>true</c> [bulk communication].</param>
-        /// <param name="sendDateTime">The send date time.</param>
-        /// <param name="recipientStatus">The recipient status.</param>
-        /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use the CreateEmailCommunication method that takes List<RockEmailMessageRecipient> as a parameter instead.", true )]
-        public Communication CreateEmailCommunication
-        (
-            List<string> recipientEmails,
-            string fromName,
-            string fromAddress,
-            string replyTo,
-            string subject,
-            string message,
-            bool bulkCommunication,
-            DateTime? sendDateTime,
-            CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered,
-            int? senderPersonAliasId = null )
-        {
-            var recipients = new PersonService( ( RockContext ) Context )
-                .Queryable()
-                .Where( p => recipientEmails.Contains( p.Email ) )
-                .ToList()
-                .Select( a => new RockEmailMessageRecipient( a, null ) )
-                .ToList();
-
-            return CreateEmailCommunication( new CreateEmailCommunicationArgs
-            {
-                Recipients = recipients,
-                FromName = fromName,
-                FromAddress = fromAddress,
-                ReplyTo = replyTo,
-                Subject = subject,
-                Message = message,
-                BulkCommunication = bulkCommunication,
-                SendDateTime = sendDateTime,
-                RecipientStatus = recipientStatus,
-                SenderPersonAliasId = senderPersonAliasId
-            } );
-        }
-
-        /// <summary>
-        /// Creates the email communication
-        /// </summary>
         /// <param name="recipients">The recipients.</param>
         /// <param name="fromName">From name.</param>
         /// <param name="fromAddress">From address.</param>
@@ -739,6 +688,43 @@ namespace Rock.Model
                 .Clients
                 .Channel( channelName )
                 .ConversationMarkedAsRead( conversationKey );
+        }
+
+        /// <summary>
+        /// Send all real time notifications for a conversation that has had
+        /// a change to its read status on a new background Task.
+        /// </summary>
+        /// <param name="conversationKey">The key that identifies the conversation that was read.</param>
+        /// <param name="readStatus">The read status that the conversation was changed to.</param>
+        internal static void SendConversationReadStatusChangedRealTimeNotificationsInBackground( string conversationKey, bool readStatus )
+        {
+            Task.Run( async () =>
+            {
+                try
+                {
+                    await SendConversationReadStatusChangedRealTimeNotificationsAsync( conversationKey, readStatus );
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                }
+            } );
+        }
+
+        /// <summary>
+        /// Send all real time notifications for a conversation that had a change to its read status.
+        /// </summary>
+        /// <param name="conversationKey">The key that identifies the conversation that was changed.</param>
+        /// <param name="readStatus">The read status that the conversation was changed to.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        internal static async Task SendConversationReadStatusChangedRealTimeNotificationsAsync( string conversationKey, bool readStatus )
+        {
+            var channelName = RealTime.Topics.ConversationParticipantTopic.GetChannelForConversationKey( conversationKey );
+
+            await RealTime.RealTimeHelper.GetTopicContext<RealTime.Topics.IConversationParticipant>()
+                .Clients
+                .Channel( channelName )
+                .ConversationReadStatusChanged( conversationKey, readStatus );
         }
 
         /// <summary>

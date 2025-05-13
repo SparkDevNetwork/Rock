@@ -417,7 +417,7 @@ namespace RockWeb.Plugins.com_lcbcchurch.NewVisitor
                     {
                         var combinedPerson = primaryGroupPerson.ToJson().FromJsonOrNull<MergeTemplateCombinedPerson>();
 
-                        var familyTitle = RockUdfHelper.ufnCrm_GetFamilyTitle( rockContext, null, combinedFamilyItem.GroupId, commaPersonIds, true );
+                        var familyTitle = combinedPerson.PrimaryFamily.GroupSalutation;
                         combinedPerson.FullName = familyTitle;
 
                         var firstNameList = combinedFamilyItem.Persons.Select( a => ( a as Person ).FirstName ).ToList();
@@ -486,9 +486,8 @@ namespace RockWeb.Plugins.com_lcbcchurch.NewVisitor
                 {
                     var personService = new PersonService( rockContext );
                     // Filter people by dataview
-                    var errorMessages = new List<string>();
                     var paramExpression = personService.ParameterExpression;
-                    var whereExpression = dataView.GetExpression( personService, paramExpression, out errorMessages );
+                    var whereExpression = dataView.GetExpression( personService, paramExpression );
                     var persons = personService
                         .Queryable( false, false ).AsNoTracking()
                         .Where( paramExpression, whereExpression, null )

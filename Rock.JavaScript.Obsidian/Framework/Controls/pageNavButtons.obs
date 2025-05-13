@@ -1,0 +1,140 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <a v-for="link in links"
+       :key="link.value ?? undefined"
+       :href="link.value ?? ''"
+       :class="getCssClass(link)"
+       v-text="link.text" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watchEffect } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { useStore } from "@Obsidian/PageState";
+    import { Guid } from "@Obsidian/Types";
+    import { PageNavButtonsGetLinksOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/pageNavButtonsGetLinksOptionsBag";
+
+    const props = defineProps({
+        /**
+         * The root page ID to use for the child page collection. Defaults to the current page instance if not set.
+         */
+        rootPageGuid: {
+            type: String as PropType<Guid>,
+            required: false
+        },
+
+        /**
+         * Flag indicating if the current page's QueryString should be used when building the URL for child pages.
+         * Default is false.
+         */
+        includeCurrentQueryString: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * Flag indicating if the current page's parameters should be used when building the URL for child pages.
+         * Default is false.
+         */
+        includeCurrentParameters: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * Any query string parameters that should be added to each <a> element's href attribute. If a matching key is
+         * found in the current query string, it's value will be replaced with the value specified here.
+         */
+        queryStringParametersToAdd: {
+            type: Object as PropType<Record<string, string>>,
+            required: false
+        },
+
+        /**
+         * The CSS class(es) to be added to each <a> element created (one per page in the child page collection).
+         * Default is 'btn'."
+         */
+        cssClass: {
+            type: String,
+            default: "btn"
+        },
+
+        /**
+         * The CSS class(es) to be added to the <a> element created for any active page within the child page
+         * collection (Pages that have the same ID as the current page). Default is 'btn-primary'.
+         */
+        cssClassActive: {
+            type: String,
+            default: "btn-primary"
+        }
+    });
+
+    const http = useHttp();
+    const store = useStore();
+    const links = ref<ListItemBag[]>([]);
+
+    const rootPageGuid = computed(() => {
+        if (!props.rootPageGuid || props.rootPageGuid === emptyGuid) {
+            return store.state.pageGuid;
+        }
+
+        return props.rootPageGuid;
+    });
+
+    const queryString = computed(() => {
+        let params = new URLSearchParams();
+
+        if (props.includeCurrentQueryString) {
+            new URLSearchParams(window.location.search).forEach((value, key) => {
+                params.set(key, value);
+            });
+        }
+
+        if (props.queryStringParametersToAdd) {
+            new URLSearchParams(props.queryStringParametersToAdd).forEach((value, key) => {
+                params.set(key, value);
+            });
+        }
+
+        return Object.fromEntries(params.entries());
+    });
+
+    const parameters = computed(() => {
+        if (props.includeCurrentParameters) {
+            return store.state.pageParameters;
+        }
+
+        return undefined;
+    });
+
+    function getCssClass(link: ListItemBag): string {
+        let className = props.cssClass;
+        if (link.category === "active") {
+            className += " " + props.cssClassActive;
+        }
+
+        return className;
+    }
+
+    async function fetchChildPages(): Promise<void> {
+        const options: PageNavButtonsGetLinksOptionsBag = {
+            rootPageGuid: rootPageGuid.value,
+            queryString: queryString.value,
+            parameters: parameters.value,
+            currentPageGuid: store.state.pageGuid
+        };
+
+        const response = await http.post<ListItemBag[]>("/api/v2/Controls/PageNavButtonsGetLinks", null, options);
+
+        if (response.isSuccess && response.data) {
+            links.value = response.data;
+        }
+        else {
+            console.error("Error fetching items from server", response.errorMessage);
+        }
+    }
+
+    watchEffect(fetchChildPages);
+</script>

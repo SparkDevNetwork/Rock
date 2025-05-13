@@ -1,0 +1,443 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="internalIsOpen"
+           :cancelText="isManualCommunicationList ? 'Cancel' : ''"
+           :clickBackdropToClose="false"
+           :isSaveButtonDisabled="disabled"
+           :saveText="isManualCommunicationList ? 'Save' : 'OK'"
+           :title="title"
+           @save="onSaveClicked"
+           @closeModal="onCloseModal">
+        <div :class="`recipient-modal-body ${breakpointHelper.breakpoint}`">
+            <template v-if="isManualCommunicationList">
+                <template v-if="!isAddingIndividualsToRecipientListsDisabled">
+                    <SectionHeader title="Recipient List"
+                                   description="Below is a listing of your current recipients. You can add or remove individuals from this list before continuing." />
+                    <div class="d-sm-flex flex-row justify-content-between align-items-center">
+                        <PersonPicker :modelValue="personPickerSelection"
+                                      :disabled="disabled"
+                                      label="Person"
+                                      @update:modelValue="onPersonPicked" />
+                        <div class="label label-info">Recipients: {{ pendingItems.length }}</div>
+                    </div>
+                </template>
+                <template v-else>
+                    <SectionHeader title="Recipient List"
+                                   description="Below is a listing of your current recipients." />
+                </template>
+            </template>
+
+            <template v-else>
+                <NotificationBox alertType="info">
+                    Below are the current members of the "{{ communicationListGroupName }}" List with segment filters applied. If this message is sent at a future date, it is possible that the list may change between now and then.
+                </NotificationBox>
+            </template>
+
+            <Grid :definition="recipientsGridDefinition"
+                  :data="recipientsGridData"
+                  itemTerm="Recipient"
+                  class="recipient-manager-grid"
+                  :disablePreferences="true"
+                  :keyField="getStringKey<CommunicationEntryWizardRecipientBag>('personAliasGuid')"
+                  rowClass="recipient-modal-row">
+
+                <Column :name="getRecipientKey('name')" :field="getRecipientKey('name')" title="Name" :filter="textValueFilter">
+                    <template #format="{ row }">
+                        <div>
+                            {{ (row as CommunicationEntryWizardRecipientBag).name }}
+                        </div>
+                    </template>
+                </Column>
+
+                <Column :name="getRecipientKey('isEmailAllowed')" :field="getRecipientKey('isEmailAllowed')" title="Email">
+                    <template #format="{ row }">
+                        <span :class="[
+                            'communication-medium-status',
+                            getEmailTextCssClass(row as CommunicationEntryWizardRecipientBag)
+                        ]">
+                            {{ getEmailAddress(row as CommunicationEntryWizardRecipientBag) }}
+                        </span>
+                    </template>
+                </Column>
+
+                <Column :name="getRecipientKey('isSmsAllowed')" :field="getRecipientKey('isSmsAllowed')" title="SMS">
+                    <template #format="{ row }">
+                        <span :class="[
+                            'communication-medium-status',
+                            getSmsTextCssClass(row as CommunicationEntryWizardRecipientBag)
+                        ]">
+                            {{ getSmsNumber(row as CommunicationEntryWizardRecipientBag) }}
+                        </span>
+                    </template>
+                </Column>
+
+                <Column :name="getRecipientKey('isPushAllowed')" :field="getRecipientKey('isPushAllowed')" title="Push">
+                    <template #format="{ row }">
+                        <span :class="[
+                            'communication-medium-status',
+                            getPushTextCssClass(row as CommunicationEntryWizardRecipientBag)
+                        ]">
+                            {{ getPushStatus(row as CommunicationEntryWizardRecipientBag) }}
+                        </span>
+                    </template>
+                </Column>
+
+                <DeleteColumn v-if="!isDeletingIndividualsFromRecipientListsDisabled" name="removeRecipient" itemClass="grid-columncommand remove-button" :disableConfirmation="true" @click="onRemoveRecipientClicked" />
+            </Grid>
+        </div>
+    </Modal>
+</template>
+
+<style scoped>
+.communication-medium-status {
+    white-space: nowrap;
+}
+
+/** Only show the remove button on hover OR if on mobile screen size (disable hover behavior if mobile). */
+.recipient-modal-body:not(.xs) :deep(.recipient-modal-row .remove-button) {
+    visibility: hidden;
+}
+
+.recipient-modal-body:not(.xs) :deep(.recipient-modal-row:hover .remove-button) {
+    visibility: visible;
+}
+
+.recipient-manager-grid :deep(.grid-body) {
+    max-height: 400px;
+    height: 400px;
+    overflow: auto;
+}
+
+.recipient-manager-grid :deep(.grid-title-heading) {
+    display: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, Ref, watch } from "vue";
+    import { useBreakpointHelper, useInvokeBlockActionHelper } from "./utils.partial";
+    import Grid, { Column, DeleteColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
+    import { Guid } from "@Obsidian/Types";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { CommunicationEntryWizardRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardRecipientBag";
+    import { FieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/fieldDefinitionBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { formatPhoneNumber } from "@Obsidian/Utility/phone";
+
+    const invokeBlockAction = useInvokeBlockActionHelper();
+    const breakpointHelper = useBreakpointHelper();
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<boolean>,
+            required: true
+        },
+
+        communicationListGroupName: {
+            type: String as PropType<string | null | undefined>
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** A message to be displayed when `disabled` is `true`. */
+        disabledMessage: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        getTooltipRef: {
+            type: Function as PropType<(value: CommunicationEntryWizardRecipientBag | null, mode: CommunicationType) => Ref<string>>,
+            default: (_: string) => ""
+        },
+
+        isAddingIndividualsToRecipientListsDisabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isDeletingIndividualsFromRecipientListsDisabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isBulkCommunication: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        recipients: {
+            type: Object as PropType<CommunicationEntryWizardRecipientBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", newValue: boolean): void,
+        (e: "update:recipients", newValue: CommunicationEntryWizardRecipientBag[]): void
+    }>();
+
+    const isRegex: RegExp = /\/(.+)\/(.*)/; // Matches regex strings in the form /<regex>/<flags>
+
+    const recipientsGridDefinition: GridDefinitionBag = {
+        enableLaunchWorkflow: false,
+        enableStickyHeader: false,
+        fields: [
+            createFieldDefinition(getStringKey<CommunicationEntryWizardRecipientBag>("name")),
+            createFieldDefinition(getStringKey<CommunicationEntryWizardRecipientBag>("isEmailAllowed")),
+            createFieldDefinition(getStringKey<CommunicationEntryWizardRecipientBag>("isSmsAllowed")),
+            createFieldDefinition(getStringKey<CommunicationEntryWizardRecipientBag>("isPushAllowed")),
+        ],
+    };
+
+    const emptyListItemBag: ListItemBag = {};
+
+    //#region Values
+
+    // UI state.
+    const internalIsOpen = useVModelPassthrough(props, "modelValue", emit);
+    const recipientTextFilter = ref<string>("");
+    const recipientTextFilterTemp = ref<string>("");
+    const personPickerSelection = ref<ListItemBag | undefined>();
+    const pendingItems = ref<CommunicationEntryWizardRecipientBag[]>([...props.recipients]);
+
+    // Communication state.
+    const internalRecipients = useVModelPassthrough(props, "recipients", emit);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const title = computed<string>(() => {
+        if (!isManualCommunicationList.value) {
+            return "Communication List Recipients";
+        }
+        else {
+            if (!props.isAddingIndividualsToRecipientListsDisabled) {
+                return "Add / Remove Recipients";
+            }
+            else {
+                return "View / Remove Recipients";
+            }
+        }
+    });
+
+    const recipientsGridData = computed<GridDataBag>(() => ({
+        rows: filteredRecipients.value,
+    }));
+
+    const filteredRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
+        const textFilter = recipientTextFilter.value;
+        if (!textFilter) {
+            return pendingItems.value;
+        }
+
+        const regex = tryGetRegExp(textFilter);
+
+        if (regex) {
+            return pendingItems.value.filter(recipient =>
+                (recipient.name && regex.test(recipient.name))
+                || (recipient.email && regex.test(recipient.email))
+                || (recipient.smsNumber && regex.test(recipient.smsNumber))
+            );
+        }
+        else {
+            const textFilterLowerCase = textFilter.toLocaleLowerCase();
+            return pendingItems.value.filter(recipient =>
+                (recipient.name && recipient.name.toLocaleLowerCase().indexOf(textFilterLowerCase) >= 0)
+                || (recipient.email && recipient.email.toLocaleLowerCase().indexOf(textFilterLowerCase) >= 0)
+                || (recipient.smsNumber && recipient.smsNumber.toLocaleLowerCase().indexOf(textFilterLowerCase) >= 0)
+            );
+        }
+    });
+
+    const isManualCommunicationList = computed<boolean>(() => {
+        if (props.communicationListGroupName) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    function getStringKey<T>(key: Extract<keyof T, string>): string {
+        return key;
+    }
+
+    function getRecipientKey(key: Extract<keyof CommunicationEntryWizardRecipientBag, string>): string {
+        return getStringKey<CommunicationEntryWizardRecipientBag>(key);
+    }
+
+    function createFieldDefinition(name: string): FieldDefinitionBag {
+        return {
+            name
+        };
+    }
+
+    function getEmailTextCssClass(recipient: CommunicationEntryWizardRecipientBag): string {
+        if (!recipient.isEmailAllowed) {
+            return "text-danger";
+        }
+        else {
+            return "";
+        }
+    }
+
+    function getSmsTextCssClass(recipient: CommunicationEntryWizardRecipientBag): string {
+        if (!recipient.isSmsAllowed) {
+            return "text-danger";
+        }
+        else {
+            return "";
+        }
+    }
+
+    function getPushTextCssClass(recipient: CommunicationEntryWizardRecipientBag): string {
+        if (!recipient.isPushAllowed) {
+            return "text-danger";
+        }
+        else {
+            return "";
+        }
+    }
+
+    function getEmailAddress(recipient: CommunicationEntryWizardRecipientBag): string {
+        if (!recipient
+            || (props.isBulkCommunication && recipient.isBulkEmailAllowed)
+            || (!props.isBulkCommunication && recipient.isEmailAllowed)) {
+            return recipient?.email || "No Email";
+        }
+
+        if (!recipient.email) {
+            return "No Email";
+        }
+        else if (!recipient.isEmailActive) {
+            return "Inactive Email";
+        }
+        else {
+            return "Email Not Allowed";
+        }
+    }
+
+    function getSmsNumber(recipient: CommunicationEntryWizardRecipientBag): string {
+        if (!recipient
+            || recipient.isSmsAllowed) {
+            return recipient?.smsNumber ? formatPhoneNumber(recipient.smsNumber) : "No SMS Number";
+        }
+
+        if (!recipient.smsNumber) {
+            return "No SMS Number";
+        }
+        else {
+            return "SMS Not Allowed";
+        }
+    }
+
+    function getPushStatus(recipient: CommunicationEntryWizardRecipientBag): string {
+        if (!recipient
+            || recipient.isPushAllowed) {
+            return "";
+        }
+
+        return "No Push Device";
+    }
+
+    function tryGetRegExp(pattern: string): RegExp | undefined {
+        try {
+            const match = pattern.match(isRegex);
+
+            if (match && match.length) {
+                return new RegExp(match[1], match[2]);
+            }
+        }
+        catch {
+            // The pattern was not valid regex.
+        }
+    }
+
+    function clear(): void {
+        personPickerSelection.value = emptyListItemBag;
+        recipientTextFilterTemp.value = "";
+        recipientTextFilter.value = "";
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    function onRemoveRecipientClicked(personAliasGuid: Guid): void {
+        if (!personAliasGuid) {
+            return;
+        }
+
+        const updatedPendingItems = [...pendingItems.value];
+
+        const index = updatedPendingItems.findIndex(i => i.personAliasGuid === personAliasGuid);
+        if (index !== -1) {
+            updatedPendingItems.splice(index, 1);
+            pendingItems.value = updatedPendingItems;
+        }
+    }
+
+    async function onPersonPicked(value: ListItemBag | undefined): Promise<void> {
+        if (!value?.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction.getRecipient(value.value);
+
+        if (!result?.isSuccess || !result.data) {
+            console.error("An unexpected error occurred while retrieving information about the selected person:", result?.errorMessage);
+            return;
+        }
+
+        const updatedPendingItems = [...pendingItems.value];
+        const index = updatedPendingItems.findIndex(i => i.personAliasGuid === result.data?.personAliasGuid);
+        if (index === -1) {
+            updatedPendingItems.push(result.data);
+            pendingItems.value = updatedPendingItems;
+        }
+
+        personPickerSelection.value = emptyListItemBag;
+    }
+
+    function onSaveClicked(): void {
+        // Only update the recipients if this is a manual communication list.
+        if (isManualCommunicationList.value) {
+            internalRecipients.value = pendingItems.value;
+        }
+
+        internalIsOpen.value = false;
+        clear();
+    }
+
+    function onCloseModal(): void {
+        clear();
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    watch(internalIsOpen, (newValue: boolean, oldValue: boolean) => {
+        // If opening the modal, reset the pending items.
+        if (newValue && !oldValue) {
+            pendingItems.value = [...props.recipients];
+        }
+    });
+
+    //#endregion
+</script>

@@ -27,13 +27,26 @@ using Rock.Utility;
 
 namespace Rock.Model
 {
+    /*
+    12/16/2024 - DSH
+
+    The LearningParticipant model participates in the the TPT (Table-Per-Type) pattern. This
+    can cause some rare unexpected results. See the engineering note above the
+    Group class for details.
+    */
+
     /// <summary>
     /// Represents a participant in a <see cref="Rock.Model.LearningClass"/>.
     /// </summary>
+    /// <remarks>
+    /// WARNING - This class inherits from another model, GroupMember, but this Table-Per-Type
+    /// (TPT) inheritance strategy should not be used and is not supported for plugins.
+    /// </remarks>
     [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Due to inheritance from GroupMember.
     [RockDomain( "LMS" )]
     [Table( "LearningParticipant" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_PARTICIPANT )]
     public partial class LearningParticipant : GroupMember
     {
@@ -117,22 +130,38 @@ namespace Rock.Model
         public virtual LearningClass LearningClass { get; set; }
 
         /// <summary>
-        /// Gets or sets a collection of <see cref="Rock.Model.LearningActivityCompletion">activities</see> for this participant.
+        /// Gets or sets a collection of <see cref="Rock.Model.LearningClassActivityCompletion">activities</see> for this participant.
         /// </summary>
         /// <value>
-        /// A collection of <see cref="Rock.Model.LearningActivityCompletion">activities</see> for this participant.
+        /// A collection of <see cref="Rock.Model.LearningClassActivityCompletion">activities</see> for this participant.
         /// </value>
-        public virtual ICollection<LearningActivityCompletion> LearningActivities
+        public virtual ICollection<LearningClassActivityCompletion> LearningClassActivityCompletions
         {
-            get { return _learningActivities ?? ( _learningActivities = new Collection<LearningActivityCompletion>() ); }
-            set { _learningActivities = value; }
+            get { return _learningClassActivityCompletions ?? ( _learningClassActivityCompletions = new Collection<LearningClassActivityCompletion>() ); }
+            set { _learningClassActivityCompletions = value; }
         }
 
-        private ICollection<LearningActivityCompletion> _learningActivities;
+        private ICollection<LearningClassActivityCompletion> _learningClassActivityCompletions;
 
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Gets the entity object type's friendly name
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the entity object type's friendly name.
+        /// </value>
+        [NotAudited]
+        public new static string FriendlyTypeName
+        {
+            get
+            {
+                // Because Entity.FriendlyTypeName would show the base class type name.
+                return "Learning Participant";
+            }
+        }
 
         #endregion
     }

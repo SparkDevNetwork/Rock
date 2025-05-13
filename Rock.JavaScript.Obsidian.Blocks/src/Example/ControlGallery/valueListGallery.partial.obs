@@ -1,0 +1,64 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <ValueList label="List of Values"
+                   v-model="value"
+                   :customValues="customValues"
+                   :valuePrompt="valuePrompt"
+                   :fullWidth="fullWidth"
+                   :definedTypeGuid="useDefinedType ? definedTypeGuid : undefined" />
+
+        <template #settings>
+            <div class="row">
+                <CheckBox formGroupClasses="col-md-3" label="Use Predefined Values" v-model="usePredefinedValues" help="Enabling this will pass a pre-made <code>ListItemBag[]</code> of options to the ValueList component via the <code>customValues</code> prop." :disabled="useDefinedType" />
+                <CheckBox formGroupClasses="col-md-3" label="Use Defined Type" v-model="useDefinedType" help="Enabling this will pass the Connection Status Defined Type's GUID to the ValueList component via the <code>definedTypeGuid</code> prop." :disabled="usePredefinedValues" />
+                <CheckBox formGroupClasses="col-md-3" label="Full Width" v-model="fullWidth" />
+                <TextBox formGroupClasses="col-md-3" label="Placeholder for Value Field" v-model="valuePrompt" />
+            </div>
+            <p>
+                There are 2 different props that control what options users can choose/enter.
+                The <code>definedTypeGuid</code> prop takes a GUID string and will limit users to choosing values from a list of defined values of that type.
+                The <code>customValues</code> option allows you to pass a <code>ListItemBag</code> array in as a list of options that the user can choose from a dropdown.
+                If both of those props are specified, the <code>definedTypeGuid</code> prop will take precedence.
+                If neither option is used, a text box is shown, allowing users to manually type in any values.
+            </p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ValueList from "@Obsidian/Controls/valueList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+
+    const usePredefinedValues = ref(false);
+    const options: ListItemBag[] = [
+        {
+            text: "Option 1",
+            value: "1"
+        },
+        {
+            text: "Option 2",
+            value: "2"
+        },
+        {
+            text: "Option 3",
+            value: "3"
+        },
+    ];
+
+    const customValues = computed(() => usePredefinedValues.value ? options : undefined);
+
+    const fullWidth = ref(false);
+    const useDefinedType = ref(false);
+    const value = ref<string[]>();
+    const definedTypeGuid = DefinedType.PersonConnectionStatus;
+    const valuePrompt = ref("Value");
+    const importCode = getSfcControlImportPath("valueList");
+    const exampleCode = `<ValueList label="List of Values" v-model="value" :customValues="customValues" :valuePrompt="valuePrompt" :definedTypeGuid="definedTypeGuid" />`;
+</script>

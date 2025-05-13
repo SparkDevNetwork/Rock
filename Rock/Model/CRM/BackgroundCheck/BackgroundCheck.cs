@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "BackgroundCheck" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "6D3A2293-BA7E-44D9-B5B3-5B85DA0EECAC")]
     public partial class BackgroundCheck : Model<BackgroundCheck>
     {

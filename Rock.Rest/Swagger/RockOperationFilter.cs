@@ -96,6 +96,17 @@ namespace Rock.Rest.Swagger
                     operation.summary = "PUT endpoint. Use this to update a record";
                 }
             }
+
+            // If the operation has both a 200-OK and another 2xx response code
+            // and the 200-OK looks like the default empty response type, then
+            // remove the 200-OK.
+            if ( operation.responses.ContainsKey( "201" ) || operation.responses.ContainsKey( "204" ) )
+            {
+                if ( operation.responses.ContainsKey( "200" ) && operation.responses["200"].schema.type == "object" )
+                {
+                    operation.responses.Remove( "200" );
+                }
+            }
         }
     }
 }

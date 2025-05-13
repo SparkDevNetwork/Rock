@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
+
 using Rock.Utility;
 using Rock.ViewModels.Communication;
 using Rock.Web.Cache;
@@ -89,10 +91,16 @@ namespace Rock.Model
                 Attachments = new List<ConversationAttachmentBag>()
             };
 
-            if ( recipient.PersonAlias.Person.PhotoId.HasValue )
+            var photoUrl = recipient?.PersonAlias?.Person != null
+                ? Rock.Model.Person.GetPersonPhotoUrl( recipient.PersonAlias.Person, 256, 256 )
+                : "/Assets/Images/person-no-photo-unknown.svg?width=256&height=256";
+
+            if ( !Uri.IsWellFormedUriString( photoUrl, UriKind.Absolute ) )
             {
-                bag.PhotoUrl = FileUrlHelper.GetImageUrl( recipient.PersonAlias.Person.PhotoId.Value, new GetImageUrlOptions { PublicAppRoot = publicUrl, Width = 256, Height = 256 } );
+                photoUrl = VirtualPathUtility.ToAbsolute( photoUrl );
             }
+
+            bag.PhotoUrl = publicUrl.IsNotNullOrWhiteSpace() ? publicUrl + photoUrl : photoUrl;
 
             var attachmentGuids = recipient.Communication.Attachments
                 .Where( ca => ca.CommunicationType == CommunicationType.SMS )

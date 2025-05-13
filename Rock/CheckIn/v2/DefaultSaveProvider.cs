@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Enums.CheckIn;
 using Rock.Model;
 using Rock.Observability;
@@ -125,7 +126,16 @@ namespace Rock.CheckIn.v2
 
             // Get the current attendance records for these locations.
             var validLocationIds = preparedRequests.Select( r => r.Location.Id ).Distinct().ToList();
-            var currentAttendances = CheckInDirector.GetCurrentAttendance( now, validLocationIds, Session.RockContext );
+            var existingAttendancesQuery = new AttendanceService( Session.RockContext ).Queryable()
+                .Where( a =>
+                    a.Occurrence.OccurrenceDate == now.Date
+                    && a.Occurrence.LocationId.HasValue
+                    && a.Occurrence.GroupId.HasValue
+                    && a.Occurrence.ScheduleId.HasValue
+                    && a.PersonAliasId.HasValue
+                    && validLocationIds.Contains( a.Occurrence.LocationId.Value ) );
+            var existingAttendances = CheckInDirector.GetRecentAttendanceFromQuery( existingAttendancesQuery );
+
             var newOrUpdatedAttendances = new List<RecentAttendance>();
             var newAttendances = new List<Attendance>();
             var attributeEntitiesToSave = new List<IHasAttributes>();
@@ -134,7 +144,7 @@ namespace Rock.CheckIn.v2
             foreach ( var request in preparedRequests )
             {
                 // Check if the location is over capacity.
-                if ( sessionRequest.IsCapacityThresholdEnforced && IsLocationOverCapacity( sessionRequest, request, currentAttendances, newAttendances ) )
+                if ( sessionRequest.IsCapacityThresholdEnforced && IsLocationOverCapacity( sessionRequest, request, existingAttendances, newAttendances ) )
                 {
                     messages.Add( $"Could not check {request.Person.FullName} into {request.Location.Name} because it is over capacity." );
 
@@ -154,7 +164,7 @@ namespace Rock.CheckIn.v2
                     }
                 }
 
-                var attendance = AddOrUpdateAttendance( request, currentAttendances );
+                var attendance = AddOrUpdateAttendance( request, existingAttendances );
 
                 var newAttendance = new RecentAttendance
                 {
@@ -163,6 +173,7 @@ namespace Rock.CheckIn.v2
                     CampusId = attendance.CampusId.HasValue
                         ? CampusCache.Get( attendance.CampusId.Value, Session.RockContext )?.IdKey
                         : null,
+                    DidAttend = true,
                     EndDateTime = attendance.EndDateTime,
                     GroupId = request.Group.IdKey,
                     GroupTypeId = request.Area.IdKey,
@@ -173,9 +184,9 @@ namespace Rock.CheckIn.v2
                     Status = attendance.CheckInStatus
                 };
 
-                if ( !currentAttendances.Any( a => a.AttendanceGuid == attendance.Guid ) )
+                if ( !existingAttendances.Any( a => a.AttendanceGuid == attendance.Guid ) )
                 {
-                    currentAttendances.Add( newAttendance );
+                    existingAttendances.Add( newAttendance );
                 }
 
                 if ( attendance.Id == 0 )
@@ -254,6 +265,7 @@ namespace Rock.CheckIn.v2
                     CampusId = item.CampusId.HasValue
                         ? IdHasher.Instance.GetHash( item.CampusId.Value )
                         : null,
+                    DidAttend = true,
                     EndDateTime = item.Attendance.EndDateTime,
                     GroupId = IdHasher.Instance.GetHash( item.GroupId ),
                     GroupTypeId = IdHasher.Instance.GetHash( item.AreaId ),
@@ -516,14 +528,7 @@ namespace Rock.CheckIn.v2
                 attendance.OccurrenceId = occurrence.Id;
                 attendance.PersonAliasId = request.Person.PrimaryAliasId;
                 attendance.PersonAlias = request.Person.PrimaryAlias;
-                attendance.StartDateTime = request.StartDateTime;
                 attendance.CampusId = request.Location.CampusId;
-                attendance.DeviceId = request.Kiosk?.Id;
-                attendance.SearchTypeValueId = GetSearchTypeValueId( request.SearchMode );
-                attendance.SearchValue = request.SearchTerm;
-                attendance.SearchResultGroupId = request.FamilyId;
-                attendance.AttendanceCodeId = request.AttendanceCode.Id;
-                attendance.DidAttend = true;
 
                 attendanceService.Add( attendance );
 
@@ -535,11 +540,17 @@ namespace Rock.CheckIn.v2
                 Activity.Current?.AddEvent( new ActivityEvent( "Complete IsFirstTime" ) );
             }
 
+            attendance.StartDateTime = request.StartDateTime;
+            attendance.EndDateTime = null;
             attendance.AttendanceCheckInSession = request.Session;
             attendance.CheckedInByPersonAliasId = request.CheckedInByPersonAliasId;
             attendance.DeviceId = request.Kiosk?.Id;
+            attendance.DidAttend = true;
             attendance.AttendanceCodeId = request.AttendanceCode.Id;
             attendance.Note = request.Note;
+            attendance.SearchTypeValueId = GetSearchTypeValueId( request.SearchMode );
+            attendance.SearchValue = request.SearchTerm;
+            attendance.SearchResultGroupId = request.FamilyId;
 
             if ( Session.AttendanceSourceValueId.HasValue )
             {
@@ -696,7 +707,9 @@ namespace Rock.CheckIn.v2
 
             // Current attendence records in the database.
             var count = currentAttendances
-                .Where( a => a.LocationId == request.Location.IdKey )
+                .Where( a => a.LocationId == request.Location.IdKey
+                    && a.DidAttend
+                    && !a.EndDateTime.HasValue )
                 .Count();
 
             // New records we have created but not written yet.
@@ -932,6 +945,8 @@ namespace Rock.CheckIn.v2
                     IsPending = sessionRequest.IsPending,
                     FamilyId = familyId,
                     Kiosk = kiosk,
+                    SearchMode = sessionRequest.SearchMode,
+                    SearchTerm = sessionRequest.SearchTerm,
                     ClientIpAddress = clientIpAddress,
                     CheckedInByPersonAliasId = checkedInByPersonAliasId,
                     StartDateTime = now,

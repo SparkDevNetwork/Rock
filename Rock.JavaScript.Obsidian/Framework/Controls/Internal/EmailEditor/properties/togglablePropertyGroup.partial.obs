@@ -1,0 +1,72 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="form-group">
+        <InlineSwitchProperty :label="label"
+                              :valueProvider="valueProvider"
+                              @on="onSwitchedOn"
+                              @off="onSwitchedOff" />
+    </div>
+
+    <TransitionVerticalCollapse>
+        <div v-if="isShown">
+            <slot></slot>
+        </div>
+    </TransitionVerticalCollapse>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import InlineSwitchProperty from "./inlineSwitchProperty.partial.obs";
+    import { ValueProvider } from "../types.partial";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+
+    const props = defineProps({
+        label: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        valueProvider: {
+            type: Object as PropType<ValueProvider<boolean | null | undefined>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "on");
+        (e: "off");
+        (e: "toggle", value: boolean);
+    }>();
+
+    // #region Values
+
+    const isShown = ref<boolean>(props.valueProvider.value ?? false);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onSwitchedOn(): void {
+        isShown.value = true;
+        emit("on");
+        emit("toggle", true);
+    }
+
+    function onSwitchedOff(): void {
+        isShown.value = false;
+        emit("off");
+        emit("toggle", false);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.valueProvider, (newValue) => {
+        if (newValue) {
+            isShown.value = newValue.value ?? false;
+        }
+    });
+
+    // #endregion Watchers
+</script>

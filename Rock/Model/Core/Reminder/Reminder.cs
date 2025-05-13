@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Reminder" )]
     [DataContract]
+    [CodeGenerateRest]
     [SystemGuid.EntityTypeGuid( SystemGuid.EntityType.REMINDER )]
     public partial class Reminder : Model<Reminder>
     {
@@ -40,6 +41,7 @@ namespace Rock.Model
         /// The reminder type identifier.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int ReminderTypeId { get; set; }
 
         /// <summary>

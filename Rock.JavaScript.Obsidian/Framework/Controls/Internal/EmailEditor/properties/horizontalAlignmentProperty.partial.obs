@@ -1,0 +1,31 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <HorizontalAlignmentPicker v-model="internalHorizontalAlignment"
+                               v-bind="$attrs" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import HorizontalAlignmentPicker from "../horizontalAlignmentPicker.partial.obs";
+    import { HorizontalAlignment, ValueProvider } from "../types.partial";
+
+    const props = defineProps({
+        valueProvider: {
+            type: Object as PropType<ValueProvider<HorizontalAlignment | "" | null | undefined>>,
+            required: true
+        }
+    });
+
+    // #region Computed Props
+
+    const internalHorizontalAlignment = computed<HorizontalAlignment | "">({
+        get(): HorizontalAlignment | "" {
+            return props.valueProvider.value ?? "";
+        },
+        set(newValue: HorizontalAlignment | ""): void {
+            props.valueProvider.value = (newValue as HorizontalAlignment) || null;
+        }
+    });
+
+    // #endregion Computed Props
+</script>

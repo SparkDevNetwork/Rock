@@ -37,6 +37,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "BlockType" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "04768EDF-C0CD-4950-B629-4D2370B57C99" )]
     public partial class BlockType : Model<BlockType>, ICacheable
     {

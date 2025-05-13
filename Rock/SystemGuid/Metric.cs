@@ -44,5 +44,24 @@ namespace Rock.SystemGuid
         public const string HOSTING_SOFT_CONNECTS_PER_SECOND = "F90F9446-8754-4001-887C-1AB920968C6D";
 
         #endregion
+
+        #region Tithing Overview
+
+        /// <summary>
+        /// Tithing overview by campus metric Guid.
+        /// </summary>
+        public const string TITHING_OVERVIEW_BY_CAMPUS_METRIC_GUID = "F4951A42-9F71-4CB1-A46E-2A7ED84CD923";
+
+        /// <summary>
+        /// Tithing households by campus metric Guid.
+        /// </summary>
+        public const string TITHING_HOUSEHOLDS_BY_CAMPUS_METRIC_GUID = "2B798177-E8F4-46DB-A1D7-308D63CA519A";
+
+        /// <summary>
+        /// Giving households by campus metric Guid.
+        /// </summary>
+        public const string GIVING_HOUSEHOLDS_BY_CAMPUS_METRIC_GUID = "B5BFAB51-9B46-4E7E-992E-B0119E4D25EC";
+
+        #endregion
     }
 }

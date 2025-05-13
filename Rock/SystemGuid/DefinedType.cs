@@ -96,6 +96,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_PHONE_COUNTRY_CODE = "45E9EF7C-91C7-45AB-92C1-1D6219293847";
 
         /// <summary>
+        /// Guid for the Communication Topic.
+        /// </summary>
+        public const string COMMUNICATION_TOPIC = "A798492C-F0A4-496E-9142-97D9336C3E99";
+
+        /// <summary>
         /// Guid for Content Channel Audience Type
         /// </summary>
         public const string CONTENT_CHANNEL_AUDIENCE_TYPE = "799301A3-2026-4977-994E-45DC68502559";
@@ -525,6 +530,11 @@ namespace Rock.SystemGuid
         public const string PEER_NETWORK_RELATIONSHIP_TYPE = "F2E8E639-F16D-489D-AAFB-BE0133531E41";
 
         /// <summary>
+        /// Clarifies what the metrics are measuring, enabling the system to utilize these metrics for analytics.
+        /// </summary>
+        public const string MEASUREMENT_CLASSIFICATION = "A9897479-110E-4E50-8F60-160CEFE4CF7B";
+
+        /// <summary>
         /// List of different sources from which website traffic may originate.
         /// </summary>
         public const string UTM_SOURCE = "3CFE43A9-5D0C-4BE4-B1EC-AFA06BBB7C32";
@@ -538,6 +548,11 @@ namespace Rock.SystemGuid
         /// List of different campaigns that may generate website traffic.
         /// </summary>
         public const string UTM_CAMPAIGN = "A2F452BB-39E8-40F8-9DAD-74DBD920FD2F";
+
+        /// <summary>
+        /// List of possible sentiments for classification.
+        /// </summary>
+        public const string SENTIMENT_EMOTIONS = "C9751C20-DA81-4521-81DE-0099D6F598BA";
 
         /// <summary>
         /// The statement generator lava template (Legacy)

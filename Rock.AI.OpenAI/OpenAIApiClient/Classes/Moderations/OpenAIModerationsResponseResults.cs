@@ -20,7 +20,7 @@ using Newtonsoft.Json;
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
 {
     /// <summary>
-    /// The Reponse object for a moderation result.
+    /// The Response object for a moderation result.
     /// </summary>
     internal class OpenAIModerationsResponseResults
     {

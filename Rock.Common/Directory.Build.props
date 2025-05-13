@@ -1,4 +1,5 @@
 <Project>
+    <Import Project="../Directory.Build.props" />
     <PropertyGroup>
         <MSBuildProjectExtensionsPath Condition="'$(MSBuildProjectFile)'=='Rock.Common.NG.csproj'">obj/NG</MSBuildProjectExtensionsPath>
         <BaseOutputPath Condition="'$(MSBuildProjectFile)'=='Rock.Common.NG.csproj'">bin/NG</BaseOutputPath>

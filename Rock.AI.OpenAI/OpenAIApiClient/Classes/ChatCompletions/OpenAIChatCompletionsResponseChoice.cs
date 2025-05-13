@@ -16,8 +16,8 @@
 //
 
 using Newtonsoft.Json;
+
 using Rock.AI.Classes.ChatCompletions;
-using Rock.AI.Classes.TextCompletions;
 using Rock.AI.OpenAI.Utilities;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
@@ -30,7 +30,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
         #region Properties
 
         /// <summary>
-        /// The text reponse for the completion.
+        /// The text response for the completion.
         /// </summary>
         [JsonProperty( "message" )]
         public OpenAIChatCompletionsResponseChoiceMessage Message { get; set; }

@@ -167,6 +167,16 @@ namespace RockWeb.Blocks.Steps
             /// The step program id page parameter
             /// </summary>
             public const string StepProgramId = "StepProgramId";
+
+            /// <summary>
+            /// The original, fall-back page parameter for a given person's Id.
+            /// </summary>
+            public const string PersonId = "PersonId";
+
+            /// <summary>
+            /// The page parameter for a given person key (Id, Guid, or IdKey)
+            /// </summary>
+            public const string Person = "Person";
         }
 
         /// <summary>
@@ -791,13 +801,21 @@ namespace RockWeb.Blocks.Steps
 
                 if ( _person == null )
                 {
-                    // 2.) PersonId parameter
-                    var personId = PageParameter( "PersonId" ).AsIntegerOrNull();
+                    // 2.) PersonId or Person parameter
+                    // Going forward, we'd like to use page parameters with this new naming convention (Person),
+                    // but we still have to support the original convention (PersonId).
+                    var personKey = PageParameter( PageParameterKey.Person );
 
-                    if ( personId.HasValue )
+                    // fall-back logic
+                    if ( personKey.IsNullOrWhiteSpace() )
+                    {
+                        personKey = PageParameter( PageParameterKey.PersonId );
+                    }
+
+                    if ( personKey.IsNotNullOrWhiteSpace() )
                     {
                         var rockContext = GetRockContext();
-                        _person = new PersonService( rockContext ).Get( personId.Value );
+                        _person = new PersonService( rockContext ).Get( personKey, !PageCache.Layout.Site.DisablePredictableIds );
                     }
                     else
                     {
@@ -1353,11 +1371,20 @@ namespace RockWeb.Blocks.Steps
 
             if ( person != null )
             {
-                NavigateToLinkedPage( AttributeKey.StepPage, new Dictionary<string, string> {
-                    { "PersonId", person.Id.ToString() },
+                var queryParams = new Dictionary<string, string> {
+                    { PageParameterKey.PersonId, person.Id.ToString() },
                     { "StepTypeId", stepTypeId.ToString() },
                     { "StepId", (stepId ?? 0).ToString() }
-                } );
+                };
+
+                // Retain the given person key if it was passed in.
+                var personKey = PageParameter( PageParameterKey.Person );
+                if ( personKey.IsNotNullOrWhiteSpace() )
+                {
+                    queryParams.Add( PageParameterKey.Person, personKey );
+                }
+
+                NavigateToLinkedPage( AttributeKey.StepPage, queryParams );
             }
         }
 

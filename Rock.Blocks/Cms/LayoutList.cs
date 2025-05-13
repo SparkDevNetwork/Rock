@@ -114,15 +114,14 @@ namespace Rock.Blocks.Cms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
-            var siteIdParam = PageParameter( PageParameterKey.SiteId );
-            var siteId = Rock.Utility.IdHasher.Instance.GetId( siteIdParam ).ToString() ?? siteIdParam;
+            var siteIdKey = PageParameter( PageParameterKey.SiteId );
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string>
-        {
-            { "LayoutId", "((Key))" },
-            { "SiteId", siteId }
-        } )
+                {
+                    { "LayoutId", "((Key))" },
+                    { "SiteId", siteIdKey }
+                } )
             };
         }
 

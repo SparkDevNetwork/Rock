@@ -280,6 +280,26 @@ namespace Rock
             }
         }
 
+        /// <summary>
+        /// Moves the CSS inline using PreMailer.Net, which moves any stylesheets to inline style attributes, for maximum compatibility with email clients
+        /// </summary>
+        /// <param name="html">The HTML.</param>
+        /// <param name="removeStyleElements">If <see langword="true"/>, then style elements will be removed.</param>
+        /// <returns></returns>
+        internal static string ConvertHtmlStylesToInlineAttributes( this string html, bool removeStyleElements )
+        {
+            try
+            {
+                var rockHtmlMarkupFormatter = new Rock.Utility.RockHtmlMarkupFormatter();
+                var result = PreMailer.Net.PreMailer.MoveCssInline( html, removeStyleElements, ".ignore", null, false, false, rockHtmlMarkupFormatter );
+                return result.Html;
+            }
+            catch
+            {
+                return html;
+            }
+        }
+
         #region HTML Truncation Extensions 
         // Modified from:
         // https://blog.andycook.com/code/2016/02/11/String-truncation-of-HTML/

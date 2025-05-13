@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "LMS" )]
     [Table( "LearningSemester" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_SEMESTER )]
     public partial class LearningSemester : Model<LearningSemester>
     {

@@ -23,6 +23,8 @@
 
 /** System Metrics */
 export const Metric = {
+    /** Giving households by campus metric Guid. */
+    GivingHouseholdsByCampusMetricGuid: "B5BFAB51-9B46-4E7E-992E-B0119E4D25EC",
     /** Hosting Metric hard connects per second Guid */
     HostingHardConnectsPerSecond: "64D538D0-EE05-4646-91F5-EBE06460BDAB",
     /** Hosting Metric number of active connections Guid */
@@ -31,4 +33,8 @@ export const Metric = {
     HostingNumberOfFreeConnections: "8A1F73DD-4275-47C0-AF2A-6EABDA06E3C7",
     /** Hosting Metric soft connects per second Guid */
     HostingSoftConnectsPerSecond: "F90F9446-8754-4001-887C-1AB920968C6D",
+    /** Tithing households by campus metric Guid. */
+    TithingHouseholdsByCampusMetricGuid: "2B798177-E8F4-46DB-A1D7-308D63CA519A",
+    /** Tithing overview by campus metric Guid. */
+    TithingOverviewByCampusMetricGuid: "F4951A42-9F71-4CB1-A46E-2A7ED84CD923",
 };

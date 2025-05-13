@@ -17,6 +17,7 @@
 
 using System.Data.Entity;
 
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -43,6 +44,13 @@ namespace Rock.Model
         {
             ContentCollectionSourceCache.UpdateCachedEntity( Id, entityState );
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => ContentCollection ?? base.ParentAuthority;
 
         #endregion
     }

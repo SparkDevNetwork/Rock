@@ -1,0 +1,38 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode">
+
+        <CopyButton :value="value" :tooltip="tooltip" :btnSize="buttonSize" />
+
+        <template #settings>
+            <div class="row">
+                <TextBox formGroupClasses="col-sm-4" v-model="value" label="Value to Copy to Clipboard" />
+                <TextBox formGroupClasses="col-sm-4" v-model="tooltip" label="Tooltip" />
+                <DropDownList formGroupClasses="col-sm-4" label="Button Size" v-model="buttonSize" :items="sizeOptions" />
+            </div>
+
+            <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import CopyButton from "@Obsidian/Controls/copyButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const tooltip = ref("Copy");
+    const value = ref("To God Be The Glory");
+    const buttonSize = ref("md");
+    const sizeOptions = [
+        { value: "lg", text: "Large" },
+        { value: "md", text: "Medium" },
+        { value: "sm", text: "Small" },
+        { value: "xs", text: "Extra Small" },
+    ];
+    const importCode = getSfcControlImportPath("copyButton");
+    const exampleCode = `<CopyButton :value="value" tooltip="Copy" />`;
+</script>

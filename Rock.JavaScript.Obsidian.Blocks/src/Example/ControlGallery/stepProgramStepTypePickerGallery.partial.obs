@@ -1,0 +1,50 @@
+<template>
+    <GalleryAndResult :value="{ value, stepProgram }"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      hasMultipleValues
+                      enableReflection>
+
+        <StepProgramStepTypePicker label="Step Program > Step Type"
+                                   v-model="value"
+                                   v-model:stepProgram="stepProgram"
+                                   :defaultStepProgramGuid="defaultProgramGuid"
+                                   :rules="required ? 'required' : ''"
+                                   :disabled="disabled" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <StepProgramPicker label="Default Step Program" v-model="defaultProgram" showBlankItem help="If this defaultStepProgramGuid prop is set, the Step Program selector will not be shown and the Step Types will be based on that Program." />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Required" v-model="required" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Disabled" v-model="disabled" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import StepProgramStepTypePicker from "@Obsidian/Controls/stepProgramStepTypePicker.obs";
+    import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+
+    const defaultProgram = ref<ListItemBag>({});
+    const defaultProgramGuid = computed<Guid | null>(() => toGuidOrNull(defaultProgram.value?.value));
+    const value = ref({});
+    const stepProgram = ref({});
+    const required = ref(false);
+    const disabled = ref(false);
+    const importCode = getSfcControlImportPath("stepProgramStepTypePicker");
+    const exampleCode = `<StepProgramStepTypePicker label="Step Program > Step Type" v-model="value" />`;
+</script>

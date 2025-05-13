@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupScheduleExclusion" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "047D57EE-1B06-455F-86EA-D96B8325C77D")]
     public partial class GroupScheduleExclusion : Model<GroupScheduleExclusion>
     {

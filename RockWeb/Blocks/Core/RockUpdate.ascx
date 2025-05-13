@@ -32,13 +32,6 @@
                         You will need to upgrade your database in order to proceed with additional updates.
                     </p>
                 </Rock:NotificationBox>
-                <Rock:NotificationBox ID="nbLegacyLavaIssue" runat="server" NotificationBoxType="Warning" Visible="false">
-                    <strong><i class="fa fa-exclamation-triangle"></i> 'Lava Support Level' Change is Needed</strong>
-                    <p>
-                        Rock v16 no longer supports "Legacy" Lava.
-                        In order to upgrade Rock to v16, your <strong> Lava Support Level </strong> Global Attribute must be set to "No Legacy".
-                    </p>
-                </Rock:NotificationBox>
                 <Rock:NotificationBox ID="nbLavaEngineIssue" runat="server" NotificationBoxType="Warning" Visible="false">
                     <strong><i class="fa fa-exclamation-triangle"></i> 'Lava Engine Liquid Framework' Change is Needed</strong>
                     <p>
@@ -52,7 +45,7 @@
                     </p>
                 </Rock:NotificationBox>
 
-                <Rock:NotificationBox ID="nbPendingMigrationJobs" runat="server" NotificationBoxType="Warning" Visible="false"></Rock:NotificationBox>
+                <Rock:NotificationBox ID="nbPendingMigrationJobs" runat="server" NotificationBoxType="Info" Visible="false"></Rock:NotificationBox>
 
                 <asp:Panel ID="pnlNoUpdates" runat="server">
                     <div class="well well-message">
@@ -160,8 +153,7 @@
                         <i class="fa fa-exclamation-triangle"></i>
                         <p>
                             Update completed successfully... You're now running
-                            <asp:Literal ID="lSuccessVersion" runat="server" />
-                            .
+                            <asp:Literal ID="lSuccessVersion" runat="server" />.
                         </p>
 
                         <div class="text-center margin-t-md">

@@ -18,7 +18,7 @@
 namespace Rock.ViewModels.Blocks.Core.RestControllerList
 {
     /// <summary>
-    /// 
+    /// The additional configuration options for the Rest Controller List block.
     /// </summary>
     public class RestControllerListOptionsBag
     {

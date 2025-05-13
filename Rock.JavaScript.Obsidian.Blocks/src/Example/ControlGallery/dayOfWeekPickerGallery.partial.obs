@@ -1,0 +1,36 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <DayOfWeekPicker label="Day of the Week" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
+
+        <template #settings>
+            <div class="row">
+                <CheckBox formGroupClasses="col-sm-4" label="Show Blank Item" v-model="showBlankItem" />
+                <CheckBox formGroupClasses="col-sm-4" label="Multiple" v-model="multiple" />
+                <NumberUpDown v-if="multiple" formGroupClasses="col-sm-4" label="Columns" v-model="columns" />
+            </div>
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const showBlankItem = ref(false);
+    const multiple = ref(false);
+    const columns = ref(1);
+    const value = ref(null);
+    const importCode = getSfcControlImportPath("dayOfWeekPicker");
+    const exampleCode = `<DayOfWeekPicker label="Day of the Week" v-model="value" :showBlankItem="false" :multiple="false" />`;
+</script>

@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using Rock.Security;
+
 namespace Rock.Model
 {
     public partial class EventItemOccurrenceGroupMap
@@ -64,6 +66,13 @@ namespace Rock.Model
 
             return parts.AsDelimited( " - " );
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => EventItemOccurrence ?? base.ParentAuthority;
 
         #endregion
     }

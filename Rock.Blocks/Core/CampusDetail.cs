@@ -505,7 +505,9 @@ namespace Rock.Blocks.Core
                 ServiceTimes = ConvertServiceTimesToBags( entity.ServiceTimes ),
                 ShortCode = entity.ShortCode,
                 TimeZoneId = entity.TimeZoneId,
-                Url = entity.Url
+                Url = entity.Url,
+                ClosedDate = entity.ClosedDate,
+                OpenedDate = entity.OpenedDate,
             };
         }
 
@@ -521,7 +523,7 @@ namespace Rock.Blocks.Core
 
             bag.PhoneNumber = entity.PhoneNumber;
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -555,7 +557,7 @@ namespace Rock.Blocks.Core
                 bag.PhoneNumber = entity.PhoneNumber;
             }
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -635,12 +637,18 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Bag.Url ),
                 () => entity.Url = box.Bag.Url );
 
+            box.IfValidProperty( nameof( box.Bag.OpenedDate ),
+                () => entity.OpenedDate = box.Bag.OpenedDate );
+
+            box.IfValidProperty( nameof( box.Bag.ClosedDate ),
+                () => entity.ClosedDate = box.Bag.ClosedDate );
+
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;

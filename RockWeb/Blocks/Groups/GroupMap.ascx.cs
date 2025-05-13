@@ -239,8 +239,11 @@ namespace RockWeb.Blocks.Groups
         var map;
         var bounds = new google.maps.LatLngBounds();
         var infoWindow = new google.maps.InfoWindow();
+        var parser = new DOMParser();
 
         var mapStyle = {1};
+        var mapId = '{13}';
+        var isMapIdEmpty = !mapId;
 
         var polygonColorIndex = 0;
         var polygonColors = [{2}];
@@ -260,10 +263,15 @@ namespace RockWeb.Blocks.Groups
             // Set default map options
             var mapOptions = {{
                  mapTypeId: 'roadmap'
-                ,styles: mapStyle
                 ,center: new google.maps.LatLng({7}, {8})
                 ,zoom: {9}
             }};
+
+            if (!isMapIdEmpty) {{
+                mapOptions.mapId = mapId;
+            }} else {{
+                mapOptions.styles = mapStyle;
+            }}
 
             // Display a map on the page
             map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
@@ -369,32 +377,72 @@ namespace RockWeb.Blocks.Groups
                     color = 'FE7569'
                 }}
 
-                var pinImage = {{
-                    path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
-                    fillColor: '#' + color,
-                    fillOpacity: 1,
-                    strokeColor: '#000',
-                    strokeWeight: 1,
-                    scale: 1,
-                    labelOrigin: new google.maps.Point(0,-28)
-                }};
+                if (isMapIdEmpty) {{
+                    var pinImage = {{
+                        path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                        fillColor: '#' + color,
+                        fillOpacity: 1,
+                        strokeColor: '#000',
+                        strokeWeight: 1,
+                        scale: 1,
+                        labelOrigin: new google.maps.Point(0,-28)
+                    }};
 
-                marker = new google.maps.Marker({{
-                    position: position,
-                    map: map,
-                    title: htmlDecode(mapItem.Name),
-                    icon: pinImage,
-                    label: String.fromCharCode(9679)
-                }});
+                    marker = new google.maps.Marker({{
+                        position: position,
+                        map: map,
+                        title: htmlDecode(mapItem.Name),
+                        icon: pinImage,
+                        label: String.fromCharCode(9679)
+                    }});
+                }}
+                else {{
+                    const pinGlyph = new google.maps.marker.PinElement({{
+                      glyphColor: 'black',
+                    }});
+
+                    marker = {{
+                        position: position,
+                        map: map,
+                        title: htmlDecode(mapItem.Name),
+                        marker_element: new google.maps.marker.AdvancedMarkerElement({{
+                            id: mapItem.EntityId,
+                            position: position,
+                            map: map,
+                            title: htmlDecode(mapItem.Name),
+                            content: pinGlyph.element
+                        }}),
+                        setMap: function(map) {{
+                            this.map = map;
+                            this.marker_element.map = map;
+                        }},
+                        getPosition: function() {{
+                            return this.position;
+                        }},
+                        setPosition: function(position) {{
+                            this.position = position;
+                            this.marker_element.position = position;
+                        }}
+                    }}                    
+                }}
+
 
                 items.push(marker);
                 allMarkers.push(marker);
 
-                google.maps.event.addListener(marker, 'click', (function (marker, i) {{
+                google.maps.event.addListener(marker.marker_element || marker, 'click', (function (marker, i) {{
                     return function () {{
                         $.post( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfoWindow/' + mapItem.EntityId + '/' + mapItem.LocationId, infoWindowRequest, function( data ) {{
                             infoWindow.setContent( data.Result );
-                            infoWindow.open(map, marker);
+                            if (isMapIdEmpty) {{
+                                infoWindow.open(map, marker);
+                            }}
+                            else {{
+                                infoWindow.open({{
+                                    anchor: marker.marker_element,
+                                    map
+                                }});
+                            }}
                         }});
                     }}
                 }})(marker, i));
@@ -705,11 +753,17 @@ namespace RockWeb.Blocks.Groups
             // add styling to map
             string styleCode = "null";
             var markerColors = new List<string>();
+            string mapId = string.Empty;
 
             DefinedValueCache dvcMapStyle = DefinedValueCache.Get( GetAttributeValue( AttributeKey.MapStyle ).AsGuid() );
             if ( dvcMapStyle != null )
             {
-                styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                var dynamicMapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                if ( dynamicMapStyle.IsNotNullOrWhiteSpace() )
+                {
+                    styleCode = dynamicMapStyle;
+                }
+                mapId = dvcMapStyle.GetAttributeValue( "core_GoogleMapId" );
                 markerColors = dvcMapStyle.GetAttributeValue( "Colors" )
                     .Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries )
                     .ToList();
@@ -761,7 +815,8 @@ namespace RockWeb.Blocks.Groups
                     zoom, // {9}
                     cbShowAllGroups.Checked.ToTrueFalse(), // {10}
                     gtpGroupType.SelectedGroupTypeIds.AsDelimited(","), // {11}
-                    GroupMemberStatus.Active // {12}
+                    GroupMemberStatus.Active, // {12}
+                    mapId // {13}
                 );
 
             ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-map-script", mapScript, false );

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using Rock.ViewModels.Blocks.Finance.VolunteerGenerosityAnalysis;
 using Rock.Obsidian.UI;
 using System.Globalization;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks.Finance
 {
@@ -69,11 +70,14 @@ namespace Rock.Blocks.Finance
                         if ( box != null && ( box.UniqueCampuses == null || box.UniqueGroups == null ) )
                         {
                             var peopleData = box.PeopleData;
-                            var uniqueCampuses = peopleData
+
+                            // Get unique dictionary of campuses, keyed by short code.
+                            var campusDict = peopleData
                                 .Where( p => !string.IsNullOrEmpty( p.CampusShortCode ) )
-                                .Select( p => p.CampusShortCode )
-                                .Distinct()
-                                .ToList();
+                                .GroupBy( p => p.CampusShortCode, StringComparer.OrdinalIgnoreCase )
+                                .ToDictionary( p => p.Key, p => p.First().CampusName, StringComparer.OrdinalIgnoreCase );
+
+                            var uniqueCampuses = campusDict.Select( c => new ListItemBag { Text = c.Value, Value = c.Key } ).OrderBy( i => i.Text ).ToList();
 
                             var uniqueGroups = peopleData.Select( p => p.GroupName ).Distinct().ToList();
                             var hasMultipleCampuses = CampusCache.All().Count( c => ( bool ) c.IsActive ) > 1;

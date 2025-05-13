@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as NoteType.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.NOTE_TYPE )]
     public class NoteTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
@@ -135,6 +136,14 @@ namespace Rock.Field.Types
                 }
             }
             return publicConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+            privateConfigurationValues.Remove( VALUES_PUBLIC_KEY );
+            return privateConfigurationValues;
         }
 
         #endregion

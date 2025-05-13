@@ -37,6 +37,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "CommunicationTemplate" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.COMMUNICATION_TEMPLATE )]
     public partial class CommunicationTemplate : Model<CommunicationTemplate>, ICommunicationDetails, ICampusFilterable
     {
@@ -127,6 +128,21 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? CategoryId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this is a starter communication template.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <see langword="true" /> if this is a starter template, otherwise <see langword="false" />.
+        /// </value>=
+        [DataMember]
+        public bool IsStarter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication template version.
+        /// </summary>
+        [DataMember]
+        public CommunicationTemplateVersion Version { get; set; }
 
         #region Email Fields
 

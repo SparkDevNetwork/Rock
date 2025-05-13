@@ -27,6 +27,7 @@ using Rock.Web.UI;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Security;
+using System.Collections.Generic;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -47,6 +48,20 @@ namespace RockWeb.Blocks.Crm
             public const string DetailPage = "DetailPage";
         }
         #endregion Attribute Keys
+
+        #region PageParameterKeys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string BadgeId = "BadgeId";
+            public const string ReturnUrl = "returnUrl";
+            public const string AutoEdit = "autoEdit";
+        }
+
+        #endregion PageParameterKey
 
         #region Base Control Methods
 
@@ -113,7 +128,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBadge_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "BadgeId", e.RowKeyId );
+            var queryParams = new Dictionary<string, string>();
+            queryParams.AddOrReplace( PageParameterKey.BadgeId, e.RowKeyId.ToString() );
+            queryParams.AddOrReplace( PageParameterKey.AutoEdit, "true" );
+            queryParams.AddOrReplace( PageParameterKey.ReturnUrl, Request.RawUrl );
+            NavigateToLinkedPage( AttributeKey.DetailPage, queryParams );
         }
 
         /// <summary>

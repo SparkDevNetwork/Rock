@@ -6,10 +6,19 @@
 .key-value-rows {
   .controls-row {
     margin-bottom: 6px;
+    margin-right: 0;
 
     &.controls-row-full-width {
       display: flex;
       align-items: center;
     }
+  }
+
+  .control-wrapper {
+    width: 100%;
+  }
+
+  .form-control-group:not(.controls-row-full-width) {
+    max-width: 600px;
   }
 }

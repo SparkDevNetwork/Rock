@@ -1,0 +1,27 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <ConnectionRequestPicker label="ConnectionRequest" v-model="value" :multiple="multiple" />
+
+        <template #settings>
+            <CheckBox label="Multiple" v-model="multiple" />
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ConnectionRequestPicker from "@Obsidian/Controls/connectionRequestPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const multiple = ref(false);
+    const value = ref(null);
+    const importCode = getSfcControlImportPath("connectionRequestPicker");
+    const exampleCode = `<ConnectionRequestPicker label="ConnectionRequest" v-model="value" :multiple="false" />`;
+</script>

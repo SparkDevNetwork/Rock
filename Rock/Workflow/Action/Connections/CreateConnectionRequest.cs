@@ -144,6 +144,7 @@ namespace Rock.Workflow.Action
             var connectionRequest = new ConnectionRequest();
             connectionRequest.PersonAliasId = personAlias.Id;
             connectionRequest.ConnectionOpportunityId = opportunity.Id;
+            connectionRequest.ConnectionTypeId = opportunity.ConnectionTypeId;
             connectionRequest.ConnectionState = ConnectionState.Active;
             connectionRequest.ConnectionStatusId = status.Id;
             connectionRequest.CampusId = campusId;

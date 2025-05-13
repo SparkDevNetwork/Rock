@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -50,14 +51,14 @@ namespace RockWeb.Blocks.Prayer
         AllowMultiple = false,
         EntityTypeName = "Rock.Model.PrayerRequest",
         IsRequired = false,
-        Category = "Filtering",
+        Category = AttributeCategory.Filtering,
         Order = 1 )]
 
     [BooleanField( "Enable Prayer Team Flagging",
         Description = "If enabled, members of the prayer team can flag a prayer request if they feel the request is inappropriate and needs review by an administrator.",
         Key = AttributeKey.EnableCommunityFlagging,
         DefaultBooleanValue = false,
-        Category = "Flagging",
+        Category = AttributeCategory.Flagging,
         Order = 2 )]
 
     [IntegerField( "Flag Limit",
@@ -65,7 +66,7 @@ namespace RockWeb.Blocks.Prayer
         Key = AttributeKey.FlagLimit,
         DefaultIntegerValue = 1,
         IsRequired = false,
-        Category = "Flagging",
+        Category = AttributeCategory.Flagging,
         Order = 3 )]
 
     [CodeEditorField( "Prayer Person Lava",
@@ -92,7 +93,7 @@ namespace RockWeb.Blocks.Prayer
         Description = "Should the campus field be displayed? If there is only one active campus then the campus field will not show.",
         Key = AttributeKey.DisplayCampus,
         DefaultBooleanValue = true,
-        Category = "Filtering",
+        Category = AttributeCategory.Filtering,
         Order = 6 )]
 
     [BooleanField( "Public Only",
@@ -107,10 +108,35 @@ namespace RockWeb.Blocks.Prayer
         DefaultBooleanValue = true,
         IsRequired = true,
         Order = 8 )]
+
+    [BooleanField(
+        "Enable AI Disclaimer",
+        Description = "If enabled and the PrayerRequest Text was sent to an AI automation the configured AI Disclaimer will be shown.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.EnableAIDisclaimer,
+        Category = AttributeCategory.AIAutomations,
+        Order = 9 )]
+
+    [TextField(
+        "AI Disclaimer",
+        Description = "The message to display indicating the Prayer Request text may have been modified by an AI automation.",
+        IsRequired = false,
+        DefaultValue = "This request may have been modified by an AI for formatting and privacy. Please be aware that errors may be present.",
+        Key = AttributeKey.AIDisclaimer,
+        Category = AttributeCategory.AIAutomations,
+        Order = 10 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "FD294789-3B72-4D83-8006-FA50B5087D06" )]
     public partial class PrayerSession : RockBlock
     {
         #region Keys
+
+        private class AttributeCategory
+        {
+            public const string AIAutomations = "AI Automations";
+            public const string Filtering = "Filtering";
+            public const string Flagging = "Flagging";
+        }
 
         /// <summary>
         /// Attribute keys for the <see cref="PrayerSession"/> block.
@@ -126,6 +152,8 @@ namespace RockWeb.Blocks.Prayer
             public const string EnableCommunityFlagging = "EnableCommunityFlagging";
             public const string CategoryGuid = "CategoryGuid";
             public const string WelcomeIntroductionText = "WelcomeIntroductionText";
+            public const string EnableAIDisclaimer = "EnableAIDisclaimer";
+            public const string AIDisclaimer = "AIDisclaimer";
         }
 
         private static class PageParameterKey
@@ -187,6 +215,8 @@ namespace RockWeb.Blocks.Prayer
         private int? _flagLimit = 1;
         private string[] _savedCategoryIdsSetting;
         private const string PUBLIC_ONLY = "PublicOnly";
+        private bool _enableAIDisclaimer = false;
+        private string _aiDisclaimerText = string.Empty;
 
         #endregion
 
@@ -242,6 +272,8 @@ namespace RockWeb.Blocks.Prayer
 
             mdFlag.SaveClick += mdFlag_SaveClick;
 
+            _aiDisclaimerText = GetAttributeValue( AttributeKey.AIDisclaimer );
+            _enableAIDisclaimer = GetAttributeValue( AttributeKey.EnableAIDisclaimer ).AsBoolean();
             _flagLimit = GetAttributeValue( AttributeKey.FlagLimit ).AsIntegerOrNull();
             _categoryGuidString = GetAttributeValue( AttributeKey.CategoryGuid );
             _enableCommunityFlagging = GetAttributeValue( AttributeKey.EnableCommunityFlagging ).AsBoolean();
@@ -556,7 +588,7 @@ namespace RockWeb.Blocks.Prayer
             _savedCategoryIdsSetting = preferences.GetValue( CATEGORIES_PREFERENCE ).SplitDelimitedValues();
             for ( int i = 0; i < cblCategories.Items.Count; i++ )
             {
-                ListItem item = (ListItem)cblCategories.Items[i];
+                ListItem item = ( ListItem ) cblCategories.Items[i];
                 item.Selected = _savedCategoryIdsSetting.Contains( item.Value );
             }
 
@@ -665,6 +697,16 @@ namespace RockWeb.Blocks.Prayer
             var excludeForView = prayerRequest.Attributes.Where( a => !a.Value.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
             prayerRequest.Attributes = prayerRequest.Attributes.Where( a => !excludeForView.Contains( a.Key ) ).ToDictionary( k => k.Key, k => k.Value );
             prayerRequest.AttributeValues = prayerRequest.AttributeValues.Where( av => !excludeForView.Contains( av.Key ) ).ToDictionary( k => k.Key, k => k.Value );
+
+            // If this request has been processed by an AI (OriginalRequest is not empty) and AI disclaimers are enabled then show the disclaimer.
+            if ( prayerRequest.OriginalRequest.IsNotNullOrWhiteSpace() && _enableAIDisclaimer == true )
+            {
+                lAIDisclaimer.Text = $"<small class='text-muted'>{_aiDisclaimerText}</small>";
+            }
+            else
+            {
+                lAIDisclaimer.Text = string.Empty;
+            }
 
             mergeFields.Add( "PrayerRequest", prayerRequest );
             string prayerPersonLava = this.GetAttributeValue( AttributeKey.PrayerPersonLava );

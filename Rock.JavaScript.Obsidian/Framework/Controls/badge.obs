@@ -1,0 +1,53 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span ref="badge" v-bind="attributes">
+        <slot />
+    </span>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, PropType, ref } from "vue";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
+
+    const props = defineProps({
+        /** Tooltip to show on hover */
+        tooltip: {
+            type: String,
+            default: ""
+        },
+
+        /** The style of badge to use */
+        badgeType: {
+            type: String as PropType<BadgeType>,
+            default: ""
+        },
+
+        /** If true, adds large border radius to make a circle shape */
+        isCircle: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const badge = ref<HTMLElement | null>(null);
+
+    const attributes = computed(() => {
+        const result = {
+            class: [
+                "badge",
+                props.isCircle ? "badge-circle" : "",
+                props.badgeType ? `badge-${props.badgeType}` : ""
+            ]
+        };
+
+        if (props.tooltip) {
+            result["title"] = props.tooltip;
+            result["data-toggle"] = "tooltip";
+        }
+
+        return result;
+    });
+
+    onMounted(() => tooltip(badge.value!));
+</script>

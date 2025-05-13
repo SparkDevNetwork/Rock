@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+import { ICancellationToken } from "@Obsidian/Utility/cancellation";
+
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 export type HttpUrlParams = Record<string, unknown> | undefined | null;
 export type HttpBodyData = Record<string, unknown> | undefined | null;
@@ -27,11 +29,11 @@ export type HttpResult<T> = {
     errorMessage: string | null;
 };
 
-export type HttpDoApiCallFunc = <T>(method: HttpMethod, url: string, params?: HttpUrlParams , data?: HttpBodyData) => Promise<HttpResult<T>>;
+export type HttpDoApiCallFunc = <T>(method: HttpMethod, url: string, params?: HttpUrlParams, data?: HttpBodyData, cancellationToken?: ICancellationToken) => Promise<HttpResult<T>>;
 
 export type HttpGetFunc = <T>(url: string, params?: HttpUrlParams) => Promise<HttpResult<T>>;
 
-export type HttpPostFunc = <T>(url: string, params?: HttpUrlParams, data?: HttpBodyData) => Promise<HttpResult<T>>;
+export type HttpPostFunc = <T>(url: string, params?: HttpUrlParams, data?: HttpBodyData, cancellationToken?: ICancellationToken) => Promise<HttpResult<T>>;
 
 export type HttpFunctions = {
     doApiCall: HttpDoApiCallFunc;

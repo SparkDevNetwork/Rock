@@ -18,7 +18,9 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.SqlServer;
 using System.Linq;
+
 using Rock.Data;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -103,7 +105,7 @@ namespace Rock.Model
 
             // Get the Attribute associated with the matrix value, and then locate the specific target entity to which the AttributeMatrix is attached.
             var matrixAttributeCache = AttributeCache.Get( matrixAttributeValue.AttributeId );
-            if ( matrixAttributeCache == null )
+            if ( matrixAttributeCache == null || matrixAttributeCache.IsSuppressHistoryLogging )
             {
                 return;
             }
@@ -121,9 +123,13 @@ namespace Rock.Model
             foreach ( var attributeValue in AttributeValues.Values )
             {
                 var attributeCache = AttributeCache.Get( attributeValue.AttributeId );
-                var formattedOldValue = isDelete ? GetHistoryFormattedValue( attributeValue.Value, attributeCache ) : string.Empty;
-                var formattedNewValue = isDelete ? string.Empty : GetHistoryFormattedValue( attributeValue.Value, attributeCache );
-                History.EvaluateChange( historyChangeList, attributeCache.Name, formattedOldValue, formattedNewValue, attributeCache.FieldType.Field.IsSensitive() );
+
+                if ( attributeCache.IsSuppressHistoryLogging )
+                {
+                    var formattedOldValue = isDelete ? GetHistoryFormattedValue( attributeValue.Value, attributeCache ) : string.Empty;
+                    var formattedNewValue = isDelete ? string.Empty : GetHistoryFormattedValue( attributeValue.Value, attributeCache );
+                    History.EvaluateChange( historyChangeList, attributeCache.Name, formattedOldValue, formattedNewValue, attributeCache.FieldType.Field.IsSensitive() );
+                }
             }
 
             if ( !historyChangeList.Any() )
@@ -161,5 +167,12 @@ namespace Rock.Model
         }
 
         #endregion History
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => AttributeMatrix ?? base.ParentAuthority;
+
+        #endregion
     }
 }

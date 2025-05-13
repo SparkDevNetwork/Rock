@@ -24,7 +24,7 @@
 /** Determines the method for calculating the available date. */
 export const AvailabilityCriteria = {
     /** A specific date. */
-    Specific: 0,
+    SpecificDate: 0,
 
     /** An offset of the class start date. */
     ClassStartOffset: 1,
@@ -41,7 +41,7 @@ export const AvailabilityCriteria = {
 
 /** Determines the method for calculating the available date. */
 export const AvailabilityCriteriaDescription: Record<number, string> = {
-    0: "Specific",
+    0: "Specific Date",
 
     1: "Class Start Offset",
 

@@ -21,8 +21,10 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
 
 export type SiteBag = {
     /**
@@ -36,11 +38,17 @@ export type SiteBag = {
     /** Gets or sets a value indicating whether [allow indexing]. */
     allowIndexing: boolean;
 
+    /** Gets or sets a value indicating whether the site's theme allows compiling. */
+    allowsCompile: boolean;
+
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the binary file type identifier. */
+    binaryFileTypeGuid: Guid;
 
     /** Gets or sets the change password page. */
     changePasswordPage?: ListItemBag | null;
@@ -74,9 +82,6 @@ export type SiteBag = {
 
     /** Gets or sets a value indicating whether [enable mobile redirect]. */
     enableMobileRedirect: boolean;
-
-    /** Gets or sets a value indicating whether geo-location lookups should be performed on interactions. */
-    enablePageViewGeoTracking: boolean;
 
     /** Gets or sets a value indicating whether to log Page Views into the Interaction tables for pages in this site */
     enablePageViews: boolean;
@@ -150,11 +155,17 @@ export type SiteBag = {
     /** Gets or sets the number of days to keep page views logged. */
     retentionDuration?: number | null;
 
+    /** The site Attributes */
+    siteAttributes?: PublicEditableAttributeBag[] | null;
+
     /** Gets or sets the site domains. */
     siteDomains?: string | null;
 
     /** Gets or sets the site logo binary file. */
     siteLogoBinaryFile?: ListItemBag | null;
+
+    /** Gets or sets the site URL. */
+    siteUrl?: string | null;
 
     /** Gets or sets the name of the Theme that is used on the Site. */
     theme?: string | null;

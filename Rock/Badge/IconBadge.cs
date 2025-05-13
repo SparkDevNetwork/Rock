@@ -31,27 +31,6 @@ namespace Rock.Badge
         /// <summary>
         /// Gets the tool tip text.
         /// </summary>
-        /// <param name="person">The person.</param>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "This method will be removed, use the Entity param instead.", true )]
-        public virtual string GetToolTipText( Person person ) {
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Gets the icon path.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "This method will be removed, use the Entity param instead.", true )]
-        public virtual string GetIconPath( Person person )
-        {
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Gets the tool tip text.
-        /// </summary>
         /// <param name="entity">The entity.</param>
         public virtual string GetToolTipText( IEntity entity )
         {

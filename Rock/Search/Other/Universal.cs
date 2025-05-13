@@ -58,6 +58,11 @@ namespace Rock.Search.Other
         /// <returns>A queryable of index models that match the search term.</returns>
         private List<UniversalSearch.IndexModels.IndexModelBase> GetSearchResults( string searchTerm )
         {
+            if ( searchTerm.IsSingleSpecialCharacter() )
+            {
+                return new List<UniversalSearch.IndexModels.IndexModelBase>();
+            }
+
             // Strip off the special HTML that might have been prepended
             searchTerm = Regex.Replace( searchTerm, @"\<data.*\</i\>", string.Empty )?.Trim();
 
@@ -105,6 +110,11 @@ namespace Rock.Search.Other
         /// <inheritdoc/>
         public override IOrderedQueryable<object> SearchQuery( string searchTerm )
         {
+            if ( searchTerm.IsSingleSpecialCharacter() )
+            {
+                return Enumerable.Empty<object>().AsQueryable().OrderBy( _ => true );
+            }
+
             // This is a bit of a cheat. Since everything will have the same
             // order .OrderBy() will return an IOrderedQueryable in the original
             // order of the results.
@@ -120,6 +130,11 @@ namespace Rock.Search.Other
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
+            if ( searchterm.IsSingleSpecialCharacter() )
+            {
+                return Enumerable.Empty<string>().AsQueryable();
+            }
+
             var results = GetSearchResults( searchterm );
 
             // NOTE: Put a bunch of whitespace before and after it so that the Search box shows blank instead of stringified html

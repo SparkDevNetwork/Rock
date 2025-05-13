@@ -589,6 +589,7 @@ function onTaskCompleted( resultData )
                     PushMessage = communication.PushMessage,
                     PushTitle = communication.PushTitle,
                     PushOpenMessage = communication.PushOpenMessage,
+                    PushOpenMessageJson = communication.PushOpenMessageJson,
                     PushOpenAction = communication.PushOpenAction
                 };
             }
@@ -640,6 +641,8 @@ function onTaskCompleted( resultData )
             lTitle.Text = ( communication.Name ?? communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
             cbDuplicatePreventionOption.Visible = this.GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
             cbDuplicatePreventionOption.Checked = communication.ExcludeDuplicateRecipientAddress;
+            cbRecipientListDuplicatePreventionOption.Visible = this.GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
+            cbRecipientListDuplicatePreventionOption.Checked = communication.ExcludeDuplicateRecipientAddress;
             tbCommunicationName.Text = communication.Name;
             swBulkCommunication.Checked = _isBulkCommunicationForced || communication.IsBulkCommunication;
 
@@ -1318,6 +1321,8 @@ function onTaskCompleted( resultData )
 
             pnlIndividualRecipientSummary.Visible = showIndividualRecipientsSummary;
             pnlIndividualRecipientList.Visible = !showIndividualRecipientsSummary;
+
+            cbRecipientListDuplicatePreventionOption.Visible = GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
         }
 
         /// <summary>
@@ -1508,6 +1513,7 @@ function onTaskCompleted( resultData )
             {
                 pnlHeadingLabels.Visible = false;
                 pnlListSelection.Visible = false;
+                cbRecipientListDuplicatePreventionOption.Checked = cbDuplicatePreventionOption.Checked;
                 ShowManualList();
             }
             else
@@ -1526,6 +1532,7 @@ function onTaskCompleted( resultData )
         {
             pnlHeadingLabels.Visible = false;
             nbRecipientsAlert.Visible = false;
+            cbDuplicatePreventionOption.Checked = cbRecipientListDuplicatePreventionOption.Checked;
 
             if ( !this.IndividualRecipientPersonIds.Any() )
             {
@@ -1576,7 +1583,7 @@ function onTaskCompleted( resultData )
             var emailTransportEnabled = _emailTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.Email );
             var smsTransportEnabled = _smsTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.SMS );
             var pushTransportEnabled = _pushTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.PushNotification );
-            var recipientPreferenceEnabled = allowedCommunicationTypes.Contains( CommunicationType.RecipientPreference );
+            var recipientPreferenceEnabled = ( emailTransportEnabled || smsTransportEnabled || pushTransportEnabled ) && allowedCommunicationTypes.Contains( CommunicationType.RecipientPreference );
 
             // only prompt for Medium Type if more than one will be visible
             if ( emailTransportEnabled )
@@ -1929,6 +1936,7 @@ function onTaskCompleted( resultData )
                 PushMessage = communicationTemplate.PushMessage,
                 PushTitle = communicationTemplate.PushTitle,
                 PushOpenMessage = communicationTemplate.PushOpenMessage,
+                PushOpenMessageJson = communicationTemplate.PushOpenMessageJson,
                 PushOpenAction = communicationTemplate.PushOpenAction
             };
 
@@ -3431,6 +3439,10 @@ function onTaskCompleted( resultData )
             {
                 communication = UpdateCommunication( rockContext );
                 var sampleCommunicationRecipient = GetSampleCommunicationRecipient( communication, rockContext );
+                if ( communication.Id != default( int ) )
+                {
+                    hfCommunicationId.Value = communication.Id.ToString();
+                }
 
                 Person currentPerson;
                 if ( communication.CreatedByPersonAlias != null && communication.CreatedByPersonAlias.Person != null )
@@ -3692,19 +3704,20 @@ function onTaskCompleted( resultData )
                 settings.FutureSendDateTime = dtpSendCommunicationDateTime.SelectedDateTime;
             }
 
-            var details = new CommunicationDetails();
+            var details = new CommunicationDetails
+            {
+                Subject = tbEmailSubject.Text,
+                Message = hfEmailEditorHtml.Value,
 
-            details.Subject = tbEmailSubject.Text;
-            details.Message = hfEmailEditorHtml.Value;
+                FromName = tbFromName.Text,
+                FromEmail = ebFromAddress.Text,
+                ReplyToEmail = ebReplyToAddress.Text,
+                CCEmails = ebCCList.Text,
+                BCCEmails = ebBCCList.Text,
 
-            details.FromName = tbFromName.Text;
-            details.FromEmail = ebFromAddress.Text;
-            details.ReplyToEmail = ebReplyToAddress.Text;
-            details.CCEmails = ebCCList.Text;
-            details.BCCEmails = ebBCCList.Text;
-
-            details.SmsFromSystemPhoneNumberId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();
-            details.SMSMessage = tbSMSTextMessage.Text;
+                SmsFromSystemPhoneNumberId = ddlSMSFrom.SelectedValue.AsIntegerOrNull(),
+                SMSMessage = tbSMSTextMessage.Text
+            };
 
             // Get Push notification settings.
             var pushNotificationControl = phPushControl.Controls[0] as PushNotification;
@@ -4100,6 +4113,7 @@ function onTaskCompleted( resultData )
                 communication.PushMessage = settings.Details.PushMessage;
                 communication.PushOpenAction = settings.Details.PushOpenAction;
                 communication.PushOpenMessage = settings.Details.PushOpenMessage;
+                communication.PushOpenMessageJson = settings.Details.PushOpenMessageJson;
                 communication.PushTitle = settings.Details.PushTitle;
 
                 return communication;
@@ -4186,7 +4200,13 @@ function onTaskCompleted( resultData )
                 // Add new recipients
                 ReportProgress( progressReporter, 5, activityMessage: "Creating Recipients List..." );
 
-                var recipientPersonIdQuery = GetRecipientPersonIdPersistedList( recipientPersonIdList, rockContext );
+                /*
+                 SK - 12/6/2024
+                 A new RockContext is created in the lines below because GetRecipientPersonIdPersistedList internally calls RockContext.SaveChanges.
+                 However, the goal is to prevent the Communication entity, created through the original RockContext, from being saved.
+                */
+                var newRockContext = new RockContext();
+                var recipientPersonIdQuery = GetRecipientPersonIdPersistedList( recipientPersonIdList, newRockContext );
 
                 if ( recipientPersonIdQuery == null )
                 {
@@ -4195,7 +4215,7 @@ function onTaskCompleted( resultData )
 
                 using ( var recipientPersonLookupActivity = ObservabilityHelper.StartActivity( "COMMUNICATION: Entry Wizard > Update Communication Recipients > Create Recipient Person Lookup Dictionary" ) )
                 {
-                    var recipientPersonsLookup = new PersonService( rockContext ).Queryable().Where( a => recipientPersonIdQuery.Contains( a.Id ) )
+                    var recipientPersonsLookup = new PersonService( newRockContext ).Queryable().Where( a => recipientPersonIdQuery.Contains( a.Id ) )
                         .Select( a => new
                         {
                             PersonId = a.Id,

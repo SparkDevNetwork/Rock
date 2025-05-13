@@ -1,0 +1,58 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <AchievementTypePicker label="Achievement Type"
+                               v-model="value"
+                               :multiple="multiple"
+                               :columnCount="columnCount"
+                               :enhanceForLongLists="enhanceForLongLists"
+                               :displayStyle="displayStyle"
+                               :showBlankItem="showBlankItem" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+
+                <div class="col-md-3">
+                    <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+                </div>
+
+                <div class="col-md-3">
+                    <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+                </div>
+
+                <div class="col-md-3">
+                    <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import { getSfcControlImportPath, displayStyleItems } from "./common/utils.partial";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+
+    const columnCount = ref(0);
+    const displayStyle = ref(PickerDisplayStyle.Auto);
+    const enhanceForLongLists = ref(false);
+    const multiple = ref(false);
+    const showBlankItem = ref(false);
+    const value = ref(null);
+    const importCode = getSfcControlImportPath("achievementTypePicker");
+    const exampleCode = `<AchievementTypePicker label="Achievement Type" v-model="value" :multiple="false" />`;
+</script>

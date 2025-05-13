@@ -319,7 +319,7 @@ namespace RockWeb
                 throw new Rock.Web.FileUploadException( "Binary file type must be specified.", System.Net.HttpStatusCode.Forbidden );
             }
 
-            if ( !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            if ( !binaryFileType.AllowAnonymous && !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) )
             {
                 throw new Rock.Web.FileUploadException( "Not authorized to upload this type of file.", System.Net.HttpStatusCode.Forbidden );
             }

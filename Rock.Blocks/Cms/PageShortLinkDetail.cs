@@ -115,7 +115,7 @@ namespace Rock.Blocks.Cms
             {
                 SiteOptions = Web.Cache.SiteCache
                     .All()
-                    .Where( site => site.EnabledForShortening )
+                    .Where( site => site.EnabledForShortening && site.SiteType == SiteType.Web )
                     .OrderBy( site => site.Name )
                     .Select( site => new ListItemBag
                     {
@@ -280,7 +280,7 @@ namespace Rock.Blocks.Cms
                 .EnsureTrailingForwardslash()
                 + entity.Token;
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -306,7 +306,7 @@ namespace Rock.Blocks.Cms
                 UtmContent = utmSettings.UtmContent ?? ""
             };
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -333,7 +333,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             box.IfValidProperty( nameof( box.Bag.UtmSettings ), () =>

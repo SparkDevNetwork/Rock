@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-
+using System.Text.RegularExpressions;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -35,6 +35,11 @@ namespace Rock.ElectronicSignature
         /// Sample Ted Decker signature data URL
         /// </summary>
         public const string SampleSignatureDataURL = SampleDrawnSignatures.SampleSignatureTedDeckerDataURL;
+
+        /// <summary>
+        /// Regular Expression for inserting multiple signature blocks into a document.
+        /// </summary>
+        private const string SIGNATURE_INSERTION_EXPRESSION = "<!--\\s*\\[\\[\\s*SignatureDetails\\s*\\]\\]\\s*-->";
 
         /// <summary>
         /// Gets the signature document HTML (prior to signing)
@@ -55,6 +60,11 @@ namespace Rock.ElectronicSignature
         /// <returns>System.String.</returns>
         public static string GetSignedDocumentHtml( string signatureDocumentHtml, string signatureInformation )
         {
+            if ( Regex.IsMatch( signatureDocumentHtml, SIGNATURE_INSERTION_EXPRESSION, RegexOptions.IgnoreCase ) )
+            {
+                return Regex.Replace( signatureDocumentHtml, SIGNATURE_INSERTION_EXPRESSION, signatureInformation );
+            }
+
             return signatureDocumentHtml + signatureInformation;
         }
 

@@ -14,12 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     public partial class RegistrationTemplatePlacement
     {
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => RegistrationTemplate ?? base.ParentAuthority;
+
+        #endregion
+
         #region Methods
 
         /// <summary>

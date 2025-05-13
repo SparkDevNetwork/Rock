@@ -1,0 +1,76 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="flat-panel" :class="{ 'scrollable': hasScrollableBody }">
+        <div class="flat-panel-header">
+            <slot name="preTitle">
+                <div></div>
+            </slot>
+
+            <h5 class="flat-panel-header-title">{{ title }}</h5>
+
+            <slot name="postTitle">
+                <div></div>
+            </slot>
+        </div>
+
+        <div class="flat-panel-body" :class="{ 'padded': hasPaddedBody, 'scrollable': hasScrollableBody }">
+            <slot></slot>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.flat-panel {
+    border: none;
+    flex: 1;
+}
+
+.flat-panel.scrollable {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.flat-panel-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-medium);
+    border-bottom: 1px solid var(--color-interface-soft);
+}
+
+.flat-panel-header-title {
+    margin: 0;
+}
+
+.flat-panel-body.padded {
+    padding: var(--spacing-medium);
+}
+
+.flat-panel-body.scrollable {
+    overflow-y: auto;
+    flex: 1;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    defineProps({
+        hasPaddedBody: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        hasScrollableBody: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+</script>

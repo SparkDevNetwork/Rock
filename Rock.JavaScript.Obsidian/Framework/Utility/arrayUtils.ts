@@ -25,7 +25,7 @@
  *
  * @returns A new array with the sub-array elements concatenated into it.
  */
-export const flatten = <T>(arr: T[][], depth: number = 1): T[] => {
+export function flatten<T>(arr: T[][], depth: number = 1): T[] {
     const result: T[] = [];
     const forEach = result.forEach;
 
@@ -42,4 +42,29 @@ export const flatten = <T>(arr: T[][], depth: number = 1): T[] => {
 
     flatDeep(arr, depth);
     return result;
-};
+}
+
+/**
+ * Convert a single item to an array of one item. If the value is already an
+ * array then it is just returned as is.
+ *
+ * @param value The value from the parent component.
+ *
+ * @returns The value trimmed down to just the actual selection value.
+ */
+export function forceToArray<T>(value: T | T[] | undefined | null, multiple: boolean): T[] {
+    if (value === undefined || value === null) {
+        return [];
+    }
+    else if (Array.isArray(value)) {
+        if (!multiple && value.length > 1) {
+            return [value[0]];
+        }
+        else {
+            return value;
+        }
+    }
+    else {
+        return [value];
+    }
+}

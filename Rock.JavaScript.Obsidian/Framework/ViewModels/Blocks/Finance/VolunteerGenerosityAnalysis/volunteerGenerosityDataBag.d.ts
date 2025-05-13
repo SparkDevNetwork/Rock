@@ -35,6 +35,9 @@ export type VolunteerGenerosityDataBag = {
     /** Gets or sets the Campus ID. */
     campusId?: string | null;
 
+    /** Gets or sets the Campus Name */
+    campusName?: string | null;
+
     /** Gets or sets the Campus Short Code */
     campusShortCode?: string | null;
 

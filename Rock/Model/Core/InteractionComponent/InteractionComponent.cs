@@ -32,6 +32,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "InteractionComponent" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "ACE6145B-57D6-4694-972F-EC43AF776DE7")]
     public partial class InteractionComponent : Model<InteractionComponent>, ICacheable
     {

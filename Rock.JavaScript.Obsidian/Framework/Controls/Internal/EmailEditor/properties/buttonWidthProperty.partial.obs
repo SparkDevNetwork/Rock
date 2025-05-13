@@ -1,0 +1,120 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DropDownListProperty v-bind="$attrs"
+                          :items="buttonWidthItems"
+                          :label="label"
+                          :popupContainerOverride="documentBody"
+                          :showBlankItem="showBlankItem"
+                          :valueProvider="widthProviderWrapper" />
+
+    <TransitionVerticalCollapse>
+        <div v-if="widthProviderWrapper.value === 'fixed'" class="row">
+            <div class="col-sm-6">
+                <NumberBoxProperty label="Fixed Width"
+                                   :valueProvider="fixedWidthProviderWrapper"
+                                   valueSuffix="px" />
+            </div>
+        </div>
+    </TransitionVerticalCollapse>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import DropDownListProperty from "./dropDownListProperty.partial.obs";
+    import NumberBoxProperty from "./numberBoxProperty.partial.obs";
+    import { ButtonWidth, ButtonWidthValues, ValueProvider } from "../types.partial";
+    import { get } from "../utils.partial";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    // This property group doesn't quite fit the pattern
+    // because it modifies multiple elements and the standardProps
+    // imply that a single element is being modified.
+    // We could, however, add another cssStyleDeclarations property for the other modified elements.
+
+    const props = defineProps({
+        label: {
+            type: String as PropType<string>,
+            default: "Width" as const
+        },
+
+        showBlankItem: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        valueProvider: {
+            type: Object as PropType<ValueProvider<ButtonWidthValues | null | undefined>>,
+            required: true
+        }
+    });
+
+    const documentBody = document.body;
+
+    const buttonWidthItems: ListItemBag[] = [
+        {
+            text: "Fit To Text",
+            value: get<ButtonWidth>("fitToText")
+        }, {
+            text: "Full Width",
+            value: get<ButtonWidth>("full")
+        }, {
+            text: "Fixed Width",
+            value: get<ButtonWidth>("fixed")
+        }
+    ];
+
+    // #region Values
+
+    const widthProviderWrapper = ref<ValueProvider<ButtonWidth | null | undefined>>(createWidthProviderWrapper());
+    const fixedWidthProviderWrapper = ref<ValueProvider<number | null | undefined>>(createFixedWidthProviderWrapper());
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createWidthProviderWrapper(): ValueProvider<ButtonWidth | null | undefined> {
+        return {
+            set value(newValue) {
+                props.valueProvider.value = {
+                    width: newValue,
+                    fixedWidth: props.valueProvider.value?.fixedWidth
+                };
+            },
+            get value() {
+                return props.valueProvider.value?.width;
+            },
+            dispose() {
+                // Do nothing here. The main value provider handles disposal.
+            }
+        };
+    }
+
+    function createFixedWidthProviderWrapper(): ValueProvider<number | null | undefined> {
+        return {
+            set value(newValue) {
+                props.valueProvider.value = {
+                    width: props.valueProvider.value?.width,
+                    fixedWidth: newValue
+                };
+            },
+            get value() {
+                return props.valueProvider.value?.fixedWidth;
+            },
+            dispose() {
+                // Do nothing here. The main value provider handles disposal.
+            }
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.valueProvider, () => {
+        widthProviderWrapper.value = createWidthProviderWrapper();
+        fixedWidthProviderWrapper.value = createFixedWidthProviderWrapper();
+    });
+
+    // #endregion Watchers
+</script>

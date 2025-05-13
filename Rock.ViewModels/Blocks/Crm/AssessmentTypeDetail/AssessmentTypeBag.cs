@@ -70,6 +70,6 @@ namespace Rock.ViewModels.Blocks.Crm.AssessmentTypeDetail
         /// Gets or sets the number of days the assessment is valid for Rock.Model.AssessmentType.
         /// How long (in days) is this assessment valid before it must be taken again.
         /// </summary>
-        public int ValidDuration { get; set; }
+        public int? ValidDuration { get; set; }
     }
 }

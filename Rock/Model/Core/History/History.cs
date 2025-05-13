@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "History" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.HISTORY )]
     public partial class History : Model<History>
     {

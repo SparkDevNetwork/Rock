@@ -141,18 +141,6 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Attempts to gets the type of the credit card based on evaluating the RegExPattern of each credit card type defined value and returning the first match
-        /// </summary>
-        /// <param name="ccNumber">The cc number.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use GetCreditCardTypeFromName or GetCreditCardTypeFromCreditCardNumber" )]
-        public static DefinedValueCache GetCreditCardType( string ccNumber )
-        {
-            return GetCreditCardTypeFromCreditCardNumber( ccNumber );
-        }
-
-        /// <summary>
         /// Attempts to gets the type of the credit card based on evaluating the RegExPattern of each credit card type defined value.
         /// Note: If you know the credit card name (Amex, Visa, etc), use <seealso cref="GetCreditCardTypeFromName"/> instead
         /// </summary>

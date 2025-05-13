@@ -220,6 +220,7 @@ namespace RockWeb.Blocks.Reporting
             MetricValue metricValue;
             var rockContext = new RockContext();
             MetricValueService metricValueService = new MetricValueService( rockContext );
+            var campusEntityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.CAMPUS.AsGuid() );
 
             int metricValueId = int.Parse( hfMetricValueId.Value );
 
@@ -263,6 +264,15 @@ namespace RockWeb.Blocks.Reporting
                 else
                 {
                     metricValuePartition.EntityId = null;
+                }
+
+                if ( metricPartition.IsRequired && metricPartitionEntityType?.Guid == campusEntityType.Guid )
+                {
+                    var campuses = CampusCache.All( false );
+                    if ( campuses.Count == 1 )
+                    {
+                        metricValuePartition.EntityId = campuses[0].Id;
+                    }
                 }
 
                 if ( metricPartition.IsRequired && metricPartitionEntityType != null && !metricValuePartition.EntityId.HasValue )

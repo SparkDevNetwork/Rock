@@ -54,14 +54,14 @@
 
 .taglist {
   display: flex;
+  flex-wrap: wrap;
+  gap: @spacing-sm-px 8px;
 
   .tag {
     position: relative;
     display: inline-flex;
     height: 22px;
     padding: 1px 12px 0;
-    margin-right: 8px;
-    margin-bottom: @spacing-sm-px;
     font-size: @font-size-xs;
     line-height: 18px;
     color: @tag-text-color;

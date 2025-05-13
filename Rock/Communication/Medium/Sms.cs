@@ -192,7 +192,7 @@ namespace Rock.Communication.Medium
         /// <param name="message">The message to send.</param>
         /// <param name="plainMessage">The plain message.</param>
         /// <param name="rockSmsFromPhoneNumber">From phone.</param>
-        /// <param name="responseCode">The reponseCode to use for tracking the conversation.</param>
+        /// <param name="responseCode">The responseCode to use for tracking the conversation.</param>
         /// <param name="rockContext">A context to use for database calls.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <param name="attachments">The attachments.</param>

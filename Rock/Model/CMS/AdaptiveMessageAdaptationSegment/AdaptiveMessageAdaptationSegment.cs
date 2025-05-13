@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "AdaptiveMessageAdaptationSegment" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ADAPTIVE_MESSAGE_ADAPTATION_SEGMENT )]
     public partial class AdaptiveMessageAdaptationSegment : Model<AdaptiveMessageAdaptationSegment>
     {

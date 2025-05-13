@@ -21,5 +21,7 @@
 // </copyright>
 //
 
+/** Additional configuration details for the Merge Template Detail block.s */
 export type MergeTemplateDetailOptionsBag = {
+    isBlockVisible: boolean;
 };

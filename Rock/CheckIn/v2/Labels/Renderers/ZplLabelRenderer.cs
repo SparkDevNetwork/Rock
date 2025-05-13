@@ -123,6 +123,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                     field.Field.Top,
                     colWidth,
                     field.Field.Height,
+                    0,
                     col1Value );
 
                 WriteTextFieldColumn( writer,
@@ -131,6 +132,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                     field.Field.Top,
                     colWidth,
                     field.Field.Height,
+                    0,
                     col2Value );
             }
             else
@@ -156,6 +158,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                     field.Field.Top,
                     field.Field.Width,
                     field.Field.Height,
+                    field.Field.RotationAngle,
                     textValue );
             }
         }
@@ -169,16 +172,10 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         /// <param name="top">The top position in inches.</param>
         /// <param name="width">The width in inches.</param>
         /// <param name="height">The height in inches.</param>
+        /// <param name="rotationAngle">The rotation angle increments of 90.</param>
         /// <param name="textValue">The text content to display.</param>
-        private void WriteTextFieldColumn( StreamWriter writer, TextFieldConfiguration config, double left, double top, double width, double height, string textValue )
+        private void WriteTextFieldColumn( StreamWriter writer, TextFieldConfiguration config, double left, double top, double width, double height, double rotationAngle, string textValue )
         {
-            WriteFieldOrigin( writer, left, top );
-
-            if ( config.IsColorInverted )
-            {
-                writer.Write( "^FR" );
-            }
-
             if ( config.MaxLength > 0 )
             {
                 textValue = textValue.Truncate( config.MaxLength );
@@ -189,6 +186,31 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             var horizontalFontSize = fontSize;
             var lineCount = Math.Max( 1, ( int ) Math.Round( ToDots( height ) / ( double ) fontSize ) );
             var alignment = "L";
+            var rotation = "N";
+
+            if ( rotationAngle == 270 )
+            {
+                top = Math.Max( 0, top - width );
+                rotation = "B";
+            }
+            else if ( rotationAngle == 180 )
+            {
+                left = Math.Max( 0, left - width );
+                top = Math.Max( 0, top - ( lineCount * fontSize / ( double ) _dpi ) );
+                rotation = "I";
+            }
+            else if ( rotationAngle == 90 )
+            {
+                left = Math.Max( 0, left - ( lineCount * fontSize / ( double ) _dpi ) );
+                rotation = "R";
+            }
+
+            WriteFieldOrigin( writer, left, top );
+
+            if ( config.IsColorInverted )
+            {
+                writer.Write( "^FR" );
+            }
 
             if ( config.HorizontalAlignment == HorizontalTextAlignment.Center )
             {
@@ -211,7 +233,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                 horizontalFontSize = ( int ) Math.Floor( fontSize * 0.8 );
             }
 
-            writer.WriteLine( $"^FB{ToDots( width )},{lineCount},0,{alignment}^A0,{horizontalFontSize},{fontSize}^FD{textValue}^FS" );
+            writer.WriteLine( $"^FB{ToDots( width )},{lineCount},0,{alignment}^A0{rotation},{horizontalFontSize},{fontSize}^FD{textValue}^FS" );
         }
 
         /// <summary>

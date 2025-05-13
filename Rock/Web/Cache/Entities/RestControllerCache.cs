@@ -20,6 +20,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Attribute;
+using Rock.Cms;
 using Rock.Data;
 using Rock.Model;
 
@@ -31,11 +33,16 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    public class RestControllerCache : ModelCache<RestControllerCache, RestController>
+    public class RestControllerCache : ModelCache<RestControllerCache, RestController>, IHasReadOnlyAdditionalSettings
     {
         #region Properties
 
         private readonly object _obj = new object();
+
+        /// <summary>
+        /// The metadata that has been decoded for this action.
+        /// </summary>
+        private RestControllerMetadata _metadata = new RestControllerMetadata();
 
         /// <summary>
         /// Gets or sets the name.
@@ -101,6 +108,11 @@ namespace Rock.Web.Cache
         }
         private List<int> _restActionIds;
 
+        /// <inheritdoc/>
+        [RockInternal( "17.0" )]
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -118,6 +130,18 @@ namespace Rock.Web.Cache
 
             Name = restController.Name;
             ClassName = restController.ClassName;
+            AdditionalSettingsJson = restController.AdditionalSettingsJson;
+
+            _metadata = this.GetAdditionalSettings<RestControllerMetadata>();
+        }
+
+        /// <summary>
+        /// Gets the metadata for this instance.
+        /// </summary>
+        /// <returns>An instance of <see cref="RestControllerMetadata"/> or <c>null</c>.</returns>
+        internal RestControllerMetadata GetMetadata()
+        {
+            return _metadata;
         }
 
         /// <summary>

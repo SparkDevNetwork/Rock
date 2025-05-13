@@ -65,6 +65,11 @@ namespace Rock.Search.Person
         {
             var personService = new PersonService( new RockContext() );
 
+            if ( searchTerm.IsSingleSpecialCharacter() )
+            {
+                return Enumerable.Empty<Model.Person>().AsQueryable();
+            }
+
             return personService.Queryable()
                 .Where( p => p.Email.Contains( searchTerm ) );
         }

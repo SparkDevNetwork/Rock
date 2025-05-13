@@ -175,7 +175,6 @@ namespace Rock.Model
         /// <param name="level">The level of ancestors to retrieve (1 = parent, 2 = grandparent, etc.)</param>
         /// <param name="childCategoryIds">The child category identifiers.</param>
         /// <returns></returns>
-        [RockInternal( "1.15.2" )]
         internal IEnumerable<Category> GetAncestors( int level, params int[] childCategoryIds )
         {
             return ExecuteQuery( $@"
@@ -416,6 +415,10 @@ namespace Rock.Model
                         else if ( itemFilterPropertyNameExpression.Type == typeof( Guid? ) || itemFilterPropertyNameExpression.Type == typeof( Guid ) )
                         {
                             itemFilterPropertyValueExpression = Expression.Constant( options.ItemFilterPropertyValue.AsGuidOrNull(), typeof( Guid? ) );
+                        }
+                        else if ( itemFilterPropertyNameExpression.Type == typeof( bool? ) || itemFilterPropertyNameExpression.Type == typeof( bool ) )
+                        {
+                            itemFilterPropertyValueExpression = Expression.Constant( options.ItemFilterPropertyValue.AsBooleanOrNull(), typeof( bool? ) );
                         }
                         else
                         {

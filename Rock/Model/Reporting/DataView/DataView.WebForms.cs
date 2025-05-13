@@ -34,58 +34,6 @@ namespace Rock.Model
     public partial class DataView : Model<DataView>, ICategorized
     {
         /// <summary>
-        /// Gets the query using the most appropriate type of dbContext 
-        /// </summary>
-        /// <param name="sortProperty">The sort property.</param>
-        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
-        /// <param name="errorMessages">The error messages.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetQuery( DataViewGetQueryArgs dataViewGetQueryArgs ) instead" )]
-        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages )
-        {
-            return GetQuery( sortProperty, null, null, databaseTimeoutSeconds, out errorMessages );
-        }
-
-        /// <summary>
-        /// Gets the query using the specified dbContext
-        /// </summary>
-        /// <param name="sortProperty">The sort property.</param>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
-        /// <param name="errorMessages">The error messages.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetQuery( DataViewGetQueryArgs dataViewGetQueryArgs ) instead" )]
-        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, System.Data.Entity.DbContext dbContext, int? databaseTimeoutSeconds, out List<string> errorMessages )
-        {
-            return GetQuery( sortProperty, dbContext, null, databaseTimeoutSeconds, out errorMessages );
-        }
-
-        /// <summary>
-        /// Gets the query.
-        /// </summary>
-        /// <param name="sortProperty">The sort property.</param>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
-        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
-        /// <param name="errorMessages">The error messages.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetQuery( DataViewGetQueryArgs dataViewGetQueryArgs ) instead" )]
-        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, System.Data.Entity.DbContext dbContext, DataViewFilterOverrides dataViewFilterOverrides, int? databaseTimeoutSeconds, out List<string> errorMessages )
-        {
-            errorMessages = new List<string>();
-            return GetQuery( new DataViewGetQueryArgs
-            {
-                DbContext = dbContext,
-                DataViewFilterOverrides = dataViewFilterOverrides,
-                DatabaseTimeoutSeconds = databaseTimeoutSeconds,
-                SortProperty = sortProperty
-            } );
-        }
-
-        /// <summary>
         /// Gets the query.
         /// </summary>
         /// <returns></returns>

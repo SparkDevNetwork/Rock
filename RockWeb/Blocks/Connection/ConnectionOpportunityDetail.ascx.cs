@@ -826,6 +826,7 @@ namespace RockWeb.Blocks.Connection
                 var inheritedConnectionType = new ConnectionTypeService( rockContext ).Get( inheritedConnectionTypeId.Value );
                 if ( inheritedConnectionType != null )
                 {
+                    var urlTemplate = EntityTypeCache.Get( typeof( ConnectionType ) ).LinkUrlLavaTemplate;
                     string qualifierValue = inheritedConnectionType.Id.ToString();
 
                     foreach ( var attribute in attributeService.GetByEntityTypeId( new ConnectionRequest().TypeId, false ).AsQueryable()
@@ -836,11 +837,16 @@ namespace RockWeb.Blocks.Connection
                         .ThenBy( a => a.Name )
                         .ToList() )
                     {
+                        var url = urlTemplate.ResolveMergeFields( new Dictionary<string, object>
+                        {
+                            { "Entity", inheritedConnectionType }
+                        } );
+
                         ConnectionRequestAttributesInheritedState.Add( new InheritedAttribute(
                             attribute.Name,
                             attribute.Key,
                             attribute.Description,
-                            Page.ResolveUrl( "~/ConnectionType/" + attribute.EntityTypeQualifierValue ),
+                            Page.ResolveUrl( url ),
                             inheritedConnectionType.Name ) );
                     }
                 }

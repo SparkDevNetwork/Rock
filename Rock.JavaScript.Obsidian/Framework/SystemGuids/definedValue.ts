@@ -59,6 +59,8 @@ export const DefinedValue = {
     BlockTemplateMobileDailyChallengeEntry: "30ECA4B6-0869-4656-A4CD-B8729CB29E76",
     /** The block template mobile event item occurrence list by audience */
     BlockTemplateMobileEventItemOccurrenceListByAudience: "26944B71-7B69-4943-8EC2-3506F728D943",
+    /** The block template for ScheduledTransactionList block. */
+    BlockTemplateMobileFinanceScheduledTransactionList: "4FB77C19-3D70-4051-9FED-DF254B3FB310",
     /** The block template for the mobile group member list. */
     BlockTemplateMobileGroupMemberList: "E5618730-9E50-4BDA-9E13-D27697F83980",
     /** The block template for the mobile group member view. */
@@ -246,6 +248,8 @@ export const DefinedValue = {
     InteractionchanneltypeChallengeProgress: "6AA529BD-9FA5-43AD-A98E-B8DF5F997146",
     /** Interaction Channel Type: Challenges */
     InteractionchanneltypeChallenges: "593607DC-4537-46E4-939F-60E0F74A1518",
+    /** Interaction Channel Type: Chat */
+    InteractionchanneltypeChat: "0E2EAE2C-957B-4CCB-8826-AA5627C27BBD",
     /** Interaction Channel Type: Communication */
     InteractionchanneltypeCommunication: "55004F5C-A8ED-7CB7-47EE-5988E9F8E0A8",
     /** Interaction Channel Type: Content Channel */

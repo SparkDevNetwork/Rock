@@ -48,6 +48,13 @@
     </Compile>
     <Compile Include="AI\ModerationFlags.cs" />
     <Compile Include="AI\ChatMessageRole.cs" />
+    <Compile Include="AI\NameRemoval.cs" />
+    <Compile Include="AI\TextEnhancement.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntryWizard\CommunicationType.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntryWizard\PushOpenAction.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\Mode.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\MediumType.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\PushOpenActionType.cs" />
     <Compile Include="CheckIn\AgeRestrictionMode.cs" />
     <Compile Include="CheckIn\GradeAndAgeMatchingMode.cs" />
     <Compile Include="CheckIn\LocationSelectionStrategy.cs" />
@@ -99,10 +106,18 @@
     <Compile Include="Cms\TagType.cs" />
     <Compile Include="Cms\ThemeFontAwesomeWeight.cs" />
     <Compile Include="Cms\ThemeIconSet.cs" />
+    <Compile Include="CodeGenerateRestEndpoint.cs" />
+    <Compile Include="Communication\Chat\ChatRole.cs" />
+    <Compile Include="Communication\Chat\ChatSyncType.cs" />
     <Compile Include="Communication\CommunicationMessageFilter.cs" />
+    <Compile Include="Communication\CommunicationTemplateVersion.cs" />
+    <Compile Include="Communication\UnsubscribeLevel.cs" />
     <Compile Include="Communication\CommunicationRecipientStatus.cs" />
     <Compile Include="Communication\CommunicationStatus.cs" />
     <Compile Include="Configuration\DatabasePlatform.cs" />
+    <Compile Include="Controls\FieldSource.cs" />
+    <Compile Include="Controls\AttributeFormat.cs" />
+    <Compile Include="Controls\FieldFormat.cs" />
     <Compile Include="Controls\DayOfWeek.cs" />
     <Compile Include="Communication\NotificationClassification.cs" />
     <Compile Include="Communication\SegmentCriteria.cs" />
@@ -194,6 +209,7 @@
     <Compile Include="Group\GroupMemberStatus.cs" />
     <Compile Include="Group\MeetsGroupRequirement.cs" />
     <Compile Include="Group\ParticipationType.cs" />
+    <Compile Include="Group\RelationshipStrength.cs" />
     <Compile Include="Group\RelationshipTrend.cs" />
     <Compile Include="Group\RequirementCheckType.cs" />
     <Compile Include="Group\ScheduleConfirmationLogic.cs" />
@@ -203,8 +219,10 @@
     <Compile Include="Lms\AssignTo.cs" />
     <Compile Include="Lms\AvailabilityCriteria.cs" />
     <Compile Include="Lms\CompletionStatus.cs" />
+    <Compile Include="Lms\DueDateChangeType.cs" />
     <Compile Include="Lms\DueDateCriteria.cs" />
     <Compile Include="Lms\LearningCompletionStatus.cs" />
+    <Compile Include="Lms\PresentedFor.cs" />
     <Compile Include="Lms\RequirementType.cs" />
     <Compile Include="Mobile\MobileNavigationActionType.cs" />
     <Compile Include="Net\CookieSameSiteMode.cs" />
@@ -213,11 +231,13 @@
     <Compile Include="Reporting\ComparisonType.cs" />
     <Compile Include="Reporting\FieldFilterSourceType.cs" />
     <Compile Include="Reporting\FilterExpressionType.cs" />
+    <Compile Include="Reporting\FilterMode.cs" />
     <Compile Include="Reporting\MetricNumericDataType.cs" />
     <Compile Include="Reporting\MetricValueType.cs" />
     <Compile Include="Reporting\ReportFieldType.cs" />
     <Compile Include="Reporting\UnitType.cs" />
     <Compile Include="Blocks\Security\ConfirmAccount\ConfirmAccountViewType.cs" />
+    <Compile Include="Security\LoginFailureReason.cs" />
     <Compile Include="WebFarm\LogSeverity.cs" />
     <Compile Include="WebFarm\LogType.cs" />
     <Compile Include="Workflow\WorkflowActionFormShowHideOption.cs" />

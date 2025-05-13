@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupRequirementType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "8E67E852-D1BF-485C-9898-09F19998CC40" )]
     public partial class GroupRequirementType : Model<GroupRequirementType>
     {

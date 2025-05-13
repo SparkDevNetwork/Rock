@@ -38,6 +38,7 @@ namespace Rock.Field.Types
     /// Stored as either a single GroupMember.Guid or a comma-delimited list of GroupMember.Guids (if AllowMultiple)
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_MEMBER )]
     public class GroupMemberFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType, IEntityReferenceFieldType
@@ -196,7 +197,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            if ( publicConfigurationValues?.ContainsKey( GROUP_KEY ) == true && int.TryParse( publicConfigurationValues[GROUP_KEY], out int groupId ) )
+            if ( usage != ConfigurationValueUsage.View && publicConfigurationValues?.ContainsKey( GROUP_KEY ) == true && int.TryParse( publicConfigurationValues[GROUP_KEY], out int groupId ) )
             {
                 using ( var rockContext = new RockContext() )
                 {

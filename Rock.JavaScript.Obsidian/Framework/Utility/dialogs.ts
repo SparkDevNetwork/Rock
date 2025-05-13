@@ -25,7 +25,7 @@ declare const Rock: any;
 /** The options that describe the dialog. */
 export type DialogOptions = {
     /** The text to display inside the dialog. */
-    message: string;
+    message: string | HTMLElement;
 
     /** A list of buttons to display, rendered left to right. */
     buttons: ButtonOptions[];
@@ -35,6 +35,12 @@ export type DialogOptions = {
      * will be chosen automatically.
      */
     container?: string | Element;
+
+    /**
+     * Determines if the standard close button in the corner of the dialog
+     * should be hidden.
+     */
+    hideCloseButton?: boolean;
 
     /**
      * An optional cancellation token that will dismiss the dialog automatically
@@ -53,6 +59,7 @@ export type ButtonOptions = {
 
     /** The CSS classes to assign to the button, such as `btn btn-primary`. */
     className: string;
+    autoFocus?: boolean;
 };
 
 /**
@@ -174,7 +181,14 @@ export function showDialog(options: DialogOptions): Promise<string> {
         let timer: NodeJS.Timeout | null = null;
         const container = document.fullscreenElement || document.body;
         const body = document.createElement("div");
-        body.innerText = options.message;
+        let autoFocus: null | HTMLElement = null;
+
+        if (options.message instanceof HTMLElement) {
+            body.appendChild(options.message);
+        }
+        else {
+            body.innerText = options.message;
+        }
 
         const buttons: HTMLElement[] = [];
 
@@ -225,16 +239,25 @@ export function showDialog(options: DialogOptions): Promise<string> {
             btn.addEventListener("click", () => {
                 clearDialog(button.key);
             });
+            if (button.autoFocus) {
+                autoFocus = btn;
+            }
             buttons.push(btn);
         }
 
-        // Construct the close (cancel) button.
-        const closeButton = createCloseButton();
-        closeButton.addEventListener("click", () => {
-            clearDialog("cancel");
-        });
+        const dialogBody: HTMLElement[] = [body];
 
-        const dialog = createDialog([closeButton, body], buttons);
+        if (!options.hideCloseButton) {
+            // Construct the close (cancel) button.
+            const closeButton = createCloseButton();
+            closeButton.addEventListener("click", () => {
+                clearDialog("cancel");
+            });
+
+            dialogBody.splice(0, 0, closeButton);
+        }
+
+        const dialog = createDialog(dialogBody, buttons);
         const backdrop = createBackdrop();
 
         const modal = dialog.querySelector(".modal") as HTMLElement;
@@ -244,6 +267,10 @@ export function showDialog(options: DialogOptions): Promise<string> {
         container.appendChild(dialog);
         container.appendChild(backdrop);
         modal.style.marginTop = `-${modal.offsetHeight / 2.0}px`;
+
+        if (autoFocus) {
+            autoFocus.focus();
+        }
 
         // Show the backdrop and the modal.
         backdrop.classList.add("in");
@@ -292,7 +319,8 @@ export async function confirm(message: string): Promise<boolean> {
             {
                 key: "ok",
                 label: "OK",
-                className: "btn btn-primary"
+                className: "btn btn-primary",
+                autoFocus: true
             },
             {
                 key: "cancel",
@@ -341,5 +369,5 @@ export function showSecurity(entityTypeIdKey: Guid | string | number, entityIdKe
  * @param pageId The page identifier
  */
 export function showChildPages(pageId: Guid | string | number): void {
-    Rock.controls.modal.show(undefined, `/pages/${pageId}?t=Child Pages&amp;pb=&amp;sb=Done`);
+    Rock.controls.modal.show(undefined, `/pages/${pageId}?t=Child Pages&pb=&sb=Done`);
 }

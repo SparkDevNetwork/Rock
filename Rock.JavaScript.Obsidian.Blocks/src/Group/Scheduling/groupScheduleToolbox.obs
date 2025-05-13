@@ -53,32 +53,34 @@
                 </div>
             </div>
 
-          <div :class="contentColumnCssClass">
-            <div ref="scrollContainer" :class="actionCssClass">
-              <NotificationBox v-if="blockActionErrorMessage" :alertType="AlertType.Warning">
-                {{ blockActionErrorMessage }}
-              </NotificationBox>
+            <div :class="contentColumnCssClass">
+                <div ref="scrollContainer" :class="actionCssClass">
+                    <NotificationBox v-if="blockActionErrorMessage" :alertType="AlertType.Warning">
+                        {{ blockActionErrorMessage }}
+                    </NotificationBox>
 
-              <div v-if="contentHeaderHtml" v-html="contentHeaderHtml" class="schedule-toolbox-content-header"></div>
+                    <div v-if="contentHeaderHtml" v-html="contentHeaderHtml" class="schedule-toolbox-content-header"></div>
 
-              <CurrentSchedule v-if="isActionTypeViewCurrent"
-                               v-model:isLoadingCurrentSchedule="isLoadingCurrentSchedule"
-                               :isScheduleUnavailabilityEnabled="isScheduleUnavailabilityEnabled"
-                               :scheduleUnavailabilitybuttonText="scheduleUnavailabilityButtonText"
-                               :scheduleUnavailabilityHeaderHtml="scheduleUnavailabilityHeaderHtml"
-                               :disabled="isBusy" />
+                    <CurrentSchedule v-if="isActionTypeViewCurrent"
+                                     v-model:isLoadingCurrentSchedule="isLoadingCurrentSchedule"
+                                     :confirmedButtonText="confirmedButtonText"
+                                     :declineButtonText="declineButtonText"
+                                     :isScheduleUnavailabilityEnabled="isScheduleUnavailabilityEnabled"
+                                     :scheduleUnavailabilitybuttonText="scheduleUnavailabilityButtonText"
+                                     :scheduleUnavailabilityHeaderHtml="scheduleUnavailabilityHeaderHtml"
+                                     :disabled="isBusy" />
 
-              <UpdatePreferences v-if="isActionTypeUpdatePreferences"
-                                 v-model:isLoadingSchedulePreferences="isLoadingSchedulePreferences"
-                                 :disabled="isBusy" />
+                    <UpdatePreferences v-if="isActionTypeUpdatePreferences"
+                                       v-model:isLoadingSchedulePreferences="isLoadingSchedulePreferences"
+                                       :disabled="isBusy" />
 
-              <SignUp v-if="isActionTypeSignUp"
-                      v-model:isLoadingSignUps="isLoadingSignUps"
-                      :immediateNeedsTitle="immediateNeedsTitle"
-                      :immediateNeedsIntroduction="immediateNeedsIntroduction"
-                      :disabled="isBusy" />
+                    <SignUp v-if="isActionTypeSignUp"
+                            v-model:isLoadingSignUps="isLoadingSignUps"
+                            :immediateNeedsTitle="immediateNeedsTitle"
+                            :immediateNeedsIntroduction="immediateNeedsIntroduction"
+                            :disabled="isBusy" />
+                </div>
             </div>
-          </div>
         </div>
 
     </Panel>
@@ -143,6 +145,8 @@
     const isScheduleUnavailabilityEnabled = ref(config.isScheduleUnavailabilityEnabled);
     const scheduleUnavailabilityButtonText = ref(config.scheduleUnavailabilityButtonText);
     const scheduleUnavailabilityHeaderHtml = ref(config.scheduleUnavailabilityHeaderHtml);
+    const confirmedButtonText = ref(config.confirmedButtonText);
+    const declineButtonText = ref(config.declineButtonText);
     const isLoadingCurrentSchedule = ref(false);
 
     // Update Schedule Preferernces.

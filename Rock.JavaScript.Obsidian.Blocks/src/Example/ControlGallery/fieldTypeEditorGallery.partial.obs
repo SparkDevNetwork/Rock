@@ -1,0 +1,38 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <FieldTypeEditor v-model="value" :isFieldTypeReadOnly="readOnly" />
+
+        <template #settings>
+            <div class="row">
+                <CheckBox formGroupClasses="col-md-4" label="Read Only Field Type" v-model="readOnly" />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+
+    const value = ref<FieldTypeEditorUpdateAttributeConfigurationOptionsBag>({
+        configurationValues: {
+            truetext: "Yup",
+            falsetext: "Nah",
+            BooleanControlType: "2"
+        },
+        defaultValue: "True",
+        fieldTypeGuid: FieldType.Boolean
+    });
+    const readOnly = ref(false);
+    const importCode = getSfcControlImportPath("fieldTypeEditor");
+    const exampleCode = `<FieldTypeEditor v-model="value" :isFieldTypeReadOnly="readOnly" />`;
+</script>

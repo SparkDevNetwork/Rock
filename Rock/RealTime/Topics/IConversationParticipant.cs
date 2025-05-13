@@ -37,5 +37,13 @@ namespace Rock.RealTime.Topics
         /// </summary>
         /// <param name="conversationKey">The conversation key that has been read.</param>
         Task ConversationMarkedAsRead( string conversationKey );
+
+        /// <summary>
+        /// Called when a conversation's read status has been changed. 
+        /// </summary>
+        /// <param name="conversationKey">The conversation key that has a read status change.</param>
+        /// <param name="readStatus">The read status of the conversation.</param>
+        /// <returns></returns>
+        Task ConversationReadStatusChanged( string conversationKey, bool readStatus );
     }
 }

@@ -32,11 +32,6 @@ namespace Rock.ViewModels.Blocks.Crm.FamilyPreRegistration
         public Guid? FamilyGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the full name.
-        /// </summary>
-        public string FullName { get; set; }
-
-        /// <summary>
         /// Gets or sets the address.
         /// </summary>
         public AddressControlBag Address { get; set; }

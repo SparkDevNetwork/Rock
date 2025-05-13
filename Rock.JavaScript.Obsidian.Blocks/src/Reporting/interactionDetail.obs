@@ -1,0 +1,23 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" alertType="warning" v-html="errorMessage" />
+
+    <div v-if="!errorMessage" v-html="content">
+
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { InteractionDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/InteractionDetail/interactionDetailInitializationBox";
+
+    const config = useConfigurationValues<InteractionDetailInitializationBox>();
+
+    const content = ref(config.content ?? "");
+    const errorMessage = ref(config.errorMessage ?? "");
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+</script>

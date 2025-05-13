@@ -129,15 +129,14 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
 
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = commandTimeoutSeconds;
-            var groupDataView = new DataViewService( rockContext ).Get( groupDataViewGuid.Value );
+            var groupDataView = DataViewCache.Get( groupDataViewGuid.Value );
             if ( groupDataView == null )
             {
                 this.UpdateLastStatusMessage( "No Group Data View defined." );
                 return;
             }
 
-            var groupsQuery = groupDataView.GetQuery( new DataViewGetQueryArgs { DatabaseTimeoutSeconds = commandTimeoutSeconds } ) as IQueryable<Group>;
-            var groupIds = groupsQuery.Select( a => a.Id ).ToList();
+            var groupIds = groupDataView.GetEntityIds( new Reporting.GetQueryableOptions { DatabaseTimeoutSeconds = commandTimeoutSeconds } );
 
             // limit attendances to groups returned from the DataView
             var attendanceQuery = new AttendanceService( rockContext ).Queryable()

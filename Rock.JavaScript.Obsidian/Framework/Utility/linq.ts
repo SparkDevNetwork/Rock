@@ -1,3 +1,20 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
 /**
  * A function that will select a value from the object.
  */
@@ -25,7 +42,7 @@ const noElementsFound = "No element was found in collection.";
  * For the purposes of a compare, null and undefined are always a lower
  * value - unless both values are null or undefined in which case they
  * are considered equal.
- * 
+ *
  * @param keySelector The function that will select the value.
  * @param descending True if this comparison should be in descending order.
  */
@@ -76,7 +93,7 @@ export class List<T> {
 
     /**
      * Creates a new list with the given elements.
-     * 
+     *
      * @param elements The elements to be made available to LINQ queries.
      */
     constructor(elements?: T[]) {
@@ -91,7 +108,7 @@ export class List<T> {
 
     /**
      * Creates a new List from the elements without copying to a new array.
-     * 
+     *
      * @param elements The elements to initialize the list with.
      * @returns A new list of elements.
      */
@@ -225,6 +242,49 @@ export class List<T> {
     }
 
     /**
+     * Returns the last element found in the collection or undefined if the
+     * collection contains no elements.
+     *
+     * @returns The last element in the collection or undefined.
+     */
+    public lastOrUndefined(): T | undefined;
+
+    /**
+     * Filters the list by the predicate and then returns the last element
+     * found in the collection. If no elements remain then undefined is
+     * returned instead.
+     *
+     * @param predicate The predicate to filter the elements by.
+     *
+     * @returns The last element in the filtered collection or undefined.
+     */
+    public lastOrUndefined(predicate: PredicateFn<T>): T | undefined;
+
+    /**
+     * Filters the list by the predicate and then returns the last element
+     * found in the collection. If no elements remain then undefined is
+     * returned instead.
+     *
+     * @param predicate The predicate to filter the elements by.
+     *
+     * @returns The last element in the filtered collection or undefined.
+     */
+    public lastOrUndefined(predicate?: PredicateFn<T>): T | undefined {
+        let elements = this.elements;
+
+        if (predicate !== undefined) {
+            elements = elements.filter(predicate);
+        }
+
+        if (elements.length) {
+            return elements[elements.length - 1];
+        }
+        else {
+            return undefined;
+        }
+    }
+
+    /**
      * Returns a single element from the collection if there is a single
      * element. Otherwise will throw an exception.
      *
@@ -319,7 +379,7 @@ export class List<T> {
     /**
      * Orders the elements of the array and returns a new list of items
      * in that order.
-     * 
+     *
      * @param keySelector The selector for the key to be ordered by.
      * @returns A new ordered list of elements.
      */
@@ -345,9 +405,9 @@ export class List<T> {
     /**
      * Filters the results and returns a new list containing only the elements
      * that match the predicate.
-     * 
+     *
      * @param predicate The predicate to filter elements with.
-     * 
+     *
      * @returns A new collection of elements that match the predicate.
      */
     public where(predicate: PredicateFn<T>): List<T> {
@@ -385,7 +445,7 @@ class OrderedList<T> extends List<T> {
     /**
      * Orders the elements of the array and returns a new list of items
      * in that order.
-     * 
+     *
      * @param keySelector The selector for the key to be ordered by.
      * @returns A new ordered list of elements.
      */
@@ -406,5 +466,398 @@ class OrderedList<T> extends List<T> {
         const comparer = valueComparer(keySelector, true);
 
         return new OrderedList(this.elements, (a: T, b: T) => this.baseComparer(a, b) || comparer(a, b));
+    }
+}
+
+/**
+ * A utility class for working with iterables in a LINQ-like manner.
+ */
+export class Enumerable<T> {
+    protected iterableFactory: () => Iterable<T>;
+
+    /**
+     * Creates an instance of Enumerable using a factory for the iterable.
+     * @param iterableFactory - A factory function that produces an iterable.
+     */
+    constructor(iterableFactory: () => Iterable<T>) {
+        this.iterableFactory = iterableFactory;
+    }
+
+    /**
+     * Creates an Enumerable from a regular iterable (e.g., Array, Set).
+     * @param iterable - An iterable to create the Enumerable from.
+     * @returns A new Enumerable instance.
+     */
+    static from<T>(iterable: Iterable<T>): Enumerable<T>;
+
+    /**
+     * Creates an Enumerable from a generator function.
+     * @param generator - A function that produces an IterableIterator.
+     * @returns A new Enumerable instance.
+     */
+    static from<T>(generator: () => IterableIterator<T>): Enumerable<T>;
+
+    /**
+     * Creates an Enumerable from a regular iterable (e.g., Array, Set) or a generator function.
+     * @param source - Either an iterable or a generator function.
+     * @returns A new Enumerable instance.
+     */
+    static from<T>(source: Iterable<T> | (() => IterableIterator<T>)): Enumerable<T> {
+        if (typeof source === "function") {
+            return new Enumerable(source); // Handle generator factory
+        }
+        else {
+            return new Enumerable(() => source); // Handle regular iterable
+        }
+    }
+
+    /**
+     * Returns an iterator for the current Enumerable.
+     * @returns An iterator for the iterable.
+     */
+    *[Symbol.iterator](): Iterator<T> {
+        // Regenerate the iterable.
+        yield* this.iterableFactory();
+    }
+
+    /**
+     * Filters the sequence to include only elements that satisfy the predicate.
+     * @param predicate - A function to test each element for a condition.
+     * @returns A new Enumerable containing the filtered elements.
+     */
+    where(predicate: (item: T) => boolean): Enumerable<T> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return new Enumerable(function* (): Generator<T, void, unknown> {
+            for (const item of self) {
+                if (predicate(item)) {
+                    yield item;
+                }
+            }
+        });
+    }
+
+    /**
+     * Projects each element of the sequence into a new form.
+     * @param selector - A function to project each element into a new form.
+     * @returns A new Enumerable with the projected elements.
+     */
+    select<U>(selector: (item: T) => U): Enumerable<U> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return new Enumerable(function* (): Generator<U, void, unknown> {
+            for (const item of self) {
+                yield selector(item);
+            }
+        });
+    }
+
+    /**
+     * Returns a new Enumerable that skips the first `count` elements of the sequence.
+     * @param count - The number of elements to skip.
+     * @returns A new Enumerable that skips the specified number of elements.
+     */
+    skip(count: number): Enumerable<T> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return new Enumerable(function* () {
+            let skipped = 0;
+            for (const item of self) {
+                if (skipped++ >= count) {
+                    yield item;
+                }
+            }
+        });
+    }
+
+    /**
+     * Returns a new Enumerable that contains the first `count` elements of the sequence.
+     * @param count - The number of elements to take.
+     * @returns A new Enumerable containing the taken elements.
+     */
+    take(count: number): Enumerable<T> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return new Enumerable(function* () {
+            let i = 0;
+            for (const item of self) {
+                if (i++ < count) {
+                    yield item;
+                }
+                else {
+                    break;
+                }
+            }
+        });
+    }
+
+    /**
+     * Returns the first element of the sequence or a default value if the sequence is empty.
+     * @param defaultValue - The default value to return if the sequence is empty.
+     * @returns The first element of the sequence or the default value.
+     */
+    firstOrDefault(defaultValue?: T): T | undefined {
+        for (const item of this) {
+            return item;
+        }
+
+        return defaultValue;
+    }
+
+    /**
+     * Returns the last element of the sequence, or a default value if the sequence is empty.
+     * @param defaultValue - The default value to return if the sequence is empty.
+     * @returns The last element of the sequence, or the provided default value.
+     *
+     * @example
+     * const numbers = Enumerable.from([1, 2, 3]);
+     * console.log(numbers.lastOrDefault()); // Outputs: 3
+     *
+     * @example
+     * const empty = Enumerable.from<number>([]);
+     * console.log(empty.lastOrDefault(0)); // Outputs: 0
+     */
+    lastOrDefault(defaultValue?: T): T | undefined {
+        let last: T | undefined = defaultValue;
+
+        for (const item of this) {
+            // Update `last` for each element.
+            last = item;
+        }
+
+        return last;
+    }
+
+    /**
+     * Aggregates the elements of the sequence using a specified accumulator function and seed value.
+     * @param accumulator - A function that accumulates each element.
+     * @param seed - The initial value for the accumulation.
+     * @returns The aggregated value.
+     */
+    aggregate<U>(accumulator: (acc: U, item: T, index: number) => U, seed: U): U {
+        let result = seed;
+        let index = 0;
+        for (const item of this) {
+            result = accumulator(result, item, index++);
+        }
+        return result;
+    }
+
+    /**
+     * Determines whether any elements in the sequence satisfy a condition or if the sequence contains any elements.
+     * @param predicate - An optional function to test each element for a condition.
+     * @returns `true` if any elements satisfy the condition; otherwise, `false`.
+     */
+    any(predicate?: (item: T) => boolean): boolean {
+        for (const item of this) {
+            if (!predicate || predicate(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determines whether all elements in the sequence satisfy a condition or if the sequence contains any elements.
+     * @param predicate - An optional function to test each element for a condition.
+     * @returns `true` if all elements satisfy the condition; otherwise, `false`.
+     */
+    all(predicate: (item: T) => boolean): boolean {
+        for (const item of this) {
+            if (!predicate(item)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Executes a specified action for each element in the sequence.
+     * @param action - A function to execute for each element.
+     */
+    forEach(action: (item: T) => void): void {
+        for (const item of this) {
+            action(item);
+        }
+    }
+
+    /**
+     * Converts the sequence into an array.
+     * @returns An array containing all elements in the sequence.
+     */
+    toArray(): T[] {
+        return Array.from(this);
+    }
+
+    /**
+     * Converts the sequence into a List.
+     * @returns An List containing all elements in the sequence.
+     */
+    toList(): List<T> {
+        return new List<T>(this.toArray());
+    }
+
+    /**
+     * Sorts the elements of the sequence in ascending order.
+     * @param keySelector - Function to extract the key for comparison.
+     * @param comparer - Optional comparison function for the keys.
+     * @returns An OrderedEnumerable sorted in ascending order.
+     */
+    orderBy<U>(
+        keySelector: (item: T) => U,
+        comparer: (a: U, b: U) => number = (a, b) => (a > b ? 1 : a < b ? -1 : 0)
+    ): OrderedEnumerable<T> {
+        return new OrderedEnumerable(
+            this.iterableFactory,
+            (a, b) => comparer(keySelector(a), keySelector(b))
+        );
+    }
+
+    /**
+     * Sorts the elements of the sequence in descending order.
+     * @param keySelector - Function to extract the key for comparison.
+     * @param comparer - Optional comparison function for the keys.
+     * @returns An OrderedEnumerable sorted in descending order.
+     */
+    orderByDescending<U>(
+        keySelector: (item: T) => U,
+        comparer: (a: U, b: U) => number = (a, b) => (a > b ? 1 : a < b ? -1 : 0)
+    ): OrderedEnumerable<T> {
+        const descendingComparer = (a: U, b: U): number => -comparer(a, b);
+        return this.orderBy(keySelector, descendingComparer);
+    }
+
+    /**
+     * Returns a generator that yields each element of the sequence paired with its index.
+     *
+     * @generator
+     * @yields {[T, number]} A tuple containing the element and its zero-based index.
+     *
+     * @example
+     * // Example usage with a for...of loop:
+     * const elements = Enumerable.from(['a', 'b', 'c']);
+     * for (const [item, index] of elements.withIndex()) {
+     *     console.log(`Index: ${index}, Item: ${item}`);
+     * }
+     * // Output:
+     * // Index: 0, Item: a
+     * // Index: 1, Item: b
+     * // Index: 2, Item: c
+     *
+     * @example
+     * // Example usage with chaining:
+     * const indexed = Enumerable.from(['x', 'y', 'z'])
+     *     .withIndex()
+     *     .where(([item, index]) => index % 2 === 0)
+     *     .toArray();
+     * console.log(indexed);
+     * // Output: [['x', 0], ['z', 2]]
+     */
+    *withIndex(): IterableIterator<[T, number]> {
+        let index = 0;
+        for (const item of this) {
+            yield [item, index++];
+        }
+    }
+
+    /**
+ * Filters the sequence and returns only elements of the specified type.
+ * @template U The target type to filter by.
+ * @param typeCheck - A runtime check function to validate the type of each element.
+ * @returns A new Enumerable containing elements of type `U`.
+ *
+ * @example
+ * const mixed: Enumerable<unknown> = Enumerable.from([1, "hello", true, 42]);
+ * const numbers = mixed.ofType<number>(item => typeof item === "number");
+ * console.log(numbers.toArray()); // Outputs: [1, 42]
+ *
+ * @example
+ * class Animal {}
+ * class Dog extends Animal {}
+ * const animals: Enumerable<Animal> = Enumerable.from([new Animal(), new Dog()]);
+ * const dogs = animals.ofType<Dog>(item => item instanceof Dog);
+ * console.log(dogs.toArray()); // Outputs: [Dog instance]
+ */
+    ofType<U extends T>(typeCheck: (item: T) => item is U): Enumerable<U> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return new Enumerable(function* () {
+            for (const item of self) {
+                if (typeCheck(item)) {
+                    yield item;
+                }
+            }
+        });
+    }
+}
+
+class OrderedEnumerable<T> extends Enumerable<T> {
+    private readonly sortComparers: ((a: T, b: T) => number)[];
+
+    constructor(
+        iterableFactory: () => Iterable<T>,
+        initialComparer: (a: T, b: T) => number
+    ) {
+        super(iterableFactory);
+        this.sortComparers = [initialComparer];
+    }
+
+    /**
+     * Adds a secondary ascending order comparison to the current sort.
+     * @param keySelector - Function to extract the key for comparison.
+     * @param comparer - Optional comparison function for the keys.
+     * @returns A new OrderedEnumerable with the additional ordering.
+     */
+    thenOrderBy<U>(
+        keySelector: (item: T) => U,
+        comparer: (a: U, b: U) => number = (a, b) => (a > b ? 1 : a < b ? -1 : 0)
+    ): OrderedEnumerable<T> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return new OrderedEnumerable(
+            this.iterableFactory,
+            (a, b) => {
+                for (const cmp of self.sortComparers) {
+                    const result = cmp(a, b);
+                    if (result !== 0) return result;
+                }
+                return comparer(keySelector(a), keySelector(b));
+            }
+        );
+    }
+
+    /**
+     * Adds a secondary descending order comparison to the current sort.
+     * @param keySelector - Function to extract the key for comparison.
+     * @param comparer - Optional comparison function for the keys.
+     * @returns A new OrderedEnumerable with the additional ordering.
+     */
+    thenOrderByDescending<U>(
+        keySelector: (item: T) => U,
+        comparer: (a: U, b: U) => number = (a, b) => (a > b ? 1 : a < b ? -1 : 0)
+    ): OrderedEnumerable<T> {
+        const descendingComparer = (a: U, b: U): number => -comparer(a, b);
+        return this.thenOrderBy(keySelector, descendingComparer);
+    }
+
+    override toArray(): T[] {
+        return Array.from(this);
+    }
+
+    /**
+     * Sorts the sequence based on the defined comparers.
+     * @returns A new Iterable with elements sorted.
+     */
+    override *[Symbol.iterator](): Iterator<T> {
+        const array = Array.from(this.iterableFactory());
+        array.sort((a, b) => {
+            for (const comparer of this.sortComparers) {
+                const result = comparer(a, b);
+                if (result !== 0) return result;
+            }
+            return 0;
+        });
+        yield* array;
     }
 }

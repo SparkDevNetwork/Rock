@@ -138,7 +138,15 @@ namespace RockWeb.Blocks.CheckIn
             rSelection.ItemDataBound += rSelection_ItemDataBound;
             rSelection.ItemCommand += RSelection_ItemCommand;
 
-            string script = string.Format( @"
+            string script = $@"
+        function NoEligiblePeople() {{
+            bootbox.alert(""Sorry, but it looks like there aren't any people eligible for check-in from your family."", function () {{
+                if ($('#{lbCancel.ClientID}').length > 0) {{
+                    $('#{lbCancel.ClientID}')[0].click();
+                }}
+            }});
+        }}
+
         function GetPersonSelection() {{
             var ids = '';
             $('div.checkin-person-list').find('i.fa-check-square').each( function() {{
@@ -150,8 +158,8 @@ namespace RockWeb.Blocks.CheckIn
             }}
             else
             {{
-                $('#{0}').button('loading')
-                $('#{1}').val(ids);
+                $('#{lbSelect.ClientID}').button('loading')
+                $('#{hfPeople.ClientID}').val(ids);
                 return true;
             }}
         }}
@@ -163,7 +171,7 @@ namespace RockWeb.Blocks.CheckIn
             $('div.checkin-person-list').find('i.fa-check-square').each( function() {{
                 ids += $(this).closest('a').attr('data-person-id') + ',';
             }});
-            $('#{1}').val(ids);
+            $('#{hfPeople.ClientID}').val(ids);
         }});
 
         function GetOptionSelection() {{
@@ -177,8 +185,8 @@ namespace RockWeb.Blocks.CheckIn
             }}
             else
             {{
-                $('#{2}').button('loading')
-                $('#{3}').val(keys);
+                $('#{lbOptionSelect.ClientID}').button('loading')
+                $('#{hfOptions.ClientID}').val(keys);
                 return true;
             }}
         }}
@@ -199,7 +207,7 @@ namespace RockWeb.Blocks.CheckIn
                 }}
             }});
         }});
-", lbSelect.ClientID, hfPeople.ClientID, lbOptionSelect.ClientID, hfOptions.ClientID );
+";
             ScriptManager.RegisterStartupScript( pnlContent, pnlContent.GetType(), "SelectPerson", script, true );
         }
 
@@ -247,6 +255,12 @@ namespace RockWeb.Blocks.CheckIn
                             Rock.Workflow.Action.CheckIn.SetAvailableSchedules.ProcessForFamily( rockContext, family );
                             Rock.Workflow.Action.CheckIn.FilterByPreviousCheckin.ProcessForFamily( rockContext, family, preventDuplicate );
                         }
+                    }
+
+                    if ( !family.People.Any() )
+                    {
+                        ScriptManager.RegisterStartupScript( this, this.GetType(), $"NoEligiblePeople_{this.ClientID}", "NoEligiblePeople();", true );
+                        return;
                     }
 
                     foreach ( var person in family.People )

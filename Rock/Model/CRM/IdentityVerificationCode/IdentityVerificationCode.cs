@@ -28,6 +28,7 @@ namespace Rock.Model
     /// </summary>
     [RockDomain( "CRM" )]
     [Table( "IdentityVerificationCode" )]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "3FCB8972-C319-4262-9D6E-3D60E1C4E463")]
     public partial class IdentityVerificationCode : Model<IdentityVerificationCode>
     {

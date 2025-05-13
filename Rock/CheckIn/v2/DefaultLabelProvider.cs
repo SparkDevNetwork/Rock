@@ -485,7 +485,7 @@ namespace Rock.CheckIn.v2
             var labelData = GetLabelData( label.LabelType, attendanceLabel, attendanceLabels, sessionFamily );
 
             var filter = label.GetConditionalPrintCriteria();
-            var builder = new Reporting.FieldFilterExpressionBuilder();
+            var builder = new CheckInFieldFilterBuilder();
             var fn = builder.GetIsMatchFunction( filter, labelData.GetType() );
 
             if ( !fn( labelData ) )
@@ -574,11 +574,13 @@ namespace Rock.CheckIn.v2
                 }
 
                 var hasCutter = printer?.GetAttributeValue( DeviceAttributeKey.DEVICE_HAS_CUTTER ).AsBoolean() ?? false;
+                var dpi = printer?.GetAttributeValue( DeviceAttributeKey.DEVICE_PRINTER_DPI ).AsIntegerOrNull();
 
                 var printRequest = new PrintLabelRequest
                 {
                     Capabilities = new PrinterCapabilities
                     {
+                        Dpi = dpi,
                         IsCutterSupported = hasCutter
                     },
                     RockContext = RockContext,

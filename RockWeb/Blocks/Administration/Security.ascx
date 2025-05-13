@@ -111,6 +111,8 @@
                     </div>
                 </div>
 
+                <Rock:NotificationBox ID="nbNoMatchSecurityMessage" runat="server" NotificationBoxType="Info" />
+
             </asp:PlaceHolder>
 
             <asp:Panel ID="pnlAddRole" runat="server" Visible="false" CssClass="add-role">

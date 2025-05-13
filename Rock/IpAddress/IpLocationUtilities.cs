@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
@@ -26,6 +27,8 @@ namespace Rock.IpAddress
     /// <summary>
     /// Utilities to help work with IP Address locations
     /// </summary>
+    [RockObsolete( "1.17" )]
+    [Obsolete( "Use IpGeoLookup instead." )]
     public static class IpLocationUtilities
     {
         #region Public Methods

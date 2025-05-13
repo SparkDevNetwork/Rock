@@ -106,6 +106,8 @@
                 var drawingManager;
 
                 var mapStyle = <%=this.StyleCode%>;
+                var mapId = '<%=this.MapId%>';
+                var isMapIdEmpty = !mapId;
                 var polygonColorIndex = 0;
                 var polygonColors;
 
@@ -126,6 +128,10 @@
                         , center: centerLatLng
                         , zoom: zoom
                         , streetViewControl: false
+                    }
+
+                    if (!isMapIdEmpty) {
+                        mapOptions.mapId = mapId;
                     }
 
                     // Display a map on the page
@@ -171,26 +177,42 @@
                     var campusMarkersData = [
 <%=this.CampusMarkersData%>]
 
-                    var pinImage = {
-                        path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
-                        fillColor: '#FE7569',
-                        fillOpacity: 1,
-                        strokeColor: '#000',
-                        strokeWeight: 1,
-                        scale: 1,
-                        labelOrigin: new google.maps.Point(0,-28)
+                    if (isMapIdEmpty) {
+                        var pinImage = {
+                            path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                            fillColor: '#FE7569',
+                            fillOpacity: 1,
+                            strokeColor: '#000',
+                            strokeWeight: 1,
+                            scale: 1,
+                            labelOrigin: new google.maps.Point(0, -28)
+                        };
 
-                    };
-
-                    campusMarkersData.forEach( function (c) {
-                        marker = new google.maps.Marker({
-                            position: c.location,
-                            map: map,
-                            title: c.campusName,
-                            icon: pinImage,
-                            label: String.fromCharCode(9679)
+                        campusMarkersData.forEach(function (c) {
+                            marker = new google.maps.Marker({
+                                position: c.location,
+                                map: map,
+                                title: c.campusName,
+                                icon: pinImage,
+                                label: String.fromCharCode(9679)
+                            });
                         });
-                    });
+                    }
+                    else {
+                        const pinGlyph = new google.maps.marker.PinElement({
+                            glyphColor: 'black',
+                        });
+
+                        campusMarkersData.forEach( function (c) {
+                            marker = new google.maps.marker.AdvancedMarkerElement({
+                                position: c.location,
+                                map: map,
+                                title: c.campusName,
+                                content: pinGlyph.element
+                            });
+                        });
+                    }
+
 
                     var heatMapBounds = new google.maps.LatLngBounds();
                     heatMapData.forEach(function (a) {

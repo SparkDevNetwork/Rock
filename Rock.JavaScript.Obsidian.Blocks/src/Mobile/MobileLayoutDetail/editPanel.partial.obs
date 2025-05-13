@@ -1,0 +1,95 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <CodeEditor v-model="layoutMobilePhone" label="Phone Layout XAML" theme="rock" mode="xml" :editorHeight="200" />
+
+        <CodeEditor v-model="layoutMobileTablet" label="Tablet Layout XAML" theme="rock" mode="xml" :editorHeight="200" />
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { MobileLayoutBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileLayoutDetail/mobileLayoutBag";
+    import { MobileLayoutDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileLayoutDetail/mobileLayoutDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<MobileLayoutBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<MobileLayoutDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<MobileLayoutBag>): void;
+        (e: "propertyChanged", value: string): void;
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const layoutMobilePhone = propertyRef(props.modelValue?.bag?.layoutMobilePhone ?? "", "LayoutMobilePhone");
+    const layoutMobileTablet = propertyRef(props.modelValue?.bag?.layoutMobileTablet ?? "", "LayoutMobileTablet");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, name, layoutMobilePhone, layoutMobileTablet];
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(layoutMobilePhone, props.modelValue?.bag?.layoutMobilePhone ?? "");
+        updateRefValue(layoutMobileTablet, props.modelValue?.bag?.layoutMobileTablet ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<MobileLayoutBag> = {
+            bag: { ...props.modelValue.bag } as MobileLayoutBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "layoutMobilePhone", layoutMobilePhone.value);
+        setPropertiesBoxValue(newValue, "layoutMobileTablet", layoutMobileTablet.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>
