@@ -232,7 +232,6 @@
 
                         <asp:Panel ID="pnlStepAttributes" runat="server" CssClass="row">
                             <div class="col-sm-12">
-                                <asp:PlaceHolder ID="PlaceHolder1" runat="server"></asp:PlaceHolder>
                                 <Rock:AttributeValuesContainer ID="avcStepAttributes" runat="server" NumberOfColumns="2" />
                             </div>
                         </asp:Panel>

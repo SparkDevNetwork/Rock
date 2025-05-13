@@ -1363,10 +1363,7 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            var rockContext = new RockContext();
-            var stepProgram = new StepProgramService( rockContext ).Queryable()
-                .AsNoTracking()
-                .FirstOrDefault( p => p.Id == stepProgramId.Value );
+            var stepProgram = StepProgramCache.Get( stepProgramId.Value );
             var stepType = stepProgram.StepTypes.FirstOrDefault( st => st.Id == stepTypeId.Value );
             if ( stepType == null )
             {
@@ -3274,7 +3271,7 @@ namespace RockWeb.Blocks.Crm
 
                 if ( this.UpdateStepAction != StepChangeActionSpecifier.None )
                 {
-                    var stepType = new StepTypeService( rockContext ).Get( this.UpdateStepTypeId.Value );
+                    var stepType = StepTypeCache.Get( this.UpdateStepTypeId.Value );
                     if ( stepType != null )
                     {
                         if ( this.UpdateStepAction == StepChangeActionSpecifier.Remove )
