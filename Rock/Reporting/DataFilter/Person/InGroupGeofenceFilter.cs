@@ -74,7 +74,7 @@ namespace Rock.Reporting.DataFilter.Person
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
             var groupGuid = selection.AsGuid();
-            var group = new GroupService( new RockContext() ).Get( groupGuid );
+            var group = new GroupService( rockContext ).Get( groupGuid );
 
             return new Dictionary<string, string> { { "group", group?.ToListItemBag()?.ToCamelCaseJson( false, false ) } };
         }

@@ -1039,6 +1039,7 @@ namespace Rock.Blocks.Communication
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+            securityGrant.AddRule( new EmailEditorSecurityGrantRule() );
 
             return securityGrant.ToToken();
         }
@@ -3389,7 +3390,19 @@ namespace Rock.Blocks.Communication
                 communication.PushOpenMessageJson = settings.Details.PushOpenMessageJson;
                 communication.PushTitle = settings.Details.PushTitle;
 
-                communication.CommunicationTopicValueId = settings.CommunicationTopicValueId;
+                if ( settings.CommunicationTopicValueId.HasValue )
+                {
+                    if ( settings.CommunicationTopicValueId != communication.CommunicationTopicValueId )
+                    {
+                        communication.CommunicationTopicValue = new DefinedValueService( rockContext ).Get( settings.CommunicationTopicValueId.Value );
+                        communication.CommunicationTopicValueId = communication.CommunicationTopicValue?.Id;
+                    }
+                }
+                else
+                {
+                    communication.CommunicationTopicValue = null;
+                    communication.CommunicationTopicValueId = null;
+                }
 
                 rockContext.SaveChanges();
 

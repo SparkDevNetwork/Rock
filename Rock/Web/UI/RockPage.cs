@@ -1582,6 +1582,20 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                         }
                     }
 
+                    var colorModeScript = @"
+(function initializeColorMode() {
+    let attributeName = ""theme""
+    var htmlElement = document.documentElement;
+
+    if ( localStorage.getItem(attributeName) != null ) {
+        const value = localStorage.getItem(attributeName);
+        htmlElement.setAttribute(attributeName, value);
+    }
+})();
+";
+                    ClientScript.RegisterStartupScript( this.Page.GetType(), "color-mode-init", colorModeScript, true );
+
+
                     /*
                      * 2020-06-17 - JH
                      *
@@ -2341,7 +2355,12 @@ Obsidian.onReady(() => {{
             if ( impersonatedByUser != null )
             {
                 Authorization.SignOut();
-                UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = impersonatedByUser.UserName } );
+                UserLoginService.UpdateLastLogin(
+                    new UpdateLastLoginArgs {
+                        UserName = impersonatedByUser.UserName,
+                        ShouldSkipWritingHistoryLog = true
+                    }
+                );
 
                 /*
                     10/23/2023 - JMH

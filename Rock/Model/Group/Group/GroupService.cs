@@ -175,53 +175,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the complete list of <see cref="RockChatGroup"/>s - lightweight objects which represent all
-        /// <see cref="Group"/>s that correspond to <see cref="ChatChannel"/>s in the external chat system, regardless
-        /// of whether they're currently chat-enabled.
-        /// </summary>
-        /// <returns>
-        /// A list of <see cref="RockChatGroup"/>s.
-        /// </returns>
-        /// <remarks>This will include archived, chat-specific <see cref="Group"/>s.</remarks>
-        internal List<RockChatGroup> GetRockChatGroups()
-        {
-            // Get chat groups along with their chat-specific attributes.
-            var groups = GetChatChannelGroupsQuery().ToList();
-            groups.LoadFilteredAttributes( a => a.Key == ChatHelper.GroupAttributeKey.AvatarImage );
-
-            return groups
-                .Select( g =>
-                {
-                    var chatChannelKey = ChatHelper.GetChatChannelKey( g.Id, g.ChatChannelKey );
-
-                    var avatarImageUrl = string.Empty;
-                    var avatarImageGuid = g.GetAttributeValue( ChatHelper.GroupAttributeKey.AvatarImage ).AsGuidOrNull();
-                    if ( avatarImageGuid.HasValue )
-                    {
-                        avatarImageUrl = ChatHelper.GetChatChannelAvatarImageUrl( avatarImageGuid.Value );
-                    }
-
-                    return new RockChatGroup
-                    {
-                        GroupTypeId = g.GroupTypeId,
-                        GroupId = g.Id,
-                        ChatChannelTypeKey = ChatHelper.GetChatChannelTypeKey( g.GroupTypeId ),
-                        ChatChannelKey = chatChannelKey,
-                        ShouldSaveChatChannelKeyInRock = g.ChatChannelKey != chatChannelKey,
-                        Name = g.Name,
-                        AvatarImageUrl = avatarImageUrl,
-                        CampusId = g.CampusId,
-                        IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
-                        IsPublic = g.GetIsChatChannelPublic(),
-                        IsAlwaysShown = g.GetIsChatChannelAlwaysShown(),
-                        IsChatEnabled = g.GetIsChatEnabled(),
-                        IsChatChannelActive = g.GetIsChatChannelActive()
-                    };
-                } )
-                .ToList();
-        }
-
-        /// <summary>
         /// Gets a Queryable of all <see cref="Group"/>s that are currently chat-enabled.
         /// </summary>
         /// <param name="groupTypeId">The optional identifier of the <see cref="GroupType"/> for the <see cref="Group"/>s to query.</param>

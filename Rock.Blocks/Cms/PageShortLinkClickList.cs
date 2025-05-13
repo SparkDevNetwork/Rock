@@ -37,7 +37,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Lists clicks for a particular short link." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes(Model.SiteType.Web)]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "aa860dc7-d590-4d0e-bbb3-16990f2cd680" )]
     [Rock.SystemGuid.BlockTypeGuid( "e44cac85-346f-41a4-884b-a6fb5fc64de1" )]

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,8 +26,12 @@ using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Enums.Reporting;
+using Rock.Field;
 using Rock.Model;
-using Rock.Utility;
+using Rock.Net;
+using Rock.ViewModels.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -39,7 +43,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter Person records on the attribute values of a Step they have participated in" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Step Participants By Attribute Value Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "A8A108B7-6713-444F-AA02-A65C1D354B96")]
+    [Rock.SystemGuid.EntityTypeGuid( "A8A108B7-6713-444F-AA02-A65C1D354B96" )]
     public class StepParticipantsByAttributeValueFilter : EntityFieldFilter
     {
         #region Properties
@@ -64,6 +68,172 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/stepParticipantsByAttributeValueFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+
+            //var channelService = new ContentChannelService( rockContext );
+            var stepProgramService = new StepProgramService( rockContext );
+            var stepTypeService = new StepTypeService( rockContext );
+
+            var stepTypes = stepTypeService.Queryable().OrderBy( a => a.Name ).ToList();
+
+            var stepTypeGuidsById = new Dictionary<int, Guid>();
+            var fieldFilterSourcesByStepType = new Dictionary<Guid, List<FieldFilterSourceBag>>();
+
+            // Prime the dictionary with empty lists to make it easier to add the entity fields
+            foreach ( var stepType in stepTypes )
+            {
+                stepTypeGuidsById.Add( stepType.Id, stepType.Guid );
+                fieldFilterSourcesByStepType.AddOrReplace( stepType.Guid, new List<FieldFilterSourceBag>() );
+            }
+
+            var attributes = AttributeCache.AllForEntityType<Rock.Model.Step>()
+                .Where( a => a.IsActive )
+                .Where( a => a.FieldType.Field.HasFilterControl() )
+                .OrderBy( a => a.Order ).ThenBy( a => a.Name )
+                .ToList();
+            var allEntityFields = new List<EntityField>();
+            EntityHelper.AddEntityFieldsForAttributeList( allEntityFields, attributes );
+
+            // Go through all the entity fields and add them to the dictionary based on content channel type indicated by their entity type qualifier
+            foreach ( var attribute in attributes )
+            {
+                //var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
+                Guid stepTypeGuid = Guid.Empty;
+
+                if ( attribute.EntityTypeQualifierColumn == "StepTypeId" )
+                {
+                    stepTypeGuid = stepTypeGuidsById.GetValueOrDefault( attribute.EntityTypeQualifierValue.AsInteger(), Guid.Empty );
+                }
+
+                var fieldType = attribute.FieldType;
+
+                var source = new FieldFilterSourceBag
+                {
+                    Guid = attribute.Guid,
+                    Type = FieldFilterSourceType.Attribute,
+                    Attribute = new PublicAttributeBag
+                    {
+                        AttributeGuid = attribute.Guid,
+                        ConfigurationValues = fieldType.Field.GetPublicConfigurationValues( attribute.ConfigurationValues, Field.ConfigurationValueUsage.Edit, null ),
+                        Description = attribute.Description,
+                        FieldTypeGuid = fieldType.Guid,
+                        Name = attribute.Name
+                    }
+                };
+
+                // Add to list for specific step type
+                if ( stepTypeGuid != Guid.Empty )
+                {
+                    fieldFilterSourcesByStepType.GetValueOrNull( stepTypeGuid )?.Add( source );
+                }
+                // Add to each list, because it's global
+                else
+                {
+                    foreach ( var filterSourceList in fieldFilterSourcesByStepType )
+                    {
+                        filterSourceList.Value.Add( source );
+                    }
+                }
+
+            }
+
+            data.AddOrReplace( "fieldFilterSources", fieldFilterSourcesByStepType.ToCamelCaseJson( false, true ) );
+
+            if ( !string.IsNullOrWhiteSpace( selection ) || selection.IsNotNullOrWhiteSpace() )
+            {
+                var values = selection.FromJsonOrNull<List<string>>();
+                if ( values == null || values.Count == 0 )
+                {
+                    return data;
+                }
+
+                var stepProgram = stepProgramService.Get( values[0]?.AsGuid() ?? Guid.Empty );
+                data.AddOrReplace( "stepProgram", stepProgram?.ToListItemBag().ToCamelCaseJson( false, true ) ?? "" );
+
+                var stepType = stepTypeService.Get( values[1]?.AsGuid() ?? Guid.Empty );
+                data.AddOrReplace( "stepType", stepType?.ToListItemBag().ToCamelCaseJson( false, true ) ?? "" );
+
+                if ( values.Count > 2 )
+                {
+
+                    var entityField = allEntityFields.ToList().FindFromFilterSelection( values[2] );
+
+                    if ( entityField == null )
+                    {
+                        return data;
+                    }
+
+                    var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
+
+                    if ( values.Count == 4 )
+                    {
+                        var filterRule = FieldVisibilityRule.GetPublicRuleBag( attribute, 0, values[3] );
+
+                        data.AddOrReplace( "filterRule", filterRule.ToCamelCaseJson( false, true ) );
+                    }
+                    else if ( values.Count == 5 )
+                    {
+                        var filterRule = FieldVisibilityRule.GetPublicRuleBag( attribute, ( ComparisonType ) ( values[3].AsInteger() ), values[4] );
+
+                        data.AddOrReplace( "filterRule", filterRule.ToCamelCaseJson( false, true ) );
+                    }
+                }
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = new List<string>();
+
+            var stepProgram = data.GetValueOrNull( "stepProgram" )?.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
+            if ( stepProgram.IsNullOrWhiteSpace() )
+            {
+                return selectionValues.ToJson();
+            }
+            selectionValues.Add( stepProgram );
+
+            var stepType = data.GetValueOrNull( "stepType" )?.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
+            if ( stepType.IsNullOrWhiteSpace() )
+            {
+                return selectionValues.ToJson();
+            }
+            selectionValues.Add( stepType );
+
+            var filterRule = data.GetValueOrNull( "filterRule" ).FromJsonOrNull<FieldFilterRuleBag>();
+            if ( filterRule == null || filterRule.AttributeGuid == null )
+            {
+                return selectionValues.ToJson();
+            }
+
+            var attribute = AttributeCache.Get( filterRule.AttributeGuid.Value );
+            var entityField = EntityHelper.GetEntityFieldForAttribute( attribute );
+            var comparisonValue = new ComparisonValue
+            {
+                ComparisonType = filterRule.ComparisonType,
+                Value = filterRule.Value
+            };
+
+            var filterValue = attribute.FieldType.Field.GetPrivateFilterValue( comparisonValue, attribute.ConfigurationValues ).FromJsonOrNull<List<string>>();
+
+            selectionValues.Add( entityField.UniqueName );
+            selectionValues = selectionValues.Concat( filterValue ).ToList();
+
+            return selectionValues.ToJson();
         }
 
         #endregion
@@ -177,7 +347,7 @@ namespace Rock.Reporting.DataFilter.Person
             };
             stepProgramPicker.SelectedIndexChanged += stepProgramPicker_SelectedIndexChanged;
             stepProgramPicker.AutoPostBack = true;
-            StepProgramPicker.LoadDropDownItems( stepProgramPicker, true );            
+            StepProgramPicker.LoadDropDownItems( stepProgramPicker, true );
             containerControl.Controls.Add( stepProgramPicker );
 
             // Create the StepTypePicker.

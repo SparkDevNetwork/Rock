@@ -715,10 +715,13 @@
     <Compile Include="Attribute\AIProviderFieldAttribute.cs" />
     <Compile Include="Attribute\ImageFieldAttribute.cs" />
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
-    <Compile Include="CheckIn\v2\Labels\Renderers\Zebra64.cs" />
     <Compile Include="Bus\Message\RestrictedCountriesWereUpdatedMessage.cs" />
     <Compile Include="Bus\Queue\IpGeolocationEventQueue.cs" />
+    <Compile Include="CheckIn\v2\Labels\Renderers\Zebra64.cs" />
+    <Compile Include="CheckIn\v2\ProximityDirector.cs" />
     <Compile Include="ClientService\Core\Note\NoteClientService.cs" />
+    <Compile Include="Cms\LavaApplicationRequestHelpers.cs" />
+    <Compile Include="Cms\LavaEndpointAdditionalSettings.cs" />
     <Compile Include="Cms\PageAdditionalSettings.cs" />
     <Compile Include="Cms\RestActionMetadata.cs" />
     <Compile Include="Cms\RestControllerMetadata.cs" />
@@ -784,8 +787,30 @@
     <Compile Include="Core\EntitySearch\IdKeyExpressionVisitor.cs" />
     <Compile Include="Communication\Chat\ChatConfiguration.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171PopulateAttendanceRootGroupType.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV18DeleteGroupLocationHistoricalSchedule.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV18UpdateCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171UpdateCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171AddCommunicationRecipientIndex.cs" />
+    <Compile Include="Lava\Blocks\DbTransaction.cs" />
+    <Compile Include="Lava\Blocks\HttpResponse.cs" />
+    <Compile Include="Lava\Blocks\Internal\DbTransactionResult.cs" />
+    <Compile Include="Lava\Blocks\Internal\DeleteEntityResult.cs" />
+    <Compile Include="Lava\Blocks\Internal\ModifyEntityField.cs" />
+    <Compile Include="Lava\Blocks\Internal\ModifyEntityResult.cs" />
+    <Compile Include="Lava\Blocks\Internal\ValidationError.cs" />
+    <Compile Include="Lava\Blocks\RenderLavaEndpoint.cs" />
+    <Compile Include="Lava\Blocks\RockEntityDeleteBlock.cs" />
+    <Compile Include="Lava\Blocks\RockEntityModifyBlock.cs" />
+    <Compile Include="Model\CMS\LavaApplication\LavaApplication.cs" />
+    <Compile Include="Model\CMS\LavaApplication\LavaApplication.Logic.cs" />
+    <Compile Include="Model\CMS\LavaApplication\LavaApplication.SaveHook.cs" />
+    <Compile Include="Model\CMS\LavaApplication\LavaApplicationService.cs" />
+    <Compile Include="Model\CMS\LavaEndpoint\LavaEndpoint.cs" />
+    <Compile Include="Model\CMS\LavaEndpoint\LavaEndpoint.Logic.cs" />
+    <Compile Include="Model\CMS\LavaEndpoint\LavaEndpointService.cs" />
+    <Compile Include="Model\CodeGenerated\LavaApplicationService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LavaEndpointService.CodeGenerated.cs" />
+    <Compile Include="Jobs\RunLava.cs" />
     <Compile Include="Model\CRM\UserLogin\UpdateLastLoginArgs.cs" />
     <Compile Include="Data\AttributeValueExpressionVisitor.cs" />
     <Compile Include="Data\EnableAttributeQualificationAttribute.cs" />
@@ -1631,7 +1656,6 @@
     <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlanConfiguration.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlanConfigurationOptions.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlanConfigurationService.cs" />
-    <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalScheduleService.cs" />
     <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormFieldException.cs" />
     <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateFormService.cs" />
     <Compile Include="Model\Group\GroupLocation\GroupLocation.Logic.cs" />
@@ -1810,6 +1834,10 @@
     <Compile Include="Plugin\HotFixes\232_UpdateContentFileTypeBlacklist.cs" />
     <Compile Include="Plugin\HotFixes\244_MigrationRollupsForV17_1_1.cs" />
     <Compile Include="Plugin\HotFixes\243_AddDefaultAllowedGroupTypesToMobileGroupRegistration.cs" />
+    <Compile Include="Plugin\HotFixes\245_UpdateMergeFieldAttributeDescription.cs" />
+    <Compile Include="Plugin\HotFixes\246_AddProximityCheckInAttribute.cs" />
+    <Compile Include="Plugin\HotFixes\248_MigrationRollupsForV17_1_2.cs" />
+    <Compile Include="Plugin\HotFixes\247_UpdateLayoutBlockListNamingObsidian.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1908,6 +1936,8 @@
     <Compile Include="Security\HistoryLoginRelatedData.cs" />
     <Compile Include="Security\SecurityGrantRules\AddDefinedValueToTypeGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
+    <Compile Include="Security\SecurityGrantRules\ConnectionRequestPickerSecurityGrantRule.cs" />
+    <Compile Include="Security\SecurityGrantRules\EmailEditorSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
     <Compile Include="SystemGuid\EmailSection.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />
@@ -2227,7 +2257,6 @@
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.cs" />
     <Compile Include="Model\Group\GroupHistorical\GroupHistorical.cs" />
     <Compile Include="Model\Group\GroupHistorical\GroupHistorical.Logic.cs" />
-    <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalSchedule.cs" />
     <Compile Include="Model\Group\GroupLocationHistorical\GroupLocationHistorical.cs" />
     <Compile Include="Model\Group\GroupLocationHistorical\GroupLocationHistorical.Logic.cs" />
     <Compile Include="Model\Group\GroupLocationHistorical\GroupLocationHistoricalService.cs" />
@@ -2787,6 +2816,8 @@
     <Compile Include="Web\Cache\Entities\InteractiveExperienceCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractiveExperienceScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\GroupLocationCache.cs" />
+    <Compile Include="Web\Cache\Entities\LavaApplicationCache.cs" />
+    <Compile Include="Web\Cache\Entities\LavaEndpointCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedLocationCache.cs" />
     <Compile Include="Web\Cache\Entities\NotificationMessageTypeCache.cs" />

@@ -333,6 +333,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnLoad( e );
 
+            EnsureChildControls();
             var selectedRegistrationTemplateId = _registrationTemplatePicker.SelectedValue.AsIntegerOrNull();
             if ( selectedRegistrationTemplateId.HasValue && selectedRegistrationTemplateId.Value > 0 )
             {

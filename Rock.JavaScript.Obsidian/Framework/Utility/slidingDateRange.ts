@@ -19,7 +19,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumber, toNumberOrNull } from "./numberUtils";
 import { SlidingDateRangeType as RangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
 import { TimeUnitType as TimeUnit } from "@Obsidian/Enums/Controls/timeUnitType";
-import { DayOfWeek, RockDateTime } from "./rockDateTime";
+import { DateTimeFormat, DayOfWeek, RockDateTime } from "./rockDateTime";
 
 // This file contains helper functions and tooling required to work with sliding
 // date ranges. A sliding date range is one that, generally, is anchored to whatever
@@ -194,11 +194,11 @@ export function parseSlidingDateRangeString(value: string): SlidingDateRange | n
     // Parse the lower and upper dates if our range type is a DateRange.
     if (range.rangeType === RangeType.DateRange) {
         if (segments.length > 3) {
-            range.lowerDate = segments[3];
+            range.lowerDate = RockDateTime.fromJSDate(new Date(segments[3]))?.toOffset(0)?.toASPString("yyyy-MM-dd") ?? "";
         }
 
         if (segments.length > 4) {
-            range.upperDate = segments[4];
+            range.upperDate = RockDateTime.fromJSDate(new Date(segments[4]))?.toOffset(0)?.toASPString("yyyy-MM-dd") ?? "";
         }
     }
 

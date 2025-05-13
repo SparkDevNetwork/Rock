@@ -1,0 +1,305 @@
+  :root {
+  // ========================= COLOR =========================
+
+  // #region BASE VARIABLE (These are not meant to be used as reference variables)
+
+  --logo-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
+
+  --base-interface-strongest: #000000;
+  --base-interface-stronger:  #0D1117;
+  --base-interface-strong:    #3D444D ;
+  --base-interface-medium:    #8B8BA7;
+  --base-interface-soft:      #D9D9E3;
+  --base-interface-softer:    #F8F8FC;
+  --base-interface-softest:   #FFFFFF;
+
+  --base-critical:    #ee7725;
+  --base-danger:      #D70015;
+  --base-info:        #007AFF;
+  --base-success:     #248A3D;
+
+  --base-primary:     #FF791D;
+  --base-warning:     #E58600;
+  --base-link:        #006DCC;
+  --base-secondary:   #83758F;
+
+  // #endregion
+
+  // INTERFACE COLORS 
+  --color-interface-strongest: var(--base-interface-strongest);
+  --color-interface-stronger:  var(--base-interface-stronger);
+  --color-interface-strong:    var(--base-interface-strong);
+  --color-interface-medium:    var(--base-interface-medium);
+  --color-interface-soft:      var(--base-interface-soft);
+  --color-interface-softer:    var(--base-interface-softer);
+  --color-interface-softest:   var(--base-interface-softest);
+
+  // APPLICATION COLORS 
+  --color-critical-soft:    var(--base-critical);
+  --color-critical-strong:  var(--base-critical);
+  --color-critical-tint:    var(--base-critical);
+  --color-critical-shade:   var(--base-critical);
+  
+  --color-danger-soft:      var(--base-danger);
+  --color-danger-strong:    var(--base-danger);
+  --color-danger-tint:      var(--base-danger);
+  --color-danger-shade:     var(--base-danger);
+  
+  --color-info-soft:        var(--base-info);
+  --color-info-strong:      var(--base-info);
+  --color-info-tint:        var(--base-info);
+  --color-info-shade:       var(--base-info);
+  
+  --color-success-soft:     var(--base-success);
+  --color-success-strong:   var(--base-success);
+  --color-success-tint:     var(--base-success);
+  --color-success-shade:    var(--base-success);
+  
+  --color-warning-soft:     var(--base-warning);
+  --color-warning-strong:   var(--base-warning);
+  --color-warning-tint:     var(--base-warning);
+  --color-warning-shade:    var(--base-warning);
+  
+  /* System colors */
+  --color-primary-soft:          var(--base-primary);
+  --color-primary:          var(--base-primary);
+  --color-primary-tint:     var(--base-primary);
+  --color-primary-shade:    var(--base-primary);
+  
+  --color-link:             var(--base-link);
+  --color-link-tint:        var(--base-link);
+  --color-link-shade:       var(--base-link);
+  
+  --color-secondary:        var(--base-secondary);
+  --color-secondary-tint:   var(--base-secondary);
+  --color-secondary-shade:  var(--base-secondary);
+
+  @supports (color: color-mix(in srgb, red 50%, white 50%)) {
+    --tint-white-percentage: 100%;
+    --shade-black-percentage: 15%;
+
+    --color-critical-tint:  color-mix(in srgb, var(--base-critical) 50%, transparent var(--tint-white-percentage));
+    --color-critical-soft:  color-mix(in srgb, var(--base-critical) 15%, transparent var(--tint-white-percentage));
+    --color-critical-shade: color-mix(in srgb, var(--base-critical) 100%, #000 var(--shade-black-percentage));
+  
+    --color-danger-tint:    color-mix(in srgb, var(--base-danger) 50%, transparent var(--tint-white-percentage));
+    --color-danger-soft:    color-mix(in srgb, var(--base-danger) 15%, transparent var(--tint-white-percentage));
+    --color-danger-shade:   color-mix(in srgb, var(--base-danger) 100%, #000 var(--shade-black-percentage));
+  
+    --color-info-tint:      color-mix(in srgb, var(--base-info) 50%, transparent var(--tint-white-percentage));
+    --color-info-soft:      color-mix(in srgb, var(--base-info) 15%, transparent var(--tint-white-percentage));
+    --color-info-shade:     color-mix(in srgb, var(--base-info) 100%, #000 var(--shade-black-percentage));
+  
+    --color-success-tint:   color-mix(in srgb, var(--base-success) 50%, transparent var(--tint-white-percentage));
+    --color-success-soft:   color-mix(in srgb, var(--base-success) 15%, transparent var(--tint-white-percentage));
+    --color-success-shade:  color-mix(in srgb, var(--base-success) 100%, #000 var(--shade-black-percentage));
+  
+    --color-warning-tint:   color-mix(in srgb, var(--base-warning) 50%, transparent var(--tint-white-percentage));
+    --color-warning-soft:   color-mix(in srgb, var(--base-warning) 15%, transparent var(--tint-white-percentage));
+    --color-warning-shade:  color-mix(in srgb, var(--base-warning) 100%, #000 var(--shade-black-percentage));
+  
+    --color-primary-tint:   color-mix(in srgb, var(--base-primary) 50%, transparent var(--tint-white-percentage));
+    --color-primary-soft:   color-mix(in srgb, var(--base-primary) 15%, transparent var(--tint-white-percentage));
+    --color-primary-shade:  color-mix(in srgb, var(--base-primary) 100%, #000 var(--shade-black-percentage));
+  
+    --color-link-tint:      color-mix(in srgb, var(--base-link) 50%, transparent var(--tint-white-percentage));
+    --color-link-shade:     color-mix(in srgb, var(--base-link) 100%, #000 var(--shade-black-percentage));
+  
+    --color-secondary-tint: color-mix(in srgb, var(--base-secondary) 50%, transparent var(--tint-white-percentage));
+    --color-secondary-shade: color-mix(in srgb, var(--base-secondary) 100%, #000 var(--shade-black-percentage));
+  }
+
+  // CATEGORICAL COLORS 
+  --color-categorical-1: #007aff;
+  --color-categorical-2: #5856D6;
+  --color-categorical-3: #4cd964;
+  --color-categorical-4: #ff2d55;
+  --color-categorical-5: #ff9500;
+  --color-categorical-6: #5ac8fa;
+  --color-categorical-7: #ffcc00;
+  --color-categorical-8: #8e8e93;
+
+  // DIVERGING COLORS
+  --color-diverging-1:  #2507b7;
+  --color-diverging-2:  #3109f5;
+  --color-diverging-3:  #6447f7;
+  --color-diverging-4:  #9884fa;
+  --color-diverging-5:  #CBC1FC;
+  --color-diverging-6:  #E5EEF9;
+  --color-diverging-7:  #C8F5F0;
+  --color-diverging-8:  #92ece2;
+  --color-diverging-9:  #5be2d4;
+  --color-diverging-10: #22c8b7;
+  --color-diverging-11: #1ca394;
+
+  // SEQUENTIAL COLORS
+  --color-sequential-1:   #1a844a;
+  --color-sequential-2:   #209f58;
+  --color-sequential-3:   #25b967;
+  --color-sequential-4:   #2AD476;
+  --color-sequential-5:   #45D987;
+  --color-sequential-6:   #5FDE98;
+  --color-sequential-7:   #7AE4A9;
+  --color-sequential-8:   #94E9BA;
+  --color-sequential-9:   #AFEECB;
+  --color-sequential-10:  #C9F4DC;
+  --color-sequential-11:  #E4F9ED;
+
+  --color-code:    #c7254e;
+  --color-code-bg: #f9f2f4;
+
+  // ========================= END COLOR ==========================
+
+
+
+  // ========================= TYPOGRAPHY =========================
+
+  // FONT SIZES
+  --font-size-xsmall:     12px;
+  --font-size-small:      14px;
+  --font-size-regular:    16px;
+  --font-size-h1:         44px;
+  --font-size-h2:         36px;
+  --font-size-h3:         28px;
+  --font-size-h4:         22px;
+  --font-size-h5:         18px;
+  --font-size-h6:         16px;
+
+  // FONT WEIGHTS 
+  --font-weight-light:    300;
+  --font-weight-regular:  400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+  --font-weight-black:    900;
+
+  // LINE HEIGHTS 
+  --line-height-normal:  1.5;
+  --line-height-tight:   1.1;
+  --line-height-compact: 1.055;
+
+  // FONT FAMILY 
+  --font-family-title:        var(--font-family-sans);
+  --font-family-body:         var(--font-family-sans);
+  --font-family-segoe:        "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --font-family-sans:         -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+  --font-family-serif:        Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+  --font-family-monospace:    Menlo, Monaco, Consolas, "Courier New", monospace;
+
+  // ========================= END TYPOGRAPHY =========================
+
+
+  // ============================ SPACING =============================
+
+  // SPACING 
+  --spacing-tiny:       4px;
+  --spacing-xsmall:     8px;
+  --spacing-small:     12px;
+  --spacing-medium:    16px;
+  --spacing-large:     24px;
+  --spacing-xlarge:    48px;
+  --spacing-huge:      80px; 
+
+  --file-asset-manager-padding-override: -18px;
+
+  // ========================== END SPACING ===========================
+
+
+  // ========================== VISUAL APPEARANCES ===========================
+  
+  --adminbar-bg:              #45474c;
+  --modal-backdrop:           rgba(94, 94, 94, 0.6);
+
+  --box-shadow:               rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
+  --popup-box-shadow:         0 1rem 3rem rgba(0,0,0,.175);
+  --dropdown-box-shadow:      0 4px 8px 0 rgba(145, 158, 171,.12);
+  --input-box-shadow:         0 1px 1px rgba(24, 36, 51, 0.06);
+  --input-focus-box-shadow:   0 0 0 2px var(--color-primary-tint);
+  --input-after-box-shadow:     0 .125rem .375rem 0 rgba(var(--color-primary), 0.3);
+
+  // BORDER RADIUS
+  --rounded-tiny:       2px;
+  --rounded-xsmall:     4px;
+  --rounded-small:      6px;
+  --rounded-medium:     8px;
+  --rounded-large:     12px;
+  --rounded-xlarge:    16px;
+  --rounded-huge:      24px;
+
+  // ========================== END VISUAL APPEARANCES ===========================
+
+  --focus-state-border: 1px solid var(--color-primary); // it is used by the "Write a note" in someone profile.
+  --focus-state-shadow: var(--input-focus-box-shadow); // it is used by the "Write a note" in someone profile.
+  --input-border: var(--color-interface-soft); // it used by CheckinAreas.css. The style is use in page Check-in Configuration in settings.
+
+
+  // Follow the system color.
+  @media (prefers-color-scheme: dark) {
+    --color-interface-strongest: var(--base-interface-softest);
+    --color-interface-stronger:  var(--base-interface-softer);
+    --color-interface-strong:    var(--base-interface-soft);
+    --color-interface-medium:    var(--base-interface-medium);
+    --color-interface-soft:      var(--base-interface-strong);
+    --color-interface-softer:    var(--base-interface-strongest);
+    --color-interface-softest:   var(--base-interface-stronger);
+  
+    --box-shadow:               rgba(145, 158, 171, 0.3) 0px 0px 2px 0px,rgba(145, 158, 171, .04) 0px 12px 24px -4px;
+    --popup-box-shadow:         0 1rem 3rem rgba(255, 255, 255,.04);
+
+    // --color-critical-soft:    var(--base-critical);
+    // --color-critical-strong:  color-mix(in srgb, var(--base-critical) 15%, #FFF var(--tint-white-percentage));
+  
+    // --color-danger-soft:      var(--base-danger);
+    // --color-danger-strong:    color-mix(in srgb, var(--base-danger) 15%, #FFF var(--tint-white-percentage));
+  
+    // --color-info-soft:        var(--base-info);
+    // --color-info-strong:      color-mix(in srgb, var(--base-info) 15%, #FFF var(--tint-white-percentage));
+  
+    // --color-success-soft:     var(--base-success);
+    // --color-success-strong:   color-mix(in srgb, var(--base-success) 15%, #FFF var(--tint-white-percentage));
+  
+    // --color-warning-soft:     var(--base-warning);
+    // --color-warning-strong:   color-mix(in srgb, var(--base-warning) 15%, #FFF var(--tint-white-percentage));
+  }
+}
+
+[theme = "light"] {
+  --color-interface-strongest: var(--base-interface-strongest);
+  --color-interface-stronger:  var(--base-interface-stronger);
+  --color-interface-strong:    var(--base-interface-strong);
+  --color-interface-medium:    var(--base-interface-medium);
+  --color-interface-soft:      var(--base-interface-soft);
+  --color-interface-softer:    var(--base-interface-softer);
+  --color-interface-softest:   var(--base-interface-softest);
+
+  --box-shadow:               rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
+  --popup-box-shadow:         0 1rem 3rem rgba(0,0,0,.175);
+}
+
+[theme = "dark"] {
+  --color-interface-strongest: var(--base-interface-softest);
+  --color-interface-stronger:  var(--base-interface-softer);
+  --color-interface-strong:    var(--base-interface-soft);
+  --color-interface-medium:    var(--base-interface-medium);
+  --color-interface-soft:      var(--base-interface-strong);
+  --color-interface-softer:    var(--base-interface-strongest);
+  --color-interface-softest:   var(--base-interface-stronger);
+
+  --box-shadow:               rgba(145, 158, 171, 0.3) 0px 0px 2px 0px,rgba(145, 158, 171, .04) 0px 12px 24px -4px;
+  --popup-box-shadow:         0 1rem 3rem rgba(255, 255, 255,.04);
+
+  // --color-critical-soft:    var(--base-critical);
+  // --color-critical-strong:  color-mix(in srgb, var(--base-critical) 15%, #FFF var(--tint-white-percentage));
+
+  // --color-danger-soft:      var(--base-danger);
+  // --color-danger-strong:    color-mix(in srgb, var(--base-danger) 15%, #FFF var(--tint-white-percentage));
+
+  // --color-info-soft:        var(--base-info);
+  // --color-info-strong:      color-mix(in srgb, var(--base-info) 15%, #FFF var(--tint-white-percentage));
+
+  // --color-success-soft:     var(--base-success);
+  // --color-success-strong:   color-mix(in srgb, var(--base-success) 15%, #FFF var(--tint-white-percentage));
+
+  // --color-warning-soft:     var(--base-warning);
+  // --color-warning-strong:   color-mix(in srgb, var(--base-warning) 15%, #FFF var(--tint-white-percentage));
+}

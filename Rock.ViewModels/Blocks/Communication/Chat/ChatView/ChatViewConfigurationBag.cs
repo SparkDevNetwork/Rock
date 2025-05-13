@@ -40,5 +40,15 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatView
         /// Gets or sets the key for the direct message channel type.
         /// </summary>
         public string DirectMessageChannelTypeKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the selected channel ID.
+        /// </summary>
+        public string SelectedChannelId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the selected message ID.
+        /// </summary>
+        public string SelectedMessageId { get; set; }
     }
 }

@@ -314,6 +314,13 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override List<ContentChannelItem> GetListItems( IQueryable<ContentChannelItem> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+            return items.Where( cci => cci.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<ContentChannelItem> GetGridBuilder()
         {
             var contentChannel = GetContentChannel();

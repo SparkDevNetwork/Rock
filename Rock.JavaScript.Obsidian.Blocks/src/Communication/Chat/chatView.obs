@@ -195,7 +195,9 @@
             userToken: data.token!,
             primaryColor: "#FF0000",
             sharedChannelTypeKey: cfg.sharedChannelTypeKey ?? undefined,
-            directMessageChannelTypeKey: cfg.directMessageChannelTypeKey ?? undefined
+            directMessageChannelTypeKey: cfg.directMessageChannelTypeKey ?? undefined,
+            cid: cfg.selectedChannelId ?? undefined,
+            jumpToMessageId: cfg.selectedMessageId ?? undefined
         });
         suspense?.completeAsyncOperation(mountGuid);
     }
@@ -212,6 +214,8 @@
         userToken: string;
         sharedChannelTypeKey?: string;
         directMessageChannelTypeKey?: string;
+        cid?: string;
+        jumpToMessageId?: string;
     }
 </script>
 

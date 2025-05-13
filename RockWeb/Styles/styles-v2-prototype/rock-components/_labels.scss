@@ -1,0 +1,56 @@
+
+// LABELS (ROCK COMPONENT) (Additional label difinitions that extend)
+
+
+// =============================================================
+// Table of Content           
+//  + ALTERNATIVE Style  
+// =============================================================
+
+
+// ======================== ALTERNATIVE STYLE ========================
+.label {
+  a {
+    color: inherit; // allow for links in labels
+  }
+}
+
+.label-outline {
+  color: var(--color-interface-strong);
+  background-color: transparent;
+  border: 1px solid var(--color-interface-medium);
+}
+
+.label-campus {
+  color:            var(--color-interface-softest);
+  background-color: var(--color-secondary);
+}
+
+.label-type {
+  color:            var(--color-interface-softest);
+  background-color: var(--color-interface-soft);
+}
+
+.label-communicationstatus-approved {
+  background-color: var(--color-success-strong);
+}
+
+.label-communicationstatus-denied {
+  background-color: var(--color-danger-strong);
+}
+
+.label-communicationstatus-draft {
+  background-color: var(--color-interface-medium);
+}
+
+.label-communicationstatus-submitted {
+  background-color: var(--color-warning-strong);
+}
+
+.label-communicationstatus-transient {
+  background-color: var(--color-interface-medium);
+}
+// ====================== END ALTERNATIVE STYLE ======================
+
+
+

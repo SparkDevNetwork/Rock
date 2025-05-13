@@ -32,6 +32,20 @@ namespace Rock.ViewModels.Blocks.Cms.MediaElementDetail
         public string CloseCaption { get; set; }
 
         /// <summary>
+        /// Gets the default file URL to use for media playback. This value is
+        /// calculated at run time but also stored on the database so it is
+        /// available in SQL and LINQ queries as well.
+        /// </summary>
+        public string DefaultFileUrl { get; set; }
+
+        /// <summary>
+        /// Gets the default thumbnail URL. This value is calculated at run
+        /// time but also stored on the database so it is available in SQL
+        /// and LINQ queries as well.
+        /// </summary>
+        public string DefaultThumbnailUrl { get; set; }
+
+        /// <summary>
         /// Gets or sets a description of the Element.
         /// </summary>
         public string Description { get; set; }

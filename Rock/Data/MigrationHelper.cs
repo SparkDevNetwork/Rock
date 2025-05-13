@@ -3183,6 +3183,82 @@ END" );
         }
 
         /// <summary>
+        /// Adds or updates the Entity Attribute for the given Attribute Guid.
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="abbreviatedName">The abbreviated name of the entity attribute.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="key">If null or empty the key will be set to the name without whitespace.</param>
+        public void AddOrUpdateEntityAttributeByGuid( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string abbreviatedName, string description, int order, string defaultValue, string guid, string key )
+        {
+            EnsureEntityTypeExists( entityTypeName );
+
+            key = key.IsNullOrWhiteSpace() ? name.Replace( " ", string.Empty ) : key;
+
+            string formattedDescription = description.Replace( "'", "''" );
+            string formattedDefaultValue = defaultValue.Replace( "'", "''" );
+
+            Migration.Sql( $@"
+                DECLARE @EntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{entityTypeName}')
+                DECLARE @FieldTypeId INT = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{fieldTypeGuid}')
+
+                IF EXISTS (
+                    SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [Guid] = '{guid}' )
+                BEGIN
+                    UPDATE [Attribute] SET
+                          [Name] = '{name}'
+                        , [Description] = '{formattedDescription}'
+                        , [Order] = {order}
+                        , [DefaultValue] = '{formattedDefaultValue}'
+                        , [Guid] = '{guid}'
+                        , [AbbreviatedName] = '{abbreviatedName}'
+                    WHERE [Guid] = '{guid}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Attribute] (
+                          [IsSystem]
+                        , [FieldTypeId]
+                        , [EntityTypeId]
+                        , [EntityTypeQualifierColumn]
+                        , [EntityTypeQualifierValue]
+                        , [Key]
+                        , [Name]
+                        , [Description]
+                        , [Order]
+                        , [IsGridColumn]
+                        , [DefaultValue]
+                        , [IsMultiValue]
+                        , [IsRequired]
+                        , [Guid])
+                    VALUES(
+                          1
+                        , @FieldTypeId
+                        , @EntityTypeid
+                        , '{entityTypeQualifierColumn}'
+                        , '{entityTypeQualifierValue}'
+                        , '{key}'
+                        , '{name}'
+                        , '{formattedDescription}'
+                        , {order}
+                        , 0
+                        , '{formattedDefaultValue}'
+                        , 0
+                        , 0
+                        , '{guid}')
+                END" );
+        }
+
+        /// <summary>
         /// Updates the entity attribute.
         /// </summary>
         /// <param name="modelEntityTypeName">Name of the model entity type.</param>
@@ -9159,6 +9235,100 @@ END
         WHERE [Guid] = '{0}';",
                 datasetGuid ) );
         }
+        #endregion
+
+        #region Lava Shortcodes
+
+        /// <summary>
+        /// Adds a new or updates an existing LavaShortcode record with the specified values.
+        /// </summary>
+        /// <param name="name">The name of the shortcode.</param>
+        /// <param name="tagName">The tagname (e.g: "campuspicker")</param>
+        /// <param name="description">The description of the shortcode.</param>
+        /// <param name="documentation">The documentation of the shortcode.</param>
+        /// <param name="markup">The markup of the shortcode.</param>
+        /// <param name="parameters">The parameters of the shortcode. This is typically an HTML value.</param>
+        /// <param name="tagType">The TagType. 1 = Inline, 2 = Block</param>
+        /// <param name="categoryGuid">The unique identifier of the category to associate the shortcode with. If null or not valid then no category association will be created.</param>
+        /// <param name="guid">The identifier of the shortcode.</param>
+        public void AddOrUpdateLavaShortcode( string name, string tagName, string description, string documentation, string markup, string parameters, int tagType, string categoryGuid, string guid )
+        {
+            Migration.Sql( $@"
+-- Check if the LavaShortCode already exists by GUID
+IF EXISTS (SELECT 1 FROM [LavaShortcode] WHERE [Guid] = TRY_CONVERT(UNIQUEIDENTIFIER, '{guid}'))
+BEGIN
+    -- Update existing record
+    UPDATE [LavaShortCode]
+    SET [Name] = '{name.Replace( "'", "''" )}',
+        [Description] = '{name.Replace( "'", "''" )}',
+        [Documentation] = '{documentation?.Replace( "'", "''" ) ?? ""}',
+        [Markup] = '{markup.Replace( "'", "''" )}',
+        [TagType] = {tagType},
+        [TagName] = '{tagName.Replace( "'", "''" )}',
+        [Parameters] = '{parameters?.Replace( "'", "''" ) ?? ""}'
+    WHERE [Guid] = '{guid}';
+END
+ELSE
+BEGIN
+    -- Insert new record
+    INSERT INTO [LavaShortcode]
+    (
+        [Name],
+        [Description],
+        [Documentation],
+        [IsSystem],
+        [IsActive],
+        [TagName],
+        [Markup],
+        [TagType],
+        [EnabledLavaCommands],
+        [Parameters],
+        [Guid]
+    )
+    VALUES
+    (
+        '{name.Replace( "'", "''" )}',
+        '{description.Replace( "'", "''" )}',
+        '{documentation?.Replace( "'", "''" ) ?? ""}',
+        1,
+        1,
+        '{tagName.Replace( "'", "''" )}',
+        '{markup.Replace( "'", "''" )}',
+        {tagType},
+        '',
+        '{parameters?.Replace( "'", "''" ) ?? ""}',
+        '{guid}'
+    );
+END
+
+DECLARE @LavaShortcodeId INT = (SELECT [Id] FROM [LavaShortcode] WHERE [Guid] = '{guid}');
+DECLARE @CategoryId INT = (SELECT [Id] FROM [Category] WHERE [Guid] = TRY_CONVERT(UNIQUEIDENTIFIER, '{categoryGuid}'));
+
+IF @CategoryId IS NOT NULL AND @LavaShortcodeId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM [LavaShortcodeCategory] WHERE [LavaShortcodeId] = @LavaShortcodeId AND [CategoryId] = @CategoryId)
+BEGIN
+    INSERT INTO [LavaShortcodeCategory]
+    (
+        [LavaShortcodeId],
+        [CategoryId]
+    )
+    VALUES
+    (
+        @LavaShortcodeId,
+        @CategoryId
+    );
+END
+" );
+        }
+
+        /// <summary>
+        /// Deletes the LavaShortcode record with the specified GUID.
+        /// </summary>
+        /// <param name="guid"></param>
+        public void DeleteLavaShortcode( string guid )
+        {
+            Migration.Sql( $"DELETE FROM [LavaShortcode] WHERE [Guid] = TRY_CONVERT(UNIQUEIDENTIFIER, '{guid}')" );
+        }
+
         #endregion
 
         /// <summary>

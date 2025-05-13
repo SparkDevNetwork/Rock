@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,7 +42,6 @@ namespace Rock.Blocks.Engagement
     [IconCssClass( "fa fa-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
-
     [CategoryField(
         "Categories",
         Key = AttributeKey.Categories,
@@ -59,7 +58,7 @@ namespace Rock.Blocks.Engagement
     [Rock.SystemGuid.EntityTypeGuid( "ef0d9904-48be-4ba5-9950-e77d318a4cfa" )]
     [Rock.SystemGuid.BlockTypeGuid( "5284b259-a9ec-431c-b949-661780bfcd68" )]
     [CustomizedGrid]
-    public class StepProgramList : RockListBlockType<StepProgramListBag>
+    public class StepProgramList : RockEntityListBlockType<StepProgram>
     {
         #region Keys
 
@@ -115,7 +114,11 @@ namespace Rock.Blocks.Engagement
         /// <returns>The options that provide additional details to the block.</returns>
         private StepProgramListOptionsBag GetBoxOptions()
         {
-            var options = new StepProgramListOptionsBag();
+            var options = new StepProgramListOptionsBag()
+            {
+                // This is based on the old webforms block: bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+                IsReOrderColumnVisible = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+            };
 
             return options;
         }
@@ -142,57 +145,56 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<StepProgramListBag> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<StepProgram> GetListQueryable( RockContext rockContext )
         {
-            var stepService = new StepService( rockContext );
-            var completedStepsQry = stepService.Queryable()
-                .Where( x => x.StepStatus != null && x.StepStatus.IsCompleteStatus && x.StepType.IsActive );
+            var query = base.GetListQueryable( rockContext );
 
-            var stepProgramsQry = new StepProgramService( rockContext )
-                .Queryable()
-                .AsNoTracking()
-                .Include( a => a.Category )
-                .Include( a => a.StepTypes )
-                .OrderBy( sp => sp.Order );
+            // Filter by Category (first by block setting, and then by selected filter).
+            var categoryGuids = GetAttributeValue( AttributeKey.Categories ).SplitDelimitedValues().AsGuidList();
+            if ( categoryGuids.Any() )
+            {
+                query = query.Where( sp => sp.Category != null && categoryGuids.Contains( sp.Category.Guid ) );
+            }
 
-            // Filter by Category
             if ( !string.IsNullOrWhiteSpace( FilterCategory ) )
             {
-                stepProgramsQry = ( IOrderedQueryable<StepProgram> )stepProgramsQry.Where( sp => sp.Category.Name == FilterCategory );
+                query = ( IOrderedQueryable<StepProgram> ) query.Where( sp => sp.Category.Name == FilterCategory );
             }
 
             // Filter by isActive
             if ( !string.IsNullOrWhiteSpace( FilterActive ) )
             {
                 bool isActive = FilterActive.Equals( "Active", StringComparison.OrdinalIgnoreCase );
-                stepProgramsQry = ( IOrderedQueryable<StepProgram> )stepProgramsQry.Where( sp => sp.IsActive == isActive );
+                query = ( IOrderedQueryable<StepProgram> ) query.Where( sp => sp.IsActive == isActive );
             }
 
-            return stepProgramsQry.Select( sp => new StepProgramListBag
-            {
-                Id = sp.Id,
-                Name = sp.Name,
-                IconCssClass = sp.IconCssClass,
-                Category = sp.Category.Name,
-                Order = sp.Order,
-                StepTypeCount = sp.StepTypes.Count( m => m.IsActive ),
-                StepCompletedCount = completedStepsQry.Count( y => y.StepType.StepProgramId == sp.Id )
-            } );
+            return query;
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<StepProgramListBag> GetGridBuilder()
+        protected override List<StepProgram> GetListItems( IQueryable<StepProgram> queryable, RockContext rockContext )
         {
-            return new GridBuilder<StepProgramListBag>()
+            var items = queryable.ToList();
+            return items.Where( sp => sp.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
+        }
+
+        /// <inheritdoc/>
+        protected override GridBuilder<StepProgram> GetGridBuilder()
+        {
+            var completedStepsQry = new StepService(  RockContext ).Queryable().Where( x => x.StepStatus != null && x.StepStatus.IsCompleteStatus && x.StepType.IsActive );
+
+            return new GridBuilder<StepProgram>()
                 .WithBlock( this )
                 .AddField( "id", a => a.Id )
-                .AddTextField( "idKey", a => a.Id.ToString() )
+                .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "icon", a => a.IconCssClass )
-                .AddTextField( "category", a => a.Category )
+                .AddTextField( "category", a => a.Category?.Name )
                 .AddField( "order", a => a.Order )
-                .AddField( "stepType", a => a.StepTypeCount )
-                .AddField( "stepsTaken", a => a.StepCompletedCount );
+                .AddField( "stepType", a => a.StepTypes.Count( m => m.IsActive ) )
+                .AddField( "stepsTaken", a => completedStepsQry.Count( y => y.StepType.StepProgramId == a.Id ) )
+                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddAttributeFields( GetGridAttributes() );
         }
 
         #endregion

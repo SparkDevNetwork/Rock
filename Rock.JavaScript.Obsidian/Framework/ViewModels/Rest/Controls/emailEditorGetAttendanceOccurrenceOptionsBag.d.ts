@@ -25,4 +25,10 @@
 export type EmailEditorGetAttendanceOccurrenceOptionsBag = {
     /** Gets or sets the attendance occurrence identifier. */
     occurrenceId: number;
+
+    /**
+     * Gets or sets the security grant token to use when performing
+     * authorization checks.
+     */
+    securityGrantToken?: string | null;
 };

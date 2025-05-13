@@ -475,6 +475,16 @@ namespace Rock.Model
         [DataMember]
         public DateTime? EmailMetricsReminderSentDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets the summary of the Communication
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the summary of the communication.
+        /// </value>
+        [DataMember]
+        [MaxLength( 600 )]
+        public string Summary { get; set; }
+
         #endregion
 
         #region Navigation Properties

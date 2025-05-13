@@ -890,7 +890,7 @@ WHERE [Guid] = '{Rock.SystemGuid.ServiceJob.CHAT_SYNC_JOB}';" );
         {
             JPH_UnsecureOidcGivePermissionPage_20250326_Up();
             JPH_AddLoginHistoryPageAndBlocks_20250326_Up();
-            JPH_MigrateLoginHistory_20250326_Up();
+            //JPH_MigrateLoginHistory_20250326_Up();
         }
 
         /// <summary>

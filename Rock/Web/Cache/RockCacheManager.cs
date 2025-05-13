@@ -40,8 +40,6 @@ namespace Rock.Web.Cache
     [RockLoggingCategory]
     public sealed class RockCacheManager<T> : IRockCacheManager
     {
-        private static RockCacheManager<T> instance;
-
         // ReSharper disable once StaticMemberInGenericType
         private static readonly object _obj = new object();
 
@@ -67,21 +65,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the singleton instance of this class
         /// </summary>
-        public static RockCacheManager<T> Instance
-        {
-            get
-            {
-                lock ( _obj )
-                {
-                    if ( instance == null )
-                    {
-                        instance = new RockCacheManager<T>();
-                    }
-                }
-
-                return instance;
-            }
-        }
+        public static RockCacheManager<T> Instance { get; } = new RockCacheManager<T>();
 
         /// <summary>
         /// Gets the cache.

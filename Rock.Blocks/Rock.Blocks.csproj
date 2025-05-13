@@ -115,6 +115,11 @@
     <Compile Include="Cms\ContentChannelList.cs" />
     <Compile Include="Cms\ContentChannelTypeList.cs" />
     <Compile Include="Cms\ContentChannelTypeDetail.cs" />
+    <Compile Include="Cms\LavaApplicationContent.cs" />
+    <Compile Include="Cms\LavaApplicationDetail.cs" />
+    <Compile Include="Cms\LavaApplicationList.cs" />
+    <Compile Include="Cms\LavaEndpointDetail.cs" />
+    <Compile Include="Cms\LavaEndpointList.cs" />
     <Compile Include="Cms\LavaShortcodeList.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaElementDetail.cs" />
@@ -165,7 +170,7 @@
     <Compile Include="Cms\PageList.cs" />
     <Compile Include="Cms\PageShortLinkClickList.cs" />
     <Compile Include="Cms\PageShortLinkList.cs" />
-    <Compile Include="Cms\BlockList.cs" />
+    <Compile Include="Cms\LayoutBlockList.cs" />
     <Compile Include="Cms\PageShortLinkDialog.cs" />
     <Compile Include="Tv\RokuApplicationDetail.cs" />
     <Compile Include="Cms\LayoutList.cs" />

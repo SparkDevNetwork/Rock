@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Enums.Reporting;
+using Rock.Field;
 using Rock.Model;
 using Rock.Net;
 using Rock.ViewModels.Reporting;
@@ -156,15 +157,18 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
 
                     var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
 
-                    var filterRule = new FieldFilterRuleBag
+                    if ( values.Count == 3 )
                     {
-                        AttributeGuid = entityField.AttributeGuid,
-                        ComparisonType = ( ComparisonType ) ( values[2].AsInteger() ),
-                        SourceType = FieldFilterSourceType.Attribute,
-                        Value = values[3]
-                    };
+                        var filterRule = FieldVisibilityRule.GetPublicRuleBag( attribute, 0, values[2] );
 
-                    data.AddOrReplace( "filterRule", filterRule.ToCamelCaseJson( false, true ) );
+                        data.AddOrReplace( "filterRule", filterRule.ToCamelCaseJson( false, true ) );
+                    }
+                    else if ( values.Count == 4 )
+                    {
+                        var filterRule = FieldVisibilityRule.GetPublicRuleBag( attribute, ( ComparisonType ) ( values[2].AsInteger() ), values[3] );
+
+                        data.AddOrReplace( "filterRule", filterRule.ToCamelCaseJson( false, true ) );
+                    }
                 }
             }
 
@@ -183,21 +187,24 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
 
             selectionValues.Add( data.GetValueOrNull( "contentChannelType" ) );
 
-            if ( data.ContainsKey( "filterRule" ) )
+            var filterRule = data.GetValueOrNull( "filterRule" ).FromJsonOrNull<FieldFilterRuleBag>();
+            if ( filterRule == null || filterRule.AttributeGuid == null )
             {
-                var filterRule = data.GetValueOrNull( "filterRule" ).FromJsonOrNull<FieldFilterRuleBag>();
-
-                if ( filterRule != null && filterRule.AttributeGuid != null )
-                {
-                    var entityField = EntityHelper.GetEntityFields( typeof( Rock.Model.ContentChannelItem ) )
-                        .Where( ef => ef.FieldKind == FieldKind.Attribute && ef.AttributeGuid == filterRule.AttributeGuid )
-                        .FirstOrDefault();
-
-                    selectionValues.Add( entityField.UniqueName );
-                    selectionValues.Add( filterRule.ComparisonType.ConvertToInt().ToString() );
-                    selectionValues.Add( filterRule.Value );
-                }
+                return selectionValues.ToJson();
             }
+
+            var attribute = AttributeCache.Get( filterRule.AttributeGuid.Value );
+            var entityField = EntityHelper.GetEntityFieldForAttribute( attribute );
+            var comparisonValue = new ComparisonValue
+            {
+                ComparisonType = filterRule.ComparisonType,
+                Value = filterRule.Value
+            };
+
+            var filterValue = attribute.FieldType.Field.GetPrivateFilterValue( comparisonValue, attribute.ConfigurationValues ).FromJsonOrNull<List<string>>();
+
+            selectionValues.Add( entityField.UniqueName );
+            selectionValues = selectionValues.Concat( filterValue ).ToList();
 
             return selectionValues.ToJson();
         }

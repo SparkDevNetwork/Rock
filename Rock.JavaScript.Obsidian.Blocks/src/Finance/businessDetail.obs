@@ -264,7 +264,6 @@
         }
     }
 
-
     // #endregion
 
     // Handle any initial error conditions or the need to go into edit mode.

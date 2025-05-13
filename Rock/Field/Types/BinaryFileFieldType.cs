@@ -26,6 +26,8 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Security.SecurityGrantRules;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -40,7 +42,7 @@ namespace Rock.Field.Types
     [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BINARY_FILE )]
-    public class BinaryFileFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
+    public class BinaryFileFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType, ISecurityGrantFieldType
     {
         #region Configuration
 
@@ -299,6 +301,28 @@ namespace Rock.Field.Types
             {
                 new ReferencedProperty( EntityTypeCache.GetId<BinaryFile>().Value, nameof( BinaryFile.FileName ) )
             };
+        }
+
+        #endregion
+
+        #region ISecurityGrantFieldType
+
+        /// <inheritdoc/>
+        public virtual void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
+        {
+            var binaryFileTypeGuid = privateConfigurationValues.GetValueOrNull( BINARY_FILE_TYPE ).AsGuidOrNull();
+
+            if ( !binaryFileTypeGuid.HasValue )
+            {
+                return;
+            }
+
+            var binaryFileType = BinaryFileTypeCache.Get( binaryFileTypeGuid.Value );
+
+            if ( binaryFileType != null )
+            {
+                grant.AddRule( new EntitySecurityGrantRule( binaryFileType.TypeId, binaryFileType.Id, Authorization.VIEW ) );
+            }
         }
 
         #endregion

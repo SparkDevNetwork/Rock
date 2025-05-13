@@ -1,0 +1,48 @@
+<template>
+    <div style="margin-right:-10px">
+        <FieldFilterRuleRow v-model="filterRule"
+                            :sources="fieldFilterSources"
+                            :filterMode="filterMode"
+                            groupSources
+                            disableRemoval
+                            allowBlankFieldSelection />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import FieldFilterRuleRow from "@Obsidian/Controls/fieldFilterRuleRow.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ref, watch } from "vue";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
+    import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { FieldFilterSourceType } from "@Obsidian/Enums/Reporting/fieldFilterSourceType";
+
+    const props = defineProps(dataViewFilterProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const groupType = ref<ListItemBag | null | undefined>(safeParseJson(props.modelValue.groupType));
+    const fieldFilterSources = safeParseJson<FieldFilterSourceBag[]>(props.modelValue.fieldFilterSources) ?? [];
+    const filterRule = ref<FieldFilterRuleBag>(safeParseJson(props.modelValue.filterRule) ?? createNewFieldRule());
+
+    function createNewFieldRule(): FieldFilterRuleBag {
+        return {
+            guid: newGuid(),
+            comparisonType: 0,
+            sourceType: FieldFilterSourceType.Attribute,
+        };
+    }
+
+    watch([groupType, filterRule], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            groupType: JSON.stringify(groupType.value),
+            filterRule: JSON.stringify(filterRule.value),
+        });
+    });
+</script>

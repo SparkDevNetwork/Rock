@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,7 +25,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Utility;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -37,7 +39,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether they have participated in one or more Steps" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Has Taken Step" )]
-    [Rock.SystemGuid.EntityTypeGuid( "7B984B07-F67C-4B78-BB81-9AFDDF750382")]
+    [Rock.SystemGuid.EntityTypeGuid( "7B984B07-F67C-4B78-BB81-9AFDDF750382" )]
     public class StepsTakenFilter : DataFilterComponent
     {
         #region Settings
@@ -152,7 +154,6 @@ namespace Rock.Reporting.DataFilter.Person
 
         #endregion
 
-
         #region Properties
 
         /// <summary>
@@ -175,6 +176,75 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/stepsTakenFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+            var settings = new FilterSettings( selection );
+
+            var stepProgram = StepProgramCache.Get( settings.StepProgramGuid ?? Guid.Empty );
+            data.Add( "stepProgram", stepProgram?.ToListItemBag()?.ToCamelCaseJson( false, true ) );
+
+            var stepTypes = StepTypeCache.GetMany( settings.StepTypeGuids, rockContext )
+                .Select( st => st.ToListItemBag() );
+            data.Add( "stepTypes", stepTypes.ToCamelCaseJson( false, true ) );
+
+            var stepStatuses = new StepStatusService( rockContext ).GetByGuids( settings.StepStatusGuids )
+                .Select( ss => new ListItemBag { Text = ss.Name, Value = ss.Guid.ToString() } );
+            data.Add( "stepStatuses", stepStatuses.ToCamelCaseJson( false, true ) );
+
+            var dateStarted = settings.StartedInPeriod.ToDelimitedString();
+            data.Add( "dateStarted", dateStarted );
+
+            var dateCompleted = settings.CompletedInPeriod.ToDelimitedString();
+            data.Add( "dateCompleted", dateCompleted );
+
+            var campuses = CampusCache.GetMany( settings.StepCampusGuids, rockContext )
+                .Select( st => st.ToListItemBag() );
+            data.Add( "campuses", campuses.ToCamelCaseJson( false, true ) );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new FilterSettings();
+
+            settings.StepProgramGuid = data.GetValueOrDefault( "stepProgram", "{}" )
+                .FromJsonOrNull<ListItemBag>()
+                ?.Value
+                ?.AsGuidOrNull();
+
+            settings.StepTypeGuids = data.GetValueOrDefault( "stepTypes", "[]" )
+                .FromJsonOrNull<List<ListItemBag>>()
+                ?.Select( bag => bag.Value.AsGuid() )
+                .ToList();
+
+            settings.StepStatusGuids = data.GetValueOrDefault( "stepStatuses", "[]" )
+                .FromJsonOrNull<List<ListItemBag>>()
+                ?.Select( bag => bag.Value.AsGuid() )
+                .ToList();
+
+            settings.StartedInPeriod.FromDelimitedString( data.GetValueOrDefault( "dateStarted", "" ) );
+
+            settings.CompletedInPeriod.FromDelimitedString( data.GetValueOrDefault( "dateCompleted", "" ) );
+
+            settings.StepCampusGuids = data.GetValueOrDefault( "campuses", "[]" )
+                .FromJsonOrNull<List<ListItemBag>>()
+                .Select( bag => bag.Value.AsGuid() )
+                .ToList();
+
+            return settings.ToSelectionString();
         }
 
         #endregion
@@ -347,6 +417,8 @@ function() {
 
             return result;
         }
+
+#if WEBFORMS
 
         /// <summary>
         /// Creates the child controls.
@@ -527,29 +599,6 @@ function() {
             base.RenderControls( entityType, filterControl, writer, controls );
         }
 
-        private StepProgram GetStepProgram( RockContext dataContext, int stepProgramId )
-        {
-            var programService = new StepProgramService( dataContext );
-
-            var stepProgram = programService.Get( stepProgramId );
-
-            return stepProgram;
-        }
-
-        private StepProgram GetStepProgram( RockContext dataContext, Guid? stepProgramGuid )
-        {
-            if ( stepProgramGuid == null )
-            {
-                return null;
-            }
-
-            var programService = new StepProgramService( dataContext );
-
-            var stepProgram = programService.Get( stepProgramGuid.Value );
-
-            return stepProgram;
-        }
-
         /// <summary>
         /// Gets the selection.
         /// </summary>
@@ -650,6 +699,31 @@ function() {
             {
                 item.Selected = settings.StepCampusGuids.Contains( item.Value.AsGuid() );
             }
+        }
+
+#endif
+
+        private StepProgram GetStepProgram( RockContext dataContext, int stepProgramId )
+        {
+            var programService = new StepProgramService( dataContext );
+
+            var stepProgram = programService.Get( stepProgramId );
+
+            return stepProgram;
+        }
+
+        private StepProgram GetStepProgram( RockContext dataContext, Guid? stepProgramGuid )
+        {
+            if ( stepProgramGuid == null )
+            {
+                return null;
+            }
+
+            var programService = new StepProgramService( dataContext );
+
+            var stepProgram = programService.Get( stepProgramGuid.Value );
+
+            return stepProgram;
         }
 
         /// <summary>

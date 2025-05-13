@@ -17,13 +17,13 @@ import "./chatComponent.css";
 
 import type { ChatComponentProps } from "./ChatComponentProps";
 import { RockChannelPreview } from "./ChannelPreview/RockChannelPreview";
-import { WrappedChannel } from "./MessageAction/RockMessageActionList";
 import { ChatConfigContext } from "./Chat/ChatConfigContext";
 import { SafeMessageInput } from "./MessageInput/SafeMessageInput";
 import ChannelListHeader from "./ChannelListHeader/ChannelListHeader";
 import CreateChannelModal from "./CreateChannel/CreateChannelModal";
 import { RockChannelHeader } from "./ChannelHeader/RockChannelHeader";
 import { CustomMessageActions } from "./MessageAction/CustomMessageActions";
+import { WrappedChannel } from "./MessageAction/WrappedChannel";
 
 /**
  * The ChatComponent sets up and renders the Stream Chat UI
@@ -37,6 +37,8 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
     filterSharedChannelByCampus,
     sharedChannelTypeKey,
     directMessageChannelTypeKey,
+    cid,
+    jumpToMessageId,
 }) => {
 
     const [showModal, setShowModal] = useState(false);
@@ -107,21 +109,26 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
                     directMessageChannelTypeKey,
                 }}>
                 <div style={chatContentStyle}>
-                    <div className="rock__channel-list-container">
-                        <ChannelListHeader onNewMessage={handleNewMessage} />
-                        <ChannelList
-                            filters={finalFilter}
-                            sort={sort}
-                            options={options}
-                            Preview={RockChannelPreview}
-                        />
-                    </div>
+                    {/* If a channel is passed in, hide the channel list and show the channel directly. */}
+                    {!cid && (
+                        <>
+                            <div className="rock__channel-list-container">
+                                <ChannelListHeader onNewMessage={handleNewMessage} />
+                                <ChannelList
+                                    filters={finalFilter}
+                                    sort={sort}
+                                    options={options}
+                                    Preview={RockChannelPreview}
+                                />
+                            </div>
+                        </>
+                    )}
 
-                    <WrappedChannel>
+                    <WrappedChannel cid={cid} jumpToMessageId={jumpToMessageId}>
                         <Window>
                             <RockChannelHeader />
                             <MessageList messageActions={['edit', 'delete', 'flag', 'mute', 'quote', 'react', 'reply']} noGroupByUser />
-                            <SafeMessageInput />
+                            <SafeMessageInput grow />
                         </Window>
                         <Thread />
                     </WrappedChannel>

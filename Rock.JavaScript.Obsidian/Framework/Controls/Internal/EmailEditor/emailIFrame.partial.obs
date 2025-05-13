@@ -591,6 +591,20 @@ iframe {
             });
     }
 
+    function getComponentCssClass(componentElement: Element): string {
+        // Get the component type name from the class list.
+        const componentCssClass = [...componentElement.classList].find(cssClass => cssClass.startsWith("component-"));
+
+        return componentCssClass ?? "";
+    }
+
+    function getWrapperForCssClass(wrapperElement: Element): string {
+        // Get the component type name from the class list.
+        const wrapperForCssClass = [...wrapperElement.classList].find(cssClass => cssClass.startsWith("for-"));
+
+        return wrapperForCssClass ?? "";
+    }
+
     /**
      * Adds a wrapper to a component element.
      */
@@ -605,13 +619,14 @@ iframe {
             return componentElement;
         }
 
-        const componentTypeNameCssClass = [...componentElement.classList].find(cssClass => cssClass.startsWith("component-"));
+
+        const componentCssClass = getComponentCssClass(componentElement);
 
         // Create the wrapper element.
         const wrapper = document.createElement("div");
         wrapper.classList.add(RockRuntimeWrapperElementCssClass, "component-side-menu-wrapper");
-        if (componentTypeNameCssClass) {
-            wrapper.classList.add(`for-${componentTypeNameCssClass}`);
+        if (componentCssClass) {
+            wrapper.classList.add(`for-${componentCssClass}`);
         }
 
         // Insert wrapper before the component and move the component inside it.
@@ -647,7 +662,7 @@ iframe {
             });
         }
 
-        // Automatically remove the wrapper if all of its children elements are removed.
+        // Automatically remove the wrapper if all of its children component elements are removed.
         wrapperAutoRemovalObserver.value?.observe(wrapper, { childList: true });
 
         // Add a resize observer if a section component.
@@ -1145,15 +1160,17 @@ ${createCssRuleset(":root", props.cssVariables)}
                     if (isElement(wrapper) && !processedWrappers.has(wrapper)) {
                         processedWrappers.add(wrapper);
 
-                        // Check if there are any runtime children.
-                        const hasRuntimeChildren = Enumerable.from(wrapper.children).any(
-                            (child) => child.classList.contains(RockRuntimeElementCssClass)
-                        );
+                        // Get the child component this wrapper is for.
+                        const wrapperForCssClass = getWrapperForCssClass(wrapper);
 
-                        // If there were no runtime children initially,
-                        // and none were added, remove the wrapper.
-                        if (!hasRuntimeChildren && wrapper.isConnected) {
-                            wrapper.remove();
+                        if (wrapperForCssClass) {
+                            const componentCssClass = wrapperForCssClass.substring(4); // skip "for-" to get the component class name
+                            const component = wrapper.querySelector(`.${componentCssClass}`);
+
+                            // If the component for this wrapper was removed, remove the wrapper as well.
+                            if (!component || component.closest(`.${wrapperForCssClass}`) !== wrapper) {
+                                wrapper.remove();
+                            }
                         }
                     }
                 });

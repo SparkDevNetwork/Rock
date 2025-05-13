@@ -115,6 +115,12 @@
     <Compile Include="Blocks\Cms\ContentChannelTypeList\ContentChannelTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelTypeDetail\ContentChannelTypeBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelTypeDetail\ContentChannelTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LavaApplicationDetail\LavaApplicationBag.cs" />
+    <Compile Include="Blocks\Cms\LavaApplicationDetail\LavaApplicationDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LavaApplicationList\LavaApplicationListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LavaEndpointDetail\LavaEndpointBag.cs" />
+    <Compile Include="Blocks\Cms\LavaEndpointDetail\LavaEndpointDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LavaEndpointList\LavaEndpointListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\LavaShortcodeList\LavaShortcodeListBox.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaElementDetail\MediaElementBag.cs" />
@@ -206,7 +212,7 @@
     <Compile Include="Blocks\Tv\AppleTvPageList\AppleTvPageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageList\PageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
-    <Compile Include="Blocks\Cms\BlockList\BlockListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LayoutBlockList\LayoutBlockListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ThemeDetail\ThemeBag.cs" />
     <Compile Include="Blocks\Cms\ThemeDetail\ThemeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ThemeDetail\ThemeFieldBag.cs" />
@@ -849,6 +855,7 @@
     <Compile Include="Rest\Controls\DataFilterFormatSelectionOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorCreateAttendanceOccurrenceOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorAttendanceOccurrenceBag.cs" />
+    <Compile Include="Rest\Controls\EmailEditorGetAllEmailSectionsOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorGetAttendanceOccurrenceOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorGetFutureAttendanceOccurrencesOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorRegisterRsvpRecipientsOptionsBag.cs" />

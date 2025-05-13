@@ -24,10 +24,10 @@ using Rock.Observability;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Run once job for v17.1 to migrate login history from the History table to the HistoryLogin table.
+    /// Run once job for v17.1 to prepare the new HistoryLogin table to record only true login events moving forward.
     /// </summary>
     [DisplayName( "Rock Update Helper v17.1 - Migrate Login History" )]
-    [Description( "This job will migrate login history from the History table to the HistoryLogin table." )]
+    [Description( "This job will prepare the new HistoryLogin table to record only true login events moving forward." )]
 
     [IntegerField( "Command Timeout",
         Key = AttributeKey.CommandTimeout,
@@ -49,131 +49,68 @@ namespace Rock.Jobs
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
             var jobMigration = new JobMigration( commandTimeout );
 
-            // Migrate records in batches of 1500, ensuring the script runs at least once. If any records are migrated
-            // within a given batch, we'll try at least once more.
-            var shouldContinueMigrating = true;
+            /*
+                5/6/2025 - JPH
 
-            while ( shouldContinueMigrating )
+                When we originally introduced the new [HistoryLogin] table, we migrated all login-specific [History]
+                records (where [Verb] = 'LOGIN') over to the new table, and deleted them from the old table. After
+                further investigation, we realized that Rock was adding 'LOGIN' records far too often, making the login
+                history far too noisy and therefore, not very helpful. This was because non-login records were being
+                falsely reported as logins (e.g. Whenever Rock would start and find a preexisting auth cookie / the
+                mobile app would start and issue a "launch packet", a 'LOGIN' record was added, even though these aren't
+                true "login" events).
+
+                We've since decided to only create [HistoryLogin] records in the new table when an individual truly logs
+                in (when providing a username + password, using passwordless login, going through an OIDC flow, Etc.).
+                Furthermore, to clean up the previous migration of noisy data, we've decided to:
+
+                    1. TRUNCATE any preexisting records from the [HistoryLogin] table, so only true logins will be
+                       present moving forward. This will only affect the Spark + Triumph sites and any super early beta
+                       testers (the Rock community - in general - will not be affected by this step, as Rock v17.1 has
+                       not yet been released).
+                    2. DELETE - without migrating - any preexisting login-specific [History] records (where [Verb] = 'LOGIN'),
+                       since we have no way of differentiating between "true" and "noisy" past records. We'd rather start
+                       with a clean and helpful slate than bring over unhelpful mountains of data.
+
+                Another benefit of this precision approach is that the performance of the new Login History block will
+                be greatly improved, as it will need to load and display far fewer records.
+
+                Reason: Implement revised strategy for what it means to "migrate" login history.
+            */
+
+            jobMigration.Sql( @"
+-- Remove any preexisting history login records (most Rock instances won't have any).
+TRUNCATE TABLE [HistoryLogin];" );
+
+            // Delete preexisting [History] records in batches of 1500, ensuring the script runs at least once. If any
+            // records are deleted within a given batch, we'll try at least once more.
+            var shouldContinueDeleting = true;
+
+            while ( shouldContinueDeleting )
             {
-                using ( var activity = ObservabilityHelper.StartActivity( "Task: Migrate Login History to HistoryLogin Table" ) )
+                using ( var activity = ObservabilityHelper.StartActivity( "Task: Delete 'LOGIN' [History] Records" ) )
                 {
-                    var recordsMigratedCount = ( int ) jobMigration.SqlScalar( @"
+                    var recordsDeletedCount = ( int ) jobMigration.SqlScalar( @"
 DECLARE @PersonEntityTypeId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '72657ED8-D16E-492E-AC12-144C5E7567E7');
 
-DECLARE @MigrateLoginHistory TABLE
-(
-    [HistoryId] INT NOT NULL
-    , [PersonId] INT NOT NULL
-    , [LoginDateTime] DATETIME NOT NULL
-    , [UserName] NVARCHAR(250) NOT NULL
-    , [RelatedData] NVARCHAR(MAX) NULL
-);
-
--- Select the next batch of records to migrate.
-INSERT INTO @MigrateLoginHistory
-    SELECT TOP 1500 [Id]        -- [HistoryId]
-        , [EntityId]            -- [PersonId]
-        , [CreatedDateTime]     -- [LoginDateTime]
-        , [ValueName]           -- [UserName]
-        , [RelatedData]         -- [RelatedData]
+-- Delete a batch of login-specific [History] records.
+WITH LoginHistoryToDelete AS (
+    SELECT TOP 1500 [Id]
     FROM [History]
     WHERE [Verb] = 'LOGIN'
         AND [EntityTypeId] = @PersonEntityTypeId
-        AND [CreatedDateTime] IS NOT NULL
-        AND [ValueName] IS NOT NULL
-    ORDER BY [Id];
-
--- Transform and insert records into the [HistoryLogin] table.
-INSERT INTO [HistoryLogin]
-(
-    [Guid]
-    , [UserName]
-    , [UserLoginId]
-    , [PersonAliasId]
-    , [LoginAttemptDateTime]
-    , [WasLoginSuccessful]
-    , [ClientIpAddress]
-    , [DestinationUrl]
-    , [RelatedDataJson]
+    ORDER BY [Id]
 )
-SELECT NEWID()                  -- [Guid]
-    , m.[UserName]              -- [UserName]
-    , ul.[Id]                   -- [UserLoginId]
-    , pa.[Id]                   -- [PersonAliasId]
-    , m.[LoginDateTime]         -- [LoginAttemptDateTime]
-    , 1                         -- [WasLoginSuccessful]
-    , CASE                      -- [ClientIpAddress]
-        WHEN m.[RelatedData] IS NOT NULL
-            AND CHARINDEX('from <span class=''field-value''>', m.[RelatedData]) > 0
-            AND CHARINDEX('</span>', m.[RelatedData], CHARINDEX('from <span class=''field-value''>', m.[RelatedData])) > 0
-        THEN LEFT(
-            SUBSTRING(
-                m.[RelatedData],
-                CHARINDEX('from <span class=''field-value''>', m.[RelatedData]) + 31,
-                CHARINDEX('</span>', m.[RelatedData], CHARINDEX('from <span class=''field-value''>', m.[RelatedData])) 
-                    - CHARINDEX('from <span class=''field-value''>', m.[RelatedData]) - 31
-            ),
-            45
-        )
-        ELSE NULL
-      END
-    , CASE                      -- [DestinationUrl]
-        WHEN m.[RelatedData] IS NOT NULL
-            AND CHARINDEX('to <span class=''field-value''>', m.[RelatedData]) > 0
-            AND CHARINDEX('</span>', m.[RelatedData], CHARINDEX('to <span class=''field-value''>', m.[RelatedData])) > 0
-        THEN LEFT(
-            SUBSTRING(
-                m.[RelatedData],
-                CHARINDEX('to <span class=''field-value''>', m.[RelatedData]) + 29,
-                CHARINDEX('</span>', m.[RelatedData], CHARINDEX('to <span class=''field-value''>', m.[RelatedData]))
-                    - CHARINDEX('to <span class=''field-value''>', m.[RelatedData]) - 29
-            ),
-            2048
-        )
-        ELSE NULL
-      END
-    , CASE                      -- [RelatedDataJson]
-        WHEN m.[RelatedData] IS NOT NULL
-            AND CHARINDEX(' impersonated by ', m.[RelatedData]) = 1
-        THEN '{""ImpersonatedByPersonFullName"":""' +
-            REPLACE(
-                CASE
-                    WHEN CHARINDEX(' to <span', m.[RelatedData]) > 0
-                    THEN SUBSTRING(m.[RelatedData], 18, CHARINDEX(' to <span', m.[RelatedData]) - 18)
-                    ELSE SUBSTRING(m.[RelatedData], 18, LEN(m.[RelatedData]))
-                END,
-                '""', '\""'
-            ) + '"",""LoginContext"":""Impersonation""}'
-        ELSE NULL
-      END
-FROM @MigrateLoginHistory m
-OUTER APPLY (
-    SELECT TOP 1 ul.[Id]
-    FROM [UserLogin] ul
-    WHERE ul.[UserName] = m.[UserName]
-    ORDER BY ul.[Id]
-) ul
-OUTER APPLY (
-    SELECT TOP 1 pa.[Id]
-    FROM [PersonAlias] pa
-    WHERE pa.[PersonId] = m.[PersonId]
-        AND pa.[AliasPersonId] = m.[PersonId]
-    ORDER BY pa.[Id]
-) pa
-ORDER BY m.[HistoryId];
-
--- Delete the migrated records from the [History] table.
 DELETE h
 FROM [History] h
-INNER JOIN @MigrateLoginHistory m
-    ON m.[HistoryId] = h.[Id];
+INNER JOIN LoginHistoryToDelete ON LoginHistoryToDelete.[Id] = h.[Id];
 
-SELECT @@ROWCOUNT AS [RecordsMigrated];" );
+SELECT @@ROWCOUNT AS [RecordsDeletedCount];" );
 
-                    activity?.AddTag( "rock.job.migrated_record_count", recordsMigratedCount );
+                    activity?.AddTag( "rock.job.deleted_record_count", recordsDeletedCount );
 
                     // If any records were migrated, check once more.
-                    shouldContinueMigrating = recordsMigratedCount > 0;
+                    shouldContinueDeleting = recordsDeletedCount > 0;
                 }
             }
 

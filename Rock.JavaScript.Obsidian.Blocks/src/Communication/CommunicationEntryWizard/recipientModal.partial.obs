@@ -84,6 +84,11 @@
 
                 <DeleteColumn v-if="!isDeletingIndividualsFromRecipientListsDisabled" name="removeRecipient" itemClass="grid-columncommand remove-button" :disableConfirmation="true" @click="onRemoveRecipientClicked" />
             </Grid>
+
+            <RockButton v-if="isManualCommunicationList"
+                        btnSize="xs"
+                        class="btn-primary btn-remove"
+                        @click="onRemoveAllClicked">Remove All</RockButton>
         </div>
     </Modal>
 </template>
@@ -111,6 +116,14 @@
 .recipient-manager-grid :deep(.grid-title-heading) {
     display: none;
 }
+
+.btn-remove,
+.btn-remove:hover,
+.btn-remove:active {
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    background-color: white;
+}
 </style>
 
 <script setup lang="ts">
@@ -120,6 +133,7 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { Guid } from "@Obsidian/Types";
@@ -426,6 +440,10 @@
 
     function onCloseModal(): void {
         clear();
+    }
+
+    function onRemoveAllClicked(): void {
+        pendingItems.value = [];
     }
 
     //#endregion

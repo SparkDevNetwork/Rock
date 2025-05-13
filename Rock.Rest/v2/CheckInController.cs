@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Labels;
@@ -34,9 +35,6 @@ using Rock.ViewModels.Rest.CheckIn;
 using Rock.Web.Cache;
 using Rock.ViewModels.CheckIn.Labels;
 using Rock.Security;
-using Microsoft.Extensions.Logging;
-
-
 
 #if WEBFORMS
 using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
@@ -625,21 +623,54 @@ namespace Rock.Rest.v2
         /// <returns>The result of the operation.</returns>
         [HttpPost]
         [Route( "ProximityCheckIn" )]
+        [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "2e0e2704-8730-4949-b726-05401930b0e0" )]
         public IActionResult PostProximityCheckIn( [FromBody] ProximityCheckInOptionsBag proximity )
         {
-            proximity = proximity ?? new ProximityCheckInOptionsBag();
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
 
-            var beacons = ( proximity.Beacons ?? new List<ProximityBeaconBag>() )
-                .Select( b => $"{{Major={b.Major}, Minor={b.Minor}, Rssi={b.Rssi}, Accuracy={b.Accuracy}}}" );
+            var beacon = proximity?.Beacons?.FirstOrDefault();
 
-            _logger.LogInformation( "ProximityCheckin Uuid={uuid}, Present={present}, PersonalDeviceGuid={personalDeviceguid}, Beacons=[{beacons:l}]",
-                proximity.ProximityGuid,
-                proximity.IsPresent,
-                proximity.PersonalDeviceGuid,
-                string.Join( ", ", beacons ) );
+            if ( beacon == null )
+            {
+                return BadRequest( "No beacons were detected." );
+            }
+
+            if ( _logger.IsEnabled( LogLevel.Information ) )
+            {
+                var beacons = ( proximity.Beacons ?? new List<ProximityBeaconBag>() )
+                    .Select( b => $"{{Major={b.Major}, Minor={b.Minor}, Rssi={b.Rssi}, Accuracy={b.Accuracy}}}" );
+
+                _logger.LogInformation( "ProximityCheckin Uuid={uuid}, Present={present}, PersonalDeviceGuid={personalDeviceGuid}, Beacons=[{beacons:l}]",
+                    proximity.ProximityGuid,
+                    proximity.IsPresent,
+                    proximity.PersonalDeviceGuid,
+                    string.Join( ", ", beacons ) );
+            }
+
+            var proximityDirector = new ProximityDirector( _rockContext );
+
+            if ( proximity.IsPresent )
+            {
+                if ( !proximityDirector.CheckIn( RockRequestContext.CurrentPerson, beacon ) )
+                {
+                    return BadRequest( "No location was available for check-in." );
+                }
+            }
+            else
+            {
+                if ( !proximityDirector.Checkout( RockRequestContext.CurrentPerson, beacon ) )
+                {
+                    return BadRequest( "No location was available for checkout." );
+                }
+            }
 
             return NoContent();
         }
