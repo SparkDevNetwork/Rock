@@ -95,9 +95,14 @@
                                     <div v-if="individualPlaysData && individualPlaysData.items.length > 0">
                                         <div v-for="(item, index) in individualPlaysData.items" :key="index" class="individual-play-row">
                                             <div class="individual-play-date">
-                                                <span>{{ formatPlayDate(item.dateTime, 'weekday') }}</span>
-                                                <span>{{ formatPlayDate(item.dateTime, 'date') }}</span>
-                                                <span>{{ formatPlayDate(item.dateTime, 'time') }}</span>
+                                                <template v-if="shouldShowFullDate(index)">
+                                                    <span>{{ formatPlayDate(item.dateTime, 'weekday') }}</span>
+                                                    <span>{{ formatPlayDate(item.dateTime, 'date') }}</span>
+                                                    <span>{{ formatPlayDate(item.dateTime, 'time') }}</span>
+                                                </template>
+                                                <template v-else>
+                                                    <span>{{ formatPlayDate(item.dateTime, 'time') }}</span>
+                                                </template>
                                             </div>
                                             <div class="individual-play-bar">
                                                 <div class="individual-play-person">
@@ -1306,7 +1311,7 @@
                 return dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
             }
             else if (format === "time") {
-                return dateObj.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+                return dateObj.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
             }
 
             return "";
@@ -1425,5 +1430,28 @@
                 chartContainer.addEventListener("mouseleave", handleMouseLeave);
             }
         }
+    }
+
+    /**
+     * Determines if the full date should be shown for a play item
+     * @param index The index of the current item
+     * @returns true if the full date should be shown, false if only time should be shown
+     */
+    function shouldShowFullDate(index: number): boolean {
+        if (!individualPlaysData.value?.items || index === 0) {
+            return true;
+        }
+
+        const currentItem = individualPlaysData.value.items[index];
+        const previousItem = individualPlaysData.value.items[index - 1];
+
+        if (!currentItem || !previousItem) {
+            return true;
+        }
+
+        const currentDate = new Date(currentItem.dateTime);
+        const previousDate = new Date(previousItem.dateTime);
+
+        return currentDate.toDateString() !== previousDate.toDateString();
     }
 </script>
