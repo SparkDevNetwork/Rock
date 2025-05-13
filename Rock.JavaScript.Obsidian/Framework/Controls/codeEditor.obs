@@ -194,7 +194,7 @@
 
     // Since themes can be passed in as the number or string, we need to convert it to the string version
     const themeName = computed<string>(() => {
-        if (props.theme === 0 && props.editor === "ace") {
+        if ((props.theme === 0 || props.theme === "rock") && props.editor === "ace") {
             return "github";
         }
 
