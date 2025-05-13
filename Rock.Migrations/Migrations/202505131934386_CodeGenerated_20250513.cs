@@ -29,9 +29,32 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            // Manual Rename of Entity Types that were missed in 202505072235453_AddLavaApplications.
+            RockMigrationHelper.RenameEntityType( "ACB4674B-22EC-FE88-48D0-2EEDB6536B85", "Rock.Blocks.Cms.LavaApplicationContent", "Lava Application Content", "Rock.Blocks.Cms.LavaApplicationContent, Rock.Blocks, Version=18.0.5.0, Culture=neutral, PublicKeyToken=null", false, false );
+            RockMigrationHelper.RenameEntityType( "FFFE0DE1-B410-435E-9AA8-3A0B18AAF0F7", "Rock.Model.LavaApplication", "Lava Application", "Rock.Model.LavaApplication, Rock.Model, Version=18.0.5.0, Culture=neutral, PublicKeyToken=null", true, true );
+            RockMigrationHelper.RenameEntityType( "F1BBF7D4-CAFD-450D-A89A-B3312C9738A2", "Rock.Model.LavaEndpoint", "Lava Endpoint", "Rock.Model.LavaEndpoint, Rock.Model, Version=18.0.5.0, Culture=neutral, PublicKeyToken=null", true, true );
+            RockMigrationHelper.RenameEntityType( "B75585A8-37C4-4566-B810-1A9B8B753DED", "Rock.Web.Cache.LavaApplicationCache", "Lava Application Cache", "Rock.Web.Cache.LavaApplicationCache, Rock.Web.Cache, Version=18.0.5.0, Culture=neutral, PublicKeyToken=null", false, true );
+            RockMigrationHelper.RenameEntityType( "AED7AF5B-5B0C-4062-B97E-F78ABB91063E", "Rock.Web.Cache.LavaEndpointCache", "Lava Endpoint Cache", "Rock.Web.Cache.LavaEndpointCache, Rock.Web.Cache, Version=18.0.5.0, Culture=neutral, PublicKeyToken=null", false, true );
+
             // Add/Update Obsidian Block Entity Type
             //   EntityType:Rock.Blocks.Cms.LavaApplicationContent
             RockMigrationHelper.UpdateEntityType( "Rock.Blocks.Cms.LavaApplicationContent", "Lava Application Content", "Rock.Blocks.Cms.LavaApplicationContent, Rock.Blocks, Version=18.0.5.0, Culture=neutral, PublicKeyToken=null", false, false, "ACB4674B-22EC-FE88-48D0-2EEDB6536B85" );
+
+            // Add/Update Model Entity Type
+            //   EntityType:Rock.Model.LavaApplication
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.LavaApplication", "Lava Application", "Rock.Model.LavaApplication, Rock.Model, Version=18.0.5.0, Culture=neutral, PublicKeyToken=null", true, true, "FFFE0DE1-B410-435E-9AA8-3A0B18AAF0F7" );
+
+            // Add/Update Model Entity Type
+            //   EntityType:Rock.Model.LavaEndpoint
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.LavaEndpoint", "Lava Endpoint", "Rock.Model.LavaEndpoint, Rock.Model, Version=18.0.5.0, Culture=neutral, PublicKeyToken=null", true, true, "F1BBF7D4-CAFD-450D-A89A-B3312C9738A2" );
+
+            // Add/Update Cache Entity Type
+            //   EntityType:Rock.Web.Cache.LavaApplicationCache
+            RockMigrationHelper.UpdateEntityType( "Rock.Web.Cache.LavaApplicationCache", "Lava Application Cache", "Rock.Web.Cache.LavaApplicationCache, Rock.Web.Cache, Version=18.0.5.0, Culture=neutral, PublicKeyToken=null", false, true, "B75585A8-37C4-4566-B810-1A9B8B753DED" );
+
+            // Add/Update Cache Entity Type
+            //   EntityType:Rock.Web.Cache.LavaEndpointCache
+            RockMigrationHelper.UpdateEntityType( "Rock.Web.Cache.LavaEndpointCache", "Lava Endpoint Cache", "Rock.Web.Cache.LavaEndpointCache, Rock.Web.Cache, Version=18.0.5.0, Culture=neutral, PublicKeyToken=null", false, true, "AED7AF5B-5B0C-4062-B97E-F78ABB91063E" );
 
             // Add/Update Obsidian Block Type
             //   Name:Lava Application Content
