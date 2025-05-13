@@ -29,7 +29,7 @@ namespace Rock.Plugin.HotFixes
         public override void Up()
         {
             // Add new check-in configuration attribute.
-            RockMigrationHelper.AddOrUpdateEntityAttribute( "Rock.Model.GroupType",
+            RockMigrationHelper.AddOrUpdateEntityAttributeByGuid( "Rock.Model.GroupType",
                 SystemGuid.FieldType.BOOLEAN,
                 "GroupTypePurposeValueId",
                 "0",
