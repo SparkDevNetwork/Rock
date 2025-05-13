@@ -137,6 +137,14 @@
     <Compile Include="Migrations\202505082134400_AddChatGroupAndGroupTypeProperties.Designer.cs">
       <DependentUpon>202505082134400_AddChatGroupAndGroupTypeProperties.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202505131801097_Rollup_20250513.cs" />
+    <Compile Include="Migrations\202505131801097_Rollup_20250513.Designer.cs">
+      <DependentUpon>202505131801097_Rollup_20250513.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202505131934386_CodeGenerated_20250513.cs" />
+    <Compile Include="Migrations\202505131934386_CodeGenerated_20250513.Designer.cs">
+      <DependentUpon>202505131934386_CodeGenerated_20250513.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.Designer.cs">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>
@@ -2692,6 +2700,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202505082134400_AddChatGroupAndGroupTypeProperties.resx">
       <DependentUpon>202505082134400_AddChatGroupAndGroupTypeProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202505131801097_Rollup_20250513.resx">
+      <DependentUpon>202505131801097_Rollup_20250513.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202505131934386_CodeGenerated_20250513.resx">
+      <DependentUpon>202505131934386_CodeGenerated_20250513.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.resx">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>

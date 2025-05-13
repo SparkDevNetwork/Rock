@@ -503,5 +503,10 @@ namespace Rock.SystemGuid
         /// The job to run Post v18.0 Data Migrations to delete the deprecated GroupLocationHistoricalSchedule table from the database.
         /// </summary>
         public const string DATA_MIGRATIONS_180_DELETE_GROUPLOCATIONHISTORICALSCHEDULE = "6A76B67B-9C25-4C02-8BC6-06B23EC8C7C3";
+
+        /// <summary>
+        /// The Job to run Post v18.0 Data Migrations to chop Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_180_CHOP_OBSIDIAN_BLOCKS = "6BFCE2DE-5B38-4B71-8737-423AF51A39B1";
     }
 }
