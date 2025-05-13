@@ -113,8 +113,7 @@ namespace RockWeb.Plugins.com_shepherdchurch.Misc
                         var personService = new PersonService( rockContext );
                         var parameterExpression = personService.ParameterExpression;
                         var dv = new DataViewService( rockContext ).Get( dataviewId.Value );
-                        List<string> errorMessages;
-                        var whereExpression = dv.GetExpression( personService, parameterExpression, out errorMessages );
+                        var whereExpression = dv.GetExpression( personService, parameterExpression );
 
                         count = new PersonService( rockContext )
                             .Get( parameterExpression, whereExpression )
@@ -305,8 +304,7 @@ namespace RockWeb.Plugins.com_shepherdchurch.Misc
                         var personService = new PersonService( rockContext );
                         var parameterExpression = personService.ParameterExpression;
                         var dv = new DataViewService( rockContext ).Get( dataviewId.Value );
-                        List<string> errorMessages;
-                        var whereExpression = dv.GetExpression( personService, parameterExpression, out errorMessages );
+                        var whereExpression = dv.GetExpression( personService, parameterExpression );
 
                         personAliasIds = new PersonService( rockContext )
                             .Get( parameterExpression, whereExpression )
