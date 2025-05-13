@@ -115,10 +115,7 @@ namespace Rock.Blocks.Cms
 
             SetBoxInitialEntityState( box );
 
-            var rootUrl = RequestContext.ResolveRockUrl( "/" );
-
             RequestContext.Response.AddCssLink( "~/Styles/Blocks/Cms/MediaElementDetail.css", true);
-            RequestContext.Response.AddScript( "mediaElementDetail", $"$.getScript('{rootUrl}Scripts/Rock/Controls/MediaElementDetail/mediaElementPlayAnalytics.js');" );
 
             box.Options = GetBoxOptions( box.IsEditable );
 
