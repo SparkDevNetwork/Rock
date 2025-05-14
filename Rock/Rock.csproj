@@ -1815,10 +1815,12 @@
     <Compile Include="RealTime\RealTimeException.cs" />
     <Compile Include="RealTime\Topics\CheckInTopic.cs" />
     <Compile Include="RealTime\Topics\CloudPrintTopic.cs" />
+    <Compile Include="RealTime\Topics\GroupPlacementTopic.cs" />
     <Compile Include="RealTime\Topics\EntityUpdatedTopic.cs" />
     <Compile Include="RealTime\Topics\ConversationParticipantTopic.cs" />
     <Compile Include="RealTime\Topics\ICheckIn.cs" />
     <Compile Include="RealTime\Topics\ICloudPrint.cs" />
+    <Compile Include="RealTime\Topics\IGroupPlacement.cs" />
     <Compile Include="RealTime\Topics\IEntityUpdated.cs" />
     <Compile Include="RealTime\Topics\IConversationParticipant.cs" />
     <Compile Include="RealTime\Topics\IInteractiveExperienceParticipant.cs" />
@@ -1901,6 +1903,8 @@
     <Compile Include="Tasks\UpdatePersonAliasPersonalizationData.cs" />
     <Compile Include="Transactions\HandleChatWebhookTransaction.cs" />
     <Compile Include="Transactions\RequeueChatToRockSyncCommandTransaction.cs" />
+    <Compile Include="Transactions\SendRegistrantRealTimeNotificationsTransaction.cs" />
+    <Compile Include="Transactions\SendGroupMemberRealTimeNotificationsTransaction.cs" />
     <Compile Include="UniversalSearch\IndexHelper.cs" />
     <Compile Include="Transactions\AddInteractionEntityTransaction.cs" />
     <Compile Include="Tv\Classes\AppleTvPageSettings.cs" />

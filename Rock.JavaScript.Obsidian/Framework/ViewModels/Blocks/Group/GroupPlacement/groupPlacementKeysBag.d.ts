@@ -21,12 +21,18 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 export type GroupPlacementKeysBag = {
     destinationGroupTypeIdKey?: string | null;
 
     entitySetIdKey?: string | null;
 
+    registrationInstanceGuid?: Guid | null;
+
     registrationInstanceIdKey?: string | null;
+
+    registrationTemplateGuid?: Guid | null;
 
     registrationTemplateIdKey?: string | null;
 

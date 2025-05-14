@@ -339,6 +339,15 @@ namespace Rock.Model
                     }
                 }
 
+                // If we need to send a real-time notification then do so after
+                // this change has been committed to the database.
+                if ( ShouldSendRealTimeMessage() )
+                {
+                    var groupMemberState = new GroupMemberService.GroupMemberUpdatedState( Entity, State );
+
+                    new SendGroupMemberRealTimeNotificationsTransaction( groupMemberState ).Enqueue( true );
+                }
+
                 base.PostSave();
 
                 // if this is a GroupMember record on a Family, ensure that AgeClassification, PrimaryFamily,
@@ -437,6 +446,53 @@ namespace Rock.Model
                         }
                     } );
                 }
+            }
+
+            /// <summary>
+            /// Determines if we need to send any real-time messages for the
+            /// changes made to this entity.
+            /// </summary>
+            /// <returns><c>true</c> if a message should be sent, <c>false</c> otherwise.</returns>
+            private bool ShouldSendRealTimeMessage()
+            {
+                if ( !RockContext.IsRealTimeEnabled )
+                {
+                    return false;
+                }
+
+                if ( PreSaveState == EntityContextState.Added )
+                {
+                    return true;
+                }
+                //else if ( PreSaveState == EntityContextState.Modified )
+                //{
+                //    if ( ( Entity.DidAttend ?? false ) != ( ( ( bool? ) OriginalValues[nameof( Entity.DidAttend )] ) ?? false ) )
+                //    {
+                //        return true;
+                //    }
+                //    else if ( Entity.RSVP != ( RSVP ) OriginalValues[nameof( Entity.RSVP )] )
+                //    {
+                //        return true;
+                //    }
+                //    else if ( Entity.PresentDateTime != ( DateTime? ) OriginalValues[nameof( Entity.PresentDateTime )] )
+                //    {
+                //        return true;
+                //    }
+                //    else if ( Entity.EndDateTime != ( DateTime? ) OriginalValues[nameof( Entity.EndDateTime )] )
+                //    {
+                //        return true;
+                //    }
+                //    else if ( Entity.CheckInStatus != ( CheckInStatus ) OriginalValues[nameof( Entity.CheckInStatus )] )
+                //    {
+                //        return true;
+                //    }
+                //}
+                else if ( PreSaveState == EntityContextState.Deleted )
+                {
+                    return true;
+                }
+
+                return false;
             }
 
             /// <summary>

@@ -451,7 +451,7 @@
     import PlacementConfigurationModal from "./GroupPlacement/placementConfigurationModal.partial.obs";
     import AddGroupModal from "./GroupPlacement/addGroupModal.partial.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import { newGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -472,6 +472,18 @@
     import { AttributeFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/attributeFiltersBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
+    import { Guid } from "@Obsidian/Types";
+    import { getTopic, ITopic, ServerFunctions } from "@Obsidian/Utility/realTime";
+    import { RealTimeConnectionKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/realTimeConnectionKeysBag";
+    import { GroupMemberUpdatedMessageBag } from "@Obsidian/ViewModels/Group/GroupMember/groupMemberUpdatedMessageBag";
+    import { RegistrationRegistrantUpdatedMessageBag } from "@Obsidian/ViewModels/Event/RegistrationEntry/registrationRegistrantUpdatedMessageBag";
+    import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
+
+    type GroupPlacementTopic = ITopic<ServerFunctions<unknown>> & {
+        groupGuids: Guid[],
+        registrationInstanceGuid: Guid,
+        registrationTemplateGuid: Guid,
+    };
 
     /*
         TODO's
@@ -484,6 +496,8 @@
     const box = useConfigurationValues<GroupPlacementInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
+
+    const realTimetopic = ref<GroupPlacementTopic | null>();
 
     const arePersonCardsExpanded = ref(false);
     const areAllPeopleSelected = ref(false);
@@ -655,6 +669,8 @@
             };
         });
     });
+
+    const placementGroupGuids = computed(() => placementGroups.value.map(g => g.groupGuid));
 
 
     // #endregion
@@ -916,26 +932,28 @@
 
                 // TODO - what happens on error?
                 var newGroupMembers = await addGroupMembersToGroup(pendingGroupMembers, placementGroup);
-                newGroupMembers.forEach((groupMember, i) => {
-                    // placementGroup.groupMembers!.splice(operation.targetIndex! + i, 0, {
-                    //     groupRoleIdKey: groupMember.groupRoleIdKey,
-                    //     person: groupMember.person,
-                    //     groupMemberIdKey: groupMember.groupMemberIdKey
-                    // });
-                    // No need to splice because we are always sorting.
-                    placementGroup.groupMembers!.push({
-                        groupMemberId: groupMember.groupMemberId,
-                        groupRoleIdKey: groupMember.groupRoleIdKey,
-                        person: groupMember.person,
-                        groupMemberIdKey: groupMember.groupMemberIdKey
-                    });
+                console.log("New group members: ", newGroupMembers);
+                // Handled by realtime now.
+                // newGroupMembers.forEach((groupMember, i) => {
+                //     // placementGroup.groupMembers!.splice(operation.targetIndex! + i, 0, {
+                //     //     groupRoleIdKey: groupMember.groupRoleIdKey,
+                //     //     person: groupMember.person,
+                //     //     groupMemberIdKey: groupMember.groupMemberIdKey
+                //     // });
+                //     // No need to splice because we are always sorting.
+                //     placementGroup.groupMembers!.push({
+                //         groupMemberId: groupMember.groupMemberId,
+                //         groupRoleIdKey: groupMember.groupRoleIdKey,
+                //         person: groupMember.person,
+                //         groupMemberIdKey: groupMember.groupMemberIdKey
+                //     });
 
-                    if (!box.isPlacementAllowingMultiple) {
-                        peopleToPlace.value = peopleToPlace.value.filter(
-                            p => groupMember.person?.personIdKey !== p.personIdKey
-                        );
-                    }
-                });
+                //     if (!box.isPlacementAllowingMultiple) {
+                //         peopleToPlace.value = peopleToPlace.value.filter(
+                //             p => groupMember.person?.personIdKey !== p.personIdKey
+                //         );
+                //     }
+                // });
 
                 selectedPersonIdKeys.value.clear();
             }
@@ -991,20 +1009,20 @@
             var isRemoveSuccess = await removeGroupMemberFromGroup(groupMemberIdKey, placementGroup.groupIdKey);
 
             if (isRemoveSuccess) {
-                // If the person does not have a Registrant in any of the included Registration Instances, then they should not be shown in the People To Place Panel.
-                // This matches with functionality from the old Webforms Block.
-                // TODO - maybe move this to filter computed?
-                var isPersonBeDisplayed = shouldPersonBeDisplayed(groupMember);
+                // // If the person does not have a Registrant in any of the included Registration Instances, then they should not be shown in the People To Place Panel.
+                // // This matches with functionality from the old Webforms Block.
+                // // TODO - maybe move this to filter computed?
+                // var isPersonBeDisplayed = shouldPersonBeDisplayed(groupMember);
 
-                if (isPersonBeDisplayed) {
-                    // peopleToPlace.value.splice(operation.targetIndex, 0, {
-                    //     ...groupMember.person,
-                    // });
-                    // No need to splice because we are always sorting.
-                    peopleToPlace.value.push({ ...groupMember.person });
-                }
+                // if (isPersonBeDisplayed) {
+                //     // peopleToPlace.value.splice(operation.targetIndex, 0, {
+                //     //     ...groupMember.person,
+                //     // });
+                //     // No need to splice because we are always sorting.
+                //     peopleToPlace.value.push({ ...groupMember.person });
+                // }
 
-                placementGroup.groupMembers = placementGroup.groupMembers?.filter(gm => gm.groupMemberIdKey !== groupMemberIdKey);
+                // placementGroup.groupMembers = placementGroup.groupMembers?.filter(gm => gm.groupMemberIdKey !== groupMemberIdKey);
             }
         }
     }
@@ -1257,6 +1275,56 @@
         return "";
     }
 
+    function getPlacementContext(groupMember: GroupMemberUpdatedMessageBag): {
+        placementGroup: PlacementGroupBag | undefined;
+        existingPerson: PersonBag | undefined;
+    } {
+        const placementGroup = placementGroups.value.find(
+            g => g.groupIdKey === groupMember.groupIdKey
+        );
+
+        if (!placementGroup) {
+            return { placementGroup: undefined, existingPerson: undefined };
+        }
+
+        if (!placementGroup.groupMembers) {
+            placementGroup.groupMembers = [];
+        }
+
+        let existingPerson: PersonBag | undefined;
+        const personIdKey = groupMember?.person?.personIdKey;
+
+        if (!isNullOrWhiteSpace(personIdKey)) {
+            existingPerson = getExistingPerson(personIdKey!);
+        }
+
+        return { placementGroup, existingPerson };
+    }
+
+
+    function getExistingPerson(personIdKey: string): PersonBag | undefined {
+        // Try to find the person from peopleToPlace
+        let existingPerson = peopleToPlace.value.find(
+            p => p.personIdKey === personIdKey
+        );
+
+        // If not found, try to find the person from other placement groups
+        if (!existingPerson) {
+            for (const pg of placementGroups.value) {
+                const groupMemberWithMatchingPerson = pg.groupMembers?.find(
+                    gm => gm.person?.personIdKey === personIdKey
+                );
+
+                if (groupMemberWithMatchingPerson?.person) {
+                    existingPerson = groupMemberWithMatchingPerson.person;
+                    break;
+                }
+            }
+        }
+
+        return existingPerson;
+    }
+
     async function processDestinationGroups(groupsPromise: Promise<PlacementGroupBag[]>): Promise<void> {
         var groups = await groupsPromise;
 
@@ -1331,6 +1399,197 @@
         placementConfigurationSettings.value = bag;
 
         loadPlacementData();
+    }
+
+    /**
+     * Subscribes to the real-time GroupPlacementTopic and returns it.
+     */
+    async function getGroupPlacementTopic(groupGuids: Guid[], registrationInstanceGuid: Guid | null | undefined, registrationTemplateGuid: Guid | null | undefined): Promise<GroupPlacementTopic> {
+        const topic = await getTopic("Rock.RealTime.Topics.GroupPlacementTopic");
+
+        // Add Source Group Guid here...
+        const request: RealTimeConnectionKeysBag = {
+            connectionId: topic.connectionId,
+            groupGuids: groupGuids,
+            registrationInstanceGuid: registrationInstanceGuid,
+            registrationTemplateGuid: registrationTemplateGuid
+        };
+
+        console.log("request: ", request);
+
+        await invokeBlockAction("SubscribeToRealTime", {
+            realTimeConnectionKeysBag: request
+        });
+
+        Object.defineProperty(topic, "registrationInstanceGuid", {
+            value: registrationInstanceGuid,
+            writable: false
+        });
+
+        Object.defineProperty(topic, "registrationTemplateGuid", {
+            value: registrationTemplateGuid,
+            writable: false
+        });
+
+        Object.defineProperty(topic, "groupGuids", {
+            value: groupGuids,
+            writable: false
+        });
+
+        return topic as GroupPlacementTopic;
+    }
+
+    /**
+     * Subscribes to the topic using the current Group and AttendanceOccurrence unique identifiers.
+     */
+    async function startRealTime(): Promise<void> {
+        // const groupGuid = config.value.groupGuid;
+        // const occurrenceGuid = attendanceOccurrenceGuid.value;
+        const registrationInstanceGuid = box.groupPlacementKeys?.registrationInstanceGuid;
+        const registrationTemplateGuid = box.groupPlacementKeys?.registrationTemplateGuid;
+
+        console.log("group Guids: ", placementGroupGuids.value);
+
+        // if (topic.value && areEqual(topic.value.groupGuid, groupGuid) && areEqual(topic.value.registrationInstanceGuid, registrationInstanceGuid)
+        //     && areEqual(topic.value.registrationTemplateGuid, registrationTemplateGuid)) {
+        //     // Skip if already subscribed.
+        //     return;
+        // }
+
+        // if (!config.value.groupGuid) {
+        //     throw "Unable to start real-time";
+        // }
+
+        // if (!attendanceOccurrenceGuid.value) {
+        //     // If the occurrence is new, do not start real-time yet.
+        //     return;
+        // }
+
+        const groupPlacementTopic = await getGroupPlacementTopic(placementGroupGuids.value, registrationInstanceGuid, registrationTemplateGuid);
+        console.log("TOPIC ", groupPlacementTopic);
+        groupPlacementTopic.onDisconnected(async () => {
+            await startRealTime();
+        });
+
+        groupPlacementTopic.on("groupMemberUpdated", onGroupMemberUpdatedFromServer);
+        groupPlacementTopic.on("groupMemberDeleted", onGroupMemberDeletedFromServer);
+        groupPlacementTopic.on("registrantUpdated", onRegistrantUpdatedFromServer);
+        groupPlacementTopic.on("registrantDeleted", onRegistrantDeletedFromServer);
+
+        return;
+    }
+
+    function onGroupMemberUpdatedFromServer(groupMember: GroupMemberUpdatedMessageBag): void {
+        console.log("Reltime update of Group Member: ", groupMember);
+
+        if (groupMember.groupIdKey === box.groupPlacementKeys?.sourceGroupIdKey) {
+            // If a group member was added to the source group then we add to peopleToPlace
+
+        }
+        else {
+            const { placementGroup, existingPerson } = getPlacementContext(groupMember);
+
+            if (!placementGroup) {
+                return;
+            }
+
+            const personToUse = existingPerson || groupMember.person;
+
+            placementGroup.groupMembers!.push({
+                groupMemberId: groupMember.groupMemberId,
+                groupRoleIdKey: groupMember.groupRoleIdKey,
+                person: personToUse,
+                groupMemberIdKey: groupMember.groupMemberIdKey
+            });
+
+            if (!box.isPlacementAllowingMultiple) {
+                peopleToPlace.value = peopleToPlace.value.filter(
+                    p => groupMember.person?.personIdKey !== p.personIdKey
+                );
+            }
+        }
+
+    }
+
+    function onGroupMemberDeletedFromServer(_groupMemberGuid: Guid, groupMember: GroupMemberUpdatedMessageBag): void {
+        console.log("Realtime removal of Group Member: ", groupMember);
+
+        const { placementGroup, existingPerson } = getPlacementContext(groupMember);
+        if (!placementGroup) {
+            return;
+        }
+
+        groupMember.person = existingPerson || groupMember.person;
+
+        // If the person does not have a Registrant in any of the included Registration Instances, then they should not be shown in the People To Place Panel.
+        // This matches with functionality from the old Webforms Block.
+        // TODO - maybe move this to filter computed?
+        if (shouldPersonBeDisplayed(groupMember) && groupMember.person) {
+            peopleToPlace.value.push({ ...groupMember.person });
+        }
+
+        placementGroup.groupMembers = placementGroup.groupMembers?.filter(gm => gm.groupMemberIdKey !== groupMember.groupMemberIdKey);
+    }
+
+    function onRegistrantUpdatedFromServer(registrant: RegistrationRegistrantUpdatedMessageBag): void {
+        console.log("Realtime update of Registrant: ", registrant);
+
+        if (isNullOrWhiteSpace(registrant.person?.personIdKey)) {
+            return;
+        }
+
+        const existingPerson = getExistingPerson(registrant.person!.personIdKey!);
+
+        if (existingPerson) {
+            if (!existingPerson.registrants) {
+                existingPerson.registrants = [];
+            }
+            existingPerson.registrants.push({
+                registrantIdKey: registrant.registrantIdKey,
+                registrationInstanceIdKey: registrant.registrationInstanceIdKey,
+                registrationInstanceName: registrant.registrationInstanceName
+            } as RegistrantBag);
+        }
+        else {
+
+            var newPerson = registrant.person! as PersonBag;
+            newPerson.registrants = [{
+                registrantIdKey: registrant.registrantIdKey,
+                registrationInstanceIdKey: registrant.registrationInstanceIdKey,
+                registrationInstanceName: registrant.registrationInstanceName
+            } as RegistrantBag];
+
+            peopleToPlace.value.push(newPerson);
+        }
+    }
+
+    function onRegistrantDeletedFromServer(_registrantGuid: Guid, registrant: RegistrationRegistrantUpdatedMessageBag): void {
+        console.log("Realtime delete of Registrant: ", registrant);
+
+        const personInPeopleToPlace = peopleToPlace.value.find(p => p.personIdKey === registrant.person?.personIdKey);
+        if (personInPeopleToPlace && personInPeopleToPlace.registrants) {
+            personInPeopleToPlace.registrants = personInPeopleToPlace.registrants.filter(
+                r => r.registrantIdKey !== registrant.registrantIdKey
+            );
+
+            // Remove person if they have no registrants left
+            if (personInPeopleToPlace.registrants.length === 0) {
+                peopleToPlace.value = peopleToPlace.value.filter(
+                    p => p.personIdKey !== personInPeopleToPlace.personIdKey
+                );
+            }
+        }
+
+        // Update in all placement groups
+        for (const group of placementGroups.value) {
+            for (const gm of group.groupMembers ?? []) {
+                if (gm.person?.personIdKey === registrant.person?.personIdKey && gm.person?.registrants) {
+                    gm.person.registrants = gm.person.registrants.filter(
+                        r => r.registrantIdKey !== registrant.registrantIdKey
+                    );
+                }
+            }
+        }
     }
 
     // #endregion
@@ -1523,10 +1782,29 @@
 
     }, { deep: true });
 
+    watch(placementGroupGuids, (newValue, oldValue) => {
+        if (!realTimetopic.value) {
+            startRealTime();
+            return;
+        }
+
+        // if (!isNullOrWhiteSpace(oldValue)) {
+        //     leaveRealTimeChannel(oldValue);
+        // }
+
+        // if (!isNullOrWhiteSpace(newValue)) {
+        //     addRealtimeChannel(newValue);
+        // }
+    });
+
     // #endregion
 
     onMounted(async () => {
         document.addEventListener("click", handleOutsideClick);
+
+        // nextTick(() => {
+        //     startRealTime();
+        // });
 
         loadPlacementData();
     });

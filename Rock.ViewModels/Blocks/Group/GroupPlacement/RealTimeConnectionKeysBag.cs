@@ -22,22 +22,14 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
-    public class GroupPlacementKeysBag
+    public class RealTimeConnectionKeysBag
     {
-        public string RegistrationTemplatePlacementIdKey { get; set; }
+        public string ConnectionId { get; set; }
 
-        public string RegistrationInstanceIdKey { get; set; }
+        public List<Guid> GroupGuids { get; set; }
 
         public Guid? RegistrationInstanceGuid { get; set; }
 
-        public string RegistrationTemplateIdKey { get; set; }
-
         public Guid? RegistrationTemplateGuid { get; set; }
-
-        public string SourceGroupIdKey { get; set; }
-
-        public string EntitySetIdKey { get; set; }
-
-        public string DestinationGroupTypeIdKey { get; set; }
     }
 }

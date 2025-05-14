@@ -19,15 +19,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field;
 using Rock.Model;
+using Rock.RealTime.Topics;
+using Rock.RealTime;
 using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Utility;
@@ -126,50 +126,11 @@ namespace Rock.Blocks.Group
 
         #region Classes
 
-        private class InstancePlacementGroupPerson
-        {
-            /// <summary>
-            /// Gets or sets the person identifier.
-            /// </summary>
-            /// <value>
-            /// The person identifier.
-            /// </value>
-            public int PersonId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the registration instance identifier.
-            /// </summary>
-            /// <value>
-            /// The registration instance identifier.
-            /// </value>
-            public int RegistrationInstanceId { get; set; }
-
-            public int GroupId { get; set; }
-        }
-
-        private class TemplatePlacementGroupPerson
-        {
-            public int PersonId { get; set; }
-
-            public int GroupId { get; set; }
-        }
-
-        private class GroupPlacementResult
-        {
-            public int GroupId { get; set; }
-            public string GroupName { get; set; }
-            public int? GroupCapacity { get; set; }
-            public int GroupTypeId { get; set; }
-            public int GroupOrder { get; set; }
-            public int? PersonId { get; set; }
-            public int? GroupRoleId { get; set; }
-            public int? GroupMemberId { get; set; }
-        }
-
         private class DestinationGroupResult
         {
             public int GroupId { get; set; }
             public string GroupName { get; set; }
+            public Guid GroupGuid { get; set; }
             public int? GroupCapacity { get; set; }
             public int GroupTypeId { get; set; }
             public int GroupOrder { get; set; }
@@ -201,7 +162,6 @@ namespace Rock.Blocks.Group
             public string RegistrationInstanceName { get; set; }
             public int? RegistrationInstanceId { get; set; }
             public DateTime? CreatedDateTime { get; set; }
-            // TODO - Add Fees
             public string FeeName { get; set; }
             public string Option { get; set; }
             public int? Quantity { get; set; }
@@ -364,6 +324,8 @@ namespace Rock.Blocks.Group
                 if ( registrationInstance != null )
                 {
                     registrationTemplateId = registrationInstance.RegistrationTemplateId;
+
+                    box.GroupPlacementKeys.RegistrationInstanceGuid = registrationInstance.Guid;
                 }
             }
 
@@ -431,6 +393,7 @@ namespace Rock.Blocks.Group
 
             box.GroupPlacementKeys.RegistrationInstanceIdKey = registrationInstanceId.HasValue ? IdHasher.Instance.GetHash( registrationInstanceId.Value ) : null;
             box.GroupPlacementKeys.RegistrationTemplateIdKey = registrationTemplateId.HasValue ? IdHasher.Instance.GetHash( registrationTemplateId.Value ) : null;
+            box.GroupPlacementKeys.RegistrationTemplateGuid = registrationTemplate.Guid;
             box.GroupPlacementKeys.RegistrationTemplatePlacementIdKey = registrationTemplatePlacementId.HasValue ? IdHasher.Instance.GetHash( registrationTemplatePlacementId.Value ) : null;
 
             box.PlacementConfigurationSettingOptions.SourceAttributes = GetRegistrantAttributesAsListItems( registrationTemplateId );
@@ -976,6 +939,58 @@ namespace Rock.Blocks.Group
         #endregion Helper Methods
 
         #region Block Actions
+
+        /// <summary>
+        /// Subscribes to the real-time AttendanceOccurrence channels.
+        /// </summary>
+        /// <param name="connectionId">The connection ID.</param>
+        /// <param name="groupGuid">The Group unique identifier.</param>
+        [BlockAction( "SubscribeToRealTime" )]
+        public async Task<BlockActionResult> SubscribeToRealTime( RealTimeConnectionKeysBag realTimeConnectionKeysBag )
+        {
+            var groupService = new GroupService( RockContext );
+            List<Rock.Model.Group> groups = new List<Rock.Model.Group>();
+
+            if ( realTimeConnectionKeysBag.GroupGuids.Any() )
+            {
+                groups = groupService
+                    .Queryable()
+                    .Where( g => realTimeConnectionKeysBag.GroupGuids.Contains( g.Guid ) )
+                    .ToList();
+            }
+
+            var topicChannels = RealTimeHelper.GetTopicContext<IGroupPlacement>().Channels;
+
+            foreach ( var group in groups )
+            {
+                // Authorize the current user.
+                if ( group == null )
+                {
+                    return ActionNotFound( "Group not found." );
+                }
+
+                if ( !group.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+                {
+                    return ActionStatusCode( System.Net.HttpStatusCode.Forbidden );
+                }
+                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetGroupMemberChannelForGroup( group.Guid ) );
+                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetGroupMemberDeletedChannel() );
+            }
+
+            // TODO - should this be an else if? Do I ever want both channels added?
+            if ( realTimeConnectionKeysBag.RegistrationInstanceGuid.HasValue )
+            {
+                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantChannelForRegistrationInstance( realTimeConnectionKeysBag.RegistrationInstanceGuid.Value ) );
+                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantDeletedChannel() );
+            }
+            else if ( realTimeConnectionKeysBag.RegistrationTemplateGuid.HasValue )
+            {
+                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantChannelForRegistrationTemplate( realTimeConnectionKeysBag.RegistrationTemplateGuid.Value ) );
+                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantDeletedChannel() );
+            }
+
+            return ActionOk();
+        }
 
         [BlockAction]
         public BlockActionResult GetPlacementPeople( GroupPlacementKeysBag groupPlacementKeys, Boolean isPlacementAllowingMultiple )
@@ -1645,6 +1660,7 @@ namespace Rock.Blocks.Group
                     GroupId = g.Key,
                     GroupIdKey = IdHasher.Instance.GetHash( g.Key ),
                     GroupName = g.First().GroupName,
+                    GroupGuid = g.First().GroupGuid,
                     GroupCapacity = g.First().GroupCapacity,
                     GroupTypeIdKey = IdHasher.Instance.GetHash( g.First().GroupTypeId ),
                     GroupOrder = g.First().GroupOrder,

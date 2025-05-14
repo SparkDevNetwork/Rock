@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
@@ -31,6 +32,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         /// this when Group Details is converted to Obsidian.)
         /// </summary>
         public int GroupId { get; set; }
+
+        public Guid GroupGuid { get; set; }
 
         public string GroupIdKey { get; set; }
 

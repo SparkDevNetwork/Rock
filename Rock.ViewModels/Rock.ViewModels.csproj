@@ -161,6 +161,7 @@
     <Compile Include="Blocks\Core\ScheduledJobHistoryList\ScheduledJobHistoryListOptionsBag.cs" />
     <Compile Include="Blocks\Example\ControlGallery\ControlGalleryInitializationBox.cs" />
     <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Group\GroupPlacement\RealTimeConnectionKeysBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\GroupPlacementKeysBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\AddGroupMembersBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\DetachGroupBag.cs" />
@@ -850,6 +851,8 @@
     <Compile Include="Controls\MobileNavigationActionBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
+    <Compile Include="Event\RegistrationEntry\RegistrationRegistrantUpdatedMessageBag.cs" />
+    <Compile Include="Group\GroupMember\GroupMemberUpdatedMessageBag.cs" />
     <Compile Include="Rest\Controls\AIProviderPickerGetAIProviderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerExtractFileOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorCreateAttendanceOccurrenceOptionsBag.cs" />

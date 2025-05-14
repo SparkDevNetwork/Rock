@@ -22,36 +22,28 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
-import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
 
-/** The SMS Conversations Initialization Box */
-export type PlacementGroupBag = {
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    attributeValues?: Record<string, string> | null;
-
-    groupCapacity?: number | null;
-
-    groupGuid: Guid;
-
-    /**
-     * Gets or sets the group unique identifier. (TODO: Remove
-     * this when Group Details is converted to Obsidian.)
-     */
-    groupId: number;
+/**
+ * Details about an group member record that is transmitted over
+ * the RealTime engine.
+ */
+export type GroupMemberUpdatedMessageBag = {
+    groupGuid?: Guid | null;
 
     groupIdKey?: string | null;
 
-    groupMembers?: GroupMemberBag[] | null;
+    groupMemberGuid: Guid;
 
-    groupName?: string | null;
+    /**
+     * Gets or sets the group member unique identifier. (TODO: Remove
+     * this when Group Member Detail is converted to Obsidian.)
+     */
+    groupMemberId: number;
 
-    groupOrder: number;
+    groupMemberIdKey?: string | null;
 
-    groupTypeIdKey?: string | null;
+    groupRoleIdKey?: string | null;
 
-    isShared: boolean;
-
-    registrationInstanceIdKey?: string | null;
+    person?: PersonBag | null;
 };

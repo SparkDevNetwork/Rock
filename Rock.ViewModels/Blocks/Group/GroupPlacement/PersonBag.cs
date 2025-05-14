@@ -28,6 +28,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 
         public string FirstName { get; set; }
 
+        // TODO - fix capitalization
         public string Nickname { get; set; }
 
         public string LastName { get; set; }

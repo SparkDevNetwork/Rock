@@ -19,10 +19,20 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
+
 using Rock.Data;
+using Rock.Logging;
+using Rock.RealTime.Topics;
+using Rock.RealTime;
 using Rock.Reporting;
 using Rock.Utility;
 using Rock.Web.Cache;
+
+using Microsoft.Extensions.Logging;
+using Rock.ViewModels.Event.RegistrationEntry;
+using DocumentFormat.OpenXml.Office.CoverPageProps;
+using Z.EntityFramework.Plus;
 
 namespace Rock.Model
 {
@@ -241,6 +251,239 @@ namespace Rock.Model
             /// </value>
             public int RegistrationInstanceId { get; set; }
         }
+
+        #region RealTime Related
+
+        internal class RegistrationRegistrantUpdatedState
+        {
+            /// <inheritdoc cref="IEntity.Id"/>
+            public int Id { get; }
+
+            /// <inheritdoc cref="IEntity.Guid"/>
+            public Guid Guid { get; }
+
+            public EntityContextState State { get; }
+
+            /// <inheritdoc cref="RegistrationRegistrant.PersonAliasId"/>
+            public int PersonAliasId { get; }
+
+            public int? RegistrationInstanceId { get; }
+
+            public string RegistrationInstanceName { get; }
+
+            public Guid? RegistrationInstanceGuid { get; }
+
+            public int? RegistrationTemplateId { get; }
+
+            public Guid? RegistrationTemplateGuid { get; }
+
+            public RegistrationRegistrantUpdatedState( RegistrationRegistrant registrant, int personAliasId, EntityContextState state )
+            {
+                if ( registrant == null )
+                {
+                    throw new ArgumentNullException( nameof( registrant ) );
+                }
+
+                Id = registrant.Id;
+                Guid = registrant.Guid;
+                State = state;
+                PersonAliasId = personAliasId;
+                RegistrationInstanceId = registrant.Registration?.RegistrationInstanceId;
+                RegistrationInstanceName = registrant.Registration?.RegistrationInstance?.Name;
+                RegistrationInstanceGuid = registrant.Registration?.RegistrationInstance?.Guid;
+                RegistrationTemplateId = registrant.RegistrationTemplateId;
+                RegistrationTemplateGuid = registrant.Registration?.RegistrationTemplate?.Guid;
+            }
+        }
+
+        /// <summary>
+        /// Sends the group member updated real time notifications for the specified
+        /// group member records.
+        /// </summary>
+        /// <param name="items">The data that describes each group member record when it was enqueued.</param>
+        /// <returns>A task that represents this operation.</returns>
+        internal static async Task SendRegistrationRegistrantUpdatedRealTimeNotificationsAsync( IList<RegistrationRegistrantUpdatedState> items )
+        {
+            if ( !items.Any() )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                try
+                {
+                    await SendRegistrationRegistrantUpdatedRealTimeNotificationsAsync( rockContext, items );
+                }
+                catch ( Exception ex )
+                {
+                    RockLogger.LoggerFactory.CreateLogger<RegistrationRegistrantService>()
+                        .LogError( ex, ex.Message );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Send group member updated real time notifications for the Registration Registrant
+        /// records.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="items">The additional data that describes each group member record when it was enqueued.</param>
+        /// <returns>A task that represents this operation.</returns>
+        private static async Task SendRegistrationRegistrantUpdatedRealTimeNotificationsAsync( RockContext rockContext, IList<RegistrationRegistrantUpdatedState> items )
+        {
+            var bags = GetRegistrationRegistrantUpdatedMessageBags( rockContext, items );
+
+            if ( !bags.Any() )
+            {
+                return;
+            }
+
+            var topicClients = RealTimeHelper.GetTopicContext<IGroupPlacement>().Clients;
+
+            var tasks = bags
+                .Select( b =>
+                {
+                    return Task.Run( () =>
+                    {
+                        var channels = GroupPlacementTopic.GetRegistrantChannelsForBag( b );
+
+                        return topicClients
+                            .Channels( channels )
+                            .RegistrantUpdated( b );
+                    } );
+                } )
+                .ToArray();
+
+            try
+            {
+                await Task.WhenAll( tasks );
+            }
+            catch ( Exception ex )
+            {
+                RockLogger.LoggerFactory.CreateLogger<RegistrationRegistrantService>()
+                    .LogError( ex, ex.Message );
+            }
+        }
+
+        /// <summary>
+        /// Sends the group member deleted real time notifications for the specified
+        /// group member records.
+        /// </summary>
+        /// <param name="items">The data that describes each group member record when it was enqueued.</param>
+        /// <returns>A task that represents this operation.</returns>
+        internal static async Task SendRegistrationRegistrantDeletedRealTimeNotificationsAsync( IList<RegistrationRegistrantUpdatedState> items )
+        {
+            if ( !items.Any() )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                try
+                {
+                    await SendRegistrationRegistrantDeletedRealTimeNotificationsAsync( rockContext, items );
+                }
+                catch ( Exception ex )
+                {
+                    RockLogger.LoggerFactory.CreateLogger<RegistrationRegistrantService>()
+                        .LogError( ex, ex.Message );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Send group member deleted real time notifications for the Registration Registrant
+        /// records.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="items">The additional data that describes each group member record when it was enqueued.</param>
+        /// <returns>A task that represents this operation.</returns>
+        private static async Task SendRegistrationRegistrantDeletedRealTimeNotificationsAsync( RockContext rockContext, IList<RegistrationRegistrantUpdatedState> items )
+        {
+            var bags = GetRegistrationRegistrantUpdatedMessageBags( rockContext, items );
+            var topicClients = RealTimeHelper.GetTopicContext<IGroupPlacement>().Clients;
+            var channel = GroupPlacementTopic.GetRegistrantDeletedChannel();
+
+            foreach ( var item in items )
+            {
+                try
+                {
+                    var bag = bags.FirstOrDefault( b => b.RegistrantGuid == item.Guid );
+
+                    await topicClients.Channel( channel ).RegistrantDeleted( item.Guid, bag );
+                }
+                catch ( Exception ex )
+                {
+                    RockLogger.LoggerFactory.CreateLogger<RegistrationRegistrantService>()
+                        .LogError( ex, ex.Message );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the group member updated message bag for the group member record.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="items">The additional data that describes each group member record when it was enqueued.</param>
+        /// <returns>A list of <see cref="RegistrationRegistrantUpdatedMessageBag"/> objects that represent the group member records.</returns>
+        private static List<RegistrationRegistrantUpdatedMessageBag> GetRegistrationRegistrantUpdatedMessageBags( RockContext rockContext, IList<RegistrationRegistrantUpdatedState> items )
+        {
+            var publicApplicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
+
+            var personAliasIds = items.Select( i => i.PersonAliasId ).ToList();
+            var futurePersonAliases = new PersonAliasService( rockContext )
+                .Queryable()
+                .Where( pa => personAliasIds.Contains( pa.Id ) )
+                .Select( pa => new
+                {
+                    pa.Id,
+                    pa.Person
+                } )
+                .Future();
+
+            var personAliases = futurePersonAliases.ToList();
+
+            return items
+                .Select( item =>
+                {
+                    var person = personAliases.FirstOrDefault( pa => pa.Id == item.PersonAliasId )?.Person;
+
+                    if ( person == null )
+                    {
+                        return null;
+                    }
+
+                    var bag = new RegistrationRegistrantUpdatedMessageBag
+                    {
+                        RegistrantGuid = item.Guid,
+                        RegistrantIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.Id ),
+                        RegistrationInstanceIdKey = item.RegistrationInstanceId.HasValue ? Rock.Utility.IdHasher.Instance.GetHash( item.RegistrationInstanceId.Value ) : null,
+                        RegistrationInstanceName = item.RegistrationInstanceName,
+                        RegistrationInstanceGuid = item.RegistrationInstanceGuid,
+                        RegistrationTemplateIdKey = item.RegistrationTemplateId.HasValue ? Rock.Utility.IdHasher.Instance.GetHash( item.RegistrationTemplateId.Value ) : null,
+                        RegistrationTemplateGuid = item.RegistrationTemplateGuid,
+                        Person = new ViewModels.Blocks.Group.GroupPlacement.PersonBag
+                        {
+                            PersonIdKey = person.IdKey,
+                            FirstName = person.FirstName,
+                            LastName = person.LastName,
+                            Nickname = person.NickName,
+                            Gender = person.Gender,
+                            PhotoUrl = $"{publicApplicationRoot}{person.PhotoUrl.TrimStart( '~', '/' )}"
+                        },
+                        //Fees = item.fees
+                    };
+
+                    return bag;
+                } )
+                .Where( bag => bag != null )
+                .ToList();
+        }
+
+        #endregion
+
     }
 
     /// <summary>

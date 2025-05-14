@@ -18,15 +18,33 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Model;
+using Rock.ViewModels.Blocks.Group.GroupPlacement;
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.Group.GroupPlacement
+namespace Rock.ViewModels.Event.RegistrationEntry
 {
-    public class GroupPlacementKeysBag
+    /// <summary>
+    /// Details about a registramt record that is transmitted over
+    /// the RealTime engine.
+    /// </summary>
+    public class RegistrationRegistrantUpdatedMessageBag
     {
-        public string RegistrationTemplatePlacementIdKey { get; set; }
+        /// <summary>
+        /// Gets or sets the registrant unique identifier.
+        /// </summary>
+        /// <value>The registrant unique identifier.</value>
+        public Guid RegistrantGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registrant encrypted identifier.
+        /// </summary>
+        /// <value>The registrant encrypted identifier.</value>
+        public string RegistrantIdKey { get; set; }
 
         public string RegistrationInstanceIdKey { get; set; }
+
+        public string RegistrationInstanceName { get; set; }
 
         public Guid? RegistrationInstanceGuid { get; set; }
 
@@ -34,10 +52,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 
         public Guid? RegistrationTemplateGuid { get; set; }
 
-        public string SourceGroupIdKey { get; set; }
+        public PersonBag Person { get; set; }
 
-        public string EntitySetIdKey { get; set; }
-
-        public string DestinationGroupTypeIdKey { get; set; }
+        //public Dictionary<string, ListItemBag> Fees { get; set; }
     }
 }
