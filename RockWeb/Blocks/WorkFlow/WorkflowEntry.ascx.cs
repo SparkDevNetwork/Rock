@@ -946,18 +946,6 @@ namespace RockWeb.Blocks.WorkFlow
                             workflowType = WorkflowTypeCache.GetByIdKey( workflowTypeId );
                         }
                     }
-
-                    if ( _workflowType == null )
-                    {
-                        // If the workflowType is still not set, try to find a WorkflowTypeGuid from either the query or route, via the PageParameter.
-                        var workflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId );
-                        if ( workflowTypeId.IsNotNullOrWhiteSpace() )
-                        {
-                            _workflowType = WorkflowTypeCache.GetByIdKey( workflowTypeId );
-
-                            WorkflowTypeGuid = _workflowType?.Guid.ToString();
-                        }
-                    }
                 }
             }
 
