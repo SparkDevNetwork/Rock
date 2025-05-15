@@ -147,7 +147,7 @@ namespace Rock.Lava.Fluid
             // Parse the content of the block into a set of Fluid statements.
             var blockContext = new FluidParseContext( _blockContent );
 
-            var parseResult = new ParseResult<List<Statement>>();
+            var parseResult = new ParseResult<IReadOnlyList<Statement>>();
 
             _ = _parser.Grammar.Parse( blockContext, ref parseResult );
 

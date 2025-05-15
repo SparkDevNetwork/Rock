@@ -37,9 +37,10 @@ namespace Rock.Lava.Fluid
     public class FluidEngine : LavaEngineBase
     {
         private TemplateOptions _templateOptions = null;
-        private readonly LavaFluidParser _parser = new LavaFluidParser();
+        public readonly LavaFluidParser _parser = new LavaFluidParser();
 
         private static readonly Guid _engineIdentifier = new Guid( "605445FE-6ECC-4E67-9A95-98F7173F7389" );
+
 
         /// <summary>
         /// The descriptive name of the engine.
@@ -227,7 +228,9 @@ namespace Rock.Lava.Fluid
         {
             if ( _templateOptions == null )
             {
-                _templateOptions = new TemplateOptions();
+                // ModelNamesComparer with StringComparer.Ordinal should allow the
+                // "LavaDataDictionary_WithKeysDifferingOnlyByCase_ReturnsMatchingValueForKey" test to pass again
+                _templateOptions = new TemplateOptions { ModelNamesComparer = StringComparer.Ordinal };
 
                 // Re-register the basic Liquid filters implemented by Fluid using CamelCase rather than the default snakecase.
                 HideSnakeCaseFilters( _templateOptions );
@@ -729,22 +732,22 @@ namespace Rock.Lava.Fluid
         /// </summary>
         /// <param name="lavaTemplate"></param>
         /// <returns></returns>
-        [Obsolete( "Use ParseTemplateToTokens instead.")]
-        [RockObsolete("v17")] 
-        public List<string> TokenizeTemplate( string lavaTemplate )
-        {
-            return LavaFluidParser.ParseToTokens( lavaTemplate );
-        }
+        //[Obsolete( "Use ParseTemplateToTokens instead.")]
+        //[RockObsolete("v17")] 
+        //public List<string> TokenizeTemplate( string lavaTemplate )
+        //{
+        //    return LavaFluidParser.ParseToTokens( lavaTemplate );
+        //}
 
         /// <summary>
         /// Process a template and return the list of valid tokens identified by the parser.
         /// </summary>
         /// <param name="lavaTemplate"></param>
         /// <returns></returns>
-        public List<string> ParseTemplateToTokens( string lavaTemplate, bool includeComments = false )
-        {
-            return LavaFluidParser.ParseToTokens( lavaTemplate, includeComments );
-        }
+        //public List<string> ParseTemplateToTokens( string lavaTemplate, bool includeComments = false )
+        //{
+        //    return LavaFluidParser.ParseToTokens( lavaTemplate, includeComments );
+        //}
 
         /// <summary>
         /// Process a template and return the list of statements identified by the parser.
