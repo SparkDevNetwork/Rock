@@ -922,7 +922,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( workflowType == null )
                     {
-                        // If the workflowType is still not set, try to find it from the "WorkflowType" PageParameter, which supports Guid, int ID, ID key, and slug values.
+                        // If the workflowType is still not set, try to find it from the "WorkflowType" PageParameter, which supports Guid, int ID, and slug values.
                         var workflowTypeIdKeyOrSlugPageParam = this.WorkflowTypePageParameter;
 
                         if ( workflowTypeIdKeyOrSlugPageParam.IsNotNullOrWhiteSpace() )
@@ -937,27 +937,13 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                     }
 
-                    if ( _workflowType == null )
+                    if ( workflowType == null )
                     {
-                        // If the workflowType is still not set, try to find a WorkflowTypeGuid from either the query or route, via the PageParameter.
+                        // If the workflowType is still not set, try to find it from the "WorkflowType" from the IdKey.
                         var workflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId );
                         if ( workflowTypeId.IsNotNullOrWhiteSpace() )
                         {
-                            _workflowType = WorkflowTypeCache.GetByIdKey( workflowTypeId );
-
-                            WorkflowTypeGuid = _workflowType?.Guid.ToString();
-                        }
-                    }
-
-                    if ( _workflowType == null )
-                    {
-                        // If the workflowType is still not set, try to find a WorkflowTypeGuid from either the query or route, via the PageParameter.
-                        var workflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId );
-                        if ( workflowTypeId.IsNotNullOrWhiteSpace() )
-                        {
-                            _workflowType = WorkflowTypeCache.GetByIdKey( workflowTypeId );
-
-                            WorkflowTypeGuid = _workflowType?.Guid.ToString();
+                            workflowType = WorkflowTypeCache.GetByIdKey( workflowTypeId );
                         }
                     }
                 }
