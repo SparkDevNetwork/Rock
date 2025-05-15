@@ -333,7 +333,7 @@ Global
 		SolutionGuid = {53C930BD-2ECB-48B7-BDE0-7F5BBDF7A427}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{185a31d7-3037-4dae-8797-0459849a84bd}*SharedItemsImports = 4
+		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{185a31d7-3037-4dae-8797-0459849a84bd}*SharedItemsImports = 5
 		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{6519c205-3304-4d09-86bc-16be8a0d9c41}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal
