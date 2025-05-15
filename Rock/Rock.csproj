@@ -5026,25 +5026,12 @@
     <Content Include="Plugin\HotFixes\157_MigrationRollupsFor13_7_0_ChartShortcodeYAxisLabelFix.sql">
       <DependentUpon>157_MigrationRollupsFor13_7_0.cs</DependentUpon>
     </Content>
-    <None Include="Resources\updateGoogleStaticMap.sql" />
     <None Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql" />
     <None Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.sql" />
     <None Include="Plugin\HotFixes\216_open_bible_on_notebook.jpg.bin" />
     <Content Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateFollowing.sql" />
     <Content Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateGroupConnections.sql" />
     <Content Include="Plugin\HotFixes\225_ImprovePeerNetworkCalculations_spPeerNetwork_UpdateGroupConnections.sql" />
-    <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
-    <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
-    <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </Content>
-    <Content Include="Service References\MelissaData.AddressCheck\Service.disco" />
-    <Content Include="Service References\ServiceObjects.GeoCoder\configuration.svcinfo" />
-    <Content Include="Service References\ServiceObjects.GeoCoder\configuration91.svcinfo" />
-    <Content Include="Service References\ServiceObjects.GeoCoder\GeoCoder.disco" />
-    <Content Include="Service References\ServiceObjects.GeoCoder\Reference.svcmap">
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </Content>
     <Content Include="SqlServerTypes\readme.htm" />
   </ItemGroup>
   <ItemGroup>
