@@ -151,7 +151,8 @@ namespace Rock.Logging
         [RockInternal( "17.0", true )]
         public static void ReloadConfiguration()
         {
-            var configuration = Rock.Web.SystemSettings.GetValue( SystemSetting.ROCK_LOGGING_SETTINGS ).FromJsonOrNull<RockLogSystemSettings>();
+            var configuration = Rock.Web.SystemSettings.GetValue( SystemSetting.ROCK_LOGGING_SETTINGS )
+                .FromJsonOrNull<RockLogSystemSettings>() ?? new RockLogSystemSettings();
 
             ReloadConfiguration( configuration, GetSerilogConfiguration() );
         }
