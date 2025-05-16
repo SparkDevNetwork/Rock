@@ -11,7 +11,7 @@
           :showLaunchWorkflow="false"
           :isCountMessageVisible="false"
           :customActions="customActions"
-          :isSearchVisible="false">
+          :isSearchVisible="true">
 
         <DateTimeColumn name="dateTime"
                         title="Date"
