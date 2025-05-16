@@ -35,7 +35,7 @@
   .panel-title {
     i {
       margin-right: var(--spacing-tiny);
-      color: var(--color-interface-soft);
+      color: var(--color-interface-medium);
     }
   }
 }
@@ -576,7 +576,7 @@
   }
 
   > .panel-body {
-    border-top:       1px solid var(--color-interface-softer);
+    border-top:       1px solid var(--color-interface-soft);
   }
 }
 // ===================== END PANEL WIDGET =====================

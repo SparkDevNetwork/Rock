@@ -121,7 +121,7 @@ output {
   font-size:          var(--font-size-regular);
   line-height:        var(--line-height-normal);
   color:              var(--color-interface-stronger);
-  background-color:   var(--color-interface-softest);
+  background-color:   var(--color-interface-softest) !important;
   background-image:   none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
   border:             1px solid var(--color-interface-soft);
   border-radius:      var(--rounded-xsmall); // Note: This has no effect on <select>s in some browsers, due to the limited stylability of <select>s in CSS.

@@ -20,8 +20,8 @@ samp {
 code {
   padding:          calc(var(--spacing-xsmall) / 2) var(--spacing-xsmall);
   font-size:        90%;
-  color:            var(--code-color);
-  background-color: var(--color-code-bg);
+  color:            var(--base-interface-softest);
+  background-color: var(--base-interface-medium);
   border-radius:    var(--rounded-small);
 }
 

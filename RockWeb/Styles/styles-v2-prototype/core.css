@@ -309,8 +309,10 @@ th {
   --color-sequential-9: #AFEECB;
   --color-sequential-10: #C9F4DC;
   --color-sequential-11: #E4F9ED;
-  --color-code: #c7254e;
-  --color-code-bg: #f9f2f4;
+  --kpi-col-lg: var(--color-interface-soft)
+  // ========================= END COLOR ==========================
+  // ========================= TYPOGRAPHY =========================
+  // FONT SIZES
   --font-size-xsmall: 12px;
   --font-size-small: 14px;
   --font-size-regular: 16px;
@@ -2470,11 +2472,11 @@ th {
   background-color: var(--color-interface-softest);
   border-color: var(--color-interface-soft);
 }
-.btn-authentication.facebook, .btn-authentication.google, .btn-authentication.twitter {
+.btn-authentication.faceF, .btn-authentication.google, .btn-authentication.twitter {
   background-color: var(--color-interface-softest);
   border-color: var(--color-interface-soft);
 }
-.btn-authentication.facebook::before, .btn-authentication.google::before, .btn-authentication.twitter::before {
+.btn-authentication.faceF::before, .btn-authentication.google::before, .btn-authentication.twitter::before {
   color: var(--btn-bg);
   display: inline-block;
   margin-right: 12px;
@@ -2663,28 +2665,28 @@ th {
 }
 
 .btn.btn-info {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-info-strong);
   border-color: var(--color-info-strong);
 }
 .btn.btn-info:focus, .btn.btn-info.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-info-strong);
   border-color: var(--color-info-strong);
 }
 .btn.btn-info:hover {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-info-shade);
   border-color: var(--color-info-shade);
 }
 .btn.btn-info:active, .btn.btn-info.active, .open > .dropdown-toggle .btn.btn-info {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-info-strong);
   border-color: var(--color-info-strong);
   background-image: none;
 }
 .btn.btn-info:active:hover, .btn.btn-info:active:focus, .btn.btn-info:active.focus, .btn.btn-info.active:hover, .btn.btn-info.active:focus, .btn.btn-info.active.focus, .open > .dropdown-toggle .btn.btn-info:hover, .open > .dropdown-toggle .btn.btn-info:focus, .open > .dropdown-toggle .btn.btn-info.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-info-shade);
   border-color: var(--color-info-shade);
 }
@@ -2701,28 +2703,28 @@ th {
 }
 
 .btn.btn-warning {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-warning-strong);
   border-color: var(--color-warning-strong);
 }
 .btn.btn-warning:focus, .btn.btn-warning.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-warning-strong);
   border-color: var(--color-warning-strong);
 }
 .btn.btn-warning:hover {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-warning-shade);
   border-color: var(--color-warning-shade);
 }
 .btn.btn-warning:active, .btn.btn-warning.active, .open > .dropdown-toggle .btn.btn-warning {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-interface-softest);
   border-color: var(--color-warning-strong);
   background-image: none;
 }
 .btn.btn-warning:active:hover, .btn.btn-warning:active:focus, .btn.btn-warning:active.focus, .btn.btn-warning.active:hover, .btn.btn-warning.active:focus, .btn.btn-warning.active.focus, .open > .dropdown-toggle .btn.btn-warning:hover, .open > .dropdown-toggle .btn.btn-warning:focus, .open > .dropdown-toggle .btn.btn-warning.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-warning-shade);
   border-color: var(--color-warning-shade);
 }
@@ -2734,26 +2736,26 @@ th {
   box-shadow: 0 0 0 3px var(--color-warning-tint);
 }
 .btn.btn-warning .badge {
-  color: var(--color-warning-strong);
+  color: var(--base-warning-strong);
   background-color: var(--color-warning-strong);
 }
 
 .btn.btn-danger,
 .btn-danger-solid {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-danger-strong);
   border-color: var(--color-danger-strong);
 }
 .btn.btn-danger:focus, .btn.btn-danger.focus,
 .btn-danger-solid:focus,
 .btn-danger-solid.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-danger-strong);
   border-color: var(--color-danger-strong);
 }
 .btn.btn-danger:hover,
 .btn-danger-solid:hover {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-danger-shade);
   border-color: var(--color-danger-shade);
 }
@@ -2761,7 +2763,7 @@ th {
 .btn-danger-solid:active,
 .btn-danger-solid.active,
 .open > .dropdown-toggle .btn-danger-solid {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-interface-softest);
   background-image: none;
   border-color: var(--color-danger-strong);
@@ -2776,7 +2778,7 @@ th {
 .open > .dropdown-toggle .btn-danger-solid:hover,
 .open > .dropdown-toggle .btn-danger-solid:focus,
 .open > .dropdown-toggle .btn-danger-solid.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-danger-shade);
   border-color: var(--color-danger-shade);
 }
@@ -2800,33 +2802,33 @@ fieldset[disabled] .btn-danger-solid.focus {
 }
 .btn.btn-danger .badge,
 .btn-danger-solid .badge {
-  color: var(--color-danger-strong);
+  color: var(--base-danger-strong);
   background-color: var(--color-danger-strong);
 }
 
 .btn-action {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-interface-medium);
   border-color: var(--color-interface-medium);
 }
 .btn-action:focus, .btn-action.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-interface-strong);
   border-color: var(--color-interface-strong);
 }
 .btn-action:hover {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-interface-strong);
   border-color: var(--color-interface-strong);
 }
 .btn-action:active, .btn-action.active, .open > .dropdown-toggle .btn-action {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-interface-strong);
   background-image: none;
   border-color: var(--color-interface-strong);
 }
 .btn-action:active:hover, .btn-action:active:focus, .btn-action:active.focus, .btn-action.active:hover, .btn-action.active:focus, .btn-action.active.focus, .open > .dropdown-toggle .btn-action:hover, .open > .dropdown-toggle .btn-action:focus, .open > .dropdown-toggle .btn-action.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-interface-strong);
   border-color: var(--color-interface-strong);
 }
@@ -2835,7 +2837,7 @@ fieldset[disabled] .btn-danger-solid.focus {
   border-color: var(--color-interface-strong);
 }
 .btn-action .badge {
-  color: var(--color-interface-stronger);
+  color: var(--base-interface-stronger);
   background-color: var(--color-interface-softest);
 }
 
@@ -3139,16 +3141,13 @@ input[type=button].btn-block {
 }
 .theme-toggle:hover {
   color: var(--color-interface-stronger);
-  background-color: var(--color-interface-soft);
 }
 .theme-toggle:focus {
   color: var(--color-interface-stronger);
-  border-color: var(--color-interface-stronger);
 }
 .theme-toggle:focus:active {
-  color: var(--color-interface-stronger);
-  background-color: var(--color-interface-soft);
-  border-color: var(--color-interface-stronger);
+  color: var(--color-primary);
+  box-shadow: var(--input-focus-box-shadow);
 }
 
 [theme=dark] .theme-toggle .ti.theme-mode-icon:before {
@@ -3968,8 +3967,8 @@ samp {
 code {
   padding: calc(var(--spacing-xsmall) / 2) var(--spacing-xsmall);
   font-size: 90%;
-  color: var(--code-color);
-  background-color: var(--color-code-bg);
+  color: var(--base-interface-softest);
+  background-color: var(--base-interface-medium);
   border-radius: var(--rounded-small);
 }
 
@@ -4532,6 +4531,7 @@ body.modal-open,
 
 .modal-title {
   margin: 0;
+  color: var(--base-interface-softest);
   line-height: var(--line-height-normal);
 }
 
@@ -5162,7 +5162,7 @@ output {
   font-size: var(--font-size-regular);
   line-height: var(--line-height-normal);
   color: var(--color-interface-stronger);
-  background-color: var(--color-interface-softest);
+  background-color: var(--color-interface-softest) !important;
   background-image: none;
   border: 1px solid var(--color-interface-soft);
   border-radius: var(--rounded-xsmall);
@@ -6615,7 +6615,7 @@ td.grid-col-actions {
   border: 0;
   box-shadow: none;
   transition: color 250ms;
-  color: var(--color-interface-medium);
+  color: var(--color-interface-strong);
   background-color: transparent;
   border-color: transparent;
 }
@@ -7714,7 +7714,7 @@ ul ul, ol ul, ul ol, ol ol {
 }
 .panel .panel-title i {
   margin-right: var(--spacing-tiny);
-  color: var(--color-interface-soft);
+  color: var(--color-interface-medium);
 }
 
 .panel-body {
@@ -8195,7 +8195,7 @@ ul ul, ol ul, ul ol, ol ol {
   color: var(--color-interface-strong);
 }
 .panel-widget > .panel-body {
-  border-top: 1px solid var(--color-interface-softer);
+  border-top: 1px solid var(--color-interface-soft);
 }
 
 .panel-persondetails {
@@ -9112,7 +9112,7 @@ ul ul, ol ul, ul ol, ol ol {
   margin-left: 2px;
 }
 .nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-primary);
   border-color: var(--color-primary);
 }
@@ -10237,7 +10237,7 @@ ul ul, ol ul, ul ol, ol ol {
 }
 
 .ace_line {
-  color: var(--color-interface-strong);
+  color: var(--color-interface-strongest);
 }
 
 .ace_editor .ace_marker-layer .ace_selection {
@@ -10322,13 +10322,13 @@ ul ul, ol ul, ul ol, ol ol {
 }
 
 .label-campus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-secondary);
 }
 
 .label-type {
-  color: var(--color-interface-softest);
-  background-color: var(--color-interface-soft);
+  color: var(--base-interface-softest);
+  background-color: var(--color-interface-medium);
 }
 
 .label-communicationstatus-approved {
@@ -14137,7 +14137,7 @@ body.rock-modal .modal-content {
 .rock-modal .modal-content .modal-header small {
   display: block;
   margin-top: var(--spacing-xsmall);
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
 }
 @media screen and (min-width: 768px) {
   .modal-content.rock-modal .modal-header h3,
@@ -15750,7 +15750,7 @@ textarea:focus,
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.active {
   background-color: var(--color-interface-soft);
-  color: var(--color-interface-medium);
+  color: var(--color-interface-stronger);
 }
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.btn-add {
@@ -15790,7 +15790,7 @@ textarea:focus,
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter.active > .btn-grid-action {
   background-color: var(--color-interface-soft);
-  color: var(--color-interface-medium);
+  color: var(--color-interface-stronger);
 }
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper {
@@ -18357,8 +18357,8 @@ iframe.file-browser {
 }
 .panel-note > .panel-heading {
   color: var(--color-interface-strongest);
-  background-color: var(--color-interface-softer);
-  border-color: var(--color-interface-softer);
+  background-color: var(--color-interface-softest);
+  border-color: var(--color-interface-soft);
 }
 .panel-note > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: var(--color-interface-soft);

@@ -63,7 +63,7 @@ body.rock-modal {
     small {
       display:      block;
       margin-top:   var(--spacing-xsmall);
-      color:        var(--color-interface-softest); // TODO darken by 10% when available
+      color:        var(--base-interface-softest); // TODO darken by 10% when available
     }
 
     @media screen and (min-width: $screen-small) {

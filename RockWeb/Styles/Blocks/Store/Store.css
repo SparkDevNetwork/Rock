@@ -39,6 +39,8 @@
   cursor: pointer;
   background-color: var(--color-interface-softest);
   border: 1px solid var(--color-interface-soft);
+  border-radius: var(--rounded-medium);
+  overflow: clip;
 }
 
 .packagesummary .packagesummary-body {

@@ -173,8 +173,8 @@
 
   & > .panel-heading {
     color:            var(--color-interface-strongest);
-    background-color: var(--color-interface-softer);
-    border-color:     var(--color-interface-softer);
+    background-color: var(--color-interface-softest);
+    border-color:     var(--color-interface-soft);
 
     + .panel-collapse > .panel-body {
       border-top-color: var(--color-interface-soft);
