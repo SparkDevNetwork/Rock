@@ -287,7 +287,7 @@ namespace Rock.Reporting.DataFilter.Person
             // First value is StepProgram Guid, second value is StepType Guid, third value is Attribute,
             // remaining values are the field type's filter values
             var values = JsonConvert.DeserializeObject<List<string>>( selection );
-            if ( values.Count >= 2 )
+            if ( values.Count >= 3 )
             {
                 var stepProgram = GetStepProgram( values[0].AsGuid() );
                 var stepType = GetStepType( values[1].AsGuid() );
