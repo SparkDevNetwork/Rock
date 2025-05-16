@@ -189,6 +189,7 @@
         cfg: ChatViewConfigurationBag,
         data: ChatPersonDataBag
     ) {
+        console.log("selectedChannelId", cfg.selectedChannelId);
         reactComponentInstance = lib.mount("chat-container", {
             apiKey: cfg.publicApiKey!,
             userId: data.userId!,
@@ -196,8 +197,9 @@
             primaryColor: "#FF0000",
             sharedChannelTypeKey: cfg.sharedChannelTypeKey ?? undefined,
             directMessageChannelTypeKey: cfg.directMessageChannelTypeKey ?? undefined,
-            cid: cfg.selectedChannelId ?? undefined,
-            jumpToMessageId: cfg.selectedMessageId ?? undefined
+            selectedChannelId: cfg.selectedChannelId ?? undefined,
+            channelId: cfg.channelId ?? undefined,
+            jumpToMessageId: cfg.jumpToMessageId ?? undefined
         });
         suspense?.completeAsyncOperation(mountGuid);
     }
@@ -214,7 +216,8 @@
         userToken: string;
         sharedChannelTypeKey?: string;
         directMessageChannelTypeKey?: string;
-        cid?: string;
+        channelId?: string;
+        selectedChannelId?: string;
         jumpToMessageId?: string;
     }
 </script>

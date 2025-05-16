@@ -24,6 +24,7 @@ import CreateChannelModal from "./CreateChannel/CreateChannelModal";
 import { RockChannelHeader } from "./ChannelHeader/RockChannelHeader";
 import { CustomMessageActions } from "./MessageAction/CustomMessageActions";
 import { WrappedChannel } from "./MessageAction/WrappedChannel";
+import { WrappedChannelList } from "./ChannelList/WrappedChannelList";
 
 /**
  * The ChatComponent sets up and renders the Stream Chat UI
@@ -37,7 +38,8 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
     filterSharedChannelByCampus,
     sharedChannelTypeKey,
     directMessageChannelTypeKey,
-    cid,
+    channelId,
+    selectedChannelId,
     jumpToMessageId,
 }) => {
 
@@ -110,21 +112,25 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
                 }}>
                 <div style={chatContentStyle}>
                     {/* If a channel is passed in, hide the channel list and show the channel directly. */}
-                    {!cid && (
+                    {!channelId && (
                         <>
                             <div className="rock__channel-list-container">
                                 <ChannelListHeader onNewMessage={handleNewMessage} />
-                                <ChannelList
+                                <WrappedChannelList
+                                    selectedChannelId={selectedChannelId}
                                     filters={finalFilter}
                                     sort={sort}
                                     options={options}
                                     Preview={RockChannelPreview}
+
+                                    // if there is a passed in selectedChannelId, we need to set it as the active channel
+                                    setActiveChannelOnMount={selectedChannelId == undefined || selectedChannelId == null || selectedChannelId == ""}
                                 />
                             </div>
                         </>
                     )}
 
-                    <WrappedChannel cid={cid} jumpToMessageId={jumpToMessageId}>
+                    <WrappedChannel channelId={channelId} jumpToMessageId={jumpToMessageId}>
                         <Window>
                             <RockChannelHeader />
                             <MessageList messageActions={['edit', 'delete', 'flag', 'mute', 'quote', 'react', 'reply']} noGroupByUser />

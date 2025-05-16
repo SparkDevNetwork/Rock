@@ -67,6 +67,9 @@ namespace Rock.Blocks.Communication.Chat
 
     #region Web-Specific
 
+    // Even though these settings are swapped between the mobile and web blocks,
+    // the order of the attributes should stay sequential to follow existing patterns.
+
     [CodeEditorField( "Age Verification Template",
         Description = "The XAML template displayed when the person does not have a birthdate.",
         IsRequired = false,
@@ -89,8 +92,8 @@ namespace Rock.Blocks.Communication.Chat
 
     #endregion
 
-    [Rock.SystemGuid.EntityTypeGuid( "B3D6F875-1589-4543-9E76-5C41201B465B" )]
-    [Rock.SystemGuid.BlockTypeGuid( "723A3F70-87DC-4BA0-A6FB-0AC15B1865B0" )]
+    [EntityTypeGuid( "B3D6F875-1589-4543-9E76-5C41201B465B" )]
+    [BlockTypeGuid( "723A3F70-87DC-4BA0-A6FB-0AC15B1865B0" )]
     public class ChatView : RockBlockType
     {
         #region Properties
@@ -182,12 +185,17 @@ namespace Rock.Blocks.Communication.Chat
         private static class PageParameterKey
         {
             /// <summary>
-            /// The channel ID key.
+            /// The SelctedChannelId key.
+            /// </summary>
+            public const string SelectedChannelId = "SelectedChannelId";
+
+            /// <summary>
+            /// The ChannelId key.
             /// </summary>
             public const string ChannelId = "ChannelId";
 
             /// <summary>
-            /// The message ID key.
+            /// The MessageId key.
             /// </summary>
             public const string MessageId = "MessageId";
         }
@@ -218,22 +226,9 @@ namespace Rock.Blocks.Communication.Chat
                 var sharedChannelGroupStreamKey = ChatHelper.GetChatChannelTypeKey( sharedChannelGroupTypeId.Value );
                 var directMessagingChannelStreamKey = ChatHelper.GetChatChannelTypeKey( directMessagingChannelGroupTypeId.Value );
 
-                var channelId = PageParameter( PageParameterKey.ChannelId );
-
-                if ( channelId.IsNotNullOrWhiteSpace() )
-                {
-                    bool usePredictableId = !( this.PageCache?.Layout?.Site?.DisablePredictableIds ?? false );
-                    var rockGroup = GroupCache.Get( channelId, usePredictableId );
-
-                    var queryableChannelKey = rockGroup != null
-                        ? chatHelper.GetQueryableChatChannelKey( rockGroup.Id )
-                        : null;
-
-                    if ( queryableChannelKey.IsNotNullOrWhiteSpace() )
-                    {
-                        channelId = queryableChannelKey;
-                    }
-                }
+                var allowIntegerIdentifier = !PageCache.Layout.Site.DisablePredictableIds;
+                var channelId = chatHelper.GetQueryableChatChannelKey( PageParameter( PageParameterKey.ChannelId ), allowIntegerIdentifier );
+                var selectedChannelId = chatHelper.GetQueryableChatChannelKey( PageParameter( PageParameterKey.SelectedChannelId ), allowIntegerIdentifier );
 
                 return new ChatViewInitializationBox
                 {
@@ -243,8 +238,9 @@ namespace Rock.Blocks.Communication.Chat
                         PublicApiKey = ChatHelper.GetChatConfiguration().ApiKey,
                         SharedChannelTypeKey = sharedChannelGroupStreamKey,
                         DirectMessageChannelTypeKey = directMessagingChannelStreamKey,
-                        SelectedChannelId = channelId,
-                        SelectedMessageId = PageParameter( PageParameterKey.MessageId )
+                        ChannelId = channelId,
+                        SelectedChannelId = selectedChannelId,
+                        JumpToMessageId = PageParameter( PageParameterKey.MessageId )
                     }
                 };
             }

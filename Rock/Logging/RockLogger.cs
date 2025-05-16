@@ -167,8 +167,8 @@ namespace Rock.Logging
 
             if ( configuration == null )
             {
-                serilogConfiguration.NumberOfLogFiles = 20;
-                serilogConfiguration.MaxFileSize = 20;
+                serilogConfiguration.NumberOfLogFiles = 5;
+                serilogConfiguration.MaxFileSize = 5;
             }
             else
             {
@@ -227,6 +227,9 @@ namespace Rock.Logging
         /// <returns>A logger instance.</returns>
         internal static Serilog.Core.Logger CreateSerilogLogger( SerilogConfiguration configuration )
         {
+            // Don't allow a MaxFileSize of 0 since it could cause Serilog to use unlimited file size.
+            var fileSizeMB = configuration.MaxFileSize > 0 ? configuration.MaxFileSize : 1;
+
             return new LoggerConfiguration()
                  .MinimumLevel
                  .Verbose()
@@ -239,7 +242,7 @@ namespace Rock.Logging
                      flushToDiskInterval: TimeSpan.FromSeconds( 10 ),
                      retainedFileCountLimit: configuration.NumberOfLogFiles,
                      rollOnFileSizeLimit: true,
-                     fileSizeLimitBytes: configuration.MaxFileSize * 1024 * 1024 )
+                     fileSizeLimitBytes: fileSizeMB * 1024 * 1024 )
                  .CreateLogger();
         }
 

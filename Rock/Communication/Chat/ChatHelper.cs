@@ -3504,6 +3504,42 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
+        /// Resolves a StreamChat-compatible channel key from the provided identifier string.
+        /// Attempts to interpret the input as a Rock group identifier (ID, IdKey, or GUID), and if found,
+        /// converts it to the corresponding StreamChat channel key. If no match is found, the original
+        /// identifier is returned as-is.
+        /// </summary>
+        /// <param name="channelIdentifier">
+        /// A string representing either a Rock group ID, IdKey, GUID, or a direct StreamChat channel key.
+        /// </param>
+        /// <param name="allowIntegerIdentifier">
+        /// A flag indicating whether numeric identifiers should be considered valid Rock group IDs
+        /// during resolution. If false, only IdKeys and GUIDs will be matched.
+        /// </param>
+        /// <returns>
+        /// The resolved StreamChat-compatible channel key, or the original identifier if it does not
+        /// map to a known Rock group.
+        /// </returns>
+        /// <remarks>
+        /// This method is useful when supporting both Rock-integrated group chat and direct StreamChat channel usage.
+        /// </remarks>
+        internal string GetQueryableChatChannelKey( string channelIdentifier, bool allowIntegerIdentifier = false )
+        {
+            if( channelIdentifier.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            var groupId = GroupCache.Get( channelIdentifier, allowIntegerIdentifier )?.Id;
+            if( groupId.HasValue )
+            {
+                return GetQueryableChatChannelKey( groupId.Value );
+            }
+
+            return channelIdentifier;
+        }
+
+        /// <summary>
         /// Gets <see cref="RockChatGroupMember"/>s for the provided <see cref="SyncGroupMemberToChatCommand"/>s.
         /// </summary>
         /// <param name="syncCommands">The list of <see cref="SyncGroupMemberToChatCommand"/>s for which to get

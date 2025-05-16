@@ -7,6 +7,7 @@ export interface ChatComponentProps {
     currentCampusId: string | null;
     sharedChannelTypeKey?: string;
     directMessageChannelTypeKey?: string;
-    cid?: string;
+    channelId?: string;
+    selectedChannelId?: string;
     jumpToMessageId?: string;
 }
