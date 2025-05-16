@@ -44,11 +44,16 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatView
         /// <summary>
         /// Gets or sets the selected channel ID.
         /// </summary>
+        public string ChannelId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the selected channel ID.
+        /// </summary>
         public string SelectedChannelId { get; set; }
 
         /// <summary>
         /// Gets or sets the selected message ID.
         /// </summary>
-        public string SelectedMessageId { get; set; }
+        public string JumpToMessageId { get; set; }
     }
 }
