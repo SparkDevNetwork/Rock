@@ -180,18 +180,6 @@ namespace Rock.Blocks.Types.Mobile.Finance
         Description = "Set this to limit campuses by campus status.",
         Order = 3 )]
 
-    [BooleanField(
-        "Use Account Campus Mapping Logic",
-        Description = @"If enabled, the accounts will be determined as follows:
-        <ul>
-          <li>If the selected account is not associated with a campus, the Selected Account will be the first matching active child account that is associated with the selected campus.</li>
-          <li>If the selected account is not associated with a campus, but there are no active child accounts for the selected campus, the parent account (the one the user sees) will be returned.</li>
-          <li>If the selected account is associated with a campus, that account will be returned regardless of campus selection (and it won't use the child account logic)</li>
-        <ul>",
-        Key = AttributeKey.UseAccountCampusMappingLogic,
-        DefaultBooleanValue = false,
-        Order = 4 )]
-
     // Communication Settings
 
     [SystemCommunicationField( "Receipt Email",
@@ -279,7 +267,6 @@ namespace Rock.Blocks.Types.Mobile.Finance
             public const string IncludeInactiveCampuses = "IncludeInactiveCampuses";
             public const string IncludedCampusTypes = "IncludedCampusTypes";
             public const string IncludedCampusStatuses = "IncludedCampusStatuses";
-            public const string UseAccountCampusMappingLogic = "UseAccountCampusMappingLogic";
             public const string SuccessTemplate = "SuccessTemplate";
             public const string EnableMultiAccount = "EnableMultiAccount";
             public const string AccountCampusContext = "AccountCampusContext";
@@ -393,11 +380,6 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// The campus statuses to include.
         /// </summary>
         protected List<Guid> IncludedCampusStatuses => GetAttributeValue( AttributeKey.IncludedCampusStatuses ).SplitDelimitedValues().AsGuidList();
-
-        /// <summary>
-        /// Whether or not to use account campus mapping logic.
-        /// </summary>
-        protected bool UseAccountCampusMappingLogic => GetAttributeValue( AttributeKey.UseAccountCampusMappingLogic ).AsBoolean();
 
         /// <summary>
         /// The connection status to use for new individuals.
@@ -583,6 +565,12 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <param name="rockContext">The rock context.</param>
         private List<AccountItemBag> GetAvailableAccounts( RockContext rockContext )
         {
+            if ( !Accounts.Any() )
+            {
+                // If no accounts are specified, return an empty list.
+                return new List<AccountItemBag>();
+            }
+
             var financialAccountService = new FinancialAccountService( rockContext );
             var accountList = new List<AccountItemBag>();
             var availableAccounts = financialAccountService.Queryable()
@@ -593,11 +581,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
                     && ( f.StartDate == null || f.StartDate <= RockDateTime.Today )
                     && ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
             .Include( f => f.ImageBinaryFile );
-
-            if ( Accounts.Any() )
-            {
-                availableAccounts = availableAccounts.Where( a => Accounts.Contains( a.Guid ) );
-            }
+            availableAccounts = availableAccounts.Where( a => Accounts.Contains( a.Guid ) );
 
             // Filter by the campus context if configured and there is a context campus.
             var contextCampus = RequestContext.GetContextEntity<Campus>();
@@ -1292,21 +1276,15 @@ namespace Rock.Blocks.Types.Mobile.Finance
         }
 
         /// <summary>
-        /// Processes the account amount selections based on the campus (see <seealso cref="UseAccountCampusMappingLogic" />).
+        /// Processes the account amount selections based on the campus (see <seealso cref="FinancialAccountCache.UsesCampusChildAccounts" />).
         /// </summary>
         /// <param name="options"></param>
-        private void ProcessAccountAmountSelections( TransactionRequestInfoBag options )
+        private List<AccountAmountSelectionBag> ProcessAccountAmountSelections( TransactionRequestInfoBag options )
         {
-            if ( options.CampusId.IsNullOrWhiteSpace() )
+            CampusCache campus = null;
+            if ( options.CampusId.IsNotNullOrWhiteSpace() )
             {
-                return;
-            }
-
-            var campusId = CampusCache.Get( options.CampusId, !this.PageCache.Layout.Site.DisablePredictableIds )?.Id;
-
-            if ( campusId == null )
-            {
-                return;
+                campus = CampusCache.Get( options.CampusId, !this.PageCache.Layout.Site.DisablePredictableIds );
             }
 
             var accountAmountSelectionsList = new List<AccountAmountSelectionBag>();
@@ -1315,25 +1293,25 @@ namespace Rock.Blocks.Types.Mobile.Finance
             {
                 var financialAccount = FinancialAccountCache.Get( accountAmountSelection.AccountId, !this.PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( financialAccount == null )
+                // If they sent us an invalid account, we need to bail out
+                // the entire transaction, so return null.
+                // Invalid meaning it was not found in the database or they sent us an account that's not enabled
+                // in block settings.
+                if ( financialAccount == null || !Accounts.Contains( financialAccount.Guid ) )
                 {
-                    continue;
+                    return null;
                 }
 
-                var accountId = financialAccount.IdKey;
-                if ( campusId != null )
-                {
-                    accountId = GetBestMatchingAccountIdForCampusFromDisplayedAccount( campusId.Value, financialAccount );
-                }
+                financialAccount = financialAccount.GetMappedAccountForCampus( campus );
 
                 accountAmountSelectionsList.Add( new AccountAmountSelectionBag
                 {
-                    AccountId = accountId,
+                    AccountId = financialAccount.IdKey,
                     Amount = accountAmountSelection.Amount
                 } );
             }
 
-            options.AccountAmountSelections = accountAmountSelectionsList;
+            return accountAmountSelectionsList;
         }
 
         /// <summary>
@@ -1352,41 +1330,6 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 };
 
                 sendPaymentReceiptsTask.Send();
-            }
-        }
-
-        /// <summary>
-        /// Gets the best matching AccountId for selected campus from the displayed account.
-        /// </summary>
-        /// <param name="campusId">The campus.</param>
-        /// <param name="displayedAccount">The displayed account.</param>
-        /// <returns></returns>
-        private string GetBestMatchingAccountIdForCampusFromDisplayedAccount( int campusId, FinancialAccountCache displayedAccount )
-        {
-            if ( !UseAccountCampusMappingLogic )
-            {
-                return displayedAccount.IdKey;
-            }
-
-            if ( displayedAccount.CampusId.HasValue && displayedAccount.CampusId == campusId )
-            {
-                // displayed account is directly associated with selected campusId, so return it
-                return displayedAccount.IdKey;
-            }
-            else
-            {
-                // displayed account doesn't have a campus (or belongs to another campus). Find first active matching child account
-                var firstMatchingChildAccount = displayedAccount.ChildAccounts.Where( a => a.IsActive ).FirstOrDefault( a => a.CampusId.HasValue && a.CampusId == campusId );
-                if ( firstMatchingChildAccount != null )
-                {
-                    // one of the child accounts is associated with the campus so, return the child account
-                    return firstMatchingChildAccount.IdKey;
-                }
-                else
-                {
-                    // none of the child accounts is associated with the campus so, return the displayed account
-                    return displayedAccount.IdKey;
-                }
             }
         }
 
@@ -1549,7 +1492,15 @@ namespace Rock.Blocks.Types.Mobile.Finance
         [BlockAction]
         public BlockActionResult ProcessTransaction( TransactionRequestInfoBag options )
         {
-            ProcessAccountAmountSelections( options );
+            var accountsAndAmounts = ProcessAccountAmountSelections( options );
+
+            if( accountsAndAmounts == null || accountsAndAmounts.Count == 0 )
+            {
+                return ActionBadRequest( "There was an error processing your transaction. An invalid or no valid financial account was provided." );
+            }
+
+            options.AccountAmountSelections = accountsAndAmounts;
+
             var transactionResult = ProcessTransaction( options, out var errorMessage );
 
             if ( errorMessage.IsNotNullOrWhiteSpace() )
