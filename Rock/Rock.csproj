@@ -1616,6 +1616,7 @@
     <Compile Include="Security\Authentication\OneTimePasscode\OneTimePasscodeAuthenticationResult.cs" />
     <Compile Include="Security\Authentication\PasswordlessAuthentication.cs" />
     <Compile Include="Security\Authentication\Passwordless\PasswordlessAuthenticationState.cs" />
+    <Compile Include="Security\SecurityGrantRules\ConnectionRequestPickerSecurityGrantRule.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />
     <Compile Include="Transactions\AddInteractionEntityTransaction.cs" />
     <Compile Include="Tv\Classes\AppleTvPageSettings.cs" />
