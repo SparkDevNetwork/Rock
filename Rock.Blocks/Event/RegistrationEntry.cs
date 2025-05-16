@@ -4006,7 +4006,11 @@ namespace Rock.Blocks.Event
                 GatewayControl = isRedirectGateway ? null : new GatewayControlBag
                 {
                     FileUrl = financialGatewayComponent?.GetObsidianControlFileUrl( financialGateway ) ?? string.Empty,
-                    Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway, null ) ?? new object()
+                    Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway, new HostedPaymentInfoControlOptions {
+                        EnableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean(),
+                        EnableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean(),
+                        EnableBillingAddressCollection = true
+                    } ) ?? new object()
                 },
                 IsRedirectGateway = isRedirectGateway,
                 SpotsRemaining = adjustedSpotsRemaining,
