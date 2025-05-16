@@ -40,6 +40,7 @@ using Rock.Lava;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.Utility;
 using Rock.Utility.CaptchaApi;
 using Rock.ViewModels.Controls;
@@ -841,6 +842,8 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "9E5F190E-91FD-4E50-9F00-8B4F9DBD874C" )]
         public IHttpActionResult BinaryFilePickerGetBinaryFiles( [FromBody] BinaryFilePickerGetBinaryFilesOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
             using ( var rockContext = new RockContext() )
             {
                 // Check that user has access to view the BinaryFileType.
@@ -848,6 +851,15 @@ namespace Rock.Rest.v2
                 if ( !authorizedFileTypeGuids.Contains( options.BinaryFileTypeGuid ) )
                 {
                     return NotFound();
+                }
+
+                var binaryFileTypeCache = BinaryFileTypeCache.Get( options.BinaryFileTypeGuid, rockContext );
+
+                // For additional security we require an explicit grant rule on
+                // the binary file type to enable this picker.
+                if ( binaryFileTypeCache == null || grant?.IsAccessGranted( binaryFileTypeCache, Authorization.VIEW ) != true )
+                {
+                    return Unauthorized();
                 }
 
                 var items = new BinaryFileService( new RockContext() )
@@ -1195,6 +1207,11 @@ namespace Rock.Rest.v2
                 return BadRequest( "Please provide a valid Defined Type GUID" );
             }
 
+            if ( !definedType.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var definedValueService = new DefinedValueService( rockContext );
@@ -1459,6 +1476,14 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
+            // Default security for ConnectionRequest is world view. So we decided
+            // to require a custom security grant in order to use the picker so that
+            // the API was not just open to the world.
+            if ( grant?.IsAccessGranted( ConnectionRequestPickerSecurityGrantRule.AccessInstance, Authorization.VIEW ) != true )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 string service = null;
@@ -1596,6 +1621,7 @@ namespace Rock.Rest.v2
         public IHttpActionResult ContentChannelItemPickerGetContentChannels()
         {
             var contentChannels = ContentChannelCache.All()
+                .Where( cc => cc.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
                 .OrderBy( cc => cc.Name )
                 .Select( cc => new ListItemBag { Text = cc.Name, Value = cc.Guid.ToString() } )
                 .ToList();
@@ -1614,7 +1640,24 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "e1f6ad6b-c3f5-4a1a-abc2-46726732daee" )]
         public IHttpActionResult ContentChannelItemPickerGetContentChannelItems( [FromBody] ContentChannelItemPickerGetContentChannelItemsOptionsBag options )
         {
-            return Ok( ContentChannelItemPickerGetContentChannelItemsForContentChannel( options.ContentChannelGuid, options.ExcludeContentChannelItems ) );
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var contentChannel = new ContentChannelService( rockContext ).GetInclude( options.ContentChannelGuid, cc => cc.Items );
+
+                if ( contentChannel == null )
+                {
+                    return BadRequest( "Invalid content channel." );
+                }
+
+                if ( !contentChannel.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( contentChannel, Security.Authorization.VIEW ) != true )
+                {
+                    return Unauthorized();
+                }
+
+                return Ok( ContentChannelItemPickerGetContentChannelItemsForContentChannel( contentChannel, options.ExcludeContentChannelItems ) );
+            }
         }
 
         /// <summary>
@@ -1628,6 +1671,8 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "ef6d055f-38b1-4225-b95f-cfe703f4d425" )]
         public IHttpActionResult ContentChannelItemPickerGetAllForContentChannelItem( [FromBody] ContentChannelItemPickerGetAllForContentChannelItemOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
             using ( var rockContext = new RockContext() )
             {
                 List<Guid> excludeContentChannelItems = options.ExcludeContentChannelItems;
@@ -1637,9 +1682,19 @@ namespace Rock.Rest.v2
                     .Where( cc => cc.Guid == options.ContentChannelItemGuid )
                     .First();
 
+                if ( contentChannelItem == null || !contentChannelItem.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return BadRequest( "Invalid content channel item." );
+                }
+
                 var contentChannel = contentChannelItem.ContentChannel;
 
-                var contentChannelItems = ContentChannelItemPickerGetContentChannelItemsForContentChannel( contentChannel.Guid, excludeContentChannelItems, rockContext );
+                if ( !contentChannel.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( contentChannel, Security.Authorization.VIEW ) != true )
+                {
+                    return Unauthorized();
+                }
+
+                var contentChannelItems = ContentChannelItemPickerGetContentChannelItemsForContentChannel( contentChannel, excludeContentChannelItems );
 
                 return Ok( new ContentChannelItemPickerGetAllForContentChannelItemResultsBag
                 {
@@ -1653,34 +1708,15 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Gets the content channel items that can be displayed in the content channel item picker.
         /// </summary>
-        /// <param name="contentChannelGuid">Load content channel items of this type</param>
+        /// <param name="contentChannel">The content channel to get the items from.</param>
         /// <param name="excludeContentChannelItems">Do not include these items in the result</param>
         /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
-        private List<ListItemBag> ContentChannelItemPickerGetContentChannelItemsForContentChannel( Guid contentChannelGuid, List<Guid> excludeContentChannelItems )
+        private List<ListItemBag> ContentChannelItemPickerGetContentChannelItemsForContentChannel( ContentChannel contentChannel, List<Guid> excludeContentChannelItems )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                return ContentChannelItemPickerGetContentChannelItemsForContentChannel( contentChannelGuid, excludeContentChannelItems, rockContext );
-            }
-        }
-
-        /// <summary>
-        /// Gets the content channel items that can be displayed in the content channel item picker.
-        /// </summary>
-        /// <param name="contentChannelGuid">Load content channel items of this type</param>
-        /// <param name="excludeContentChannelItems">Do not include these items in the result</param>
-        /// <param name="rockContext">DB context</param>
-        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
-        private List<ListItemBag> ContentChannelItemPickerGetContentChannelItemsForContentChannel( Guid contentChannelGuid, List<Guid> excludeContentChannelItems, RockContext rockContext )
-        {
-            var contentChannelItemService = new Rock.Model.ContentChannelItemService( rockContext );
-
-            var contentChannelitems = contentChannelItemService.Queryable()
-                .Where( r =>
-                    r.ContentChannel.Guid == contentChannelGuid &&
-                    !excludeContentChannelItems.Contains( r.Guid ) )
+            var contentChannelitems = contentChannel.Items
+                .Where( cci => !excludeContentChannelItems.Contains( cci.Guid ) )
                 .OrderBy( a => a.Title )
-                .Select( r => new ListItemBag { Text = r.Title, Value = r.Guid.ToString() } )
+                .Select( cci => new ListItemBag { Text = cci.Title, Value = cci.Guid.ToString() } )
                 .ToList();
 
             return contentChannelitems;
@@ -2033,7 +2069,7 @@ namespace Rock.Rest.v2
                 {
                     var category = new CategoryService( rockContext ).Get( options.CategoryGuid.Value );
 
-                    if ( category == null || ( !category.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) && !grant?.IsAccessGranted( category, Authorization.VIEW ) != true ) )
+                    if ( category == null || ( !category.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( category, Authorization.VIEW ) != true ) )
                     {
                         return NotFound();
                     }
@@ -2065,11 +2101,17 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
-                var entityGuid = Reflection.GetEntityGuidForEntityType( options.EntityTypeGuid, options.EntityKey, false, rockContext );
+                var entityType = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
+
+                if ( entityType == null )
+                {
+                    return BadRequest( "Invalid entity type." );
+                }
+
+                var entity = Reflection.GetIEntityForEntityType( entityType.GetEntityType(), options.EntityKey, false, rockContext );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-                if ( !entityTypeId.HasValue || !entityGuid.HasValue )
+                if ( entity == null )
                 {
                     return NotFound();
                 }
@@ -2083,15 +2125,15 @@ namespace Rock.Rest.v2
                 }
 
                 // If the entity is not already tagged, then tag it.
-                var taggedItem = tag.TaggedItems.FirstOrDefault( i => i.EntityGuid.Equals( entityGuid ) );
+                var taggedItem = tag.TaggedItems.FirstOrDefault( i => i.EntityGuid.Equals( entity.Guid ) );
 
                 if ( taggedItem == null )
                 {
                     taggedItem = new TaggedItem
                     {
                         Tag = tag,
-                        EntityTypeId = entityTypeId.Value,
-                        EntityGuid = entityGuid.Value
+                        EntityTypeId = entityType.Id,
+                        EntityGuid = entity.Guid
                     };
 
                     tag.TaggedItems.Add( taggedItem );
@@ -2363,6 +2405,11 @@ namespace Rock.Rest.v2
 
                 foreach ( EventCalendarCache eventCalendar in calendars )
                 {
+                    if ( !eventCalendar.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                    {
+                        continue;
+                    }
+
                     calendarList.Add( new ListItemBag { Text = eventCalendar.Name, Value = eventCalendar.Guid.ToString() } );
                 }
 
@@ -2388,7 +2435,10 @@ namespace Rock.Rest.v2
             using ( var rockContext = new RockContext() )
             {
                 var eventItems = new EventCalendarItemService( rockContext ).Queryable()
+                    .Include( eci => eci.EventCalendar )
                     .Where( i => options.IncludeInactive ? true : i.EventItem.IsActive )
+                    .ToList()
+                    .Where( eci => eci.EventCalendar.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
                     .Select( i => new ListItemBag
                     {
                         Category = i.EventCalendar.Name,
@@ -5135,6 +5185,8 @@ namespace Rock.Rest.v2
                 var registrationInstances = registrationInstanceService.Queryable()
                     .Where( ri => ri.RegistrationTemplate.Guid == options.RegistrationTemplateGuid && ri.IsActive )
                     .OrderBy( ri => ri.Name )
+                    .ToList()
+                    .Where( ri => ri.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
                     .Select( ri => new ListItemBag { Text = ri.Name, Value = ri.Guid.ToString() } )
                     .ToList();
 
@@ -5811,11 +5863,28 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "93024bbe-4941-4f84-a5e7-754cf30c03d3" )]
         public IHttpActionResult WorkflowPickerGetWorkflows( [FromBody] WorkflowPickerGetWorkflowsOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
             using ( var rockContext = new RockContext() )
             {
                 if ( options.WorkflowTypeGuid == null )
                 {
                     return NotFound();
+                }
+
+                var workflowType = WorkflowTypeCache.Get( options.WorkflowTypeGuid );
+
+                if ( workflowType == null )
+                {
+                    return Ok( Array.Empty<ListItemBag>() );
+                }
+
+                // Default security for WorkflowType is world view. And a person needs
+                // to have view access to launch a workflow. So require that an explicit
+                // security grant exists for the workflow type.
+                if ( !workflowType.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( workflowType, Authorization.VIEW ) != true )
+                {
+                    return Unauthorized();
                 }
 
                 var workflowService = new Rock.Model.WorkflowService( rockContext );
@@ -5842,12 +5911,22 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "a41c755c-ffcb-459c-a67a-f0311158976a" )]
         public IHttpActionResult WorkflowPickerGetWorkflowTypeForWorkflow( [FromBody] WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
             using ( var rockContext = new RockContext() )
             {
                 var workflow = new Rock.Model.WorkflowService( rockContext ).Get( options.WorkflowGuid );
                 if ( workflow == null )
                 {
                     return NotFound();
+                }
+
+                // Default security for WorkflowType is world view. And a person needs
+                // to have view access to launch a workflow. So require that an explicit
+                // security grant exists for the workflow type.
+                if ( !workflow.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( workflow.WorkflowType, Authorization.VIEW ) != true )
+                {
+                    return Unauthorized();
                 }
 
                 return Ok( new ListItemBag { Text = workflow.WorkflowType.Name, Value = workflow.WorkflowType.Guid.ToString() } );
