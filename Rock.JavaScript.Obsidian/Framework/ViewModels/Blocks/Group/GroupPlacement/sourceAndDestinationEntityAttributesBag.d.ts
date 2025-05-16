@@ -21,24 +21,10 @@
 // </copyright>
 //
 
-import { Gender } from "@Obsidian/Enums/Crm/gender";
-import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
-import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
+import { AttributeDataBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/attributeDataBag";
 
-export type PersonBag = {
-    firstName?: string | null;
+export type SourceAndDestinationEntityAttributesBag = {
+    destinationEntityAttributes?: Record<string, AttributeDataBag> | null;
 
-    gender: Gender;
-
-    lastName?: string | null;
-
-    nickname?: string | null;
-
-    personIdKey?: string | null;
-
-    photoUrl?: string | null;
-
-    registrants?: RegistrantBag[] | null;
-
-    sourceGroupMembers?: GroupMemberBag[] | null;
+    sourceEntityAttributes?: Record<string, AttributeDataBag> | null;
 };

@@ -38,5 +38,9 @@ export type GroupPlacementKeysBag = {
 
     registrationTemplatePlacementIdKey?: string | null;
 
+    sourceGroupGuid?: Guid | null;
+
     sourceGroupIdKey?: string | null;
+
+    sourceGroupTypeIdKey?: string | null;
 };

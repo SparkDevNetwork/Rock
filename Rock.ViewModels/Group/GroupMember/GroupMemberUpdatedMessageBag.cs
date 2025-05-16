@@ -32,6 +32,8 @@ namespace Rock.ViewModels.Group.GroupMember
     {
         public string GroupIdKey { get; set; }
 
+        public string GroupTypeIdKey { get; set; }
+
         public Guid? GroupGuid { get; set; }
 
         /// <summary>

@@ -64,21 +64,26 @@
                 </template>
                 <template v-if="(!isGroupMemberCard || areSourceAttributesDisplayedOnDestinationGroupMembers) && hasSourceMemberDetailsToDisplay">
                     <div class="header">
-                        Source Group Member
+                        {{ sourceGroupMemberHeader }}
                     </div>
-                    <dl>
-                        <template v-for="attribute, key in getAttributesWithCorrespondingValues(sourceGroupMemberAttributes, sourceGroupMemberAttributeValues)"
-                                  :key="key">
-                            <dt>
-                                {{ attribute.name }}
-                            </dt>
-                            <dd :ref="(el) => addTooltip(el as Element)"
-                                data-toggle="tooltip"
-                                :data-original-title="getAttributeValueText(sourceGroupMemberAttributeValues, attribute, key)">
-                                {{ getAttributeValueText(sourceGroupMemberAttributeValues, attribute, key) }}
-                            </dd>
-                        </template>
-                    </dl>
+                    <!-- TODO - Handle hiding dl when there are no attributes to display. -->
+                    <template v-for="sourceGroupMember in person.sourceGroupMembers">
+                        <dl v-if="sourceGroupMember.groupMemberIdKey && sourceGroupMember.attributes && sourceGroupMember.attributeValues"
+                            :key="sourceGroupMember.groupMemberIdKey">
+                            <template v-for="(attribute, key) in getAttributesWithCorrespondingValues(sourceGroupMember.attributes, sourceGroupMember.attributeValues)"
+                                      :key="key">
+                                <dt>
+                                    {{ attribute.name }}
+                                </dt>
+                                <!-- TODO - tooltip isn't top right... have to rework the title as well -->
+                                <dd :ref="(el) => addTooltip(el as Element)"
+                                    data-toggle="tooltip"
+                                    :data-original-title="getAttributeValueText(sourceGroupMember.attributeValues, attribute, key)">
+                                    {{ getAttributeValueText(sourceGroupMember.attributeValues, attribute, key) }}
+                                </dd>
+                            </template>
+                        </dl>
+                    </template>
                 </template>
                 <!-- If show instance or show registrants attributes is on then we display this. -->
                 <!-- TODO - Come back to this if statement -->
@@ -86,6 +91,7 @@
                     <div class="header">
                         {{ registrantHeader }}
                     </div>
+                    <!-- TODO - Handle hiding dl when there are no attributes or instance to display. -->
                     <template v-for="registrant in person.registrants">
                         <dl v-if="registrant.registrantIdKey"
                             :key="registrant.registrantIdKey">
@@ -190,7 +196,8 @@
 
 .person-card .details-container .header {
     font-weight: var(--font-weight-semibold);
-    margin: 0.5rem 0;
+    /* margin: 0.5rem 0; */
+    margin-top: 0.5rem;
 }
 
 .person-card .details-container dl {
@@ -204,7 +211,7 @@
 }
 
 .person-card .details-container dl {
-    padding-top: 0;
+    /* padding-top: 0; */
 }
 
 .person-card .details-container dl:last-child {
@@ -356,24 +363,12 @@
         return props.groupMember.attributeValues;
     });
 
-    const sourceGroupMemberAttributes = computed((): Record<string, PublicAttributeBag> => {
-        if (!props.person.sourceGroupMember?.attributes) {
-            return {};
-        }
-        return props.person.sourceGroupMember.attributes;
-    });
-
-    const sourceGroupMemberAttributeValues = computed((): Record<string, string> => {
-        if (!props.person.sourceGroupMember?.attributeValues) {
-            return {};
-        }
-        return props.person.sourceGroupMember.attributeValues;
-    });
-
     const isGroupMemberCard = computed(() => {
         const gm = props.groupMember;
         return !!gm && Object.keys(gm).length > 0;
     });
+
+    const sourceGroupMemberHeader = computed(() => props.person.sourceGroupMembers && props.person.sourceGroupMembers.length > 1 ? "Source Group Members" : "Source Group Member");
 
     const registrantHeader = computed(() => props.person.registrants && props.person.registrants.length > 1 ? "Registrants" : "Registrant");
 
@@ -403,11 +398,18 @@
     });
 
     const hasSourceMemberDetailsToDisplay = computed((): boolean => {
-        if (props.placementMode !== PlacementMode.GroupMode || !props.person.sourceGroupMember) {
+        if (!props.person.sourceGroupMembers || props.person.sourceGroupMembers.length === 0 || props.placementMode !== PlacementMode.GroupMode) {
             return false;
         }
 
-        return Object.keys(getAttributesWithCorrespondingValues(sourceGroupMemberAttributes.value, sourceGroupMemberAttributeValues.value) ?? {}).length > 0;
+        return props.person.sourceGroupMembers.some(sourceGroupMember => {
+            const hasAttributes = (!isGroupMemberCard.value || props.areSourceAttributesDisplayedOnDestinationGroupMembers)
+                && sourceGroupMember.attributes
+                && sourceGroupMember.attributeValues
+                && Object.keys(getAttributesWithCorrespondingValues(sourceGroupMember.attributes, sourceGroupMember.attributeValues) ?? {}).length > 0;
+
+            return hasAttributes;
+        });
     });
 
     function getPersonBorderColor(gender: Gender) {

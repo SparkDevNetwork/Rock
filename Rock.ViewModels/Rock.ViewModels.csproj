@@ -161,6 +161,10 @@
     <Compile Include="Blocks\Core\ScheduledJobHistoryList\ScheduledJobHistoryListOptionsBag.cs" />
     <Compile Include="Blocks\Example\ControlGallery\ControlGalleryInitializationBox.cs" />
     <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Group\GroupPlacement\SourceAndDestinationEntityAttributesBag.cs" />
+    <Compile Include="Blocks\Group\GroupPlacement\AttributeDataBag.cs" />
+    <Compile Include="Blocks\Group\GroupPlacement\EntityKeysWithTypeBag.cs" />
+    <Compile Include="Blocks\Group\GroupPlacement\SourceAndDestinationEntityKeysBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\RealTimeConnectionKeysBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\GroupPlacementKeysBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\AddGroupMembersBag.cs" />

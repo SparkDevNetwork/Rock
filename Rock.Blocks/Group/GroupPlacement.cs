@@ -234,6 +234,8 @@ namespace Rock.Blocks.Group
                     box.PlacementConfigurationSettingOptions.SourceAttributes = box.PlacementConfigurationSettingOptions.DestinationGroupMemberAttributes = GetGroupMemberAttributesAsListItems( fakeSourceGroup );
                     box.Title = $"Group Placement - {sourceGroup.Name}";
                     box.GroupPlacementKeys.SourceGroupIdKey = IdHasher.Instance.GetHash( sourceGroupId.Value );
+                    box.GroupPlacementKeys.SourceGroupTypeIdKey = IdHasher.Instance.GetHash( sourceGroup.GroupTypeId ); // TODO - Verify if I need this or if I just use the one on realtime update message.
+                    box.GroupPlacementKeys.SourceGroupGuid = sourceGroup.Guid;
                     box.PlacementMode = PlacementMode.GroupMode;
                 }
                 else
@@ -552,7 +554,7 @@ namespace Rock.Blocks.Group
         }
 
 
-        private Dictionary<string, PublicAttributeBag> GetGroupAttributes( int groupId, int groupTypeId, HashSet<int> displayedAttributeIds )
+        private AttributeDataBag GetGroupAttributesAndValues( int groupId, int groupTypeId, HashSet<int> displayedAttributeIds )
         {
             if ( displayedAttributeIds == null )
             {
@@ -571,35 +573,16 @@ namespace Rock.Blocks.Group
                 group.LoadAttributes();
             }
 
-            var attributes = group.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) );
-
-            return attributes;
-        }
-
-        private Dictionary<string, string> GetGroupAttributeValues( int groupId, int groupTypeId, HashSet<int> displayedAttributeIds )
-        {
-            if ( displayedAttributeIds == null )
+            var attributeDataBag = new AttributeDataBag
             {
-                // don't spend time loading attributes if there aren't any to be displayed
-                return null;
-            }
-
-            Rock.Model.Group group = new Rock.Model.Group
-            {
-                Id = groupId,
-                GroupTypeId = groupTypeId,
+                Attributes = group.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) ),
+                AttributeValues = group.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) )
             };
 
-            if ( group.AttributeValues == null )
-            {
-                group.LoadAttributes();
-            }
-
-            var attributeValues = group.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) );
-
-            return attributeValues;
+            return attributeDataBag;
         }
-        private Dictionary<string, PublicAttributeBag> GetGroupMemberAttributes( int? groupMemberId, int? groupTypeId, HashSet<int> displayedAttributeIds )
+
+        private AttributeDataBag GetGroupMemberAttributesAndValues( int? groupMemberId, int? groupTypeId, HashSet<int> displayedAttributeIds )
         {
             if ( displayedAttributeIds == null || !groupMemberId.HasValue || !groupTypeId.HasValue )
             {
@@ -618,38 +601,18 @@ namespace Rock.Blocks.Group
                 groupMember.LoadAttributes();
             }
 
-            var attributes = groupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) );
-
-            return attributes;
-        }
-
-        private Dictionary<string, string> GetGroupMemberAttributeValues( int? groupMemberId, int? groupTypeId, HashSet<int> displayedAttributeIds )
-        {
-            if ( displayedAttributeIds == null || !groupMemberId.HasValue || !groupTypeId.HasValue )
+            var attributeDataBag = new AttributeDataBag
             {
-                // don't spend time loading attributes if there aren't any to be displayed
-                return null;
-            }
-
-            GroupMember groupMember = new GroupMember
-            {
-                Id = groupMemberId.Value,
-                GroupTypeId = groupTypeId.Value,
+                Attributes = groupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) ),
+                AttributeValues = groupMember.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) )
             };
 
-            if ( groupMember.AttributeValues == null )
-            {
-                groupMember.LoadAttributes();
-            }
-
-            var attributeValues = groupMember.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) );
-
-            return attributeValues;
+            return attributeDataBag;
         }
 
-        private Dictionary<string, PublicAttributeBag> GetRegistrantAttributes( int registrantId, int registrationTemplateId, HashSet<int> displayedAttributeIds )
+        private AttributeDataBag GetRegistrantAttributesAndValues( int? registrantId, int? registrationTemplateId, HashSet<int> displayedAttributeIds )
         {
-            if ( displayedAttributeIds == null )
+            if ( displayedAttributeIds == null || !registrantId.HasValue || !registrationTemplateId.HasValue)
             {
                 // don't spend time loading attributes if there aren't any to be displayed
                 return null;
@@ -657,8 +620,8 @@ namespace Rock.Blocks.Group
 
             RegistrationRegistrant registrant = new RegistrationRegistrant
             {
-                Id = registrantId,
-                RegistrationTemplateId = registrationTemplateId,
+                Id = registrantId.Value,
+                RegistrationTemplateId = registrationTemplateId.Value,
             };
 
             if ( registrant.AttributeValues == null )
@@ -666,33 +629,13 @@ namespace Rock.Blocks.Group
                 registrant.LoadAttributes();
             }
 
-            var attributes = registrant.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) );
-
-            return attributes;
-        }
-
-        private Dictionary<string, string> GetRegistrantAttributeValues( int registrantId, int registrationTemplateId, HashSet<int> displayedAttributeIds )
-        {
-            if ( displayedAttributeIds == null )
+            var attributeDataBag = new AttributeDataBag
             {
-                // don't spend time loading attributes if there aren't any to be displayed
-                return null;
-            }
-
-            RegistrationRegistrant registrant = new RegistrationRegistrant
-            {
-                Id = registrantId,
-                RegistrationTemplateId = registrationTemplateId,
+                Attributes = registrant.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) ),
+                AttributeValues = registrant.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) )
             };
 
-            if ( registrant.AttributeValues == null )
-            {
-                registrant.LoadAttributes();
-            }
-
-            var attributeValues = registrant.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) );
-
-            return attributeValues;
+            return attributeDataBag;
         }
 
         /// <summary>
@@ -1303,15 +1246,24 @@ namespace Rock.Blocks.Group
                     personBag.Registrants = personGroup
                         .Where( r => r.RegistrantId.HasValue )
                         .DistinctBy( r => r.RegistrantId )
-                        .Select( r => new RegistrantBag
-                        {
-                            RegistrantIdKey = IdHasher.Instance.GetHash( r.RegistrantId.Value ),
-                            RegistrationInstanceName = r.RegistrationInstanceName,
-                            RegistrationInstanceIdKey = r.RegistrationInstanceId.HasValue ? IdHasher.Instance.GetHash( r.RegistrationInstanceId.Value ) : null,
-                            CreatedDateTime = r.CreatedDateTime?.ToRockDateTimeOffset(),
-                            Fees = GetFormattedFeesForRegistrant( personGroup, r.RegistrantId.Value ),
-                            Attributes = GetRegistrantAttributes( r.RegistrantId.Value, registrationTemplateId.Value, displayedSourceAttributeIds ),
-                            AttributeValues = GetRegistrantAttributeValues( r.RegistrantId.Value, registrationTemplateId.Value, displayedSourceAttributeIds )
+                        .Select( r => {
+                            var registrantBag = new RegistrantBag
+                            {
+                                RegistrantIdKey = IdHasher.Instance.GetHash( r.RegistrantId.Value ),
+                                RegistrationInstanceName = r.RegistrationInstanceName,
+                                RegistrationInstanceIdKey = r.RegistrationInstanceId.HasValue ? IdHasher.Instance.GetHash( r.RegistrationInstanceId.Value ) : null,
+                                CreatedDateTime = r.CreatedDateTime?.ToRockDateTimeOffset(),
+                                Fees = GetFormattedFeesForRegistrant( personGroup, r.RegistrantId.Value ),
+                            };
+
+                            var attributesAndValues = GetRegistrantAttributesAndValues( r.RegistrantId, registrationTemplateId, displayedSourceAttributeIds );
+                            if ( attributesAndValues != null )
+                            {
+                                registrantBag.Attributes = attributesAndValues.Attributes;
+                                registrantBag.AttributeValues = attributesAndValues.AttributeValues;
+                            }
+
+                            return registrantBag;
                         } )
                         .ToList();
                 }
@@ -1319,15 +1271,25 @@ namespace Rock.Blocks.Group
                 {
                     var sourceGroup = GroupCache.Get( sourceGroupId.Value );
 
-                    personBag.SourceGroupMember = personGroup
+                    personBag.SourceGroupMembers = personGroup
                         .Where( p => p.GroupMemberId.HasValue && !p.GroupId.HasValue )
-                        .Select( p => new GroupMemberBag
-                        {
-                            GroupMemberIdKey = IdHasher.Instance.GetHash( p.GroupMemberId.Value ),
-                            Attributes = GetGroupMemberAttributes( p.GroupMemberId, sourceGroup.GroupTypeId, displayedSourceAttributeIds ),
-                            AttributeValues = GetGroupMemberAttributeValues( p.GroupMemberId, sourceGroup.GroupTypeId, displayedSourceAttributeIds )
+                        .DistinctBy( p => p.GroupMemberId )
+                        .Select( p => {
+                            var groupMemberBag = new GroupMemberBag
+                            {
+                                GroupMemberIdKey = IdHasher.Instance.GetHash( p.GroupMemberId.Value ),
+                            };
+
+                            var attributeDataBag = GetGroupMemberAttributesAndValues( p.GroupMemberId, sourceGroup.GroupTypeId, displayedSourceAttributeIds );
+                            if ( attributeDataBag != null )
+                            {
+                                groupMemberBag.Attributes = attributeDataBag.Attributes;
+                                groupMemberBag.AttributeValues = attributeDataBag.AttributeValues;
+                            }
+
+                            return groupMemberBag;
                         } )
-                        .FirstOrDefault();
+                        .ToList();
                 }
 
                 // If GroupId exists, put them in TempGroups
@@ -1391,6 +1353,8 @@ namespace Rock.Blocks.Group
                         placementPeopleBag.TempGroups.Add( groupBag );
                     }
 
+                    var attributeDataBag = GetGroupMemberAttributesAndValues( groupMemberId, row.GroupTypeId, displayedGroupMemberAttributeIds );
+
                     groupBag.GroupMembers.Add( new GroupMemberBag
                     {
                         GroupMemberId = groupMemberId,
@@ -1398,8 +1362,8 @@ namespace Rock.Blocks.Group
                         GroupRoleIdKey = row.GroupRoleId.HasValue
                             ? IdHasher.Instance.GetHash( row.GroupRoleId.Value )
                             : null,
-                        Attributes = GetGroupMemberAttributes( groupMemberId, row.GroupTypeId, displayedGroupMemberAttributeIds ),
-                        AttributeValues = GetGroupMemberAttributeValues( groupMemberId, row.GroupTypeId, displayedGroupMemberAttributeIds ),
+                        Attributes = attributeDataBag?.Attributes,
+                        AttributeValues = attributeDataBag?.AttributeValues,
                         Person = personBag
                     } );
                 }
@@ -1655,19 +1619,28 @@ namespace Rock.Blocks.Group
 
             var placementGroupBags = destinationGroupResults
                 .GroupBy( g => g.GroupId )
-                .Select( g => new PlacementGroupBag
-                {
-                    GroupId = g.Key,
-                    GroupIdKey = IdHasher.Instance.GetHash( g.Key ),
-                    GroupName = g.First().GroupName,
-                    GroupGuid = g.First().GroupGuid,
-                    GroupCapacity = g.First().GroupCapacity,
-                    GroupTypeIdKey = IdHasher.Instance.GetHash( g.First().GroupTypeId ),
-                    GroupOrder = g.First().GroupOrder,
-                    RegistrationInstanceIdKey = g.First().RegistrationInstanceId.HasValue ? IdHasher.Instance.GetHash( g.First().RegistrationInstanceId.Value ) : string.Empty,
-                    IsShared = g.First().IsShared,
-                    Attributes = GetGroupAttributes( g.Key, g.First().GroupTypeId, groupIdsToDisplay ),
-                    AttributeValues = GetGroupAttributeValues( g.Key, g.First().GroupTypeId, groupIdsToDisplay )
+                .Select( g => {
+                    var placementBag = new PlacementGroupBag
+                    {
+                        GroupId = g.Key,
+                        GroupIdKey = IdHasher.Instance.GetHash( g.Key ),
+                        GroupName = g.First().GroupName,
+                        GroupGuid = g.First().GroupGuid,
+                        GroupCapacity = g.First().GroupCapacity,
+                        GroupTypeIdKey = IdHasher.Instance.GetHash( g.First().GroupTypeId ),
+                        GroupOrder = g.First().GroupOrder,
+                        RegistrationInstanceIdKey = g.First().RegistrationInstanceId.HasValue ? IdHasher.Instance.GetHash( g.First().RegistrationInstanceId.Value ) : string.Empty,
+                        IsShared = g.First().IsShared
+                    };
+
+                    var attributeDataBag = GetGroupAttributesAndValues( g.Key, g.First().GroupTypeId, groupIdsToDisplay );
+                    if ( attributeDataBag != null )
+                    {
+                        placementBag.Attributes = attributeDataBag.Attributes;
+                        placementBag.AttributeValues = attributeDataBag.AttributeValues;
+                    }
+
+                    return placementBag;
                 } ).ToList();
 
             return ActionOk( placementGroupBags );
@@ -2169,6 +2142,69 @@ namespace Rock.Blocks.Group
             }
 
             return ActionOk( attributeFiltersBag );
+        }
+
+        [BlockAction]
+        public BlockActionResult PopulateAttributes( SourceAndDestinationEntityKeysBag sourceAndDestinationEntityKeys )
+        {
+            var resultBag = new SourceAndDestinationEntityAttributesBag
+            {
+                SourceEntityAttributes = new Dictionary<string, AttributeDataBag>(),
+                DestinationEntityAttributes = new Dictionary<string, AttributeDataBag>()
+            };
+
+            var placementConfiguration = GetPlacementConfiguration( sourceAndDestinationEntityKeys.GroupPlacementKeysBag );
+
+            HashSet<int> displayedSourceAttributeIds = null;
+            HashSet<int> displayedGroupMemberAttributeIds = null;
+
+            if ( placementConfiguration.SourceAttributesToDisplay?.Any() == true )
+            {
+                displayedSourceAttributeIds = placementConfiguration.SourceAttributesToDisplay
+                    .Select( idKey => Rock.Utility.IdHasher.Instance.GetId( idKey ) )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToHashSet();
+            }
+
+            if ( placementConfiguration.DestinationGroupMemberAttributesToDisplay?.Any() == true )
+            {
+                displayedGroupMemberAttributeIds = placementConfiguration.DestinationGroupMemberAttributesToDisplay
+                    .Select( idKey => Rock.Utility.IdHasher.Instance.GetId( idKey ) )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToHashSet();
+            }
+
+            if ( sourceAndDestinationEntityKeys.PlacementMode == PlacementMode.GroupMode )
+            {
+                foreach ( var sourceEntity in sourceAndDestinationEntityKeys.SourceEntities )
+                {
+                    var entityId = IdHasher.Instance.GetId( sourceEntity.EntityIdKey );
+                    var typeId = IdHasher.Instance.GetId( sourceEntity.EntityTypeIdKey );
+
+                    resultBag.SourceEntityAttributes[sourceEntity.EntityIdKey] = GetGroupMemberAttributesAndValues( entityId, typeId, displayedSourceAttributeIds );
+                }
+            }
+            else if ( sourceAndDestinationEntityKeys.PlacementMode == PlacementMode.TemplateMode || sourceAndDestinationEntityKeys.PlacementMode == PlacementMode.InstanceMode )
+            {
+                foreach ( var sourceEntity in sourceAndDestinationEntityKeys.SourceEntities )
+                {
+                    var entityId = IdHasher.Instance.GetId( sourceEntity.EntityIdKey );
+                    var typeId = IdHasher.Instance.GetId( sourceEntity.EntityTypeIdKey );
+
+                    resultBag.SourceEntityAttributes[sourceEntity.EntityIdKey] = GetRegistrantAttributesAndValues( entityId, typeId, displayedSourceAttributeIds );
+                }
+            }
+
+            foreach ( var destinationEntity in sourceAndDestinationEntityKeys.DestinationEntities )
+            {
+                var entityId = IdHasher.Instance.GetId( destinationEntity.EntityIdKey );
+                var typeId = IdHasher.Instance.GetId( destinationEntity.EntityTypeIdKey );
+                resultBag.DestinationEntityAttributes[destinationEntity.EntityIdKey] = GetGroupMemberAttributesAndValues( entityId, typeId, displayedGroupMemberAttributeIds );
+            }
+
+            return ActionOk( resultBag );
         }
 
         #endregion Block Actions

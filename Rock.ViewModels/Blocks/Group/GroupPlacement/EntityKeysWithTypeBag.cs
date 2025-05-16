@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 using Rock.Model;
@@ -22,23 +23,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
-    public class PersonBag
+    public class EntityKeysWithTypeBag
     {
-        public string PersonIdKey { get; set; }
+        public string EntityIdKey { get; set; }
 
-        public string FirstName { get; set; }
-
-        // TODO - fix capitalization
-        public string Nickname { get; set; }
-
-        public string LastName { get; set; }
-
-        public Gender Gender { get; set; }
-
-        public string PhotoUrl { get; set; }
-
-        public List<RegistrantBag> Registrants { get; set; }
-
-        public List<GroupMemberBag> SourceGroupMembers { get; set; }
+        public string EntityTypeIdKey { get; set; }
     }
 }

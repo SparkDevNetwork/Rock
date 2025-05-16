@@ -21,24 +21,16 @@
 // </copyright>
 //
 
-import { Gender } from "@Obsidian/Enums/Crm/gender";
-import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
-import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
+import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
+import { EntityKeysWithTypeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/entityKeysWithTypeBag";
+import { GroupPlacementKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementKeysBag";
 
-export type PersonBag = {
-    firstName?: string | null;
+export type SourceAndDestinationEntityKeysBag = {
+    destinationEntities?: EntityKeysWithTypeBag[] | null;
 
-    gender: Gender;
+    groupPlacementKeysBag?: GroupPlacementKeysBag | null;
 
-    lastName?: string | null;
+    placementMode: PlacementMode;
 
-    nickname?: string | null;
-
-    personIdKey?: string | null;
-
-    photoUrl?: string | null;
-
-    registrants?: RegistrantBag[] | null;
-
-    sourceGroupMembers?: GroupMemberBag[] | null;
+    sourceEntities?: EntityKeysWithTypeBag[] | null;
 };

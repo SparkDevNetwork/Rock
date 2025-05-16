@@ -1304,7 +1304,8 @@ namespace Rock.Model
 
                     var bag = new GroupMemberUpdatedMessageBag
                     {
-                        GroupIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.GroupId ),
+                        GroupIdKey = group.IdKey,
+                        GroupTypeIdKey = Rock.Utility.IdHasher.Instance.GetHash( group.GroupTypeId ),
                         GroupGuid = group.Guid,
                         GroupMemberId = item.Id,
                         GroupMemberIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.Id ),

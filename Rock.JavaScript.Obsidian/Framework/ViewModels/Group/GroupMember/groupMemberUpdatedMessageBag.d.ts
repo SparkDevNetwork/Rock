@@ -45,5 +45,7 @@ export type GroupMemberUpdatedMessageBag = {
 
     groupRoleIdKey?: string | null;
 
+    groupTypeIdKey?: string | null;
+
     person?: PersonBag | null;
 };
