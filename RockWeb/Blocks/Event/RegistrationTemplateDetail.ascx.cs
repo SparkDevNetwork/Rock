@@ -884,25 +884,6 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Handles the Click event of the btnPlacements control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnPlacements_Click( object sender, EventArgs e )
-        {
-            var queryParams = new Dictionary<string, string>();
-
-            if ( hfRegistrationTemplateId.Value.AsIntegerOrNull().HasValue )
-            {
-                queryParams.Add( PageParameterKey.RegistrationTemplateId, hfRegistrationTemplateId.Value );
-            }
-
-            //TODO -- remove the button
-
-            NavigateToLinkedPage( AttributeKey.RegistrationTemplatePlacementPage, queryParams );
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnCopy control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -2621,9 +2602,6 @@ The logged-in person's information will be used to complete the registrar inform
                 && registrationTemplate.Id > 0
                 && new RegistrationTemplateService( rockContext ).HasRegistrationTemplatePlacements( registrationTemplate.Id );
 
-            btnPlacements.ToolTip = registrationTemplate.Name + " Placement";
-            btnPlacements.Visible = showPlacementsButton;
-
             if ( readOnly )
             {
                 btnEdit.Visible = false;
@@ -3019,6 +2997,7 @@ The logged-in person's information will be used to complete the registrar inform
                     : string.Empty;
             }
 
+
             using ( var rockContext = new RockContext() )
             {
                 var placementService = new RegistrationTemplatePlacementService( rockContext );
@@ -3039,8 +3018,14 @@ The logged-in person's information will be used to complete the registrar inform
                         { "RegistrationTemplatePlacementId", p.Id.ToString() },
                         { "ReturnUrl", GetCurrentPageUrl() }
                     } )
-                } ).ToList();
+                } )
+                .Where( p => !string.IsNullOrWhiteSpace( p.Url ) )
+                .ToList();
 
+                if ( templatePlacements.Count == 0 )
+                {
+                    lGroupPlacements.Visible = false;
+                }
                 rptGroupPlacements.DataSource = templatePlacements;
                 rptGroupPlacements.DataBind();
             }

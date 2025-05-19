@@ -129,7 +129,10 @@
                             </div>
                         </div>
                         <div v-drag-source="personDragSourceOptions" v-drag-target="groupMemberDragSourceOptions.id" class="people-to-place-card-container">
-                            <template v-for="(person, index) in filteredAndSortedPeopleToPlace" v-if="filteredAndSortedPeopleToPlace.length > 0">
+                            <div v-if="arePeopleLoading" class="d-flex align-items-center justify-content-center">
+                                <Loading :isLoading="arePeopleLoading" />
+                            </div>
+                            <template v-for="(person, index) in filteredAndSortedPeopleToPlace" v-else-if="filteredAndSortedPeopleToPlace.length > 0">
                                 <PersonCard v-if="person.personIdKey"
                                             :key="index"
                                             :data-person-id-key="person.personIdKey"
@@ -145,9 +148,6 @@
                                             @toggleCardExpansion="toggleCardExpansion"
                                             @toggleSelection="toggleSelection(person.personIdKey)" />
                             </template>
-                            <div v-else-if="arePeopleLoading" class="d-flex align-items-center justify-content-center">
-                                <Loading :isLoading="arePeopleLoading" />
-                            </div>
                             <div v-else>
                                 <span v-if="!isNoPeopleLabelHidden" class="no-people-label">No People Available</span>
                             </div>
@@ -435,11 +435,11 @@
     import { PlacementConfigurationSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingsBag";
     import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
     import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
-    import { onMounted, ref, nextTick, computed, watch, onBeforeUnmount } from "vue";
+    import { onMounted, ref, nextTick, computed, watch, onBeforeUnmount, toRaw } from "vue";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { tooltip } from "@Obsidian/Utility/tooltip";
-    import { PreferenceKey, SortTypes, NavigationUrlKey } from "./GroupPlacement/types.partial";
+    import { PreferenceKey, SortTypes, NavigationUrlKey, IGroupPlacementFunctions } from "./GroupPlacement/types.partial";
     import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -483,7 +483,8 @@
     import { SourceAndDestinationEntityAttributesBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/sourceAndDestinationEntityAttributesBag";
     import { debounce } from "@Obsidian/Utility/util";
 
-    type GroupPlacementTopic = ITopic<ServerFunctions<unknown>> & {
+
+    type GroupPlacementTopic = ITopic<ServerFunctions<IGroupPlacementFunctions>> & {
         groupGuids: Guid[],
         registrationInstanceGuid: Guid,
         registrationTemplateGuid: Guid,
@@ -561,8 +562,9 @@
 
     const isGenderHighlighting = ref<boolean>(asBooleanOrNull(preferences.getValue(getIsGenderHighlightingKey())) ?? false);
 
-    const pendingSourceEntities = ref<EntityKeysWithTypeBag[]>([]);
-    const pendingDestinationEntities = ref<EntityKeysWithTypeBag[]>([]);
+    const pendingSourceRegistrants = ref<RegistrationRegistrantUpdatedMessageBag[]>([]);
+    const pendingSourceGroupMembers = ref<GroupMemberUpdatedMessageBag[]>([]);
+    const pendingDestinationGroupMembers = ref<GroupMemberUpdatedMessageBag[]>([]);
 
     const personDragSourceOptions = getPersonDragSourceOptions();
     const groupMemberDragSourceOptions = getGroupMemberDragSourceOptions();
@@ -679,7 +681,7 @@
         });
     });
 
-    const groupGuids = computed(() => {
+    const computedGroupGuids = computed(() => {
         const groupGuids = placementGroups.value.map(g => g.groupGuid);
 
         if (box.groupPlacementKeys?.sourceGroupGuid) {
@@ -1357,7 +1359,8 @@
         var newRegistrant = {
             registrantIdKey: registrant.registrantIdKey,
             registrationInstanceIdKey: registrant.registrationInstanceIdKey,
-            registrationInstanceName: registrant.registrationInstanceName
+            registrationInstanceName: registrant.registrationInstanceName,
+            fees: registrant.fees
         } as RegistrantBag;
 
         if (!person.registrants) {
@@ -1367,68 +1370,133 @@
         person.registrants.push(newRegistrant);
     }
 
-    async function processDestinationGroups(groupsPromise: Promise<PlacementGroupBag[]>): Promise<void> {
-        var groups = await groupsPromise;
+    // async function processDestinationGroups(groupsPromise: Promise<PlacementGroupBag[]>): Promise<void> {
+    //     var groups = await groupsPromise;
 
-        return new Promise((resolve, reject) => {
-            try {
-                // setTimeout(() => {
-                placementGroups.value = groups.map(g => ({
-                    ...g,
-                    groupMembers: [] // Ensure groupMembers is initialized
-                }));
-                areGroupsLoading.value = false;
-                areGroupsExpanded.value = groups.length > 3 ? false : true;
-                console.log("placementGroups: ", placementGroups.value);
-                resolve();
-                // }, 3000);
-            }
-            catch (error) {
-                reject(error);
-            }
-        });
-    }
+    //     return new Promise((resolve, reject) => {
+    //         try {
+    //             // setTimeout(() => {
+    //             placementGroups.value = groups.map(g => ({
+    //                 ...g,
+    //                 groupMembers: [] // Ensure groupMembers is initialized
+    //             }));
+    //             areGroupsLoading.value = false;
+    //             areGroupsExpanded.value = groups.length > 3 ? false : true;
+    //             console.log("placementGroups: ", placementGroups.value);
+    //             resolve();
+    //             // }, 3000);
+    //         }
+    //         catch (error) {
+    //             reject(error);
+    //         }
+    //     });
+    // }
 
-    async function loadPlacementData() {
-        // Start API calls immediately
+    // async function loadPlacementData() {
+    //     // Start API calls immediately
+    //     const attributeFiltersPromise = populateAttributeFilters();
+    //     const groupsPromise = getDestinationGroups();
+    //     const placementPeoplePromise = getPlacementPeople();
+
+    //     attributeFiltersPromise.then(attributeFilters => {
+    //         // TODO - Probably can remove the population of attribute values from the server. We only care about attributes. Values are handled by preferences.
+    //         sourceAttributesForFilter.value = attributeFilters.sourceAttributesForFilter ?? {};
+    //         registrantFeeItemsForFilter.value = attributeFilters.registrantFeeItemsForFilter ?? [];
+    //         destinationGroupAttributesForFilter.value = attributeFilters.destinationGroupAttributesForFilter ?? {};
+    //         destinationGroupMemberAttributesForFilter.value = attributeFilters.destinationGroupMemberAttributesForFilter ?? {};
+    //         console.log("Attribute Filters: ", attributeFilters);
+    //     });
+
+    //     // TODO - Come back to cleanup promise logic
+    //     const processGroupsPromise = processDestinationGroups(groupsPromise);
+
+
+    //     placementPeoplePromise.then(async placementPeople => {
+    //         // Wait here until groups and attribute filters are loaded
+    //         // await attributeFiltersPromise;
+    //         await processGroupsPromise;
+    //         console.log("placementpeople: ", placementPeople);
+
+    //         if (placementPeople.peopleToPlace) {
+    //             peopleToPlace.value = placementPeople.peopleToPlace;
+    //         }
+    //         if (placementPeople.tempGroups) {
+    //             placementPeople.tempGroups.forEach(g => {
+    //                 const placementGroup = placementGroups.value.find(pg => pg.groupIdKey === g.groupIdKey);
+    //                 if (placementGroup?.groupMembers && g.groupMembers?.length) {
+    //                     placementGroup.groupMembers.push(...g.groupMembers);
+    //                 }
+    //             });
+    //         }
+
+    //         arePeopleLoading.value = false;
+    //     });
+    // }
+
+    async function loadPlacementData(): Promise<void> {
+        const startTime = performance.now();
+        console.log("[loadPlacementData] Starting all requests...");
+
+        // Start all requests in parallel
         const attributeFiltersPromise = populateAttributeFilters();
         const groupsPromise = getDestinationGroups();
         const placementPeoplePromise = getPlacementPeople();
 
-        attributeFiltersPromise.then(attributeFilters => {
-            // TODO - Probably can remove the population of attribute values from the server. We only care about attributes. Values are handled by preferences.
-            sourceAttributesForFilter.value = attributeFilters.sourceAttributesForFilter ?? {};
-            registrantFeeItemsForFilter.value = attributeFilters.registrantFeeItemsForFilter ?? [];
-            destinationGroupAttributesForFilter.value = attributeFilters.destinationGroupAttributesForFilter ?? {};
-            destinationGroupMemberAttributesForFilter.value = attributeFilters.destinationGroupMemberAttributesForFilter ?? {};
-            console.log("Attribute Filters: ", attributeFilters);
-        });
+        // Wait for attribute filters
+        console.log("[loadPlacementData] Waiting for attribute filters...");
+        const attrStart = performance.now();
+        const attributeFilters = await attributeFiltersPromise;
+        console.log(`[loadPlacementData] Attribute filters received (${(performance.now() - attrStart).toFixed(2)}ms):`, attributeFilters);
 
-        // TODO - Come back to cleanup promise logic
-        const processGroupsPromise = processDestinationGroups(groupsPromise);
+        // TODO - Probably can remove the population of attribute values from the server. We only care about attributes. Values are handled by preferences.
+        sourceAttributesForFilter.value = attributeFilters.sourceAttributesForFilter ?? {};
+        registrantFeeItemsForFilter.value = attributeFilters.registrantFeeItemsForFilter ?? [];
+        destinationGroupAttributesForFilter.value = attributeFilters.destinationGroupAttributesForFilter ?? {};
+        destinationGroupMemberAttributesForFilter.value = attributeFilters.destinationGroupMemberAttributesForFilter ?? {};
+        console.log("[loadPlacementData] Attribute filters assigned.");
 
+        // Wait for destination groups
+        console.log("[loadPlacementData] Waiting for destination groups...");
+        const groupsStart = performance.now();
+        const groups = await groupsPromise;
+        console.log(`[loadPlacementData] Destination groups received (${(performance.now() - groupsStart).toFixed(2)}ms):`, groups);
 
-        placementPeoplePromise.then(async placementPeople => {
-            // Wait here until groups and attribute filters are loaded
-            // await attributeFiltersPromise;
-            await processGroupsPromise;
-            console.log("placementpeople: ", placementPeople);
+        placementGroups.value = groups.map(g => ({
+            ...g,
+            groupMembers: []
+        }));
 
-            if (placementPeople.peopleToPlace) {
-                peopleToPlace.value = placementPeople.peopleToPlace;
-            }
-            if (placementPeople.tempGroups) {
-                placementPeople.tempGroups.forEach(g => {
-                    const placementGroup = placementGroups.value.find(pg => pg.groupIdKey === g.groupIdKey);
-                    if (placementGroup?.groupMembers && g.groupMembers?.length) {
-                        placementGroup.groupMembers.push(...g.groupMembers);
-                    }
-                });
-            }
+        areGroupsLoading.value = false;
+        areGroupsExpanded.value = groups.length <= 3;
+        console.log("[loadPlacementData] Destination groups processed.");
 
-            arePeopleLoading.value = false;
-        });
+        // Wait for placement people
+        console.log("[loadPlacementData] Waiting for placement people...");
+        const peopleStart = performance.now();
+        const placementPeople = await placementPeoplePromise;
+        console.log(`[loadPlacementData] Placement people received (${(performance.now() - peopleStart).toFixed(2)}ms):`, placementPeople);
+
+        if (placementPeople.peopleToPlace) {
+            peopleToPlace.value = placementPeople.peopleToPlace;
+            console.log("[loadPlacementData] peopleToPlace assigned.");
+        }
+
+        if (placementPeople.tempGroups) {
+            placementPeople.tempGroups.forEach(g => {
+                const placementGroup = placementGroups.value.find(pg => pg.groupIdKey === g.groupIdKey);
+                if (placementGroup?.groupMembers && g.groupMembers?.length) {
+                    placementGroup.groupMembers.push(...g.groupMembers);
+                }
+            });
+            console.log("[loadPlacementData] tempGroups merged into placementGroups.");
+        }
+
+        arePeopleLoading.value = false;
+
+        const totalDuration = performance.now() - startTime;
+        console.log(`[loadPlacementData] Finished (${totalDuration.toFixed(2)}ms total).`);
     }
+
 
     async function savePlacementCofigSettings(bag: PlacementConfigurationSettingsBag): Promise<void> {
         console.log("Here is my saved bag: ", bag);
@@ -1474,51 +1542,74 @@
         });
 
         Object.defineProperty(topic, "groupGuids", {
-            value: groupGuids,
-            writable: false
+            value: toRaw(groupGuids),
+            writable: true
         });
 
         return topic as GroupPlacementTopic;
+    }
+
+    function areGuidSetsEqual(listA: string[], listB: string[]): boolean {
+        if (listA.length !== listB.length) {
+            return false;
+        }
+
+        return listA.every(guidA =>
+            listB.some(guidB => areEqual(guidA, guidB))
+        );
     }
 
     /**
      * Subscribes to the topic using the current Group and AttendanceOccurrence unique identifiers.
      */
     async function startRealTime(): Promise<void> {
-        // const groupGuid = config.value.groupGuid;
-        // const occurrenceGuid = attendanceOccurrenceGuid.value;
         const registrationInstanceGuid = box.groupPlacementKeys?.registrationInstanceGuid;
         const registrationTemplateGuid = box.groupPlacementKeys?.registrationTemplateGuid;
 
-        console.log("group Guids: ", groupGuids.value);
+        if (realTimetopic.value && areGuidSetsEqual(toRaw(realTimetopic.value.groupGuids), toRaw(computedGroupGuids.value))
+            && areEqual(realTimetopic.value.registrationTemplateGuid, registrationTemplateGuid)
+            && areEqual(realTimetopic.value.registrationInstanceGuid, registrationInstanceGuid)) {
+            // Skip if already subscribed.
+            return;
+        }
 
-        // if (topic.value && areEqual(topic.value.groupGuid, groupGuid) && areEqual(topic.value.registrationInstanceGuid, registrationInstanceGuid)
-        //     && areEqual(topic.value.registrationTemplateGuid, registrationTemplateGuid)) {
-        //     // Skip if already subscribed.
-        //     return;
-        // }
+        if (!computedGroupGuids.value && !registrationTemplateGuid && !registrationInstanceGuid) {
+            throw "Unable to start real-time";
+        }
 
-        // if (!config.value.groupGuid) {
-        //     throw "Unable to start real-time";
-        // }
-
-        // if (!attendanceOccurrenceGuid.value) {
-        //     // If the occurrence is new, do not start real-time yet.
-        //     return;
-        // }
-
-        const groupPlacementTopic = await getGroupPlacementTopic(groupGuids.value, registrationInstanceGuid, registrationTemplateGuid);
-        console.log("TOPIC ", groupPlacementTopic);
-        groupPlacementTopic.onDisconnected(async () => {
+        const topic = await getGroupPlacementTopic(computedGroupGuids.value, registrationInstanceGuid, registrationTemplateGuid);
+        topic.onDisconnected(async () => {
             await startRealTime();
         });
 
-        groupPlacementTopic.on("groupMemberUpdated", onGroupMemberUpdatedFromServer);
-        groupPlacementTopic.on("groupMemberDeleted", onGroupMemberDeletedFromServer);
-        groupPlacementTopic.on("registrantUpdated", onRegistrantUpdatedFromServer);
-        groupPlacementTopic.on("registrantDeleted", onRegistrantDeletedFromServer);
+        topic.on("groupMemberUpdated", onGroupMemberUpdatedFromServer);
+        topic.on("groupMemberDeleted", onGroupMemberDeletedFromServer);
+        topic.on("registrantUpdated", onRegistrantUpdatedFromServer);
+        topic.on("registrantDeleted", onRegistrantDeletedFromServer);
 
-        return;
+        realTimetopic.value = topic;
+    }
+
+    /**
+     * Leaves the real-time channel for the given group GUID.
+     * @param groupGuid - The GUID of the group to leave the channel.
+     */
+    async function leaveRealTimeGroupChannel(groupGuid: Guid): Promise<void> {
+        if (!realTimetopic.value) {
+            return;
+        }
+        await realTimetopic.value.server.leaveGroupChannel(groupGuid);
+    }
+
+    /**
+     * Joins the real-time channel for the given group GUIDs.
+     * @param groupGuids - The GUIDs of the groups to join the channels.
+     */
+    async function joinRealTimeGroupChannels(groupGuids: Guid[]): Promise<void> {
+        if (!realTimetopic.value) {
+            return;
+        }
+        await realTimetopic.value.server.joinGroupChannels(groupGuids);
     }
 
     function onGroupMemberUpdatedFromServer(groupMember: GroupMemberUpdatedMessageBag): void {
@@ -1530,12 +1621,7 @@
                 return;
             }
 
-            var pendingSourceEntity = {
-                entityIdKey: groupMember.groupMemberIdKey,
-                entityTypeIdKey: groupMember.groupTypeIdKey
-            } as EntityKeysWithTypeBag;
-
-            pendingSourceEntities.value.push(pendingSourceEntity);
+            pendingSourceGroupMembers.value.push(groupMember);
 
             let isPersonInPeopleToPlace = false;
             let isPersonInDestinationGroup = false;
@@ -1575,12 +1661,7 @@
                 return;
             }
 
-            var pendingDestinationEntity = {
-                entityIdKey: groupMember.groupMemberIdKey,
-                entityTypeIdKey: groupMember.groupTypeIdKey
-            } as EntityKeysWithTypeBag;
-
-            pendingDestinationEntities.value.push(pendingDestinationEntity);
+            pendingDestinationGroupMembers.value.push(groupMember);
 
             const personToUse = existingPerson || groupMember.person;
 
@@ -1656,12 +1737,7 @@
             return;
         }
 
-        var pendingSourceEntity = {
-            entityIdKey: registrant.registrantIdKey,
-            entityTypeIdKey: registrant.registrationTemplateIdKey
-        } as EntityKeysWithTypeBag;
-
-        pendingSourceEntities.value.push(pendingSourceEntity);
+        pendingSourceRegistrants.value.push(registrant);
 
         let isPersonInPeopleToPlace = false;
         let isPersonInDestinationGroup = false;
@@ -1690,7 +1766,8 @@
             newPerson.registrants = [{
                 registrantIdKey: registrant.registrantIdKey,
                 registrationInstanceIdKey: registrant.registrationInstanceIdKey,
-                registrationInstanceName: registrant.registrationInstanceName
+                registrationInstanceName: registrant.registrationInstanceName,
+                fees: registrant.fees
             } as RegistrantBag];
 
             peopleToPlace.value.push(newPerson);
@@ -1737,7 +1814,8 @@
 
         const result = await invokeBlockAction<PlacementPeopleBag>("GetPlacementPeople", {
             groupPlacementKeys: box.groupPlacementKeys,
-            isPlacementAllowingMultiple: box.isPlacementAllowingMultiple
+            isPlacementAllowingMultiple: box.isPlacementAllowingMultiple,
+            placementMode: box.placementMode
         });
 
         if (result.isSuccess && result.data) {
@@ -1754,7 +1832,8 @@
         areGroupsLoading.value = true;
 
         const result = await invokeBlockAction<PlacementGroupBag[]>("GetDestinationGroups", {
-            groupPlacementKeys: box.groupPlacementKeys
+            groupPlacementKeys: box.groupPlacementKeys,
+            PlacementMode: box.placementMode
         });
 
         if (result.isSuccess && result.data) {
@@ -1829,15 +1908,16 @@
         addGroupBag.groupPlacementKeys = box.groupPlacementKeys;
         addGroupBag.groupTypeIdKey = box.destinationGroupType.idKey;
 
-        const result = await invokeBlockAction("AddPlacementGroup", {
+        const result = await invokeBlockAction<Guid[]>("AddPlacementGroup", {
             addGroupBag
         });
 
-        if (result.isSuccess) {
+        if (result.isSuccess && result.data) {
             console.log("Add group success.");
             addGroupModalElement.value?.resetForm();
             isAddGroupModalVisible.value = false;
             loadPlacementData();
+            joinRealTimeGroupChannels(result.data);
         }
         else {
             addGroupModalErrorText.value = result.errorMessage ?? "Unknown error while adding a group.";
@@ -1845,7 +1925,7 @@
     }
 
     async function detachPlacementGroup(groupIdKey: string): Promise<void> {
-        const result = await invokeBlockAction("DetachPlacementGroup", {
+        const result = await invokeBlockAction<Guid>("DetachPlacementGroup", {
             detachGroupBag: {
                 groupIdKey: groupIdKey,
                 groupPlacementKeys: box.groupPlacementKeys,
@@ -1853,10 +1933,11 @@
             } as DetachGroupBag
         });
 
-        if (result.isSuccess) {
+        if (result.isSuccess && result.data) {
             // TODO - this doesn't work on template mode. Same on Webforms.
             console.log("Detach group success.");
             loadPlacementData();
+            leaveRealTimeGroupChannel(result.data);
         }
         else {
             console.error(result.errorMessage ?? "Unknown error while trying to detach a group.");
@@ -1878,15 +1959,16 @@
     }
 
     async function populateAttributes(): Promise<void> {
-        if (pendingSourceEntities.value.length === 0 && pendingDestinationEntities.value.length === 0) {
+        if (pendingSourceRegistrants.value.length === 0 && pendingSourceGroupMembers.value.length === 0 && pendingDestinationGroupMembers.value.length === 0) {
             return;
         }
 
         const request: SourceAndDestinationEntityKeysBag = {
             placementMode: box.placementMode,
             groupPlacementKeysBag: box.groupPlacementKeys ?? null,
-            sourceEntities: [...pendingSourceEntities.value],
-            destinationEntities: [...pendingDestinationEntities.value]
+            sourceRegistrants: [...pendingSourceRegistrants.value],
+            sourceGroupMembers: [...pendingSourceGroupMembers.value],
+            destinationGroupMembers: [...pendingDestinationGroupMembers.value]
         };
 
         console.log("Calling PopulateAttributes with this request: ", request);
@@ -1903,7 +1985,6 @@
             if (box.placementMode === PlacementMode.GroupMode && (sourceAttributesMap || destinationAttributesMap)) {
                 // If we have data in sourceAttributesMap then loop through peopleToPlace and assign accordingly
                 if (sourceAttributesMap && Object.keys(sourceAttributesMap).length > 0) {
-                    console.log("WE have source attributes map: ", sourceAttributesMap);
                     peopleToPlace.value.forEach(person => {
                         const matchingGroupMember = person.sourceGroupMembers?.find(gm =>
                             gm.groupMemberIdKey && sourceAttributesMap[gm.groupMemberIdKey]
@@ -1925,7 +2006,6 @@
                         }
 
                         if (destinationAttributesMap && Object.keys(destinationAttributesMap).length > 0) {
-                            console.log("WE have destination attributes map: ", destinationAttributesMap);
                             const data = destinationAttributesMap[groupMember.groupMemberIdKey];
                             if (data) {
                                 groupMember.attributes = data.attributes;
@@ -1950,7 +2030,6 @@
             else if (box.placementMode === PlacementMode.TemplateMode || box.placementMode === PlacementMode.InstanceMode) {
                 // If we have data in sourceAttributesMap then loop through peopleToPlace and assign accordingly
                 if (sourceAttributesMap && Object.keys(sourceAttributesMap).length > 0) {
-                    console.log("WE have source attributes map: ", sourceAttributesMap);
                     peopleToPlace.value.forEach(person => {
                         const matchingRegistrant = person.registrants?.find(r =>
                             r.registrantIdKey && sourceAttributesMap[r.registrantIdKey]
@@ -1972,7 +2051,6 @@
                         }
 
                         if (destinationAttributesMap && Object.keys(destinationAttributesMap).length > 0) {
-                            console.log("WE have destination attributes map: ", destinationAttributesMap);
                             const data = destinationAttributesMap[groupMember.groupMemberIdKey];
                             if (data) {
                                 groupMember.attributes = data.attributes;
@@ -2057,31 +2135,20 @@
 
     }, { deep: true });
 
-    watch(groupGuids, (newValue, oldValue) => {
-        if (!realTimetopic.value) {
-            startRealTime();
-            return;
-        }
-
-        // if (!isNullOrWhiteSpace(oldValue)) {
-        //     leaveRealTimeChannel(oldValue);
-        // }
-
-        // if (!isNullOrWhiteSpace(newValue)) {
-        //     addRealtimeChannel(newValue);
-        // }
-    });
+    // watch(() => computedGroupGuids.value.join(","), () => {
+    // });
 
     // #endregion
 
     onMounted(async () => {
         document.addEventListener("click", handleOutsideClick);
 
-        // nextTick(() => {
-        //     startRealTime();
-        // });
+        await loadPlacementData();
 
-        loadPlacementData();
+        // Wait for placement data to load before starting real time so that we have group guids.
+        if (computedGroupGuids.value || box.groupPlacementKeys?.registrationTemplateGuid || box.groupPlacementKeys?.registrationInstanceGuid) {
+            startRealTime();
+        }
     });
 
     onBeforeUnmount(() => {

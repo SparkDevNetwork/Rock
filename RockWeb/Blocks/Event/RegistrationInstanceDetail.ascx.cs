@@ -729,8 +729,13 @@ namespace RockWeb.Blocks.Event
                 { "ReturnUrl", GetCurrentPageUrl() }
                         } )
                     } )
+                    .Where( p => !string.IsNullOrWhiteSpace( p.Url ) )
                     .ToList();
 
+                if ( templatePlacements.Count == 0 )
+                {
+                    lGroupPlacements.Visible = false;
+                }
                 rptGroupPlacements.DataSource = templatePlacements;
                 rptGroupPlacements.DataBind();
             }

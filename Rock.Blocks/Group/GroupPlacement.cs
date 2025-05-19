@@ -34,6 +34,8 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.GroupPlacement;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Blocks.Types.Mobile.Core;
+using System.Runtime.CompilerServices;
 
 namespace Rock.Blocks.Group
 {
@@ -136,6 +138,8 @@ namespace Rock.Blocks.Group
             public int GroupOrder { get; set; }
             public bool IsShared { get; set; }
             public int? RegistrationInstanceId { get; set; }
+            public int? ParentGroupId { get; set; }
+            public int? CampusId { get; set; }
         }
 
         private class PlacementPeopleResult
@@ -153,7 +157,7 @@ namespace Rock.Blocks.Group
             public string LastName { get; set; }
             public Gender Gender { get; set; }
             public int? PhotoId { get; set; }
-            public int Age { get; set; }
+            public int? Age { get; set; }
             public int? RecordTypeValueId { get; set; }
             public AgeClassification AgeClassification { get; set; }
 
@@ -553,91 +557,6 @@ namespace Rock.Blocks.Group
             return listItems;
         }
 
-
-        private AttributeDataBag GetGroupAttributesAndValues( int groupId, int groupTypeId, HashSet<int> displayedAttributeIds )
-        {
-            if ( displayedAttributeIds == null )
-            {
-                // don't spend time loading attributes if there aren't any to be displayed
-                return null;
-            }
-
-            Rock.Model.Group group = new Rock.Model.Group
-            {
-                Id = groupId,
-                GroupTypeId = groupTypeId,
-            };
-
-            if ( group.AttributeValues == null )
-            {
-                group.LoadAttributes();
-            }
-
-            var attributeDataBag = new AttributeDataBag
-            {
-                Attributes = group.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) ),
-                AttributeValues = group.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) )
-            };
-
-            return attributeDataBag;
-        }
-
-        private AttributeDataBag GetGroupMemberAttributesAndValues( int? groupMemberId, int? groupTypeId, HashSet<int> displayedAttributeIds )
-        {
-            if ( displayedAttributeIds == null || !groupMemberId.HasValue || !groupTypeId.HasValue )
-            {
-                // don't spend time loading attributes if there aren't any to be displayed
-                return null;
-            }
-
-            GroupMember groupMember = new GroupMember
-            {
-                Id = groupMemberId.Value,
-                GroupTypeId = groupTypeId.Value,
-            };
-
-            if ( groupMember.AttributeValues == null )
-            {
-                groupMember.LoadAttributes();
-            }
-
-            var attributeDataBag = new AttributeDataBag
-            {
-                Attributes = groupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) ),
-                AttributeValues = groupMember.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) )
-            };
-
-            return attributeDataBag;
-        }
-
-        private AttributeDataBag GetRegistrantAttributesAndValues( int? registrantId, int? registrationTemplateId, HashSet<int> displayedAttributeIds )
-        {
-            if ( displayedAttributeIds == null || !registrantId.HasValue || !registrationTemplateId.HasValue)
-            {
-                // don't spend time loading attributes if there aren't any to be displayed
-                return null;
-            }
-
-            RegistrationRegistrant registrant = new RegistrationRegistrant
-            {
-                Id = registrantId.Value,
-                RegistrationTemplateId = registrationTemplateId.Value,
-            };
-
-            if ( registrant.AttributeValues == null )
-            {
-                registrant.LoadAttributes();
-            }
-
-            var attributeDataBag = new AttributeDataBag
-            {
-                Attributes = registrant.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) ),
-                AttributeValues = registrant.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedAttributeIds.Contains( a.Id ) )
-            };
-
-            return attributeDataBag;
-        }
-
         /// <summary>
         /// Gets the placement configuration.
         /// </summary>
@@ -839,9 +758,10 @@ namespace Rock.Blocks.Group
                         var feeLabel = f.FeeType == RegistrationFeeType.Multiple && f.Option.IsNotNullOrWhiteSpace()
                             ? $"{f.FeeName}-{f.Option}"
                             : f.Option;
-                        var costText = f.Quantity > 1
-                            ? $"{f.Quantity} at {f.Cost?.FormatAsCurrency()}" // TODO - check for null
-                            : ( ( f.Quantity ?? 0 ) * ( f.Cost ?? 0 ) ).FormatAsCurrency();
+                        var cost = f.Cost ?? 0;
+                        var costText = f.Quantity.Value > 1
+                            ? $"{f.Quantity.Value} at {cost.FormatAsCurrency()}"
+                            : ( f.Quantity.Value * cost ).FormatAsCurrency();
 
                         return new ListItemBag
                         {
@@ -850,6 +770,81 @@ namespace Rock.Blocks.Group
                         };
                     }
                 );
+        }
+
+        private List<T> GetPlacementPeopleEntities<T>(
+            List<PlacementPeopleResult> placementPeopleResults,
+            int? registrationTemplateId,
+            int? sourceGroupId,
+            bool isFetchingDestinationGroupMembers,
+            HashSet<int> displayedAttributeIds )
+            where T : IEntity
+        {
+            List<T> entitiesWithLoadedAttributes = new List<T>();
+
+            // If there are no attributes to display then return an empty list.
+            if ( displayedAttributeIds == null )
+            {
+                return entitiesWithLoadedAttributes;
+            }
+
+            if ( typeof( T ) == typeof( RegistrationRegistrant ) )
+            {
+                if ( registrationTemplateId.HasValue )
+                {
+                    var registrants = placementPeopleResults
+                        .Where( p => p.RegistrantId.HasValue )
+                        .DistinctBy( p => p.RegistrantId )
+                        .Select( p => new RegistrationRegistrant
+                        {
+                            Id = p.RegistrantId.Value,
+                            RegistrationTemplateId = registrationTemplateId.Value,
+                        } )
+                        .ToList();
+
+                    registrants.LoadFilteredAttributes( a => displayedAttributeIds.Contains( a.Id ) );
+                    entitiesWithLoadedAttributes = registrants.Cast<T>().ToList();
+                }
+            }
+            else if ( typeof( T ) == typeof( GroupMember ) )
+            {
+                if ( sourceGroupId.HasValue && !isFetchingDestinationGroupMembers )
+                {
+                    var members = placementPeopleResults
+                        .Where( p => p.GroupMemberId.HasValue && p.GroupRoleId.HasValue && p.GroupTypeId.HasValue )
+                        .DistinctBy( p => p.GroupMemberId )
+                        .Select( p => new GroupMember
+                        {
+                            Id = p.GroupMemberId.Value,
+                            GroupRoleId = p.GroupRoleId.Value,
+                            GroupTypeId = p.GroupTypeId.Value,
+                            GroupId = sourceGroupId.Value
+                        } )
+                        .ToList();
+
+                    members.LoadFilteredAttributes( a => displayedAttributeIds.Contains( a.Id ) );
+                    entitiesWithLoadedAttributes = members.Cast<T>().ToList();
+                }
+                else
+                {
+                    var members = placementPeopleResults
+                        .Where( p => p.GroupId.HasValue && p.GroupMemberId.HasValue && p.GroupRoleId.HasValue && p.GroupTypeId.HasValue && p.GroupId.Value != sourceGroupId )
+                        .DistinctBy( p => p.GroupMemberId )
+                        .Select( p => new GroupMember
+                        {
+                            Id = p.GroupMemberId.Value,
+                            GroupRoleId = p.GroupRoleId.Value,
+                            GroupTypeId = p.GroupTypeId.Value,
+                            GroupId = p.GroupId.Value
+                        } )
+                        .ToList();
+
+                    members.LoadFilteredAttributes( a => displayedAttributeIds.Contains( a.Id ) );
+                    entitiesWithLoadedAttributes = members.Cast<T>().ToList();
+                }
+            }
+
+            return entitiesWithLoadedAttributes;
         }
 
         #endregion Methods
@@ -936,16 +931,15 @@ namespace Rock.Blocks.Group
         }
 
         [BlockAction]
-        public BlockActionResult GetPlacementPeople( GroupPlacementKeysBag groupPlacementKeys, Boolean isPlacementAllowingMultiple )
+        public BlockActionResult GetPlacementPeople( GroupPlacementKeysBag groupPlacementKeys, Boolean isPlacementAllowingMultiple, PlacementMode placementMode )
         {
             int registrationTemplatePlacementEntityTypeId = EntityTypeCache.Get<Rock.Model.RegistrationTemplatePlacement>().Id;
             int registrationInstanceEntityTypeId = EntityTypeCache.Get<Rock.Model.RegistrationInstance>().Id;
             int personEntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
-            int sourceEntityTypeId;
+            int? sourceEntityTypeId = null;
             int targetEntityTypeId = EntityTypeCache.Get<Rock.Model.Group>().Id;
-            int sourceEntityId;
-            string placementMode;
-            string purposeKey;
+            int? sourceEntityId = null;
+            string purposeKey = null;
             string registrationTemplatePurposeKey = RelatedEntityPurposeKey.RegistrationTemplateGroupPlacementTemplate;
             string registrationInstancePurposeKey = RelatedEntityPurposeKey.RegistrationInstanceGroupPlacement;
             List<PlacementPeopleResult> placementPeopleResults;
@@ -992,203 +986,68 @@ namespace Rock.Blocks.Group
 
             var destinationGroupIds = GetIdsFromDestinationGroupParam();
 
-            // If registration instance id has a value than we are in instance mode
-            if ( registrationInstanceId.HasValue )
-            {
-                placementMode = "InstanceMode";
-
-                placementPeopleResults = RockContext.Database.SqlQuery<PlacementPeopleResult>(
-                    $@"EXEC [dbo].[spGetGroupPlacementPeople] 
-                        @{nameof( registrationTemplatePlacementEntityTypeId )}, 
-                        @{nameof( registrationInstanceEntityTypeId )}, 
-                        @{nameof( personEntityTypeId )}, 
-                        @{nameof( sourceEntityTypeId )}, 
-                        @{nameof( targetEntityTypeId )}, 
-                        @{nameof( registrationTemplateId )}, 
-                        @{nameof( registrationInstanceId )}, 
-                        @{nameof( registrationTemplatePlacementId )},
-                        @{nameof( sourceEntityId )},
-                        @{nameof( placementMode )},
-                        @{nameof( includedRegistrationInstanceIds )},
-                        @{nameof( includeFees )},
-                        @{nameof( includedFeeItemIds )},
-                        @{nameof( destinationGroupTypeId )},
-                        @{nameof( destinationGroupIds )},
-                        @{nameof( displayedCampusGuid )},
-                        @{nameof( purposeKey )},
-                        @{nameof( registrationTemplatePurposeKey )},
-                        @{nameof( registrationInstancePurposeKey )}",
-                    new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
-                    new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
-                    new SqlParameter( nameof( personEntityTypeId ), personEntityTypeId ),
-                    new SqlParameter( nameof( sourceEntityTypeId ), DBNull.Value ),
-                    new SqlParameter( nameof( targetEntityTypeId ), targetEntityTypeId ),
-                    new SqlParameter( nameof( registrationTemplateId ), registrationTemplateId ),
-                    new SqlParameter( nameof( registrationInstanceId ), registrationInstanceId.Value ),
-                    new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
-                    new SqlParameter( nameof( sourceEntityId ), DBNull.Value ),
-                    new SqlParameter( nameof( placementMode ), placementMode ),
-                    new SqlParameter( nameof( includedRegistrationInstanceIds ), ( object ) includedRegistrationInstanceIds ?? DBNull.Value ),
-                    new SqlParameter( nameof( includeFees ), includeFees ),
-                    new SqlParameter( nameof( includedFeeItemIds ), ( object ) includedFeeItemIds ?? DBNull.Value ),
-                    new SqlParameter( nameof( destinationGroupTypeId ), destinationGroupTypeId.Value ),
-                    new SqlParameter( nameof( destinationGroupIds ), DBNull.Value ),
-                    new SqlParameter( nameof( displayedCampusGuid ), ( object ) displayedCampusGuid ?? DBNull.Value ),
-                    new SqlParameter( nameof( purposeKey ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationTemplatePurposeKey ), registrationTemplatePurposeKey ),
-                    new SqlParameter( nameof( registrationInstancePurposeKey ), registrationInstancePurposeKey )
-                ).ToList();
-            }
-            else if ( registrationTemplateId.HasValue )
-            {
-                placementMode = "TemplateMode";
-
-                placementPeopleResults = RockContext.Database.SqlQuery<PlacementPeopleResult>(
-                    $@"EXEC [dbo].[spGetGroupPlacementPeople] 
-                        @{nameof( registrationTemplatePlacementEntityTypeId )}, 
-                        @{nameof( registrationInstanceEntityTypeId )}, 
-                        @{nameof( personEntityTypeId )}, 
-                        @{nameof( sourceEntityTypeId )}, 
-                        @{nameof( targetEntityTypeId )}, 
-                        @{nameof( registrationTemplateId )}, 
-                        @{nameof( registrationInstanceId )}, 
-                        @{nameof( registrationTemplatePlacementId )},
-                        @{nameof( sourceEntityId )},
-                        @{nameof( placementMode )},
-                        @{nameof( includedRegistrationInstanceIds )},
-                        @{nameof( includeFees )},
-                        @{nameof( includedFeeItemIds )},
-                        @{nameof( destinationGroupTypeId )},
-                        @{nameof( destinationGroupIds )},
-                        @{nameof( displayedCampusGuid )},
-                        @{nameof( purposeKey )},
-                        @{nameof( registrationTemplatePurposeKey )},
-                        @{nameof( registrationInstancePurposeKey )}",
-                    new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
-                    new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
-                    new SqlParameter( nameof( personEntityTypeId ), personEntityTypeId ),
-                    new SqlParameter( nameof( sourceEntityTypeId ), DBNull.Value ),
-                    new SqlParameter( nameof( targetEntityTypeId ), targetEntityTypeId ),
-                    new SqlParameter( nameof( registrationTemplateId ), registrationTemplateId.Value ),
-                    new SqlParameter( nameof( registrationInstanceId ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
-                    new SqlParameter( nameof( sourceEntityId ), DBNull.Value ),
-                    new SqlParameter( nameof( placementMode ), placementMode ),
-                    new SqlParameter( nameof( includedRegistrationInstanceIds ), ( object ) includedRegistrationInstanceIds ?? DBNull.Value ),
-                    new SqlParameter( nameof( includeFees ), includeFees ),
-                    new SqlParameter( nameof( includedFeeItemIds ), ( object ) includedFeeItemIds ?? DBNull.Value ),
-                    new SqlParameter( nameof( destinationGroupTypeId ), destinationGroupTypeId.Value ),
-                    new SqlParameter( nameof( destinationGroupIds ), DBNull.Value ),
-                    new SqlParameter( nameof( displayedCampusGuid ), ( object ) displayedCampusGuid ?? DBNull.Value ),
-                    new SqlParameter( nameof( purposeKey ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationTemplatePurposeKey ), registrationTemplatePurposeKey ),
-                    new SqlParameter( nameof( registrationInstancePurposeKey ), registrationInstancePurposeKey )
-                ).ToList();
-            }
-            else if ( sourceGroupId.HasValue )
-            {
-                placementMode = "GroupMode";
-                sourceEntityId = sourceGroupId.Value;
-                purposeKey = RelatedEntityPurposeKey.GroupPlacement;
-
-                placementPeopleResults = RockContext.Database.SqlQuery<PlacementPeopleResult>(
-                    $@"EXEC [dbo].[spGetGroupPlacementPeople] 
-                        @{nameof( registrationTemplatePlacementEntityTypeId )}, 
-                        @{nameof( registrationInstanceEntityTypeId )}, 
-                        @{nameof( personEntityTypeId )}, 
-                        @{nameof( sourceEntityTypeId )}, 
-                        @{nameof( targetEntityTypeId )}, 
-                        @{nameof( registrationTemplateId )}, 
-                        @{nameof( registrationInstanceId )}, 
-                        @{nameof( registrationTemplatePlacementId )},
-                        @{nameof( sourceEntityId )},
-                        @{nameof( placementMode )},
-                        @{nameof( includedRegistrationInstanceIds )},
-                        @{nameof( includeFees )},
-                        @{nameof( includedFeeItemIds )},
-                        @{nameof( destinationGroupTypeId )},
-                        @{nameof( destinationGroupIds )},
-                        @{nameof( displayedCampusGuid )},
-                        @{nameof( purposeKey )},
-                        @{nameof( registrationTemplatePurposeKey )},
-                        @{nameof( registrationInstancePurposeKey )}",
-                    new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationInstanceEntityTypeId ), DBNull.Value ),
-                    new SqlParameter( nameof( personEntityTypeId ), personEntityTypeId ),
-                    new SqlParameter( nameof( sourceEntityTypeId ), targetEntityTypeId ), // We know our target entity type id is set to Group.
-                    new SqlParameter( nameof( targetEntityTypeId ), targetEntityTypeId ),
-                    new SqlParameter( nameof( registrationTemplateId ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationInstanceId ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationTemplatePlacementId ), DBNull.Value ),
-                    new SqlParameter( nameof( sourceEntityId ), sourceEntityId ),
-                    new SqlParameter( nameof( placementMode ), placementMode ),
-                    new SqlParameter( nameof( includedRegistrationInstanceIds ), DBNull.Value ),
-                    new SqlParameter( nameof( includeFees ), DBNull.Value ),
-                    new SqlParameter( nameof( includedFeeItemIds ), DBNull.Value ),
-                    new SqlParameter( nameof( destinationGroupTypeId ), destinationGroupTypeId.Value ),
-                    new SqlParameter( nameof( destinationGroupIds ), ( object ) destinationGroupIds ?? DBNull.Value ),
-                    new SqlParameter( nameof( displayedCampusGuid ), ( object ) displayedCampusGuid ?? DBNull.Value ),
-                    new SqlParameter( nameof( purposeKey ), purposeKey ),
-                    new SqlParameter( nameof( registrationTemplatePurposeKey ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationInstancePurposeKey ), DBNull.Value )
-                ).ToList();
-            }
-            else if ( entitySetId.HasValue )
-            {
-                placementMode = "EntitySetMode";
-                sourceEntityTypeId = EntityTypeCache.Get<Rock.Model.EntitySet>().Id;
-                sourceEntityId = entitySetId.Value;
-                purposeKey = RelatedEntityPurposeKey.EntitySetPlacement;
-
-                placementPeopleResults = RockContext.Database.SqlQuery<PlacementPeopleResult>(
-                    $@"EXEC [dbo].[spGetGroupPlacementPeople] 
-                        @{nameof( registrationTemplatePlacementEntityTypeId )}, 
-                        @{nameof( registrationInstanceEntityTypeId )}, 
-                        @{nameof( personEntityTypeId )}, 
-                        @{nameof( sourceEntityTypeId )}, 
-                        @{nameof( targetEntityTypeId )}, 
-                        @{nameof( registrationTemplateId )}, 
-                        @{nameof( registrationInstanceId )}, 
-                        @{nameof( registrationTemplatePlacementId )},
-                        @{nameof( sourceEntityId )},
-                        @{nameof( placementMode )},
-                        @{nameof( includedRegistrationInstanceIds )},
-                        @{nameof( includeFees )},
-                        @{nameof( includedFeeItemIds )},
-                        @{nameof( destinationGroupTypeId )},
-                        @{nameof( destinationGroupIds )},
-                        @{nameof( displayedCampusGuid )},
-                        @{nameof( purposeKey )},
-                        @{nameof( registrationTemplatePurposeKey )},
-                        @{nameof( registrationInstancePurposeKey )}",
-                    new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationInstanceEntityTypeId ), DBNull.Value ),
-                    new SqlParameter( nameof( personEntityTypeId ), personEntityTypeId ),
-                    new SqlParameter( nameof( sourceEntityTypeId ), sourceEntityTypeId ),
-                    new SqlParameter( nameof( targetEntityTypeId ), targetEntityTypeId ),
-                    new SqlParameter( nameof( registrationTemplateId ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationInstanceId ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationTemplatePlacementId ), DBNull.Value ),
-                    new SqlParameter( nameof( sourceEntityId ), sourceEntityId ),
-                    new SqlParameter( nameof( placementMode ), placementMode ),
-                    new SqlParameter( nameof( includedRegistrationInstanceIds ), DBNull.Value ),
-                    new SqlParameter( nameof( includeFees ), DBNull.Value ),
-                    new SqlParameter( nameof( includedFeeItemIds ), DBNull.Value ),
-                    new SqlParameter( nameof( destinationGroupTypeId ), destinationGroupTypeId.Value ),
-                    new SqlParameter( nameof( destinationGroupIds ), ( object ) destinationGroupIds ?? DBNull.Value ),
-                    new SqlParameter( nameof( displayedCampusGuid ), ( object ) displayedCampusGuid ?? DBNull.Value ),
-                    new SqlParameter( nameof( purposeKey ), purposeKey ),
-                    new SqlParameter( nameof( registrationTemplatePurposeKey ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationInstancePurposeKey ), DBNull.Value )
-                ).ToList();
-            }
-            else
+            if ( !registrationTemplateId.HasValue && !registrationInstanceId.HasValue && !sourceGroupId.HasValue && !entitySetId.HasValue )
             {
                 return ActionNotFound( "Missing required keys to get Placement People." );
             }
 
+            if ( placementMode == PlacementMode.GroupMode )
+            {
+                sourceEntityTypeId = EntityTypeCache.Get<Rock.Model.Group>().Id;
+                sourceEntityId = sourceGroupId;
+                purposeKey = RelatedEntityPurposeKey.GroupPlacement;
+            }
+            else if ( placementMode == PlacementMode.EntitySetMode )
+            {
+                sourceEntityTypeId = EntityTypeCache.Get<Rock.Model.EntitySet>().Id;
+                sourceEntityId = entitySetId;
+                purposeKey = RelatedEntityPurposeKey.EntitySetPlacement;
+            }
+
+            placementPeopleResults = RockContext.Database.SqlQuery<PlacementPeopleResult>(
+                $@"EXEC [dbo].[spGetGroupPlacementPeople] 
+                                @{nameof( registrationTemplatePlacementEntityTypeId )}, 
+                                @{nameof( registrationInstanceEntityTypeId )}, 
+                                @{nameof( personEntityTypeId )}, 
+                                @{nameof( sourceEntityTypeId )}, 
+                                @{nameof( targetEntityTypeId )}, 
+                                @{nameof( registrationTemplateId )}, 
+                                @{nameof( registrationInstanceId )}, 
+                                @{nameof( registrationTemplatePlacementId )},
+                                @{nameof( sourceEntityId )},
+                                @{nameof( placementMode )},
+                                @{nameof( includedRegistrationInstanceIds )},
+                                @{nameof( includeFees )},
+                                @{nameof( includedFeeItemIds )},
+                                @{nameof( destinationGroupTypeId )},
+                                @{nameof( destinationGroupIds )},
+                                @{nameof( displayedCampusGuid )},
+                                @{nameof( purposeKey )},
+                                @{nameof( registrationTemplatePurposeKey )},
+                                @{nameof( registrationInstancePurposeKey )}",
+                new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
+                new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
+                new SqlParameter( nameof( personEntityTypeId ), personEntityTypeId ),
+                new SqlParameter( nameof( sourceEntityTypeId ), ( object ) sourceEntityTypeId ?? DBNull.Value ),
+                new SqlParameter( nameof( targetEntityTypeId ), targetEntityTypeId ),
+                new SqlParameter( nameof( registrationTemplateId ), ( object ) registrationTemplateId ?? DBNull.Value ),
+                new SqlParameter( nameof( registrationInstanceId ), ( object ) registrationInstanceId ?? DBNull.Value ),
+                new SqlParameter( nameof( registrationTemplatePlacementId ), ( object ) registrationTemplatePlacementId ?? DBNull.Value ),
+                new SqlParameter( nameof( sourceEntityId ), ( object ) sourceEntityId ?? DBNull.Value ),
+                new SqlParameter( nameof( placementMode ), placementMode.ToString() ),
+                new SqlParameter( nameof( includedRegistrationInstanceIds ), ( object ) includedRegistrationInstanceIds ?? DBNull.Value ),
+                new SqlParameter( nameof( includeFees ), includeFees ),
+                new SqlParameter( nameof( includedFeeItemIds ), ( object ) includedFeeItemIds ?? DBNull.Value ),
+                new SqlParameter( nameof( destinationGroupTypeId ), destinationGroupTypeId.Value ),
+                new SqlParameter( nameof( destinationGroupIds ), ( object ) destinationGroupIds ?? DBNull.Value ),
+                new SqlParameter( nameof( displayedCampusGuid ), ( object ) displayedCampusGuid ?? DBNull.Value ),
+                new SqlParameter( nameof( purposeKey ), ( object ) purposeKey ?? DBNull.Value ),
+                new SqlParameter( nameof( registrationTemplatePurposeKey ), registrationTemplatePurposeKey ),
+                new SqlParameter( nameof( registrationInstancePurposeKey ), registrationInstancePurposeKey )
+            ).ToList();
+
             HashSet<int> displayedSourceAttributeIds = null;
-            HashSet<int> displayedGroupMemberAttributeIds = null;
+            HashSet<int> displayedDestinationGroupMemberAttributeIds = null;
 
             if ( placementConfiguration.SourceAttributesToDisplay?.Any() == true )
             {
@@ -1201,12 +1060,44 @@ namespace Rock.Blocks.Group
 
             if ( placementConfiguration.DestinationGroupMemberAttributesToDisplay?.Any() == true )
             {
-                displayedGroupMemberAttributeIds = placementConfiguration.DestinationGroupMemberAttributesToDisplay
+                displayedDestinationGroupMemberAttributeIds = placementConfiguration.DestinationGroupMemberAttributesToDisplay
                     .Select( idKey => Rock.Utility.IdHasher.Instance.GetId( idKey ) )
                     .Where( id => id.HasValue )
                     .Select( id => id.Value )
                     .ToHashSet();
             }
+
+            List<RegistrationRegistrant> registrants = new List<RegistrationRegistrant>();
+            List<GroupMember> sourceGroupMembers = new List<GroupMember>();
+
+            if ( placementMode == PlacementMode.TemplateMode || placementMode == PlacementMode.InstanceMode )
+            {
+                registrants = GetPlacementPeopleEntities<RegistrationRegistrant>(
+                    placementPeopleResults,
+                    registrationTemplateId,
+                    null,
+                    false,
+                    displayedSourceAttributeIds
+                );
+            }
+            else if ( placementMode == PlacementMode.GroupMode )
+            {
+                sourceGroupMembers = GetPlacementPeopleEntities<GroupMember>(
+                    placementPeopleResults,
+                    null,
+                    sourceGroupId,
+                    false,
+                    displayedSourceAttributeIds
+                );
+            }
+
+            List<GroupMember> destinationGroupMembers = GetPlacementPeopleEntities<GroupMember>(
+                placementPeopleResults,
+                null,
+                sourceGroupId,
+                true,
+                displayedDestinationGroupMemberAttributeIds
+            );
 
             var placementPeopleBag = new PlacementPeopleBag
             {
@@ -1256,12 +1147,17 @@ namespace Rock.Blocks.Group
                                 Fees = GetFormattedFeesForRegistrant( personGroup, r.RegistrantId.Value ),
                             };
 
-                            var attributesAndValues = GetRegistrantAttributesAndValues( r.RegistrantId, registrationTemplateId, displayedSourceAttributeIds );
-                            if ( attributesAndValues != null )
-                            {
-                                registrantBag.Attributes = attributesAndValues.Attributes;
-                                registrantBag.AttributeValues = attributesAndValues.AttributeValues;
-                            }
+                            var registrant = registrants.FirstOrDefault( x => x.Id == r.RegistrantId );
+
+                            registrantBag.Attributes = registrant.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) );
+                            registrantBag.AttributeValues = registrant.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) );
+
+                            //var attributesAndValues = GetRegistrantAttributesAndValues( r.RegistrantId, registrationTemplateId, displayedSourceAttributeIds );
+                            //if ( attributesAndValues != null )
+                            //{
+                            //    registrantBag.Attributes = attributesAndValues.Attributes;
+                            //    registrantBag.AttributeValues = attributesAndValues.AttributeValues;
+                            //}
 
                             return registrantBag;
                         } )
@@ -1272,7 +1168,7 @@ namespace Rock.Blocks.Group
                     var sourceGroup = GroupCache.Get( sourceGroupId.Value );
 
                     personBag.SourceGroupMembers = personGroup
-                        .Where( p => p.GroupMemberId.HasValue && !p.GroupId.HasValue )
+                        .Where( p => p.GroupMemberId.HasValue && p.GroupId == sourceGroupId.Value )
                         .DistinctBy( p => p.GroupMemberId )
                         .Select( p => {
                             var groupMemberBag = new GroupMemberBag
@@ -1280,12 +1176,17 @@ namespace Rock.Blocks.Group
                                 GroupMemberIdKey = IdHasher.Instance.GetHash( p.GroupMemberId.Value ),
                             };
 
-                            var attributeDataBag = GetGroupMemberAttributesAndValues( p.GroupMemberId, sourceGroup.GroupTypeId, displayedSourceAttributeIds );
-                            if ( attributeDataBag != null )
-                            {
-                                groupMemberBag.Attributes = attributeDataBag.Attributes;
-                                groupMemberBag.AttributeValues = attributeDataBag.AttributeValues;
-                            }
+                            var sourceGroupMember = sourceGroupMembers.FirstOrDefault( gm => gm.Id == p.GroupMemberId.Value );
+
+                            groupMemberBag.Attributes = sourceGroupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) );
+                            groupMemberBag.AttributeValues = sourceGroupMember.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) );
+
+                            //var attributeDataBag = GetGroupMemberAttributesAndValues( p.GroupMemberId, sourceGroup.GroupTypeId, displayedSourceAttributeIds );
+                            //if ( attributeDataBag != null )
+                            //{
+                            //    groupMemberBag.Attributes = attributeDataBag.Attributes;
+                            //    groupMemberBag.AttributeValues = attributeDataBag.AttributeValues;
+                            //}
 
                             return groupMemberBag;
                         } )
@@ -1311,8 +1212,8 @@ namespace Rock.Blocks.Group
                 //    {
                 //        GroupMemberIdKey = firstResult.GroupMemberId.HasValue ? IdHasher.Instance.GetHash( firstResult.GroupMemberId.Value ) : null,
                 //        GroupRoleIdKey = firstResult.GroupRoleId.HasValue ? IdHasher.Instance.GetHash( firstResult.GroupRoleId.Value ) : null,
-                //        Attributes = GetGroupMemberAttributes( firstResult.GroupMemberId, firstResult.GroupTypeId, displayedGroupMemberAttributeIds ),
-                //        AttributeValues = GetGroupMemberAttributeValues( firstResult.GroupMemberId, firstResult.GroupTypeId, displayedGroupMemberAttributeIds ),
+                //        Attributes = GetGroupMemberAttributes( firstResult.GroupMemberId, firstResult.GroupTypeId, displayedDestinationGroupMemberAttributeIds ),
+                //        AttributeValues = GetGroupMemberAttributeValues( firstResult.GroupMemberId, firstResult.GroupTypeId, displayedDestinationGroupMemberAttributeIds ),
                 //        Person = personBag
                 //    };
 
@@ -1327,7 +1228,7 @@ namespace Rock.Blocks.Group
                 var addedGroupMemberIds = new HashSet<int>();
 
                 // Check for all group placements
-                foreach ( var row in personGroup.Where( r => r.GroupId.HasValue && r.GroupMemberId.HasValue ) )
+                foreach ( var row in personGroup.Where( r => r.GroupId.HasValue && r.GroupMemberId.HasValue && r.GroupId != sourceGroupId ) )
                 {
                     var groupId = row.GroupId.Value;
                     var groupMemberId = row.GroupMemberId.Value;
@@ -1353,7 +1254,7 @@ namespace Rock.Blocks.Group
                         placementPeopleBag.TempGroups.Add( groupBag );
                     }
 
-                    var attributeDataBag = GetGroupMemberAttributesAndValues( groupMemberId, row.GroupTypeId, displayedGroupMemberAttributeIds );
+                    var destinationGroupMember = destinationGroupMembers.FirstOrDefault( gm => gm.Id == groupMemberId );
 
                     groupBag.GroupMembers.Add( new GroupMemberBag
                     {
@@ -1362,14 +1263,14 @@ namespace Rock.Blocks.Group
                         GroupRoleIdKey = row.GroupRoleId.HasValue
                             ? IdHasher.Instance.GetHash( row.GroupRoleId.Value )
                             : null,
-                        Attributes = attributeDataBag?.Attributes,
-                        AttributeValues = attributeDataBag?.AttributeValues,
+                        Attributes = destinationGroupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedDestinationGroupMemberAttributeIds.Contains( a.Id ) ),
+                        AttributeValues = destinationGroupMember.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedDestinationGroupMemberAttributeIds.Contains( a.Id ) ),
                         Person = personBag
                     } );
                 }
 
                 // If the person has no placements at all
-                var hasPlacements = personGroup.Any( r => r.GroupId.HasValue && r.GroupMemberId.HasValue );
+                var hasPlacements = personGroup.Any( r => r.GroupId.HasValue && r.GroupMemberId.HasValue && r.GroupId != sourceGroupId );
                 // TODO - check allow multiple here.
                 if ( !hasPlacements || isPlacementAllowingMultiple )
                 {
@@ -1384,15 +1285,14 @@ namespace Rock.Blocks.Group
         }
 
         [BlockAction]
-        public BlockActionResult GetDestinationGroups( GroupPlacementKeysBag groupPlacementKeys )
+        public BlockActionResult GetDestinationGroups( GroupPlacementKeysBag groupPlacementKeys, PlacementMode placementMode )
         {
             int registrationTemplatePlacementEntityTypeId = EntityTypeCache.Get<Rock.Model.RegistrationTemplatePlacement>().Id;
             int registrationInstanceEntityTypeId = EntityTypeCache.Get<Rock.Model.RegistrationInstance>().Id;
-            int sourceEntityTypeId;
+            int? sourceEntityTypeId = null;
             int targetEntityTypeId = EntityTypeCache.Get<Rock.Model.Group>().Id;
-            int sourceEntityId;
-            string placementMode;
-            string purposeKey;
+            int? sourceEntityId = null;
+            string purposeKey = null;
             string registrationTemplatePurposeKey = RelatedEntityPurposeKey.RegistrationTemplateGroupPlacementTemplate;
             string registrationInstancePurposeKey = RelatedEntityPurposeKey.RegistrationInstanceGroupPlacement;
             List<DestinationGroupResult> destinationGroupResults;
@@ -1435,191 +1335,89 @@ namespace Rock.Blocks.Group
 
             var destinationGroupIds = GetIdsFromDestinationGroupParam();
 
-            // If registration instance id has a value than we are in instance mode
-            if ( registrationInstanceId.HasValue )
-            {
-                placementMode = "InstanceMode";
-
-                destinationGroupResults = RockContext.Database.SqlQuery<DestinationGroupResult>(
-                    $@"EXEC [dbo].[spGetDestinationGroups] 
-                        @{nameof( registrationTemplatePlacementEntityTypeId )}, 
-                        @{nameof( registrationInstanceEntityTypeId )},
-                        @{nameof( sourceEntityTypeId )}, 
-                        @{nameof( targetEntityTypeId )}, 
-                        @{nameof( registrationTemplateId )}, 
-                        @{nameof( registrationInstanceId )}, 
-                        @{nameof( registrationTemplatePlacementId )},
-                        @{nameof( sourceEntityId )},
-                        @{nameof( placementMode )},
-                        @{ nameof( includedRegistrationInstanceIds )},
-                        @{ nameof( destinationGroupTypeId )},
-                        @{ nameof( destinationGroupIds )},
-                        @{ nameof( displayedCampusGuid )},
-                        @{ nameof( purposeKey )},
-                        @{nameof( registrationTemplatePurposeKey )},
-                        @{nameof( registrationInstancePurposeKey )}",
-                    new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
-                    new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
-                    new SqlParameter( nameof( sourceEntityTypeId ), DBNull.Value ),
-                    new SqlParameter( nameof( targetEntityTypeId ), targetEntityTypeId ),
-                    new SqlParameter( nameof( registrationTemplateId ), registrationTemplateId ),
-                    new SqlParameter( nameof( registrationInstanceId ), registrationInstanceId.Value ),
-                    new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
-                    new SqlParameter( nameof( sourceEntityId ), DBNull.Value ),
-                    new SqlParameter( nameof( placementMode ), placementMode ),
-                    new SqlParameter( nameof( includedRegistrationInstanceIds ), ( object ) includedRegistrationInstanceIds ?? DBNull.Value ),
-                    new SqlParameter( nameof( destinationGroupTypeId ), destinationGroupTypeId.Value ),
-                    new SqlParameter( nameof( destinationGroupIds ), DBNull.Value ),
-                    new SqlParameter( nameof( displayedCampusGuid ), ( object ) displayedCampusGuid ?? DBNull.Value ),
-                    new SqlParameter( nameof( purposeKey ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationTemplatePurposeKey ), registrationTemplatePurposeKey ),
-                    new SqlParameter( nameof( registrationInstancePurposeKey ), registrationInstancePurposeKey )
-                ).ToList();
-            }
-            else if ( registrationTemplateId.HasValue )
-            {
-                placementMode = "TemplateMode";
-
-                destinationGroupResults = RockContext.Database.SqlQuery<DestinationGroupResult>(
-                    $@"EXEC [dbo].[spGetDestinationGroups] 
-                        @{nameof( registrationTemplatePlacementEntityTypeId )}, 
-                        @{nameof( registrationInstanceEntityTypeId )},
-                        @{nameof( sourceEntityTypeId )}, 
-                        @{nameof( targetEntityTypeId )}, 
-                        @{nameof( registrationTemplateId )}, 
-                        @{nameof( registrationInstanceId )}, 
-                        @{nameof( registrationTemplatePlacementId )},
-                        @{nameof( sourceEntityId )},
-                        @{nameof( placementMode )},
-                        @{nameof( includedRegistrationInstanceIds )},
-                        @{ nameof( destinationGroupTypeId )},
-                        @{nameof( destinationGroupIds )},
-                        @{nameof( displayedCampusGuid )},
-                        @{nameof( purposeKey )},
-                        @{nameof( registrationTemplatePurposeKey )},
-                        @{nameof( registrationInstancePurposeKey )}",
-                    new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
-                    new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
-                    new SqlParameter( nameof( sourceEntityTypeId ), DBNull.Value ),
-                    new SqlParameter( nameof( targetEntityTypeId ), targetEntityTypeId ),
-                    new SqlParameter( nameof( registrationTemplateId ), registrationTemplateId.Value ),
-                    new SqlParameter( nameof( registrationInstanceId ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationTemplatePlacementId ), registrationTemplatePlacementId ),
-                    new SqlParameter( nameof( sourceEntityId ), DBNull.Value ),
-                    new SqlParameter( nameof( placementMode ), placementMode ),
-                    new SqlParameter( nameof( includedRegistrationInstanceIds ), ( object ) includedRegistrationInstanceIds ?? DBNull.Value ),
-                    new SqlParameter( nameof( destinationGroupTypeId ), destinationGroupTypeId.Value ),
-                    new SqlParameter( nameof( destinationGroupIds ), DBNull.Value ),
-                    new SqlParameter( nameof( displayedCampusGuid ), ( object ) displayedCampusGuid ?? DBNull.Value ),
-                    new SqlParameter( nameof( purposeKey ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationTemplatePurposeKey ), registrationTemplatePurposeKey ),
-                    new SqlParameter( nameof( registrationInstancePurposeKey ), registrationInstancePurposeKey )
-                ).ToList();
-            }
-            else if ( sourceGroupId.HasValue )
-            {
-                placementMode = "GroupMode";
-                sourceEntityId = sourceGroupId.Value;
-                purposeKey = RelatedEntityPurposeKey.GroupPlacement;
-
-                destinationGroupResults = RockContext.Database.SqlQuery<DestinationGroupResult>(
-                    $@"EXEC [dbo].[spGetDestinationGroups] 
-                        @{nameof( registrationTemplatePlacementEntityTypeId )}, 
-                        @{nameof( registrationInstanceEntityTypeId )},
-                        @{nameof( sourceEntityTypeId )}, 
-                        @{nameof( targetEntityTypeId )}, 
-                        @{nameof( registrationTemplateId )}, 
-                        @{nameof( registrationInstanceId )}, 
-                        @{nameof( registrationTemplatePlacementId )},
-                        @{nameof( sourceEntityId )},
-                        @{nameof( placementMode )},
-                        @{nameof( includedRegistrationInstanceIds )},
-                        @{nameof( destinationGroupTypeId )},
-                        @{nameof( destinationGroupIds )},
-                        @{nameof( displayedCampusGuid )},
-                        @{nameof( purposeKey )},
-                        @{nameof( registrationTemplatePurposeKey )},
-                        @{nameof( registrationInstancePurposeKey )}",
-                    new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationInstanceEntityTypeId ), DBNull.Value ),
-                    new SqlParameter( nameof( sourceEntityTypeId ), targetEntityTypeId ), // We know our target entity type id is set to Group.
-                    new SqlParameter( nameof( targetEntityTypeId ), targetEntityTypeId ),
-                    new SqlParameter( nameof( registrationTemplateId ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationInstanceId ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationTemplatePlacementId ), DBNull.Value ),
-                    new SqlParameter( nameof( sourceEntityId ), sourceEntityId ),
-                    new SqlParameter( nameof( placementMode ), placementMode ),
-                    new SqlParameter( nameof( includedRegistrationInstanceIds ), DBNull.Value ),
-                    new SqlParameter( nameof( destinationGroupTypeId ), destinationGroupTypeId.Value ),
-                    new SqlParameter( nameof( destinationGroupIds ), ( object ) destinationGroupIds ?? DBNull.Value ),
-                    new SqlParameter( nameof( displayedCampusGuid ), ( object ) displayedCampusGuid ?? DBNull.Value ),
-                    new SqlParameter( nameof( purposeKey ), purposeKey ),
-                    new SqlParameter( nameof( registrationTemplatePurposeKey ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationInstancePurposeKey ), DBNull.Value )
-                ).ToList();
-            }
-            else if ( entitySetId.HasValue )
-            {
-                placementMode = "EntitySetMode";
-                sourceEntityTypeId = EntityTypeCache.Get<Rock.Model.EntitySet>().Id;
-                sourceEntityId = entitySetId.Value;
-                purposeKey = RelatedEntityPurposeKey.EntitySetPlacement;
-
-                destinationGroupResults = RockContext.Database.SqlQuery<DestinationGroupResult>(
-                    $@"EXEC [dbo].[spGetDestinationGroups] 
-                        @{nameof( registrationTemplatePlacementEntityTypeId )}, 
-                        @{nameof( registrationInstanceEntityTypeId )}, 
-                        @{nameof( sourceEntityTypeId )}, 
-                        @{nameof( targetEntityTypeId )}, 
-                        @{nameof( registrationTemplateId )}, 
-                        @{nameof( registrationInstanceId )}, 
-                        @{nameof( registrationTemplatePlacementId )},
-                        @{nameof( sourceEntityId )},
-                        @{nameof( placementMode )},
-                        @{nameof( includedRegistrationInstanceIds )},
-                        @{nameof( destinationGroupTypeId )},
-                        @{nameof( destinationGroupIds )},
-                        @{nameof( displayedCampusGuid )},
-                        @{nameof( purposeKey )},
-                        @{nameof( registrationTemplatePurposeKey )},
-                        @{nameof( registrationInstancePurposeKey )}",
-                    new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationInstanceEntityTypeId ), DBNull.Value ),
-                    new SqlParameter( nameof( sourceEntityTypeId ), sourceEntityTypeId ),
-                    new SqlParameter( nameof( targetEntityTypeId ), targetEntityTypeId ),
-                    new SqlParameter( nameof( registrationTemplateId ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationInstanceId ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationTemplatePlacementId ), DBNull.Value ),
-                    new SqlParameter( nameof( sourceEntityId ), sourceEntityId ),
-                    new SqlParameter( nameof( placementMode ), placementMode ),
-                    new SqlParameter( nameof( includedRegistrationInstanceIds ), DBNull.Value ),
-                    new SqlParameter( nameof( destinationGroupTypeId ), destinationGroupTypeId.Value ),
-                    new SqlParameter( nameof( destinationGroupIds ), ( object ) destinationGroupIds ?? DBNull.Value ),
-                    new SqlParameter( nameof( displayedCampusGuid ), ( object ) displayedCampusGuid ?? DBNull.Value ),
-                    new SqlParameter( nameof( purposeKey ), purposeKey ),
-                    new SqlParameter( nameof( registrationTemplatePurposeKey ), DBNull.Value ),
-                    new SqlParameter( nameof( registrationInstancePurposeKey ), DBNull.Value )
-                ).ToList();
-            }
-            else
+            if ( !registrationTemplateId.HasValue && !registrationInstanceId.HasValue && !sourceGroupId.HasValue && !entitySetId.HasValue )
             {
                 return ActionNotFound( "Missing required keys to get Destination Groups." );
             }
 
-            HashSet<int> groupIdsToDisplay = new HashSet<int>();
+            if ( placementMode == PlacementMode.GroupMode )
+            {
+                sourceEntityTypeId = EntityTypeCache.Get<Rock.Model.Group>().Id;
+                sourceEntityId = sourceGroupId;
+                purposeKey = RelatedEntityPurposeKey.GroupPlacement;
+            }
+            else if ( placementMode == PlacementMode.EntitySetMode )
+            {
+                sourceEntityTypeId = EntityTypeCache.Get<Rock.Model.EntitySet>().Id;
+                sourceEntityId = entitySetId;
+                purposeKey = RelatedEntityPurposeKey.EntitySetPlacement;
+            }
+
+            destinationGroupResults = RockContext.Database.SqlQuery<DestinationGroupResult>(
+                $@"EXEC [dbo].[spGetDestinationGroups] 
+                                    @{nameof( registrationTemplatePlacementEntityTypeId )}, 
+                                    @{nameof( registrationInstanceEntityTypeId )},
+                                    @{nameof( sourceEntityTypeId )}, 
+                                    @{nameof( targetEntityTypeId )}, 
+                                    @{nameof( registrationTemplateId )}, 
+                                    @{nameof( registrationInstanceId )}, 
+                                    @{nameof( registrationTemplatePlacementId )},
+                                    @{nameof( sourceEntityId )},
+                                    @{nameof( placementMode )},
+                                    @{nameof( includedRegistrationInstanceIds )},
+                                    @{nameof( destinationGroupTypeId )},
+                                    @{nameof( destinationGroupIds )},
+                                    @{nameof( displayedCampusGuid )},
+                                    @{nameof( purposeKey )},
+                                    @{nameof( registrationTemplatePurposeKey )},
+                                    @{nameof( registrationInstancePurposeKey )}",
+                new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
+                new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
+                new SqlParameter( nameof( sourceEntityTypeId ), ( object ) sourceEntityTypeId ?? DBNull.Value ),
+                new SqlParameter( nameof( targetEntityTypeId ), targetEntityTypeId ),
+                new SqlParameter( nameof( registrationTemplateId ), ( object ) registrationTemplateId ?? DBNull.Value ),
+                new SqlParameter( nameof( registrationInstanceId ), ( object ) registrationInstanceId ?? DBNull.Value ),
+                new SqlParameter( nameof( registrationTemplatePlacementId ), ( object ) registrationTemplatePlacementId ?? DBNull.Value ),
+                new SqlParameter( nameof( sourceEntityId ), ( object ) sourceEntityId ?? DBNull.Value ),
+                new SqlParameter( nameof( placementMode ), placementMode.ToString() ),
+                new SqlParameter( nameof( includedRegistrationInstanceIds ), ( object ) includedRegistrationInstanceIds ?? DBNull.Value ),
+                new SqlParameter( nameof( destinationGroupTypeId ), destinationGroupTypeId.Value ),
+                new SqlParameter( nameof( destinationGroupIds ), ( object ) destinationGroupIds ?? DBNull.Value ),
+                new SqlParameter( nameof( displayedCampusGuid ), ( object ) displayedCampusGuid ?? DBNull.Value ),
+                new SqlParameter( nameof( purposeKey ), ( object ) purposeKey ?? DBNull.Value ),
+                new SqlParameter( nameof( registrationTemplatePurposeKey ), registrationTemplatePurposeKey ),
+                new SqlParameter( nameof( registrationInstancePurposeKey ), registrationInstancePurposeKey )
+            ).ToList();
+
+            HashSet<int> displayedGroupAttributeIds = new HashSet<int>();
+            List<Rock.Model.Group> groups = new List<Rock.Model.Group>();
 
             if ( placementConfiguration.DestinationGroupAttributesToDisplay?.Any() == true )
             {
-                groupIdsToDisplay = placementConfiguration.DestinationGroupAttributesToDisplay
+                displayedGroupAttributeIds = placementConfiguration.DestinationGroupAttributesToDisplay
                     .Select( idKey => Rock.Utility.IdHasher.Instance.GetId( idKey ) )
                     .Where( id => id.HasValue )
                     .Select( id => id.Value )
                     .ToHashSet();
+
+                groups = destinationGroupResults.DistinctBy( g => g.GroupId )
+                    .Select( g => new Rock.Model.Group
+                    {
+                        Id = g.GroupId,
+                        GroupTypeId = g.GroupTypeId,
+                        CampusId = g.CampusId,
+                        ParentGroupId = g.ParentGroupId
+                    } )
+                    .ToList();
+
+                groups.LoadFilteredAttributes( a => displayedGroupAttributeIds.Contains( a.Id ) );
             }
 
             var placementGroupBags = destinationGroupResults
                 .GroupBy( g => g.GroupId )
                 .Select( g => {
+                    var group = groups.FirstOrDefault( x => x.Id == g.Key );
+
                     var placementBag = new PlacementGroupBag
                     {
                         GroupId = g.Key,
@@ -1630,15 +1428,10 @@ namespace Rock.Blocks.Group
                         GroupTypeIdKey = IdHasher.Instance.GetHash( g.First().GroupTypeId ),
                         GroupOrder = g.First().GroupOrder,
                         RegistrationInstanceIdKey = g.First().RegistrationInstanceId.HasValue ? IdHasher.Instance.GetHash( g.First().RegistrationInstanceId.Value ) : string.Empty,
-                        IsShared = g.First().IsShared
+                        IsShared = g.First().IsShared,
+                        Attributes = group.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedGroupAttributeIds.Contains( a.Id ) ),
+                        AttributeValues = group.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedGroupAttributeIds.Contains( a.Id ) )
                     };
-
-                    var attributeDataBag = GetGroupAttributesAndValues( g.Key, g.First().GroupTypeId, groupIdsToDisplay );
-                    if ( attributeDataBag != null )
-                    {
-                        placementBag.Attributes = attributeDataBag.Attributes;
-                        placementBag.AttributeValues = attributeDataBag.AttributeValues;
-                    }
 
                     return placementBag;
                 } ).ToList();
@@ -1881,6 +1674,7 @@ namespace Rock.Blocks.Group
             // TODO - update with groups placement logic
             var registrationInstanceService = new RegistrationInstanceService( RockContext );
             var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( RockContext );
+            List<Guid> addedGroupGuids = new List<Guid>();
 
             foreach ( var placementGroup in placementGroups )
             {
@@ -1890,31 +1684,44 @@ namespace Rock.Blocks.Group
                     registrationInstanceService.GetRegistrationInstancePlacementGroupsByPlacement( registrationInstanceId.Value, registrationTemplatePlacementId.Value );
 
                     // in RegistrationInstanceMode
-                    registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup, registrationTemplatePlacementId.Value );
+                    if ( registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup, registrationTemplatePlacementId.Value ) )
+                    {
+                        addedGroupGuids.Add( placementGroup.Guid );
+                    }
+
                 }
                 else if ( registrationTemplatePlacementId.HasValue )
                 {
                     var registrationTemplatePlacement = registrationTemplatePlacementService.Get( registrationTemplatePlacementId.Value );
-                    registrationTemplatePlacementService.AddRegistrationTemplatePlacementPlacementGroup( registrationTemplatePlacement, placementGroup );
+                    if ( registrationTemplatePlacementService.AddRegistrationTemplatePlacementPlacementGroup( registrationTemplatePlacement, placementGroup ) )
+                    {
+                        addedGroupGuids.Add( placementGroup.Guid );
+                    }
                 }
-                else if ( sourceGroupId.HasValue )
+                else if ( sourceGroupId.HasValue && placementGroup.Id != sourceGroupId.Value ) // Added logic to skip adding placement group if it is the current source group.
                 {
                     var sourceGroup = groupService.Get( sourceGroupId.Value );
-                    groupService.AddGroupPlacementPlacementGroup( sourceGroup, placementGroup );
+                    
+                    if ( groupService.AddGroupPlacementPlacementGroup( sourceGroup, placementGroup ) )
+                    {
+                        addedGroupGuids.Add( placementGroup.Guid );
+                    }
                 }
                 else if ( entitySetId.HasValue )
                 {
                     var entitySetService = new EntitySetService( RockContext );
                     var entitySet = entitySetService.Get( entitySetId.Value );
 
-                    entitySetService.AddEntitySetPlacementGroup( entitySet, placementGroup );
+                    if ( entitySetService.AddEntitySetPlacementGroup( entitySet, placementGroup ) )
+                    {
+                        addedGroupGuids.Add( placementGroup.Guid );
+                    }
                 }
             }
 
             RockContext.SaveChanges();
 
-            // TODO - return the added groups
-            return ActionOk();
+            return ActionOk( addedGroupGuids );
         }
 
         [BlockAction]
@@ -1997,7 +1804,7 @@ namespace Rock.Blocks.Group
 
             RockContext.SaveChanges();
 
-            return ActionOk();
+            return ActionOk( group.Guid );
         }
 
         [BlockAction]
@@ -2156,7 +1963,7 @@ namespace Rock.Blocks.Group
             var placementConfiguration = GetPlacementConfiguration( sourceAndDestinationEntityKeys.GroupPlacementKeysBag );
 
             HashSet<int> displayedSourceAttributeIds = null;
-            HashSet<int> displayedGroupMemberAttributeIds = null;
+            HashSet<int> displayedDestinationGroupMemberAttributeIds = null;
 
             if ( placementConfiguration.SourceAttributesToDisplay?.Any() == true )
             {
@@ -2169,7 +1976,7 @@ namespace Rock.Blocks.Group
 
             if ( placementConfiguration.DestinationGroupMemberAttributesToDisplay?.Any() == true )
             {
-                displayedGroupMemberAttributeIds = placementConfiguration.DestinationGroupMemberAttributesToDisplay
+                displayedDestinationGroupMemberAttributeIds = placementConfiguration.DestinationGroupMemberAttributesToDisplay
                     .Select( idKey => Rock.Utility.IdHasher.Instance.GetId( idKey ) )
                     .Where( id => id.HasValue )
                     .Select( id => id.Value )
@@ -2178,30 +1985,108 @@ namespace Rock.Blocks.Group
 
             if ( sourceAndDestinationEntityKeys.PlacementMode == PlacementMode.GroupMode )
             {
-                foreach ( var sourceEntity in sourceAndDestinationEntityKeys.SourceEntities )
-                {
-                    var entityId = IdHasher.Instance.GetId( sourceEntity.EntityIdKey );
-                    var typeId = IdHasher.Instance.GetId( sourceEntity.EntityTypeIdKey );
+                var sourceGroupMembers = sourceAndDestinationEntityKeys.SourceGroupMembers.Select( gm => {
+                    var groupMemberId = IdHasher.Instance.GetId( gm.GroupMemberIdKey );
+                    var groupId = IdHasher.Instance.GetId( gm.GroupIdKey );
+                    var groupTypeId = IdHasher.Instance.GetId( gm.GroupTypeIdKey );
+                    var groupRoleId = IdHasher.Instance.GetId( gm.GroupRoleIdKey );
+                    var groupMember = new GroupMember();
 
-                    resultBag.SourceEntityAttributes[sourceEntity.EntityIdKey] = GetGroupMemberAttributesAndValues( entityId, typeId, displayedSourceAttributeIds );
+                    if ( groupMemberId.HasValue && groupId.HasValue && groupTypeId.HasValue && groupRoleId.HasValue )
+                    {
+                        groupMember = new GroupMember
+                        {
+                            Id = groupMemberId.Value,
+                            GroupId = groupId.Value,
+                            GroupTypeId = groupTypeId.Value,
+                            GroupRoleId = groupRoleId.Value
+                        };
+                    }
+
+                    return groupMember;
+                } ).ToList();
+
+                if ( displayedSourceAttributeIds != null )
+                {
+                    sourceGroupMembers.LoadFilteredAttributes( a => displayedSourceAttributeIds.Contains( a.Id ) );
+                }
+
+                foreach ( var sourceGroupMember in sourceGroupMembers )
+                {
+                    resultBag.SourceEntityAttributes[sourceGroupMember.IdKey] = new AttributeDataBag()
+                    {
+                        Attributes = sourceGroupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) ),
+                        AttributeValues = sourceGroupMember.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) )
+                    };
                 }
             }
             else if ( sourceAndDestinationEntityKeys.PlacementMode == PlacementMode.TemplateMode || sourceAndDestinationEntityKeys.PlacementMode == PlacementMode.InstanceMode )
             {
-                foreach ( var sourceEntity in sourceAndDestinationEntityKeys.SourceEntities )
-                {
-                    var entityId = IdHasher.Instance.GetId( sourceEntity.EntityIdKey );
-                    var typeId = IdHasher.Instance.GetId( sourceEntity.EntityTypeIdKey );
+                var sourceRegistrants = sourceAndDestinationEntityKeys.SourceRegistrants.Select( r => {
+                    var registrantId = IdHasher.Instance.GetId( r.RegistrantIdKey );
+                    var registrationTemplateId = IdHasher.Instance.GetId( r.RegistrationTemplateIdKey );
+                    var registrant = new RegistrationRegistrant();
 
-                    resultBag.SourceEntityAttributes[sourceEntity.EntityIdKey] = GetRegistrantAttributesAndValues( entityId, typeId, displayedSourceAttributeIds );
+                    if ( registrantId.HasValue && registrationTemplateId.HasValue )
+                    {
+                        registrant = new RegistrationRegistrant
+                        {
+                            Id = registrantId.Value,
+                            RegistrationTemplateId = registrationTemplateId.Value
+                        };
+                    }
+
+                    return registrant;
+                } ).ToList();
+
+                if ( displayedSourceAttributeIds != null )
+                {
+                    sourceRegistrants.LoadFilteredAttributes( a => displayedSourceAttributeIds.Contains( a.Id ) );
+                }
+
+                foreach ( var sourceRegistrant in sourceRegistrants )
+                {
+                    resultBag.SourceEntityAttributes[sourceRegistrant.IdKey] = new AttributeDataBag()
+                    {
+                        Attributes = sourceRegistrant.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) ),
+                        AttributeValues = sourceRegistrant.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) )
+                    };
                 }
             }
 
-            foreach ( var destinationEntity in sourceAndDestinationEntityKeys.DestinationEntities )
+            var destinationGroupMembers = sourceAndDestinationEntityKeys.DestinationGroupMembers.Select( gm => {
+                var groupMemberId = IdHasher.Instance.GetId( gm.GroupMemberIdKey );
+                var groupId = IdHasher.Instance.GetId( gm.GroupIdKey );
+                var groupTypeId = IdHasher.Instance.GetId( gm.GroupTypeIdKey );
+                var groupRoleId = IdHasher.Instance.GetId( gm.GroupRoleIdKey );
+                var groupMember = new GroupMember();
+
+                if ( groupMemberId.HasValue && groupId.HasValue && groupTypeId.HasValue && groupRoleId.HasValue )
+                {
+                    groupMember = new GroupMember
+                    {
+                        Id = groupMemberId.Value,
+                        GroupId = groupId.Value,
+                        GroupTypeId = groupTypeId.Value,
+                        GroupRoleId = groupRoleId.Value
+                    };
+                }
+
+                return groupMember;
+            } ).ToList();
+
+            if ( displayedDestinationGroupMemberAttributeIds != null )
             {
-                var entityId = IdHasher.Instance.GetId( destinationEntity.EntityIdKey );
-                var typeId = IdHasher.Instance.GetId( destinationEntity.EntityTypeIdKey );
-                resultBag.DestinationEntityAttributes[destinationEntity.EntityIdKey] = GetGroupMemberAttributesAndValues( entityId, typeId, displayedGroupMemberAttributeIds );
+                destinationGroupMembers.LoadFilteredAttributes( a => displayedDestinationGroupMemberAttributeIds.Contains( a.Id ) );
+            }
+
+            foreach ( var destinationGroupMember in destinationGroupMembers )
+            {
+                resultBag.DestinationEntityAttributes[destinationGroupMember.IdKey] = new AttributeDataBag()
+                {
+                    Attributes = destinationGroupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedDestinationGroupMemberAttributeIds.Contains( a.Id ) ),
+                    AttributeValues = destinationGroupMember.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedDestinationGroupMemberAttributeIds.Contains( a.Id ) )
+                };
             }
 
             return ActionOk( resultBag );

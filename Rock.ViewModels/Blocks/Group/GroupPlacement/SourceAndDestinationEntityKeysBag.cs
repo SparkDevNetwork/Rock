@@ -19,15 +19,19 @@ using System;
 using System.Collections.Generic;
 
 using Rock.Model;
+using Rock.ViewModels.Event.RegistrationEntry;
+using Rock.ViewModels.Group.GroupMember;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
     public class SourceAndDestinationEntityKeysBag
     {
-        public List<EntityKeysWithTypeBag> SourceEntities { get; set; }
+        public List<RegistrationRegistrantUpdatedMessageBag> SourceRegistrants { get; set; }
 
-        public List<EntityKeysWithTypeBag> DestinationEntities { get; set; }
+        public List<GroupMemberUpdatedMessageBag> SourceGroupMembers { get; set; }
+
+        public List<GroupMemberUpdatedMessageBag> DestinationGroupMembers { get; set; }
 
         public PlacementMode PlacementMode { get; set; }
 

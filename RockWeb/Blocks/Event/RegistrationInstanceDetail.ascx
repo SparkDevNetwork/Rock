@@ -105,7 +105,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group static-control">
-                                    <label class="control-label">Group Placements</label>
+                                    <asp:Label ID="lGroupPlacements" runat="server" CssClass="control-label" Text="Group Placements"></asp:Label>
                                     <asp:Repeater ID="rptGroupPlacements" runat="server">
                                         <ItemTemplate>
                                             <li>

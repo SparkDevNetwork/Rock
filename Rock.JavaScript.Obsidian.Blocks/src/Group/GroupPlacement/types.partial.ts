@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 // export const enum NavigationUrlKey {
@@ -56,4 +57,9 @@ export enum SortTypes {
     SortByFirstName = 1,
     SortByDateAddedAsc = 2,
     SortByDateAddedDesc = 3
+}
+
+export interface IGroupPlacementFunctions {
+    joinGroupChannels(groupGuids: Guid[]): Promise<void>;
+    leaveGroupChannel(groupGuid: Guid): Promise<void>;
 }

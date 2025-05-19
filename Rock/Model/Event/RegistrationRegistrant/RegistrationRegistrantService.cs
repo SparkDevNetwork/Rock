@@ -33,6 +33,7 @@ using Microsoft.Extensions.Logging;
 using Rock.ViewModels.Event.RegistrationEntry;
 using DocumentFormat.OpenXml.Office.CoverPageProps;
 using Z.EntityFramework.Plus;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Model
 {
@@ -277,6 +278,8 @@ namespace Rock.Model
 
             public Guid? RegistrationTemplateGuid { get; }
 
+            public Dictionary<string, ListItemBag> Fees { get; set; }
+
             public RegistrationRegistrantUpdatedState( RegistrationRegistrant registrant, int personAliasId, EntityContextState state )
             {
                 if ( registrant == null )
@@ -293,6 +296,26 @@ namespace Rock.Model
                 RegistrationInstanceGuid = registrant.Registration?.RegistrationInstance?.Guid;
                 RegistrationTemplateId = registrant.RegistrationTemplateId;
                 RegistrationTemplateGuid = registrant.Registration?.RegistrationTemplate?.Guid;
+                Fees = registrant.Fees.Where( f => f.RegistrationTemplateFeeItemId.HasValue && f.Quantity > 0 )
+                    .DistinctBy( f => f.RegistrationTemplateFeeItemId )
+                    .ToDictionary(
+                        f => IdHasher.Instance.GetHash( f.RegistrationTemplateFeeItemId.Value ),
+                        f =>
+                        {
+                            var feeLabel = f.RegistrationTemplateFee.FeeType == RegistrationFeeType.Multiple && f.Option.IsNotNullOrWhiteSpace()
+                                ? $"{f.RegistrationTemplateFee.Name}-{f.Option}"
+                                : f.Option;
+                            var costText = f.Quantity > 1
+                                ? $"{f.Quantity} at {f.Cost.FormatAsCurrency()}"
+                                : ( f.Quantity * f.Cost ).FormatAsCurrency();
+
+                            return new ListItemBag
+                            {
+                                Text = feeLabel,
+                                Value = costText
+                            };
+                        }
+                    );
             }
         }
 
@@ -473,7 +496,7 @@ namespace Rock.Model
                             Gender = person.Gender,
                             PhotoUrl = $"{publicApplicationRoot}{person.PhotoUrl.TrimStart( '~', '/' )}"
                         },
-                        //Fees = item.fees
+                        Fees = item.Fees
                     };
 
                     return bag;

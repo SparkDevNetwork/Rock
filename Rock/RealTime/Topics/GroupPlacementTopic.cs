@@ -23,6 +23,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Event.RegistrationEntry;
 using Rock.ViewModels.Group.GroupMember;
+using Rock.Web.Cache;
 
 namespace Rock.RealTime.Topics
 {
@@ -33,6 +34,54 @@ namespace Rock.RealTime.Topics
     [RealTimeTopic]
     internal sealed class GroupPlacementTopic : Topic<IGroupPlacement>
     {
+        /// <summary>
+        /// Joins group guids to respective channels to begin receiving notifications
+        /// </summary>
+        /// <param name="groupGuids">The list of group unique identifiers.</param>
+        public async Task JoinGroupChannels( List<Guid> groupGuids )
+        {
+            foreach( var groupGuid in groupGuids )
+            {
+                var group = GroupCache.Get( groupGuid );
+
+                if ( group == null )
+                {
+                    throw new RealTimeException( "Group was not found." );
+                }
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var person = Context.CurrentPersonId.HasValue
+                        ? new PersonService( rockContext ).Get( Context.CurrentPersonId.Value )
+                        : null;
+
+                    if ( !group.IsAuthorized( Security.Authorization.VIEW, person ) )
+                    {
+                        throw new RealTimeException( "You are not authorized for this group." );
+                    }
+
+                    await Channels.AddToChannelAsync( Context.ConnectionId, GetGroupMemberChannelForGroup( groupGuid ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Leaves an group channel to indicate that the client no longer wishes
+        /// to receive notifications.
+        /// </summary>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        public async Task LeaveGroupChannel( Guid groupGuid )
+        {
+            var group = GroupCache.Get( groupGuid );
+
+            if ( group == null )
+            {
+                throw new RealTimeException( "Group was not found." );
+            }
+
+            await Channels.RemoveFromChannelAsync( Context.ConnectionId, GetGroupMemberChannelForGroup( groupGuid ) );
+        }
+
         #region Registrant Methods
 
         /// <summary>

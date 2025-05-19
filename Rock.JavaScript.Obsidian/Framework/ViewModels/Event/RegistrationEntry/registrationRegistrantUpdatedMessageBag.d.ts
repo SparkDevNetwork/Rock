@@ -23,12 +23,15 @@
 
 import { Guid } from "@Obsidian/Types";
 import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /**
  * Details about a registramt record that is transmitted over
  * the RealTime engine.
  */
 export type RegistrationRegistrantUpdatedMessageBag = {
+    fees?: Record<string, ListItemBag> | null;
+
     person?: PersonBag | null;
 
     /** Gets or sets the registrant unique identifier. */

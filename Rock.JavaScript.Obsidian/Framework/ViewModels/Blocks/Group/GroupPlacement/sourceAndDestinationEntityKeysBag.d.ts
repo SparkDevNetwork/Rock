@@ -22,15 +22,18 @@
 //
 
 import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
-import { EntityKeysWithTypeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/entityKeysWithTypeBag";
 import { GroupPlacementKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementKeysBag";
+import { RegistrationRegistrantUpdatedMessageBag } from "@Obsidian/ViewModels/Event/RegistrationEntry/registrationRegistrantUpdatedMessageBag";
+import { GroupMemberUpdatedMessageBag } from "@Obsidian/ViewModels/Group/GroupMember/groupMemberUpdatedMessageBag";
 
 export type SourceAndDestinationEntityKeysBag = {
-    destinationEntities?: EntityKeysWithTypeBag[] | null;
+    destinationGroupMembers?: GroupMemberUpdatedMessageBag[] | null;
 
     groupPlacementKeysBag?: GroupPlacementKeysBag | null;
 
     placementMode: PlacementMode;
 
-    sourceEntities?: EntityKeysWithTypeBag[] | null;
+    sourceGroupMembers?: GroupMemberUpdatedMessageBag[] | null;
+
+    sourceRegistrants?: RegistrationRegistrantUpdatedMessageBag[] | null;
 };

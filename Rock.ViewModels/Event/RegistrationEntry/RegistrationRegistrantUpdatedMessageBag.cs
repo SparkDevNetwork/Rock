@@ -54,6 +54,6 @@ namespace Rock.ViewModels.Event.RegistrationEntry
 
         public PersonBag Person { get; set; }
 
-        //public Dictionary<string, ListItemBag> Fees { get; set; }
+        public Dictionary<string, ListItemBag> Fees { get; set; }
     }
 }
