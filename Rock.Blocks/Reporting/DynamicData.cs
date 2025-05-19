@@ -793,80 +793,40 @@ namespace Rock.Blocks.Reporting
             var mergeFields = dataResults.Config.MergeFields;
             var i = 1;
 
-            if ( LavaService.RockLiquidIsEnabled )
+            var tableFields = new List<Dictionary<string, object>>();
+            foreach ( DataTable dataTable in dataSet.Tables )
             {
-                var tableFields = new List<Dictionary<string, object>>();
-                foreach ( DataTable dataTable in dataSet.Tables )
+                var lavaRows = new List<DataRowLavaData>();
+                foreach ( DataRow row in dataTable.Rows )
                 {
-                    var lavaRows = new List<DataRowDrop>();
-                    foreach ( DataRow row in dataTable.Rows )
-                    {
-                        lavaRows.Add( new DataRowDrop( row ) );
-                    }
-
-                    // Add a collection of all the tables as a merge field (even if only one table),
-                    // to allow the template to iterate over them.
-                    var tableField = new Dictionary<string, object>
-                    {
-                        { "rows", lavaRows }
-                    };
-
-                    tableFields.Add( tableField );
-
-                    // Continue to add the following merge fields to maintain compatibility with
-                    // lava templates that were written before this Obsidian version of the block
-                    // (and therefore before the 'tables' merge field) was added.
-                    if ( dataSet.Tables.Count > 1 )
-                    {
-                        mergeFields.Add( "table" + i.ToString(), tableField );
-                    }
-                    else
-                    {
-                        mergeFields.Add( "rows", lavaRows );
-                    }
-
-                    i++;
+                    lavaRows.Add( new DataRowLavaData( row ) );
                 }
 
-                mergeFields.Add( "tables", tableFields );
-            }
-            else
-            {
-                var tableFields = new List<Dictionary<string, object>>();
-                foreach ( DataTable dataTable in dataSet.Tables )
+                // Add a collection of all the tables as a merge field (even if only one table),
+                // to allow the template to iterate over them.
+                var tableField = new Dictionary<string, object>
                 {
-                    var lavaRows = new List<DataRowLavaData>();
-                    foreach ( DataRow row in dataTable.Rows )
-                    {
-                        lavaRows.Add( new DataRowLavaData( row ) );
-                    }
+                    { "rows", lavaRows }
+                };
 
-                    // Add a collection of all the tables as a merge field (even if only one table),
-                    // to allow the template to iterate over them.
-                    var tableField = new Dictionary<string, object>
-                    {
-                        { "rows", lavaRows }
-                    };
+                tableFields.Add( tableField );
 
-                    tableFields.Add( tableField );
-
-                    // Continue to add the following merge fields to maintain compatibility with
-                    // lava templates that were written before this Obsidian version of the block
-                    // (and therefore before the 'tables' merge field) was added.
-                    if ( dataSet.Tables.Count > 1 )
-                    {
-                        mergeFields.Add( "table" + i.ToString(), tableField );
-                    }
-                    else
-                    {
-                        mergeFields.Add( "rows", lavaRows );
-                    }
-
-                    i++;
+                // Continue to add the following merge fields to maintain compatibility with
+                // lava templates that were written before this Obsidian version of the block
+                // (and therefore before the 'tables' merge field) was added.
+                if ( dataSet.Tables.Count > 1 )
+                {
+                    mergeFields.Add( "table" + i.ToString(), tableField );
+                }
+                else
+                {
+                    mergeFields.Add( "rows", lavaRows );
                 }
 
-                mergeFields.Add( "tables", tableFields );
+                i++;
             }
+
+            mergeFields.Add( "tables", tableFields );
         }
 
         /// <summary>
@@ -2187,56 +2147,6 @@ namespace Rock.Blocks.Reporting
             /// Gets or sets the lava template results.
             /// </summary>
             public LavaTemplateResultsBag LavaTemplateResults { get; set; }
-        }
-
-        /// <summary>
-        /// An object to represent data table rows within the lava template, when RockLiquid lava processing is enabled.
-        /// </summary>
-        private class DataRowDrop : DotLiquid.Drop, ILavaDataDictionary
-        {
-            private readonly DataRow _dataRow;
-
-            public DataRowDrop( DataRow dataRow )
-            {
-                _dataRow = dataRow;
-            }
-
-            public override object BeforeMethod( string method )
-            {
-                if ( _dataRow.Table.Columns.Contains( method ) )
-                {
-                    return _dataRow[method];
-                }
-
-                return null;
-            }
-
-            public List<string> AvailableKeys
-            {
-                get
-                {
-                    var keys = new List<string>();
-                    foreach ( DataColumn column in _dataRow.Table.Columns )
-                    {
-                        keys.Add( column.ColumnName );
-                    }
-                    return keys;
-                }
-            }
-
-            public bool ContainsKey( string key )
-            {
-                return _dataRow.Table.Columns.Contains( key );
-            }
-
-            public object GetValue( string key )
-            {
-                if ( _dataRow.Table.Columns.Contains( key ) )
-                {
-                    return _dataRow[key];
-                }
-                return null;
-            }
         }
 
         /// <summary>

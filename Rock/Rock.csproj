@@ -801,6 +801,7 @@
     <Compile Include="Lava\Blocks\RenderLavaEndpoint.cs" />
     <Compile Include="Lava\Blocks\RockEntityDeleteBlock.cs" />
     <Compile Include="Lava\Blocks\RockEntityModifyBlock.cs" />
+    <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="Model\CMS\LavaApplication\LavaApplication.cs" />
     <Compile Include="Model\CMS\LavaApplication\LavaApplication.Logic.cs" />
     <Compile Include="Model\CMS\LavaApplication\LavaApplication.SaveHook.cs" />
@@ -1568,7 +1569,6 @@
     <Compile Include="Lava\Blocks\PersonalizeBlock.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Personalization.cs" />
     <Compile Include="Lava\Helpers\LavaPersonalizationHelper.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Personalize.cs" />
     <Compile Include="Model\CMS\PersonalizationSegment\PersonalizationSegment.SaveHook.cs" />
     <Compile Include="Model\CMS\PersonalizationSegment\PersonalizationSegmentService.cs" />
     <Compile Include="Model\CMS\RequestFilter\RequestFilterService.cs" />
@@ -1990,7 +1990,6 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV14DataMigrationsAddMissingMediaElementInteractions.cs" />
     <Compile Include="Jobs\ProcessElevatedSecurity.cs" />
     <Compile Include="Lava\Blocks\ReturnTag.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Return.cs" />
     <Compile Include="Mobile\MobileNavigationAction.cs" />
     <Compile Include="Model\CMS\PersonalLinkSectionOrder\PersonalLinkSectionOrder.Logic.cs" />
     <Compile Include="Model\CMS\PersonalLinkSection\PersonalLinkSection.Logic.cs" />
@@ -2302,37 +2301,8 @@
     <Compile Include="Financial\TestRedirectionGateway.cs" />
     <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
     <Compile Include="Lava\LavaService.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\MediaPlayer.cs" />
     <Compile Include="Lava\Shortcodes\MediaPlayerShortcode.cs" />
     <Compile Include="Jobs\GroupAttendanceReporting.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Cache.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\CalendarEvents.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\EventScheduledInstance.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Execute.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\InteractionContentChannelItemWrite.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\InteractionWrite.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\IRockLavaBlock.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Javascript.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\JsonProperty.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\RockEntity.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\RockLavaBlockBase.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Search.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Sql.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Stylesheet.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\TagList.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\WebRequest.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\WorkflowActivate.cs" />
-    <Compile Include="Lava\RockLiquid\LavaFileSystem.cs" />
-    <Compile Include="Lava\RockLiquid\RockFilters.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\BootstrapAlert.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\DynamicShortcodeBlock.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\DynamicShortcodeInline.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\IRockShortcode.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\RockLavaShortcodeBase.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\RockLavaShortcodeBlockBase.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\ScheduledContent.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\Scripturize.cs" />
     <Compile Include="Lava\WebsiteLavaFileSystem.cs" />
     <Compile Include="Lava\WebsiteLavaShortcodeProvider.cs" />
     <Compile Include="Lava\WebsiteLavaTemplateCache.cs" />
@@ -3273,7 +3243,6 @@
     <Compile Include="Web\Cache\Entities\SiteCache.cs" />
     <Compile Include="Web\Cache\NonEntities\AttributeValueCache.cs" />
     <Compile Include="Web\Cache\NonEntities\GlobalAttributesCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\LavaTemplateCache.cs" />
     <Compile Include="Web\Cache\NonEntities\RoleCache.cs" />
     <Compile Include="Chart\ChartGroupBy.cs" />
     <Compile Include="Chart\IChartData.cs" />
@@ -5185,10 +5154,6 @@
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
       <Project>{61dece2b-0434-435e-8d65-49a4fdf98365}</Project>
       <Name>Rock.Enums</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj">
-      <Project>{79aa470a-dc63-4cb4-b0b6-77285f60c69b}</Project>
-      <Name>Rock.Lava.DotLiquid</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj">
       <Project>{afce6f84-bf3a-4182-a816-8fb47afc0305}</Project>

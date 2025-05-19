@@ -18,8 +18,6 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 
-using DotLiquid;
-
 using Microsoft.Extensions.Logging;
 
 using Quartz;
@@ -299,14 +297,7 @@ namespace Rock.Jobs
             {
                 if ( jobException != null )
                 {
-                    if ( LavaService.RockLiquidIsEnabled )
-                    {
-                        mergeFields.Add( "Exception", Hash.FromAnonymousObject( jobException ) );
-                    }
-                    else
-                    {
-                        mergeFields.Add( "Exception", LavaDataObject.FromAnonymousObject( jobException ) );
-                    }
+                    mergeFields.Add( "Exception", LavaDataObject.FromAnonymousObject( jobException ) );
                 }
 
             }

@@ -68,27 +68,13 @@ namespace Rock.Store
                     propValue = ( (Guid)propValue ).ToString();
                 }
 
-                if ( LavaService.RockLiquidIsEnabled )
+                if ( debug && propValue is ILavaDataDictionarySource )
                 {
-                    if ( debug && propValue is DotLiquid.ILiquidizable )
-                    {
-                        dictionary.Add( propInfo.Name, ( (DotLiquid.ILiquidizable)propValue ).ToLiquid() );
-                    }
-                    else
-                    {
-                        dictionary.Add( propInfo.Name, propValue );
-                    }
+                    dictionary.Add( propInfo.Name, ( (ILavaDataDictionarySource)propValue ).GetLavaDataDictionary() );
                 }
                 else
                 {
-                    if ( debug && propValue is ILavaDataDictionarySource )
-                    {
-                        dictionary.Add( propInfo.Name, ( (ILavaDataDictionarySource)propValue ).GetLavaDataDictionary() );
-                    }
-                    else
-                    {
-                        dictionary.Add( propInfo.Name, propValue );
-                    }
+                    dictionary.Add( propInfo.Name, propValue );
                 }
 
             }

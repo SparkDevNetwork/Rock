@@ -1938,7 +1938,7 @@ namespace Rock.Lava
         private const int _maxRecursionDepth = 10;
 
         /// <summary>
-        /// DotLiquid Attribute Filter
+        /// Lava Attribute Filter
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>

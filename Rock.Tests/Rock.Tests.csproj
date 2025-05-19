@@ -266,7 +266,6 @@
     <Compile Include="Lava\LiquidKeywordTests.cs" />
     <Compile Include="Lava\LavaHelperTests.cs" />
     <Compile Include="Lava\ContainerVariableTests.cs" />
-    <Compile Include="Lava\RockFiltersTests.cs" />
     <Compile Include="Lava\Filters\CollectionFilterTests.cs" />
     <Compile Include="Lava\Filters\ColorFilterTests.cs" />
     <Compile Include="Lava\Filters\DateFilterTests.cs" />
