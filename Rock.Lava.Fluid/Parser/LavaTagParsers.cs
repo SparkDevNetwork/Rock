@@ -327,12 +327,9 @@ namespace Rock.Lava.Fluid
                 var openTagParser = LavaFluidTagParsers.NewLavaStartTag( _tagName, _tagFormat );
                 var closeTagParser = LavaFluidTagParsers.NewLavaEndTag( _tagName, _tagFormat );
 
-                // TODO: Do we have to construct a new LavaFluidParser instance each time?
-                var lavaFluidParser = new LavaFluidParser();
-
-                var rawTagParser = lavaFluidParser.CreateTag( "raw" )
-                    .SkipAnd( AnyCharBefore( lavaFluidParser.CreateTag( "endraw" ), canBeEmpty: true )
-                    .AndSkip( lavaFluidParser.CreateTag( "endraw" ) ) );
+                var rawTagParser = LavaFluidParser.CreateTag( "raw" )
+                    .SkipAnd( AnyCharBefore( LavaFluidParser.CreateTag( "endraw" ), canBeEmpty: true )
+                    .AndSkip( LavaFluidParser.CreateTag( "endraw" ) ) );
 
                 var inlineCommentParser = LavaTagParsers.LavaInlineCommentStart
                     .SkipAnd( AnyCharBefore( LavaTagParsers.LavaInlineCommentEnd, canBeEmpty: true )

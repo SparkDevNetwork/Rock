@@ -23,6 +23,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Fluid;
 using Fluid.Ast;
@@ -37,7 +38,7 @@ namespace Rock.Lava.Fluid
     public class FluidEngine : LavaEngineBase
     {
         private TemplateOptions _templateOptions = null;
-        public readonly LavaFluidParser _parser = new LavaFluidParser();
+        private readonly LavaFluidParser _parser = new LavaFluidParser();
 
         private static readonly Guid _engineIdentifier = new Guid( "605445FE-6ECC-4E67-9A95-98F7173F7389" );
 
@@ -230,6 +231,8 @@ namespace Rock.Lava.Fluid
             {
                 // ModelNamesComparer with StringComparer.Ordinal should allow the
                 // "LavaDataDictionary_WithKeysDifferingOnlyByCase_ReturnsMatchingValueForKey" test to pass again
+                // but it does not seem to have this effect.  I've posted my question about this feature
+                // in https://github.com/sebastienros/fluid/pull/681#issuecomment-2891948387
                 _templateOptions = new TemplateOptions { ModelNamesComparer = StringComparer.Ordinal };
 
                 // Re-register the basic Liquid filters implemented by Fluid using CamelCase rather than the default snakecase.
@@ -732,22 +735,22 @@ namespace Rock.Lava.Fluid
         /// </summary>
         /// <param name="lavaTemplate"></param>
         /// <returns></returns>
-        //[Obsolete( "Use ParseTemplateToTokens instead.")]
-        //[RockObsolete("v17")] 
-        //public List<string> TokenizeTemplate( string lavaTemplate )
-        //{
-        //    return LavaFluidParser.ParseToTokens( lavaTemplate );
-        //}
+        [Obsolete( "Use ParseTemplateToTokens instead.")]
+        [RockObsolete("v17")] 
+        public List<string> TokenizeTemplate( string lavaTemplate )
+        {
+            return LavaFluidParser.ParseToTokens( lavaTemplate );
+        }
 
         /// <summary>
         /// Process a template and return the list of valid tokens identified by the parser.
         /// </summary>
         /// <param name="lavaTemplate"></param>
         /// <returns></returns>
-        //public List<string> ParseTemplateToTokens( string lavaTemplate, bool includeComments = false )
-        //{
-        //    return LavaFluidParser.ParseToTokens( lavaTemplate, includeComments );
-        //}
+        public List<string> ParseTemplateToTokens( string lavaTemplate, bool includeComments = false )
+        {
+            return LavaFluidParser.ParseToTokens( lavaTemplate, includeComments );
+        }
 
         /// <summary>
         /// Process a template and return the list of statements identified by the parser.

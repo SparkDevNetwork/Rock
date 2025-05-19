@@ -230,11 +230,6 @@ namespace Rock.Lava.Fluid
             else if ( value is ArrayValue )
             {
                 return ( ( ArrayValue ) value ).Values.Select( a => a.ToRealObjectValue() ).ToList();
-                //var fieldInfo = value.GetType().GetField( "_value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance );
-
-                //var values = ( IEnumerable<FluidValue> ) fieldInfo.GetValue( value );
-
-                //return values.Select( a => a.ToRealObjectValue() ).ToList();
             }
             else if ( value is NumberValue nv )
             {
