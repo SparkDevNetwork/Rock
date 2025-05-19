@@ -169,6 +169,10 @@ namespace Rock.Lava.Fluid
             var member = Identifier.Then<MemberSegment>( x => new IdentifierSegment( x ) ).And(
                 ZeroOrMany(
                     Dot.SkipAnd(
+                        // This CultureInfo.InvariantCulture in this next line is what's needed to make TRUE/false keywords
+                        // be case-insensitive.  It might make sense to pass this idea by the Fluid team to see if they think
+                        // it could become a FluidParserOptions (AllowCaseInsensitiveBoolean) so we don't have to maintain
+                        // this method here.
                         Identifier.Or( Terms.Integer( NumberOptions.None ).Then( x => x.ToString( CultureInfo.InvariantCulture ) ) )
                             .Then<MemberSegment>( x => new IdentifierSegment( x ) )
                     )
@@ -622,9 +626,6 @@ namespace Rock.Lava.Fluid
         /// <summary>
         /// A Lava parser that captures an output token: {{ output }}
         /// </summary>
-        /// <summary>
-        /// A Lava parser that captures an output token: {{ output }}
-        /// </summary>
         private static readonly Parser<LavaDocumentToken> LavaOutputTokenParser = InlineOutputStart
             .SkipAnd( AnyCharBefore( InlineOutputEnd, canBeEmpty: true ) )
             .AndSkip( InlineOutputEnd )
@@ -692,8 +693,8 @@ namespace Rock.Lava.Fluid
         public static List<string> ParseToTokens( string template, bool includeComments = false, bool includeParserTrace = false )
         {
             var context = new FluidParseContext( template );
-            var statements = LavaTokensListParser.Parse( context );
 
+            var statements = LavaTokensListParser.Parse( context );
             if ( !includeComments )
             {
                 statements = statements.Where( s => s.ElementType != LavaDocumentTokenTypeSpecifier.Comment ).ToList();
@@ -733,10 +734,8 @@ namespace Rock.Lava.Fluid
         public static List<string> ParseToStatements( string template )
         {
             var context = new FluidParseContext( template );
-            var statements = LavaTokensListParser.Parse( context );
 
-            //var lavaFluidParser = new LavaFluidParser();
-            //var statements = lavaFluidParser.LavaTokensListParser.Parse( context );
+            var statements = LavaTokensListParser.Parse( context );
 
             var lavaTokens = new List<string>();
             foreach ( var statement in statements )
