@@ -114,20 +114,6 @@ namespace Rock.Lava.Fluid
             : base( LavaOptions )
         {
             var parserOptions = LavaOptions;
-            //LavaOutputTokenParser = this.OutputStart
-            //    .SkipAnd( AnyCharBefore( this.OutputEnd, canBeEmpty: true ) )
-            //    .AndSkip( this.OutputEnd )
-            //    .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Output, x.ToString() ) );
-
-            //LavaTextTokenParser = AnyCharBefore( this.OutputStart.Or( LavaTokenStartParser.AsFluidTagResultParser() ) )
-            //    .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Literal, x.ToString() ) );
-
-            //LavaTokensListParser = ZeroOrMany( LavaOutputTokenParser
-            //    .Or( LavaShortcodeTokenParser )
-            //    .Or( LavaTagTokenParser )
-            //    .Or( LavaTextTokenParser )
-            //    .Or( LavaBlockCommentParser )
-            //    .Or( LavaInlineCommentParser ) );
 
             CreateLavaDocumentParsers();
 
@@ -152,14 +138,11 @@ namespace Rock.Lava.Fluid
             // This parser can also return an empty argument list.
             LavaArgumentsListParser = OneOf<IReadOnlyList<FilterArgument>>(
                 LavaTokenEndParser.Then( x => ( IReadOnlyList<FilterArgument> ) new List<FilterArgument>() ),
-                Separated(
-                    SpaceParser,
-                    OneOf(
-                        Identifier.AndSkip( Colon ).And( Primary ).Then( x => new FilterArgument( x.Item1, x.Item2 ) ),
-                        Primary.Then( x => new FilterArgument( null, x ) )
-                    )
-                )
-            );
+                Separated( SpaceParser,
+                           OneOf(
+                               Identifier.AndSkip( Colon ).And( Primary ).Then( x => new FilterArgument( x.Item1, x.Item2 ) ),
+                               Primary.Then( x => new FilterArgument( null, x ) )
+                           ) ) );
         }
 
         /// <summary>
@@ -191,7 +174,7 @@ namespace Rock.Lava.Fluid
                     )
                     .Or( indexer )
                     .Or( call ) ) )
-                //.Then( x => new MemberExpression( [x.Item1, .. x.Item2] ) );  // C# v12
+                //.Then( x => new MemberExpression( [x.Item1, .. x.Item2] ) );  // This is how Fluid does it for C# v12
                 .Then( x =>
                 {
                     var segments = new List<MemberSegment> { x.Item1 };
@@ -646,7 +629,6 @@ namespace Rock.Lava.Fluid
             .SkipAnd( AnyCharBefore( InlineOutputEnd, canBeEmpty: true ) )
             .AndSkip( InlineOutputEnd )
             .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Output, x.ToString() ) );
-        //private readonly Parser<LavaDocumentToken> LavaOutputTokenParser;
 
         /// <summary>
         /// A Lava parser that captures a tag token: {% tagname %}
@@ -660,7 +642,6 @@ namespace Rock.Lava.Fluid
         /// </summary>
         private static readonly Parser<LavaDocumentToken> LavaTextTokenParser = AnyCharBefore( InlineOutputStart.Or( LavaTokenStartParser.AsFluidTagResultParser() ) )
             .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Literal, x.ToString() ) );
-        //private readonly Parser<LavaDocumentToken> LavaTextTokenParser;
 
         /// <summary>
         /// A Lava parser that captures a shortcode token: {[ shortcode ]}
@@ -691,7 +672,6 @@ namespace Rock.Lava.Fluid
             .Or( LavaTextTokenParser )
             .Or( LavaBlockCommentParser )
             .Or( LavaInlineCommentParser ) );
-        //private readonly Parser<IReadOnlyList<LavaDocumentToken>> LavaTokensListParser;
 
         /// <summary>
         /// Parse the supplied template into a collection of tokens that are recognized by the Fluid parser.
@@ -714,8 +694,6 @@ namespace Rock.Lava.Fluid
             var context = new FluidParseContext( template );
             var statements = LavaTokensListParser.Parse( context );
 
-            //var lavaFluidParser = new LavaFluidParser();
-            //var statements = lavaFluidParser.LavaTokensListParser.Parse( context );
             if ( !includeComments )
             {
                 statements = statements.Where( s => s.ElementType != LavaDocumentTokenTypeSpecifier.Comment ).ToList();
