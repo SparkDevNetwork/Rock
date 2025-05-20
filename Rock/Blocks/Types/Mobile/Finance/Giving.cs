@@ -859,6 +859,8 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 paymentInfo.FeeCoverageAmount = totalFeeCoverageAmounts.Sum();
             }
 
+            paymentInfo.AdditionalParameters = bag.AdditionalParameters;
+
             if ( !isSavedAccount )
             {
                 paymentInfo.Street1 = bag.Street1;
@@ -867,7 +869,6 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 paymentInfo.State = bag.State;
                 paymentInfo.PostalCode = bag.PostalCode;
                 paymentInfo.Country = bag.Country;
-                paymentInfo.AdditionalParameters = bag.AdditionalParameters;
                 paymentInfo.ReferenceNumber = bag.PaymentToken;
                 paymentInfo.InitialCurrencyTypeValue = DefinedValueCache.Get( bag.CurrencyTypeValue );
             }
@@ -1474,7 +1475,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
             var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( RockContext );
 
-            var savedAccount = financialPersonSavedAccountService.CreateAccountFromToken( MyWellGateway, options, RequestContext.CurrentPerson, TransactionType.Id, PageCache?.Layout?.Site?.SiteType ?? SiteType.Web, out var errorMessage );
+            var savedAccount = financialPersonSavedAccountService.CreateAccountFromToken( MyWellGateway, options, RequestContext.CurrentPerson, TransactionType.Id, out var errorMessage );
 
             if ( savedAccount == null )
             {

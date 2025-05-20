@@ -244,7 +244,7 @@ namespace Rock.Blocks.Communication.Chat
                     }
                 };
             }
-        }
+        }                   
 
         /// <inheritdoc />
         public override object GetMobileConfigurationValues()
