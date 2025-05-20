@@ -1778,10 +1778,6 @@ namespace Rock.Rest.v2
                 fileList.AddRange( Directory.GetFiles( physicalFolder, filter ).OrderBy( a => a ).ToList() );
             }
 
-            var dir = new DirectoryInfo( physicalFolder );
-            var fileInfoList = dir.GetFiles();
-
-
             foreach ( var filePath in fileList )
             {
                 var file = new Asset();
