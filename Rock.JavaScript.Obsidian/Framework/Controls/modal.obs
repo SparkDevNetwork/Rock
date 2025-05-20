@@ -13,7 +13,7 @@
                      role="dialog"
                      style="display: block; margin-top: 0;">
                     <div class="modal-header">
-                        <button v-if="!isCloseButtonHidden" @click="onClose" class="close" aria-hidden="true" type="button">&times;</button>
+                        <button v-if="!isCloseButtonHidden" @click="onClose" class="close" type="button" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         <template v-if="title">
                             <h3 class="modal-title">{{ title }}</h3>
                             <small v-if="subtitle">{{ subtitle }}</small>
