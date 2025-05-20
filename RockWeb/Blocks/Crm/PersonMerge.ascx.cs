@@ -246,6 +246,12 @@ namespace RockWeb.Blocks.Crm
                 // Process Query String parameter "Set", specifying a set of people to merge.
                 int? setId = PageParameter( "Set" ).AsIntegerOrNull();
 
+                if ( setId == null )
+                {
+                    var mergeIdKey = PageParameter( "Set" );
+                    setId = Rock.Utility.IdHasher.Instance.GetId( mergeIdKey );
+                }
+
                 if ( setId.HasValue )
                 {
                     selectedPersonIds = new EntitySetItemService( new RockContext() )
