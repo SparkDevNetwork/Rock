@@ -8514,6 +8514,9 @@ ul ul, ol ul, ul ol, ol ol {
   margin-left: var(--spacing-tiny);
 }
 
+.panel .panel-heading .panel-header-actions {
+  margin-right: 1rem !important;
+}
 .panel .panel-heading .panel-title small {
   color: var(--color-interface-medium);
 }

@@ -3,7 +3,7 @@
     <div ref="wizardStartStepElement" class="wizard-start-step">
         <Panel :title="title" type="block" panelBodyCssClass="panel-body-wizard">
             <template #headerActions>
-                <div class="mr-3">
+                <div>
                     <HighlightLabel labelType="info">
                         <template v-if="isFetchingRecipients"><i class="fas fa-spinner fa-pulse"></i> Recipients</template>
                         <template v-else>{{ recipientsLabel }}</template>
@@ -213,15 +213,15 @@
                                     <div class="col-sm-5">
                                         <RadioButtonList v-model="selectedSendTimePreference"
                                                          :items="[
-                                                             {
-                                                                 value: 'now',
-                                                                 text: 'Now'
-                                                             },
-                                                             {
-                                                                 value: 'later',
-                                                                 text: 'Later'
-                                                             }
-                                                         ]"
+                                                            {
+                                                                value: 'now',
+                                                                text: 'Now'
+                                                            },
+                                                            {
+                                                                value: 'later',
+                                                                text: 'Later'
+                                                            }
+                                                        ]"
                                                          :horizontal="true"
                                                          label="When to Send"
                                                          rules="required"

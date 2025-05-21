@@ -6,7 +6,7 @@
 
     <Panel type="block" :title="panelName" :headerSecondaryActions="blockLabels">
         <template #headerActions>
-            <div class="mr-3">
+            <div>
                 <template v-if="mediaElementViewBag?.closeCaption">
                     <a><span ref="closedCaptionIcon" class="label label-info" title="Has Closed Captions"><i class="fa fa-cc fa-lg"></i></span></a>
                 </template>

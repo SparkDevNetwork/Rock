@@ -991,6 +991,11 @@
 // copy from _rock_core.less, some of the nested class I join with the bootstrap panel class.
 .panel { 
   .panel-heading {
+
+    .panel-header-actions {
+      margin-right: 1rem !important;
+    }
+
     .panel-title {
       small {
         color: var(--color-interface-medium);
