@@ -72,7 +72,7 @@
                     "name": "Success Color",
                     "variable": "base-success",
                     "description": "The success color used to paint alert, label, badges.",
-                    "default": "#248A3D"
+                    "default": "#32D74B"
                 },
                 {
                     "type": "color",

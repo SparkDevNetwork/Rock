@@ -236,7 +236,7 @@ th {
   --base-critical: #ee7725;
   --base-danger: #D70015;
   --base-info: #007AFF;
-  --base-success: #248A3D;
+  --base-success: #32D74B;
   --base-primary: #FF791D;
   --base-warning: #E58600;
   --base-link: #006DCC;
@@ -369,22 +369,22 @@ th {
     --tint-white-percentage: 100%;
     --shade-black-percentage: 15%;
     --color-critical-tint: color-mix(in srgb, var(--base-critical) 50%, transparent var(--tint-white-percentage));
-    --color-critical-soft: color-mix(in srgb, var(--base-critical) 15%, transparent var(--tint-white-percentage));
+    --color-critical-soft: color-mix(in srgb, var(--base-critical) 9%, transparent var(--tint-white-percentage));
     --color-critical-shade: color-mix(in srgb, var(--base-critical) 100%, #000 var(--shade-black-percentage));
     --color-danger-tint: color-mix(in srgb, var(--base-danger) 50%, transparent var(--tint-white-percentage));
-    --color-danger-soft: color-mix(in srgb, var(--base-danger) 15%, transparent var(--tint-white-percentage));
+    --color-danger-soft: color-mix(in srgb, var(--base-danger) 9%, transparent var(--tint-white-percentage));
     --color-danger-shade: color-mix(in srgb, var(--base-danger) 100%, #000 var(--shade-black-percentage));
     --color-info-tint: color-mix(in srgb, var(--base-info) 50%, transparent var(--tint-white-percentage));
-    --color-info-soft: color-mix(in srgb, var(--base-info) 15%, transparent var(--tint-white-percentage));
+    --color-info-soft: color-mix(in srgb, var(--base-info) 9%, transparent var(--tint-white-percentage));
     --color-info-shade: color-mix(in srgb, var(--base-info) 100%, #000 var(--shade-black-percentage));
     --color-success-tint: color-mix(in srgb, var(--base-success) 50%, transparent var(--tint-white-percentage));
-    --color-success-soft: color-mix(in srgb, var(--base-success) 15%, transparent var(--tint-white-percentage));
+    --color-success-soft: color-mix(in srgb, var(--base-success) 9%, transparent var(--tint-white-percentage));
     --color-success-shade: color-mix(in srgb, var(--base-success) 100%, #000 var(--shade-black-percentage));
     --color-warning-tint: color-mix(in srgb, var(--base-warning) 50%, transparent var(--tint-white-percentage));
-    --color-warning-soft: color-mix(in srgb, var(--base-warning) 15%, transparent var(--tint-white-percentage));
+    --color-warning-soft: color-mix(in srgb, var(--base-warning) 9%, transparent var(--tint-white-percentage));
     --color-warning-shade: color-mix(in srgb, var(--base-warning) 100%, #000 var(--shade-black-percentage));
     --color-primary-tint: color-mix(in srgb, var(--base-primary) 50%, transparent var(--tint-white-percentage));
-    --color-primary-soft: color-mix(in srgb, var(--base-primary) 15%, transparent var(--tint-white-percentage));
+    --color-primary-soft: color-mix(in srgb, var(--base-primary) 9%, transparent var(--tint-white-percentage));
     --color-primary-shade: color-mix(in srgb, var(--base-primary) 100%, #000 var(--shade-black-percentage));
     --color-link-tint: color-mix(in srgb, var(--base-link) 50%, transparent var(--tint-white-percentage));
     --color-link-shade: color-mix(in srgb, var(--base-link) 100%, #000 var(--shade-black-percentage));
@@ -2472,11 +2472,15 @@ th {
   background-color: var(--color-interface-softest);
   border-color: var(--color-interface-soft);
 }
-.btn-authentication.faceF, .btn-authentication.google, .btn-authentication.twitter {
+.btn-authentication::before {
+  content: " ";
+  width: 2em;
+}
+.btn-authentication.facebook, .btn-authentication.google, .btn-authentication.twitter {
   background-color: var(--color-interface-softest);
   border-color: var(--color-interface-soft);
 }
-.btn-authentication.faceF::before, .btn-authentication.google::before, .btn-authentication.twitter::before {
+.btn-authentication.facebook::before, .btn-authentication.google::before, .btn-authentication.twitter::before {
   color: var(--btn-bg);
   display: inline-block;
   margin-right: 12px;
@@ -2490,6 +2494,15 @@ th {
   --btn-hover-bg: #3B5998;
   --social-icon: "";
 }
+.btn-authentication.facebook:before {
+  background-image: url("/Assets/Icons/Facebook_logo.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 1.2em;
+  height: 1.2em;
+  content: "  ";
+}
 .btn-authentication.google {
   color: var(--color-interface-strong);
 }
@@ -2498,8 +2511,8 @@ th {
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  width: 1em;
-  height: 1em;
+  width: 1.1em;
+  height: 1.1em;
   content: "  ";
 }
 .btn-authentication.twitter {
@@ -12142,6 +12155,12 @@ div.aspNetDisabled {
   text-align: left;
 }
 
+.splash-form-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .nav .open > a, .nav .open > a:hover, .nav .open > a:focus {
   background-color: transparent;
 }
@@ -18242,6 +18261,30 @@ iframe.file-browser {
   background: rgba(94, 94, 94, 0.6);
 }
 
+.workflow-activity {
+  position: relative;
+  margin: 0 0 8px;
+}
+.workflow-activity > .panel-heading {
+  background: var(--color-interface-softest);
+  border-bottom: 0;
+}
+.workflow-activity > .panel-heading:hover {
+  background: var(--color-interface-softer);
+}
+.workflow-activity > .panel-heading > .pull-right {
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+.workflow-activity .btn-action.add-action {
+  color: var(--color-interface-strong);
+  background-color: var(--color-interface-softest);
+  border-color: var(--color-interface-soft);
+}
+.workflow-activity:last-of-type {
+  margin-bottom: 0;
+}
+
 /* ===================== BLOCK =================== */
 /*
   Used to manage styles for specific blocks.
@@ -18843,7 +18886,7 @@ iframe.file-browser {
   width: 6px;
   content: "";
   background: var(--color-info-strong);
-  border-radius: var(--color-interface-soft) -radius 0 0 var(--color-interface-soft) -radius;
+  border-radius: var(--rounded-xsmall) 0 0 var(--rounded-xsmall);
 }
 .panel.workflow-activity h3.panel-title {
   display: flex;
@@ -18893,7 +18936,7 @@ iframe.file-browser {
 }
 @media (min-width: 992px) {
   .panel.workflow-activity > .panel-body {
-    padding-left: var(--spacing-medium)36px;
+    padding-left: calc(var(--spacing-medium) + 36px);
   }
 }
 

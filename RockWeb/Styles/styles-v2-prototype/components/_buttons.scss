@@ -103,7 +103,12 @@
   background-color: var(--color-interface-softest);
   border-color:     var(--color-interface-soft);
 
-  &.faceF,
+  &::before {
+    content: " ";
+    width: 2em;
+  }
+
+  &.facebook,
   &.google,
   &.twitter {
     background-color: var(--color-interface-softest);
@@ -124,6 +129,15 @@
     --btn-bg:       #{$brand-facebook};
     --btn-hover-bg: #{$brand-facebook}; // TODO darken by 10% when available
     --social-icon:  "\f39e";
+    &:before {
+      background-image:     url("/Assets/Icons/Facebook_logo.svg");
+      background-size:      contain;
+      background-repeat:    no-repeat;
+      background-position:  center;
+      width:                1.2em;
+      height:               1.2em;
+      content: "  ";
+    }
   }
 
   &.google {
@@ -133,8 +147,8 @@
       background-size:      contain;
       background-repeat:    no-repeat;
       background-position:  center;
-      width:                1em;
-      height:               1em;
+      width:                1.1em;
+      height:               1.1em;
       content: "  ";
     }
   }

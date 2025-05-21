@@ -1078,12 +1078,6 @@ a.rock-bookmark {
   margin: 0;
 }
 
-.splash-form-btn {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
 #splash {
   display: flex;
   justify-content: center;
@@ -1199,7 +1193,7 @@ a.rock-bookmark {
     --base-critical: #ee7725;
     --base-danger: #D70015;
     --base-info: #007AFF;
-    --base-success: #248A3D;
+    --base-success: #32D74B;
     --base-warning: #E58600;
     --base-interface-strongest: #000000;
     --base-interface-stronger: #0d1117;
