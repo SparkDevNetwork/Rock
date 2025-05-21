@@ -846,7 +846,7 @@ td.grid-col-actions {
     border:           0;
     box-shadow:       none;
     transition:       color 250ms;
-    color:            var(--color-interface-strong);
+    color:            var(--color-interface-medium);
     background-color: transparent;
     border-color:     transparent;
   }
@@ -870,7 +870,7 @@ td.grid-actions {
 .panel-section .table-light,
 .well .table-light {
   > tfoot > tr > td {
-    background-color: var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
   }
 }
 

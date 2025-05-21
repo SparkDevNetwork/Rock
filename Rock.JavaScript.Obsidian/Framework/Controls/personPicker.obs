@@ -117,9 +117,9 @@
 
 .absolute-panel {
     position: fixed;
-    left: 22.5%;
+    left: 13.5%;
     top: 25%;
-    width: 55%;
+    width: 75%;
     height: 55%;
     overflow-y: auto;
     z-index: 1070;
@@ -166,7 +166,11 @@
     border: 1px solid var(--color-interface-soft);
 }
 
-@media screen and (max-width: 768px) {
+.address-email {
+    overflow-wrap: break-word;
+}
+
+@media screen and (max-width: 992px) {
     .absolute-panel {
         left: 0;
         top: 0;

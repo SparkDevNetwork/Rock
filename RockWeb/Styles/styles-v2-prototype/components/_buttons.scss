@@ -235,7 +235,7 @@
   &.active,
   .open > .dropdown-toggle & {
     color:            var(--color-interface-stronger);
-    background-color: var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
     border-color:     var(--color-interface-soft);
     background-image: none;
  
@@ -244,7 +244,7 @@
     &.focus {
       color:            var(--color-interface-stronger);
       background-color: var(--color-interface-soft);
-      border-color:     var(--color-interface-soft);
+      border-color:     var(--color-interface-medium);
     }
   }
   &.disabled,
@@ -775,8 +775,8 @@
   border-color:       var(--color-primary); // TODO: darken by 5% when available
   
   &:hover {
-    color:            var(--color-interface-softest);
-    background-color: var(--color-primary);
+    color:            var(--color-primary);
+    background-color: var(--color-primary-soft);
     border-color:     var(--color-primary);
   }
   

@@ -93,7 +93,7 @@
     &.day:hover,
     &.focused {
       cursor:       pointer;
-      background:   var(--color-interface-soft);
+      background:   var(--color-interface-softer);
     }
     &.disabled,
     &.disabled:hover {
@@ -118,28 +118,28 @@
     }
 
     &.today {
-      color:            var(--color-interface-strongest);
-      background-color: $datepicker-today-bg;
+      color:            var(--base-interface-softest);
+      background-color: var(--color-primary);
 
       &:hover,
       &:focus {
-        background:     $datepicker-today-focus;
+        background:     var(--color-primary-shade);
       }
 
       &.focused {
-        background:     $datepicker-today-focus;
+        background:     var(--color-primary-shade);
       }
 
       &.disabled,
       &.disabled:active {
         color:          var(--color-interface-medium);
-        background:     $datepicker-today-bg;
+        background:     var(--color-primary);
       }
     }
 
     &.range {
       color:          var(--color-interface-strongest);
-      background:     var(--color-interface-softer);
+      background:     var(--color-primary-tint);
       border-radius:  0;
 
       &.focused,
@@ -181,7 +181,8 @@
 
     &.range.today {
       color:          var(--color-interface-strongest);
-      background:     var(--color-interface-soft);
+      background:     var(--color-primary-tint);
+      border:1px solid var(--color-primary);
 
       &:hover {
         background:   var(--color-interface-soft);
@@ -198,10 +199,10 @@
     &.selected.highlighted {
       color:        var(--color-interface-softest);
       text-shadow:  $datepicker-selected-text-shadow;
-      background:   var(--color-interface-medium);
+      background:   var(--color-primary);
 
       &:hover {
-        background: var(--color-interface-medium);
+        background: var(--color-primary);
       }
     }
 
