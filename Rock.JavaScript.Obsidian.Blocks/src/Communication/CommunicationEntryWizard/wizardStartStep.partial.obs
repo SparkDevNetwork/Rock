@@ -105,6 +105,7 @@
                                     <div class="col-sm-5">
                                         <ConditionalWell class="segments-section">
                                             <DropDownList v-model="personalizationSegmentIdsAsStrings"
+                                                          enhanceForLongLists
                                                           :items="personalizationSegments"
                                                           label="Select Segments"
                                                           :multiple="true" />
