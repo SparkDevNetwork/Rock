@@ -1,0 +1,996 @@
+/-
+    Template: Modular Landing Page Template
+    Author: Triumph
+    Description: This template is powered by content channel type Modular Landing Page and ultilizes items with Module content channel typesfor easy page building.
+    Block: Content Channel Item View
+    Version: 1.0
+    Last Modified: 03.26.25
+-/
+
+//- Configuration
+{% assign headingFontFamily = Item | Attribute:'HeadingFontFamily' %}
+{% assign headingFontWeight = Item | Attribute:'HeadingFontWeight' %}
+{% assign contentFontFamily = Item | Attribute:'BodyFontFamily' %}
+{% assign buttonBorderRadius = Item | Attribute:'ButtonBorderRadius','RawValue' |  AsInteger %}
+{% assign buttonBorderFontWeight = Item | Attribute:'ButtonFontWeight' %}
+{% assign mediaBorderRadius = Item | Attribute:'MediaBorderRadius' %}
+{% assign additionalStyling = Item | Attribute:'AdditionalStyling' %}
+
+{% assign animationData = 'data-gsap="fade-down" data-gsap-duration="400" data-gsap-delay="200" data-gsap-ease="power1.out"' %}
+
+{% if buttonBorderRadius and buttonBorderRadius != empty %}
+    {% capture buttonBorderRadiusCss %}
+        {% case buttonBorderRadius %}
+            {% when 1 %} //- None
+            rounded-0
+            {% when 2 %} //- Rounded Small
+            rounded-sm
+            {% when 3 %} //- Rounded Large
+            rounded-lg
+            {% when 4 %} //- Pill
+            rounded-pill
+        {% endcase %}
+    {% endcapture %}
+{% endif %}
+
+{% if headingFontFamily and headingFontFamily != empty -%}
+    {% capture headingFontCss -%}
+    .module {
+        h1,.h1,h2,.h2,h3,.h3,h4,.h4,h5,.h5,h6,.h6 {
+            font-family: {{ headingFontFamily }} !important;
+            gap: 10px;
+        }
+    }
+    {%- endcapture %}
+{%- endif %}
+
+{% if headingFontWeight and headingFontWeight != empty -%}
+    {% capture headingFontWeightCss -%}
+    .module {
+        h1,.h1,h2,.h2,h3,.h3,h4,.h4,h5,.h5,h6,.h6 {
+            font-weight: {{ headingFontWeight }} !important;
+        }
+    }
+    {%- endcapture %}
+{%- endif %}
+
+{% if contentFontFamily and contentFontFamily != empty -%}
+    {% capture contentFontFamilyCss -%}
+    .module {
+        p, span, label {
+            font-family: {{ contentFontFamily }} !important;
+            font-weight: normal;
+            line-height: 1.5;
+        }
+    }
+    {%- endcapture %}
+{%- endif %}
+
+{% capture mediaBorderRadiusCss -%}
+    {% if mediaBorderRadius and mediaBorderRadius != empty -%}
+        img,
+        video,
+        .plyr {
+            border-radius: {{ mediaBorderRadius }}px !important;
+        }
+    {%- endif %}
+{%- endcapture %}
+
+{% if buttonBorderFontWeight and buttonBorderFontWeight != empty -%}
+    {% capture buttonBorderFontWeightCss -%}
+    .module {
+        .btn {
+            font-weight: {{ buttonBorderFontWeight }} !important;
+        }
+    }
+    {%- endcapture %}
+{%- endif %}
+
+{% if additionalStyling and additionalStyling != empty %}
+    {% assign additionalCss = additionalStyling | Trim %}
+{% endif %}
+
+//- Landing Page General Styles
+{% if headingFontCss or headingFontWeightCss and headingFontWeightCss != empty or contentFontFamilyCss and contentFontFamilyCss != empty or buttonBorderFontWeightCss and buttonBorderFontWeightCss != empty or mediaBorderRadiusCss and mediaBorderRadiusCss != empty or additionalCss and additionalCss != empty  %}
+    {% stylesheet compile:'less' %}
+        {{ headingFontCss }}
+        {{ headingFontWeightCss }}
+        {{ contentFontFamilyCss }}
+        {{ buttonBorderFontWeightCss }}
+        {{ mediaBorderRadiusCss }}
+        {{ additionalCss }}
+    {% endstylesheet %}
+{% endif %}
+
+
+//- Child Item Modules
+{% assign orderedItems = Item.ChildItems | OrderBy:'Order' %}
+
+{% for childItem in orderedItems %}
+    //- Check type and create attributes
+    {% case childItem.ChildContentChannelItem.ContentChannelTypeId %}
+        {% when 50 %} //- Hero Module
+            //- Sanitize Variables
+            {% assign uniqueClassIdentifier = '' | UniqueIdentifier | ToCssClass %}
+            {% assign backgroundImageUrl = '' %}
+            {% assign title = '' %}
+            {% assign titleMarkup = '' %}
+
+            //- Set Variables
+            {% assign backgroundImageGuid = childItem.ChildContentChannelItem | Attribute:'BackgroundImage','RawValue' %}
+            {% assign backgroundColor = childItem.ChildContentChannelItem | Attribute:'BackgroundColor' %}
+            {% assign hideTitle = childItem.ChildContentChannelItem | Attribute:'HideTitle' | AsBoolean %}
+            {% assign content = childItem.ChildContentChannelItem | Attribute:'ContentSection' %}
+            {% assign headingStyle = childItem.ChildContentChannelItem | Attribute:'HeadingStyle' %}
+            {% assign titleForegroundColor = childItem.ChildContentChannelItem | Attribute:'TitleForegroundColor' %}
+            {% assign bodyForegroundColor = childItem.ChildContentChannelItem | Attribute:'BodyForegroundColor' %}
+            {% assign justification = childItem.ChildContentChannelItem | Attribute:'Justification' %}
+            {% assign uniqueClassIdentifier = '' | UniqueIdentifier | ToCssClass %}
+            {% assign backgroundImageUrl = '' %}
+
+            {% if hideTitle == false %}
+                {% capture titleMarkup %}
+                    <{{ headingStyle }} class="module-hero-title module-hero-title-{{ uniqueClassIdentifier }}">{{ childItem.ChildContentChannelItem.Title }}</{{ headingStyle }}>
+                {% endcapture %}
+            {% endif %}
+
+            {% if content != empty %}
+                {% capture content %}
+                    <div class="module-hero-text module-hero-text-{{ uniqueClassIdentifier }}">{{ content }}</div>
+                {% endcapture %}
+            {% endif %}
+
+            {% if backgroundImageGuid != empty %}
+                {% assign backgroundImageUrl = backgroundImageGuid | Prepend:'/GetImage.ashx?Guid=' | TriumphImgCdn:'auto=compress&auto=format' %}
+            {% endif %}
+
+            //- Markup
+            <div class="module module-hero module-hero-title-{{ childItem.ChildContentChannelItem.Title | Remove:"'" | ToCssClass }} module-hero-{{ uniqueClassIdentifier }} text-{{ justification | ToCssClass }}">
+                <div class="module-hero-body module-hero-body-{{ uniqueClassIdentifier }}" data-gsap="fade-down">
+                    <div class="container">
+                        {{ titleMarkup }}
+                        {{ content }}
+                    </div>
+                </div>
+            </div>
+
+            {% stylesheet id:'module' %}
+                .module-hero {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 100%;
+                    height: 100vh;
+                }
+                .module-hero-{{ uniqueClassIdentifier }} {
+                    background-image: url('{{ backgroundImageUrl }}');
+                    background-color: {{ backgroundColor }};
+                    background-size: cover;
+                    background-repeat: no-repeat;
+                    background-position: center;
+                }
+
+                .module-hero-title-{{ uniqueClassIdentifier }} {
+                    color: {{ titleForegroundColor }};
+                }
+
+                .module-hero-body-{{ uniqueClassIdentifier }} {
+                    color: {{ bodyForegroundColor }};
+                }
+
+                @media screen and (max-width: 767px) {
+                    .module-hero {
+                        max-height: 845px;
+                    }
+                }
+
+            {% endstylesheet %}
+
+            //- Reset Attributes
+
+        {% when 51 or 52 %} //- Bordered Image Module
+
+            //- Sanitize Variables
+            {% assign uniqueClassIdentifier = '' | UniqueIdentifier | ToCssClass %}
+            {% assign backgroundImageGuid = '' %}
+            {% assign backgroundImageUrl = '' %}
+            {% assign separatorGuid = '' %}
+            {% assign separatorUrl = '' %}
+            {% assign title = '' %}
+            {% assign titleMarkup = '' %}
+            {% assign titleImageGuid = '' %}
+            {% assign titleImageOrientation = '' %}
+            {% assign titleImageOrder = '' %}
+            {% assign titleImageUrl = '' %}
+            {% assign primaryButtonLink = '' %}
+            {% assign secondaryButtonLink = '' %}
+            {% assign primaryButton = '' %}
+            {% assign secondaryButton = '' %}
+            {% assign imageOneCaption = '' %}
+            {% assign imageTwoCaption = '' %}
+            {% assign hideTitle = false %}
+            {% assign captionBackgroundColor = '' %}
+            {% assign captionTextColor = '' %}
+            {% assign gsapContent = '' %}
+            {% assign gsapImage = '' %}
+            {% assign imageCount = 0 %}
+
+            //- Set Variables
+            {% assign title = childItem.ChildContentChannelItem.Title %}
+            {% assign content = childItem.ChildContentChannelItem.Content %}
+            {% assign imageOneGuid = childItem.ChildContentChannelItem | Attribute:'ImageOne','RawValue' %}
+            {% assign imageOneCaption = childItem.ChildContentChannelItem | Attribute:'ImageOneCaption' %}
+            {% assign captionBackgroundColor = childItem.ChildContentChannelItem | Attribute:'CaptionBackgroundColor' %}
+            {% assign captionTextColor = childItem.ChildContentChannelItem | Attribute:'CaptionTextColor' %}
+            {% assign imageTwoGuid = childItem.ChildContentChannelItem | Attribute:'ImageTwo','RawValue' %}
+            {% assign imageTwoCaption = childItem.ChildContentChannelItem | Attribute:'ImageTwoCaption' %}
+            {% assign imageryOrientation = childItem.ChildContentChannelItem | Attribute:'ImageryOrientation' %}
+            {% assign backgroundImageGuid = childItem.ChildContentChannelItem | Attribute:'BackgroundImage','RawValue' %}
+            {% assign backgroundColor = childItem.ChildContentChannelItem | Attribute:'BackgroundColor' %}
+            {% assign hideTitle = childItem.ChildContentChannelItem | Attribute:'HideTitle' | AsBoolean %}
+            {% assign titleImageGuid = childItem.ChildContentChannelItem | Attribute:'TitleImage','RawValue' %}
+            {% assign titleImageOrientation = childItem.ChildContentChannelItem | Attribute:'TitleImageOrientation' %}
+            {% assign titleForegroundColor = childItem.ChildContentChannelItem | Attribute:'TitleForegroundColor' %}
+            {% assign bodyForegroundColor = childItem.ChildContentChannelItem | Attribute:'BodyForegroundColor' %}
+            {% assign justification = childItem.ChildContentChannelItem | Attribute:'Justification' %}
+            {% assign additionalContent = childItem.ChildContentChannelItem | Attribute:'AdditionalContent' %}
+            {% assign primaryButtonLink = childItem.ChildContentChannelItem | Attribute:'PrimaryButtonLink' %}
+            {% assign primaryButtonText = childItem.ChildContentChannelItem | Attribute:'PrimaryButtonText' | Default:'Learn More' %}
+            {% assign secondaryButtonLink = childItem.ChildContentChannelItem | Attribute:'SecondaryButtonLink' %}
+            {% assign secondaryButtonText = childItem.ChildContentChannelItem | Attribute:'SecondaryButtonText' | Default:'Learn More' %}
+            {% assign buttonRadius = childItem.ChildContentChannelItem | Attribute:'ButtonRadius' %}
+            {% assign separatorGuid = childItem.ChildContentChannelItem | Attribute:'Separator','RawValue' %}
+            {% assign isContainedImage = childItem.ChildContentChannelItem | Attribute:'ContainImage' | AsBoolean %}
+            {% assign imageCount = imageOneGuid | Append:',' | Append:imageTwoGuid | Split:',' | Size %}
+            {% assign imageContainedCSSClass = '' %}
+
+            {% if isContainedImage == true %}
+                {% assign imageContainedCSSClass = 'image-contained-' | Append:uniqueClassIdentifier %}
+            {% endif %}
+
+            {% if imageryOrientation == 'Right' %}
+                {% assign orientationImages = 'right-0' %}
+                {% assign orientationContent = '' %}
+            {% else %}
+                {% assign orientationImages = 'left-0' %}
+                {% assign orientationContent = '' %}
+                {% if childItem.ChildContentChannelItem.ContentChannelTypeId == 52 %}
+                    {% assign orientationContent = 'col-lg-push-6' %}
+                {% endif %}
+            {% endif %}
+
+            {% if hideTitle == false %}
+                {% if titleImageGuid and titleImageGuid != empty %}
+                    {% assign titleImageUrl = titleImageGuid | Prepend:'/GetImage.ashx?Guid=' | TriumphImgCdn:'auto=compress&auto=format' %}
+                {% endif %}
+                {% capture titleMarkup %}
+                    {% if titleImageOrientation and titleImageOrientation == 'Right' %}
+                        {% assign titleImageOrder = 'order-2' %}
+                    {% endif %}
+                    <h2 class="module-image-title module-image-title-{{ uniqueClassIdentifier }}">
+                        {% if titleImageUrl and titleImageUrl != empty %}
+                            <img class="d-inline rounded-0 {{ titleImageOrder }}" src="{{ titleImageUrl }}">
+                        {% endif %}
+                        <div>
+                            {{ title }}
+                        </div>
+                    </h2>
+                {% endcapture %}
+            {% endif %}
+
+            {% if content != empty %}
+                {% capture content %}
+                    <div class="module-image-text module-image-text-{{ uniqueClassIdentifier }}">{{ content }}</div>
+                    {{ additionalContent }}
+                {% endcapture %}
+            {% endif %}
+
+            {% if backgroundImageGuid != empty %}
+                {% assign backgroundImageUrl = backgroundImageGuid | Prepend:'/GetImage.ashx?Guid=' | TriumphImgCdn:'auto=compress&auto=format' %}
+            {% endif %}
+
+            {% if separatorGuid and separatorGuid != empty %}
+                {% assign separatorUrl = separatorGuid | Prepend:'/GetImage.ashx?Guid=' | TriumphImgCdn:'auto=compress&auto=format' %}
+            {% endif %}
+
+            {% if separatorOrientation == 'Right' %}
+                {% assign separatorOrientationContent = 'col-lg-pull-6' %}
+                {% assign separatorOrientationVideo = 'col-lg-push-6' %}
+            {% endif %}
+
+            {% if primaryButtonLink and primaryButtonLink != empty %}
+                {% capture primaryButton %}
+                    <a href="{{ primaryButtonLink }}" class="btn {{ buttonBorderRadiusCss | Trim }} btn-primary">{{ primaryButtonText }}</a>
+                {% endcapture %}
+            {% endif %}
+
+            {% if secondaryButtonLink and secondaryButtonLink != empty %}
+                {% capture secondaryButton %}
+                    <a href="{{ secondaryButtonLink }}" class="btn {{ buttonBorderRadiusCss | Trim }} btn-default">{{ secondaryButtonText }}</a>
+                {% endcapture %}
+            {% endif %}
+
+            {% assign borderedImagesCss = '' %}
+            {% if childItem.ChildContentChannelItem.ContentChannelTypeId == 51 and imageOneGuid and imageOneGuid != empty and imageTwoGuid and imageTwoGuid != empty %}
+                {% assign borderedImagesCss = 'bordered-images' %}
+            {% endif %}
+
+
+            //- Markup
+            <div class="module module-image module-image-{{ childItem.ChildContentChannelItem.Title | Remove:"'" | ToCssClass }} module-image-{{ uniqueClassIdentifier }} py-0 py-lg-5">
+                <div class="module-image-body module-image-body-{{ uniqueClassIdentifier }}">
+
+                    {% if childItem.ChildContentChannelItem.ContentChannelTypeId == 52 %}
+                        <div class="borderless-image-section d-flex flex-row {{ orientationImages }}">
+                            {% if imageOneGuid and imageOneGuid != empty %}
+                                <div class="image-wrapper overflow-hidden {{ imageContainedCSSClass }}">
+                                    {% if imageOneCaption and imageOneCaption != empty %}
+                                        <p class="caption caption-{{ uniqueClassIdentifier }}" data-gsap="fade" data-gsap-ease="power1.out">{{ imageOneCaption }}</p>
+                                    {% endif %}
+                                    <img src="{{ imageOneGuid | Prepend:'/GetImage.ashx?Guid=' | TriumphImgCdn:'auto=compress&auto=format' }}" data-gsap="fade" data-gsap-ease="power1.out">
+                                </div>
+                            {% endif %}
+                            {% if imageTwoGuid and imageTwoGuid != empty %}
+                                <div class="image-wrapper overflow-hidden {{ imageContainedCSSClass }}">
+                                    {% if imageTwoCaption and imageTwoCaption != empty %}
+                                        <p class="caption caption-{{ uniqueClassIdentifier }}" data-gsap="fade" data-gsap-ease="power1.out">{{ imageTwoCaption }}</p>
+                                    {% endif %}
+                                    <img src="{{ imageTwoGuid | Prepend:'/GetImage.ashx?Guid=' | TriumphImgCdn:'auto=compress&auto=format' }}" data-gsap="fade" data-gsap-ease="power1.out">
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <div class="container {{ borderedImagesCss }}">
+                        <div class="d-lg-flex flex-row row align-items-center">
+
+                            {% if childItem.ChildContentChannelItem.ContentChannelTypeId == 51 %}
+                                <div class="bordered-image-section col-xs-12 col-lg-6 {{ orientationimage }}">
+                                    <div class="d-flex flex-row px-4 p-md-0">
+                                        {% if imageOneGuid and imageOneGuid != empty %}
+                                            <div class="image-wrapper overflow-hidden {{ imageContainedCSSClass }}">
+                                                {% if imageOneCaption and imageOneCaption != empty %}
+                                                    <p class="caption caption-{{ uniqueClassIdentifier }}" data-gsap="fade" data-gsap-ease="power1.out">{{ imageOneCaption }}</p>
+                                                {% endif %}
+                                                <img src="{{ imageOneGuid | Prepend:'/GetImage.ashx?Guid=' | TriumphImgCdn:'auto=compress&auto=format' }}" class="animated-element" data-gsap="fade" data-gsap-ease="power1.out">
+                                            </div>
+                                        {% endif %}
+                                        {% if imageTwoGuid and imageTwoGuid != empty %}
+                                            <div class="image-wrapper overflow-hidden {{ imageContainedCSSClass }}">
+                                                {% if imageTwoCaption and imageTwoCaption != empty %}
+                                                    <p class="caption caption-{{ uniqueClassIdentifier }}" data-gsap="fade" data-gsap-ease="power1.out">{{ imageTwoCaption }}</p>
+                                                {% endif %}
+                                                <img src="{{ imageTwoGuid | Prepend:'/GetImage.ashx?Guid=' | TriumphImgCdn:'auto=compress&auto=format' }}" data-gsap="fade" data-gsap-ease="power1.out">
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <div class="col-xs-12 col-lg-6 {{ orientationContent }}">
+                                <div class="d-flex flex-wrap align-items-center p-4 {% if justification == 'Right' %}justify-content-md-end{% endif %}" {{ animationData }}>
+
+                                    {{ titleMarkup }}
+
+                                    <img class="module-image-separator" src="{{ separatorUrl }}" class="{{ separatorOrientation }}" style="width:inherit;max-width: 100%;">
+
+                                    <div class="{{ justification | ToCssClass | Prepend:'text-md-' }}" style="color:{{ bodyForegroundColor }};" >
+                                        {{ content }}
+                                    </div>
+
+                                    {% if primaryButton and primaryButton != empty or  secondaryButton and secondaryButton != empty %}
+                                        <div class="{{ justification | ToCssClass | Prepend:'text-md-' }} w-100 mt-4">
+                                            {{ primaryButton }}
+                                            {{ secondaryButton }}
+                                        </div>
+                                    {% endif %}
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% stylesheet compile:'less' %}
+                .module-image-{{ uniqueClassIdentifier }} {
+                    {% if backgroundImageUrl and backgroundImageUrl != empty %}
+                        background-image: url('{{ backgroundImageUrl }}');
+                    {% endif %}
+                    {% if backgroundColor and backgroundColor != empty %}
+                        background-color: {{ backgroundColor }};
+                    {% endif %}
+                    background-size: cover;
+                    background-repeat: no-repeat;
+                    background-position: center;
+                    overflow: hidden;
+                }
+
+                {% if imageContainedCSSClass and imageContainedCSSClass != empty %}
+                    .{{ imageContainedCSSClass }}  {
+                        left: 0;
+                        right: 0;
+                        display: flex;
+                        align-items: center;
+                        img {
+                            object-fit: contain !important;
+                            width: 100% !important;
+                            height: auto !important;
+                        }
+                    }
+                {% endif %}
+
+                {% if titleForegroundColor and titleForegroundColor != empty %}
+                    .module-image-title-{{ uniqueClassIdentifier }} {
+                        color: {{ titleForegroundColor }};
+                        margin-top:0;
+                    }
+                {% endif %}
+
+                {% if bodyForegroundColor and bodyForegroundColor != empty %}
+                    .module-image-body-{{ uniqueClassIdentifier }} {
+                        color: {{ bodyForegroundColor }};
+                    }
+                {% endif %}
+
+                .borderless-image-section,
+                .bordered-image-section {
+                    .caption-{{ uniqueClassIdentifier }} {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        color: {{ captionTextColor | Default:'#fff' }};
+                        background-color: {{ captionBackgroundColor | Default:'#008cd0' }};
+                        padding: .5rem;
+                        font-size: 14px;
+                    }
+                }
+
+
+                @media (min-width: 1024px) {
+
+                    .module-image-body-{{ uniqueClassIdentifier }} {
+                        .image-wrapper {
+                            position: relative;
+                            {% if imageTwoGuid and imageTwoGuid != empty %}
+                                width: 26.2vw;
+                            {% else %}
+                                width: 50vw;
+                            {% endif %}
+                        }
+                    }
+                }
+
+            {% endstylesheet %}
+
+        {% when 53 %} //- Video Section Module
+
+            //- Sanitize Variables
+            {% assign uniqueClassIdentifier = '' | UniqueIdentifier | ToCssClass %}
+            {% assign backgroundImageUrl = '' %}
+            {% assign separatorGuid = '' %}
+            {% assign separatorUrl = '' %}
+            {% assign title = '' %}
+            {% assign titleMarkup = '' %}
+            {% assign titleImageGuid = '' %}
+            {% assign primaryButtonLink = '' %}
+            {% assign secondaryButtonLink = '' %}
+            {% assign primaryButton = '' %}
+            {% assign secondaryButton = '' %}
+            {% assign orientationContent = '' %}
+            {% assign orientationVideo = '' %}
+
+
+            //- Set Variables
+            {% assign title = childItem.ChildContentChannelItem.Title %}
+            {% assign content = childItem.ChildContentChannelItem.Content %}
+            {% assign video = childItem.ChildContentChannelItem | Attribute:'Video','Object' %}
+            {% assign videoOrientation = childItem.ChildContentChannelItem | Attribute:'VideoOrientation' %}
+            {% assign backgroundImageGuid = childItem.ChildContentChannelItem | Attribute:'BackgroundImage','RawValue' %}
+            {% assign backgroundColor = childItem.ChildContentChannelItem | Attribute:'BackgroundColor' %}
+            {% assign separatorGuid = childItem.ChildContentChannelItem | Attribute:'Separator','RawValue' %}
+            {% assign separatorOrientation = childItem.ChildContentChannelItem | Attribute:'SeparatorOrientation' %}
+            {% assign hideTitle = childItem.ChildContentChannelItem | Attribute:'HideTitle' | AsBoolean %}
+            {% assign titleForegroundColor = childItem.ChildContentChannelItem | Attribute:'TitleForegroundColor' %}
+            {% assign bodyForegroundColor = childItem.ChildContentChannelItem | Attribute:'BodyForegroundColor' %}
+            {% assign justification = childItem.ChildContentChannelItem | Attribute:'Justification' %}
+            {% assign additionalContent = childItem.ChildContentChannelItem | Attribute:'AdditionalContent' %}
+            {% assign primaryButtonLink = childItem.ChildContentChannelItem | Attribute:'PrimaryButtonLink' %}
+            {% assign primaryButtonText = childItem.ChildContentChannelItem | Attribute:'PrimaryButtonText' | Default:'Learn More' %}
+            {% assign secondaryButtonLink = childItem.ChildContentChannelItem | Attribute:'SecondaryButtonLink' %}
+            {% assign secondaryButtonText = childItem.ChildContentChannelItem | Attribute:'SecondaryButtonText' | Default:'Learn More' %}
+
+            {% if hideTitle == false %}
+                {% capture titleMarkup %}
+                    <h2 class="module-video-title module-video-title-{{ uniqueClassIdentifier }} {{ justification | ToCssClass | Prepend:'text-center text-md-' }}">{{ childItem.ChildContentChannelItem.Title }}</h2>
+                {% endcapture %}
+            {% endif %}
+
+            {% if content != empty %}
+                {% capture content %}
+                    <div class="module-video-text module-video-text-{{ uniqueClassIdentifier }}">{{ content }}</div>
+                {% endcapture %}
+            {% endif %}
+
+            {% if backgroundImageGuid != empty %}
+                {% assign backgroundImageUrl = backgroundImageGuid | Prepend:'/GetImage.ashx?Guid=' | TriumphImgCdn:'auto=compress&auto=format' %}
+            {% endif %}
+
+            {% if separatorGuid != empty %}
+                {% assign separatorUrl = separatorGuid | Prepend:'/GetImage.ashx?Guid=' | TriumphImgCdn:'auto=compress&auto=format' %}
+            {% endif %}
+
+            {% if videoOrientation == 'Right' %}
+                {% assign orientationContent = 'col-md-pull-6' %}
+                {% assign orientationVideo = 'col-md-push-6' %}
+            {% endif %}
+
+            {% if separatorOrientation == 'Right' %}
+                {% assign separatorOrientationRight = ' d-flex ml-md-auto mr-md-0' %}
+            {% endif %}
+
+            {% if primaryButtonLink and primaryButtonLink != empty %}
+                {% capture primaryButton %}
+                    <a href="{{ primaryButtonLink }}" class="btn {{ buttonBorderRadiusCss | Trim }} btn-primary">{{ primaryButtonText }}</a>
+                {% endcapture %}
+            {% endif %}
+
+            {% if secondaryButtonLink and secondaryButtonLink != empty %}
+                {% capture secondaryButton %}
+                    <a href="{{ secondaryButtonLink }}" class="btn {{ buttonBorderRadiusCss | Trim }} btn-default">{{ secondaryButtonText }}</a>
+                {% endcapture %}
+            {% endif %}
+
+            //- Markup
+            <div class="module module-video module-video-{{ childItem.ChildContentChannelItem.Title | Remove:"'" | ToCssClass }} module-video-{{ uniqueClassIdentifier }}">
+                <div class="module-video-body module-video-body-{{ uniqueClassIdentifier }}">
+                    <div class="container">
+                        <div class="d-flex flex-wrap flex-row row align-items-center">
+                            <div class="col-xs-12 col-md-6 {{ orientationVideo }}" {{ animationData }}>
+                                <div class="p-md-4">
+                                    {[ mediaplayer media:'{{ video.Id }}' ]}{[ endmediaplayer ]}
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-6 {{ orientationContent }}" {{ animationData }}>
+                                <div class="d-flex flex-wrap align-items-center p-4">
+                                    {{ titleMarkup }}
+                                    <img class="module-video-separator{{ separatorOrientationRight }} mx-auto" src="{{ separatorUrl }}" class="{{ separatorOrientation }}" style="width:inherit;max-width: 100%;">
+                                    <div class="{{ justification | ToCssClass | Prepend:'text-' }}" style="color:{{ bodyForegroundColor }};">
+                                        {{ content }}
+                                        {{ additionalContent }}
+                                    </div>
+                                    {{ primaryButton }}
+                                    {{ secondaryButton }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% stylesheet %}
+
+                .module-video-{{ uniqueClassIdentifier }} {
+                    background-image: url('{{ backgroundImageUrl }}');
+                    background-color: {{ backgroundColor }};
+                    background-size: cover;
+                    background-repeat: no-repeat;
+                    background-position: center;
+                }
+
+                .module-video-title-{{ uniqueClassIdentifier }} {
+                    color: {{ titleForegroundColor }};
+                    margin-top:0;
+                }
+
+                .module-video-body-{{ uniqueClassIdentifier }} {
+                    color: {{ bodyForegroundColor }};
+                }
+
+                //- Bordered Image Markup
+
+            {% endstylesheet %}
+
+            //- Reset Attributes
+
+        {% when 54 %} //- Separator Module
+
+            //- Set Variables
+            {% assign image = childItem.ChildContentChannelItem | Attribute:'Image','RawValue' %}
+            <div class="module module-separator module-separator-{{ childItem.ChildContentChannelItem.Title | ToCssClass }} module-separator-{{ uniqueClassIdentifier }}">
+                <img src="{{ image | Prepend:'/GetImage.ashx?Guid=' | TriumphImgCdn:'auto=compress&auto=format' }}" class="img-responsive w-100" >
+            </div>
+
+        {% when 55 %} //- Stats Module
+
+            //- Set Variables
+            {% assign stats = childItem.ChildContentChannelItem | Attribute:'Stats' %}
+            {% assign backgroundImageGuid = childItem.ChildContentChannelItem | Attribute:'BackgroundImage','RawValue' %}
+            {% assign backgroundColor = childItem.ChildContentChannelItem | Attribute:'BackgroundColor' %}
+            {% assign titleForegroundColor = childItem.ChildContentChannelItem | Attribute:'TitleForegroundColor' %}
+            {% assign bodyForegroundColor = childItem.ChildContentChannelItem | Attribute:'BodyForegroundColor' %}
+            {% assign backgroundImageUrl = '' %}
+
+            {% if backgroundImageGuid != empty %}
+                {% assign backgroundImageUrl = backgroundImageGuid | Prepend:'/GetImage.ashx?Guid=' | TriumphImgCdn:'auto=compress&auto=format' %}
+            {% endif %}
+
+            //- Markup
+            <div class="module module-stats module-stats-{{ childItem.ChildContentChannelItem.Title | Remove:"'" | ToCssClass }} module-stats-{{ uniqueClassIdentifier }} py-5">
+                <div class="module-stats-body module-stats-body-{{ uniqueClassIdentifier }}">
+                    <div class="container">
+                        {{ stats }}
+                    </div>
+                </div>
+            </div>
+
+            {% stylesheet %}
+
+                .module-stats-{{ uniqueClassIdentifier }} {
+                    background-image: url('{{ backgroundImageUrl }}');
+                    background-color: {{ backgroundColor }};
+                    background-size: cover;
+                    background-repeat: no-repeat;
+                    background-position: center;
+                }
+
+                .module-stats-{{ uniqueClassIdentifier }} .stat-number {
+                    color: {{ titleForegroundColor }};
+                    margin-top:0;
+                }
+
+                .module-stats-{{ uniqueClassIdentifier }} .stat-title,
+                .module-stats {{ uniqueClassIdentifier }} .stat-text {
+                    color: {{ bodyForegroundColor }};
+                }
+
+            {% endstylesheet %}
+
+    {% endcase %}
+
+{% endfor %}
+
+
+{% stylesheet compile:'less' %}
+    // Hero CSS
+    .module-hero {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100vh;
+    }
+
+    @media screen and (max-width: 767px) {
+        .module-hero {
+            max-height: 845px;
+        }
+    }
+
+
+    // Bordered + Borderless Image Section CSS
+    .module-image {
+        display: flex;
+        position: relative;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+    }
+
+    .module-image-separator {
+        margin-bottom: 1rem;
+    }
+
+    .module-image-title {
+        display: flex;
+    }
+
+    .bordered-image-section {
+        height: 100%;
+    }
+
+    .borderless-image-section {
+        position: relative;
+        height: 320px;
+    }
+
+    .borderless-image-section img {
+        border-radius: 0 !important;
+    }
+
+    .borderless-image-section,
+    .bordered-image-section {
+        top: 0;
+        width:100%;
+        .image-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        .caption {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: .5rem;
+            font-size: 14px;
+            z-index:10;
+        }
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    @media (max-width: 1024px) {
+        .bordered-images.container {
+            width: 100%;
+            padding: 0px;
+            .bordered-image-section>div {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .borderless-image-section {
+            position: absolute;
+        }
+        .bordered-images {
+            .image-wrapper:first-child img {
+                border-top-right-radius: 0 !important;
+                border-bottom-right-radius: 0 !important;
+            }
+            .image-wrapper:nth-child(2) img {
+                border-top-left-radius: 0 !important;
+                border-bottom-left-radius: 0 !important;
+            }
+        }
+
+        .borderless-image-section,
+        .bordered-image-section {
+            top: 0;
+            width: 50%;
+            height: 100%;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .container {
+            width: 970px;
+        }
+    }
+
+    @media (min-width: 1200px) {
+        .container {
+            width: 1170px;
+        }
+    }
+
+    @media (min-width: 1480px) {
+        .container {
+            width: 1440px;
+        }
+    }
+
+
+    // Video Section CSS
+    .module-video {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+    }
+
+    .module-video-separator {
+        margin-bottom: 1rem;
+    }
+
+
+    // Stats CSS
+    .stats {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        .stat {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+    }
+
+    .stat-title {
+        font-weight: 900 !important;
+    }
+
+    .module-separator {
+        img {
+            border-radius: 0 !important;
+        }
+    }
+
+
+    // MISC
+    @media (max-width: 480px) {
+        .module .btn + .btn {
+            margin-top: 15px;
+        }
+        .module .btn {
+            width: 100%;
+        }
+    }
+
+    [data-gsap^="fade"] {
+        opacity: 0;
+    }
+
+    [data-gsap="zoom-out"] {
+        opacity: 0;
+        scale: 1.5;
+    }
+
+    [data-gsap="zoom-in"] {
+        opacity: 0;
+        scale: .5;
+    }
+
+{% endstylesheet %}
+
+
+
+<script>
+    $(document).ready(function () {
+        function animateNumber($element, initialValue, maxValue, duration) {
+            const startIntValue = parseInt(String(initialValue).replace(/[^\d]/g, ''), 10);
+            const maxIntValue = parseInt(String(maxValue).replace(/[^\d]/g, ''), 10);
+            const startTime = Date.now();
+
+            function updateNumber() {
+                const elapsedTime = Date.now() - startTime;
+                const progress = Math.min(elapsedTime / duration, 1); // Clamp progress between 0 and 1
+                const currentValue = Math.floor(startIntValue + (progress * (maxIntValue - startIntValue)));
+
+                // Preserve dollar sign if present
+                const $parent = $element.closest('.js-animate-stat');
+                const dollarSign = $parent.text().trim().startsWith('$') ? '$' : '';
+
+                $element.text(`${dollarSign}${currentValue.toLocaleString()}`);
+
+                if (progress < 1) {
+                    requestAnimationFrame(updateNumber);
+                }
+            }
+
+            updateNumber();
+        }
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const $parent = $(entry.target);
+                        const $numberElement = $parent.find('.js-number'); // Target only the wrapped number span
+                        const initialValue = $parent.data('initial') || 0;
+                        const maxValue = $parent.data('max');
+
+                        animateNumber($numberElement, initialValue, maxValue, 2000);
+
+                        // Stop observing the element to avoid re-triggering the animation
+                        observer.unobserve(entry.target);
+                    }
+                });
+            },
+            {
+                root: null, // Use the viewport as the root
+                rootMargin: '0px',
+                threshold: 0.5, // Trigger when 50% of the element is visible
+            }
+        );
+
+        // Observe each .js-animate-stat element
+        $('.js-animate-stat').each(function () {
+            observer.observe(this);
+        });
+    });
+
+
+    $(() => {
+        // Register the ScrollTrigger plugin
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Function to get animation properties based on data-gsap attribute
+        function getAnimationProperties(element) {
+            const animationType = $(element).data('gsap');
+            const delay = ($(element).data('gsap-delay') / 1000) || 0;
+            const trigger = $(element).data('gsap-trigger') || element;
+            const duration = ($(element).data('gsap-duration') / 1000) || .5;
+            const ease = ($(element).data('gsap-ease')) || 'power1.out';
+
+            let fromVars = {};
+            let toVars = {
+                opacity: 1,
+                duration: duration,
+                ease: ease,
+                delay: delay,
+                x: 0,
+                y: 0,
+                scale: 1,
+                rotate: 0,
+                scrollTrigger: {
+                    trigger: trigger,
+                    start: 'top 85%',
+                    toggleActions: 'play none none none'
+                }
+            };
+
+            switch (animationType) {
+                case 'fade-up':
+                    fromVars = { opacity: 0, y: 150 };
+                    break;
+                case 'fade-down':
+                    fromVars = { opacity: 0, y: -150 };
+                    break;
+                case 'fade-left':
+                    fromVars = { opacity: 0, x: 150 };
+                    break;
+                case 'fade-right':
+                    fromVars = { opacity: 0, x: -150 };
+                    break;
+                case 'rotate-right':
+                    fromVars = { rotate: 180, opacity: 0 };
+                    break;
+                case 'rotate-left':
+                    fromVars = { rotate: -180, opacity: 0 };
+                    break;
+                case 'zoom-out':
+                    fromVars = { scale: 1.5, opacity: 0 };
+                    break;
+                case 'zoom-in':
+                    fromVars = { scale: .5, opacity: 0 };
+                    break;
+                default:
+                    fromVars = { opacity: 0 };
+                    break;
+            }
+
+            return { fromVars, toVars };
+        }
+
+        // Function to initialize GSAP animations
+        function initializeGSAPAnimations() {
+            // Clear existing ScrollTriggers
+            ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+
+            // Apply GSAP animations to elements with data-gsap attribute
+            $('[data-gsap^="fade"]').each(function() {
+                const { fromVars, toVars } = getAnimationProperties(this);
+                gsap.fromTo(this, fromVars, toVars);
+            });
+
+            $('[data-gsap^="zoom"]').each(function() {
+                const { fromVars, toVars } = getAnimationProperties(this);
+                gsap.fromTo(this, fromVars, toVars);
+            });
+
+            $('[data-gsap^="rotate"]').each(function() {
+                const { fromVars, toVars } = getAnimationProperties(this);
+                gsap.fromTo(this, fromVars, toVars);
+            });
+        }
+
+        // Initialize animations on page load
+        initializeGSAPAnimations();
+
+        // Handle partial postbacks in ASP.NET
+        if (typeof Sys !== 'undefined' && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+            const prm = Sys.WebForms.PageRequestManager.getInstance();
+            prm.add_endRequest(function() {
+                initializeGSAPAnimations();
+            });
+        }
+    });
+
+</script>
