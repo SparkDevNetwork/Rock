@@ -3,7 +3,7 @@
     <HtmlEditor v-if="mode === 'html'"
                 v-model="innerHtml"
                 :autocommitDelayMs="0"
-                :editorHeight="380"
+                :editorHeight="642"
                 enableAssetManager
                 :mergeFields="mergeFields ?? []"
                 :shortLinkCheckToken="shortLinkCheckToken"
