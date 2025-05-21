@@ -504,7 +504,7 @@ namespace Rock.Rest.v2
                 {
                     countries.Add( new ListItemBag { Text = "Countries", Value = string.Empty } );
                     countries.Add( new ListItemBag { Text = options.UseCountryAbbreviation ? defaultCountry.Value : defaultCountry.Description, Value = defaultCountry.Value } );
-                    countries.Add( new ListItemBag { Text = "------------------------", Value = "------------------------" } );
+                    countries.Add( new ListItemBag { Text = "------------------------", Value = string.Empty } );
                 }
             }
 
