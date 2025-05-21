@@ -118,16 +118,19 @@ namespace Rock.Tests.Shared
             var tz = GetTestTimeZoneStandard();
             RockDateTime.Initialize( tz );
         }
-            
+
         /// <summary>
-        /// Executes a method in a new thread with the specified culture.
+        /// Executes a method within a thread that has a specific <see cref="System.Globalization.CultureInfo"/>.
+        /// The method returns a result and runs in isolation to avoid polluting the thread pool with culture-specific settings.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="methodFunc">The function to execute</param>
-        /// <param name="cultureName">The standard name of the culture (en-US, de-DE, etc.)</param>
-        /// <returns>typically null</returns>
-        /// <exception cref="AggregateException">This will be thrown if the underlying thread execution fails
-        /// (which should happen when a Lava test fails its assertion.</exception>
+        /// <typeparam name="T">The return type of the method to execute.</typeparam>
+        /// <param name="methodFunc">A function that produces a result.</param>
+        /// <param name="cultureName">The culture name to apply (e.g., "en-US", "de-DE").</param>
+        /// <returns>The result returned by the method after executing within the specified culture context.</returns>
+        /// <remarks>
+        /// This method is useful for ensuring culture-sensitive operations behave as expected, such as parsing or formatting.
+        /// The thread is joined synchronously, and culture is reset to its original state after execution.
+        /// </remarks>
         public static T ExecuteWithCulture<T>( Func<T> methodFunc, string cultureName )
         {
             T result = default( T );
@@ -167,5 +170,56 @@ namespace Rock.Tests.Shared
 
             return result;
         }
+
+        /// <summary>
+        /// Executes an action within a thread that has a specific <see cref="System.Globalization.CultureInfo"/>.
+        /// Captures and rethrows any exceptions that occur inside the action to preserve test behavior.
+        /// </summary>
+        /// <param name="action">The action to execute.</param>
+        /// <param name="cultureName">The culture name to apply (e.g., "en-US", "de-DE").</param>
+        /// <exception cref="Exception">
+        /// Rethrows any exception that occurs inside the thread. Stack trace is preserved if possible.
+        /// </exception>
+        /// <remarks>
+        /// This overload is intended for void-returning methods such as assertions or operations with side effects.
+        /// It ensures that the culture context does not affect other tests by running in an isolated thread.
+        /// </remarks>
+        public static void ExecuteWithCulture( Action action, string cultureName )
+        {
+            Exception caughtException = null;
+
+            var thread = new System.Threading.Thread( () =>
+            {
+                try
+                {
+                    action();
+                }
+                catch ( Exception ex )
+                {
+                    caughtException = ex;
+                }
+            } );
+
+            // We MUST preserve the original CurrentCulture otherwise
+            // this thread will infect the pool and other tests will fail.
+            var originalCulture = thread.CurrentCulture;
+
+            try
+            {
+                thread.CurrentCulture = new System.Globalization.CultureInfo( cultureName );
+                thread.Start();
+                thread.Join();
+
+                if ( caughtException != null )
+                {
+                    throw new Exception( "Exception occurred in culture-specific test thread.", caughtException );
+                }
+            }
+            finally
+            {
+                thread.CurrentCulture = originalCulture;
+            }
+        }
+
     }
 }

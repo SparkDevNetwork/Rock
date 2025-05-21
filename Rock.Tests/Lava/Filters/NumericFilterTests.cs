@@ -539,6 +539,30 @@ Guess 3 was 0.5 from the target number!<br>
                 return null;
             }, clientCulture );
         }
+
+        #region Floor
+
+        /// <summary>
+        /// The Date filter should translate a date input using a standard .NET format string correctly.
+        /// </summary>
+        [DataTestMethod]
+        //[DataRow( "3.1", "server", "en-US", "3" )] // We can't do this because we're not sure what the server culture is.
+        //[DataRow( "3.1", "server", "de-DE", "3" )] // We can't do this because we're not sure what the server culture is.
+        [DataRow( "3.1", "client", "en-US", "3" )]
+        [DataRow( "3.1", "invariant", "de-DE", "3" )]
+        [DataRow( "3.1", "client", "de-DE", "31" )]
+        public void Floor_UsingSetCulture_ProducesCorrectValue( string input, string setCulture, string runAsClientCulture, string expectedResult )
+        {
+            var template = @"{% setculture culture:'" + setCulture + "' %}{{ '" + input + "' | Floor }}{% endsetculture %}";
+
+            TestConfigurationHelper.ExecuteWithCulture( () =>
+            {
+                  TestHelper.AssertTemplateOutput( expectedResult, template );
+            }
+            , runAsClientCulture );
+        }
+
+        #endregion
     }
 
 }
