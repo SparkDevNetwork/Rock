@@ -2861,21 +2861,29 @@ namespace RockWeb.Blocks.Crm
                                         stepToUpdate.Note = UpdateStepNote;
                                     }
 
+                                    bool checkCompletionDate = false;
+
                                     if ( SelectedFields.Contains( FieldNames.StepEndDate ) )
                                     {
                                         stepToUpdate.EndDateTime = UpdateStepEndDate;
+                                        checkCompletionDate = true;
                                     }
 
                                     if ( SelectedFields.Contains( FieldNames.StepStartDate ) )
                                     {
                                         stepToUpdate.StartDateTime = UpdateStepStartDate;
+                                        checkCompletionDate = true;
                                     }
 
                                     if ( SelectedFields.Contains( FieldNames.StepStatus ) && UpdateStepStatusId.HasValue )
                                     {
                                         stepToUpdate.StepStatusId = UpdateStepStatusId;
+                                        checkCompletionDate = true;
+                                    }
 
-                                        var stepStatus = new StepStatusService( rockContext ).Get( UpdateStepStatusId.Value );
+                                    if ( checkCompletionDate && stepToUpdate.StepStatusId.HasValue )
+                                    {
+                                        var stepStatus = new StepStatusService( rockContext ).Get( stepToUpdate.StepStatusId.Value );
                                         if ( !stepStatus.IsCompleteStatus )
                                         {
                                             stepToUpdate.CompletedDateTime = null;
