@@ -46,6 +46,7 @@
     } from "../providers.partial";
     import { ValueProvider } from "../types.partial";
     import {
+        getBorderWrapperCellSelector,
         getBorderWrapperTableSelector,
         getRowComponentHelper,
         numberToStringConverter,
@@ -106,6 +107,19 @@
                         else {
                             el.removeAttribute("data-component-body-width");
                         }
+
+                        const descendantTdElements = props.componentElement.querySelectorAll(getBorderWrapperCellSelector("row"));
+
+                        descendantTdElements.forEach((descendantTdElement) => {
+                            if (isHTMLElement(descendantTdElement)) {
+                                if (value) {
+                                    descendantTdElement.style.maxWidth = value;
+                                }
+                                else {
+                                    descendantTdElement.style.removeProperty("max-width");
+                                }
+                            }
+                        });
                     }
                 }
             }),
