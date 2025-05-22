@@ -59,7 +59,7 @@
                     <div class="row" v-show="imageSourceType === 'image'">
                         <div class="col-sm-6">
                             <DropDownList v-model="imageSize"
-                                          help="Choose how the image is displayed:  Original keeps its size, Scale resizes proportionally, and Crop trims to fit specific dimensions."
+                                          help="Choose how the image is displayed:  Responsive fills the available space, Fixed trims to fit specific dimensions, and Original keeps its size."
                                           :items="imageSizeItems"
                                           label="Image Size"
                                           :showBlankItem="false"
@@ -80,12 +80,22 @@
                         </div>
                     </div>
 
-                    <template v-else-if="imageSize === 'crop'">
+                    <template v-else-if="imageSize === 'responsive'">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <Switch v-model="isHighResEnabled"
+                                        text="Enable High-Res Images"
+                                        @update:modelValue="onIsHighResEnabledUpdated" />
+                            </div>
+                        </div>
+                    </template>
+
+                    <template v-else-if="imageSize === 'fixed'">
                         <div class="row">
                             <div class="col-sm-6">
                                 <NumberBox v-model="imageWidth"
                                            label="Width"
-                                           @update:modelValue="onCropWidthUpdated">
+                                           @update:modelValue="onFixedWidthUpdated">
                                     <template #inputGroupAppend>
                                         <span class="input-group-addon">px</span>
                                     </template>
@@ -95,7 +105,7 @@
                             <div class="col-sm-6">
                                 <NumberBox v-model="imageHeight"
                                            label="Height"
-                                           @update:modelValue="onCropHeightUpdated">
+                                           @update:modelValue="onFixedHeightUpdated">
                                     <template #inputGroupAppend>
                                         <span class="input-group-addon">px</span>
                                     </template>
@@ -169,7 +179,7 @@
     import HorizontalAlignmentTextAlignProperty from "../properties/horizontalAlignmentTextAlignProperty.partial.obs";
     import PaddingProperty from "../properties/paddingProperty.partial.obs";
     import { HorizontalAlignment } from "../types.partial";
-    import { get, getImageComponentHelper, getPaddingWrapperCellSelector, pixelConverter } from "../utils.partial";
+    import { get, getImageComponentHelper, getPaddingWrapperCellSelector, numberToStringConverter, pixelConverter } from "../utils.partial";
     import AssetPicker from "@Obsidian/Controls/Internal/assetPicker.obs";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -185,8 +195,9 @@
     import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
     import { isNullish } from "@Obsidian/Utility/util";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { getGlobalBodyWidthProvider } from "../providers.partial";
 
-    type ImageSize = "original" | "crop" | "scale";
+    type ImageSize = "original" | "fixed" | "scale" | "responsive";
 
     const props = defineProps({
         componentElement: {
@@ -228,6 +239,7 @@
         imgCssWidth: "imgcsswidth",
         imageResizemode: "imageResizemode",
         imageHighRes: "imageHighRes",
+        imageSize: "imageSize",
 
         // Asset keys
         imageAssetstorageproviderid: "imageAssetstorageproviderid",
@@ -242,17 +254,21 @@
         if (imageSourceType.value === "image") {
             return [
                 {
+                    text: "Responsive",
+                    value: get<ImageSize>("responsive")
+                },
+                // {
+                //     text: "Scale",
+                //     value: get<ImageSize>("scale")
+                // },
+                {
+                    text: "Fixed",
+                    value: get<ImageSize>("fixed")
+                },
+                {
                     text: "Original",
                     value: get<ImageSize>("original")
                 },
-                {
-                    text: "Crop",
-                    value: get<ImageSize>("crop")
-                },
-                {
-                    text: "Scale",
-                    value: get<ImageSize>("scale")
-                }
             ];
         }
         else {
@@ -302,7 +318,15 @@
     const isHighResEnabled = ref<boolean>(getIsHighResEnabledFromComponent());
     const emailContentTd = ref<HTMLTableCellElement | null | undefined>(getEmailContentTdFromComponent());
 
-    // #endregion
+    // #endregion Values
+
+    // #region Computed Values
+
+    const globalBodyWidth = computed<number | null | undefined>(() => {
+        return getGlobalBodyWidthProvider(props.componentElement.ownerDocument).value;
+    });
+
+    // #endregion Computed Values
 
     // #region Commands
 
@@ -439,13 +463,16 @@
                     // Clear placeholder first.
                     applyPlaceholderCommand.undo();
 
+                    // Reapply the size since the placeholder command could clear it.
+                    activeSetSizeCommand.execute();
+
                     // Set image src.
                     const params = new URLSearchParams();
                     params.set("isBinaryFile", "T");
                     params.set("guid", fileGuid);
                     params.set("fileName", fileName);
 
-                    if (imageSize.value === "crop") {
+                    if (imageSize.value === "fixed") {
                         const resolutionFactor = isHighResEnabled.value ? 2 : 1;
 
                         if (imageWidth.value) {
@@ -461,6 +488,16 @@
                         }
 
                         params.set("scale", "both");
+                    }
+                    else if (imageSize.value === "responsive") {
+                        const resolutionFactor = isHighResEnabled.value ? 2 : 1;
+
+                        const rowSpecificBodyWidth = numberToStringConverter.toSource(((props.componentElement.closest("[data-component-body-width='true']") ?? null) as HTMLElement | null)?.getAttribute("width") ?? null);
+                        const bodyWidth = rowSpecificBodyWidth ?? globalBodyWidth.value ?? 0;
+
+                        if (bodyWidth) {
+                            params.set("width", `${bodyWidth * resolutionFactor}`);
+                        }
                     }
                     else if (imageSize.value === "scale" && scaleImageWidth.value <= 100) {
                         if (scaleImageWidth.value === 100) {
@@ -566,6 +603,9 @@
                     // Clear placeholder first.
                     applyPlaceholderCommand.undo();
 
+                    // Reapply the size since the placeholder command could clear it.
+                    activeSetSizeCommand.execute();
+
                     imageElement.value.src = assetUrl;
 
                     // Assets always have a width of auto.
@@ -604,12 +644,12 @@
 
     // #endregion Asset Commands
 
-    // Image Size - Crop
+    // Image Size - Fixed
 
-    const setImageSizeCropCommand: Command = {
+    const setImageSizeFixedCommand: Command = {
         execute() {
-            setImageCropWidthCommand.execute();
-            setImageCropHeightCommand.execute();
+            setImageFixedWidthCommand.execute();
+            setImageFixedHeightCommand.execute();
             setImageHighResCommand.execute();
             setImageResizeModeCommand.execute();
         },
@@ -620,17 +660,17 @@
             resizeMode.value = "crop";
 
             // Reset component.
-            setImageCropWidthCommand.undo();
-            setImageCropHeightCommand.undo();
+            setImageFixedWidthCommand.undo();
+            setImageFixedHeightCommand.undo();
             setImageHighResCommand.undo();
             setImageResizeModeCommand.undo();
         }
     };
 
-    const setAssetSizeCropCommand: Command = {
+    const setAssetSizeFixedCommand: Command = {
         execute() {
-            setAssetCropWidthCommand.execute();
-            setAssetCropHeightCommand.execute();
+            setAssetFixedWidthCommand.execute();
+            setAssetFixedHeightCommand.execute();
             setAssetResizeModeCommand.execute();
         },
         undo() {
@@ -640,15 +680,15 @@
             resizeMode.value = "crop";
 
             // Reset component.
-            setAssetCropWidthCommand.undo();
-            setAssetCropHeightCommand.undo();
+            setAssetFixedWidthCommand.undo();
+            setAssetFixedHeightCommand.undo();
             setAssetResizeModeCommand.undo();
         }
     };
 
-    // Image Size - Crop - Width
+    // Image Size - Fixed - Width
 
-    const setImageCropWidthCommand: Command = {
+    const setImageFixedWidthCommand: Command = {
         execute() {
             props.componentElement.dataset[dataAttributeKey.imageWidth] = `${imageWidth.value}`;
 
@@ -681,7 +721,7 @@
         }
     };
 
-    const setAssetCropWidthCommand: Command = {
+    const setAssetFixedWidthCommand: Command = {
         execute() {
             props.componentElement.dataset[dataAttributeKey.imageWidth] = `${imageWidth.value}`;
 
@@ -699,9 +739,9 @@
         }
     };
 
-    // Image Size - Crop - Height
+    // Image Size - Fixed - Height
 
-    const setImageCropHeightCommand: Command = {
+    const setImageFixedHeightCommand: Command = {
         execute() {
             props.componentElement.dataset[dataAttributeKey.imageHeight] = `${imageHeight.value}`;
 
@@ -734,7 +774,7 @@
         }
     };
 
-    const setAssetCropHeightCommand: Command = {
+    const setAssetFixedHeightCommand: Command = {
         execute() {
             props.componentElement.dataset[dataAttributeKey.imageHeight] = `${imageHeight.value}`;
 
@@ -752,7 +792,7 @@
         }
     };
 
-    // Image Size - Crop - High-Res
+    // Image Size - Fixed - High-Res
 
     const setImageHighResCommand: Command = {
         execute() {
@@ -768,7 +808,7 @@
         }
     };
 
-    // Image Size - Crop - Resize Mode
+    // Image Size - Fixed - Resize Mode
 
     const setImageResizeModeCommand: Command = {
         execute() {
@@ -854,6 +894,23 @@
         }
     };
 
+    const setResponsiveWidthCommand: Command = {
+        execute: function (): void {
+            props.componentElement.dataset[dataAttributeKey.imageSize] = "responsive";
+
+            if (imageElement.value) {
+                imageElement.value.style.setProperty("width", "100%");
+            }
+        },
+        undo: function (): void {
+            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageSize);
+
+            if (imageElement.value) {
+                imageElement.value.style.removeProperty("width");
+            }
+        }
+    };
+
     // #endregion Commands
 
     // #region Functions
@@ -928,14 +985,22 @@
     function getImageOrAssetSizeFromComponent(): ImageSize {
         if (props.componentElement.dataset[dataAttributeKey.imageResizemode]) {
             // If there is any resize mode (Cover "crop", Contain "pad", Stretch "stretch"),
-            // then return "crop".
-            return "crop";
+            // then return "fixed".
+            return "fixed";
         }
-        else if (imageElement.value?.src.includes("zoom=") || props.componentElement.dataset[dataAttributeKey.imageScale]) {
-            return "scale";
+        // else if (imageElement.value?.src.includes("zoom=") || props.componentElement.dataset[dataAttributeKey.imageScale]) {
+        //     return "scale";
+        // }
+        else if (imageElement.value?.src
+            && !imageElement.value.src.includes("width=")
+            && !imageElement.value.src.includes("height=")) {
+            // If there is no width or height specified in the URL,
+            // then this is an original-sized image.
+            return "original";
         }
         else {
-            return "original";
+            // Responsive should be the fallback.
+            return "responsive";
         }
     }
 
@@ -1111,22 +1176,26 @@
     function getActiveSetSizeCommand(): Command {
         if (imageSourceType.value === "image") {
             switch (imageSize.value) {
-                case "crop":
-                    return setImageSizeCropCommand;
+                case "fixed":
+                    return setImageSizeFixedCommand;
                 case "scale":
                     return refreshImageMetadataCommand; // Treat as size command
                 case "original":
                     return refreshImageMetadataCommand;
+                case "responsive":
+                    return setResponsiveWidthCommand;
             }
         }
         else if (imageSourceType.value === "asset") {
             switch (imageSize.value) {
-                case "crop":
-                    return setAssetSizeCropCommand;
+                case "fixed":
+                    return setAssetSizeFixedCommand;
                 case "scale":
                     return setAssetScaleWidthCommand; // Treat as size command
                 case "original":
                     return nullCommand;
+                case "responsive":
+                    return setResponsiveWidthCommand;
             }
         }
 
@@ -1158,23 +1227,23 @@
         activeApplyCommand.execute();
     }
 
-    function getCropWidthCommand(): Command {
+    function getFixedWidthCommand(): Command {
         if (imageSourceType.value === "image") {
-            return setImageCropWidthCommand;
+            return setImageFixedWidthCommand;
         }
         else if (imageSourceType.value === "asset") {
-            return setAssetCropWidthCommand;
+            return setAssetFixedWidthCommand;
         }
 
         return nullCommand;
     }
 
-    function getCropHeightCommand(): Command {
+    function getFixedHeightCommand(): Command {
         if (imageSourceType.value === "image") {
-            return setImageCropHeightCommand;
+            return setImageFixedHeightCommand;
         }
         else if (imageSourceType.value === "asset") {
-            return setAssetCropHeightCommand;
+            return setAssetFixedHeightCommand;
         }
 
         return nullCommand;
@@ -1191,13 +1260,13 @@
         return nullCommand;
     }
 
-    function onCropWidthUpdated(): void {
-        getCropWidthCommand().execute();
+    function onFixedWidthUpdated(): void {
+        getFixedWidthCommand().execute();
         renderImageCommand.execute();
     }
 
-    function onCropHeightUpdated(): void {
-        getCropHeightCommand().execute();
+    function onFixedHeightUpdated(): void {
+        getFixedHeightCommand().execute();
         renderImageCommand.execute();
     }
 
