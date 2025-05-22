@@ -1,0 +1,216 @@
+<template>
+    <div class="d-flex align-items-center">
+        <div class="form-control-static mr-1">
+            <span class="">Trigger when</span>
+        </div>
+
+        <Toggle v-model="triggerWhenAll"
+                trueText="All"
+                falseText="Any"
+                btnSize="xs" />
+
+        <div class="form-control-static">
+            <span class="ml-1">of the rules are true:</span>
+        </div>
+    </div>
+
+    <Grid :data="criteriaGridData"
+          keyField="guid"
+          liveUpdates
+          light
+          @addItem="onAddCriteriaRuleClick">
+        <TextColumn name="property"
+                    title="Property"
+                    field="property" />
+
+        <Column name="description"
+                title="Filter Description">
+            <template #format="{ row }">
+                {{ getFilterDescription(row) }}
+            </template>
+        </Column>
+
+        <EditColumn name="edit" @click="onEditCriteriaRuleClick" />
+        <DeleteColumn name="delete" disableConfirmation @click="onDeleteCriteriaRuleClick" />
+    </Grid>
+
+    <Modal v-model="showCriteriaModal"
+           title="Trigger Criteria"
+           saveText="Save"
+           @save="onSaveCriteriaRuleClick">
+        <EditSimpleRule v-model="editCriteriaBag"
+                        :properties="properties" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import EditSimpleRule from "./editSimpleRule.partial.obs";
+    import Grid, { Column, DeleteColumn, EditColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import { EntityChangeSimpleCriteriaBag } from "@Obsidian/ViewModels/Core/Automation/Triggers/entityChangeSimpleCriteriaBag";
+    import { EntityChangeSimpleCriteriaRuleBag } from "@Obsidian/ViewModels/Core/Automation/Triggers/entityChangeSimpleCriteriaRuleBag";
+    import { computed, PropType, ref, watch } from "vue";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { EntityChangeSimpleChangeType } from "@Obsidian/Enums/Core/Automation/Triggers/entityChangeSimpleChangeType";
+
+    const props = defineProps({
+        /**
+         * The JSON string that contains the criteria for the trigger.
+         */
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /**
+         * The list of properties that can be used in the rule.
+         */
+        properties: {
+            type: Array as PropType<string[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void
+    }>();
+
+    // #region Values
+
+    const triggerWhenAll = ref(true);
+    const criteriaData = ref<EntityChangeSimpleCriteriaRuleBag[]>([]);
+
+    const showCriteriaModal = ref(false);
+    const editCriteriaBag = ref<EntityChangeSimpleCriteriaRuleBag | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const criteriaGridData = computed((): GridDataBag => {
+        return { rows: criteriaData.value };
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Sets the values of the trigger based on the model value.
+     */
+    function setValues(): void {
+        const criteria = safeParseJson<EntityChangeSimpleCriteriaBag>(props.modelValue);
+
+        updateRefValue(triggerWhenAll, criteria?.areAllRulesRequired ?? true);
+        updateRefValue(criteriaData, criteria?.rules ?? []);
+    }
+
+    /**
+     * Gets the content of the description column for the grid.
+     *
+     * @param row The grid row to get the description for.
+     *
+     * @returns The friendly description of the filter.
+     */
+    function getFilterDescription(row: EntityChangeSimpleCriteriaRuleBag): string {
+        switch (row.changeType) {
+            case EntityChangeSimpleChangeType.AnyChange:
+                return `Any change`;
+            case EntityChangeSimpleChangeType.HasSpecificValue:
+                return `Has the value '${row.updatedValue ?? ""}'`;
+            case EntityChangeSimpleChangeType.ChangedFromValue:
+                return `Changed from '${row.originalValue ?? ""}'`;
+            case EntityChangeSimpleChangeType.ChangedToValue:
+                return `Changed to '${row.updatedValue ?? ""}'`;
+            case EntityChangeSimpleChangeType.ChangedFromValueToValue:
+                return `Changed from '${row.originalValue ?? ""}' to '${row.updatedValue ?? ""}'`;
+            default:
+                return "No filter set";
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the individual cliks the button at add a new crtieria rule.
+     */
+    async function onAddCriteriaRuleClick(): Promise<void> {
+        editCriteriaBag.value = null;
+        showCriteriaModal.value = true;
+    }
+
+    /**
+     * Called when the individual is ready to save the criteria rule currently
+     * being edited in the modal.
+     */
+    function onSaveCriteriaRuleClick(): void {
+        if (!editCriteriaBag.value) {
+            return;
+        }
+
+        const newData = [...criteriaData.value];
+        const index = newData.findIndex(r => r.guid === editCriteriaBag.value?.guid);
+
+        if (index === -1) {
+            newData.push(editCriteriaBag.value);
+        }
+        else {
+            newData.splice(index, 1, editCriteriaBag.value);
+        }
+
+        criteriaData.value = newData;
+        showCriteriaModal.value = false;
+        editCriteriaBag.value = null;
+    }
+
+    /**
+     * Called when the individual clicks the edit button for a criteria rule.
+     *
+     * @param key The key of the criteria rule to edit.
+     */
+    async function onEditCriteriaRuleClick(key: string): Promise<void> {
+        const item = criteriaData.value.find(r => r.guid === key);
+
+        if (!item) {
+            return;
+        }
+
+        editCriteriaBag.value = { ...item };
+        showCriteriaModal.value = true;
+    }
+
+    /**
+     * Called when the individual clicks the delete button for a criteria rule.
+     *
+     * @param key The key of the criteria rule to delete.
+     */
+    function onDeleteCriteriaRuleClick(key: string): void {
+        const index = criteriaData.value.findIndex(r => r.guid === key);
+
+        if (index >= 0) {
+            criteriaData.value.splice(index, 1);
+        }
+    }
+
+    // #endregion
+
+    watch(() => props.modelValue, () => {
+        setValues();
+    });
+
+    watch([triggerWhenAll, criteriaData], () => {
+        const newValue: EntityChangeSimpleCriteriaBag = {
+            areAllRulesRequired: triggerWhenAll.value,
+            rules: criteriaData.value
+        };
+
+        emit("update:modelValue", JSON.stringify(newValue));
+    });
+
+    setValues();
+</script>

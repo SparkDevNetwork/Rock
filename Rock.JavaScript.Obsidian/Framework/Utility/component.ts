@@ -446,6 +446,48 @@ export const dataViewSelectProps: DataViewSelectProps = {
 
 // #endregion
 
+// #region Dynamic Components
+
+export type StandardDynamicComponentProps = {
+    modelValue: {
+        type: PropType<Record<string, string>>,
+        required: true
+    },
+
+    options: {
+        type: PropType<Record<string, string>>,
+        required: true
+    },
+
+    executeRequest: {
+        type: PropType<(request: Record<string, string>) => Promise<Record<string, string> | null>>,
+        required: true
+    }
+};
+
+/**
+ * The standard props that are available to an instantiated component by the
+ * dynamicComponent.obs component.
+ */
+export const standardDynamicComponentProps: StandardDynamicComponentProps = {
+    modelValue: {
+        type: Object as PropType<Record<string, string>>,
+        required: true
+    },
+
+    options: {
+        type: Object as PropType<Record<string, string>>,
+        required: true
+    },
+
+    executeRequest: {
+        type: Function as PropType<(request: Record<string, string>) => Promise<Record<string, string> | null>>,
+        required: true
+    }
+};
+
+// #endregion
+
 // #region Extended References
 
 /**

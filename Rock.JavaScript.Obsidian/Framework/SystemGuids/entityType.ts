@@ -121,6 +121,10 @@ export const EntityType = {
     AuthenticationPasswordless: "2D037783-09BD-48BA-8C1D-626B0BC82495",
     /** The pin authentication provider */
     AuthenticationPin: "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE",
+    /** The EntityType Guid for Rock.Model.AutomationEvent  */
+    AutomationEvent: "905DE2D9-1EA8-4E59-B0CF-E2BAC8383927",
+    /** The EntityType Guid for Rock.Model.AutomationTrigger  */
+    AutomationTrigger: "89ABFA37-68E5-41B7-B43C-A0CF823DEA61",
     /** The EntityType Guid for Rock.Model.BackgroundCheck  */
     BackgroundCheck: "6D3A2293-BA7E-44D9-B5B3-5B85DA0EECAC",
     /** The guid for the Rock.Model.Badge entity */

@@ -31,6 +31,7 @@ using System.Web;
 using Rock.Bus.Message;
 using Rock.Model;
 using Rock.Net;
+using Rock.Observability;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.UniversalSearch;
@@ -764,6 +765,15 @@ namespace Rock.Data
                 ExecuteAfterCommit( () =>
                 {
                     CallPostSaveHooks( updatedItems );
+
+                    using ( var activity = ObservabilityHelper.StartActivity( "Processing Change Monitors" ) )
+                    {
+                        foreach ( var item in updatedItems )
+                        {
+                            Core.Automation.Triggers.EntityChangeMonitor.ProcessEntity( item );
+                        }
+                    }
+
                     tcsPostSave.SetResult( true );
                 } );
             }

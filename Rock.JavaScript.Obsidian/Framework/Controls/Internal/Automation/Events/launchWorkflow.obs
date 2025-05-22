@@ -1,0 +1,76 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <AutomationEventHeader title="Workflow Launch Settings"
+                           description="Choose the workflow type to launch automatically whenever the event executes."
+                           :mergeFields="props.mergeFields" />
+
+    <div class="row">
+        <div class="col-md-6">
+            <WorkflowTypePicker label="Workflow Type"
+                                v-model="workflowType"
+                                showBlankItem
+                                rules="required" />
+        </div>
+
+        <div class="col-md-6">
+            <TextBox v-model="workflowName"
+                     label="Workflow Name"
+                     help="The optional name to assign to the workflow. If not specified then a default name will be used. <span class='tip tip-lava'></span>" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import AutomationEventHeader from "@Obsidian/Controls/Internal/Automation/automationEventHeader.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { automationEventComponentProps } from "@Obsidian/Core/Core/Automation/component";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, watch } from "vue";
+
+    const enum ConfigurationKey {
+        WorkflowType = "workflowType",
+        WorkflowName = "workflowName",
+    }
+
+    const props = defineProps(automationEventComponentProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string>): void
+    }>();
+
+    // #region Values
+
+    const workflowType = ref<ListItemBag | null>(safeParseJson<ListItemBag>(props.modelValue[ConfigurationKey.WorkflowType]) ?? null);
+    const workflowName = ref(props.modelValue[ConfigurationKey.WorkflowName] ?? "");
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    watch([workflowType, workflowName], () => {
+        const newValues = { ...props.modelValue };
+
+        newValues[ConfigurationKey.WorkflowType] = JSON.stringify(workflowType.value);
+        newValues[ConfigurationKey.WorkflowName] = workflowName.value;
+
+        emit("update:modelValue", newValues);
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(workflowType, safeParseJson<ListItemBag>(props.modelValue[ConfigurationKey.WorkflowType]) ?? null);
+        updateRefValue(workflowName, props.modelValue[ConfigurationKey.WorkflowName] ?? "");
+    });
+</script>

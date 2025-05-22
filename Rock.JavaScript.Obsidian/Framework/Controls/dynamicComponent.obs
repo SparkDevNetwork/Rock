@@ -1,0 +1,149 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="error" alertType="danger">{{ error }}</NotificationBox>
+
+    <LoadingIndicator v-else-if="loading" />
+
+    <component v-else
+               :is="control"
+               :options="definition.options ?? {}"
+               :executeRequest="executeRequest"
+               v-model="internalValue"
+               v-bind="properties" />
+</template>
+
+<script lang="ts" setup>
+    import { Component, markRaw, PropType, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import { DynamicComponentDefinitionBag } from "@Obsidian/ViewModels/Controls/dynamicComponentDefinitionBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { getSecurityGrant, provideSecurityGrant } from "@Obsidian/Utility/block";
+    import { useSuspense } from "@Obsidian/Utility/suspense";
+
+    const props = defineProps({
+        /**
+         * The value that will be edited by the dynamic component.
+         */
+        modelValue: {
+            type: Object as PropType<Record<string, string>>,
+            required: false
+        },
+
+        /**
+         * The dynamic component definition that will be used to load the
+         * component and pass the custom options to it.
+         */
+        definition: {
+            type: Object as PropType<DynamicComponentDefinitionBag>,
+            required: true
+        },
+
+        /**
+         * Additional properties that will be passed to the component.
+         */
+        properties: {
+            type: Object as PropType<Record<string, unknown>>,
+            required: false
+        },
+
+        /**
+         * The function that will be used to send any requests from the
+         * component to the server.
+         */
+        executeRequest: {
+            type: Function as PropType<(request: Record<string, string>, securityGrantToken: string | null) => Promise<Record<string, string> | null>>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: unknown): void
+    }>();
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const securityGrant = getSecurityGrant(props.definition.securityGrantToken);
+    const control = ref<Component | null>(null);
+    const loading = ref(true);
+    const error = ref("");
+
+    provideSecurityGrant(securityGrant);
+
+    const suspense = useSuspense();
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Loads the component from the URL provided in the definition.
+     */
+    async function loadComponent(): Promise<void> {
+        control.value = null;
+        loading.value = true;
+        error.value = "";
+
+        if (!props.definition.url) {
+            error.value = "Could not load the control because no URL was provided";
+            loading.value = false;
+            return;
+        }
+
+        try {
+            const controlComponentModule = await import(props.definition.url);
+            const controlModule = controlComponentModule
+                ? (controlComponentModule.default || controlComponentModule)
+                : null;
+
+            if (controlModule) {
+                control.value = markRaw(controlModule);
+            }
+        }
+        catch (e) {
+            console.error(e);
+            error.value = `Could not load the control for '${props.definition.url}'`;
+        }
+        finally {
+            loading.value = false;
+
+            if (!control) {
+                error.value = `Could not load the control for '${props.definition.url}'`;
+            }
+        }
+    }
+
+    /**
+     * Called when the dynamic component wants to execute a request on the
+     * server. This will call the function provided in the props.
+     *
+     * @param request The request that will be sent to the server.
+     *
+     * @returns The response from the server.
+     */
+    async function executeRequest(request: Record<string, string>): Promise<Record<string, string> | null> {
+        if (!props.executeRequest) {
+            return null;
+        }
+
+        return props.executeRequest(request, securityGrant.token.value);
+    }
+
+    // #endregion
+
+    watch(() => props.definition.securityGrantToken, () => {
+        securityGrant.updateToken(props.definition.securityGrantToken);
+    });
+
+    watch([() => props.definition.url, () => props.definition.options], () => {
+        loadComponent();
+    });
+
+    if (suspense) {
+        suspense.addOperation(loadComponent());
+    }
+    else {
+        loadComponent();
+    }
+</script>

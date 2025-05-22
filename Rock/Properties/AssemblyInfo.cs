@@ -50,6 +50,7 @@ using System.Runtime.InteropServices;
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Jobs" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Bus" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Communication" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Core.Automation" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Financial" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Lava" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Model" )]

@@ -275,6 +275,8 @@
     <Compile Include="v2\Models\CodeGenerated\AuthClientsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\AuthsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\AuthScopesController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\AutomationEventsController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\AutomationTriggersController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\BackgroundChecksController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\BadgesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\BenevolenceRequestDocumentsController.CodeGenerated.cs" />

@@ -68,6 +68,11 @@ namespace Rock.Configuration
         /// <value>The hosting settings.</value>
         public virtual IHostingSettings HostingSettings => _serviceProvider.GetRequiredService<IHostingSettings>();
 
+        /// <summary>
+        /// The service provider that controls the entire application.
+        /// </summary>
+        internal IServiceProvider ServiceProvider => _serviceProvider;
+
         #endregion
 
         #region Constructors

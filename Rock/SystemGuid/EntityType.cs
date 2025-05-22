@@ -2050,5 +2050,15 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.LavaEndpoint"/> 
         /// </summary>
         public const string LAVA_ENDPOINT = "F1BBF7D4-CAFD-450D-A89A-B3312C9738A2";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AutomationEvent"/> 
+        /// </summary>
+        public const string AUTOMATION_EVENT = "905DE2D9-1EA8-4E59-B0CF-E2BAC8383927";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AutomationTrigger"/> 
+        /// </summary>
+        public const string AUTOMATION_TRIGGER = "89ABFA37-68E5-41B7-B43C-A0CF823DEA61";
     }
 }
