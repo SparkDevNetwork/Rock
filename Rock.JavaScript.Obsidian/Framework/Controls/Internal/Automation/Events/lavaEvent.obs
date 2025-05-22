@@ -1,0 +1,70 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <AutomationEventHeader title="Lava Event Settings"
+                           description="Configure the Lava template that will run automatically whenever this event is triggered."
+                           :mergeFields="props.mergeFields" />
+
+    <CodeEditor label="Lava Template"
+                v-model="template"
+                editor="monaco"
+                mode="lava"
+                rules="required" />
+
+    <LavaCommandPicker label="Enabled Lava Commands"
+                       v-model="enabledLavaCommands" />
+</template>
+
+<script setup lang="ts">
+    import AutomationEventHeader from "@Obsidian/Controls/Internal/Automation/automationEventHeader.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";
+    import { automationEventComponentProps } from "@Obsidian/Core/Core/Automation/component";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, watch } from "vue";
+
+    const enum ConfigurationKey {
+        Template = "template",
+        EnabledLavaCommands = "enabledLavaCommands",
+    }
+
+    const props = defineProps(automationEventComponentProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string>): void
+    }>();
+
+    // #region Values
+
+    const template = ref(props.modelValue[ConfigurationKey.Template] ?? "");
+    const enabledLavaCommands = ref(safeParseJson<ListItemBag[]>(props.modelValue[ConfigurationKey.EnabledLavaCommands]) ?? []);
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    watch([template, enabledLavaCommands], () => {
+        const newValues = { ...props.modelValue };
+
+        newValues[ConfigurationKey.Template] = template.value;
+        newValues[ConfigurationKey.EnabledLavaCommands] = JSON.stringify(enabledLavaCommands.value);
+
+        emit("update:modelValue", newValues);
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(template, props.modelValue[ConfigurationKey.Template] ?? "");
+        updateRefValue(enabledLavaCommands, safeParseJson<ListItemBag[]>(props.modelValue[ConfigurationKey.EnabledLavaCommands]) ?? []);
+    });
+</script>

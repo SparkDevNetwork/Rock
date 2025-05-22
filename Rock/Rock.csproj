@@ -788,6 +788,8 @@
     <Compile Include="Core\Automation\AutomationTriggerContainer.cs" />
     <Compile Include="Core\Automation\AutomationValueDefinition.cs" />
     <Compile Include="Core\Automation\Events\LaunchWorkflowExecutor.cs" />
+    <Compile Include="Core\Automation\Events\LavaEvent.cs" />
+    <Compile Include="Core\Automation\Events\LavaEventExecutor.cs" />
     <Compile Include="Core\Automation\Events\LogMessage.cs" />
     <Compile Include="Core\Automation\Events\LaunchWorkflow.cs" />
     <Compile Include="Core\Automation\Events\LogMessageExecutor.cs" />
