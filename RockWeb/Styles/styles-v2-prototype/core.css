@@ -363,6 +363,15 @@ th {
   --focus-state-border: 1px solid var(--color-primary);
   --focus-state-shadow: var(--input-focus-box-shadow);
   --input-border: var(--color-interface-soft);
+  --slider-height: 8px;
+  --slider-bg: var(--color-interface-softer);
+  --slider-progress-bg: var(--color-primary);
+  --slider-handle-offset: 29px;
+  --slider-handle-bg: var(--color-interface-softest);
+  --slider-handle-height: 16px;
+  --slider-handle-bg--hover: var(--color-interface-softest);
+  --slider-handle-border-color: var(--color-interface-soft);
+  --slider-handle-border-color--hover: var(--color-interface-soft);
 }
 @supports (color: color-mix(in srgb, red 50%, white 50%)) {
   :root {
@@ -3980,8 +3989,8 @@ samp {
 code {
   padding: calc(var(--spacing-xsmall) / 2) var(--spacing-xsmall);
   font-size: 90%;
-  color: var(--base-interface-softest);
-  background-color: var(--base-interface-medium);
+  color: #e83e8c;
+  background-color: transparent;
   border-radius: var(--rounded-small);
 }
 
@@ -12997,7 +13006,7 @@ ul.list-group-panel .list-group-item:first-child,
 
 @media (min-width: 992px) {
   .grid-loader {
-    --uib-size: 140px !important;
+    --uib-size: 120px !important;
   }
   .updateprogress-status {
     padding: var(--spacing-xlarge) var(--spacing-xlarge);

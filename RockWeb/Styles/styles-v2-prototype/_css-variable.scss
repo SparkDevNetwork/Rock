@@ -232,6 +232,17 @@
   --focus-state-shadow: var(--input-focus-box-shadow); // it is used by the "Write a note" in someone profile.
   --input-border: var(--color-interface-soft); // it used by CheckinAreas.css. The style is use in page Check-in Configuration in settings.
 
+  // it is used by the range slider (obisidian control gallery "Range Slider").
+  --slider-height: 8px;
+  --slider-bg: var(--color-interface-softer);
+  --slider-progress-bg: var(--color-primary);
+  --slider-handle-offset: 29px;
+  --slider-handle-bg: var(--color-interface-softest);
+  --slider-handle-height: 16px; 
+  --slider-handle-bg--hover: var(--color-interface-softest);
+  --slider-handle-border-color: var(--color-interface-soft);
+  --slider-handle-border-color--hover: var(--color-interface-soft);
+
 
   // Follow the system color.
   @media (prefers-color-scheme: dark) {
