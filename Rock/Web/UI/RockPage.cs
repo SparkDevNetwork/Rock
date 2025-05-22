@@ -2798,7 +2798,7 @@ Sys.Application.add_load(function () {
         /// <returns>An new service scope.</returns>
         private IServiceScope CreateServiceScope()
         {
-            var scope = RockApp.Current.ServiceProvider.CreateScope();
+            var scope = RockApp.Current.CreateScope();
 
             _pageServiceScopes.Add( scope );
 

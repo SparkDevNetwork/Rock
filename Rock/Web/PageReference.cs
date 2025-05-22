@@ -888,7 +888,7 @@ namespace Rock.Web
             }
 
             var currentParentPages = initialPage.GetPageHierarchy();
-            using ( var scope = RockApp.Current.ServiceProvider.CreateScope() )
+            using ( var scope = RockApp.Current.CreateScope() )
             {
                 var rockContext = scope.ServiceProvider.GetService<RockContext>();
 

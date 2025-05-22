@@ -367,7 +367,7 @@ namespace Rock.Rest
             config.Services.Replace( typeof( IHttpControllerActivator ), new RockDependencyControllerActivator() );
 
             // Add a new message handler that will create scopes for each request.
-            config.MessageHandlers.Add( new ServiceScopeHandler( RockApp.Current.ServiceProvider ) );
+            config.MessageHandlers.Add( new ServiceScopeHandler( RockApp.Current ) );
         }
     }
 }
