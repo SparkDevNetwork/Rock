@@ -153,7 +153,7 @@ namespace RockWeb
                         context.Response.ContentType = mimeType;
 
                         // If extra query string params are passed in and it isn't an SVG file, assume resize is needed
-                        if ( ShouldResizeImage( mimeType, fileContents, context ) )
+                        if ( ShouldResizeImage( mimeType, fileContents, fileContents.Length, context ) )
                         {
                             using ( var resizedStream = GetResized( context.Request.QueryString, fileContents ) )
                             {
@@ -380,7 +380,7 @@ namespace RockWeb
                     if ( fileContent != null )
                     {
                         // Determine if we should resize the image.
-                        if ( ShouldResizeImage( binaryFile.MimeType, fileContent, context ) )
+                        if ( ShouldResizeImage( binaryFile.MimeType, fileContent, binaryFile.FileSize, context ) )
                         {
                             // if it isn't an SVG file, do a Resize
                             if ( binaryFile.MimeType != "image/svg+xml" )
@@ -466,7 +466,16 @@ namespace RockWeb
             }
         }
 
-        private bool ShouldResizeImage( string mimeType, Stream stream, HttpContext context)
+        /// <summary>
+        /// Determines if the image should be resized based on various checks
+        /// and parameters.
+        /// </summary>
+        /// <param name="mimeType">The known mime type of <paramref name="stream"/>.</param>
+        /// <param name="stream">The stream that contains the image data.</param>
+        /// <param name="fileSize">If the size of the content is already known then it should be passed here; otherwise pass <c>null</c>.</param>
+        /// <param name="context">The current context for this request.</param>
+        /// <returns><c>true</c> if the image should be resized; otherwise <c>false</c>.</returns>
+        private bool ShouldResizeImage( string mimeType, Stream stream, long? fileSize, HttpContext context)
         {
             // Force "image/tiff" to get resized so that it gets converted into a jpg (browsers don't like tiffs)
             if ( mimeType == "image/tiff" )
@@ -495,7 +504,19 @@ namespace RockWeb
             }
 
             // Large gifs over 10MB will be put through the optimization. This will strip the animation but that's arguably a good thing.
-            if ( stream.Length > 10 * 1024 * 1024 )
+            if ( !fileSize.HasValue )
+            {
+                try
+                {
+                    fileSize = stream.Length;
+                }
+                catch ( NotSupportedException )
+                {
+                    fileSize = null;
+                }
+            }
+
+            if ( fileSize.HasValue && fileSize.Value > 10 * 1024 * 1024 )
             {
                 return true;
             }
