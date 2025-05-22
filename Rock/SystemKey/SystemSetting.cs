@@ -438,5 +438,10 @@ namespace Rock.SystemKey
         /// Channel Type-scoped Stream chat permission grants.
         /// </summary>
         public const string CHAT_STREAM_GRANTS_CHANNEL_TYPE_SCOPED = "core_ChatStreamGrantsChannelTypeScoped";
+
+        /// <summary>
+        /// The countries that are globally restricted from accessing Rock.
+        /// </summary>
+        public const string COUNTRIES_RESTRICTED_FROM_ACCESSING = "core_CountriesRestrictedFromAccessing";
     }
 }

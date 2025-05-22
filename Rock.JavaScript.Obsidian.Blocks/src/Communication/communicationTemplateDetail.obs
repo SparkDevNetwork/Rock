@@ -45,6 +45,7 @@
                 <div class="col-md-3">
                     <CategoryPicker v-model="category"
                                     :disabled="isSaving"
+                                    :entityTypeGuid="EntityType.CommunicationTemplate"
                                     label="Category" />
                 </div>
 
@@ -159,12 +160,12 @@
 
                 <div class="row" v-if="!config.isEditRestricted">
                     <div class="col-md-6">
-                        <ImageUploader v-model="currentAttachment"
-                                       :binaryFileTypeGuid="config.attachmentsBinaryFileTypeGuid"
-                                       :disabled="isSaving"
-                                       label="Attachments"
-                                       :uploadAsTemporary="true"
-                                       @update:modelValue="onAttachmentAdded" />
+                        <FileUploader v-model="currentAttachment"
+                                      :binaryFileTypeGuid="config.attachmentsBinaryFileTypeGuid"
+                                      :disabled="isSaving"
+                                      label="Attachments"
+                                      :uploadAsTemporary="true"
+                                      @update:modelValue="onAttachmentAdded" />
 
                         <div class="attachment">
                             <ul class="attachment-content">
@@ -524,6 +525,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import EmailEditor, { GetHtmlRequest } from "@Obsidian/Controls/emailEditor";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import KeyValueList from "@Obsidian/Controls/keyValueList.obs";

@@ -42,7 +42,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Achievements" )]
     [Description( "Displays the details of the given attempt for editing." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

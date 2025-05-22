@@ -1032,7 +1032,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
         /// <summary>
         /// Verifies that the PIN code is valid and can be used. This is used
-        /// by the UI to perform the initial login step to the admins creen.
+        /// by the UI to perform the initial login step to the admins screen.
         /// </summary>
         /// <param name="pinCode">The PIN code to validate.</param>
         /// <returns>A 200-OK status if the PIN code was valid.</returns>
@@ -1041,7 +1041,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         {
             var director = new CheckInDirector( RockContext );
 
-            if ( !director.TryAuthenticatePin( pinCode, out var errorMessage ) )
+            if ( !director.TryAuthenticatePin( pinCode, out var errorMessage, true ) )
             {
                 return ActionBadRequest( errorMessage );
             }

@@ -245,9 +245,10 @@
                         <asp:Panel ID="pnlAddForm" runat="server" Visible="false">
                             <div class="row">
                                 <div class="col-xs-12 col-md-9 col-lg-8">
-                                    <Rock:DataTextBox ID="tbFormName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" Help="The internal name of the form you are creating. This name will not be displayed when the form is not being shown." />
+                                    <Rock:DataTextBox ID="tbFormName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" Help="The internal name of the form you are creating. This name will not be displayed when the form is not being shown." AutoPostBack="true" OnTextChanged="tbFormName_TextChanged" />
                                     <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" Help="An internal description of what the form will be used for." />
                                     <Rock:RockDropDownList ID="ddlTemplate" Label="Template" runat="server" Help="An optional template to use that provides pre-configured settings." />
+                                    <Rock:DataTextBox ID="tbSlug" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Slug" Help="Unique identifier for this workflow type. Changing this may affect links and integrations." AutoPostBack="true" OnTextChanged="tbSlug_TextChanged" Required="true" />
                                     <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" Label="Category" EntityTypeName="Rock.Model.WorkflowType" />
                                 </div>
                             </div>
@@ -281,14 +282,23 @@
                     </div>
                     <Rock:ModalDialog ID="mdLinkToFormModal" runat="server" Title="Link To Form" CancelLinkVisible="false" OnSaveClick="mdLinkToFormModal_SaveClick" SaveButtonText="Close" >
                         <Content>
-                            <h3>Select a Page for Form Link</h3>
-                            <p>Choose a page from the list below to generate a link for the form. Once selected, you can copy and use the link as needed.</p>
+                            <div class="well no-border">
+                                <h4 class="mb-1">Select A Page For Form Link</h4>
+                                <p class="text-muted text-sm">Choose a page from the list below to generate a link for the form. Once selected, you can copy and use the link as needed.</p>
+                            </div>
+
                             <Rock:Grid ID="gPages" runat="server" DisplayType="Light" RowItemText="Page">
                                 <Columns>
-                                    <Rock:RockBoundField DataField="Name" HeaderText="Page Name" />
-                                    <Rock:RockBoundField DataField="Site" HeaderText="Site" />
-                                    <Rock:RockBoundField DataField="Route" HeaderText="Route" />
-                                    <Rock:RockTemplateFieldUnselected>
+                                    <Rock:RockTemplateField HeaderText="Link" ItemStyle-CssClass="w-100">
+                                        <ItemTemplate>
+                                            <div>
+                                                <h5 class="mb-1"><%# Eval( "SiteAndPage" ) %></h5>
+                                                <p class="text-muted text-sm"><%# Eval( "FriendlyRouteUrl" ) %></p>
+                                            </div>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+
+                                    <Rock:RockTemplateFieldUnselected ItemStyle-CssClass="align-middle">
                                         <ItemTemplate>
                                             <button class="btn btn-default js-copy-clipboard"
                                                     data-toggle="tooltip"

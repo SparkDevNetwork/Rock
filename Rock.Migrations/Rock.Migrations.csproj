@@ -100,6 +100,55 @@
     <Compile Include="Migrations\202504151751340_CodeGenerated_20250415.Designer.cs">
       <DependentUpon>202504151751340_CodeGenerated_20250415.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202504222122021_AddRecordSource.cs" />
+    <Compile Include="Migrations\202504222122021_AddRecordSource.Designer.cs">
+      <DependentUpon>202504222122021_AddRecordSource.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport.cs" />
+    <Compile Include="Migrations\202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport.Designer.cs">
+      <DependentUpon>202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport.cs</DependentUpon>
+    </Compile>
+    <Content Include="Migrations\202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport_GenerateWorkflowTypeSlugs.sql" />
+    <Compile Include="Migrations\202504291730237_Rollup_20250429.cs" />
+    <Compile Include="Migrations\202504291730237_Rollup_20250429.Designer.cs">
+      <DependentUpon>202504291730237_Rollup_20250429.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202504291802180_CodeGenerated_20250429.cs" />
+    <Compile Include="Migrations\202504291802180_CodeGenerated_20250429.Designer.cs">
+      <DependentUpon>202504291802180_CodeGenerated_20250429.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202505021623060_AddCommunicationSummaryAndImproveExistingIndex.cs" />
+    <Compile Include="Migrations\202505021623060_AddCommunicationSummaryAndImproveExistingIndex.Designer.cs">
+      <DependentUpon>202505021623060_AddCommunicationSummaryAndImproveExistingIndex.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202505051814300_AlterWorkflowTypeSlugAsNullable.cs" />
+    <Compile Include="Migrations\202505051814300_AlterWorkflowTypeSlugAsNullable.Designer.cs">
+      <DependentUpon>202505051814300_AlterWorkflowTypeSlugAsNullable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202505072133213_DeleteGroupLocationHistoricalSchedule.cs" />
+    <Compile Include="Migrations\202505072133213_DeleteGroupLocationHistoricalSchedule.Designer.cs">
+      <DependentUpon>202505072133213_DeleteGroupLocationHistoricalSchedule.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202505072235453_AddLavaApplications.cs" />
+    <Compile Include="Migrations\202505072235453_AddLavaApplications.Designer.cs">
+      <DependentUpon>202505072235453_AddLavaApplications.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202505082134400_AddChatGroupAndGroupTypeProperties.cs" />
+    <Compile Include="Migrations\202505082134400_AddChatGroupAndGroupTypeProperties.Designer.cs">
+      <DependentUpon>202505082134400_AddChatGroupAndGroupTypeProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202505131801097_Rollup_20250513.cs" />
+    <Compile Include="Migrations\202505131801097_Rollup_20250513.Designer.cs">
+      <DependentUpon>202505131801097_Rollup_20250513.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202505131934386_CodeGenerated_20250513.cs" />
+    <Compile Include="Migrations\202505131934386_CodeGenerated_20250513.Designer.cs">
+      <DependentUpon>202505131934386_CodeGenerated_20250513.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202505162026334_AddIsBeaconMonitoringEnabledToPersonalDevice.cs" />
+    <Compile Include="Migrations\202505162026334_AddIsBeaconMonitoringEnabledToPersonalDevice.Designer.cs">
+      <DependentUpon>202505162026334_AddIsBeaconMonitoringEnabledToPersonalDevice.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.Designer.cs">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>
@@ -2628,6 +2677,42 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202504151751340_CodeGenerated_20250415.resx">
       <DependentUpon>202504151751340_CodeGenerated_20250415.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202504222122021_AddRecordSource.resx">
+      <DependentUpon>202504222122021_AddRecordSource.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport.resx">
+      <DependentUpon>202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202504291730237_Rollup_20250429.resx">
+      <DependentUpon>202504291730237_Rollup_20250429.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202504291802180_CodeGenerated_20250429.resx">
+      <DependentUpon>202504291802180_CodeGenerated_20250429.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202505021623060_AddCommunicationSummaryAndImproveExistingIndex.resx">
+      <DependentUpon>202505021623060_AddCommunicationSummaryAndImproveExistingIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202505051814300_AlterWorkflowTypeSlugAsNullable.resx">
+      <DependentUpon>202505051814300_AlterWorkflowTypeSlugAsNullable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202505072133213_DeleteGroupLocationHistoricalSchedule.resx">
+      <DependentUpon>202505072133213_DeleteGroupLocationHistoricalSchedule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202505072235453_AddLavaApplications.resx">
+      <DependentUpon>202505072235453_AddLavaApplications.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202505082134400_AddChatGroupAndGroupTypeProperties.resx">
+      <DependentUpon>202505082134400_AddChatGroupAndGroupTypeProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202505131801097_Rollup_20250513.resx">
+      <DependentUpon>202505131801097_Rollup_20250513.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202505131934386_CodeGenerated_20250513.resx">
+      <DependentUpon>202505131934386_CodeGenerated_20250513.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202505162026334_AddIsBeaconMonitoringEnabledToPersonalDevice.resx">
+      <DependentUpon>202505162026334_AddIsBeaconMonitoringEnabledToPersonalDevice.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.resx">
       <DependentUpon>202503251838152_AddHistoryLoginModel.cs</DependentUpon>

@@ -174,6 +174,7 @@ namespace Rock.Model
             target.PaymentReminderFromName = source.PaymentReminderFromName;
             target.PaymentReminderSubject = source.PaymentReminderSubject;
             target.PaymentReminderTimeSpan = source.PaymentReminderTimeSpan;
+            target.RegistrantRecordSourceValueId = source.RegistrantRecordSourceValueId;
             target.RegistrantsSameFamily = source.RegistrantsSameFamily;
             target.RegistrantTerm = source.RegistrantTerm;
             target.RegistrantWorkflowTypeId = source.RegistrantWorkflowTypeId;

@@ -764,6 +764,13 @@ namespace RockWeb
         {
             try
             {
+                // Close out jobs infrastructure if running under IIS
+                bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
+                if ( runJobsInContext )
+                {
+                    ServiceJobService.ShutdownQuartzScheduler();
+                }
+
                 // Log the reason that the application end was fired
                 var shutdownReason = System.Web.Hosting.HostingEnvironment.ShutdownReason;
 
@@ -783,13 +790,6 @@ namespace RockWeb
                 var shutdownMessage = $"Application Ended: {shutdownReason} (App PID: {Rock.WebFarm.RockWebFarm.ProcessId}-{AppDomain.CurrentDomain.Id})";
                 RockApplicationStartupHelper.ShowDebugTimingMessage( shutdownMessage );
                 RockApplicationStartupHelper.LogShutdownMessage( shutdownMessage );
-
-                // Close out jobs infrastructure if running under IIS
-                bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
-                if ( runJobsInContext )
-                {
-                    ServiceJobService.ShutdownQuartzScheduler();
-                }
 
                 // Process the transaction queue
                 DrainTransactionQueue();

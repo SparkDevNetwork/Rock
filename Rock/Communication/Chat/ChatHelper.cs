@@ -51,18 +51,6 @@ namespace Rock.Communication.Chat
     [RockInternal( "17.1", true )]
     public class ChatHelper : IDisposable
     {
-        #region Keys
-
-        /// <summary>
-        /// Attribute keys for Rock groups.
-        /// </summary>
-        internal static class GroupAttributeKey
-        {
-            public const string AvatarImage = "AvatarImage";
-        }
-
-        #endregion Keys
-
         #region Fields
 
         /// <summary>
@@ -1244,7 +1232,7 @@ namespace Rock.Communication.Chat
                     bool HasChannelChanged( ChatChannel lastSyncedChannel, ChatChannel currentChannel )
                     {
                         return lastSyncedChannel.Name != currentChannel.Name
-                            || lastSyncedChannel.AvatarImageUrl != currentChannel.AvatarImageUrl
+                            || lastSyncedChannel.AvatarUrl != currentChannel.AvatarUrl
                             || lastSyncedChannel.IsLeavingAllowed != currentChannel.IsLeavingAllowed
                             || lastSyncedChannel.IsPublic != currentChannel.IsPublic
                             || lastSyncedChannel.IsAlwaysShown != currentChannel.IsAlwaysShown
@@ -3337,24 +3325,30 @@ namespace Rock.Communication.Chat
 
             using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Get Rock Chat Groups for Group Queryable" ) )
             {
-                // Get all groups matching the provided query, along with their chat-specific attributes.
-                var groups = groupQry.AsNoTracking().ToList();
-                groups.LoadFilteredAttributes( a => a.Key == GroupAttributeKey.AvatarImage );
-
-                return groups
+                // Get all groups matching the provided query.
+                return groupQry
+                    .Select( g =>
+                        new
+                        {
+                            Group = g,
+                            AvatarBinaryFileGuid = g.ChatChannelAvatarBinaryFile != null
+                                ? g.ChatChannelAvatarBinaryFile.Guid
+                                : ( Guid? ) null
+                        }
+                    )
+                    .AsEnumerable() // Materialize the query.
                     .Select( g =>
                     {
-                        var groupId = g.Id;
-                        var groupTypeId = g.GroupTypeId;
+                        var groupId = g.Group.Id;
+                        var groupTypeId = g.Group.GroupTypeId;
 
-                        var savedChatChannelKey = g.ChatChannelKey;
+                        var savedChatChannelKey = g.Group.ChatChannelKey;
                         var runtimeChatChannelKey = GetChatChannelKey( groupId, savedChatChannelKey );
 
-                        var avatarImageUrl = string.Empty;
-                        var avatarImageGuid = g.GetAttributeValue( GroupAttributeKey.AvatarImage ).AsGuidOrNull();
-                        if ( avatarImageGuid.HasValue )
+                        var avatarUrl = string.Empty;
+                        if ( g.AvatarBinaryFileGuid.HasValue )
                         {
-                            avatarImageUrl = $"{PublicApplicationRootUrl}GetImage.ashx?guid={avatarImageGuid.Value}&maxwidth=120&maxheight=120";
+                            avatarUrl = $"{PublicApplicationRootUrl}GetImage.ashx?guid={g.AvatarBinaryFileGuid.Value}&maxwidth=120&maxheight=120";
                         }
 
                         return new RockChatGroup
@@ -3364,14 +3358,15 @@ namespace Rock.Communication.Chat
                             ChatChannelTypeKey = GetChatChannelTypeKey( groupTypeId ),
                             ChatChannelKey = runtimeChatChannelKey,
                             ShouldSaveChatChannelKeyInRock = savedChatChannelKey != runtimeChatChannelKey,
-                            Name = g.Name,
-                            AvatarImageUrl = avatarImageUrl,
-                            CampusId = g.CampusId,
-                            IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
-                            IsPublic = g.GetIsChatChannelPublic(),
-                            IsAlwaysShown = g.GetIsChatChannelAlwaysShown(),
-                            IsChatEnabled = g.GetIsChatEnabled(),
-                            IsChatChannelActive = g.GetIsChatChannelActive()
+                            Name = g.Group.Name,
+                            AvatarUrl = avatarUrl,
+                            CampusId = g.Group.CampusId,
+                            IsLeavingAllowed = g.Group.GetIsLeavingChatChannelAllowed(),
+                            IsPublic = g.Group.GetIsChatChannelPublic(),
+                            IsAlwaysShown = g.Group.GetIsChatChannelAlwaysShown(),
+                            ChatNotificationMode = g.Group.GetChatPushNotificationMode(),
+                            IsChatEnabled = g.Group.GetIsChatEnabled(),
+                            IsChatChannelActive = g.Group.GetIsChatChannelActive()
                         };
                     } )
                     .ToList();
@@ -3429,11 +3424,12 @@ namespace Rock.Communication.Chat
                     rockChatGroup.ChatChannelKey = dbRockChatGroup.ChatChannelKey;
                     rockChatGroup.ShouldSaveChatChannelKeyInRock = dbRockChatGroup.ShouldSaveChatChannelKeyInRock;
                     rockChatGroup.Name = dbRockChatGroup.Name;
-                    rockChatGroup.AvatarImageUrl = dbRockChatGroup.AvatarImageUrl;
+                    rockChatGroup.AvatarUrl = dbRockChatGroup.AvatarUrl;
                     rockChatGroup.CampusId = dbRockChatGroup.CampusId;
                     rockChatGroup.IsLeavingAllowed = dbRockChatGroup.IsLeavingAllowed;
                     rockChatGroup.IsPublic = dbRockChatGroup.IsPublic;
                     rockChatGroup.IsAlwaysShown = dbRockChatGroup.IsAlwaysShown;
+                    rockChatGroup.ChatNotificationMode = dbRockChatGroup.ChatNotificationMode;
                     rockChatGroup.IsChatEnabled = dbRockChatGroup.IsChatEnabled;
                     rockChatGroup.IsChatChannelActive = dbRockChatGroup.IsChatChannelActive;
                 }
@@ -3505,6 +3501,42 @@ namespace Rock.Communication.Chat
             return rockChatGroup != null
                 ? ChatProvider.GetQueryableChatChannelKey( rockChatGroup )
                 : string.Empty;
+        }
+
+        /// <summary>
+        /// Resolves a StreamChat-compatible channel key from the provided identifier string.
+        /// Attempts to interpret the input as a Rock group identifier (ID, IdKey, or GUID), and if found,
+        /// converts it to the corresponding StreamChat channel key. If no match is found, the original
+        /// identifier is returned as-is.
+        /// </summary>
+        /// <param name="channelIdentifier">
+        /// A string representing either a Rock group ID, IdKey, GUID, or a direct StreamChat channel key.
+        /// </param>
+        /// <param name="allowIntegerIdentifier">
+        /// A flag indicating whether numeric identifiers should be considered valid Rock group IDs
+        /// during resolution. If false, only IdKeys and GUIDs will be matched.
+        /// </param>
+        /// <returns>
+        /// The resolved StreamChat-compatible channel key, or the original identifier if it does not
+        /// map to a known Rock group.
+        /// </returns>
+        /// <remarks>
+        /// This method is useful when supporting both Rock-integrated group chat and direct StreamChat channel usage.
+        /// </remarks>
+        internal string GetQueryableChatChannelKey( string channelIdentifier, bool allowIntegerIdentifier = false )
+        {
+            if( channelIdentifier.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            var groupId = GroupCache.Get( channelIdentifier, allowIntegerIdentifier )?.Id;
+            if( groupId.HasValue )
+            {
+                return GetQueryableChatChannelKey( groupId.Value );
+            }
+
+            return channelIdentifier;
         }
 
         /// <summary>
@@ -3763,24 +3795,18 @@ namespace Rock.Communication.Chat
                 ? rockChatGroup.Name
                 : null;
 
-            // Hard-code chat notification mode based on the parent group type.
-            // We'll improve this logic in a future version of Rock.
-            var chatNotificationMode = rockChatGroup.GroupTypeId == ChatSharedChannelGroupTypeId
-                ? ChatNotificationMode.MentionsAndReplies
-                : ChatNotificationMode.AllMessages;
-
             return new ChatChannel
             {
                 Key = key,
                 ChatChannelTypeKey = GetChatChannelTypeKey( rockChatGroup.GroupTypeId ),
                 QueryableKey = ChatProvider.GetQueryableChatChannelKey( rockChatGroup ),
                 Name = name,
-                AvatarImageUrl = rockChatGroup.AvatarImageUrl,
+                AvatarUrl = rockChatGroup.AvatarUrl,
                 CampusId = rockChatGroup.CampusId,
                 IsLeavingAllowed = rockChatGroup.IsLeavingAllowed,
                 IsPublic = rockChatGroup.IsPublic,
                 IsAlwaysShown = rockChatGroup.IsAlwaysShown,
-                ChatNotificationMode = chatNotificationMode,
+                ChatNotificationMode = rockChatGroup.ChatNotificationMode,
                 IsActive = rockChatGroup.IsChatChannelActive
             };
         }

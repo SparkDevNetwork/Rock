@@ -36,6 +36,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Cms.Utm;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Logging;
@@ -1201,6 +1202,11 @@ namespace Rock.Web.UI
                 {
                     /* At this point, we know the Person (or NULL person) is authorized to View the page */
 
+                    RecordSourceHelper.TrySetRecordSourceSessionCookie( ( cookieName, cookieValue ) =>
+                    {
+                        AddOrUpdateCookie( new HttpCookie( cookieName, cookieValue ) );
+                    } );
+
                     if ( Site.EnableVisitorTracking )
                     {
                         bool isLoggingIn = this.PageId == Site.LoginPageId;
@@ -1575,6 +1581,20 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-init", script, true );
                         }
                     }
+
+                    var colorModeScript = @"
+(function initializeColorMode() {
+    let attributeName = ""theme""
+    var htmlElement = document.documentElement;
+
+    if ( localStorage.getItem(attributeName) != null ) {
+        const value = localStorage.getItem(attributeName);
+        htmlElement.setAttribute(attributeName, value);
+    }
+})();
+";
+                    ClientScript.RegisterStartupScript( this.Page.GetType(), "color-mode-init", colorModeScript, true );
+
 
                     /*
                      * 2020-06-17 - JH
@@ -5095,6 +5115,15 @@ Sys.Application.add_load(function () {
             if ( _lazyServiceProvider.Value.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
             {
                 internalAccessor.RockRequestContext = RequestContext;
+            }
+
+            if ( RequestContext.IsClientForbidden( _pageCache ) )
+            {
+                context.Response.StatusCode = ( int ) System.Net.HttpStatusCode.Forbidden;
+                context.Response.SuppressContent = true;
+                context.ApplicationInstance.CompleteRequest();
+
+                return null;
             }
 
             return AsyncPageBeginProcessRequest( context, cb, extraData );

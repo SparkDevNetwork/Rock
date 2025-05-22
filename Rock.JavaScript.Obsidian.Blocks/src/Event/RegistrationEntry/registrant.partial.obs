@@ -76,7 +76,7 @@
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
     import { RegistrantsSameFamily } from "@Obsidian/Enums/Event/registrantsSameFamily";
     import { RegistrationFieldSource } from "@Obsidian/Enums/Event/registrationFieldSource";
     import { useStore } from "@Obsidian/PageState";
@@ -368,7 +368,7 @@
             .filter(r => r.personGuid && r.personGuid !== props.currentRegistrant.personGuid)
             .map(r => r.personGuid);
 
-        const familyMembers =  viewModel.value.familyMembers
+        const familyMembers = viewModel.value.familyMembers
             ?.filter(fm => fm.guid && !usedFamilyMemberGuids.includes(fm.guid))
             ?.map(fm => ({
                 text: fm.fullName,
@@ -382,9 +382,9 @@
         }
 
         let newPersonOptions = {
-                text: newPersonOptionText,
-                value: null
-            };
+            text: newPersonOptionText,
+            value: null
+        };
 
         return [...familyMembers, newPersonOptions];
     });

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,8 +15,16 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+
+using Rock.Data;
+using Rock.Net;
+
+using Rock.ViewModels.Utility;
+
+using Rock.Web.Cache;
 
 namespace Rock.Reporting.DataFilter.Person
 {
@@ -26,7 +34,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people that are associated with any of the selected active campuses." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Active Campuses Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "8734B837-D689-4EE9-97FB-91701061897C")]
+    [Rock.SystemGuid.EntityTypeGuid( "8734B837-D689-4EE9-97FB-91701061897C" )]
     public class CampusesActiveFilter : CampusesFilter
     {
         #region Properties
@@ -71,5 +79,37 @@ namespace Rock.Reporting.DataFilter.Person
         }
 
         #endregion
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var result = new Dictionary<string, string>();
+
+            result.AddOrReplace( "multiple", "True" );
+            result.AddOrReplace( "label", CampusPickerLabel );
+            result.AddOrReplace( "includeInactive", IncludeInactive.ToTrueFalse() );
+
+            if ( selection.IsNotNullOrWhiteSpace() )
+            {
+                var selectionValues = selection.Split( '|' );
+                var campuses = new List<ListItemBag>();
+                if ( selectionValues.Length >= 1 )
+                {
+                    var campusGuidList = selectionValues[0].Split( ',' ).AsGuidList();
+                    foreach ( var campusGuid in campusGuidList )
+                    {
+                        var campus = CampusCache.Get( campusGuid );
+                        if ( campus != null )
+                        {
+                            campuses.Add( new ListItemBag { Text = campus.Name, Value = campus.Guid.ToString() } );
+                        }
+                    }
+                }
+
+                result.AddOrReplace( "campus", campuses.ToCamelCaseJson( false, true ) );
+            }
+
+            return result;
+        }
     }
 }

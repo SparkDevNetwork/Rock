@@ -504,7 +504,7 @@ namespace Rock.Rest.v2
                 {
                     countries.Add( new ListItemBag { Text = "Countries", Value = string.Empty } );
                     countries.Add( new ListItemBag { Text = options.UseCountryAbbreviation ? defaultCountry.Value : defaultCountry.Description, Value = defaultCountry.Value } );
-                    countries.Add( new ListItemBag { Text = "------------------------", Value = "------------------------" } );
+                    countries.Add( new ListItemBag { Text = "------------------------", Value = string.Empty } );
                 }
             }
 
@@ -1777,10 +1777,6 @@ namespace Rock.Rest.v2
             {
                 fileList.AddRange( Directory.GetFiles( physicalFolder, filter ).OrderBy( a => a ).ToList() );
             }
-
-            var dir = new DirectoryInfo( physicalFolder );
-            var fileInfoList = dir.GetFiles();
-
 
             foreach ( var filePath in fileList )
             {
@@ -3307,6 +3303,67 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Data Filter
+
+        /// <summary>
+        /// Gets the formatted string that describes the data filter from the
+        /// selection values.
+        /// </summary>
+        /// <param name="options">The options that describe the filter and selection.</param>
+        /// <returns>A string of text.</returns>
+        [HttpPost]
+        [Route( "DataFilterFormatSelection" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( string ) )]
+        [Rock.SystemGuid.RestActionGuid( "149fcd94-cd27-4017-9d4b-a1bc39e2d575" )]
+        public IActionResult DataFilterFormatSelection( [FromBody] DataFilterFormatSelectionOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var componentData = options.ComponentData.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+
+                if ( options.EntityTypeGuid == Guid.Empty || options.FilterTypeGuid == Guid.Empty )
+                {
+                    return BadRequest( "Invalid request." );
+                }
+
+                var filterEntityType = EntityTypeCache.Get( options.FilterTypeGuid, rockContext );
+                var entityType = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
+
+                if ( filterEntityType == null )
+                {
+                    return BadRequest( "Invalid request." );
+                }
+
+                // We have to check access on the EntityType record because the
+                // component is not an IEntity so it will not work.
+                if ( !grant.IsAccessGranted( filterEntityType, Security.Authorization.VIEW ) )
+                {
+                    return BadRequest( "Security grant token is not valid." );
+                }
+
+                var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( filterEntityType.Name );
+
+                if ( filterComponent == null )
+                {
+                    return BadRequest( "Invalid request." );
+                }
+
+                if ( !filterComponent.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return BadRequest( "Not authorized to access this filter." );
+                }
+
+                var selection = filterComponent.GetSelectionFromObsidianComponentData( entityType.GetEntityType(), componentData, rockContext, RockRequestContext );
+
+                return Ok( filterComponent.FormatSelection( entityType.GetEntityType(), selection ) );
+            }
+        }
+
+        #endregion
+
         #region Data View Picker
 
         /// <summary>
@@ -3767,13 +3824,13 @@ namespace Rock.Rest.v2
 
                     emailSectionService.Add( emailSection );
                 }
-                
+
                 var categoryGuid = options.Category?.Value.AsGuidOrNull();
                 var category = categoryGuid.HasValue ? new CategoryService( rockContext ).Get( categoryGuid.Value ) : null;
 
                 var thumbnailBinaryFileGuid = options.ThumbnailBinaryFile?.Value.AsGuidOrNull();
                 var thumbnailBinaryFile = thumbnailBinaryFileGuid.HasValue ? new BinaryFileService( rockContext ).Get( thumbnailBinaryFileGuid.Value ) : null;
-                
+
                 emailSection.Category = category;
                 emailSection.Guid = options.Guid;
                 emailSection.Name = options.Name;
@@ -3996,7 +4053,7 @@ namespace Rock.Rest.v2
                 UsageSummary = emailSection.UsageSummary
             };
         }
-        
+
         private static ListItemBag OccurrenceAsListItemBag( AttendanceOccurrence attendanceOccurrence )
         {
             return attendanceOccurrence == null ? null : new ListItemBag
@@ -4005,8 +4062,8 @@ namespace Rock.Rest.v2
                 Value = $"{attendanceOccurrence.Id}|{attendanceOccurrence.GroupId}|{attendanceOccurrence.LocationId}|{attendanceOccurrence.ScheduleId}|{attendanceOccurrence.OccurrenceDate:s}",
                 Text = attendanceOccurrence.OccurrenceDate.ToString( "dddd, MMMM d, yyyy" )
             };
-        } 
-        
+        }
+
         private static EmailEditorAttendanceOccurrenceBag OccurrenceAsBag( AttendanceOccurrence attendanceOccurrence )
         {
             return attendanceOccurrence == null ? null : new EmailEditorAttendanceOccurrenceBag
@@ -4018,7 +4075,7 @@ namespace Rock.Rest.v2
                 ScheduleId = attendanceOccurrence.ScheduleId,
                 OccurrenceDate = $"{attendanceOccurrence.OccurrenceDate:s}"
             };
-        } 
+        }
 
         #endregion
 
@@ -6146,7 +6203,8 @@ namespace Rock.Rest.v2
                 // get all group types that have at least one role
                 var groupTypes = groupTypeService.Queryable()
                     .Where( a => a.Roles.Any() )
-                    .OrderBy( a => a.Name )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
                     .Select( g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
                     .ToList();
 
@@ -6239,6 +6297,134 @@ namespace Rock.Rest.v2
                 .ToList();
 
             return groupRoles;
+        }
+
+        #endregion
+
+        #region In Group Filter (Reporting Data Filter)
+
+        /// <summary>
+        /// Gets the group roles for the provided groups and/or their children.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the group roles.</returns>
+        [HttpPost]
+        [Route( "InGroupFilterGetGroupRolesForGroups" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [Rock.SystemGuid.RestActionGuid( "EAC8814B-8FAD-408F-B76F-703A3F529197" )]
+        public IActionResult InGroupFilterGetGroupRolesForGroups( [FromBody] InGroupFilterGetGroupRolesForGroupsOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupRoles = GetGroupTypeRolesForSelectedGroups(
+                    options.GroupGuids,
+                    options.IncludeChildGroups,
+                    options.IncludeSelectedGroups,
+                    options.IncludeAllDescendants,
+                    options.IncludeInactiveGroups,
+                    rockContext
+                );
+
+                return Ok( groupRoles );
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of group type roles that should be available for
+        /// selection in the filter settings UI.
+        /// </summary>
+        /// <param name="groupGuids">The integer identifiers of the selected groups.</param>
+        /// <param name="includeChildGroups">If <c>true</c> then child groups will be included when determining which group types to include.</param>
+        /// <param name="includeSelectedGroups">If <paramref name="includeChildGroups"/> and this are <c>true</c> then the originally selected groups will be included along with the child groups when determining the group types.</param>
+        /// <param name="includeAllDescendants">If <paramref name="includeChildGroups"/> and this are <c>true</c> then all descendant groups will be included when determining the group types.</param>
+        /// <param name="includeInactiveGroups">If <paramref name="includeChildGroups"/> and this are <c>true</c> then inactive groups will be included when determining the group types.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A list of <see cref="ListItemBag"/> objects that represent the options to display to the individual.</returns>
+        private List<ListItemBag> GetGroupTypeRolesForSelectedGroups( List<Guid> groupGuids, bool includeChildGroups, bool includeSelectedGroups, bool includeAllDescendants, bool includeInactiveGroups, RockContext rockContext )
+        {
+            var groupService = new GroupService( rockContext );
+            var groupTypeRoleService = new GroupTypeRoleService( rockContext );
+            var qryGroupTypeRoles = groupTypeRoleService.Queryable();
+
+            var selectedGroups = groupService.GetByGuids( groupGuids )
+                .Select( s => new
+                {
+                    s.Id,
+                    s.GroupTypeId
+                } )
+                .ToList();
+
+            var selectedGroupTypeIds = selectedGroups.Select( a => a.GroupTypeId )
+                .Distinct()
+                .ToList();
+
+            if ( includeChildGroups )
+            {
+                var childGroupTypeIds = new List<int>();
+
+                foreach ( var groupId in selectedGroups.Select( a => a.Id ).ToList() )
+                {
+                    if ( includeAllDescendants )
+                    {
+                        // Get all children and descendants of the selected group(s).
+                        var descendantGroupTypes = groupService.GetAllDescendentsGroupTypes( groupId, includeInactiveGroups );
+
+                        childGroupTypeIds.AddRange( descendantGroupTypes.Select( a => a.Id ).ToList() );
+                    }
+                    else
+                    {
+                        // Get only immediate children of the selected group(s).
+                        var childGroups = groupService.Queryable().Where( a => a.ParentGroupId == groupId );
+
+                        if ( !includeInactiveGroups )
+                        {
+                            childGroups = childGroups.Where( a => a.IsActive == true );
+                        }
+
+                        childGroupTypeIds.AddRange( childGroups.Select( a => a.GroupTypeId ).Distinct().ToList() );
+                    }
+                }
+
+                childGroupTypeIds = childGroupTypeIds.Distinct().ToList();
+
+                if ( includeSelectedGroups )
+                {
+                    qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue
+                        && ( selectedGroupTypeIds.Contains( a.GroupTypeId.Value ) || childGroupTypeIds.Contains( a.GroupTypeId.Value ) ) );
+                }
+                else
+                {
+                    qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue
+                        && childGroupTypeIds.Contains( a.GroupTypeId.Value ) );
+                }
+            }
+            else
+            {
+                qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue
+                    && selectedGroupTypeIds.Contains( a.GroupTypeId.Value ) );
+            }
+
+            return qryGroupTypeRoles.OrderBy( a => a.GroupType.Order )
+                .ThenBy( a => a.GroupType.Name )
+                .ThenBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => new
+                {
+                    a.Guid,
+                    a.Name,
+                    GroupTypeName = a.GroupType.Name
+                } )
+                .ToList()
+                .Select( a => new ListItemBag
+                {
+                    Value = a.Guid.ToString(),
+                    Text = $"{a.Name} ({a.GroupTypeName})"
+                } )
+                .ToList();
         }
 
         #endregion
@@ -6387,6 +6573,92 @@ namespace Rock.Rest.v2
             foreach ( var command in Rock.Lava.LavaHelper.GetLavaCommands() )
             {
                 items.Add( new ListItemBag { Text = command.SplitCase(), Value = command } );
+            }
+
+            return Ok( items );
+        }
+
+        #endregion
+
+        #region Learning Class Activity Picker
+
+        /// <summary>
+        /// Gets the lava commands that can be displayed in the lava command picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the lava commands.</returns>
+        [HttpPost]
+        [Route( "LearningClassActivityPickerGetLearningClassActivities" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [Rock.SystemGuid.RestActionGuid( "C37F74D9-BB42-4544-AC3B-F48543F497E1" )]
+        public IActionResult LearningClassActivityPickerGetLearningClassActivities( [FromBody] LearningClassActivityPickerGetLearningClassActivitiesOptionsBag options )
+        {
+            if ( !options.LearningClassGuid.HasValue )
+            {
+                return NotFound();
+            }
+
+            var selectedClassGuid = options.LearningClassGuid.Value;
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            var items = new List<ListItemBag>();
+
+            var learningClasses = new LearningClassActivityService( new RockContext() )
+                .Queryable()
+                .Where( lca => lca.LearningClass.Guid == selectedClassGuid )
+                .OrderBy( lca => lca.Order )
+                .ToList();
+
+            foreach ( var lca in learningClasses )
+            {
+                if ( lca.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || ( grant?.IsAccessGranted( lca, Security.Authorization.VIEW ) == true ) )
+                {
+                    items.Add( new ListItemBag { Text = lca.Name, Value = lca.Guid.ToString() } );
+                }
+            }
+
+            return Ok( items );
+        }
+
+        #endregion
+
+        #region Learning Class Picker
+
+        /// <summary>
+        /// Gets the lava commands that can be displayed in the lava command picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the lava commands.</returns>
+        [HttpPost]
+        [Route( "LearningClassPickerGetLearningClasses" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [Rock.SystemGuid.RestActionGuid( "C5739387-B814-4ED5-9182-CD204529E8BB" )]
+        public IActionResult LearningClassPickerGetLearningClasses( [FromBody] LearningClassPickerGetLearningClassesOptionsBag options )
+        {
+            if ( !options.LearningCourseGuid.HasValue )
+            {
+                return NotFound();
+            }
+
+            var selectedCourseGuid = options.LearningCourseGuid.Value;
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            var items = new List<ListItemBag>();
+
+            var learningClasses = new LearningClassService( new RockContext() )
+                .Queryable()
+                .Where( lc => lc.LearningCourse.Guid == selectedCourseGuid )
+                .OrderBy( lc => lc.Order )
+                .ToList();
+
+            foreach ( var lc in learningClasses )
+            {
+                if ( lc.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || ( grant?.IsAccessGranted( lc, Security.Authorization.VIEW ) == true ) )
+                {
+                    items.Add( new ListItemBag { Text = lc.Name, Value = lc.Guid.ToString() } );
+                }
             }
 
             return Ok( items );

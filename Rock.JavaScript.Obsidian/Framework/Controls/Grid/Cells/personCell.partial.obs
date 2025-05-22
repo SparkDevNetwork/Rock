@@ -5,7 +5,7 @@
         </div>
         <div class="flex-grow-1">
             <template v-if="showAsLink && idKey">
-                <a :href="`/person/${idKey}`"><strong>{{ formattedName }}</strong></a>
+                <a :href="`/person/${idKey}`" @click.stop><strong>{{ formattedName }}</strong></a>
             </template>
             <template v-else>
                 <strong>{{ formattedName }}</strong>

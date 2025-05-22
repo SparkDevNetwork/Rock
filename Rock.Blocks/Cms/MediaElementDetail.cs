@@ -81,25 +81,30 @@ namespace Rock.Blocks.Cms
             using ( var rockContext = new RockContext() )
             {
                 var breadCrumbs = new List<IBreadCrumb>();
+                var pageParameters = new Dictionary<string, string>();
                 var key = pageReference.GetPageParameter( PageParameterKey.MediaElementId );
+                var additionalParameters = new Dictionary<string, string>();
 
-                if ( !string.IsNullOrWhiteSpace( key ) )
+                var data = new MediaElementService( rockContext )
+                 .GetSelect( key, mf => new
+                 {
+                     mf.Name,
+                     mf.MediaFolderId
+                 } );
+
+                if ( data != null )
                 {
-                    var pageParameters = new Dictionary<string, string>();
-                    var name = new MediaElementService( rockContext ).GetSelect( key, t => t.Name );
-
-                    if ( name != null )
-                    {
-                        pageParameters.Add( PageParameterKey.MediaElementId, key );
-                        var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
-                        var breadCrumb = new BreadCrumbLink( name, breadCrumbPageRef );
-                        breadCrumbs.Add( breadCrumb );
-                    }
+                    pageParameters.Add( PageParameterKey.MediaElementId, key );
+                    additionalParameters.Add( PageParameterKey.MediaFolderId, data.MediaFolderId.ToString() );
                 }
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( data?.Name ?? "New Media Elment", breadCrumbPageRef );
 
                 return new BreadCrumbResult
                 {
-                    BreadCrumbs = breadCrumbs
+                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb },
+                    AdditionalParameters = additionalParameters
                 };
             }
         }
@@ -110,10 +115,7 @@ namespace Rock.Blocks.Cms
 
             SetBoxInitialEntityState( box );
 
-            var rootUrl = RequestContext.ResolveRockUrl( "/" );
-
             RequestContext.Response.AddCssLink( "~/Styles/Blocks/Cms/MediaElementDetail.css", true);
-            RequestContext.Response.AddScript( "mediaElementDetail", $"$.getScript('{rootUrl}Scripts/Rock/Controls/MediaElementDetail/mediaElementPlayAnalytics.js');" );
 
             box.Options = GetBoxOptions( box.IsEditable );
 
@@ -211,6 +213,8 @@ namespace Rock.Blocks.Cms
             {
                 IdKey = entity.IdKey,
                 CloseCaption = entity.CloseCaption,
+                DefaultFileUrl = entity.DefaultFileUrl,
+                DefaultThumbnailUrl = entity.DefaultThumbnailUrl,
                 Description = entity.Description,
                 DurationSeconds = entity.DurationSeconds,
                 FileDataJson = entity.FileDataJson,

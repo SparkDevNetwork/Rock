@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -23,6 +24,8 @@ using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -33,7 +36,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether any of their family's map locations are within the geofenced boundary of the specified group" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Group Geofence Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "32ADC9E4-29CB-4D19-9073-CD9D3A8D2A6C")]
+    [Rock.SystemGuid.EntityTypeGuid( "32ADC9E4-29CB-4D19-9073-CD9D3A8D2A6C" )]
     public class InGroupGeofenceFilter : DataFilterComponent
     {
         #region Properties
@@ -58,6 +61,30 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/inGroupGeofenceFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var groupGuid = selection.AsGuid();
+            var group = new GroupService( rockContext ).Get( groupGuid );
+
+            return new Dictionary<string, string> { { "group", group?.ToListItemBag()?.ToCamelCaseJson( false, false ) } };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var groupGuid = data.GetValueOrNull( "group" )?.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
+
+            return groupGuid;
         }
 
         #endregion
@@ -193,11 +220,11 @@ function() {
         {
             Guid groupGuid = selection.AsGuid();
 
-            var geoQry = new GroupService( (RockContext)serviceInstance.Context )
+            var geoQry = new GroupService( ( RockContext ) serviceInstance.Context )
                 .GetGeofencedFamilies( groupGuid )
                 .SelectMany( g => g.Members );
 
-            var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
+            var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
                 .Where( p => geoQry.Any( xx => xx.PersonId == p.Id ) );
 
             Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

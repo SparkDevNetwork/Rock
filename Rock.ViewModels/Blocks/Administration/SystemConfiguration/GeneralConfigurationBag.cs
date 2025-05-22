@@ -15,6 +15,9 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+
 namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
 {
     /// <summary>
@@ -69,5 +72,13 @@ namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
         /// The personalization cookie cache length minutes.
         /// </value>
         public int? PersonalizationCookieCacheLengthMinutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the defined value GUIDs for countries from which access will be restricted to all pages.
+        /// </summary>
+        /// <value>
+        /// The defined value GUIDs for countries from which access will be restricted to all pages.
+        /// </value>
+        public List<Guid> CountriesRestrictedFromAccessing { get; set; }
     }
 }

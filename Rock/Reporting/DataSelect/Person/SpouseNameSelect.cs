@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -22,6 +23,7 @@ using System.Linq.Expressions;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -107,6 +109,29 @@ namespace Rock.Reporting.DataSelect.Person
             }
         }
 
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataSelects/Person/spouseNameSelect.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var includeLastName = selection.AsBooleanOrNull() ?? false;
+            return new Dictionary<string, string>
+            {
+                ["includeLastName"] = includeLastName.ToTrueFalse()
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return data.GetValueOrDefault( "includeLastName", string.Empty ).AsBooleanOrNull().ToStringSafe();
+        }
+
         #endregion
 
         #region Methods
@@ -166,6 +191,8 @@ namespace Rock.Reporting.DataSelect.Person
 
             return selectSpouseExpression;
         }
+
+#if WEBFORMS
 
         /// <summary>
         /// Creates the child controls.
@@ -232,6 +259,8 @@ namespace Rock.Reporting.DataSelect.Person
                 }
             }
         }
+
+#endif
 
         #endregion
 

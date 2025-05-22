@@ -34,7 +34,7 @@
                     <Rock:PanelWidget ID="pwDetails" runat="server" Title="Details" Expanded="true">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" />
+                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" OnTextChanged="tbName_TextChanged" AutoPostBack="true" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
@@ -54,6 +54,11 @@
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbNumberPrefix" runat="server" Label="Workflow Number Prefix" Help="The number prefix to use for workflows of this type. For example, to have workflows of this type numbered like 'WF0001, WF0002' use a prefix of 'WF'. Prefixes do need to be unique between workflow types." />
                                 <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" Help="The Icon to use when displaying this type of workflow." />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:DataTextBox ID="tbSlug" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Slug" Label="Slug" OnTextChanged="tbSlug_TextChanged" AutoPostBack="true" Help="Unique identifier for this workflow type. Changing this may affect links and integrations." />
                             </div>
                         </div>
                     </Rock:PanelWidget>

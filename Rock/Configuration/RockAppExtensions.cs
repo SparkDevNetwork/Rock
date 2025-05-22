@@ -63,7 +63,7 @@ namespace Rock.Configuration
         /// <summary>
         /// Get the name of the current Lava engine that is being used to
         /// process Lava. If this is called before Rock has finished starting
-        /// up it will always return <c>DotLiquid</c>.
+        /// up it will always return <c>Fluid</c>.
         /// </summary>
         /// <param name="app">The RockApp for which to retrieve the Lava engine name.</param>
         /// <returns>The current Lava engine name.</returns>
@@ -74,18 +74,11 @@ namespace Rock.Configuration
 
             if ( engine == null )
             {
-                return "DotLiquid";
+                return "Fluid";
             }
             else
             {
-                var engineName = engine.EngineName;
-
-                if ( LavaService.RockLiquidIsEnabled )
-                {
-                    engineName = $"DotLiquid (with {engineName} verification)";
-                }
-
-                return engineName;
+                return engine.EngineName;
             }
         }
 

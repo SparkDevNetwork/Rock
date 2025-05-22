@@ -57,7 +57,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         Order = 0 )]
 
     [DefinedValueField( "Default Connection Status",
-        Description = "The connection status to use for new individuals (default = 'Prospect'.)",
+        Description = "The connection status to use for new individuals (default = 'Prospect').",
         DefinedTypeGuid = SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
         IsRequired = true,
         AllowMultiple = false,
@@ -66,7 +66,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         Order = 1 )]
 
     [DefinedValueField( "Default Record Status",
-        Description = "The record status to use for new individuals (default = 'Pending'.)",
+        Description = "The record status to use for new individuals (default = 'Pending').",
         DefinedTypeGuid = SystemGuid.DefinedType.PERSON_RECORD_STATUS,
         IsRequired = true,
         AllowMultiple = false,
@@ -74,11 +74,20 @@ namespace Rock.Blocks.Types.Mobile.Security
         Key = AttributeKeys.DefaultRecordStatus,
         Order = 2 )]
 
+    [DefinedValueField( "Default Record Source",
+        Description = "The record source to use for new individuals (default = 'Mobile App').",
+        DefinedTypeGuid = SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_MOBILE_APP,
+        Key = AttributeKeys.DefaultRecordSource,
+        Order = 3 )]
+
     [SystemCommunicationField( "System Communication",
         Description = "The communication that will be used to send the SMS or email to the user.",
         IsRequired = true,
         Key = AttributeKeys.SystemCommunication,
-        Order = 3 )]
+        Order = 4 )]
 
     [GroupCategoryField( "Communication List Categories",
         Description = "The category of communication lists that will be made available to the user as topics of interest.",
@@ -86,25 +95,25 @@ namespace Rock.Blocks.Types.Mobile.Security
         IsRequired = false,
         AllowMultiple = true,
         Key = AttributeKeys.CommunicationListCategories,
-        Order = 4 )]
+        Order = 5 )]
 
     [IntegerField( "Verification Time Limit",
         Description = "The number of minutes that the user has to enter the verification code.",
         DefaultIntegerValue = 5,
         Key = AttributeKeys.VerificationTimeLimit,
-        Order = 5 )]
+        Order = 6 )]
 
     [IntegerField( "IP Throttle Limit",
         Description = "The number of times a single IP address can submit phone numbers for verification per day.",
         DefaultIntegerValue = 5000,
         Key = AttributeKeys.IpThrottleLimit,
-        Order = 6 )]
+        Order = 7 )]
 
     [IntegerField( "Validation Code Attempts",
         Description = "The number of times a validation code verification can be re-tried before failing permanently.",
         DefaultIntegerValue = IdentityVerification.DefaultMaxFailedMatchAttemptCount,
         Key = AttributeKeys.ValidationCodeAttempts,
-        Order = 7 )]
+        Order = 8 )]
 
     #region Campus Block Attributes
 
@@ -466,6 +475,11 @@ namespace Rock.Blocks.Types.Mobile.Security
             public const string DefaultRecordStatus = "DefaultRecordStatus";
 
             /// <summary>
+            /// The default record source key.
+            /// </summary>
+            public const string DefaultRecordSource = "DefaultRecordSource";
+
+            /// <summary>
             /// The system communication key.
             /// </summary>
             public const string SystemCommunication = "SystemCommunication";
@@ -689,6 +703,14 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// The default record status unique identifier.
         /// </value>
         public Guid DefaultRecordStatusGuid => GetAttributeValue( AttributeKeys.DefaultRecordStatus ).AsGuid();
+
+        /// <summary>
+        /// Gets the default record source unique identifier.
+        /// </summary>
+        /// <value>
+        /// The default record source unique identifier.
+        /// </value>
+        public Guid DefaultRecordSourceGuid => GetAttributeValue( AttributeKeys.DefaultRecordSource ).AsGuid();
 
         /// <summary>
         /// Gets the system communication unique identifier.
@@ -1305,6 +1327,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         {
             var dvcConnectionStatus = DefinedValueCache.Get( DefaultConnectionStatusGuid );
             var dvcRecordStatus = DefinedValueCache.Get( DefaultRecordStatusGuid );
+            var dvcRecordSource = DefinedValueCache.Get( DefaultRecordSourceGuid );
 
             var person = new Person
             {
@@ -1316,7 +1339,8 @@ namespace Rock.Blocks.Types.Mobile.Security
                 EmailPreference = Rock.Model.EmailPreference.EmailAllowed,
                 RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
                 ConnectionStatusValueId = dvcConnectionStatus?.Id,
-                RecordStatusValueId = dvcRecordStatus?.Id
+                RecordStatusValueId = dvcRecordStatus?.Id,
+                RecordSourceValueId = dvcRecordSource?.Id
             };
 
             if ( details.BirthDate.HasValue )

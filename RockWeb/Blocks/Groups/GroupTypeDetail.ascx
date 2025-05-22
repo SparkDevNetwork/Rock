@@ -99,6 +99,9 @@
                                 <Rock:RockDropDownList ID="ddlGroupStatusDefinedType" runat="server" Label="Group Status Defined Type" Help="Select the defined type to use when setting the group's status. Leave this blank if you don't want groups to prompt for group status." EnhanceForLongLists="true" />
                                 <Rock:RockCheckBox ID="cbShowAdministrator" runat="server" Label="Show Administrator"
                                     Help="This setting determines if groups of this type support assigning an administrator for each group." />
+
+                                <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source" Help="The record source for group members added to groups of this type." />
+                                <Rock:RockCheckBox ID="cbAllowGroupSpecificRecordSource" runat="server" Label="Allow Specific Group Record Source" Help="Determines if groups of this type should be allowed to override the record source." />
                             </div>
                             <div class="col-md-6">
                                 <div class="row">
@@ -531,6 +534,11 @@
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsChatChannelPublic" runat="server" Label="Make Channel Public" Help="If enabled, chat channels of this type are public. A public channel is visible to everyone when performing a search. This also implies that the channel may be joined by any person via the chat application." />
                                 <Rock:RockCheckBox ID="cbIsChatChannelAlwaysShown" runat="server" Label="Always Show Channel" Help="If enabled, chat channels of this type are always shown in the channel list even if the person has not joined the channel. This also implies that the channel may be joined by any person via the chat application." />
+                                <Rock:RockDropDownList ID="ddlChatPushNotificationMode" runat="server" CssClass="input-width-xl" Label="Push Notification Mode" Help="Controls how push notifications are sent for chat channels of this type.">
+                                    <asp:ListItem Value="0" Text="All Messages" />
+                                    <asp:ListItem Value="1" Text="Mentions And Replies" />
+                                    <asp:ListItem Value="2" Text="Silent" />
+                                </Rock:RockDropDownList>
                             </div>
                         </div>
                     </Rock:PanelWidget>

@@ -115,6 +115,12 @@
     <Compile Include="Blocks\Cms\ContentChannelTypeList\ContentChannelTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelTypeDetail\ContentChannelTypeBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelTypeDetail\ContentChannelTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LavaApplicationDetail\LavaApplicationBag.cs" />
+    <Compile Include="Blocks\Cms\LavaApplicationDetail\LavaApplicationDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LavaApplicationList\LavaApplicationListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LavaEndpointDetail\LavaEndpointBag.cs" />
+    <Compile Include="Blocks\Cms\LavaEndpointDetail\LavaEndpointDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LavaEndpointList\LavaEndpointListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\LavaShortcodeList\LavaShortcodeListBox.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaElementDetail\MediaElementBag.cs" />
@@ -541,6 +547,7 @@
     <Compile Include="Blocks\Cms\ContentCollectionDetail\CustomFieldFilterBag.cs" />
     <Compile Include="Blocks\Core\Notes\DeleteNoteRequestBag.cs" />
     <Compile Include="Blocks\Core\Notes\EditNoteRequestBag.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormBuilderDetailLinkToFormBag.cs" />
     <Compile Include="Controls\NoteBag.cs" />
     <Compile Include="Controls\NoteEditBag.cs" />
     <Compile Include="Blocks\Core\Notes\NotesInitializationBox.cs" />
@@ -845,6 +852,7 @@
     <Compile Include="Rest\CheckIn\ProximityCheckInOptionsBag.cs" />
     <Compile Include="Rest\Controls\AIProviderPickerGetAIProviderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerExtractFileOptionsBag.cs" />
+    <Compile Include="Rest\Controls\DataFilterFormatSelectionOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorCreateAttendanceOccurrenceOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorAttendanceOccurrenceBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorGetAllEmailSectionsOptionsBag.cs" />
@@ -854,6 +862,9 @@
     <Compile Include="Rest\Controls\EmailEditorDeleteEmailSectionOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorGetEmailSectionOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorEmailSectionBag.cs" />
+    <Compile Include="Rest\Controls\InGroupFilterGetGroupRolesForGroupsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\LearningClassActivityPickerGetLearningClassActivitiesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\LearningClassPickerGetLearningClassesOptionsBag.cs" />
     <Compile Include="Rest\Controls\MergeFieldPickerGetSearchedMergedFieldsOptionsBag.cs" />
     <Compile Include="Rest\Controls\PageNavButtonsGetLinksOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerMoveFolderOptionsBag.cs" />

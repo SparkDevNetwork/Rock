@@ -110,7 +110,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     [DefinedValueField(
         "Record Status",
-        Description = "The record status to use for new individuals.",
+        Description = "The record status to use for new individuals (default = 'Pending').",
         DefinedTypeGuid = SystemGuid.DefinedType.PERSON_RECORD_STATUS,
         IsRequired = true,
         AllowMultiple = false,
@@ -118,12 +118,22 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Key = AttributeKey.RecordStatus,
         Order = 8 )]
 
+    [DefinedValueField(
+        "Record Source",
+        Description = "The record source to use for new individuals (default = 'Group Registration'). Can be overridden by a record source specified on the group or its parent group type.",
+        DefinedTypeGuid = SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_GROUP_REGISTRATION,
+        Key = AttributeKey.RecordSource,
+        Order = 9 )]
+
     [LinkedPage(
         "Result Page",
         Description = "An optional page to redirect user to after they have been registered for the group. GroupGuid will be passed in the query string.",
         IsRequired = false,
         Key = AttributeKey.ResultPage,
-        Order = 9 )]
+        Order = 10 )]
 
     [CodeEditorField(
         "Registration Completion Message",
@@ -131,7 +141,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         IsRequired = false,
         EditorMode = Web.UI.Controls.CodeEditorMode.Xml,
         Key = AttributeKey.RegistrationCompletionMessage,
-        Order = 10 )]
+        Order = 11 )]
 
     [BooleanField(
         "Prevent Overcapacity Registrations",
@@ -140,7 +150,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         DefaultBooleanValue = false,
         Key = AttributeKey.PreventOvercapacityRegistrations,
-        Order = 11 )]
+        Order = 12 )]
 
     [BooleanField(
         "Autofill Form",
@@ -149,14 +159,14 @@ namespace Rock.Blocks.Types.Mobile.Groups
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         DefaultBooleanValue = true,
         Key = AttributeKey.AutofillForm,
-        Order = 12 )]
+        Order = 13 )]
 
     [TextField( "Register Button Text",
         Description = "The text to display in the save button.",
         IsRequired = true,
         DefaultValue = "Register",
         Key = AttributeKey.RegisterButtonText,
-        Order = 13 )]
+        Order = 14 )]
 
     #endregion
 
@@ -215,6 +225,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// The default record status attribute key.
             /// </summary>
             public const string RecordStatus = "DefaultRecordStatus";
+
+            /// <summary>
+            /// The default record source attribute key.
+            /// </summary>
+            public const string RecordSource = "DefaultRecordSource";
 
             /// <summary>
             /// The result page attribute key.
@@ -456,6 +471,9 @@ namespace Rock.Blocks.Types.Mobile.Groups
             else
             {
                 person = CreateNewPerson( personDetails.FirstName, personDetails.LastName, personDetails.Email, personDetails.MobilePhone, personDetails.IsMessagingEnabled );
+
+                SetRecordSource( person, group );
+
                 PersonService.SaveNewPerson( person, rockContext, null, false );
             }
 
@@ -515,6 +533,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
             else
             {
                 spouse = CreateNewPerson( personDetails.FirstName, personDetails.LastName, personDetails.Email, personDetails.MobilePhone, personDetails.IsMessagingEnabled );
+
+                SetRecordSource( spouse, group );
 
                 var groupRoleId = GroupTypeCache.GetFamilyGroupType().Roles
                     .First( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )
@@ -690,6 +710,25 @@ namespace Rock.Blocks.Types.Mobile.Groups
             }
 
             return person;
+        }
+
+        /// <summary>
+        /// Sets the record source on the person.
+        /// </summary>
+        /// <param name="person">The person on which to set the record source.</param>
+        /// <param name="group">The group the person is registering for.</param>
+        private void SetRecordSource( Person person, Group group )
+        {
+            // Is there a group record source?
+            var recordSourceValueId = group.GetGroupMemberRecordSourceValueId();
+            if ( recordSourceValueId.HasValue )
+            {
+                person.RecordSourceValueId = recordSourceValueId;
+                return;
+            }
+
+            // Fall back to the record source defined in block settings.
+            person.RecordSourceValueId = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordSource ).AsGuid() )?.Id;
         }
 
         /// <summary>

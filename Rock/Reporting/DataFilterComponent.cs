@@ -174,6 +174,21 @@ namespace Rock.Reporting
             return string.Empty;
         }
 
+        /// <summary>
+        /// Gets the related data view that this filter references. This is used
+        /// to ensure data integrity so that the related data view can't be
+        /// deleted while another data view is referencing it.
+        /// </summary>
+        /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
+        /// <param name="selection">The selection string from the database.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <returns>The identifier of the related data view or <c>null</c> if there isn't one.</returns>
+        [RockInternal( "18.0" )]
+        public virtual int? GetRelatedDataViewId( Type entityType, string selection, RockContext rockContext )
+        {
+            return null;
+        }
+
 #if WEBFORMS
         /// <summary>
         /// Creates the model representation of the child controls used to display and edit the filter settings.

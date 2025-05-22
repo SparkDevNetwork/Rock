@@ -23,20 +23,23 @@
 
 /** A bag of settings for the chat view block. */
 export type ChatViewConfigurationBag = {
+    /** Gets or sets the selected channel ID. */
+    channelId?: string | null;
+
     /** Gets or sets the key for the direct message channel type. */
     directMessageChannelTypeKey?: string | null;
 
     /** Whether or not to filter shared channels by campus. */
     filterSharedChannelsByCampus: boolean;
 
+    /** Gets or sets the selected message ID. */
+    jumpToMessageId?: string | null;
+
     /** Gets or sets the public API key for the chat service. */
     publicApiKey?: string | null;
 
     /** Gets or sets the selected channel ID. */
     selectedChannelId?: string | null;
-
-    /** Gets or sets the selected message ID. */
-    selectedMessageId?: string | null;
 
     /** Gets or sets the key for the shared channel type. */
     sharedChannelTypeKey?: string | null;

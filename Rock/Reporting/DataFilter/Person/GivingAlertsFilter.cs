@@ -16,8 +16,11 @@
 //
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -60,6 +63,69 @@ namespace Rock.Reporting.DataFilter
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/givingAlertsFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+            var alertTypeService = new FinancialTransactionAlertTypeService( rockContext );
+
+            var alertTypeOptions = alertTypeService.Queryable()
+                .Select( fta => new ListItemBag() { Text = fta.Name, Value = fta.Guid.ToString() } )
+                .ToList();
+            var alertTypes = new List<Guid>();
+
+            if ( config?.TransactionAlertTypeIds != null )
+            {
+                alertTypes = alertTypeService.GetByIds( config.TransactionAlertTypeIds )
+                   .Where( fta => fta != null )
+                   .Select( fta => fta.Guid )
+                   .ToList();
+            }
+
+            var data = new Dictionary<string, string>
+            {
+                { "alertTypeOptions", alertTypeOptions.ToCamelCaseJson(false, true) },
+                { "alertTypes", alertTypes.ToJson() },
+                { "dateRange", config?.DelimitedDateRangeValues },
+                { "amount", config?.Amount.ToString() },
+                { "comparisonType", config?.ComparisonValue ?? ComparisonType.EqualTo.ConvertToInt().ToString() },
+            };
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var alertTypeService = new FinancialTransactionAlertTypeService( rockContext );
+            var alertTypes = data.GetValueOrNull( "alertTypes" )?.FromJsonOrNull<List<Guid>>();
+            var alertTypeIds = new List<int>();
+
+            if ( alertTypes != null )
+            {
+                alertTypeIds = alertTypeService.GetByGuids( alertTypes )
+                    .Select( fta => fta.Id )
+                    .ToList();
+            }
+
+            var selectionConfig = new SelectionConfig
+            {
+                TransactionAlertTypeIds = alertTypeIds,
+                DelimitedDateRangeValues = data.GetValueOrDefault( "dateRange", "All||||" ),
+                Amount = data.GetValueOrNull( "amount" )?.AsIntegerOrNull() ?? 0,
+                ComparisonValue = data.GetValueOrDefault( "comparisonType", ComparisonType.EqualTo.ConvertToInt().ToString() ),
+            };
+
+            return selectionConfig.ToJson();
         }
 
         #endregion Properties
@@ -197,7 +263,7 @@ function() {
             filterControl.Controls.Add( rlbGivingAlerts );
             controls.Add( rlbGivingAlerts );
 
-            var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes | ComparisonType.StartsWith );
+            var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypesRequired );
             ddlIntegerCompare.ID = string.Format( "{0}_{1}", filterControl.ID, "ddlIntegerCompare" );
             ddlIntegerCompare.AddCssClass( "js-filter-compare" );
             filterControl.Controls.Add( ddlIntegerCompare );
@@ -360,6 +426,9 @@ function() {
                     case ComparisonType.EqualTo:
                         qry = qry.Where( ft => ft.Amount == selectionConfig.Amount );
                         break;
+                    case ComparisonType.NotEqualTo:
+                        qry = qry.Where( ft => ft.Amount != selectionConfig.Amount );
+                        break;
                     case ComparisonType.LessThan:
                         qry = qry.Where( ft => ft.Amount < selectionConfig.Amount );
                         break;
@@ -398,10 +467,10 @@ function() {
             }
 
             /// <summary>
-            /// Gets or sets the note type identifiers.
+            /// Gets or sets the alert type identifiers.
             /// </summary>
             /// <value>
-            /// The note type identifiers.
+            /// The alert type identifiers.
             /// </value>
             public List<int> TransactionAlertTypeIds { get; set; }
 

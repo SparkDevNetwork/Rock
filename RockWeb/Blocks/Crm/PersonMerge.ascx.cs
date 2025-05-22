@@ -246,6 +246,12 @@ namespace RockWeb.Blocks.Crm
                 // Process Query String parameter "Set", specifying a set of people to merge.
                 int? setId = PageParameter( "Set" ).AsIntegerOrNull();
 
+                if ( setId == null )
+                {
+                    var mergeIdKey = PageParameter( "Set" );
+                    setId = Rock.Utility.IdHasher.Instance.GetId( mergeIdKey );
+                }
+
                 if ( setId.HasValue )
                 {
                     selectedPersonIds = new EntitySetItemService( new RockContext() )
@@ -574,6 +580,7 @@ namespace RockWeb.Blocks.Crm
                         primaryPerson.RecordTypeValueId = GetNewIntValue( "RecordType" );
                         primaryPerson.RecordStatusValueId = GetNewIntValue( "RecordStatus" );
                         primaryPerson.RecordStatusReasonValueId = GetNewIntValue( "RecordStatusReason" );
+                        primaryPerson.RecordSourceValueId = GetNewIntValue( "RecordSource" );
                         primaryPerson.ConnectionStatusValueId = GetNewIntValue( "ConnectionStatus" );
                         primaryPerson.IsDeceased = GetNewBoolValue( "Deceased" ) ?? false;
                         primaryPerson.Gender = ( Gender ) GetNewEnumValue( "Gender", typeof( Gender ) );
@@ -2703,6 +2710,7 @@ AND Attendance.Id != @FirstTimeRecordId
             AddProperty( "RecordType", person.Id, person.RecordTypeValue );
             AddProperty( "RecordStatus", person.Id, person.RecordStatusValue );
             AddProperty( "RecordStatusReason", person.Id, person.RecordStatusReasonValue );
+            AddProperty( "RecordSource", person.Id, person.RecordSourceValue );
             AddProperty( "ConnectionStatus", person.Id, person.ConnectionStatusValue );
             AddProperty( "Deceased", person.Id, person.IsDeceased );
             AddProperty( "Gender", person.Id, person.Gender );

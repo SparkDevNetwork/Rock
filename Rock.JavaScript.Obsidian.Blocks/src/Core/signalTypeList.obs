@@ -3,11 +3,11 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Personal Signal Types"
+          itemTerm="Person Signal Type"
           :entityTypeGuid="EntityType.SignalType"
           stickyHeader
           liveUpdates
-          :showLaunchWorkflow = "false"
+          :showLaunchWorkflow="false"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
         <ReorderColumn @orderChanged="onOrderChanged" />
@@ -17,20 +17,17 @@
                 field="signalColor"
                 visiblePriority="xs"
                 itemClass="padding-b-none padding-t-none"
-                width="10%"
-                :hideOnScreen="false"
-                :excludeFromExport="true">
+                width="10%">
             <template #format="{ row }">
-                <div class="h-100" :style="{'background-color':row.signalColor, width: '40px'}">
+                <div class="h-100" :style="{ 'background-color': row.signalColor, width: '40px' }">
                     &nbsp;
                 </div>
             </template>
+            <template #export="{ row }">
+                {{ row.signalColor }}
+            </template>
         </Column>
-        <TextColumn name="signalColor"
-                title="Color"
-                field="signalColor"
-                :hideOnScreen="true"
-                visiblePriority="xs" />
+
         <TextColumn name="name"
                     title="Name"
                     field="name"
@@ -46,7 +43,7 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'name'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>

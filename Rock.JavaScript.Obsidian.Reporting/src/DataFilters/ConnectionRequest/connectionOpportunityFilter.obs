@@ -1,0 +1,50 @@
+<template>
+    <DropDownList v-model="connectionType"
+                  :items="connectionTypeOptions"
+                  label="Connection Type"
+                  showBlankItem
+                  enhanceForLongLists />
+
+    <DropDownList v-if="currentConnectionOpportunityOptions"
+                  v-model="connectionOpportunity"
+                  :items="currentConnectionOpportunityOptions"
+                  label="Connection Opportunity"
+                  :showBlankItem="false" />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { computed, ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const connectionTypeOptions = safeParseJson<ListItemBag[]>(props.modelValue.connectionTypeOptions) ?? [];
+    const connectionType = ref<Guid>(props.modelValue.connectionType ?? "");
+    const connectionOpportunityOptions = safeParseJson<Record<string, ListItemBag[]>>(props.modelValue.connectionOpportunityOptions) ?? [];
+    const connectionOpportunity = ref<Guid>(props.modelValue.connectionOpportunity ?? "");
+
+    const currentConnectionOpportunityOptions = computed<ListItemBag[] | undefined>(() => {
+        return connectionOpportunityOptions?.[connectionType.value];
+    });
+
+    watch(currentConnectionOpportunityOptions, () => {
+        if (!currentConnectionOpportunityOptions.value || currentConnectionOpportunityOptions.value.length === 0) {
+            connectionOpportunity.value = "";
+        }
+    });
+
+    watch([connectionType, connectionOpportunity], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            connectionType: connectionType.value,
+            connectionOpportunity: connectionOpportunity.value,
+        });
+    });
+</script>

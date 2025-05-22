@@ -45,7 +45,6 @@ namespace Rock.Tests.Performance.Benchmarks.Lava
         [GlobalSetup]
         public void Setup()
         {
-            LavaService.RockLiquidIsEnabled = false;
             LavaService.SetCurrentEngine( new FluidEngine() );
             GlobalAttributesCache.Get().GetValue( "DefaultEnabledLavaCommands" );
 

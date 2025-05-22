@@ -3456,7 +3456,7 @@ namespace Rock.Communication.Chat
                 channelRequest.SetData( ChannelDataKey.Name, chatChannel.Name );
             }
 
-            channelRequest.SetData( ChannelDataKey.Image, chatChannel.AvatarImageUrl ?? string.Empty );
+            channelRequest.SetData( ChannelDataKey.Image, chatChannel.AvatarUrl ?? string.Empty );
             channelRequest.SetData( ChannelDataKey.CampusId, chatChannel.CampusId ?? 0 );
             channelRequest.SetData( ChannelDataKey.IsLeavingAllowed, chatChannel.IsLeavingAllowed );
             channelRequest.SetData( ChannelDataKey.IsPublic, chatChannel.IsPublic );
@@ -3544,7 +3544,7 @@ namespace Rock.Communication.Chat
                 ChatChannelTypeKey = channel.Type,
                 QueryableKey = channel.Cid,
                 Name = channel.GetDataOrDefault<string>( ChannelDataKey.Name, null ),
-                AvatarImageUrl = channel.GetDataOrDefault( ChannelDataKey.Image, string.Empty ),
+                AvatarUrl = channel.GetDataOrDefault( ChannelDataKey.Image, string.Empty ),
                 CampusId = campusId,
                 IsLeavingAllowed = channel.GetDataOrDefault( ChannelDataKey.IsLeavingAllowed, false ),
                 IsPublic = channel.GetDataOrDefault( ChannelDataKey.IsPublic, false ),

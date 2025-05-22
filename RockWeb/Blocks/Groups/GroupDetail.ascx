@@ -128,6 +128,7 @@
                                     <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                                     <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Require Signed Document"
                                         Help="If members of this group need to have signed a document, select that document type here." />
+                                    <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source Override" Help="The record source for group members added to this group. If not set, the group type's record source will be used." />
                                 </div>
                             </div>
 
@@ -381,6 +382,17 @@
                                         <asp:ListItem Value="n" Text="No" />
                                         <asp:ListItem Value="y" Text="Yes" />
                                     </Rock:RockDropDownList>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlChatPushNotificationMode" runat="server" CssClass="input-width-xl" Label="Push Notification Mode" Help="Controls how push notifications are sent for this chat channel.">
+                                        <asp:ListItem Value="" Text="Inherit from Group Type" />
+                                        <asp:ListItem Value="0" Text="All Messages" />
+                                        <asp:ListItem Value="1" Text="Mentions And Replies" />
+                                        <asp:ListItem Value="2" Text="Silent" />
+                                    </Rock:RockDropDownList>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:ImageUploader ID="imgChatChannelAvatar" runat="server" Label="Channel Avatar" Help="The image to use for this chat channel in the external chat system. Recommended image size is 120x120." />
                                 </div>
                             </div>
                         </Rock:PanelWidget>

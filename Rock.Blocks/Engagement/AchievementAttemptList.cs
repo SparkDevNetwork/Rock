@@ -41,7 +41,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Achievements" )]
     [Description( "Lists all the people that have made an attempt at earning an achievement." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the achievement attempt details.",

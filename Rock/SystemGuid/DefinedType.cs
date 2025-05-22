@@ -560,5 +560,10 @@ namespace Rock.SystemGuid
         [Obsolete("Use FinancialStatementTemplate instead")]
         [RockObsolete("1.12.4")]
         public const string STATEMENT_GENERATOR_LAVA_TEMPLATE_LEGACY = "74A23516-A20A-40C9-93B5-1AB5FDFF6750";
+
+        /// <summary>
+        /// Guid for the types of Record Sources (such as external website, event registration, etc.)
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE = "B8F781C5-6690-4E5E-8BCE-75CC62DB0EBB";
     }
 }

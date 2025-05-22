@@ -20,7 +20,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Web;
+
 using Rock.Attribute;
+using Rock.Cms;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -32,7 +35,6 @@ using Rock.ViewModels.Blocks.Administration.PageProperties;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 
 namespace Rock.Blocks.Administration
 {
@@ -80,11 +82,12 @@ namespace Rock.Blocks.Administration
             public const string Page = "Page";
             public const string ParentPageId = "ParentPageId";
             public const string ExpandedIds = "ExpandedIds";
+            public const string Redirect = "Redirect";
         }
 
         private static class NavigationUrlKey
         {
-            public const string ParentPage = "ParentPage";
+            public const string ReturnPage = "ReturnPage";
             public const string Page = "Page";
             public const string MedianTimeDetailPage = "MedianTimeDetailPage";
         }
@@ -124,7 +127,8 @@ namespace Rock.Blocks.Administration
                 LayoutItems = LoadLayouts( site ),
                 DisplayWhenItems = typeof( DisplayInNavWhen ).ToEnumListItemBag(),
                 IntentDefinedTypeGuid = InteractionIntentDefinedTypeCache?.Guid.ToString(),
-                EnableFullEditMode = this.GetAttributeValue( AttributeKey.EnableFullEditMode ).AsBoolean()
+                EnableFullEditMode = this.GetAttributeValue( AttributeKey.EnableFullEditMode ).AsBoolean(),
+                Countries = DefinedTypeCache.GetLocationCountryListItemBagList( true )
             };
             return options;
         }
@@ -164,7 +168,7 @@ namespace Rock.Blocks.Administration
                 return new List<ListItemBag>();
             }
 
-            LayoutService.RegisterLayouts( "~" , site );
+            LayoutService.RegisterLayouts( "~", site );
 
             var layouts = new LayoutService( RockContext ).GetBySiteId( site.Id ).Select( l => new ListItemBag()
             {
@@ -348,6 +352,8 @@ namespace Rock.Blocks.Administration
 
             var layout = entity.Layout == null ? entity.ParentPage?.Layout.ToListItemBag() : entity.Layout.ToListItemBag();
 
+            var pageAdditionalSettings = entity.GetAdditionalSettings<PageAdditionalSettings>();
+
             var bag = new PagePropertiesBag
             {
                 IdKey = entity.IdKey,
@@ -387,6 +393,7 @@ namespace Rock.Blocks.Administration
                 Site = entity.Layout?.Site.ToListItemBag() ?? site.ToListItemBag(),
                 PageRoute = string.Join( ",", entity.PageRoutes.Select( route => route.Route ).ToArray() ),
                 Intents = intents,
+                CountriesRestrictedFromAccessing = pageAdditionalSettings.CountriesRestrictedFromAccessing,
                 PageId = entity.Id
             };
 
@@ -581,6 +588,19 @@ namespace Rock.Blocks.Administration
                     entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
+            box.IfValidProperty( nameof( box.Bag.CountriesRestrictedFromAccessing ),
+                () =>
+                {
+                    var pageAdditionalSettings = entity.GetAdditionalSettings<PageAdditionalSettings>();
+
+                    pageAdditionalSettings.CountriesRestrictedFromAccessing = box.Bag
+                        .CountriesRestrictedFromAccessing
+                        .Distinct()
+                        .ToList();
+
+                    entity.SetAdditionalSettings( pageAdditionalSettings );
+                } );
+
             return true;
         }
 
@@ -732,11 +752,60 @@ namespace Rock.Blocks.Administration
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
-            return new Dictionary<string, string>
+            var queryParams = new Dictionary<string, string>();
+            var pageId = PageParameter(PageParameterKey.Page);
+            var parentPageId = PageParameter(PageParameterKey.ParentPageId);
+            var expandedIds = PageParameter(PageParameterKey.ExpandedIds);
+            var redirect = PageParameter(PageParameterKey.Redirect);
+
+            if (string.IsNullOrWhiteSpace(pageId) || pageId == "0")
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
-                [NavigationUrlKey.MedianTimeDetailPage] = this.GetLinkedPageUrl( AttributeKey.MedianTimeDetailPage, NavigationUrlKey.Page, "((Key))" ),
+                if (!string.IsNullOrWhiteSpace(parentPageId))
+                {
+                    if (int.TryParse(parentPageId, out int parentId))
+                    {
+                        queryParams[PageParameterKey.Page] = parentPageId;
+                            
+                        if (!string.IsNullOrWhiteSpace(expandedIds) && expandedIds.Split(',').All(id => int.TryParse(id, out _)))
+                        {
+                            queryParams[PageParameterKey.ExpandedIds] = expandedIds;
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(redirect))
+                        {
+                            queryParams[PageParameterKey.Redirect] = redirect;
+                        }
+                    }
+                }
+            }
+
+            var urls = new Dictionary<string, string>
+            {
+                [NavigationUrlKey.ReturnPage] = GetCleanPageUrl(queryParams),
+                [NavigationUrlKey.MedianTimeDetailPage] = this.GetLinkedPageUrl(AttributeKey.MedianTimeDetailPage, NavigationUrlKey.Page, "((Key))")
             };
+
+            return urls;
+        }
+
+        /// <summary>
+        /// Gets a clean page URL using only the specified parameters without including existing page parameters.
+        /// </summary>
+        /// <param name="queryParams">The query parameters to include in the URL.</param>
+        /// <returns>A string representing the URL to the current page with only the specified parameters.</returns>
+        private string GetCleanPageUrl( IDictionary<string, string> queryParams = null )
+        {
+            var parameters = queryParams != null ? new Dictionary<string, string>( queryParams ) : new Dictionary<string, string>();
+            var pageReference = new Rock.Web.PageReference( this.PageCache.Guid.ToString(), parameters );
+
+            if ( pageReference.PageId > 0 )
+            {
+                return pageReference.BuildUrl();
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
 
         /// <inheritdoc/>

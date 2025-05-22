@@ -1,0 +1,61 @@
+<template>
+    <div class="row">
+        <div class="col-md-4">
+            <DropDownList v-model="comparisonType"
+                          :items="comparisonItems"
+                          disableLabel
+                          enhanceForLongLists
+                          :showBlankItem="false" />
+        </div>
+        <div class="col-md-8">
+            <TextBox v-model="postalCode" disableLabel />
+        </div>
+    </div>
+    <DefinedValuePicker v-model="locationType"
+                        label="Location Type"
+                        :definedTypeGuid="DefinedType.GroupLocationType"
+                        enhanceForLongLists
+                        showBlankItem />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
+    const postalCode = ref<string>(props.modelValue.postalCode ?? "");
+    const locationType = ref<ListItemBag | null>(safeParseJson(props.modelValue.locationType) ?? null);
+
+    const comparisonItems = getFilteredComparisonTypeOptions(
+        ComparisonType.EqualTo,
+        ComparisonType.NotEqualTo,
+        ComparisonType.Contains,
+        ComparisonType.DoesNotContain,
+        ComparisonType.IsBlank,
+        ComparisonType.IsNotBlank,
+        ComparisonType.StartsWith,
+        ComparisonType.EndsWith,
+    );
+
+    watch([comparisonType, postalCode, locationType], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            comparisonType: comparisonType.value,
+            postalCode: postalCode.value,
+            locationType: JSON.stringify(locationType.value)
+        });
+    });
+</script>

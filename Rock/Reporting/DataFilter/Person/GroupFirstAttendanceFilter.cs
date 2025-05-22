@@ -22,8 +22,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -65,6 +69,70 @@ namespace Rock.Reporting.DataFilter.Person
             {
                 return "Attendance";
             }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/groupFirstAttendanceFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = GetGroupFirstAttendanceFilterSelection( selection );
+
+            var groupBags = config.GroupGuids
+                .Select( guid => GroupCache.Get( guid )?.ToListItemBag() )
+                .Where( bag => bag != null )
+                .ToList();
+
+            var scheduleService = new ScheduleService( rockContext );
+            var scheduleBags = scheduleService.GetByIds( config.Schedules )
+                .ToList()
+                .Select( sch => sch.ToListItemBag() )
+                .ToList();
+
+            var isBlank = selection.Trim() == string.Empty;
+
+            return new Dictionary<string, string>
+            {
+                { "groups", groupBags.ToCamelCaseJson(false, true) },
+                { "includeChildGroups", config.IncludeChildGroups.ToTrueFalse() },
+                { "comparisonType", isBlank ? ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() : config.IntegerCompare },
+                { "attendedCount", isBlank ? "1" : config.AttendedCount.ToString() },
+                { "dateRange", config.SlidingDateRange },
+                { "schedules", scheduleBags.ToCamelCaseJson(false, true) },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var groupGuids = data.GetValueOrDefault( "groups", "[]" )
+                .FromJsonOrNull<List<ListItemBag>>()
+                ?.Select( c => c.Value?.AsGuidOrNull() ?? Guid.Empty )
+                .Where( g => g != Guid.Empty )
+                .ToList();
+
+            var scheduleService = new ScheduleService( rockContext );
+            var scheduleIds = data.GetValueOrDefault( "schedules", "[]" )
+                .FromJsonOrNull<List<ListItemBag>>()
+                ?.Select( s => scheduleService.Get( s.Value.AsGuid() ).Id )
+                .ToList();
+
+            var groupAttendanceFilterSelection = new GroupFirstAttendanceFilterSelection
+            {
+                GroupGuids = groupGuids,
+                IncludeChildGroups = data.GetValueOrDefault( "includeChildGroups", "False" ).AsBoolean(),
+                IntegerCompare = data.GetValueOrDefault( "comparisonType", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ),
+                AttendedCount = data.GetValueOrDefault( "attendedCount", "1" ).AsInteger(),
+                SlidingDateRange = data.GetValueOrDefault( "dateRange", "All||||" ),
+                Schedules = scheduleIds,
+            };
+
+            return groupAttendanceFilterSelection.ToJson();
         }
 
         #endregion
@@ -129,10 +197,12 @@ namespace Rock.Reporting.DataFilter.Person
 
             string dateRangeText = SlidingDateRangePicker.FormatDelimitedValues( groupFirstAttendanceFilterSelection.SlidingDateRange );
 
-             selectionOutput = $"Attended '{groupsList}' for the first time in the Date Range: {dateRangeText}";
+            selectionOutput = $"Attended '{groupsList}' for the first time in the Date Range: {dateRangeText}";
 
             return selectionOutput;
         }
+
+#if WEBFORMS
 
         /// <inheritdoc/>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
@@ -301,6 +371,8 @@ namespace Rock.Reporting.DataFilter.Person
             slidingDateRangePicker.DelimitedValues = groupFirstAttendanceFilterSelection.SlidingDateRange;
             cbChildGroups.Checked = groupFirstAttendanceFilterSelection.IncludeChildGroups;
         }
+
+#endif
 
         private GroupFirstAttendanceFilterSelection GetGroupFirstAttendanceFilterSelection( string selection )
         {

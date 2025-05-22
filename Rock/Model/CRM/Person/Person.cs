@@ -104,7 +104,7 @@ namespace Rock.Model
         public int? RecordStatusReasonValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Defined Value <see cref="Rock.Model.DefinedValue"/> representing the connection status of the Person.
+        /// Gets or sets the Id of the Connection Status <see cref="Rock.Model.DefinedValue"/> representing the connection status of the Person.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the connection status of the Person.
@@ -112,6 +112,16 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS )]
         public int? ConnectionStatusValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the Record Source <see cref="Rock.Model.DefinedValue"/> representing the source of this entity
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source <see cref="Rock.Model.DefinedValue"/> representing the source of this entity.
+        /// </value>S
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.RECORD_SOURCE_TYPE )]
+        public int? RecordSourceValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the Defined Value <see cref="Rock.Model.DefinedValue"/> representing the reason a record needs to be reviewed.
@@ -873,6 +883,15 @@ namespace Rock.Model
         public virtual DefinedValue RecordStatusReasonValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the record source.
+        /// </summary>
+        /// <value>
+        /// A <see cref="DefinedValue"/> object representing the record source.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue RecordSourceValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the RecordType.
         /// </summary>
         /// <value>
@@ -1048,6 +1067,7 @@ namespace Rock.Model
             this.HasOptional( p => p.ConnectionStatusValue ).WithMany().HasForeignKey( p => p.ConnectionStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RecordStatusValue ).WithMany().HasForeignKey( p => p.RecordStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RecordStatusReasonValue ).WithMany().HasForeignKey( p => p.RecordStatusReasonValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RecordSourceValue ).WithMany().HasForeignKey( p => p.RecordSourceValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RecordTypeValue ).WithMany().HasForeignKey( p => p.RecordTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ReviewReasonValue ).WithMany().HasForeignKey( p => p.ReviewReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.SuffixValue ).WithMany().HasForeignKey( p => p.SuffixValueId ).WillCascadeOnDelete( false );

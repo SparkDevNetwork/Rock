@@ -17,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
@@ -85,7 +84,7 @@ namespace RockWeb.Blocks.Reporting
         Key = AttributeKey.UseObsidianComponents,
         Description = "Switches the filter components to use Obsidian if supported.",
         DefaultBooleanValue = true,
-        Category = "Advanced")]
+        Category = "Advanced" )]
 
     [Rock.SystemGuid.BlockTypeGuid( "EB279DF9-D817-4905-B6AC-D9883F0DA2E4" )]
     public partial class DataViewDetail : RockBlock
@@ -1140,17 +1139,17 @@ $(document).ready(function() {
             {
                 return;
             }
-            else if ( dataView.PersistedScheduleId != null || dataView.PersistedScheduleIntervalMinutes != null  )
+            else if ( dataView.PersistedScheduleId != null || dataView.PersistedScheduleIntervalMinutes != null )
             {
                 // This is a persisted data view...
-                if ( ! dataView.PersistedLastRunDurationMilliseconds.HasValue )
+                if ( !dataView.PersistedLastRunDurationMilliseconds.HasValue )
                 {
                     return;
                 }
 
                 isPersisted = true;
             }
-            else if ( ! dataView.TimeToRunDurationMilliseconds.HasValue )
+            else if ( !dataView.TimeToRunDurationMilliseconds.HasValue )
             {
                 // Otherwise it is not persisted data view, but there is no 'time to run duration' to show.
                 return;
@@ -1355,6 +1354,7 @@ $(document).ready(function() {
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
+            filterField.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
             filterField.ValidationGroup = this.BlockValidationGroup;
             filterField.IsFilterTypeEnhancedForLongLists = true;
             filterField.DataViewFilterGuid = Guid.NewGuid();
@@ -1363,7 +1363,6 @@ $(document).ready(function() {
             filterField.ID = string.Format( "ff_{0}", filterField.DataViewFilterGuid.ToString( "N" ) );
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             filterField.Expanded = true;
-            filterField.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
 
             // This is required for Obsidian filters so they can initialize any
             // data that must be sent from C# to Obsidian.
@@ -1488,13 +1487,13 @@ $(document).ready(function() {
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
                     var filterControl = new FilterField();
+                    filterControl.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
                     filterControl.ValidationGroup = this.BlockValidationGroup;
                     filterControl.IsFilterTypeEnhancedForLongLists = true;
                     parentControl.Controls.Add( filterControl );
                     filterControl.DataViewFilterGuid = filter.Guid;
                     filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
                     filterControl.FilteredEntityTypeName = filteredEntityTypeName;
-                    filterControl.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
                     if ( filter.EntityTypeId.HasValue )
                     {
                         var entityTypeCache = EntityTypeCache.Get( filter.EntityTypeId.Value, rockContext );
