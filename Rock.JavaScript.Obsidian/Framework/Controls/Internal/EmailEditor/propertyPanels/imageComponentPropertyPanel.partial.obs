@@ -311,8 +311,8 @@
     const fileAsset = ref<FileAsset | undefined>(getAssetFromComponent());
     const imageSourceType = ref<ImageSourceType>(fileAsset.value ? "asset" : "image");
     const resizeMode = ref<ResizeMode>((props.componentElement?.dataset[dataAttributeKey.imageResizemode] as ResizeMode) ?? "");
-    const imageWidth = ref<number | null>(props.componentElement?.dataset[dataAttributeKey.imageWidth] ? parseInt(props.componentElement.dataset[dataAttributeKey.imageWidth] ?? "0") : null);
-    const imageHeight = ref<number | null>(props.componentElement?.dataset[dataAttributeKey.imageHeight] ? parseInt(props.componentElement.dataset[dataAttributeKey.imageHeight] ?? "0") : null);
+    const imageWidth = ref<number | null>(numberToStringConverter.toSource(props.componentElement?.dataset[dataAttributeKey.imageWidth] ?? null) ?? null);
+    const imageHeight = ref<number | null>(numberToStringConverter.toSource(props.componentElement?.dataset[dataAttributeKey.imageHeight] ?? null) ?? null);
     const imageSize = ref<ImageSize>(getImageOrAssetSizeFromComponent());
     const scaleImageWidth = ref<number>(getScaleWidthFromComponent());
     const isHighResEnabled = ref<boolean>(getIsHighResEnabledFromComponent());
@@ -690,7 +690,7 @@
 
     const setImageFixedWidthCommand: Command = {
         execute() {
-            props.componentElement.dataset[dataAttributeKey.imageWidth] = `${imageWidth.value}`;
+            props.componentElement.dataset[dataAttributeKey.imageWidth] = numberToStringConverter.toTarget(imageWidth.value) ?? "";
 
             // Set the width inline style on the image element.
             // Previously, the image width was determined by the image's natural width.
@@ -723,7 +723,7 @@
 
     const setAssetFixedWidthCommand: Command = {
         execute() {
-            props.componentElement.dataset[dataAttributeKey.imageWidth] = `${imageWidth.value}`;
+            props.componentElement.dataset[dataAttributeKey.imageWidth] = numberToStringConverter.toTarget(imageWidth.value) ?? "";
 
             if (imageElement.value) {
                 imageElement.value.style.width = pixelConverter.toTarget(imageWidth.value) ?? "";
@@ -743,7 +743,7 @@
 
     const setImageFixedHeightCommand: Command = {
         execute() {
-            props.componentElement.dataset[dataAttributeKey.imageHeight] = `${imageHeight.value}`;
+            props.componentElement.dataset[dataAttributeKey.imageHeight] = numberToStringConverter.toTarget(imageHeight.value) ?? "";
 
             // Set the height inline style on the image element.
             // Previously, the image height was determined by the image's natural height.
@@ -776,7 +776,7 @@
 
     const setAssetFixedHeightCommand: Command = {
         execute() {
-            props.componentElement.dataset[dataAttributeKey.imageHeight] = `${imageHeight.value}`;
+            props.componentElement.dataset[dataAttributeKey.imageHeight] = numberToStringConverter.toTarget(imageHeight.value) ?? "";
 
             if (imageElement.value) {
                 imageElement.value.style.height = pixelConverter.toTarget(imageHeight.value) ?? "";
@@ -1298,8 +1298,8 @@
         fileAsset.value = getAssetFromComponent();
         imageSourceType.value = fileAsset.value ? "asset" : "image";
         resizeMode.value = (props.componentElement?.dataset[dataAttributeKey.imageResizemode] as ResizeMode) ?? "";
-        imageWidth.value = props.componentElement?.dataset[dataAttributeKey.imageWidth] ? parseInt(props.componentElement.dataset[dataAttributeKey.imageWidth] ?? "0") : null;
-        imageHeight.value = props.componentElement?.dataset[dataAttributeKey.imageHeight] ? parseInt(props.componentElement.dataset[dataAttributeKey.imageHeight] ?? "0") : null;
+        imageWidth.value = numberToStringConverter.toSource(props.componentElement?.dataset[dataAttributeKey.imageWidth] ?? null) ?? null;
+        imageHeight.value = numberToStringConverter.toSource(props.componentElement?.dataset[dataAttributeKey.imageHeight] ?? null) ?? null;
         imageSize.value = getImageOrAssetSizeFromComponent();
         scaleImageWidth.value = getScaleWidthFromComponent();
         isHighResEnabled.value = getIsHighResEnabledFromComponent();
