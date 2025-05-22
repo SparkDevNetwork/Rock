@@ -409,7 +409,7 @@ namespace Rock.Model
         [RockInternal( "1.15" )]
         public static void StartQuartzScheduler()
         {
-            QuartzScheduler?.Start();
+            QuartzScheduler?.StartDelayed( TimeSpan.FromSeconds( 10 ) );
         }
 
         /// <summary>
