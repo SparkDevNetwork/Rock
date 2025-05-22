@@ -176,7 +176,7 @@ namespace Rock.Blocks.Workflow
 
     [BooleanField(
         "Enable for Form Sharing",
-        Description = "Marks this block instance as available for form sharing. When enabled, the Form Builder can display this block as a shareable link option.",
+        Description = "When enabled and Workflow Type is blank, the Form Builder will be able to generate a shareable link to this page so the chosen form can be filled out using this block instance.",
         DefaultBooleanValue = false,
         Key = AttributeKey.EnableForFormSharing,
         Order = 15 )]
@@ -248,7 +248,7 @@ namespace Rock.Blocks.Workflow
             public const string WorkflowName = "WorkflowName";
 
             public const string ActionId = "ActionId";
-            
+
             /// <summary>
             /// "WorkflowType" supports integer IDs, unique IDs, ID keys, and slugs.
             /// It is used to load the workflow type associated with the workflow.
@@ -303,7 +303,7 @@ namespace Rock.Blocks.Workflow
 
         #region Page Parameters
 
-        private string WorkflowTypePageParameter => PageParameter( PageParameterKey.WorkflowType ); 
+        private string WorkflowTypePageParameter => PageParameter( PageParameterKey.WorkflowType );
 
         private int? WorkflowTypeIdPageParameter =>
             PageParameter( PageParameterKey.WorkflowType ).AsIntegerOrNull()
@@ -368,7 +368,7 @@ namespace Rock.Blocks.Workflow
             {
                 this.RequestContext.Response.SetPageTitle( workflow.WorkflowTypeCache.Name );
             }
-                 
+
             var actionId = RequestContext.GetPageParameter( PageParameterKey.ActionId ).AsIntegerOrNull();
             var initialAction = ProcessWorkflow( workflow, actionId, null, null, null );
 
@@ -386,7 +386,7 @@ namespace Rock.Blocks.Workflow
             var workflowTypeGuidPageParam = this.WorkflowTypeGuidPageParameter;
             var workflowTypeKeyOrSlugPageParam = this.WorkflowTypePageParameter;
             var workflowTypeSlugPageParam = this.WorkflowTypeSlugPageParameter;
-            var allowPassingWorkflowTypeId = !GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean(); 
+            var allowPassingWorkflowTypeId = !GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean();
 
             if ( workflowTypeGuidBlockSetting.HasValue )
             {
@@ -395,7 +395,7 @@ namespace Rock.Blocks.Workflow
             else if ( workflowTypeGuidPageParam.HasValue )
             {
                 return WorkflowTypeCache.Get( workflowTypeGuidPageParam.Value, this.RockContext );
-            } 
+            }
             else if ( workflowTypeIdPageParam.HasValue && allowPassingWorkflowTypeId )
             {
                 return WorkflowTypeCache.Get( workflowTypeIdPageParam.Value, this.RockContext );
