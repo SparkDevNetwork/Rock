@@ -4843,6 +4843,7 @@
     <Compile Include="Workflow\Action\CheckIn\LoadSchedules.cs" />
     <Compile Include="Workflow\Action\CheckIn\ParseZebraLabel.cs" />
     <Compile Include="Workflow\Action\CheckIn\PreSelectRecentAttendance.cs" />
+    <Compile Include="Workflow\Action\CheckIn\PrintLabels.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyGroups.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyGroupTypes.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyLocations.cs" />
