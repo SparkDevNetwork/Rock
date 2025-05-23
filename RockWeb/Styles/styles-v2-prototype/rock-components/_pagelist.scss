@@ -15,6 +15,9 @@
 }
 
 .list-as-blocks {
+  background-color: var(--color-interface-softer);
+  border-radius:    var(--rounded-medium);
+  
   h3 {
     display:      inline-block;
     width:        100%;
@@ -29,8 +32,7 @@
     display:          flex;
     -ms-flex-wrap:    wrap;
     flex-wrap:        wrap;
-    padding:          0;
-    margin:           calc($grid-gutter-width * 0.5) calc($grid-gutter-width * -.25) calc($grid-gutter-width * -.5);
+    padding:          var(--spacing-large) var(--spacing-medium) 8px var(--spacing-medium);
     list-style:       none;
 
     li {

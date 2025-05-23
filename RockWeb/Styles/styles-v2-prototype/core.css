@@ -226,17 +226,17 @@ th {
 /* ===================== VARIABLES =================== */
 :root {
   --logo-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
-  --base-interface-strongest: #000000;
+  --base-interface-strongest: #0a0a0a;
   --base-interface-stronger: #0D1117;
   --base-interface-strong: #3D444D ;
   --base-interface-medium: #8B8BA7;
   --base-interface-soft: #D9D9E3;
   --base-interface-softer: #F8F8FC;
-  --base-interface-softest: #FFFFFF;
+  --base-interface-softest: #fdfdfd;
   --base-critical: #ee7725;
   --base-danger: #D70015;
-  --base-info: #007AFF;
-  --base-success: #32D74B;
+  --base-info: #007DD7;
+  --base-success: #00AE1A;
   --base-primary: #FF791D;
   --base-warning: #E58600;
   --base-link: #006DCC;
@@ -10380,6 +10380,10 @@ ul ul, ol ul, ul ol, ol ol {
   margin: 0 0 6.7px;
 }
 
+.list-as-blocks {
+  background-color: var(--color-interface-softer);
+  border-radius: var(--rounded-medium);
+}
 .list-as-blocks h3 {
   display: inline-block;
   width: 100%;
@@ -10393,8 +10397,7 @@ ul ul, ol ul, ul ol, ol ol {
   display: flex;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
-  padding: 0;
-  margin: 15px -7.5px -15px;
+  padding: var(--spacing-large) var(--spacing-medium) 8px var(--spacing-medium);
   list-style: none;
 }
 .list-as-blocks ul li {

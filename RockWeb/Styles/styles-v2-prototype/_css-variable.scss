@@ -5,18 +5,18 @@
 
   --logo-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
 
-  --base-interface-strongest: #000000;
+  --base-interface-strongest: #0a0a0a;
   --base-interface-stronger:  #0D1117;
   --base-interface-strong:    #3D444D ;
   --base-interface-medium:    #8B8BA7;
   --base-interface-soft:      #D9D9E3;
   --base-interface-softer:    #F8F8FC;
-  --base-interface-softest:   #FFFFFF;
+  --base-interface-softest:   #fdfdfd;
 
   --base-critical:    #ee7725;
   --base-danger:      #D70015;
-  --base-info:        #007AFF;
-  --base-success:     #32D74B;
+  --base-info:        #007DD7;
+  --base-success:     #00AE1A;
 
   --base-primary:     #FF791D;
   --base-warning:     #E58600;
@@ -182,7 +182,6 @@
   --font-family-body:         var(--font-family-sans);
   --font-family-segoe:        "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   --font-family-sans:         -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
-  // --font-family-sans:         "Lato", sans-serif;
   --font-family-serif:        Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
   --font-family-monospace:    Menlo, Monaco, Consolas, "Courier New", monospace;
 
