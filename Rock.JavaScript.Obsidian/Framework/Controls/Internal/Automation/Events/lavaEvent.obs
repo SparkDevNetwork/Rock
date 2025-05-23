@@ -32,7 +32,7 @@
     const props = defineProps(automationEventComponentProps);
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: Record<string, string>): void
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
     // #region Values
