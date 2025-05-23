@@ -65,14 +65,14 @@
                     "name": "Info Color",
                     "variable": "base-info",
                     "description": "The info color used to paint alert, label, badges.",
-                    "default": "#007DD7"
+                    "default": "#005DD7"
                 },
                 {
                     "type": "color",
                     "name": "Success Color",
                     "variable": "base-success",
                     "description": "The success color used to paint alert, label, badges.",
-                    "default": "#00AE1A"
+                    "default": "#01A11E"
                 },
                 {
                     "type": "color",

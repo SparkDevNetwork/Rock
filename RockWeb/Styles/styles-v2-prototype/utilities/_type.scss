@@ -197,7 +197,8 @@ mark,
 ul,
 ol {
   margin-top: 0;
-  margin-bottom: calc($line-height-computed / 2);
+  // margin-bottom: calc($line-height-computed / 2);
+  margin-bottom: 0;
   ul,
   ol {
     margin-bottom: 0;

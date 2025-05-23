@@ -68,7 +68,7 @@
 }
 
 .input-group-btn > .btn {
-  padding: 6px var(--spacing-medium);
+  padding: var(--spacing-xsmall) var(--spacing-medium); // Need to hard code for the search icon to match the height of the input box.
 }
 // ===================== END SIZING =====================
 
@@ -157,6 +157,7 @@
 
 .input-group-addon:last-child {
   border-left:    0;
+  box-shadow: var(--input-box-shadow);
 }
 
 .input-group-btn {

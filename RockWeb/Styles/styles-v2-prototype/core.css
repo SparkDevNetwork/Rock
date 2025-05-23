@@ -235,8 +235,8 @@ th {
   --base-interface-softest: #fdfdfd;
   --base-critical: #ee7725;
   --base-danger: #D70015;
-  --base-info: #007DD7;
-  --base-success: #00AE1A;
+  --base-info: #005DD7;
+  --base-success: #01A11E;
   --base-primary: #FF791D;
   --base-warning: #E58600;
   --base-link: #006DCC;
@@ -375,25 +375,25 @@ th {
 }
 @supports (color: color-mix(in srgb, red 50%, white 50%)) {
   :root {
-    --tint-white-percentage: 100%;
+    --tint-white-percentage: 50%;
     --shade-black-percentage: 15%;
     --color-critical-tint: color-mix(in srgb, var(--base-critical) 50%, transparent var(--tint-white-percentage));
-    --color-critical-soft: color-mix(in srgb, var(--base-critical) 9%, transparent var(--tint-white-percentage));
+    --color-critical-soft: color-mix(in srgb, var(--base-critical) 7%, transparent var(--tint-white-percentage));
     --color-critical-shade: color-mix(in srgb, var(--base-critical) 100%, #000 var(--shade-black-percentage));
     --color-danger-tint: color-mix(in srgb, var(--base-danger) 50%, transparent var(--tint-white-percentage));
-    --color-danger-soft: color-mix(in srgb, var(--base-danger) 9%, transparent var(--tint-white-percentage));
+    --color-danger-soft: color-mix(in srgb, var(--base-danger) 7%, transparent var(--tint-white-percentage));
     --color-danger-shade: color-mix(in srgb, var(--base-danger) 100%, #000 var(--shade-black-percentage));
     --color-info-tint: color-mix(in srgb, var(--base-info) 50%, transparent var(--tint-white-percentage));
-    --color-info-soft: color-mix(in srgb, var(--base-info) 9%, transparent var(--tint-white-percentage));
+    --color-info-soft: color-mix(in srgb, var(--base-info) 7%, transparent var(--tint-white-percentage));
     --color-info-shade: color-mix(in srgb, var(--base-info) 100%, #000 var(--shade-black-percentage));
     --color-success-tint: color-mix(in srgb, var(--base-success) 50%, transparent var(--tint-white-percentage));
-    --color-success-soft: color-mix(in srgb, var(--base-success) 9%, transparent var(--tint-white-percentage));
+    --color-success-soft: color-mix(in srgb, var(--base-success) 7%, transparent var(--tint-white-percentage));
     --color-success-shade: color-mix(in srgb, var(--base-success) 100%, #000 var(--shade-black-percentage));
     --color-warning-tint: color-mix(in srgb, var(--base-warning) 50%, transparent var(--tint-white-percentage));
-    --color-warning-soft: color-mix(in srgb, var(--base-warning) 9%, transparent var(--tint-white-percentage));
+    --color-warning-soft: color-mix(in srgb, var(--base-warning) 7%, transparent var(--tint-white-percentage));
     --color-warning-shade: color-mix(in srgb, var(--base-warning) 100%, #000 var(--shade-black-percentage));
     --color-primary-tint: color-mix(in srgb, var(--base-primary) 50%, transparent var(--tint-white-percentage));
-    --color-primary-soft: color-mix(in srgb, var(--base-primary) 9%, transparent var(--tint-white-percentage));
+    --color-primary-soft: color-mix(in srgb, var(--base-primary) 7%, transparent var(--tint-white-percentage));
     --color-primary-shade: color-mix(in srgb, var(--base-primary) 100%, #000 var(--shade-black-percentage));
     --color-link-tint: color-mix(in srgb, var(--base-link) 50%, transparent var(--tint-white-percentage));
     --color-link-shade: color-mix(in srgb, var(--base-link) 100%, #000 var(--shade-black-percentage));
@@ -410,6 +410,11 @@ th {
     --color-interface-soft: var(--base-interface-strong);
     --color-interface-softer: var(--base-interface-strongest);
     --color-interface-softest: var(--base-interface-stronger);
+    --color-info-strong: color-mix(in srgb, var(--base-info) 50%, #fff var(--tint-white-percentage));
+    --color-danger-strong: color-mix(in srgb, var(--base-danger) 50%, #fff var(--tint-white-percentage));
+    --color-success-strong: color-mix(in srgb, var(--base-success) 50%, #fff var(--tint-white-percentage));
+    --color-warning-strong: color-mix(in srgb, var(--base-warning) 50%, #fff var(--tint-white-percentage));
+    --color-critical-strong: color-mix(in srgb, var(--base-critical) 50%, #fff var(--tint-white-percentage));
     --box-shadow: rgba(145, 158, 171, 0.3) 0px 0px 2px 0px,rgba(145, 158, 171, .04) 0px 12px 24px -4px;
     --popup-box-shadow: 0 1rem 3rem rgba(255, 255, 255,.04);
   }
@@ -423,6 +428,11 @@ th {
   --color-interface-soft: var(--base-interface-soft);
   --color-interface-softer: var(--base-interface-softer);
   --color-interface-softest: var(--base-interface-softest);
+  --color-info-strong: var(--base-info);
+  --color-danger-strong: var(--base-danger);
+  --color-success-strong: var(--base-success);
+  --color-warning-strong: var(--base-warning);
+  --color-critical-strong: var(--base-critical);
   --box-shadow: rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
   --popup-box-shadow: 0 1rem 3rem rgba(0,0,0,.175);
 }
@@ -435,6 +445,11 @@ th {
   --color-interface-soft: var(--base-interface-strong);
   --color-interface-softer: var(--base-interface-strongest);
   --color-interface-softest: var(--base-interface-stronger);
+  --color-info-strong: color-mix(in srgb, var(--base-info) 50%, #fff var(--tint-white-percentage));
+  --color-danger-strong: color-mix(in srgb, var(--base-danger) 50%, #fff var(--tint-white-percentage));
+  --color-success-strong: color-mix(in srgb, var(--base-success) 50%, #fff var(--tint-white-percentage));
+  --color-warning-strong: color-mix(in srgb, var(--base-warning) 50%, #fff var(--tint-white-percentage));
+  --color-critical-strong: color-mix(in srgb, var(--base-critical) 50%, #fff var(--tint-white-percentage));
   --box-shadow: rgba(145, 158, 171, 0.3) 0px 0px 2px 0px,rgba(145, 158, 171, .04) 0px 12px 24px -4px;
   --popup-box-shadow: 0 1rem 3rem rgba(255, 255, 255,.04);
 }
@@ -3898,8 +3913,9 @@ a .label:hover, a .label:focus {
 }
 
 .label-default {
-  background-color: var(--color-interface-soft);
+  background-color: var(--color-interface-softer);
   color: var(--color-interface-strong);
+  border: 1px solid var(--color-interface-soft);
 }
 .label-default[href]:hover, .label-default[href]:focus {
   background-color: var(--color-interface-medium);
@@ -6875,7 +6891,7 @@ td.grid-actions {
 }
 
 .input-group-btn > .btn {
-  padding: 6px var(--spacing-medium);
+  padding: var(--spacing-xsmall) var(--spacing-medium);
 }
 
 .input-group-addon,
@@ -6951,6 +6967,7 @@ td.grid-actions {
 
 .input-group-addon:last-child {
   border-left: 0;
+  box-shadow: var(--input-box-shadow);
 }
 
 .input-group-btn {
@@ -10383,6 +10400,8 @@ ul ul, ol ul, ul ol, ol ol {
 .list-as-blocks {
   background-color: var(--color-interface-softer);
   border-radius: var(--rounded-medium);
+  border: 1px solid var(--color-interface-soft);
+  margin-bottom: var(--spacing-huge);
 }
 .list-as-blocks h3 {
   display: inline-block;
@@ -10458,7 +10477,7 @@ ul ul, ol ul, ul ol, ol ol {
 .list-as-blocks ul li a i {
   margin: var(--spacing-xsmall) 0;
   font-size: var(--font-size-h3); /* When switching Rock Core to Tabler icon set make sure to increase the font-size as FontAwesome is bigger than Tabler.*/
-  color: var(--color-interface-strong);
+  color: var(--color-interface-medium);
 }
 .list-as-blocks ul li a:hover {
   color: var(--color-interface-stronger);
@@ -28800,7 +28819,7 @@ a .bg-danger:hover, a .bg-danger:focus {
 ul,
 ol {
   margin-top: 0;
-  margin-bottom: calc(var(--font-size-regular) * var(--line-height-normal) / 2);
+  margin-bottom: 0;
 }
 ul ul,
 ul ol,

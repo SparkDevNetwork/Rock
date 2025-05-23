@@ -17,6 +17,8 @@
 .list-as-blocks {
   background-color: var(--color-interface-softer);
   border-radius:    var(--rounded-medium);
+  border:           1px solid var(--color-interface-soft);
+  margin-bottom:    var(--spacing-huge);
   
   h3 {
     display:      inline-block;
@@ -90,7 +92,7 @@
         i {
           margin:     var(--spacing-xsmall) 0;
           font-size:  var(--font-size-h3);    /* When switching Rock Core to Tabler icon set make sure to increase the font-size as FontAwesome is bigger than Tabler.*/
-          color:      var(--color-interface-strong);
+          color:      var(--color-interface-medium);
         }
 
         &:hover {
