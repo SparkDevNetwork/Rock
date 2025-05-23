@@ -79,7 +79,7 @@
     const props = defineProps(standardDynamicComponentProps);
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: Record<string, string>): void
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
     // #region Values
@@ -126,7 +126,7 @@
      *
      * @returns The list of triggered on values.
      */
-    function parseTriggeredOn(triggeredOnValue: string): string[] {
+    function parseTriggeredOn(triggeredOnValue: string | null | undefined): string[] {
         var triggeredOn = toNumber(triggeredOnValue);
         const triggeredOnItems: string[] = [];
 

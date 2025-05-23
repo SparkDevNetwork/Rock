@@ -2871,7 +2871,7 @@
     <Compile Include="Web\UI\Controls\MediaPlayer.cs" />
     <Compile Include="Web\UI\Controls\MediaSelector.cs" />
     <Compile Include="Web\UI\Controls\MobileNavigationActionEditor.cs" />
-    <Compile Include="Web\UI\Controls\ObsidianDataComponentWrapper.cs" />
+    <Compile Include="Web\UI\Controls\ObsidianDynamicComponentWrapper.cs" />
     <Compile Include="Web\UI\Controls\PageNavButtons.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
     <Compile Include="Web\UI\Controls\LocationList.cs" />

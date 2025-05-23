@@ -37,7 +37,9 @@ export type DynamicComponentDefinitionBag = {
     /**
      * The security grant that will be provided to the component. This
      * will allow any UI controls to make API requests that require
-     * additional permissions.
+     * additional permissions. These are not automatically renewed so it
+     * is suggested that you create the token with an expiration of atleast
+     * a few hours to cover then walking away while editing something.
      */
     securityGrantToken?: string | null;
 
