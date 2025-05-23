@@ -991,6 +991,9 @@
         // else if (imageElement.value?.src.includes("zoom=") || props.componentElement.dataset[dataAttributeKey.imageScale]) {
         //     return "scale";
         // }
+        else if (imageElement.value?.style.width === "100%") {
+            return "responsive";
+        }
         else if (imageElement.value?.src
             && !imageElement.value.src.includes("width=")
             && !imageElement.value.src.includes("height=")) {
