@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 using Ical.Net;
@@ -66,7 +65,7 @@ namespace Rock.Tests.Lava.Filters
             var today = startDate.Date;
             var nextSaturday = today.GetNextWeekday( DayOfWeek.Saturday );
 
-            var weeklySaturday430 = new Ical.Net.Calendar()
+            var weeklySaturday430 = new Calendar()
             {
                 Events =
                 {
@@ -90,7 +89,7 @@ namespace Rock.Tests.Lava.Filters
         {
             var firstSaturdayOfMonth = startDate.StartOfMonth().GetNextWeekday( DayOfWeek.Saturday );
 
-            var monthlyFirstSaturday = new Ical.Net.Calendar()
+            var monthlyFirstSaturday = new Calendar()
             {
                 Events =
                 {
