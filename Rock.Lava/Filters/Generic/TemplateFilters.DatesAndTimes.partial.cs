@@ -46,15 +46,22 @@ namespace Rock.Lava.Filters
         /// <summary>
         /// Formats a date using a .NET date format string
         /// </summary>
+        /// <param name="context">The Lava rendering context, used to determine the effective culture (invariant, client, etc).</param>
         /// <param name="input"></param>
         /// <param name="format"></param>
-        /// <returns></returns>
-        public static string Date( object input, string format = null )
+        /// <returns>a date string</returns>
+        /// <remarks>
+        /// This method honors the Rock "setculture" Lava command to determine the culture for parsing.
+        /// The culture is resolved via <c>context.GetCultureInfo()</c>.
+        /// </remarks>
+        public static string Date( ILavaRenderContext context, object input, string format = null )
         {
             if ( input == null )
             {
                 return null;
             }
+
+            CultureInfo cultureInfo = context.GetCultureInfo();
 
             string output;
 
@@ -103,9 +110,8 @@ namespace Rock.Lava.Filters
                 }
                 else
                 {
-                    //context.GetInternalField( "rock_culture" );
-                    var invariantDateString = Convert.ToString( input, CultureInfo.InvariantCulture );
-                    inputDateTime = LavaDateTime.ParseToOffset( invariantDateString, null );
+                    var invariantDateString = Convert.ToString( input, cultureInfo );
+                    inputDateTime = LavaDateTime.ParseToOffset( invariantDateString, cultureInfo, null );
                 }
 
                 if ( !inputDateTime.HasValue )
@@ -115,7 +121,7 @@ namespace Rock.Lava.Filters
                 }
                 else
                 {
-                    output = LavaDateTime.ToString( inputDateTime.Value, format ).Trim();
+                    output = LavaDateTime.ToString( inputDateTime.Value, format, cultureInfo ).Trim();
                 }
             }
             return output;

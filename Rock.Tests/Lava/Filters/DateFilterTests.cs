@@ -176,8 +176,8 @@ namespace Rock.Tests.Lava.Filters
         /// </summary>
         [DataTestMethod]
         [DataRow( "5/1/2018", "May 1, 2018", "en-US" )]
-        [DataRow( "5/1/2018", "Mai 1, 2018", "de-DE" )] // Note: Mai is May in German
-        public void AsDateTime_DateOnlyUsingInvariantDateFormat_ProducesValidDate( string input, string expectedResult, string clientCulture )
+        [DataRow( "5/1/2018", "Jan 5, 2018", "de-DE" )] // Note: Mai is May in German
+        public void AsDateTime_UsingAmbiguousDate_ProducesDifferentDates( string input, string expectedResult, string clientCulture )
         {
             var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
@@ -185,6 +185,22 @@ namespace Rock.Tests.Lava.Filters
                 return null;
             }, clientCulture );
         }
+
+        /// <summary>
+        /// Converts an input value to a date/time value.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "5/1/2018", "May 1, 2018", "en-US" )]
+        [DataRow( "5/1/2018", "Mai 1, 2018", "de-DE" )] // Note: Mai is May in German
+        public void AsDateTime_UsingSetCulture_AsInvariant_UsingAmbiguousDate_ProducesSameDate( string input, string expectedResult, string clientCulture )
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{{ '" + input + "' | AsDateTime | Date:'MMM d, yyyy' }}{% endsetculture %}" );
+                return null;
+            }, clientCulture );
+        }
+
 
         /// <summary>
         /// Using the Date filter to format a DateTimeOffset type should correctly report the offset in the output.
@@ -321,6 +337,48 @@ namespace Rock.Tests.Lava.Filters
         public void Date_NowWithFormatStringAsInput_ResolvesToCurrentDateTimeWithSpecifiedFormat()
         {
             TestHelper.AssertTemplateOutputDate( _now.ToString( "yyyy-MM-dd" ), "{{ 'Now' | Date:'yyyy-MM-dd' }}" );
+        }
+
+        [DataTestMethod]
+        [DataRow( "1-May-2018 6:30 PM", "5/1/2018", "en-US" )]
+        [DataRow( "1-May-2018 6:30 PM", "01.05.2018", "de-DE" )]
+        [DataRow( "01/02/2020", "01.02.2020", "de-DE" )] // That is February 1 as dd.MM.yyyy
+        [DataRow( "01/02/2020", "1/2/2020", "en-US" )] // That is January 2
+        public void DateString_ShortDateParameter_AgainstClientCulture( string input, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input + "' | Date:'sd' }}" );
+                return null;
+            }, clientCulture );
+        }
+
+        [DataTestMethod]
+        [DataRow( "1-May-2018 6:30 PM", "05/01/2018", "en-US" )]
+        [DataRow( "1-May-2018 6:30 PM", "05/01/2018", "de-DE" )]
+        [DataRow( "01/02/2020", "01/02/2020", "de-DE" )] // That is January 2
+        [DataRow( "01/02/2020", "01/02/2020", "en-US" )] // That is January 2
+        public void DateString_UsingSetCulture_AsInvariant_ShortDateParameter_AgainstClientCulture( string input, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{{ '" + input + "' | Date:'sd' }}{% endsetculture %}" );
+                return null;
+            }, clientCulture );
+        }
+
+        [DataTestMethod]
+        [DataRow( "1-May-2018 6:30 PM", "5/1/2018", "en-US" )]
+        [DataRow( "1-May-2018 6:30 PM", "01.05.2018", "de-DE" )]
+        [DataRow( "01/02/2020", "01.02.2020", "de-DE" )] // That is February 1 as dd.MM.yyyy
+        [DataRow( "01/02/2020", "1/2/2020", "en-US" )] // That is January 2
+        public void DateString_UsingSetCulture_AsClientt_ShortDateParameter_AgainstClientCulture( string input, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'client' %}{{ '" + input + "' | Date:'sd' }}{% endsetculture %}" );
+                return null;
+            }, clientCulture );
         }
 
         /// <summary>

@@ -103,39 +103,46 @@ namespace Rock.Lava.Blocks
                     }
                 case "server":
                     {
-                        // use the culture installed with the operating system.
+                        // Use the culture installed with the operating system.
                         // See https://learn.microsoft.com/en-us/dotnet/api/system.globalization.cultureinfo.installeduiculture?view=net-9.0#system-globalization-cultureinfo-installeduiculture
                         cultureInfo = CultureInfo.InstalledUICulture;
                         break;
                     }
                 case "client":
-                default:
                     {
                         // just leave as CurrentCulture
                         break;
                     }
+                default:
+                    {
+                        // Try using the given string for the CultureInfo.
+                        cultureInfo = CultureInfo.GetCultureInfo( cultureString );
+                        break;
+                    }
             }
 
-            // Alternatively, if we'd rather not have such a wide reaching culture impact, we could set
+            /*
+                    //// We could also allow setting the culture explicitly.  So, instead of "client" we could allow
+                    //// setting this to a specific culture (e.g., "en-GB", "de-DE", etc.).  That could allow
+                    //// someone to capture the client's culture at the time the input was collected so that it uses
+                    //// that culture later when the Lava is processed (such as in the ProcessWorkflows job).
+
+                    //// Otherwise, we're doing it like this which impacts the entire thread (any/all Lava).
+                    //// Run and return the Lava
+                    //ExecuteWithCulture( () =>
+                    //{
+                    //    var lavaResults = MergeLava( _blockMarkup.ToString(), context );
+                    //    result.Write( lavaResults );
+                    //}
+                    //, cultureInfo );
+            */
+
+            // Alternatively, if we'd rather not have such a wide reaching culture impact, we will just set
             // an internal field on the Lava context to hold the culture info. Then, we would need to use
             // that inside a limited list of specific filters (such as AsInteger, AsDecimal, AsDateTime, etc.).
-            // 
-            //context.SetInternalField( "rock_culture", cultureInfo );
-
-            // We could also allow setting the culture explicitly.  So, instead of "client" we could allow
-            // setting this to a specific culture (e.g., "en-GB", "de-DE", etc.).  That could allow
-            // someone to capture the client's culture at the time the input was collected so that it uses
-            // that culture later when the Lava is processed (such as in the ProcessWorkflows job).
-
-            // Otherwise, we're doing it like this which impacts the entire thread (any/all Lava).
-            // Run and return the Lava
-            ExecuteWithCulture( () =>
-            {
-                var lavaResults = MergeLava( _blockMarkup.ToString(), context );
-                result.Write( lavaResults );
-            }
-            , cultureInfo );
-            
+            context.SetInternalField( "rock_culture", cultureInfo );
+            var lavaResults = MergeLava( _blockMarkup.ToString(), context );
+            result.Write( lavaResults );
         }
 
         internal static LavaElementAttributes GetAttributesFromMarkup( string markup, ILavaRenderContext context )
