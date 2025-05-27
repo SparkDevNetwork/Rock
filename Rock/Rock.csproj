@@ -1763,6 +1763,7 @@
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
     <Compile Include="Plugin\HotFixes\226_UpdateIndexesForV16_8.cs" />
+    <Compile Include="Plugin\HotFixes\250_AddDuplicateCommunicationRecipientHandling.cs" />
     <Compile Include="Plugin\HotFixes\242_UpdateFileAssetManagerDefaultValues.cs" />
     <Compile Include="Plugin\HotFixes\241_ChatBackendSyncAdditions.cs" />
     <Compile Include="Plugin\HotFixes\239_AddLoginHistoryPageAndBlocks.cs" />
@@ -5104,6 +5105,7 @@
     <Content Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateFollowing.sql" />
     <Content Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateGroupConnections.sql" />
     <Content Include="Plugin\HotFixes\225_ImprovePeerNetworkCalculations_spPeerNetwork_UpdateGroupConnections.sql" />
+    <Content Include="Plugin\HotFixes\250_AddDuplicateCommunicationRecipientHandling_spCommunicationRecipientDetails.sql" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">
