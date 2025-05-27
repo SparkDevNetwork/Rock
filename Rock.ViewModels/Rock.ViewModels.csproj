@@ -180,7 +180,6 @@
     <Compile Include="Blocks\Group\GroupPlacement\PlacementConfigurationSettingsBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PlacementGroupBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\DestinationGroupTypeRoleBag.cs" />
-    <Compile Include="Blocks\Group\GroupPlacement\DestinationGroupTypeBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\GroupPlacementInitializationBox.cs" />
     <Compile Include="Blocks\Lms\LearningClassActivityCompletionDetail\LearningClassActivityCompletionBag.cs" />
     <Compile Include="Blocks\Lms\LearningClassActivityCompletionDetail\LearningClassActivityCompletionDetailOptionsBag.cs" />

@@ -179,6 +179,7 @@ namespace RockWeb.Blocks.Groups
 
     [LinkedPage( "Group Placement Page",
         Key = AttributeKey.GroupPlacementPage,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_PLACEMENT + "," + Rock.SystemGuid.PageRoute.GROUP_PLACEMENT,
         Description = "The page used for performing group placements.",
         IsRequired = false,
         Order = 20 )]

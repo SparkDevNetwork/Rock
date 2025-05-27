@@ -7,11 +7,14 @@
          @mouseleave="toggleIsCardExpandedOnHover(false)">
         <div class="d-flex justify-content-between align-items-center person-row"
              :class="{ 'expanded': isCardExpanded }">
-            <div class="d-flex align-items-center flex-grow-1">
+            <div class="d-flex align-items-center w-100">
                 <div class="mr-3 flex-shrink-0"
                      :style="{ 'width': '32px', 'height': '32px', 'border-radius': '18px', 'background-image': `url('${person.photoUrl}')`, 'background-size': 'cover' }">
                 </div>
-                {{ displayedPersonName }}
+                <span :ref="(el) => addTooltipIfOverflow(el as HTMLElement, displayedPersonName)"
+                      class="overflow-ellipsis">
+                    {{ displayedPersonName }}
+                </span>
             </div>
             <div v-if="isGroupMemberCard && groupMember?.groupMemberIdKey"
                  :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === index }]">
@@ -41,7 +44,7 @@
                 </ul>
             </div>
         </div>
-        <TransitionVerticalCollapse>
+        <TransitionVerticalCollapse v-if="isTransitionEnabled">
             <div v-if="isCardExpanded && (hasGroupMemberDetailsToDisplay || hasRegistrantDetailsToDisplay || hasSourceMemberDetailsToDisplay)"
                  class="details-container">
                 <template v-if="isGroupMemberCard && hasGroupMemberDetailsToDisplay">
@@ -49,15 +52,13 @@
                         Group Member
                     </div>
                     <dl>
-                        <template v-for="attribute, key in getAttributesWithCorrespondingValues(destinationGroupMemberAttributes, destinationGroupMemberAttributeValues)"
-                                  :key="key">
-                            <dt>
+                        <template v-for="attribute in getDisplayAttributes(destinationGroupMemberAttributes, destinationGroupMemberAttributeValues)"
+                                  :key="attribute.key">
+                            <dt :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.name)">
                                 {{ attribute.name }}
                             </dt>
-                            <dd :ref="(el) => addTooltip(el as Element)"
-                                data-toggle="tooltip"
-                                :data-original-title="getAttributeValueText(destinationGroupMemberAttributeValues, attribute, key)">
-                                {{ getAttributeValueText(destinationGroupMemberAttributeValues, attribute, key) }}
+                            <dd :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.value)">
+                                {{ attribute.value }}
                             </dd>
                         </template>
                     </dl>
@@ -70,16 +71,13 @@
                     <template v-for="sourceGroupMember in person.sourceGroupMembers">
                         <dl v-if="sourceGroupMember.groupMemberIdKey && sourceGroupMember.attributes && sourceGroupMember.attributeValues"
                             :key="sourceGroupMember.groupMemberIdKey">
-                            <template v-for="(attribute, key) in getAttributesWithCorrespondingValues(sourceGroupMember.attributes, sourceGroupMember.attributeValues)"
-                                      :key="key">
-                                <dt>
+                            <template v-for="attribute in getDisplayAttributes(sourceGroupMember.attributes, sourceGroupMember.attributeValues)"
+                                      :key="attribute.key">
+                                <dt :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.name)">
                                     {{ attribute.name }}
                                 </dt>
-                                <!-- TODO - tooltip isn't top right... have to rework the title as well -->
-                                <dd :ref="(el) => addTooltip(el as Element)"
-                                    data-toggle="tooltip"
-                                    :data-original-title="getAttributeValueText(sourceGroupMember.attributeValues, attribute, key)">
-                                    {{ getAttributeValueText(sourceGroupMember.attributeValues, attribute, key) }}
+                                <dd :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.value)">
+                                    {{ attribute.value }}
                                 </dd>
                             </template>
                         </dl>
@@ -95,47 +93,32 @@
                     <template v-for="registrant in person.registrants">
                         <dl v-if="registrant.registrantIdKey"
                             :key="registrant.registrantIdKey">
-                            <template v-if="isInstanceDisplayed">
+                            <template v-if="isInstanceDisplayed && !isNullOrWhiteSpace(registrant.registrationInstanceName)">
                                 <dt>
                                     Instance
                                 </dt>
-                                <dd :ref="(el) => addTooltip(el as Element)"
-                                    data-toggle="tooltip"
-                                    :data-original-title="registrant.registrationInstanceName">
+                                <dd :ref="(el) => addTooltipIfOverflow(el as HTMLElement, registrant.registrationInstanceName!)">
                                     {{ registrant.registrationInstanceName }}
                                 </dd>
                             </template>
                             <template v-if="(!isGroupMemberCard || areSourceAttributesDisplayedOnDestinationGroupMembers) && registrant.attributes && registrant.attributeValues"
-                                      v-for="(attribute, key) in getAttributesWithCorrespondingValues(registrant.attributes, registrant.attributeValues)"
-                                      :key="key">
-                                <dt>
+                                      v-for="attribute in getDisplayAttributes(registrant.attributes, registrant.attributeValues)"
+                                      :key="attribute.key">
+                                <dt :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.name)">
                                     {{ attribute.name }}
                                 </dt>
-                                <!-- TODO - tooltip isn't top right... have to rework the title as well -->
-                                <dd v-if="registrant.attributeValues"
-                                    :ref="(el) => addTooltip(el as Element)"
-                                    data-toggle="tooltip"
-                                    :data-original-title="getAttributeValueText(registrant.attributeValues, attribute, key)">
-                                    <!-- <RockField :attribute="attribute"
-                                               :modelValue="registrant.attributeValues[key!]"
-                                               :showLabel="false"
-                                               class="attribute-value-list" /> -->
-                                    {{ getAttributeValueText(registrant.attributeValues, attribute, key) }}
+                                <dd :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.value)">
+                                    {{ attribute.value }}
                                 </dd>
                             </template>
-                            <template v-if="!isGroupMemberCard && areFeesDisplayed && registrant.fees"
-                                      v-for="key in Object.keys(registrant.fees)"
+                            <template v-if="!isGroupMemberCard && areFeesDisplayed"
+                                      v-for="[key, fee] in getValidFees(registrant.fees)"
                                       :key="key">
-                                <dt :ref="(el) => addTooltip(el as Element)"
-                                    data-toggle="tooltip"
-                                    :data-original-title="registrant.fees[key].text">
-                                    {{ registrant.fees[key].text }}
+                                <dt :ref="(el) => addTooltipIfOverflow(el as HTMLElement, fee.text!)">
+                                    {{ fee.text }}
                                 </dt>
-                                <!-- TODO - tooltip isn't top right... have to rework the title as well -->
-                                <dd :ref="(el) => addTooltip(el as Element)"
-                                    data-toggle="tooltip"
-                                    :data-original-title="registrant.fees[key].value">
-                                    {{ registrant.fees[key].value }}
+                                <dd :ref="(el) => addTooltipIfOverflow(el as HTMLElement, fee.value!)">
+                                    {{ fee.value }}
                                 </dd>
                             </template>
                         </dl>
@@ -143,6 +126,88 @@
                 </template>
             </div>
         </TransitionVerticalCollapse>
+        <template v-else>
+            <div v-if="isCardExpanded && (hasGroupMemberDetailsToDisplay || hasRegistrantDetailsToDisplay || hasSourceMemberDetailsToDisplay)"
+                 class="details-container">
+                <template v-if="isGroupMemberCard && hasGroupMemberDetailsToDisplay">
+                    <div class="header">
+                        Group Member
+                    </div>
+                    <dl>
+                        <template v-for="attribute in getDisplayAttributes(destinationGroupMemberAttributes, destinationGroupMemberAttributeValues)"
+                                  :key="attribute.key">
+                            <dt :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.name)">
+                                {{ attribute.name }}
+                            </dt>
+                            <dd :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.value)">
+                                {{ attribute.value }}
+                            </dd>
+                        </template>
+                    </dl>
+                </template>
+                <template v-if="(!isGroupMemberCard || areSourceAttributesDisplayedOnDestinationGroupMembers) && hasSourceMemberDetailsToDisplay">
+                    <div class="header">
+                        {{ sourceGroupMemberHeader }}
+                    </div>
+                    <!-- TODO - Handle hiding dl when there are no attributes to display. -->
+                    <template v-for="sourceGroupMember in person.sourceGroupMembers">
+                        <dl v-if="sourceGroupMember.groupMemberIdKey && sourceGroupMember.attributes && sourceGroupMember.attributeValues"
+                            :key="sourceGroupMember.groupMemberIdKey">
+                            <template v-for="attribute in getDisplayAttributes(sourceGroupMember.attributes, sourceGroupMember.attributeValues)"
+                                      :key="attribute.key">
+                                <dt :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.name)">
+                                    {{ attribute.name }}
+                                </dt>
+                                <dd :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.value)">
+                                    {{ attribute.value }}
+                                </dd>
+                            </template>
+                        </dl>
+                    </template>
+                </template>
+                <!-- If show instance or show registrants attributes is on then we display this. -->
+                <!-- TODO - Come back to this if statement -->
+                <template v-if="(isInstanceDisplayed || areFeesDisplayed || (!isGroupMemberCard || areSourceAttributesDisplayedOnDestinationGroupMembers)) && hasRegistrantDetailsToDisplay">
+                    <div class="header">
+                        {{ registrantHeader }}
+                    </div>
+                    <!-- TODO - Handle hiding dl when there are no attributes or instance to display. -->
+                    <template v-for="registrant in person.registrants">
+                        <dl v-if="registrant.registrantIdKey"
+                            :key="registrant.registrantIdKey">
+                            <template v-if="isInstanceDisplayed && !isNullOrWhiteSpace(registrant.registrationInstanceName)">
+                                <dt>
+                                    Instance
+                                </dt>
+                                <dd :ref="(el) => addTooltipIfOverflow(el as HTMLElement, registrant.registrationInstanceName!)">
+                                    {{ registrant.registrationInstanceName }}
+                                </dd>
+                            </template>
+                            <template v-if="(!isGroupMemberCard || areSourceAttributesDisplayedOnDestinationGroupMembers) && registrant.attributes && registrant.attributeValues"
+                                      v-for="attribute in getDisplayAttributes(registrant.attributes, registrant.attributeValues)"
+                                      :key="attribute.key">
+                                <dt :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.name)">
+                                    {{ attribute.name }}
+                                </dt>
+                                <dd :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.value)">
+                                    {{ attribute.value }}
+                                </dd>
+                            </template>
+                            <template v-if="!isGroupMemberCard && areFeesDisplayed"
+                                      v-for="[key, fee] in getValidFees(registrant.fees)"
+                                      :key="key">
+                                <dt :ref="(el) => addTooltipIfOverflow(el as HTMLElement, fee.text!)">
+                                    {{ fee.text }}
+                                </dt>
+                                <dd :ref="(el) => addTooltipIfOverflow(el as HTMLElement, fee.value!)">
+                                    {{ fee.value }}
+                                </dd>
+                            </template>
+                        </dl>
+                    </template>
+                </template>
+            </div>
+        </template>
     </div>
 </template>
 
@@ -166,7 +231,7 @@
     cursor: -webkit-grab;
     /* cursor: grab; */
     background-color: #fff;
-    box-shadow: 0 1px 0 #3321140D
+    box-shadow: 0 1px 0 #3321140D;
 }
 
 .person-row {
@@ -229,6 +294,12 @@
     text-overflow: ellipsis;
 }
 
+.overflow-ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .person-card .details-container dd {
     text-align: right;
     color: var(--color-interface-stronger);
@@ -259,7 +330,7 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, ref, computed } from "vue";
+    import { PropType, ref, computed, nextTick, } from "vue";
     import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
     import { tooltip } from "@Obsidian/Utility/tooltip";
@@ -273,11 +344,17 @@
     import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
     import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
     import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         isCardExpanded: {
             type: Boolean as PropType<boolean>,
             required: true
+        },
+        isTransitionEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: false
         },
         person: {
             type: Object as PropType<PersonBag>,
@@ -336,6 +413,12 @@
         (e: "removeGroupMember", value: string): void;
     }>();
 
+    type DisplayAttribute = {
+        key: string;
+        name: string;
+        value: string;
+    };
+
     const openDropdownIndex = ref<number | null>(null);
     const isCardExpanded = useVModelPassthrough(props, "isCardExpanded", emit);
 
@@ -377,7 +460,7 @@
             return false;
         }
 
-        return Object.keys(getAttributesWithCorrespondingValues(props.groupMember.attributes, props.groupMember.attributeValues) ?? {}).length > 0;
+        return getDisplayAttributes(props.groupMember.attributes, props.groupMember.attributeValues).length > 0;
     });
 
     const hasRegistrantDetailsToDisplay = computed((): boolean => {
@@ -387,11 +470,11 @@
 
         return props.person.registrants.some(registrant => {
             const hasInstance = props.isInstanceDisplayed && !!registrant.registrationInstanceName;
-            const hasFees = props.areFeesDisplayed && Object.keys(registrant.fees ?? {}).length > 0;
+            const hasFees = props.areFeesDisplayed && getValidFees(registrant.fees).length > 0;
             const hasAttributes = (!isGroupMemberCard.value || props.areSourceAttributesDisplayedOnDestinationGroupMembers)
                 && registrant.attributes
                 && registrant.attributeValues
-                && Object.keys(getAttributesWithCorrespondingValues(registrant.attributes, registrant.attributeValues) ?? {}).length > 0;
+                && getDisplayAttributes(registrant.attributes, registrant.attributeValues).length > 0;
 
             return hasInstance || hasAttributes || hasFees;
         });
@@ -406,7 +489,7 @@
             const hasAttributes = (!isGroupMemberCard.value || props.areSourceAttributesDisplayedOnDestinationGroupMembers)
                 && sourceGroupMember.attributes
                 && sourceGroupMember.attributeValues
-                && Object.keys(getAttributesWithCorrespondingValues(sourceGroupMember.attributes, sourceGroupMember.attributeValues) ?? {}).length > 0;
+                && getDisplayAttributes(sourceGroupMember.attributes, sourceGroupMember.attributeValues).length > 0;
 
             return hasAttributes;
         });
@@ -443,19 +526,68 @@
         return fieldType?.getTextValue?.(rawValue, configValues) ?? rawValue;
     }
 
-    function getAttributesWithCorrespondingValues(attributes: Record<string, PublicAttributeBag>, attributeValues: Record<string, string>): Record<string, PublicAttributeBag> | null {
+    function getDisplayAttributes(attributes: Record<string, PublicAttributeBag>, attributeValues: Record<string, string> | null): DisplayAttribute[] {
         if (!attributes || !attributeValues) {
-            return null;
+            return [];
         }
 
-        const filtered = Object.entries(attributes).filter(([key, attr]) => {
-            const value = attributeValues![key];
-            return !!value && value !== "";
-        });
+        const result: DisplayAttribute[] = [];
 
-        return filtered.length > 0
-            ? Object.fromEntries(filtered)
-            : null;
+        for (const [key, attribute] of Object.entries(attributes)) {
+            // Skip if attribute name is empty
+            if (isNullOrWhiteSpace(attribute.name)) {
+                continue;
+            }
+
+            const rawValue = attributeValues[key];
+
+            // Skip if the raw value is empty
+            if (isNullOrWhiteSpace(rawValue)) {
+                continue;
+            }
+
+            const formatted = getAttributeValueText(attributeValues, attribute, key);
+
+            // Skip if formatted value is empty too
+            if (isNullOrWhiteSpace(formatted)) {
+                continue;
+            }
+
+            result.push({
+                key,
+                name: attribute.name!,
+                value: formatted
+            });
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns a list of fees that have both a non-empty text and value.
+     * Filters out any fee entries that are missing or incomplete.
+     *
+     * @param fees The raw fee dictionary to filter.
+     * @returns An array of [key, fee] pairs with fully populated content.
+     */
+    function getValidFees(fees: Record<string, ListItemBag> | null | undefined): Array<[string, ListItemBag]> {
+        // Return an empty list if no fees are provided
+        if (!fees) {
+            return [];
+        }
+
+        const validFees: Array<[string, ListItemBag]> = [];
+
+        for (const [key, fee] of Object.entries(fees)) {
+            // Check if both text and value are present and non-empty
+            const hasTextAndValue = !isNullOrWhiteSpace(fee.text) && !isNullOrWhiteSpace(fee.value);
+
+            if (hasTextAndValue) {
+                validFees.push([key, fee]);
+            }
+        }
+
+        return validFees;
     }
 
     function togglePersonDropdown(index: number) {
@@ -470,6 +602,27 @@
         }
     }
 
+    function isTextOverflowing(el: HTMLElement): boolean {
+        return el.scrollWidth > el.clientWidth;
+    }
+
+    function addTooltipIfOverflow(el: HTMLElement | null, tooltipText: string): void {
+        if (!el) return;
+
+        nextTick(() => {
+            el.removeAttribute("title");
+            el.removeAttribute("data-original-title");
+            el.removeAttribute("data-toggle");
+
+            if (isTextOverflowing(el)) {
+                el.setAttribute("title", tooltipText);
+                el.setAttribute("data-original-title", tooltipText);
+                el.setAttribute("data-toggle", "tooltip");
+                tooltip(el);
+            }
+        });
+    }
+
     function editGroupMember() {
         // TOOD: When Group Member Detail is converted to Obsidian use idKey.
         // emit("editGroupMember", groupMemberIdKey);
@@ -479,12 +632,6 @@
     function removeGroupMember() {
         emit("removeGroupMember", props.groupMember?.groupMemberIdKey ?? "");
         openDropdownIndex.value = null;
-    }
-
-    function addTooltip(element: Element | null): void {
-        if (element) {
-            tooltip(element);
-        }
     }
 
 </script>

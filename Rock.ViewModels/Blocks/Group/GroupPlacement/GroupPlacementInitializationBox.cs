@@ -29,7 +29,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
     {
         public GroupPlacementKeysBag GroupPlacementKeys { get; set; }
 
-        public DestinationGroupTypeBag DestinationGroupType { get; set; }
+        public List<DestinationGroupTypeRoleBag> DestinationGroupTypeRoles { get; set; }
 
         public string Title { get; set; }
 
@@ -55,5 +55,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         /// Gets or sets the error message, if any.
         /// </summary>
         public string ErrorMessage { get; set; }
+
+        public List<ListItemBag> RegistrationTemplatePlacements { get; set; }
     }
 }

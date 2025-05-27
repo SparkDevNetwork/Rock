@@ -45,8 +45,8 @@ namespace RockWeb.Blocks.Event
 
     [LinkedPage(
         "Group Placement Page",
-        Key = AttributeKey.RegistrationTemplatePlacementPage,
-        DefaultValue = Rock.SystemGuid.Page.REGISTRATION_TEMPLATE_PLACEMENT + "," + Rock.SystemGuid.PageRoute.REGISTRATION_TEMPLATE_PLACEMENT,
+        Key = AttributeKey.GroupPlacementPage,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_PLACEMENT + "," + Rock.SystemGuid.PageRoute.GROUP_PLACEMENT,
         Description = "The page used for performing group placements.",
         Order = 0
         )]
@@ -444,7 +444,7 @@ namespace RockWeb.Blocks.Event
 
         private static class AttributeKey
         {
-            public const string RegistrationTemplatePlacementPage = "RegistrationTemplatePlacementPage";
+            public const string GroupPlacementPage = "GroupPlacementPage";
             public const string DefaultConfirmationEmail = "DefaultConfirmationEmail";
             public const string DefaultReminderEmail = "DefaultReminderEmail";
             public const string DefaultSuccessText = "DefaultSuccessText";
@@ -2598,7 +2598,7 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             // Only show the placements button if a linked page is defined AND this template has any placement records
-            var showPlacementsButton = GetAttributeValue( AttributeKey.RegistrationTemplatePlacementPage ).IsNotNullOrWhiteSpace()
+            var showPlacementsButton = GetAttributeValue( AttributeKey.GroupPlacementPage ).IsNotNullOrWhiteSpace()
                 && registrationTemplate.Id > 0
                 && new RegistrationTemplateService( rockContext ).HasRegistrationTemplatePlacements( registrationTemplate.Id );
 
@@ -3012,7 +3012,7 @@ The logged-in person's information will be used to complete the registrar inform
                 .Select( p => new
                 {
                     Name = p.Name,
-                    Url = LinkedPageUrl( AttributeKey.RegistrationTemplatePlacementPage, new Dictionary<string, string>
+                    Url = LinkedPageUrl( AttributeKey.GroupPlacementPage, new Dictionary<string, string>
                     {
                         { PageParameterKey.RegistrationTemplateId, registrationTemplate.Id.ToString() },
                         { "RegistrationTemplatePlacementId", p.Id.ToString() },

@@ -1,6 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel type="block" panelBodyCssClass="overflow-hidden" class="styled-scroll">
+    <NotificationBox v-if="!isNullOrWhiteSpace(initializationError)" alertType="danger">
+        {{ initializationError }}
+    </NotificationBox>
+    <Panel v-else
+           type="block"
+           panelBodyCssClass="overflow-hidden"
+           class="styled-scroll">
         <template #title>
             <div class="d-flex align-items-center">
                 <span v-if="!isNullOrWhiteSpace(box.backPageUrl)" class="clickable text-sm mr-3" @click="onBack">
@@ -14,6 +20,11 @@
 
         <template #headerActions>
             <div class="d-flex gap-1 mr-3">
+                <DropDownList v-model="fallbackRegistrationTemplatePlacement"
+                              v-if="box.registrationTemplatePlacements"
+                              :items="box.registrationTemplatePlacements"
+                              :showBlankItem="false"
+                              inputClasses="placements-dropdown" />
                 <div class="dropdown">
                     <RockButton :btnType="BtnType.Default"
                                 :btnSize="BtnSize.Small"
@@ -23,7 +34,7 @@
                         <i class="fa fa-sort"></i>
                     </RockButton>
                     <ul class="dropdown-menu dropdown-menu-right">
-                        <li v-for="[key, label] in sortOptions" :key="key">
+                        <li v-for="[key, label] in sortOptions" :key="key" :class="{ 'selected': currentSortOrder === key }">
                             <a href="#" @click.prevent="changeSort(key)">
                                 {{ label }}
                             </a>
@@ -54,7 +65,10 @@
             </div>
         </template>
 
-        <div class="d-flex w-100 h-100">
+        <NotificationBox v-if="!isNullOrWhiteSpace(dataRetrievalError)" alertType="danger">
+            {{ dataRetrievalError }}
+        </NotificationBox>
+        <div v-else class="d-flex w-100 h-100">
             <div class="col-xs-5 col-md-4 col-lg-3 p-0 h-100 helper-height">
                 <Panel type="default"
                        title="People To Place"
@@ -128,15 +142,19 @@
                                 </span>
                             </div>
                         </div>
-                        <div v-drag-source="personDragSourceOptions" v-drag-target="groupMemberDragSourceOptions.id" class="people-to-place-card-container">
+                        <div v-drag-source="personDragSourceOptions"
+                             v-drag-target="groupMemberDragSourceOptions.id"
+                             class="people-to-place-card-container">
                             <div v-if="arePeopleLoading" class="d-flex align-items-center justify-content-center">
                                 <Loading :isLoading="arePeopleLoading" />
                             </div>
-                            <template v-for="(person, index) in filteredAndSortedPeopleToPlace" v-else-if="filteredAndSortedPeopleToPlace.length > 0">
+                            <template v-for="(person, index) in filteredAndSortedPeopleToPlace"
+                                      v-else-if="filteredAndSortedPeopleToPlace.length > 0">
                                 <PersonCard v-if="person.personIdKey"
                                             :key="index"
                                             :data-person-id-key="person.personIdKey"
                                             :isCardExpanded="arePersonCardsExpanded"
+                                            :isTransitionEnabled="true"
                                             :person="person"
                                             :index="index"
                                             :isSelected="isSelected(person.personIdKey)"
@@ -233,7 +251,7 @@
                                           :destinationGroup="group"
                                           :arePersonCardsExpanded="arePersonCardsExpanded"
                                           :isGroupExpanded="areGroupsExpanded"
-                                          :groupTypeRoles="box.destinationGroupType?.roles ?? []"
+                                          :groupTypeRoles="box.destinationGroupTypeRoles ?? []"
                                           :dragTargetId="personDragSourceOptions.id"
                                           :groupMemberDragOptions="groupMemberDragSourceOptions"
                                           :getGroupRoleError="getGroupRoleError"
@@ -313,6 +331,14 @@
     padding: 1rem !important;
 }
 
+.dropdown-menu li.selected {
+    background-color: #e6f7ff;
+}
+
+.dropdown-menu li.selected > a {
+    font-weight: var(--font-weight-semibold);
+}
+
 .group-member-filter-toggle {
     cursor: pointer;
     user-select: none;
@@ -321,6 +347,12 @@
 
 .no-people-label {
     color: var(--color-interface-medium);
+}
+
+:deep(.placements-dropdown) {
+    font-size: 14px !important;
+    height: 34px !important;
+    min-width: 100px !important;
 }
 
 .gu-mirror.multi-drag-preview {
@@ -430,7 +462,7 @@
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues, usePersonPreferences, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, usePersonPreferences, useInvokeBlockAction, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
     import { GroupPlacementInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementInitializationBox";
     import { PlacementConfigurationSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingsBag";
     import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
@@ -451,7 +483,7 @@
     import PlacementConfigurationModal from "./GroupPlacement/placementConfigurationModal.partial.obs";
     import AddGroupModal from "./GroupPlacement/addGroupModal.partial.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import { areEqual, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -478,10 +510,10 @@
     import { GroupMemberUpdatedMessageBag } from "@Obsidian/ViewModels/Group/GroupMember/groupMemberUpdatedMessageBag";
     import { RegistrationRegistrantUpdatedMessageBag } from "@Obsidian/ViewModels/Event/RegistrationEntry/registrationRegistrantUpdatedMessageBag";
     import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
-    import { EntityKeysWithTypeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/entityKeysWithTypeBag";
     import { SourceAndDestinationEntityKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/sourceAndDestinationEntityKeysBag";
     import { SourceAndDestinationEntityAttributesBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/sourceAndDestinationEntityAttributesBag";
     import { debounce } from "@Obsidian/Utility/util";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 
 
     type GroupPlacementTopic = ITopic<ServerFunctions<IGroupPlacementFunctions>> & {
@@ -490,21 +522,18 @@
         registrationTemplateGuid: Guid,
     };
 
-    /*
-        TODO's
-        1. In the special case where a user overrides the Registration Template Id from the Block Settings AND a the Registration Template Placement Id is not present.
-            then we will display a dropdown on the top bar (similar to Sms Conversations selected system phone number). This dropdown will allow us to select different
-            Registration Template Placements.
-    */
-
     // #region Values
     const box = useConfigurationValues<GroupPlacementInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
+    const reloadBlock = useReloadBlock();
 
     const populateAttributesDebounce = debounce(() => populateAttributes(), undefined, false);
 
     const realTimetopic = ref<GroupPlacementTopic | null>();
+
+    const initializationError = ref<string>(box.errorMessage ?? "");
+    const dataRetrievalError = ref<string>();
 
     const arePersonCardsExpanded = ref(false);
     const areAllPeopleSelected = ref(false);
@@ -515,6 +544,8 @@
     // const peopleToPlace = ref<PersonBag[]>(box.peopleToPlace ?? []);
     const placementGroups = ref<PlacementGroupBag[]>([]);
     const peopleToPlace = ref<PersonBag[]>([]);
+
+    const fallbackRegistrationTemplatePlacement = ref(preferences.getValue(PreferenceKey.FallbackRegistrationTemplatePlacement));
 
     const areGroupsLoading = ref<boolean>(true);
     const arePeopleLoading = ref<boolean>(true);
@@ -571,6 +602,7 @@
 
     const placementConfigurationSettings = ref<PlacementConfigurationSettingsBag>(preferences.getValue(getPlacementConfigurationSettingsKey()) ? JSON.parse(preferences.getValue(getPlacementConfigurationSettingsKey())) : {} as PlacementConfigurationSettingsBag);
 
+
     console.log("GroupPlacementInitializationBox", box);
     console.log("placement config settings: ", placementConfigurationSettings.value);
 
@@ -609,9 +641,14 @@
                 });
                 return matchesSearchText && matchesAttributeAndFeeFilters;
             }
-            else {  // TODO - Determine if we need else if here (Depends on EntitySetMode)
-                return p.sourceGroupMembers?.some(s => !s?.attributeValues
+            else if (box.placementMode === PlacementMode.GroupMode) {
+                const hasMatchingAttributes = p.sourceGroupMembers?.some(s => !s?.attributeValues
                     || areAttributeFiltersMet(sourceAttributesForFilter.value, sourceAttributeValuesForFilter.value, s.attributeValues));
+
+                return hasMatchingAttributes && matchesSearchText;
+            }
+            else {
+                return matchesSearchText;
             }
         });
 
@@ -745,11 +782,23 @@
                     return (a.firstName ?? "").localeCompare(b.firstName ?? "");
                 }
 
-                // TODO - Figure out how to sort by date when not in registration mode.
                 case SortTypes.SortByDateAddedAsc: {
-                    // We'll just grab the first registrant on each person.
-                    const dateA = RockDateTime.parseISO(a.registrants?.[0]?.createdDateTime ?? "");
-                    const dateB = RockDateTime.parseISO(b.registrants?.[0]?.createdDateTime ?? "");
+                    let entityDateTimeA;
+                    let entityDateTimeB;
+                    if (box.placementMode === PlacementMode.TemplateMode || box.placementMode === PlacementMode.InstanceMode) {
+                        entityDateTimeA = a.registrants?.[0]?.createdDateTime;
+                        entityDateTimeB = b.registrants?.[0]?.createdDateTime;
+                    }
+                    else if (box.placementMode === PlacementMode.GroupMode) {
+                        entityDateTimeA = a.sourceGroupMembers?.[0]?.createdDateTime;
+                        entityDateTimeB = b.sourceGroupMembers?.[0]?.createdDateTime;
+                    }
+                    else {
+                        return 0;
+                    }
+
+                    const dateA = RockDateTime.parseISO(entityDateTimeA ?? "");
+                    const dateB = RockDateTime.parseISO(entityDateTimeB ?? "");
 
                     if (dateA && dateB) {
                         return dateA.toMilliseconds() - dateB.toMilliseconds();
@@ -765,9 +814,22 @@
                 }
 
                 case SortTypes.SortByDateAddedDesc: {
-                    // We'll just grab the first registrant on each person.
-                    const dateA = RockDateTime.parseISO(a.registrants?.[0]?.createdDateTime ?? "");
-                    const dateB = RockDateTime.parseISO(b.registrants?.[0]?.createdDateTime ?? "");
+                    let entityDateTimeA;
+                    let entityDateTimeB;
+                    if (box.placementMode === PlacementMode.TemplateMode || box.placementMode === PlacementMode.InstanceMode) {
+                        entityDateTimeA = a.registrants?.[0]?.createdDateTime;
+                        entityDateTimeB = b.registrants?.[0]?.createdDateTime;
+                    }
+                    else if (box.placementMode === PlacementMode.GroupMode) {
+                        entityDateTimeA = a.sourceGroupMembers?.[0]?.createdDateTime;
+                        entityDateTimeB = b.sourceGroupMembers?.[0]?.createdDateTime;
+                    }
+                    else {
+                        return 0;
+                    }
+
+                    const dateA = RockDateTime.parseISO(entityDateTimeA ?? "");
+                    const dateB = RockDateTime.parseISO(entityDateTimeB ?? "");
 
                     if (dateA && dateB) {
                         return dateB.toMilliseconds() - dateA.toMilliseconds();
@@ -833,7 +895,7 @@
 
                         mirror.innerHTML = `
                             <div class="multi-card-preview">
-                            <i class="fa fa-user-friends"></i>
+                                <i class="fa fa-user-friends"></i>
                             </div>
                         `;
 
@@ -873,7 +935,7 @@
 
                         transit.innerHTML = `
                             <div class="multi-card-preview">
-                            <i class="fa fa-user-friends"></i>
+                                <i class="fa fa-user-friends"></i>
                             </div>
                         `;
                     });
@@ -940,8 +1002,6 @@
                             person: person,
                             groupMemberIdKey: null
                         });
-
-                        //TODO - the current display of group members results in incosistency with there array index
                     }
                 }
 
@@ -952,27 +1012,6 @@
                 // TODO - what happens on error?
                 var newGroupMembers = await addGroupMembersToGroup(pendingGroupMembers, placementGroup);
                 console.log("New group members: ", newGroupMembers);
-                // Handled by realtime now.
-                // newGroupMembers.forEach((groupMember, i) => {
-                //     // placementGroup.groupMembers!.splice(operation.targetIndex! + i, 0, {
-                //     //     groupRoleIdKey: groupMember.groupRoleIdKey,
-                //     //     person: groupMember.person,
-                //     //     groupMemberIdKey: groupMember.groupMemberIdKey
-                //     // });
-                //     // No need to splice because we are always sorting.
-                //     placementGroup.groupMembers!.push({
-                //         groupMemberId: groupMember.groupMemberId,
-                //         groupRoleIdKey: groupMember.groupRoleIdKey,
-                //         person: groupMember.person,
-                //         groupMemberIdKey: groupMember.groupMemberIdKey
-                //     });
-
-                //     if (!box.isPlacementAllowingMultiple) {
-                //         peopleToPlace.value = peopleToPlace.value.filter(
-                //             p => groupMember.person?.personIdKey !== p.personIdKey
-                //         );
-                //     }
-                // });
 
                 selectedPersonIdKeys.value.clear();
             }
@@ -1025,24 +1064,7 @@
                 peopleToPlace.value = [];
             }
 
-            var isRemoveSuccess = await removeGroupMemberFromGroup(groupMemberIdKey, placementGroup.groupIdKey);
-
-            if (isRemoveSuccess) {
-                // // If the person does not have a Registrant in any of the included Registration Instances, then they should not be shown in the People To Place Panel.
-                // // This matches with functionality from the old Webforms Block.
-                // // TODO - maybe move this to filter computed?
-                // var isPersonBeDisplayed = shouldPersonBeDisplayed(groupMember);
-
-                // if (isPersonBeDisplayed) {
-                //     // peopleToPlace.value.splice(operation.targetIndex, 0, {
-                //     //     ...groupMember.person,
-                //     // });
-                //     // No need to splice because we are always sorting.
-                //     peopleToPlace.value.push({ ...groupMember.person });
-                // }
-
-                // placementGroup.groupMembers = placementGroup.groupMembers?.filter(gm => gm.groupMemberIdKey !== groupMemberIdKey);
-            }
+            await removeGroupMemberFromGroup(groupMemberIdKey, placementGroup.groupIdKey, groupMember.groupRoleIdKey ?? "");
         }
     }
 
@@ -1062,12 +1084,12 @@
         let shouldBeDisplayed: boolean = true;
 
         if (box.placementMode === PlacementMode.TemplateMode) {
+            if (!placementConfigurationSettings.value.includedRegistrationInstanceIds || placementConfigurationSettings.value.includedRegistrationInstanceIds?.length === 0) {
+                return true;
+            }
+
             // Default to true if person or registrants were not found for some reason.
             shouldBeDisplayed = groupMember!.person?.registrants?.some(r => {
-                if (placementConfigurationSettings.value.includedRegistrationInstanceIds?.length === 0) {
-                    return true;
-                }
-
                 return placementConfigurationSettings.value.includedRegistrationInstanceIds!.includes(r.registrationInstanceIdKey ?? "");
             }) ?? true;
         }
@@ -1220,76 +1242,85 @@
 
     function getSortOrderKey(): string {
         if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
-            return PreferenceKey.SortOrderRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
+            return PreferenceKey.SortOrderRegistrationInstanceIdKey.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
         }
         else if (box.placementMode === PlacementMode.TemplateMode && box.groupPlacementKeys?.registrationTemplateIdKey) {
-            return PreferenceKey.SortOrderRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
+            return PreferenceKey.SortOrderRegistrationTemplateIdKey.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
         }
         else if (box.placementMode === PlacementMode.GroupMode && box.groupPlacementKeys?.sourceGroupIdKey) {
-            return PreferenceKey.SortOrderSourceGroupId.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
+            return PreferenceKey.SortOrderSourceGroupIdKey.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.EntitySetMode && box.groupPlacementKeys?.entitySetIdKey) {
+            return PreferenceKey.SortOrderEntitySetIdKey.replace("{0}", box.groupPlacementKeys.entitySetIdKey.toString());
         }
         return "";
     }
 
     function getIsGenderHighlightingKey(): string {
         if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
-            return PreferenceKey.IsGenderHighlightingRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
+            return PreferenceKey.IsGenderHighlightingRegistrationInstanceIdKey.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
         }
         else if (box.placementMode === PlacementMode.TemplateMode && box.groupPlacementKeys?.registrationTemplateIdKey) {
-            return PreferenceKey.IsGenderHighlightingRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
+            return PreferenceKey.IsGenderHighlightingRegistrationTemplateIdKey.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
         }
         else if (box.placementMode === PlacementMode.GroupMode && box.groupPlacementKeys?.sourceGroupIdKey) {
-            return PreferenceKey.IsGenderHighlightingSourceGroupId.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
+            return PreferenceKey.IsGenderHighlightingSourceGroupIdKey.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.EntitySetMode && box.groupPlacementKeys?.entitySetIdKey) {
+            return PreferenceKey.IsGenderHighlightingEntitySetIdKey.replace("{0}", box.groupPlacementKeys.entitySetIdKey.toString());
         }
         return "";
     }
 
     function getPersonAttributeFilterKey(): string {
         if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
-            return PreferenceKey.PersonAttributeFilterRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
+            return PreferenceKey.PersonAttributeFilterRegistrationInstanceIdKey.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
         }
         else if (box.placementMode === PlacementMode.TemplateMode && box.groupPlacementKeys?.registrationTemplateIdKey) {
-            return PreferenceKey.PersonAttributeFilterRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
+            return PreferenceKey.PersonAttributeFilterRegistrationTemplateIdKey.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
         }
         else if (box.placementMode === PlacementMode.GroupMode && box.groupPlacementKeys?.sourceGroupIdKey) {
-            return PreferenceKey.PersonAttributeFilterSourceGroupId.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
+            return PreferenceKey.PersonAttributeFilterSourceGroupIdKey.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
         }
         return "";
     }
 
     function getPlacementConfigurationSettingsKey(): string {
-        if (box.groupPlacementKeys?.registrationInstanceIdKey) {
-            return PreferenceKey.PlacementConfigurationJSONRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
+        if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
+            return PreferenceKey.PlacementConfigurationJSONRegistrationInstanceIdKey.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
         }
-        else if (box.groupPlacementKeys?.registrationTemplateIdKey) {
-            return PreferenceKey.PlacementConfigurationJSONRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
+        else if (box.placementMode === PlacementMode.TemplateMode && box.groupPlacementKeys?.registrationTemplateIdKey) {
+            return PreferenceKey.PlacementConfigurationJSONRegistrationTemplateIdKey.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
         }
         else if (box.placementMode === PlacementMode.GroupMode && box.groupPlacementKeys?.sourceGroupIdKey) {
-            return PreferenceKey.PlacementConfigurationJSONSourceGroupId.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
+            return PreferenceKey.PlacementConfigurationJSONSourceGroupIdKey.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.EntitySetMode && box.groupPlacementKeys?.entitySetIdKey) {
+            return PreferenceKey.PlacementConfigurationJSONEntitySetIdKey.replace("{0}", box.groupPlacementKeys.entitySetIdKey.toString());
         }
         return "";
     }
 
     function getRegistrantFeeItemValuesFilterKey(): string {
         if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
-            return PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationInstanceId.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
+            return PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationInstanceIdKey.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
         }
         else if (box.placementMode === PlacementMode.TemplateMode && box.groupPlacementKeys?.registrationTemplateIdKey) {
-            return PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationTemplateId.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
+            return PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationTemplateIdKey.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
         }
         return "";
     }
 
     function getGroupAttributeFilterKey(): string {
-        if (box.destinationGroupType?.idKey) {
-            return PreferenceKey.GroupAttributeFilterGroupTypeId.replace("{0}", box.destinationGroupType.idKey.toString());
+        if (box.groupPlacementKeys?.destinationGroupTypeIdKey) {
+            return PreferenceKey.GroupAttributeFilterGroupTypeIdKey.replace("{0}", box.groupPlacementKeys.destinationGroupTypeIdKey.toString());
         }
         return "";
     }
 
     function getGroupMemberAttributeFilterKey(): string {
-        if (box.destinationGroupType?.idKey) {
-            return PreferenceKey.GroupMemberAttributeFilterGroupTypeId.replace("{0}", box.destinationGroupType.idKey.toString());
+        if (box.groupPlacementKeys?.destinationGroupTypeIdKey) {
+            return PreferenceKey.GroupMemberAttributeFilterGroupTypeIdKey.replace("{0}", box.groupPlacementKeys.destinationGroupTypeIdKey.toString());
         }
         return "";
     }
@@ -1370,70 +1401,12 @@
         person.registrants.push(newRegistrant);
     }
 
-    // async function processDestinationGroups(groupsPromise: Promise<PlacementGroupBag[]>): Promise<void> {
-    //     var groups = await groupsPromise;
-
-    //     return new Promise((resolve, reject) => {
-    //         try {
-    //             // setTimeout(() => {
-    //             placementGroups.value = groups.map(g => ({
-    //                 ...g,
-    //                 groupMembers: [] // Ensure groupMembers is initialized
-    //             }));
-    //             areGroupsLoading.value = false;
-    //             areGroupsExpanded.value = groups.length > 3 ? false : true;
-    //             console.log("placementGroups: ", placementGroups.value);
-    //             resolve();
-    //             // }, 3000);
-    //         }
-    //         catch (error) {
-    //             reject(error);
-    //         }
-    //     });
-    // }
-
-    // async function loadPlacementData() {
-    //     // Start API calls immediately
-    //     const attributeFiltersPromise = populateAttributeFilters();
-    //     const groupsPromise = getDestinationGroups();
-    //     const placementPeoplePromise = getPlacementPeople();
-
-    //     attributeFiltersPromise.then(attributeFilters => {
-    //         // TODO - Probably can remove the population of attribute values from the server. We only care about attributes. Values are handled by preferences.
-    //         sourceAttributesForFilter.value = attributeFilters.sourceAttributesForFilter ?? {};
-    //         registrantFeeItemsForFilter.value = attributeFilters.registrantFeeItemsForFilter ?? [];
-    //         destinationGroupAttributesForFilter.value = attributeFilters.destinationGroupAttributesForFilter ?? {};
-    //         destinationGroupMemberAttributesForFilter.value = attributeFilters.destinationGroupMemberAttributesForFilter ?? {};
-    //         console.log("Attribute Filters: ", attributeFilters);
-    //     });
-
-    //     // TODO - Come back to cleanup promise logic
-    //     const processGroupsPromise = processDestinationGroups(groupsPromise);
-
-
-    //     placementPeoplePromise.then(async placementPeople => {
-    //         // Wait here until groups and attribute filters are loaded
-    //         // await attributeFiltersPromise;
-    //         await processGroupsPromise;
-    //         console.log("placementpeople: ", placementPeople);
-
-    //         if (placementPeople.peopleToPlace) {
-    //             peopleToPlace.value = placementPeople.peopleToPlace;
-    //         }
-    //         if (placementPeople.tempGroups) {
-    //             placementPeople.tempGroups.forEach(g => {
-    //                 const placementGroup = placementGroups.value.find(pg => pg.groupIdKey === g.groupIdKey);
-    //                 if (placementGroup?.groupMembers && g.groupMembers?.length) {
-    //                     placementGroup.groupMembers.push(...g.groupMembers);
-    //                 }
-    //             });
-    //         }
-
-    //         arePeopleLoading.value = false;
-    //     });
-    // }
-
     async function loadPlacementData(): Promise<void> {
+        // If there was an initilization error than skip.
+        if (!isNullOrWhiteSpace(initializationError.value)) {
+            return;
+        }
+
         const startTime = performance.now();
         console.log("[loadPlacementData] Starting all requests...");
 
@@ -1448,7 +1421,6 @@
         const attributeFilters = await attributeFiltersPromise;
         console.log(`[loadPlacementData] Attribute filters received (${(performance.now() - attrStart).toFixed(2)}ms):`, attributeFilters);
 
-        // TODO - Probably can remove the population of attribute values from the server. We only care about attributes. Values are handled by preferences.
         sourceAttributesForFilter.value = attributeFilters.sourceAttributesForFilter ?? {};
         registrantFeeItemsForFilter.value = attributeFilters.registrantFeeItemsForFilter ?? [];
         destinationGroupAttributesForFilter.value = attributeFilters.destinationGroupAttributesForFilter ?? {};
@@ -1721,7 +1693,6 @@
 
             // If the person does not have a Registrant in any of the included Registration Instances, then they should not be shown in the People To Place Panel.
             // This matches with functionality from the old Webforms Block.
-            // TODO - maybe move this to filter computed?
             if (shouldPersonBeDisplayed(groupMember) && groupMember.person) {
                 peopleToPlace.value.push({ ...groupMember.person });
             }
@@ -1819,11 +1790,10 @@
         });
 
         if (result.isSuccess && result.data) {
-            console.log("PEOPLE RESULT: ", result.data);
             return result.data;
         }
         else {
-            console.error(result.errorMessage);
+            dataRetrievalError.value = result.errorMessage ?? "An error occurred while retrieving Placement People";
         }
         return {};
     }
@@ -1840,7 +1810,7 @@
             return result.data;
         }
         else {
-            console.error(result.errorMessage);
+            dataRetrievalError.value = result.errorMessage ?? "An error occurred while retrieving Destination Groups";
         }
         return [];
     }
@@ -1856,7 +1826,7 @@
             return result.data;
         }
         else {
-            console.error(result.errorMessage);
+            dataRetrievalError.value = result.errorMessage ?? "An error occurred while retrieving Attribute Filters";
         }
         return {};
     }
@@ -1876,13 +1846,13 @@
         }
         else {
             if (pendingGroupMembers[0].groupRoleIdKey) {
-                setGroupRoleError(placementGroup.groupIdKey!, pendingGroupMembers[0].groupRoleIdKey, result.errorMessage ?? "Unknown error while trying to add a group member.");
+                setGroupRoleError(placementGroup.groupIdKey!, pendingGroupMembers[0].groupRoleIdKey, result.errorMessage ?? "An unknown error occurred while trying to add a group member.");
             }
         }
         return [];
     }
 
-    async function removeGroupMemberFromGroup(groupMemberIdKey: string, groupIdKey: string): Promise<boolean> {
+    async function removeGroupMemberFromGroup(groupMemberIdKey: string, groupIdKey: string, groupRoleIdKey: string): Promise<boolean> {
         const result = await invokeBlockAction<GroupMemberBag[]>("RemoveGroupMemberFromGroup", {
             groupMemberIdKey: groupMemberIdKey,
             groupIdKey: groupIdKey
@@ -1893,54 +1863,59 @@
             return true;
         }
         else {
-            console.error(result.errorMessage ?? "Unknown error while trying to remove a group member.");
+            setGroupRoleError(groupIdKey, groupRoleIdKey, result.errorMessage ?? "An unknown error occurred while trying to remove a group member.");
         }
         return false;
     }
 
-    async function addGroup(addGroupBag: AddGroupBag) {
-        // TODO - need to make grouptypeid non nullable
-        if (!box.destinationGroupType?.idKey) {
-            console.error("Group Type Id required");
+    async function addGroup(addGroupBag: AddGroupBag): Promise<void> {
+        if (!box.groupPlacementKeys?.destinationGroupTypeIdKey) {
+            addGroupModalErrorText.value = "A Destination Group Type is required to add a group.";
             return;
         }
 
         addGroupBag.groupPlacementKeys = box.groupPlacementKeys;
-        addGroupBag.groupTypeIdKey = box.destinationGroupType.idKey;
+        addGroupBag.groupTypeIdKey = box.groupPlacementKeys.destinationGroupTypeIdKey;
 
         const result = await invokeBlockAction<Guid[]>("AddPlacementGroup", {
             addGroupBag
         });
 
         if (result.isSuccess && result.data) {
-            console.log("Add group success.");
             addGroupModalElement.value?.resetForm();
             isAddGroupModalVisible.value = false;
             loadPlacementData();
             joinRealTimeGroupChannels(result.data);
         }
         else {
-            addGroupModalErrorText.value = result.errorMessage ?? "Unknown error while adding a group.";
+            addGroupModalErrorText.value = result.errorMessage ?? "An unknown error occurred while adding a group.";
         }
     }
 
     async function detachPlacementGroup(groupIdKey: string): Promise<void> {
+        var groupPlacementKeysCopy = JSON.parse(JSON.stringify(box.groupPlacementKeys));
+
+        // If we are detaching a group in template mode than we will need the registration instance idkey on that group.
+        if (box.placementMode === PlacementMode.TemplateMode && groupPlacementKeysCopy) {
+            var pendingGroup = placementGroups.value.find(g => g.groupIdKey === groupIdKey);
+            groupPlacementKeysCopy.registrationInstanceIdKey = pendingGroup?.registrationInstanceIdKey;
+        }
+
         const result = await invokeBlockAction<Guid>("DetachPlacementGroup", {
             detachGroupBag: {
                 groupIdKey: groupIdKey,
-                groupPlacementKeys: box.groupPlacementKeys,
+                groupPlacementKeys: groupPlacementKeysCopy,
                 placementMode: box.placementMode
             } as DetachGroupBag
         });
 
         if (result.isSuccess && result.data) {
-            // TODO - this doesn't work on template mode. Same on Webforms.
-            console.log("Detach group success.");
             loadPlacementData();
             leaveRealTimeGroupChannel(result.data);
         }
         else {
-            console.error(result.errorMessage ?? "Unknown error while trying to detach a group.");
+            // Need to determine a place for this error message. This should go in a Toast, but we currently don't have the control.
+            console.error(result.errorMessage ?? "An unknown error occurred while trying to detach a group.");
         }
     }
 
@@ -1950,11 +1925,11 @@
         });
 
         if (result.isSuccess) {
-            console.log("Delete group success.");
             loadPlacementData();
         }
         else {
-            console.error(result.errorMessage ?? "Unknown error while trying to delete a group.");
+            // Need to determine a place for this error message. This should go in a Toast, but we currently don't have the control.
+            console.error(result.errorMessage ?? "An unknown error occurred while trying to delete a group.");
         }
     }
 
@@ -2090,7 +2065,7 @@
             }
         }
         else {
-            console.error(result.errorMessage ?? "Unknown error while trying to populate attributes.");
+            console.error(result.errorMessage ?? "An unknown error occurred while trying to populate attributes.");
         }
     }
 
@@ -2109,6 +2084,14 @@
     //         personSearchText.value = "";
     //     }
     // });
+
+    watch(fallbackRegistrationTemplatePlacement, async () => {
+        preferences.setValue(PreferenceKey.FallbackRegistrationTemplatePlacement, fallbackRegistrationTemplatePlacement.value);
+
+        await preferences.save();
+
+        reloadBlock();
+    });
 
     watch([currentSortOrder, isGenderHighlighting, sourceAttributeValuesForFilter, registrantFeeItemValuesForFilter, destinationAttributeValuesForFilter, destinationMemberAttributeValuesForFilter], async () => {
         preferences.setValue(getSortOrderKey(), currentSortOrder.value.toString());
@@ -2135,9 +2118,6 @@
 
     }, { deep: true });
 
-    // watch(() => computedGroupGuids.value.join(","), () => {
-    // });
-
     // #endregion
 
     onMounted(async () => {
@@ -2155,4 +2135,5 @@
         document.removeEventListener("click", handleOutsideClick);
     });
 
+    onConfigurationValuesChanged(reloadBlock);
 </script>

@@ -362,6 +362,40 @@ namespace Rock
         }
 
         /// <summary>
+        /// Gets a list of attribute metadata (as <see cref="ListItemBag"/>) that can be sent to public devices,
+        /// based on the entity's attributes and the current person's view permissions.
+        /// Each item will include the attribute's name as the text and the attribute's GUID as the value.
+        /// </summary>
+        /// <param name="entity">The entity that contains the attributes.</param>
+        /// <param name="currentPerson">The person for whom security permissions will be evaluated.</param>
+        /// <param name="enforceSecurity">If set to <c>true</c> then security will be enforced.</param>
+        /// <param name="attributeFilter">If not <c>null</c> then this specifies a function to call to filter which attributes to include. This filtering will take place after the security check.</param>
+        /// <returns>
+        /// A list of <see cref="ListItemBag"/> objects representing authorized attributes with their name and GUID.
+        /// </returns>
+        public static List<ListItemBag> GetPublicAttributeListItemsForView( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true, Func<AttributeCache, bool> attributeFilter = null )
+        {
+            if ( entity == null || entity.Attributes == null )
+            {
+                return new List<ListItemBag>();
+            }
+
+            bool? entityAuthorized = null;
+
+            return entity.Attributes
+                .Select( a => a.Value )
+                .Where( attribute =>
+                    ( !enforceSecurity || IsAttributeAuthorized( entity, ref entityAuthorized, attribute, Authorization.VIEW, currentPerson ) ) &&
+                    ( attributeFilter == null || attributeFilter( attribute ) ) )
+                .Select( attribute => new ListItemBag
+                {
+                    Text = attribute.Name,
+                    Value = attribute.Guid.ToString()
+                } )
+                .ToList();
+        }
+
+        /// <summary>
         /// <para>
         /// Sets attribute values that have been provided by a remote client.
         /// </para>

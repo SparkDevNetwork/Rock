@@ -26,15 +26,9 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
     {
         public Dictionary<string, PublicAttributeBag> SourceAttributesForFilter { get; set; }
 
-        public Dictionary<string, string> SourceAttributeValuesForFilter { get; set; }
-
         public Dictionary<string, PublicAttributeBag> DestinationGroupAttributesForFilter { get; set; }
 
-        public Dictionary<string, string> DestinationGroupAttributeValuesForFilter { get; set; }
-
         public Dictionary<string, PublicAttributeBag> DestinationGroupMemberAttributesForFilter { get; set; }
-
-        public Dictionary<string, string> DestinationGroupMemberAttributeValuesForFilter { get; set; }
 
         public List<ListItemBag> RegistrantFeeItemsForFilter { get; set; }
     }

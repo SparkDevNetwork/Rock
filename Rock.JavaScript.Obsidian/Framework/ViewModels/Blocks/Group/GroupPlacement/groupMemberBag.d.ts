@@ -29,6 +29,8 @@ export type GroupMemberBag = {
 
     attributeValues?: Record<string, string> | null;
 
+    createdDateTime?: string | null;
+
     /**
      * Gets or sets the group member unique identifier. (TODO: Remove
      * this when Group Member Detail is converted to Obsidian.)

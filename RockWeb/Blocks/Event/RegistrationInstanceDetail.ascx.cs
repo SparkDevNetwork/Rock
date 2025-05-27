@@ -60,6 +60,7 @@ namespace RockWeb.Blocks.Event
     [LinkedPage(
         "Group Placement Page",
         Key = AttributeKey.GroupPlacementPage,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_PLACEMENT + "," + Rock.SystemGuid.PageRoute.GROUP_PLACEMENT,
         Description = "The page for managing group placements.",
         IsRequired = false,
         Order = 2 )]

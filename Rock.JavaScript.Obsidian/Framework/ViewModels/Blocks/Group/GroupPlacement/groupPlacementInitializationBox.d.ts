@@ -22,10 +22,11 @@
 //
 
 import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
-import { DestinationGroupTypeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/destinationGroupTypeBag";
+import { DestinationGroupTypeRoleBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/destinationGroupTypeRoleBag";
 import { GroupPlacementKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementKeysBag";
 import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
 import { PlacementConfigurationSettingOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingOptionsBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** The SMS Conversations Initialization Box */
@@ -34,7 +35,7 @@ export type GroupPlacementInitializationBox = {
 
     backPageUrl?: string | null;
 
-    destinationGroupType?: DestinationGroupTypeBag | null;
+    destinationGroupTypeRoles?: DestinationGroupTypeRoleBag[] | null;
 
     /** Gets or sets the error message, if any. */
     errorMessage?: string | null;
@@ -49,6 +50,8 @@ export type GroupPlacementInitializationBox = {
     placementConfigurationSettingOptions?: PlacementConfigurationSettingOptionsBag | null;
 
     placementMode: PlacementMode;
+
+    registrationTemplatePlacements?: ListItemBag[] | null;
 
     sourcePerson?: PersonBag | null;
 

@@ -23,22 +23,26 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 // }
 
 export const enum PreferenceKey {
-    PlacementConfigurationJSONRegistrationInstanceId = "PlacementConfigurationJSON_RegistrationInstanceId_{0}",
-    PlacementConfigurationJSONRegistrationTemplateId = "PlacementConfigurationJSON_RegistrationTemplateId_{0}",
-    PlacementConfigurationJSONSourceGroupId = "PlacementConfigurationJSON_SourceGroupId_{0}",
-    SortOrderRegistrationInstanceId = "SortOrder_RegistrationInstanceId_{0}",
-    SortOrderRegistrationTemplateId = "SortOrder_RegistrationTemplateId_{0}",
-    SortOrderSourceGroupId = "SortOrder_SourceGroupId_{0}",
-    IsGenderHighlightingRegistrationInstanceId = "IsGenderHighlighting_RegistrationInstanceId_{0}",
-    IsGenderHighlightingRegistrationTemplateId = "IsGenderHighlighting_RegistrationTemplateId_{0}",
-    IsGenderHighlightingSourceGroupId = "IsGenderHighlighting_SourceGroupId_{0}",
-    PersonAttributeFilterRegistrationInstanceId = "PersonAttributeFilter_RegistrationInstanceId_{0}",
-    PersonAttributeFilterRegistrationTemplateId = "PersonAttributeFilter_RegistrationTemplateId_{0}",
-    PersonAttributeFilterSourceGroupId = "PersonAttributeFilter_SourceGroupId_{0}",
-    GroupAttributeFilterGroupTypeId = "GroupAttributeFilter_GroupTypeId_{0}",
-    GroupMemberAttributeFilterGroupTypeId = "GroupMemberAttributeFilter_GroupTypeId_{0}",
-    RegistrantFeeItemValuesForFiltersJSONRegistrationInstanceId = "RegistrantFeeItemValuesForFiltersJSON_RegistrationInstanceId_{0}",
-    RegistrantFeeItemValuesForFiltersJSONRegistrationTemplateId = "RegistrantFeeItemValuesForFiltersJSON_RegistrationTemplateId_{0}"
+    PlacementConfigurationJSONRegistrationInstanceIdKey = "PlacementConfigurationJSON_RegistrationInstanceIdKey_{0}",
+    PlacementConfigurationJSONRegistrationTemplateIdKey = "PlacementConfigurationJSON_RegistrationTemplateIdKey_{0}",
+    PlacementConfigurationJSONSourceGroupIdKey = "PlacementConfigurationJSON_SourceGroupIdKey_{0}",
+    PlacementConfigurationJSONEntitySetIdKey = "PlacementConfigurationJSON_EntitySetIdKey_{0}",
+    PersonAttributeFilterRegistrationInstanceIdKey = "PersonAttributeFilter_RegistrationInstanceIdKey_{0}",
+    PersonAttributeFilterRegistrationTemplateIdKey = "PersonAttributeFilter_RegistrationTemplateIdKey_{0}",
+    PersonAttributeFilterSourceGroupIdKey = "PersonAttributeFilter_SourceGroupIdKey_{0}",
+    GroupAttributeFilterGroupTypeIdKey = "GroupAttributeFilter_GroupTypeIdKey_{0}",
+    GroupMemberAttributeFilterGroupTypeIdKey = "GroupMemberAttributeFilter_GroupTypeIdKey_{0}",
+    RegistrantFeeItemValuesForFiltersJSONRegistrationInstanceIdKey = "RegistrantFeeItemValuesForFiltersJSON_RegistrationInstanceIdKey_{0}",
+    RegistrantFeeItemValuesForFiltersJSONRegistrationTemplateIdKey = "RegistrantFeeItemValuesForFiltersJSON_RegistrationTemplateIdKey_{0}",
+    SortOrderRegistrationInstanceIdKey = "SortOrder_RegistrationInstanceIdKey_{0}",
+    SortOrderRegistrationTemplateIdKey = "SortOrder_RegistrationTemplateIdKey_{0}",
+    SortOrderSourceGroupIdKey = "SortOrder_SourceGroupIdKey_{0}",
+    SortOrderEntitySetIdKey = "SortOrder_EntitySetIdKey_{0}",
+    IsGenderHighlightingRegistrationInstanceIdKey = "IsGenderHighlighting_RegistrationInstanceIdKey_{0}",
+    IsGenderHighlightingRegistrationTemplateIdKey = "IsGenderHighlighting_RegistrationTemplateIdKey_{0}",
+    IsGenderHighlightingSourceGroupIdKey = "IsGenderHighlighting_SourceGroupIdKey_{0}",
+    IsGenderHighlightingEntitySetIdKey = "IsGenderHighlighting_EntitySetIdKey_{0}",
+    FallbackRegistrationTemplatePlacement = "FallbackRegistrationTemplatePlacement",
 }
 
 export const enum NavigationUrlKey {

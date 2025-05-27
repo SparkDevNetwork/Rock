@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 using Rock.Model;
@@ -40,5 +41,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         public Dictionary<string, string> AttributeValues { get; set; }
 
         public PersonBag Person { get; set; }
+
+        public DateTimeOffset? CreatedDateTime { get; set; }
     }
 }

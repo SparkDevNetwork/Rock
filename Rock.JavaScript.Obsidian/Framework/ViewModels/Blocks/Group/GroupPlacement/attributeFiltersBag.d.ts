@@ -27,15 +27,9 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 export type AttributeFiltersBag = {
     destinationGroupAttributesForFilter?: Record<string, PublicAttributeBag> | null;
 
-    destinationGroupAttributeValuesForFilter?: Record<string, string> | null;
-
     destinationGroupMemberAttributesForFilter?: Record<string, PublicAttributeBag> | null;
-
-    destinationGroupMemberAttributeValuesForFilter?: Record<string, string> | null;
 
     registrantFeeItemsForFilter?: ListItemBag[] | null;
 
     sourceAttributesForFilter?: Record<string, PublicAttributeBag> | null;
-
-    sourceAttributeValuesForFilter?: Record<string, string> | null;
 };
