@@ -80,6 +80,12 @@
                               :items="cameraBarcodeConfigurationOptions"
                               label="iPad Camera Barcode Configuration"
                               help="If set, this value will override any block setting for check-in." />
+
+                <DropDownList v-if="showPrinterSettings"
+                              v-model="proxyDevice"
+                              :items="proxyDeviceItems"
+                              label="Proxy Device"
+                              help="The proxy device that will handle communicating with this printer when performing server based printing." />
             </div>
         </div>
 
@@ -163,6 +169,7 @@
     const printFrom = propertyRef(props.modelValue.printFrom?.toString() ?? "", "PrintFrom");
     const printTo = propertyRef(props.modelValue.printToOverride?.toString() ?? "", "PrintToOverride");
     const printerDevice = propertyRef(props.modelValue.printerDevice?.value ?? "", "PrinterDeviceId");
+    const proxyDevice = propertyRef(props.modelValue.proxyDevice?.value ?? "", "ProxyDeviceId");
     const kioskType = propertyRef(props.modelValue.kioskType?.toString(), "KioskType");
     const cameraBarcodeConfigurationType = propertyRef(props.modelValue.cameraBarcodeConfigurationType?.toString() ?? "", "CameraBarcodeConfigurationType");
     const cameraBarcodeConfigurationOptions = ref(props.options.cameraBarcodeConfigurationOptions ?? []);
@@ -170,6 +177,7 @@
     const printFromOptions = ref(props.options.printFromOptions ?? []);
     const printToOptions = ref(props.options.printToOptions ?? []);
     const printerOptions = ref(props.options.printerOptions ?? []);
+    const proxyDeviceItems = ref(props.options.proxyItems ?? []);
     const mapStyleValueGuid = ref(props.options.mapStyleValueGuid ?? "");
     const isModalOpen = ref<boolean>(false);
     const location = ref<ListItemBag | null>(null);
@@ -177,7 +185,7 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [name, isActive, description, ipAddress, hasCamera, deviceType, printFrom, printTo, printerDevice, kioskType, cameraBarcodeConfigurationType];
+    const propRefs = [name, isActive, description, ipAddress, hasCamera, deviceType, printFrom, printTo, printerDevice, proxyDevice, kioskType, cameraBarcodeConfigurationType];
 
     // #endregion
 
@@ -193,6 +201,10 @@
             kioskType.value = "";
         }
         return showSettings;
+    });
+
+    const showPrinterSettings = computed((): boolean => {
+        return areEqual(deviceType.value.value, DefinedValue.DeviceTypePrinter);
     });
 
     const showCameraBarCodeConfiguration = computed((): boolean => {
@@ -280,6 +292,7 @@
         updateRefValue(printFrom, props.modelValue.printFrom?.toString());
         updateRefValue(printTo, props.modelValue.printToOverride?.toString());
         updateRefValue(printerDevice, props.modelValue.printerDevice?.value ?? "");
+        updateRefValue(proxyDevice, props.modelValue.proxyDevice?.value ?? "");
         updateRefValue(kioskType, props.modelValue.kioskType?.toString() ?? "");
         updateRefValue(cameraBarcodeConfigurationType, props.modelValue.cameraBarcodeConfigurationType?.toString() ?? "");
         updateRefValue(locations, props.modelValue.locations ?? []);
@@ -302,6 +315,7 @@
             printFrom: toNumber(printFrom.value) as PrintFrom,
             printToOverride: toNumber(printTo.value) as PrintTo,
             printerDevice: { text: "", value: printerDevice.value },
+            proxyDevice: { text: "", value: proxyDevice.value },
             kioskType: toNumberOrNull(kioskType.value) as KioskType | null,
             cameraBarcodeConfigurationType: toNumberOrNull(cameraBarcodeConfigurationType.value) as CameraBarcodeConfiguration | null,
             locations: locations.value,
