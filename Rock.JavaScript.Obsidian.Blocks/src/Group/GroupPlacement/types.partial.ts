@@ -17,6 +17,8 @@
 
 import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { nextTick } from "vue";
+import { tooltip } from "@Obsidian/Utility/tooltip";
 
 // export const enum NavigationUrlKey {
 //     DetailPage = "DetailPage"
@@ -66,4 +68,25 @@ export enum SortTypes {
 export interface IGroupPlacementFunctions {
     joinGroupChannels(groupGuids: Guid[]): Promise<void>;
     leaveGroupChannel(groupGuid: Guid): Promise<void>;
+}
+
+function isTextOverflowing(el: HTMLElement): boolean {
+    return el.scrollWidth > el.clientWidth;
+}
+
+export function addTooltipIfOverflow(el: HTMLElement | null, tooltipText: string): void {
+    if (!el) return;
+
+    nextTick(() => {
+        el.removeAttribute("title");
+        el.removeAttribute("data-original-title");
+        el.removeAttribute("data-toggle");
+
+        if (isTextOverflowing(el)) {
+            el.setAttribute("title", tooltipText);
+            el.setAttribute("data-original-title", tooltipText);
+            el.setAttribute("data-toggle", "tooltip");
+            tooltip(el);
+        }
+    });
 }

@@ -87,6 +87,7 @@
                                                             :person="groupMember.person"
                                                             :index="index"
                                                             :isDetailHoverDisabled="true"
+                                                            :isTransitionEnabled="isTransitionEnabled"
                                                             :data-group-id-key="destinationGroup.groupIdKey"
                                                             :data-group-member-id-key="groupMember.groupMemberIdKey"
                                                             :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
@@ -124,6 +125,7 @@
                                         :person="groupMember.person"
                                         :index="index"
                                         :isDetailHoverDisabled="true"
+                                        :isTransitionEnabled="isTransitionEnabled"
                                         :data-group-id-key="destinationGroup.groupIdKey"
                                         :data-group-member-id-key="groupMember.groupMemberIdKey"
                                         :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
@@ -384,6 +386,10 @@
         },
         placementMode: {
             type: Number as PropType<PlacementMode | null>,
+            required: false
+        },
+        isTransitionEnabled: {
+            type: Boolean as PropType<boolean>,
             required: false
         }
     });

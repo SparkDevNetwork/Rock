@@ -154,7 +154,7 @@
                                             :key="index"
                                             :data-person-id-key="person.personIdKey"
                                             :isCardExpanded="arePersonCardsExpanded"
-                                            :isTransitionEnabled="true"
+                                            :isTransitionEnabled="isCardTransitionEnabled"
                                             :person="person"
                                             :index="index"
                                             :isSelected="isSelected(person.personIdKey)"
@@ -163,8 +163,10 @@
                                             :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
                                             :isGenderHighlighting="isGenderHighlighting"
                                             :placementMode="box.placementMode"
+                                            :class="{ 'hovered-card': showPointer }"
                                             @toggleCardExpansion="toggleCardExpansion"
-                                            @toggleSelection="toggleSelection(person.personIdKey)" />
+                                            @toggleSelection="toggleSelection(person.personIdKey)"
+                                            @hover="togglePersonCardHovered" />
                             </template>
                             <div v-else>
                                 <span v-if="!isNoPeopleLabelHidden" class="no-people-label">No People Available</span>
@@ -262,6 +264,7 @@
                                           :areSourceAttributesDisplayedOnDestinationGroupMembers="placementConfigurationSettings.areSourceAttributesDisplayedOnDestinationGroupMembers"
                                           :arePeopleLoading="arePeopleLoading"
                                           :placementMode="box.placementMode"
+                                          :isTransitionEnabled="isCardTransitionEnabled"
                                           @editGroup="editGroup"
                                           @detachGroup="detachPlacementGroup"
                                           @deleteGroup="deletePlacementGroup"
@@ -452,6 +455,10 @@
     font-weight: var(--font-weight-semibold);
 }
 
+.hovered-card {
+    cursor: pointer;
+}
+
 :deep(.highlight) {
     background-color: var(--color-interface-soft) !important;
 }
@@ -602,6 +609,8 @@
 
     const placementConfigurationSettings = ref<PlacementConfigurationSettingsBag>(preferences.getValue(getPlacementConfigurationSettingsKey()) ? JSON.parse(preferences.getValue(getPlacementConfigurationSettingsKey())) : {} as PlacementConfigurationSettingsBag);
 
+    const isCtrlKeyHeld = ref<boolean>(false);
+    const isPersonCardHovered = ref<boolean>(false);
 
     console.log("GroupPlacementInitializationBox", box);
     console.log("placement config settings: ", placementConfigurationSettings.value);
@@ -610,7 +619,11 @@
 
     // #region Computed Values
 
+    const showPointer = computed(() => isCtrlKeyHeld.value && isPersonCardHovered.value);
+
     const selectedPeopleCount = computed(() => selectedPersonIdKeys.value.size);
+
+    const isCardTransitionEnabled = computed(() => filteredAndSortedPeopleToPlace.value.length <= 50);
 
     const groupMemberFilterIcon = computed((): string => {
         return isGroupMemberFilterDisplayed.value ? "fa fa-chevron-up" : "fa fa-chevron-down";
@@ -1132,6 +1145,10 @@
         if (!clickedEl.closest(".person-card") && !clickedEl.closest(".prevent-clear")) {
             selectedPersonIdKeys.value.clear();
         }
+    }
+
+    function togglePersonCardHovered(value: boolean): void {
+        isPersonCardHovered.value = value;
     }
 
     function toggleSelection(personIdKey: string) {
@@ -1776,6 +1793,18 @@
         }
     }
 
+    function handleKeyDown(e: KeyboardEvent) {
+        if (e.ctrlKey || e.metaKey) {
+            isCtrlKeyHeld.value = true;
+        }
+    }
+
+    function handleKeyUp(e: KeyboardEvent) {
+        if (!e.ctrlKey && !e.metaKey) {
+            isCtrlKeyHeld.value = false;
+        }
+    }
+
     // #endregion
 
     // #region Block Actions
@@ -2122,6 +2151,8 @@
 
     onMounted(async () => {
         document.addEventListener("click", handleOutsideClick);
+        window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("keyup", handleKeyUp);
 
         await loadPlacementData();
 
@@ -2133,6 +2164,8 @@
 
     onBeforeUnmount(() => {
         document.removeEventListener("click", handleOutsideClick);
+        window.removeEventListener("keydown", handleKeyDown);
+        window.removeEventListener("keyup", handleKeyUp);
     });
 
     onConfigurationValuesChanged(reloadBlock);
