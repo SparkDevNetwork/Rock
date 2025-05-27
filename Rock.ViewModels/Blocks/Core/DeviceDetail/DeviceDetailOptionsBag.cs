@@ -66,6 +66,11 @@ namespace Rock.ViewModels.Blocks.Core.DeviceDetail
         public List<ListItemBag> PrintToOptions { get; set; }
 
         /// <summary>
+        /// The list of cloud print proxy devices that can be selected.
+        /// </summary>
+        public List<ListItemBag> ProxyItems { get; set; }
+
+        /// <summary>
         /// Gets or sets the map style value unique identifier.
         /// </summary>
         /// <value>
