@@ -2108,6 +2108,18 @@ mission. We are so grateful for your commitment.</p>
                 allowedCurrencyTypes.Add( achCurrency );
             }
 
+            var applePayCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_APPLE_PAY.AsGuid() );
+            if ( financialGatewayComponent.SupportsSavedAccount( applePayCurrency ) )
+            {
+                allowedCurrencyTypes.Add( applePayCurrency );
+            }
+
+            var googlePayCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ANDROID_PAY.AsGuid() );
+            if ( financialGatewayComponent.SupportsSavedAccount( googlePayCurrency ) )
+            {
+                allowedCurrencyTypes.Add( googlePayCurrency );
+            }
+
             int[] allowedCurrencyTypeIds = allowedCurrencyTypes.Select( a => a.Id ).ToArray();
 
             personSavedAccountsQuery = personSavedAccountsQuery.Where( a =>
