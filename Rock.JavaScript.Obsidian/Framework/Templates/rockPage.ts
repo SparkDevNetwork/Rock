@@ -427,7 +427,6 @@ export async function initializeDynamicComponentWrapper(rootElementId: string, c
                 const componentDataElement = document.getElementById(componentDataId) as HTMLInputElement;
 
                 if (componentDataElement) {
-                    console.log("UpdateComponentData", data);
                     componentDataElement.value = encodeURIComponent(JSON.stringify(data));
                 }
             }
