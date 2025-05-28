@@ -64,40 +64,40 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202504071505457_AddBluetoothBeaconIdentifiers.cs" />
-    <Compile Include="Migrations\202504071505457_AddBluetoothBeaconIdentifiers.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504071505457_AddBluetoothBeaconIdentifiers.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504071505457_AddBluetoothBeaconIdentifiers.Designer.cs">
       <DependentUpon>202504071505457_AddBluetoothBeaconIdentifiers.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202504091439306_DeprecateCsvToTableFunction.cs" />
-    <Compile Include="Migrations\202504091439306_DeprecateCsvToTableFunction.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504091439306_DeprecateCsvToTableFunction.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504091439306_DeprecateCsvToTableFunction.Designer.cs">
       <DependentUpon>202504091439306_DeprecateCsvToTableFunction.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202504091716317_AddPersonalDeviceLocationPermissionStatus.cs" />
-    <Compile Include="Migrations\202504091716317_AddPersonalDeviceLocationPermissionStatus.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504091716317_AddPersonalDeviceLocationPermissionStatus.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504091716317_AddPersonalDeviceLocationPermissionStatus.Designer.cs">
       <DependentUpon>202504091716317_AddPersonalDeviceLocationPermissionStatus.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202504092004075_AddWorkflowTypeSlug.cs" />
-    <Compile Include="Migrations\202504092004075_AddWorkflowTypeSlug.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504092004075_AddWorkflowTypeSlug.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504092004075_AddWorkflowTypeSlug.Designer.cs">
       <DependentUpon>202504092004075_AddWorkflowTypeSlug.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202504092102011_UpdatePrinterDpiAttributeName.cs" />
-    <Compile Include="Migrations\202504092102011_UpdatePrinterDpiAttributeName.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504092102011_UpdatePrinterDpiAttributeName.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504092102011_UpdatePrinterDpiAttributeName.Designer.cs">
       <DependentUpon>202504092102011_UpdatePrinterDpiAttributeName.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202504111835181_AddPersonalDeviceLocationDisabledDateTime.cs" />
-    <Compile Include="Migrations\202504111835181_AddPersonalDeviceLocationDisabledDateTime.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504111835181_AddPersonalDeviceLocationDisabledDateTime.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504111835181_AddPersonalDeviceLocationDisabledDateTime.Designer.cs">
       <DependentUpon>202504111835181_AddPersonalDeviceLocationDisabledDateTime.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.cs" />
-    <Compile Include="Migrations\202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.Designer.cs">
       <DependentUpon>202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202504151646241_Rollup_20250415.cs" />
-    <Compile Include="Migrations\202504151646241_Rollup_20250415.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504151646241_Rollup_20250415.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504151646241_Rollup_20250415.Designer.cs">
       <DependentUpon>202504151646241_Rollup_20250415.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202504151751340_CodeGenerated_20250415.cs" />
-    <Compile Include="Migrations\202504151751340_CodeGenerated_20250415.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504151751340_CodeGenerated_20250415.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504151751340_CodeGenerated_20250415.Designer.cs">
       <DependentUpon>202504151751340_CodeGenerated_20250415.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.cs" />
@@ -108,12 +108,12 @@
     <Compile Include="Migrations\Version 17.0\Version 17.0\202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP.Designer.cs">
       <DependentUpon>202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202504022257120_AddNextGenKioskRegistrationAttributes.cs" />
-    <Compile Include="Migrations\202504022257120_AddNextGenKioskRegistrationAttributes.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504022257120_AddNextGenKioskRegistrationAttributes.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504022257120_AddNextGenKioskRegistrationAttributes.Designer.cs">
       <DependentUpon>202504022257120_AddNextGenKioskRegistrationAttributes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202504031939385_AddPaymentEntryWorkflowAction.cs" />
-    <Compile Include="Migrations\202504031939385_AddPaymentEntryWorkflowAction.Designer.cs">
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504031939385_AddPaymentEntryWorkflowAction.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.1\202504031939385_AddPaymentEntryWorkflowAction.Designer.cs">
       <DependentUpon>202504031939385_AddPaymentEntryWorkflowAction.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503052051200_CodeGenerated_20250305.cs" />
@@ -2602,31 +2602,31 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202504071505457_AddBluetoothBeaconIdentifiers.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.1\202504071505457_AddBluetoothBeaconIdentifiers.resx">
       <DependentUpon>202504071505457_AddBluetoothBeaconIdentifiers.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202504091439306_DeprecateCsvToTableFunction.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.1\202504091439306_DeprecateCsvToTableFunction.resx">
       <DependentUpon>202504091439306_DeprecateCsvToTableFunction.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202504091716317_AddPersonalDeviceLocationPermissionStatus.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.1\202504091716317_AddPersonalDeviceLocationPermissionStatus.resx">
       <DependentUpon>202504091716317_AddPersonalDeviceLocationPermissionStatus.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202504092004075_AddWorkflowTypeSlug.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.1\202504092004075_AddWorkflowTypeSlug.resx">
       <DependentUpon>202504092004075_AddWorkflowTypeSlug.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202504092102011_UpdatePrinterDpiAttributeName.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.1\202504092102011_UpdatePrinterDpiAttributeName.resx">
       <DependentUpon>202504092102011_UpdatePrinterDpiAttributeName.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202504111835181_AddPersonalDeviceLocationDisabledDateTime.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.1\202504111835181_AddPersonalDeviceLocationDisabledDateTime.resx">
       <DependentUpon>202504111835181_AddPersonalDeviceLocationDisabledDateTime.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.1\202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.resx">
       <DependentUpon>202504180307181_UpdateAdaptiveMessagesCategoryTreeViewHeader.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202504151646241_Rollup_20250415.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.1\202504151646241_Rollup_20250415.resx">
       <DependentUpon>202504151646241_Rollup_20250415.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202504151751340_CodeGenerated_20250415.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.1\202504151751340_CodeGenerated_20250415.resx">
       <DependentUpon>202504151751340_CodeGenerated_20250415.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503251838152_AddHistoryLoginModel.resx">
@@ -2635,10 +2635,10 @@
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP.resx">
       <DependentUpon>202504021715459_AddVersionToCommunicationTemplateAndFixRecipientDetailsSP.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202504022257120_AddNextGenKioskRegistrationAttributes.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.1\202504022257120_AddNextGenKioskRegistrationAttributes.resx">
       <DependentUpon>202504022257120_AddNextGenKioskRegistrationAttributes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202504031939385_AddPaymentEntryWorkflowAction.resx">
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.1\202504031939385_AddPaymentEntryWorkflowAction.resx">
       <DependentUpon>202504031939385_AddPaymentEntryWorkflowAction.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503052051200_CodeGenerated_20250305.resx">
