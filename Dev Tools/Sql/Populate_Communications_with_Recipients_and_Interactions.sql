@@ -5,13 +5,13 @@ SET NOCOUNT ON;
 -- README
 -- Generates [Communication], [CommunicationRecipient], [Interaction] (and associated) records.
 -- This generates mostly garbage data, so it is really only useful for performance and UI testing.
--- Will take several (10+) minutes to run with default configuration.
+-- Will likely take several (5+) minutes to run with default configuration.
 ----------------------------------------------
 
-DECLARE @CommCount              INT = 1000;     -- How many [Communication] records to create.
-DECLARE @MaxRecipientCount      INT = 1000;     -- Max randomized count of [CommunicationRecipient] records per communication.
+DECLARE @CommCount              INT = 250;      -- How many [Communication] records to create.
+DECLARE @MaxRecipientCount      INT = 2500;     -- Max randomized count of [CommunicationRecipient] records per communication.
 
-DECLARE @StartDate  DATETIME = DATEADD(DAY, -90, GETDATE());    -- Start date for communication date range.
+DECLARE @StartDate  DATETIME = DATEADD(DAY, -365, GETDATE());   -- Start date for communication date range.
 DECLARE @EndDate    DATETIME = DATEADD(DAY,  14, GETDATE());    -- End date for communication date range.
 
 -- SET to 1 to spread interactions across a wide date/time window (weigheted more heavily towards the first week, more-closely mimicking reality).
@@ -391,7 +391,11 @@ BEGIN
         DECLARE @UnsubscribeLevel  INT          = NULL;
         DECLARE @UnsubscribeOffsetMinutes INT   = NULL
 
-        IF @CommStatus = 3 AND @SendDateTime IS NOT NULL AND ABS(CHECKSUM(NEWID())) % 100 < 3 -- 3% of recipients will unsubscribe
+        -- Some recipients will unsubscribe as a result of receiving this communication, as follows:
+        IF @MediumId = @EmailMediumTypeId           -- Must be an email
+            AND @CommStatus = 3                     -- Communication must be approved
+            AND @SendDateTime IS NOT NULL           -- Communication must have a send date time
+            AND ABS(CHECKSUM(NEWID())) % 100 < 3    -- 3% of these recipients will unsubscribe
         BEGIN
             SET @CausedUnsubscribe   = 1;
 
@@ -400,11 +404,11 @@ BEGIN
                 DECLARE @RndUnsub INT = ABS(CHECKSUM(NEWID())) % 100; -- weighted 0-to-180-day offset
                 SET @UnsubscribeOffsetMinutes =
                     CASE
-                        WHEN @RndUnsub < 80                                         -- ~80 % in first 7 d
+                        WHEN @RndUnsub < 80                                         -- ~80 % happen in first 7 days
                             THEN ABS(CHECKSUM(NEWID())) % (7 * 1440)                -- 0-7 d
                         WHEN @RndUnsub < 90                                         -- ~10 % in days 8-45
                             THEN 7 * 1440 + ABS(CHECKSUM(NEWID())) % (38 * 1440)    -- 7-45 d
-                        ELSE                                                        -- ~10 % outliers to 6 mo
+                        ELSE                                                        -- ~10 % outliers up to ~6 months
                             45 * 1440 + ABS(CHECKSUM(NEWID())) % (135 * 1440)       -- 45-180 d
                     END;
             END
