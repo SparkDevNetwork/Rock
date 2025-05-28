@@ -103,8 +103,8 @@
 
 <script setup lang="ts">
     import { PropType } from "vue";
-    import MobileBackground from "./mobileBackground.partial.obs";
-    import MobilePreview from "./mobilePreview.partial.obs";
+    import MobileBackground from "./MobilePreview/mobileBackground.partial.obs";
+    import MobilePreview from "./MobilePreview/mobilePreview.partial.obs";
 
     defineProps({
         pushTitle: {

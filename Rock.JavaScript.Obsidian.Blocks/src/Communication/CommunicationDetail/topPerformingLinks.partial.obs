@@ -1,0 +1,149 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="allLinksCount"
+           v-model="isExpanded"
+           title="Top Performing Links"
+           panelHeadingCssClass="communication-analytics-links-panel-heading"
+           panelBodyCssClass="communication-analytics-links-panel-body"
+           :hasCollapse="true">
+
+        <template #headerActions>
+            <div class="action">
+                <HighlightLabel>
+                    {{ allLinksCountLabel }}
+                </HighlightLabel>
+            </div>
+        </template>
+
+        <div class="communication-analytics-link-performances">
+            <LinkPerformance v-for="link in topLinks"
+                             :key="link.url!"
+                             :linkAnalytics="link" />
+            <!-- <TransitionVerticalCollapse> TODO (Jason): Not working with v-for. -->
+            <template v-if="areAllLinksVisible">
+                <LinkPerformance v-for="link in remainingLinks"
+                                 :key="link.url!"
+                                 :linkAnalytics="link" />
+            </template>
+            <!-- </TransitionVerticalCollapse> -->
+        </div>
+
+        <template v-if="anyRemainingLinks" #footerActions>
+            <div class="communication-analytics-links-footer-actions">
+                <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.Small" @click="areAllLinksVisible = !areAllLinksVisible">
+                    See All Links <i :class="seeAllLinksIconCssClass"></i>
+                </RockButton>
+            </div>
+        </template>
+
+    </Panel>
+</template>
+
+<style scoped>
+:deep(.communication-analytics-link-performances > div:not(:first-of-type)) {
+    margin-top: var(--spacing-large)
+}
+
+:deep(.panel-body .actions) {
+    border-top: 1px solid var(--color-interface-soft);
+    background: var(--color-interface-softer);
+}
+
+.communication-analytics-links-footer-actions .btn {
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.communication-analytics-links-footer-actions .btn > i {
+    margin-left: var(--spacing-tiny);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import LinkPerformance from "./linkPerformance.partial.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationLinkAnalyticsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationLinkAnalyticsBag";
+
+    const props = defineProps({
+        linksAnalytics: {
+            type: Array as PropType<CommunicationLinkAnalyticsBag[] | null | undefined>,
+            required: true
+        },
+
+        maxLinksVisibleOnLoadCount: {
+            type: Number as PropType<number>,
+            default: 3
+        }
+    });
+
+    // #region Values
+
+    const isExpanded = ref(true);
+
+    const areAllLinksVisible = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const allLinks = computed((): CommunicationLinkAnalyticsBag[] => {
+        return props.linksAnalytics
+            ?.filter(la =>
+                la.url
+                && !isNullish(la.totalClicksCount)
+                && !isNullish(la.uniqueClicksCount)
+                && !isNullish(la.clickThroughRate)
+                && !isNullish(la.percentOfTopLink)
+            )
+            ?? [];
+    });
+
+    const allLinksCount = computed((): number => {
+        return allLinks.value.length;
+    });
+
+    const allLinksCountLabel = computed((): string => {
+        return `${asFormattedString(allLinksCount.value)} Total ${pluralize("Link", allLinksCount.value)}`;
+    });
+
+    const seeAllLinksIconCssClass = computed((): string => {
+        const direction = areAllLinksVisible.value
+            ? "up"
+            : "down";
+
+        return `fa fa-chevron-${direction}`;
+    });
+
+    const maxTopLinksCount = computed((): number => {
+        return props.maxLinksVisibleOnLoadCount
+            ? props.maxLinksVisibleOnLoadCount
+            : 3;
+    });
+
+    const topLinks = computed((): CommunicationLinkAnalyticsBag[] => {
+        return allLinks.value.length > maxTopLinksCount.value
+            ? [...allLinks.value.slice(0, maxTopLinksCount.value)]
+            : [...allLinks.value];
+    });
+
+    const remainingLinks = computed((): CommunicationLinkAnalyticsBag[] => {
+        return allLinks.value.length > maxTopLinksCount.value
+            ? [...allLinks.value.slice(maxTopLinksCount.value)]
+            : [];
+    });
+
+    const anyRemainingLinks = computed((): boolean => {
+        return !!remainingLinks.value.length;
+    });
+
+    // #endregion Computed Values
+</script>

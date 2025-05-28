@@ -1,0 +1,22 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="communication-detail-boolean-with-tooltip-cell">
+        <i v-if="isTrue" class="fa fa-check"></i>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    defineProps({
+        isTrue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        tooltip: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+</script>

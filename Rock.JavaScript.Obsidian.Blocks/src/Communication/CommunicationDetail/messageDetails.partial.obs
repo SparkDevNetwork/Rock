@@ -1,0 +1,357 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="messagePreview" class="communication-message-details">
+
+        <Panel title="Details"
+               panelHeadingCssClass="communication-message-details-panel-heading"
+               panelBodyCssClass="communication-message-details-panel-body">
+
+            <NotficationBox v-if="isFutureSend" :alertType="AlertType.Info" heading="Future Send">
+                This communication is scheduled to be sent {{ futureSendDateTimeElapsed }} <small>({{ futureSendDateTimeFormatted }})</small>.
+            </NotficationBox>
+
+            <div class="row">
+                <div :class="infoItemCssClass">
+                    <div class="communication-message-details-info-item-label text-truncate">
+                        Created By:
+                    </div>
+                    <div class="communication-message-details-info-item-value text-truncate">
+                        <span v-html="createdByPersonName || '&nbsp;'"></span>
+                        <span v-if="createdDateTimeElapsed"
+                              :data-original-title="createdDateTimeTooltip"
+                              :ref="applyTooltip">
+                            ({{ createdDateTimeElapsed }})
+                        </span>
+                    </div>
+                </div>
+                <div :class="infoItemCssClass">
+                    <div class="communication-message-details-info-item-label text-truncate">
+                        Approved By:
+                    </div>
+                    <div class="communication-message-details-info-item-value text-truncate">
+                        <span v-html="approvedByPersonName || '&nbsp;'"></span>
+                        <span v-if="approvedDateTimeElapsed"
+                              :data-original-title="approvedDateTimeTooltip"
+                              :ref="applyTooltip">
+                            ({{ approvedDateTimeElapsed }})
+                        </span>
+                    </div>
+                </div>
+                <div v-if="fromName" :class="infoItemCssClass">
+                    <div class="communication-message-details-info-item-label text-truncate">
+                        From:
+                    </div>
+                    <div class="communication-message-details-info-item-value text-truncate">
+                        <span>
+                            {{ fromName }}
+                        </span>
+                        <span v-if="fromValue">
+                            ({{ fromValue }})
+                        </span>
+                    </div>
+                </div>
+                <div :class="infoItemCssClass">
+                    <div class="communication-message-details-info-item-label text-truncate">
+                        List:
+                    </div>
+                    <div class="communication-message-details-info-item-value text-truncate">
+                        {{ listName }}
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="isEmail" class="row">
+                <div :class="infoItemCssClass">
+                    <div class="communication-message-details-info-item-label text-truncate">
+                        Subject:
+                    </div>
+                    <div class="communication-message-details-info-item-value text-truncate">
+                        <strong>{{ messagePreview?.emailSubject }}</strong>
+                    </div>
+                </div>
+                <div :class="infoItemCssClass">
+                    <div class="communication-message-details-info-item-label text-truncate">
+                        Reply To:
+                    </div>
+                    <div class="communication-message-details-info-item-value text-truncate">
+                        {{ messagePreview?.replyToEmail || fromValue }}
+                    </div>
+                </div>
+                <div v-if="messagePreview?.ccEmails" :class="infoItemCssClass">
+                    <div class="communication-message-details-info-item-label text-truncate">
+                        CC:
+                    </div>
+                    <div class="communication-message-details-info-item-value text-truncate">
+                        {{ messagePreview.ccEmails }}
+                    </div>
+                </div>
+                <div v-if="messagePreview?.bccEmails" :class="infoItemCssClass">
+                    <div class="communication-message-details-info-item-label text-truncate">
+                        BCC:
+                    </div>
+                    <div class="communication-message-details-info-item-value text-truncate">
+                        {{ messagePreview.bccEmails }}
+                    </div>
+                </div>
+            </div>
+
+            <div v-else-if="isSms" class="row">
+                <div class="communication-message-details-info-item col-xs-12">
+                    <div class="communication-message-details-info-item-label text-truncate">
+                        Message:
+                    </div>
+                    <div class="communication-message-details-info-item-value text-truncate">
+                        {{ messagePreview?.smsMessage }}
+                    </div>
+                </div>
+            </div>
+
+            <div v-else-if="isPush" class="row">
+                <div :class="infoItemCssClass">
+                    <div class="communication-message-details-info-item-label text-truncate">
+                        Title:
+                    </div>
+                    <div class="communication-message-details-info-item-value text-truncate">
+                        {{ messagePreview?.pushTitle }}
+                    </div>
+                </div>
+                <div :class="infoItemCssClass">
+                    <div class="communication-message-details-info-item-label text-truncate">
+                        Message:
+                    </div>
+                    <div class="communication-message-details-info-item-value text-truncate">
+                        {{ messagePreview?.pushMessage }}
+                    </div>
+                </div>
+                <div :class="infoItemCssClass">
+                    <div class="communication-message-details-info-item-label text-truncate">
+                        Open Option:
+                    </div>
+                    <div class="communication-message-details-info-item-value text-truncate">
+                        {{ pushOpenActionDescription }}
+                    </div>
+                </div>
+            </div>
+
+        </Panel>
+
+        <Panel v-model="isPreviewExpanded"
+               title="Preview"
+               panelHeadingCssClass="communication-message-preview-panel-heading"
+               panelBodyCssClass="communication-message-preview-panel-body"
+               :hasCollapse="true"
+               :hasFullscreen="true">
+
+            <div v-if="isEmail" class="communication-message-preview-container">
+                <EmailPreview :message="messagePreview?.emailMessage ?? ''" />
+            </div>
+
+            <SmsMobilePreview v-else-if="isSms"
+                              :smsMessage="messagePreview?.smsMessage ?? ''"
+                              :smsFromNumberName="messagePreview?.fromSystemPhoneNumberName ?? ''"
+                              :smsAttachmentLinks="[]" />
+
+            <PushNotificationMobilePreview v-else-if="isPush"
+                                           :pushTitle="messagePreview?.pushTitle ?? ''"
+                                           :pushMessage="messagePreview?.pushMessage ?? ''" />
+
+        </Panel>
+
+    </div>
+</template>
+
+<style scoped>
+:deep(.communication-message-details-panel-heading),
+:deep(.communication-message-preview-panel-heading) {
+    background-color: var(--theme-white);
+}
+
+:deep(.communication-message-details-panel-body) {
+    background-color: var(--color-interface-softer);
+    padding-bottom: 0;
+}
+
+.communication-message-details-info-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--spacing-large);
+}
+
+.communication-message-details-info-item-label {
+    font-size: var(--font-size-small);
+    color: var(--color-interface-stronger);
+    font-weight: var(--font-weight-semibold);
+}
+
+:deep(.communication-message-preview-panel-body) {
+    background-color: var(--color-interface-soft);
+    padding: 0;
+}
+
+.communication-message-preview-container {
+    padding: var(--panel-body-padding);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import { useCommunicationDetail, useMediumFilter } from "./utils.partial";
+    import EmailPreview from "@Obsidian/Controls/Internal/emailPreview.obs";
+    import PushNotificationMobilePreview from "@Obsidian/Controls/Internal/pushNotificationMobilePreview.obs";
+    import SmsMobilePreview from "@Obsidian/Controls/Internal/smsMobilePreview.obs";
+    import NotficationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+    import { PushOpenActionDescription } from "@Obsidian/Enums/Communication/pushOpenAction";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationMessagePreviewBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationMessagePreviewBag";
+
+    const communicationDetail = useCommunicationDetail();
+    const mediumFilter = useMediumFilter();
+
+    const props = defineProps({
+        messagePreview: {
+            type: Object as PropType<CommunicationMessagePreviewBag | null | undefined>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const createdByPersonName = ref(props.messagePreview?.createdByPersonName ?? "");
+    const approvedByPersonName = ref(props.messagePreview?.approvedByPersonName ?? "");
+
+    const isPreviewExpanded = ref(true);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const futureSendRockDateTime = computed((): RockDateTime | null => {
+        if (!communicationDetail.value?.futureSendDateTime) {
+            return null;
+        }
+
+        return RockDateTime.parseISO(communicationDetail.value.futureSendDateTime);
+    });
+
+    const isFutureSend = computed((): boolean => {
+        return !!futureSendRockDateTime.value
+            && !futureSendRockDateTime.value.isEarlierThan(RockDateTime.now());
+    });
+
+    const futureSendDateTimeFormatted = computed((): string => {
+        return futureSendRockDateTime.value
+            ? futureSendRockDateTime.value.toASPString("G")
+            : "";
+    });
+
+    const futureSendDateTimeElapsed = computed((): string => {
+        return futureSendRockDateTime.value
+            ? futureSendRockDateTime.value.toElapsedString()
+            : "";
+    });
+
+    const isEmail = computed((): boolean => {
+        return communicationDetail.value?.type === CommunicationType.Email
+            || mediumFilter.value == CommunicationType.Email;
+    });
+
+    const isSms = computed((): boolean => {
+        return communicationDetail.value?.type === CommunicationType.SMS
+            || mediumFilter.value === CommunicationType.SMS;
+    });
+
+    const isPush = computed((): boolean => {
+        return communicationDetail.value?.type === CommunicationType.PushNotification;
+    });
+
+    const infoItemCssClass = computed((): string => {
+        const colWidth = isPush.value ? 4 : 3;
+        return `communication-message-details-info-item col-lg-${colWidth}`;
+    });
+
+    const createdRockDateTime = computed((): RockDateTime | null => {
+        return RockDateTime.parseISO(props.messagePreview?.createdDateTime ?? "")
+            ?? null;
+    });
+
+    const createdDateTimeElapsed = computed((): string => {
+        return createdRockDateTime.value?.humanizeElapsed() ?? "";
+    });
+
+    const createdDateTimeTooltip = computed((): string => {
+        return createdRockDateTime.value?.toASPString("G") ?? "";
+    });
+
+    const approvedRockDateTime = computed((): RockDateTime | null => {
+        return RockDateTime.parseISO(props.messagePreview?.approvedDateTime ?? "")
+            ?? null;
+    });
+
+    const approvedDateTimeElapsed = computed((): string => {
+        return approvedRockDateTime.value?.humanizeElapsed() ?? "";
+    });
+
+    const approvedDateTimeTooltip = computed((): string => {
+        return createdRockDateTime.value?.toASPString("G") ?? "";
+    });
+
+    const fromName = computed((): string => {
+        if (isEmail.value) {
+            return props.messagePreview?.fromPersonName ?? "";
+        }
+        else if (isSms.value) {
+            return props.messagePreview?.fromSystemPhoneNumberName ?? "";
+        }
+        else {
+            return "";
+        }
+    });
+
+    const fromValue = computed((): string => {
+        if (isEmail.value) {
+            return props.messagePreview?.fromPersonEmail ?? "";
+        }
+        else if (isSms.value) {
+            return props.messagePreview?.fromSystemPhoneNumber ?? "";
+        }
+        else {
+            return "";
+        }
+    });
+
+    const listName = computed((): string => {
+        return props.messagePreview?.communicationListName || "Manual Recipient List";
+    });
+
+    const pushOpenActionDescription = computed((): string => {
+        if (isNullish(props.messagePreview?.pushOpenAction)) {
+            return "";
+        }
+
+        return PushOpenActionDescription[props.messagePreview!.pushOpenAction!];
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Applies a tooltip to an element. The element should have an
+     * `data-original-title` attribute containing the tooltip text.
+     *
+     * Typical use, `:ref="applyTooltip"`
+     */
+    function applyTooltip(el: unknown): void {
+        const htmlElement = el as HTMLElement;
+        if (htmlElement) {
+            tooltip(htmlElement);
+        }
+    }
+
+    // #endregion Functions
+</script>

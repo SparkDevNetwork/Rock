@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.Enums.Blocks.Communication.CommunicationEntryWizard;
+using CommunicationEntryWizardPushOpenAction = Rock.Enums.Blocks.Communication.CommunicationEntryWizard.PushOpenAction;
 using Rock.Enums.Communication;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -200,7 +200,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// <summary>
         /// Gets or sets the push open action.
         /// </summary>
-        public PushOpenAction? PushOpenAction { get; set; }
+        public CommunicationEntryWizardPushOpenAction? PushOpenAction { get; set; }
 
         /// <summary>
         /// Gets or sets the communication topic defined value.

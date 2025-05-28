@@ -1,15 +1,16 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <span :class="`label label-${statusClassSource[row.status]}`"
+    <span :class="`label label-${statusClassSource[row.inferredStatus]}`"
           :data-original-title="approvedByTooltip"
           :ref="applyTooltip">
-        {{ textSource[row.status] }}
+        {{ InferredCommunicationStatusDescription[row.inferredStatus] }}
     </span>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import { Row } from "./types.partial";
+    import { InferredCommunicationStatusDescription } from "@Obsidian/Enums/Communication/inferredCommunicationStatus";
     import { tooltip } from "@Obsidian/Utility/tooltip";
 
     const statusClassSource: Record<number, string> = {
@@ -24,11 +25,6 @@
     const props = defineProps({
         row: {
             type: Object as PropType<Row>,
-            required: true
-        },
-
-        textSource: {
-            type: Object as PropType<Record<number, string>>,
             required: true
         }
     });

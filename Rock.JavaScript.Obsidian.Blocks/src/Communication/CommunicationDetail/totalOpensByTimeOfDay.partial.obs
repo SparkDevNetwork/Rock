@@ -1,0 +1,8 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    Hello from totalOpensByTimeOfDay.partial!
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+</script>

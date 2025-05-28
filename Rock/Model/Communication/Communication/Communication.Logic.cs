@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Rock.Communication;
@@ -887,6 +888,73 @@ INNER JOIN @DuplicateRecipients dr
         #endregion Methods
 
         #region Static Methods
+
+        /// <summary>
+        /// Generates a preview of the email content for a given communication, resolving merge fields and applying styling if necessary.
+        /// </summary>
+        /// <param name="communication">The communication entity containing the email content.</param>
+        /// <param name="currentPerson">The currently logged-in person for authorization and personalization.</param>
+        /// <param name="mergeFields">A dictionary of merge fields used for resolving dynamic content.</param>
+        /// <returns>A string containing the resolved HTML preview of the email communication.</returns>
+        internal static string GenerateEmailHtmlPreview( Model.Communication communication, Person currentPerson, Dictionary<string, object> mergeFields )
+        {
+            var emailMediumWithActiveTransport = MediumContainer
+                .GetActiveMediumComponentsWithActiveTransports()
+                .Where( a => a.EntityType.Guid == Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )
+                .FirstOrDefault();
+
+            var previewHtml = communication.Message ?? string.Empty;
+
+            if ( emailMediumWithActiveTransport != null )
+            {
+                var mediumAttributes = new Dictionary<string, string>();
+
+                foreach ( var attr in emailMediumWithActiveTransport.Attributes.Select( a => a.Value ) )
+                {
+                    var value = emailMediumWithActiveTransport.GetAttributeValue( attr.Key );
+
+                    if ( value.IsNotNullOrWhiteSpace() )
+                    {
+                        mediumAttributes.Add( attr.Key, value );
+                    }
+                }
+
+                var publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
+
+                // Add HTML view
+                // Get the unsubscribe content and add a merge field for it
+                if ( communication.IsBulkCommunication && mediumAttributes.ContainsKey( "UnsubscribeHTML" ) )
+                {
+                    var unsubscribeHtml = emailMediumWithActiveTransport.Transport.ResolveText( mediumAttributes["UnsubscribeHTML"], currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
+                    mergeFields.AddOrReplace( "UnsubscribeOption", unsubscribeHtml );
+                    previewHtml = emailMediumWithActiveTransport.Transport.ResolveText( previewHtml, currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
+
+                    // Resolve special syntax needed if option was included in global attribute
+                    if ( Regex.IsMatch( previewHtml, @"\[\[\s*UnsubscribeOption\s*\]\]" ) )
+                    {
+                        previewHtml = Regex.Replace( previewHtml, @"\[\[\s*UnsubscribeOption\s*\]\]", unsubscribeHtml );
+                    }
+
+                    // Add the unsubscribe option at end if it wasn't included in content
+                    if ( !previewHtml.Contains( unsubscribeHtml ) )
+                    {
+                        previewHtml += unsubscribeHtml;
+                    }
+                }
+                else
+                {
+                    previewHtml = emailMediumWithActiveTransport.Transport.ResolveText( previewHtml, currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
+                    previewHtml = Regex.Replace( previewHtml, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+                }
+
+                if ( communication.CommunicationTemplate != null && communication.CommunicationTemplate.CssInliningEnabled )
+                {
+                    previewHtml = previewHtml.ConvertHtmlStylesToInlineAttributes();
+                }
+            }
+
+            return previewHtml;
+        }
 
         /// <summary>
         /// Sends the specified communication.
