@@ -154,6 +154,7 @@ namespace Rock.Reporting.DataFilter
                     }
                     else
                     {
+                        var fieldType = entityField.FieldType;
                         source = new FieldFilterSourceBag
                         {
                             Guid = Guid.NewGuid(),
@@ -161,9 +162,9 @@ namespace Rock.Reporting.DataFilter
                             Property = new FieldFilterPublicPropertyBag
                             {
                                 Name = entityField.UniqueName,
-                                Title = entityField.Name,
-                                FieldTypeGuid = entityField.FieldType.Guid,
-                                ConfigurationValues = entityField.FieldConfig.ToDictionary( c => c.Key, c => c.Value.Value )
+                                Title = entityField.Title,
+                                FieldTypeGuid = fieldType.Guid,
+                                ConfigurationValues = fieldType.Field.GetPublicConfigurationValues( entityField.FieldConfig.ToDictionary( c => c.Key, c => c.Value.Value ), Field.ConfigurationValueUsage.Edit, null ),
                             }
                         };
                     }
