@@ -23,6 +23,9 @@
 
 /** A bag used to add a saved account using a payment method token. */
 export type SavedAccountTokenBag = {
+    /** The additional parameters to include on the payment request. */
+    additionalParameters?: Record<string, string> | null;
+
     /** Gets or sets the city. */
     city?: string | null;
 

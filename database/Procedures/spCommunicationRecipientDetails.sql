@@ -57,12 +57,16 @@ BEGIN
 	IF @ListType = 1 
 		BEGIN
 			/* Communication List Logic - This uses segments for filtering */
-			INSERT INTO #RecipientList ([PersonId], [GroupCommunicationPreference])
-				SELECT DISTINCT [PersonId], gm.[CommunicationPreference] FROM [GroupMember] gm 
-					INNER JOIN [Person] p ON p.[Id] = gm.[PersonId]
-				WHERE gm.[GroupId] = @ListId
-					AND p.[IsDeceased] = 0
-					AND gm.[GroupMemberStatus] = 1
+            ;WITH DistinctRecipients AS (
+	            SELECT gm.[PersonId], gm.[CommunicationPreference], ROW_NUMBER() OVER (PARTITION BY gm.[PersonId] ORDER BY gm.[Id]) AS rn FROM [GroupMember] gm
+	                INNER JOIN [Person] p ON p.[Id] = gm.[PersonId]
+	            WHERE gm.[GroupId] = @ListId
+		            AND p.[IsDeceased] = 0
+		            AND gm.[GroupMemberStatus] = 1
+            )
+            INSERT INTO #RecipientList ([PersonId], [GroupCommunicationPreference])
+            SELECT [PersonId], [CommunicationPreference] FROM DistinctRecipients
+                WHERE rn = 1;
 
 			SET @RecipientLoadTime = SYSDATETIME();
 
@@ -102,12 +106,16 @@ BEGIN
 		END
 	ELSE
 		BEGIN
-			INSERT INTO #RecipientList ([PersonId], [GroupCommunicationPreference])
-				SELECT pa.[PersonId], NULL FROM [CommunicationRecipient] cr 
-					INNER JOIN [PersonAlias] pa ON pa.[Id] = cr.[PersonAliasId]
-					INNER JOIN [Person] p ON p.[Id] = pa.[PersonId]
-				WHERE cr.[CommunicationId] = @ListId
-					AND p.[IsDeceased] = 0
+            ;WITH DistinctRecipients AS (
+	            SELECT pa.[PersonId], ROW_NUMBER() OVER (PARTITION BY pa.[PersonId] ORDER BY cr.[Id]) AS rn FROM [CommunicationRecipient] cr 
+	                INNER JOIN [PersonAlias] pa ON pa.[Id] = cr.[PersonAliasId]
+	                INNER JOIN [Person] p ON p.[Id] = pa.[PersonId]
+	            WHERE cr.[CommunicationId] = @ListId
+		            AND p.[IsDeceased] = 0
+            )
+            INSERT INTO #RecipientList ([PersonId], [GroupCommunicationPreference])
+                SELECT [PersonId], NULL FROM DistinctRecipients
+                WHERE rn = 1;
 
 			SET @RecipientLoadTime = SYSDATETIME();
 			SET @RecipientFilterTime = SYSDATETIME();
