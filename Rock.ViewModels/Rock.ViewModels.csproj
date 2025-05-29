@@ -163,7 +163,6 @@
     <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\SourceAndDestinationEntityAttributesBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\AttributeDataBag.cs" />
-    <Compile Include="Blocks\Group\GroupPlacement\EntityKeysWithTypeBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\SourceAndDestinationEntityKeysBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\RealTimeConnectionKeysBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\GroupPlacementKeysBag.cs" />
@@ -175,7 +174,6 @@
     <Compile Include="Blocks\Group\GroupPlacement\AddGroupBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\RegistrantBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PersonBag.cs" />
-    <Compile Include="Blocks\Group\GroupPlacement\GroupPlacementMappingBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PlacementConfigurationSettingOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PlacementConfigurationSettingsBag.cs" />
     <Compile Include="Blocks\Group\GroupPlacement\PlacementGroupBag.cs" />

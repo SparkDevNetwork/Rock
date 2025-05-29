@@ -23,12 +23,20 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/**
+ * Represents configurable options available for group placement settings,
+ * including attribute filters and registration instance selections.
+ */
 export type PlacementConfigurationSettingOptionsBag = {
+    /** A list of selectable attributes available on destination groups that can be used for filtering or configuration. */
     destinationGroupAttributes?: ListItemBag[] | null;
 
+    /** A list of selectable attributes available on destination group members for filtering or display purposes. */
     destinationGroupMemberAttributes?: ListItemBag[] | null;
 
+    /** A list of registration instances available for selection in placement scenarios using template-based modes. */
     registrationInstances?: ListItemBag[] | null;
 
+    /** A list of selectable source-side attributes that can be used for filtering or display. */
     sourceAttributes?: ListItemBag[] | null;
 };

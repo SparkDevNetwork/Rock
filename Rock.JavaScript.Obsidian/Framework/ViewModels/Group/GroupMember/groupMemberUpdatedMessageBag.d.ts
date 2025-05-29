@@ -29,10 +29,13 @@ import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/pers
  * the RealTime engine.
  */
 export type GroupMemberUpdatedMessageBag = {
+    /** The GUID of the group. */
     groupGuid?: Guid | null;
 
+    /** The encrypted identifier key for the group. */
     groupIdKey?: string | null;
 
+    /** The GUID of the group member. */
     groupMemberGuid: Guid;
 
     /**
@@ -41,11 +44,15 @@ export type GroupMemberUpdatedMessageBag = {
      */
     groupMemberId: number;
 
+    /** The encrypted identifier key for the group member. */
     groupMemberIdKey?: string | null;
 
+    /** The encrypted identifier key for the group role. */
     groupRoleIdKey?: string | null;
 
+    /** The encrypted identifier key for the group type. */
     groupTypeIdKey?: string | null;
 
+    /** The person associated with the group member. */
     person?: PersonBag | null;
 };

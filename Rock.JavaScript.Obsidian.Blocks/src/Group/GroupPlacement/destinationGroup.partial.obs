@@ -42,6 +42,13 @@
                                           :showCategoryLabel="false" />
             </div>
         </div>
+        <NotificationBox v-if="getGroupError(destinationGroup.groupIdKey)"
+                         alertType="danger"
+                         class="m-3"
+                         :dismissible="true"
+                         @dismiss="clearGroupError(destinationGroup.groupIdKey)">
+            {{ getGroupError(destinationGroup.groupIdKey) }}
+        </NotificationBox>
         <template v-for="role in groupTypeRoles"
                   :key=role.idKey>
             <div v-if="role.idKey"
@@ -308,27 +315,26 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, ref, computed } from "vue";
-    import Panel from "@Obsidian/Controls/panel.obs";
+    import { DestinationGroupTypeRoleBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/destinationGroupTypeRoleBag";
+    import { DragSource as vDragSource, IDragSourceOptions, DragTarget as vDragTarget } from "@Obsidian/Directives/dragDrop";
     import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
-    import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
-    import { PlacementGroupTypeRoleBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupTypeRoleBag";
-    import PersonCard from "./personCard.partial.obs";
-    import Badge from "@Obsidian/Controls/badge.obs";
+    import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
+    import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
+    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
-    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
-    import { Guid } from "@Obsidian/Types";
-    import { DragSource as vDragSource, IDragSourceOptions, DragTarget as vDragTarget } from "@Obsidian/Directives/dragDrop";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { PropType, ref, computed } from "vue";
     import { SortTypes } from "./types.partial";
-    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { Guid } from "@Obsidian/Types";
+    import Badge from "@Obsidian/Controls/badge.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import PersonCard from "./personCard.partial.obs";
     import Loading from "@Obsidian/Controls/loading.obs";
-    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
 
     const props = defineProps({
         destinationGroup: {
@@ -336,7 +342,7 @@
             required: true
         },
         groupTypeRoles: {
-            type: Array as PropType<PlacementGroupTypeRoleBag[]>,
+            type: Array as PropType<DestinationGroupTypeRoleBag[]>,
         },
         arePersonCardsExpanded: {
             type: Boolean as PropType<boolean>,
@@ -354,8 +360,16 @@
             type: Object as PropType<IDragSourceOptions>,
             required: true
         },
+        getGroupError: {
+            type: Function as PropType<(groupIdKey: string) => string | null>,
+            required: true
+        },
         getGroupRoleError: {
             type: Function as PropType<(groupIdKey: string, roleIdKey: string) => string | null>,
+            required: true
+        },
+        clearGroupError: {
+            type: Function as PropType<(groupIdKey: string) => void>,
             required: true
         },
         clearGroupRoleError: {
@@ -403,10 +417,8 @@
         (e: "removeGroupMember", groupIdKey: string, memberId: string): void;
     }>();
 
-    // const destinationGroup = ref<PlacementGroupBag>(props.destinationGroup);
     const destinationGroup = computed(() => props.destinationGroup);
-    const groupTypeRoles = ref<PlacementGroupTypeRoleBag[]>(props.groupTypeRoles ?? []);
-    // TODO - handle parent edge cases.
+    const groupTypeRoles = ref<DestinationGroupTypeRoleBag[]>(props.groupTypeRoles ?? []);
     const isGroupExpanded = useVModelPassthrough(props, "isGroupExpanded", emit);
 
     const genderSections = [
@@ -512,7 +524,6 @@
         return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleIdKey === roleIdKey).length ?? 0;
     }
 
-    // Low Priority TODO - there is a ux/ui issue when a panel is collapsed and the secondary actions dropdown is opened
     function getRoleCountOverUnderCapacityClass(roleIdKey: string): string {
         const role = groupTypeRoles.value.find(r => r.idKey === roleIdKey);
         const roleMax = role?.maxCount;
@@ -565,24 +576,28 @@
         emit("editGroupMember", groupMemberIdKey);
     }
 
-    // TODO - Verify that bangs are valid.
-
-    function removeGroupMember(groupMemberIdKey: string) {
-        emit("removeGroupMember", props.destinationGroup.groupIdKey!, groupMemberIdKey);
+    function removeGroupMember(groupMemberIdKey: string): void {
+        if (!isNullOrWhiteSpace(props.destinationGroup.groupIdKey)) {
+            emit("removeGroupMember", props.destinationGroup.groupIdKey!, groupMemberIdKey);
+        }
     }
 
     function editGroup(): void {
-        // TODO when Group Detail is iconverted to Obsidian use idKey
+        // TODO when Group Detail is converted to Obsidian use idKey
         // emit("editGroup", props.destinationGroup.groupIdKey!);
         emit("editGroup", props.destinationGroup.groupId.toString());
     }
 
     function detachGroup(): void {
-        emit("detachGroup", props.destinationGroup.groupIdKey!);
+        if (!isNullOrWhiteSpace(props.destinationGroup.groupIdKey)) {
+            emit("detachGroup", props.destinationGroup.groupIdKey!);
+        }
     }
 
     function deleteGroup(): void {
-        emit("deleteGroup", props.destinationGroup.groupIdKey!);
+        if (!isNullOrWhiteSpace(props.destinationGroup.groupIdKey)) {
+            emit("deleteGroup", props.destinationGroup.groupIdKey!);
+        }
     }
 
     function addTooltip(element: Element | null): void {
@@ -591,83 +606,3 @@
         }
     }
 </script>
-
-<!-- Old Redundant Code -->
-<!--
-                            <div class="gender-section">
-                                <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Male).length > 0">
-                                    <HighlightLabel customClass="gender-highlight-label male-label" labelType="custom">
-                                        Males ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Male).length }})
-                                    </HighlightLabel>
-                                    <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
-                                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Male)">
-                                            <PersonCard v-if="groupMember.person"
-                                                        :key="index"
-                                                        :isCardExpanded="arePersonCardsExpanded"
-                                                        :person="groupMember.person"
-                                                        :index="index"
-                                                        :isDetailHoverDisabled="true"
-                                                        :data-group-id-key="destinationGroup.groupIdKey"
-                                                        :data-group-member-id-key="groupMember.groupMemberIdKey"
-                                                        :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
-                                                        :isGenderHighlighting="isGenderHighlighting"
-                                                        :isInstanceDisplayed="isInstanceDisplayed"
-                                                        :groupMember="groupMember"
-                                                        :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
-                                                        :placementMode="props.placementMode"
-                                                        @editGroupMember="editGroupMember"
-                                                        @removeGroupMember="removeGroupMember" />
-                                        </template>
-                                    </div>
-                                </div>
-                                <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Female).length > 0">
-                                    <HighlightLabel customClass="gender-highlight-label female-label" labelType="custom">
-                                        Females ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Female).length }})
-                                    </HighlightLabel>
-                                    <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
-                                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Female)">
-                                            <PersonCard v-if="groupMember.person"
-                                                        :key="index"
-                                                        :isCardExpanded="arePersonCardsExpanded"
-                                                        :person="groupMember.person"
-                                                        :index="index"
-                                                        :isDetailHoverDisabled="true"
-                                                        :data-group-id-key="destinationGroup.groupIdKey"
-                                                        :data-group-member-id-key="groupMember.groupMemberIdKey"
-                                                        :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
-                                                        :isGenderHighlighting="isGenderHighlighting"
-                                                        :isInstanceDisplayed="isInstanceDisplayed"
-                                                        :groupMember="groupMember"
-                                                        :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
-                                                        :placementMode="props.placementMode"
-                                                        @editGroupMember="editGroupMember"
-                                                        @removeGroupMember="removeGroupMember" />
-                                        </template>
-                                    </div>
-                                </div>
-                                <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Unknown).length > 0">
-                                    <HighlightLabel customClass="gender-highlight-label unknown-label" labelType="custom">
-                                        Unknown ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Unknown).length }})
-                                    </HighlightLabel>
-                                    <div class="group-role-wrapper" v-drag-source="groupMemberDragOptions">
-                                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.idKey, Gender.Unknown)">
-                                            <PersonCard v-if="groupMember.person"
-                                                        :key="index"
-                                                        :isCardExpanded="arePersonCardsExpanded"
-                                                        :person="groupMember.person"
-                                                        :index="index"
-                                                        :isDetailHoverDisabled="true"
-                                                        :data-group-id-key="destinationGroup.groupIdKey"
-                                                        :data-group-member-id-key="groupMember.groupMemberIdKey"
-                                                        :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
-                                                        :isGenderHighlighting="isGenderHighlighting"
-                                                        :isInstanceDisplayed="isInstanceDisplayed"
-                                                        :groupMember="groupMember"
-                                                        :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
-                                                        :placementMode="props.placementMode"
-                                                        @editGroupMember="editGroupMember"
-                                                        @removeGroupMember="removeGroupMember" />
-                                        </template>
-                                    </div>
-                                </div>
-                            </div> -->

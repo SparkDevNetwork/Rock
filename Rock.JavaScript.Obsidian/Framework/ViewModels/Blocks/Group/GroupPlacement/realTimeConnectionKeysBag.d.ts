@@ -23,12 +23,17 @@
 
 import { Guid } from "@Obsidian/Types";
 
+/** A bag of keys used to subscribe a client to real-time group placement updates. */
 export type RealTimeConnectionKeysBag = {
+    /** The connection ID. */
     connectionId?: string | null;
 
+    /** The group GUIDs. */
     groupGuids?: Guid[] | null;
 
+    /** The registration instance GUID. */
     registrationInstanceGuid?: Guid | null;
 
+    /** The registration template GUID. */
     registrationTemplateGuid?: Guid | null;
 };

@@ -21,14 +21,17 @@
 // </copyright>
 //
 
+/** Represents a role within a destination group type, including its display name and member count constraints. */
 export type DestinationGroupTypeRoleBag = {
+    /** The encrypted identifier key for the group role. */
     idKey?: string | null;
 
-    isLeader: boolean;
-
+    /** The optional maximum number of people allowed in this role within the group. */
     maxCount?: number | null;
 
+    /** The optional minimum number of people required in this role within the group. */
     minCount?: number | null;
 
+    /** The display name of the group role. */
     name?: string | null;
 };

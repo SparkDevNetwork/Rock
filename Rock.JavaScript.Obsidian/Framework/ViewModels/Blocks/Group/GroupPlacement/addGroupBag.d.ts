@@ -24,26 +24,38 @@
 import { GroupPlacementKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementKeysBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** Represents the data used when adding a new group or selecting existing groups for placement. */
 export type AddGroupBag = {
+    /** A list of existing groups selected for adding members or associating with placements. */
     existingGroupsToAdd?: ListItemBag[] | null;
 
+    /** The campus associated with the new group. */
     groupCampus?: ListItemBag | null;
 
+    /** The optional capacity limit for the group (maximum number of members). */
     groupCapacity?: number | null;
 
+    /** A brief description of the group's purpose or context. */
     groupDescription?: string | null;
 
+    /** The name of the new group to be created. */
     groupName?: string | null;
 
+    /** Contextual placement keys used to scope how and where the group fits into the placement process. */
     groupPlacementKeys?: GroupPlacementKeysBag | null;
 
+    /** The encrypted identifier key for the group type */
     groupTypeIdKey?: string | null;
 
+    /** Attribute values to set for the new group, keyed by attribute GUID or name. */
     newGroupAttributeValues?: Record<string, string> | null;
 
+    /** The selected parent group of the placement groups we are adding. */
     parentGroupForChildren?: ListItemBag | null;
 
+    /** The parent group under which the new group should be created. */
     parentGroupForNewGroup?: ListItemBag | null;
 
+    /** Indicates the selected option for group creation or addition. */
     selectedGroupOption?: string | null;
 };

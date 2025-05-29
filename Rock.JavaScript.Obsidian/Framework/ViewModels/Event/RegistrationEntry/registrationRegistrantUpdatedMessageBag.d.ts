@@ -30,8 +30,10 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * the RealTime engine.
  */
 export type RegistrationRegistrantUpdatedMessageBag = {
+    /** Gets or sets the list of fees associated with the registrant. */
     fees?: Record<string, ListItemBag> | null;
 
+    /** Gets or sets the person associated with the registrant. */
     person?: PersonBag | null;
 
     /** Gets or sets the registrant unique identifier. */
@@ -40,13 +42,18 @@ export type RegistrationRegistrantUpdatedMessageBag = {
     /** Gets or sets the registrant encrypted identifier. */
     registrantIdKey?: string | null;
 
+    /** Gets or sets the GUID of the registration instance. */
     registrationInstanceGuid?: Guid | null;
 
+    /** Gets or sets the registration instance encrypted identifier. */
     registrationInstanceIdKey?: string | null;
 
+    /** Gets or sets the name of the registration instance. */
     registrationInstanceName?: string | null;
 
+    /** Gets or sets the GUID of the registration template. */
     registrationTemplateGuid?: Guid | null;
 
+    /** Gets or sets the registration template encrypted identifier. */
     registrationTemplateIdKey?: string | null;
 };

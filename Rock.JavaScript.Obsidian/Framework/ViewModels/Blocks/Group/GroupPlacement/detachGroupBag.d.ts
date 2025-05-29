@@ -24,10 +24,14 @@
 import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
 import { GroupPlacementKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementKeysBag";
 
+/** Represents the data needed to detach a group from a placement context. */
 export type DetachGroupBag = {
+    /** The encrypted identifier key of the group to be detached. */
     groupIdKey?: string | null;
 
+    /** Contextual placement keys that define the relationship or linkage of the group within the placement system. */
     groupPlacementKeys?: GroupPlacementKeysBag | null;
 
+    /** The placement mode indicating the context in which the group is being detached. */
     placementMode: PlacementMode;
 };

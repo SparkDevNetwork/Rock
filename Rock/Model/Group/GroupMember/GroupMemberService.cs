@@ -20,7 +20,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-using Rock.Attribute;
 using Rock.Data;
 using Rock.Logging;
 using Rock.RealTime.Topics;
@@ -31,7 +30,6 @@ using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 using Microsoft.Extensions.Logging;
 using Rock.ViewModels.Group.GroupMember;
-using System.Web;
 
 namespace Rock.Model
 {
@@ -1138,10 +1136,6 @@ namespace Rock.Model
 
             public int GroupRoleId { get; }
 
-            //public Dictionary<string, PublicAttributeBag> Attributes { get; }
-
-            //public Dictionary<string, string> AttributeValues { get; }
-
             public GroupMemberUpdatedState( GroupMember groupMember, EntityContextState state )
             {
                 if ( groupMember == null )
@@ -1155,8 +1149,6 @@ namespace Rock.Model
                 PersonId = groupMember.PersonId;
                 GroupId = groupMember.GroupId;
                 GroupRoleId = groupMember.GroupRoleId;
-                //Attributes = groupMember.GetPublicAttributesForView();
-                //AttributeValues = groupMember.AttributeValues;
             }
         }
 
@@ -1313,16 +1305,13 @@ namespace Rock.Model
                         GroupRoleIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.GroupRoleId ),
                         Person = new ViewModels.Blocks.Group.GroupPlacement.PersonBag
                         {
-                            // TODO - maybe null check?
                             PersonIdKey = person.IdKey,
                             FirstName = person.FirstName,
                             LastName = person.LastName,
-                            Nickname = person.NickName,
+                            NickName = person.NickName,
                             Gender = person.Gender,
                             PhotoUrl = $"{publicApplicationRoot}{person.PhotoUrl.TrimStart( '~', '/' )}"
                         },
-                        //Attributes = item.Attributes,
-                        //AttributeValues = item.AttributeValues,
                     };
 
                     return bag;

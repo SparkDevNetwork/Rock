@@ -15,18 +15,24 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
-
-using Rock.Model;
-using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
+    /// <summary>
+    /// A bag containing attribute data for both source and destination entities in the placement process.
+    /// </summary>
     public class SourceAndDestinationEntityAttributesBag
     {
+        /// <summary>
+        /// The source entity attributes.
+        /// </summary>
         public Dictionary<string, AttributeDataBag> SourceEntityAttributes { get; set; }
 
+        /// <summary>
+        /// The destination entity attributes.
+        /// </summary>
         public Dictionary<string, AttributeDataBag> DestinationEntityAttributes { get; set; }
     }
+
 }

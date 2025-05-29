@@ -17,19 +17,33 @@
 
 using System.Collections.Generic;
 
-using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
+    /// <summary>
+    /// Represents a collection of available attributes and fee items that can be used to filter placement data.
+    /// </summary>
     public class AttributeFiltersBag
     {
+        /// <summary>
+        /// The set of public attributes available for filtering based on registrant or source group member data.
+        /// </summary>
         public Dictionary<string, PublicAttributeBag> SourceAttributesForFilter { get; set; }
 
+        /// <summary>
+        /// The set of public group-level attributes available for filtering destination groups.
+        /// </summary>
         public Dictionary<string, PublicAttributeBag> DestinationGroupAttributesForFilter { get; set; }
 
+        /// <summary>
+        /// The set of public attributes available for filtering destination group members.
+        /// </summary>
         public Dictionary<string, PublicAttributeBag> DestinationGroupMemberAttributesForFilter { get; set; }
 
+        /// <summary>
+        /// A list of fee item options that can be used to filter registrants based on what fees they selected.
+        /// </summary>
         public List<ListItemBag> RegistrantFeeItemsForFilter { get; set; }
     }
 }

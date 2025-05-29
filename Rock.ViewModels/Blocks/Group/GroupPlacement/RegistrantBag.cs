@@ -18,25 +18,49 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
+    /// <summary>
+    /// A bag containing registrant details for use in placement.
+    /// </summary>
     public class RegistrantBag
     {
+        /// <summary>
+        /// The registrant ID key.
+        /// </summary>
         public string RegistrantIdKey { get; set; }
 
+        /// <summary>
+        /// The registration instance name.
+        /// </summary>
         public string RegistrationInstanceName { get; set; }
 
+        /// <summary>
+        /// The registration instance ID key.
+        /// </summary>
         public string RegistrationInstanceIdKey { get; set; }
 
+        /// <summary>
+        /// The created date and time.
+        /// </summary>
         public DateTimeOffset? CreatedDateTime { get; set; }
 
+        /// <summary>
+        /// The fees.
+        /// </summary>
         public Dictionary<string, ListItemBag> Fees { get; set; }
 
-        public Dictionary<string, PublicAttributeBag> Attributes {  get; set; }
+        /// <summary>
+        /// The attributes.
+        /// </summary>
+        public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
 
+        /// <summary>
+        /// The attribute values.
+        /// </summary>
         public Dictionary<string, string> AttributeValues { get; set; }
     }
+
 }

@@ -23,36 +23,69 @@ using Rock.ViewModels.Utility;
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
     /// <summary>
-    /// The SMS Conversations Initialization Box
+    /// A bag of data representing a group in the placement process.
     /// </summary>
     public class PlacementGroupBag
     {
         /// <summary>
-        /// Gets or sets the group unique identifier. (TODO: Remove
-        /// this when Group Details is converted to Obsidian.)
+        /// The group ID.
         /// </summary>
         public int GroupId { get; set; }
 
+        /// <summary>
+        /// The group GUID.
+        /// </summary>
         public Guid GroupGuid { get; set; }
 
+        /// <summary>
+        /// The group ID key.
+        /// </summary>
         public string GroupIdKey { get; set; }
 
+        /// <summary>
+        /// The group name.
+        /// </summary>
         public string GroupName { get; set; }
 
+        /// <summary>
+        /// The group order.
+        /// </summary>
         public int GroupOrder { get; set; }
 
+        /// <summary>
+        /// The group type ID key.
+        /// </summary>
         public string GroupTypeIdKey { get; set; }
 
+        /// <summary>
+        /// The group capacity.
+        /// </summary>
         public int? GroupCapacity { get; set; }
 
+        /// <summary>
+        /// The registration instance ID key.
+        /// </summary>
         public string RegistrationInstanceIdKey { get; set; }
 
+        /// <summary>
+        /// Whether the group is shared.
+        /// </summary>
         public bool IsShared { get; set; }
 
+        /// <summary>
+        /// The group attributes.
+        /// </summary>
         public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
 
+        /// <summary>
+        /// The group attribute values.
+        /// </summary>
         public Dictionary<string, string> AttributeValues { get; set; }
 
+        /// <summary>
+        /// The group members.
+        /// </summary>
         public List<GroupMemberBag> GroupMembers { get; set; }
     }
+
 }

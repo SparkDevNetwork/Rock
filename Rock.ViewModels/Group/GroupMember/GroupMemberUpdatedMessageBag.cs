@@ -30,10 +30,19 @@ namespace Rock.ViewModels.Group.GroupMember
     /// </summary>
     public class GroupMemberUpdatedMessageBag
     {
+        /// <summary>
+        /// The encrypted identifier key for the group.
+        /// </summary>
         public string GroupIdKey { get; set; }
 
+        /// <summary>
+        /// The encrypted identifier key for the group type.
+        /// </summary>
         public string GroupTypeIdKey { get; set; }
 
+        /// <summary>
+        /// The GUID of the group.
+        /// </summary>
         public Guid? GroupGuid { get; set; }
 
         /// <summary>
@@ -42,17 +51,25 @@ namespace Rock.ViewModels.Group.GroupMember
         /// </summary>
         public int GroupMemberId { get; set; }
 
-        // TODO - verfiy that this can be nullable.
+        /// <summary>
+        /// The encrypted identifier key for the group member.
+        /// </summary>
         public string GroupMemberIdKey { get; set; }
 
+        /// <summary>
+        /// The GUID of the group member.
+        /// </summary>
         public Guid GroupMemberGuid { get; set; }
 
+        /// <summary>
+        /// The encrypted identifier key for the group role.
+        /// </summary>
         public string GroupRoleIdKey { get; set; }
 
-        //public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
-
-        //public Dictionary<string, string> AttributeValues { get; set; }
-
+        /// <summary>
+        /// The person associated with the group member.
+        /// </summary>
         public PersonBag Person { get; set; }
+
     }
 }

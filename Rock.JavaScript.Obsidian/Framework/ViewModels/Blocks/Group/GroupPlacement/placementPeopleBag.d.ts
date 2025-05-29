@@ -24,8 +24,11 @@
 import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
 import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
 
+/** A bag containing temporary groups and people available for placement. */
 export type PlacementPeopleBag = {
+    /** The people to place. */
     peopleToPlace?: PersonBag[] | null;
 
+    /** The temporary groups. */
     tempGroups?: PlacementGroupBag[] | null;
 };

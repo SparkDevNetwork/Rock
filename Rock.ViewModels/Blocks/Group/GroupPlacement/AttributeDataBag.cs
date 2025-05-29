@@ -15,18 +15,25 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 
-using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
+    /// <summary>
+    /// Represents a set of public attributes and their corresponding values
+    /// </summary>
     public class AttributeDataBag
     {
+        /// <summary>
+        /// A dictionary of public attribute definitions, keyed by attribute GUID or identifier.
+        /// </summary>
         public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
 
+        /// <summary>
+        /// A dictionary of attribute values, keyed by the same keys used in Attributes, representing user-supplied or stored values.
+        /// </summary>
         public Dictionary<string, string> AttributeValues { get; set; }
     }
 }

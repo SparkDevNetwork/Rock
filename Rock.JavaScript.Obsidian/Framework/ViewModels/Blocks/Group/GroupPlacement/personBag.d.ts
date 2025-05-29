@@ -25,20 +25,32 @@ import { Gender } from "@Obsidian/Enums/Crm/gender";
 import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
 import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
 
+/**
+ * Represents a person involved in a placement process, including basic identity details,
+ * photo, and associated registrants or source group memberships.
+ */
 export type PersonBag = {
+    /** The person’s first name. */
     firstName?: string | null;
 
+    /** The gender of the person. */
     gender: Gender;
 
+    /** The person’s last name. */
     lastName?: string | null;
 
-    nickname?: string | null;
+    /** The person’s preferred name or nickname. */
+    nickName?: string | null;
 
+    /** The encrypted key for the person’s unique identifier. */
     personIdKey?: string | null;
 
+    /** The URL of the person’s profile photo. */
     photoUrl?: string | null;
 
+    /** A list of registrant records associated with the person, typically used in registration-based placement. */
     registrants?: RegistrantBag[] | null;
 
+    /** A list of group membership records representing the person’s involvement in source groups. */
     sourceGroupMembers?: GroupMemberBag[] | null;
 };

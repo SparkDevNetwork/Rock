@@ -24,22 +24,29 @@
 import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/** Represents a group member with associated role, attributes, person details, and metadata for placement and UI purposes. */
 export type GroupMemberBag = {
+    /** The collection of public attribute metadata for this group member. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
+    /** The collection of attribute values associated with this group member. */
     attributeValues?: Record<string, string> | null;
 
+    /** The date and time when the group member record was created, if available. */
     createdDateTime?: string | null;
 
     /**
-     * Gets or sets the group member unique identifier. (TODO: Remove
-     * this when Group Member Detail is converted to Obsidian.)
+     * Gets or sets the group member unique identifier.
+     * (TODO: Remove this when Group Member Detail is converted to Obsidian.)
      */
     groupMemberId: number;
 
+    /** The encrypted identifier key for the group member. */
     groupMemberIdKey?: string | null;
 
+    /** The encrypted identifier key for the group role assigned to the member. */
     groupRoleIdKey?: string | null;
 
+    /** The person associated with this group member. */
     person?: PersonBag | null;
 };

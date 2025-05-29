@@ -23,24 +23,35 @@
 
 import { Guid } from "@Obsidian/Types";
 
+/** Represents a collection of contextual keys and identifiers used to scope a group placement session. */
 export type GroupPlacementKeysBag = {
+    /** The encrypted key of the destination group type that defines what kind of group people will be placed into. */
     destinationGroupTypeIdKey?: string | null;
 
+    /** The encrypted key for the entity set that may define the scope of people or groups involved in the placement. */
     entitySetIdKey?: string | null;
 
+    /** The GUID of the registration instance, if available. */
     registrationInstanceGuid?: Guid | null;
 
+    /** The encrypted key for the registration instance associated with the placement. */
     registrationInstanceIdKey?: string | null;
 
+    /** The GUID of the registration template, if available. */
     registrationTemplateGuid?: Guid | null;
 
+    /** The encrypted key for the registration template associated with the placement. */
     registrationTemplateIdKey?: string | null;
 
+    /** The encrypted key representing the specific registration template placement being used. */
     registrationTemplatePlacementIdKey?: string | null;
 
+    /** The GUID of the source group, if available. */
     sourceGroupGuid?: Guid | null;
 
+    /** The encrypted key of the source group where individuals are initially associated. */
     sourceGroupIdKey?: string | null;
 
+    /** The encrypted key of the source group type used to categorize or filter source groups. */
     sourceGroupTypeIdKey?: string | null;
 };

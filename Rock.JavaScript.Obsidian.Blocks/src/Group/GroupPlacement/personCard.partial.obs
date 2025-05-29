@@ -102,15 +102,15 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, ref, computed } from "vue";
-    import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
-    import { Gender } from "@Obsidian/Enums/Crm/gender";
-    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
     import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
+    import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
+    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { addTooltipIfOverflow } from "./types.partial";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { PropType, ref, computed } from "vue";
     import CardDetails from "./cardDetails.partial.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
 
     const props = defineProps({
         isCardExpanded: {
@@ -185,9 +185,9 @@
     const displayedPersonName = computed(() => {
         // TODO - check if they want nickname or first name
         if (props.isFirstNameLastName) {
-            return `${props.person.nickname} ${props.person.lastName}`;
+            return `${props.person.nickName} ${props.person.lastName}`;
         }
-        return `${props.person.lastName}, ${props.person.nickname}`;
+        return `${props.person.lastName}, ${props.person.nickName}`;
     });
 
     const isGroupMemberCard = computed(() => {
@@ -195,7 +195,7 @@
         return !!gm && Object.keys(gm).length > 0;
     });
 
-    function getPersonBorderColor(gender: Gender) {
+    function getPersonBorderColor(gender: Gender): string {
         if (props.isGenderHighlighting) {
             switch (gender) {
                 case Gender.Male:
@@ -210,17 +210,17 @@
         return "var(--color-interface-medium)";
     }
 
-    function onPersonCardClick(event: MouseEvent) {
+    function onPersonCardClick(event: MouseEvent): void {
         if (event.ctrlKey || event.metaKey) {
             emit("toggleSelection");
         }
     }
 
-    function togglePersonDropdown(index: number) {
+    function togglePersonDropdown(index: number): void {
         openDropdownIndex.value = openDropdownIndex.value === index ? null : index;
     }
 
-    function togglePersonCardHover(value: boolean) {
+    function togglePersonCardHover(value: boolean): void {
         emit("hover", value);
         // toggleIsCardExpandedOnHover(value);
     }
@@ -233,13 +233,13 @@
     //     }
     // }
 
-    function editGroupMember() {
+    function editGroupMember(): void {
         // TOOD: When Group Member Detail is converted to Obsidian use idKey.
         // emit("editGroupMember", groupMemberIdKey);
         emit("editGroupMember", props.groupMember?.groupMemberId.toString() ?? "");
         openDropdownIndex.value = null;
     }
-    function removeGroupMember() {
+    function removeGroupMember(): void {
         emit("removeGroupMember", props.groupMember?.groupMemberIdKey ?? "");
         openDropdownIndex.value = null;
     }

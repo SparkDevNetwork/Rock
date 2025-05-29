@@ -23,8 +23,11 @@
 
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/** Represents a set of public attributes and their corresponding values */
 export type AttributeDataBag = {
+    /** A dictionary of public attribute definitions, keyed by attribute GUID or identifier. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
+    /** A dictionary of attribute values, keyed by the same keys used in Attributes, representing user-supplied or stored values. */
     attributeValues?: Record<string, string> | null;
 };

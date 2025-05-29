@@ -22,7 +22,8 @@ using Rock.ViewModels.Utility;
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
     /// <summary>
-    /// 
+    /// Represents the configuration settings used to control various display and filtering behaviors 
+    /// in the group placement block.
     /// </summary>
     public class PlacementConfigurationSettingsBag
     {
@@ -69,8 +70,10 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         public List<string> SourceAttributesToDisplay { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets a value indicating whether source attributes should also be displayed 
+        /// on destination group members for comparison or reference.
         /// </summary>
+        /// <value><c>true</c> if source attributes should be shown on destination group members; otherwise, <c>false</c>.</value>
         public bool AreSourceAttributesDisplayedOnDestinationGroupMembers { get; set; }
 
         /// <summary>

@@ -370,7 +370,7 @@ namespace Rock.Blocks.Group
                 {
                     PersonIdKey = sourcePerson.IdKey,
                     FirstName = sourcePerson.FirstName,
-                    Nickname = sourcePerson.NickName,
+                    NickName = sourcePerson.NickName,
                     LastName = sourcePerson.LastName,
                     Gender = sourcePerson.Gender
                 };
@@ -807,6 +807,12 @@ namespace Rock.Blocks.Group
                 return false;
             }
 
+            if ( !group.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+            {
+                errorMessage = "You are not authorized to place people in this group.";
+                return false;
+            }
+
             if ( destinationGroupTypeId != group.GroupTypeId )
             {
                 errorMessage = "The specified group's Group Type does not match the group type of the Destination Group.";
@@ -825,16 +831,22 @@ namespace Rock.Blocks.Group
         /// <param name="pendingGroupMemberCount">The total amount of pending placement people</param>
         /// <param name="errorMessage"></param>
         /// <returns></returns>
-        private bool IsGroupRoleCapacityAvailable( int roleId, int groupId, int pendingGroupMemberCount, out string errorMessage )
+        private bool IsGroupRoleCapacityAvailable( int? roleId, int groupId, int pendingGroupMemberCount, out string errorMessage )
         {
+            if (!roleId.HasValue)
+            {
+                errorMessage = "The specified Role Id is not valid.";
+                return false;
+            }
+
             var group = GroupCache.Get( groupId );
-            var role = GroupTypeCache.Get( group.GroupTypeId )?.Roles.FirstOrDefault( r => r.Id == roleId );
+            var role = GroupTypeCache.Get( group.GroupTypeId )?.Roles.FirstOrDefault( r => r.Id == roleId.Value );
 
             if ( role?.MaxCount is int maxCount )
             {
                 var currentCount = new GroupMemberService( RockContext )
                     .Queryable()
-                    .Count( gm => gm.GroupId == group.Id && gm.GroupRoleId == roleId );
+                    .Count( gm => gm.GroupId == group.Id && gm.GroupRoleId == roleId.Value );
 
                 if ( currentCount + pendingGroupMemberCount > maxCount )
                 {
@@ -918,9 +930,17 @@ namespace Rock.Blocks.Group
             return true;
         }
 
-        private Dictionary<string, ListItemBag> GetFormattedFeesForRegistrant(
-            IEnumerable<PlacementPeopleResult> personGroup,
-            int registrantId )
+        /// <summary>
+        /// Returns a dictionary of formatted registration fees for a specific registrant,
+        /// including a description and total cost per unique fee item.
+        /// </summary>
+        /// <param name="personGroup">A collection of <see cref="PlacementPeopleResult"/> objects representing registrants and their associated fees.</param>
+        /// <param name="registrantId">The ID of the registrant to filter fee items for.</param>
+        /// <returns>
+        /// A dictionary where each key is a hashed FeeItemId, and each value is a <see cref="ListItemBag"/>
+        /// containing a formatted label and cost string for the fee.
+        /// </returns>
+        private Dictionary<string, ListItemBag> GetFormattedFeesForRegistrant( IEnumerable<PlacementPeopleResult> personGroup, int registrantId )
         {
             return personGroup
                 .Where( f => f.RegistrantId == registrantId && f.Quantity > 0 && f.FeeItemId.HasValue )
@@ -946,6 +966,19 @@ namespace Rock.Blocks.Group
                 );
         }
 
+        /// <summary>
+        /// Generates a list of entities (either <see cref="RegistrationRegistrant"/> or <see cref="GroupMember"/>) from placement results,
+        /// with only the specified attributes loaded for each entity. The result depends on the generic type <typeparamref name="T"/> and other filter conditions.
+        /// </summary>
+        /// <typeparam name="T">
+        /// The entity type to return, which must implement <see cref="IEntity"/>. Expected values are <see cref="RegistrationRegistrant"/> or <see cref="GroupMember"/>.
+        /// </typeparam>
+        /// <param name="placementPeopleResults">The list of <see cref="PlacementPeopleResult"/> records to derive entities from.</param>
+        /// <param name="registrationTemplateId">The registration template ID used to instantiate <see cref="RegistrationRegistrant"/> entities.</param>
+        /// <param name="sourceGroupId">The ID of the source group, used to determine which <see cref="GroupMember"/> records to include or exclude.</param>
+        /// <param name="isFetchingDestinationGroupMembers">Indicates whether to fetch group members from a destination group rather than the source group.</param>
+        /// <param name="displayedAttributeIds">A set of attribute IDs to load for each entity. If null, no entities are returned.</param>
+        /// <returns>A list of entities of type <typeparamref name="T"/> with the specified attributes loaded.</returns>
         private List<T> GetPlacementPeopleEntities<T>(
             List<PlacementPeopleResult> placementPeopleResults,
             int? registrationTemplateId,
@@ -1036,6 +1069,11 @@ namespace Rock.Blocks.Group
             return Rock.Utility.IdHasher.Instance.GetId( idParam ) ?? idParam.AsIntegerOrNull();
         }
 
+        /// <summary>
+        /// Retrieves and parses the destination group IDs from the page parameter, converting hashed or plain string values into
+        /// a comma-separated list of numeric group IDs.
+        /// </summary>
+        /// <returns>A comma-separated string of valid destination group IDs, or <c>null</c> if no valid IDs are found.</returns>
         private string GetIdsFromDestinationGroupParam()
         {
             var destinationGroupIdParams = PageParameter( PageParameterKey.DestinationGroup ).Split( ',' );
@@ -1082,10 +1120,11 @@ namespace Rock.Blocks.Group
         #region Block Actions
 
         /// <summary>
-        /// Subscribes to the real-time AttendanceOccurrence channels.
+        /// Subscribes the client (based on the provided connection ID) to one or more real-time topic channels related to group placement updates.
+        /// These may include channels for specific groups, registration instances, or registration templates,
+        /// enabling the client to receive live updates for group member or registrant changes.
         /// </summary>
-        /// <param name="connectionId">The connection ID.</param>
-        /// <param name="groupGuid">The Group unique identifier.</param>
+        /// <param name="realTimeConnectionKeysBag">A bag of real-time connection keys.</param>
         [BlockAction( "SubscribeToRealTime" )]
         public async Task<BlockActionResult> SubscribeToRealTime( RealTimeConnectionKeysBag realTimeConnectionKeysBag )
         {
@@ -1104,12 +1143,12 @@ namespace Rock.Blocks.Group
 
             foreach ( var group in groups )
             {
-                // Authorize the current user.
                 if ( group == null )
                 {
                     return ActionNotFound( "Group not found." );
                 }
 
+                // Authorize the current user.
                 if ( !group.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
                 {
                     return ActionStatusCode( System.Net.HttpStatusCode.Forbidden );
@@ -1132,6 +1171,12 @@ namespace Rock.Blocks.Group
             return ActionOk();
         }
 
+        /// <summary>
+        /// Gets the Placement People (placed and unplaced) for the specified Group Placement Keys and Placement Mode.
+        /// </summary>
+        /// <param name="groupPlacementKeys">A bag of Group Placement Keys</param>
+        /// <param name="isPlacementAllowingMultiple">The boolean value indicating if this configuration will allow for people being placed multiple times.</param>
+        /// <param name="placementMode">The mode of placement being performed (TemplateMode, InstanceMode, GroupMode, EntitySetMode).</param>
         [BlockAction]
         public BlockActionResult GetPlacementPeople( GroupPlacementKeysBag groupPlacementKeys, Boolean isPlacementAllowingMultiple, PlacementMode placementMode )
         {
@@ -1156,16 +1201,19 @@ namespace Rock.Blocks.Group
             var entitySetId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys?.EntitySetIdKey );
             var destinationGroupTypeId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys?.DestinationGroupTypeIdKey );
 
+            // If all of these ID's do not have a value than we cannot retrieve Placement People.
             if ( !registrationTemplateId.HasValue && !registrationInstanceId.HasValue && !sourceGroupId.HasValue && !entitySetId.HasValue )
             {
                 return ActionNotFound( "Missing required keys to retrieve Placement People." );
             }
 
+            // If there is no specified Destination Group Type than we cannot retrieve Placement People.
             if ( !destinationGroupTypeId.HasValue )
             {
                 return ActionNotFound( "Could not find Destination Group Type Id" );
             }
 
+            var destinationGroupIds = GetIdsFromDestinationGroupParam();
             var placementConfiguration = GetPlacementConfiguration( groupPlacementKeys );
 
             string displayedCampusGuid = null;
@@ -1173,8 +1221,6 @@ namespace Rock.Blocks.Group
             {
                 displayedCampusGuid = placementConfiguration.DisplayedCampus.Value;
             }
-
-            var destinationGroupIds = GetIdsFromDestinationGroupParam();
 
             if ( placementMode == PlacementMode.TemplateMode || placementMode == PlacementMode.InstanceMode )
             {
@@ -1273,6 +1319,7 @@ namespace Rock.Blocks.Group
 
             if ( placementMode == PlacementMode.TemplateMode || placementMode == PlacementMode.InstanceMode )
             {
+                // Get the Registrant entities from Placement People
                 registrants = GetPlacementPeopleEntities<RegistrationRegistrant>(
                     placementPeopleResults,
                     registrationTemplateId,
@@ -1283,6 +1330,7 @@ namespace Rock.Blocks.Group
             }
             else if ( placementMode == PlacementMode.GroupMode )
             {
+                // Get the GroupMember entities from Placement People for the source group.
                 sourceGroupMembers = GetPlacementPeopleEntities<GroupMember>(
                     placementPeopleResults,
                     null,
@@ -1292,6 +1340,7 @@ namespace Rock.Blocks.Group
                 );
             }
 
+            // Get the GroupMember entities from Placement People for the destination group(s).
             List<GroupMember> destinationGroupMembers = GetPlacementPeopleEntities<GroupMember>(
                 placementPeopleResults,
                 null,
@@ -1319,7 +1368,7 @@ namespace Rock.Blocks.Group
                 {
                     PersonIdKey = IdHasher.Instance.GetHash( firstResult.PersonId ),
                     FirstName = firstResult.FirstName,
-                    Nickname = firstResult.NickName,
+                    NickName = firstResult.NickName,
                     LastName = firstResult.LastName,
                     Gender = firstResult.Gender,
                     PhotoUrl = Rock.Model.Person.GetPersonPhotoUrl(
@@ -1347,8 +1396,10 @@ namespace Rock.Blocks.Group
                                 Fees = GetFormattedFeesForRegistrant( personGroup, r.RegistrantId.Value ),
                             };
 
+                            // Grab our registrant from the list of registrants.
                             var registrant = registrants.FirstOrDefault( x => x.Id == r.RegistrantId );
 
+                            // Get the public attributes and attribute values for the registrant.
                             registrantBag.Attributes = registrant.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) );
                             registrantBag.AttributeValues = registrant.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) );
 
@@ -1368,8 +1419,10 @@ namespace Rock.Blocks.Group
                                 CreatedDateTime = p.CreatedDateTime
                             };
 
+                            // Grab our group member from the list of source group members.
                             var sourceGroupMember = sourceGroupMembers.FirstOrDefault( gm => gm.Id == p.GroupMemberId.Value );
 
+                            // Get the public attributes and attribute values for the group member.
                             groupMemberBag.Attributes = sourceGroupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) );
                             groupMemberBag.AttributeValues = sourceGroupMember.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) );
 
@@ -1380,21 +1433,23 @@ namespace Rock.Blocks.Group
 
                 var addedGroupMemberIds = new HashSet<int>();
 
-                // Check for all group placements
+                // Process each person and their associated placement records to determine the destination groups they have been placed in (if any).
                 foreach ( var row in personGroup.Where( r => r.GroupId.HasValue && r.GroupMemberId.HasValue && r.GroupId != sourceGroupId ) )
                 {
                     var groupId = row.GroupId.Value;
                     var groupMemberId = row.GroupMemberId.Value;
 
+                    // Skip if we've already added this group member.
                     if ( !addedGroupMemberIds.Add( groupMemberId ) )
                     {
-                        // Already added — skip
                         continue;
                     }
 
+                    // Try to find the destination group in the temp group list.
                     var groupBag = placementPeopleBag.TempGroups
                         .FirstOrDefault( g => g.GroupIdKey == IdHasher.Instance.GetHash( groupId ) );
 
+                    // If it doesn't exist, create and add it.
                     if ( groupBag == null )
                     {
                         groupBag = new PlacementGroupBag
@@ -1407,8 +1462,10 @@ namespace Rock.Blocks.Group
                         placementPeopleBag.TempGroups.Add( groupBag );
                     }
 
+                    // Grab our group member from the list of destination group members.
                     var destinationGroupMember = destinationGroupMembers.FirstOrDefault( gm => gm.Id == groupMemberId );
 
+                    // Add the destination group member.
                     groupBag.GroupMembers.Add( new GroupMemberBag
                     {
                         GroupMemberId = groupMemberId,
@@ -1434,6 +1491,11 @@ namespace Rock.Blocks.Group
             return ActionOk( placementPeopleBag );
         }
 
+        /// <summary>
+        /// Gets the Destination Groups for the specified Group Placement Keys and Placement Mode.
+        /// </summary>
+        /// <param name="groupPlacementKeys">A bag of Group Placement Keys</param>
+        /// <param name="placementMode">The mode of placement being performed (TemplateMode, InstanceMode, GroupMode, EntitySetMode).</param>
         [BlockAction]
         public BlockActionResult GetDestinationGroups( GroupPlacementKeysBag groupPlacementKeys, PlacementMode placementMode )
         {
@@ -1465,6 +1527,7 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( "Could not find Destination Group Type Id" );
             }
 
+            var destinationGroupIds = GetIdsFromDestinationGroupParam();
             var placementConfiguration = GetPlacementConfiguration( groupPlacementKeys );
 
             string displayedCampusGuid = null;
@@ -1472,8 +1535,6 @@ namespace Rock.Blocks.Group
             {
                 displayedCampusGuid = placementConfiguration.DisplayedCampus.Value;
             }
-
-            var destinationGroupIds = GetIdsFromDestinationGroupParam();
 
             if ( placementMode == PlacementMode.TemplateMode || placementMode == PlacementMode.InstanceMode )
             {
@@ -1591,6 +1652,14 @@ namespace Rock.Blocks.Group
             return ActionOk( placementGroupBags );
         }
 
+        /// <summary>
+        /// Adds a collection of people to a specified group as new group members. Validates permissions,
+        /// group capacity limits, and registrant-to-group alignment before committing any changes.
+        /// </summary>
+        /// <param name="addGroupMembersBag">
+        /// A bag containing the target group details, the group placement context, the list of pending group members to add,
+        /// and placement mode configuration.
+        /// </param>
         [BlockAction]
         public BlockActionResult AddGroupMembersToGroup( AddGroupMembersBag addGroupMembersBag )
         {
@@ -1605,10 +1674,11 @@ namespace Rock.Blocks.Group
                 .Where( gm => gm?.Person != null )
                 .Select( gm => Rock.Utility.IdHasher.Instance.GetId( gm.Person.PersonIdKey ) )
                 .ToList();
-            string errorMessage = string.Empty;
 
-            var canPlacePeople = CanPlacePeople( personIds, addGroupMembersBag.GroupPlacementKeys.DestinationGroupTypeIdKey, addGroupMembersBag.TargetGroup.GroupIdKey, out errorMessage );
+            // Check if the people can be placed into the specified destination Group by the current person.
+            var canPlacePeople = CanPlacePeople( personIds, addGroupMembersBag.GroupPlacementKeys.DestinationGroupTypeIdKey, addGroupMembersBag.TargetGroup.GroupIdKey, out string errorMessage );
 
+            // If the people cannot be placed, return a bad request with the error message.
             if ( !canPlacePeople )
             {
                 return ActionBadRequest( errorMessage );
@@ -1621,8 +1691,7 @@ namespace Rock.Blocks.Group
             // Handle edge case where adding multiple group members could exceed the max count and throw an exception
             if (
                 addGroupMembersBag.PendingGroupMembers.Count > 1 &&
-                groupRoleId.HasValue &&
-                !IsGroupRoleCapacityAvailable( groupRoleId.Value, groupId.Value, addGroupMembersBag.PendingGroupMembers.Count, out errorMessage )
+                !IsGroupRoleCapacityAvailable( groupRoleId, groupId.Value, addGroupMembersBag.PendingGroupMembers.Count, out errorMessage )
             ) {
                 return ActionBadRequest( errorMessage );
             }
@@ -1664,11 +1733,14 @@ namespace Rock.Blocks.Group
                 }
 
                 groupMemberService.Add( groupMember );
+
+                // Add the newly created group member to memberPairs.
                 memberPairs.Add( (bag, groupMember) );
             }
 
             RockContext.SaveChanges();
 
+            // Loop through memberPairs to set the GroupMemberId and GroupMemberIdKey on each bag.
             foreach ( var (bag, entity) in memberPairs )
             {
                 bag.GroupMemberId = entity.Id;
@@ -1678,6 +1750,11 @@ namespace Rock.Blocks.Group
             return ActionOk( addGroupMembersBag.PendingGroupMembers );
         }
 
+        /// <summary>
+        /// Removes a group member from a group based on the provided group member ID key and group ID keys.
+        /// </summary>
+        /// <param name="groupMemberIdKey">The group member ID key to remove</param>
+        /// <param name="groupIdKey">The group ID key to remove the member from.</param>
         [BlockAction]
         public BlockActionResult RemoveGroupMemberFromGroup( string groupMemberIdKey, string groupIdKey )
         {
@@ -1690,11 +1767,22 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( "The specified Group Member was not found." );
             }
 
+            var group = new GroupService( RockContext ).Get( groupIdKey );
+
+            if ( !group.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+            {
+                return ActionBadRequest( "You are not authorized to remove people from this group." );
+            }
+
             groupMemberService.Delete( groupMember );
             RockContext.SaveChanges();
             return ActionOk();
         }
 
+        /// <summary>
+        /// Adds a new placement group based on the provided configuration in the AddGroupBag.
+        /// </summary>
+        /// <param name="addGroupBag">The bag that conains the details needed to add a Group.</param>
         [BlockAction]
         public BlockActionResult AddPlacementGroup( AddGroupBag addGroupBag )
         {
@@ -1760,7 +1848,6 @@ namespace Rock.Blocks.Group
                 newPlacementGroup.SetPublicAttributeValues( addGroupBag.NewGroupAttributeValues, GetCurrentPerson(), enforceSecurity: true );
                 newPlacementGroup.SaveAttributeValues( RockContext );
 
-                newPlacementGroup.SaveAttributeValues();
                 placementGroups = new List<Rock.Model.Group>
                 {
                     newPlacementGroup
@@ -1809,20 +1896,19 @@ namespace Rock.Blocks.Group
                     return ActionBadRequest( "Please select a parent group to add the groups." );
                 }
 
-                string errorMessage;
-                if ( !HasValidChildGroups( parentGroup.Id, groupTypeId.Value, out errorMessage ) )
+                if ( !HasValidChildGroups( parentGroup.Id, groupTypeId.Value, out string errorMessage ) )
                 {
                     return ActionBadRequest( errorMessage );
                 }
 
-                var existingPlacementGroups = groupService.Queryable().Where( a => a.ParentGroupId == parentGroup.Id && a.IsActive == true ).ToList();
-                placementGroups = existingPlacementGroups;
+                placementGroups = groupService.Queryable().Where( a => a.ParentGroupId == parentGroup.Id && a.IsActive == true ).ToList();
             }
 
             var registrationInstanceService = new RegistrationInstanceService( RockContext );
             var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( RockContext );
             List<Guid> addedGroupGuids = new List<Guid>();
 
+            // Loop through our added placement groups and attempt to add them to Related Entities.
             foreach ( var placementGroup in placementGroups )
             {
                 if ( registrationInstanceId.HasValue )
@@ -1830,7 +1916,6 @@ namespace Rock.Blocks.Group
                     var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
                     registrationInstanceService.GetRegistrationInstancePlacementGroupsByPlacement( registrationInstanceId.Value, registrationTemplatePlacementId.Value );
 
-                    // in RegistrationInstanceMode
                     if ( registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup, registrationTemplatePlacementId.Value ) )
                     {
                         addedGroupGuids.Add( placementGroup.Guid );
@@ -1871,6 +1956,10 @@ namespace Rock.Blocks.Group
             return ActionOk( addedGroupGuids );
         }
 
+        /// <summary>
+        /// Detach a placement group
+        /// </summary>
+        /// <param name="detachGroupBag">The bag that contains the info needed to detach a Placement Group.</param>
         [BlockAction]
         public BlockActionResult DetachPlacementGroup( DetachGroupBag detachGroupBag )
         {
@@ -1947,6 +2036,10 @@ namespace Rock.Blocks.Group
             return ActionOk( group.Guid );
         }
 
+        /// <summary>
+        /// Deletes a placement group identified by the provided group ID key.
+        /// </summary>
+        /// <param name="groupIdKey">The group ID key to delete</param>
         [BlockAction]
         public BlockActionResult DeletePlacementGroup( string groupIdKey )
         {
@@ -1975,6 +2068,10 @@ namespace Rock.Blocks.Group
             return ActionOk();
         }
 
+        /// <summary>
+        /// Populates the attribute filters for the specified group placement keys.
+        /// </summary>
+        /// <param name="groupPlacementKeys">The specified Group Placement Keys.</param>
         [BlockAction]
         public BlockActionResult PopulateAttributeFilters( GroupPlacementKeysBag groupPlacementKeys )
         {
@@ -2070,6 +2167,10 @@ namespace Rock.Blocks.Group
             return ActionOk( attributeFiltersBag );
         }
 
+        /// <summary>
+        /// Populates the attributes for Registrant and Group Member entities when they are added via realtime.
+        /// </summary>
+        /// <param name="sourceAndDestinationEntityKeys">The source and destination keys for Group Member and Registrant entities</param>
         [BlockAction]
         public BlockActionResult PopulateAttributes( SourceAndDestinationEntityKeysBag sourceAndDestinationEntityKeys )
         {
@@ -2096,6 +2197,7 @@ namespace Rock.Blocks.Group
 
             if ( sourceAndDestinationEntityKeys.PlacementMode == PlacementMode.GroupMode )
             {
+                // Gets a list of Group Member entities for our source group members.
                 var sourceGroupMembers = sourceAndDestinationEntityKeys.SourceGroupMembers.Select( gm => {
                     var groupMemberId = IdHasher.Instance.GetId( gm.GroupMemberIdKey );
                     var groupId = IdHasher.Instance.GetId( gm.GroupIdKey );
@@ -2119,11 +2221,13 @@ namespace Rock.Blocks.Group
 
                 if ( displayedSourceAttributeIds != null )
                 {
+                    // Load the attributes for the source group members based on the displayed attribute IDs.
                     sourceGroupMembers.LoadFilteredAttributes( a => displayedSourceAttributeIds.Contains( a.Id ) );
                 }
 
                 foreach ( var sourceGroupMember in sourceGroupMembers )
                 {
+                    // Create a new AttributeDataBag for each source group member.
                     resultBag.SourceEntityAttributes[sourceGroupMember.IdKey] = new AttributeDataBag()
                     {
                         Attributes = sourceGroupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) ),
@@ -2133,6 +2237,7 @@ namespace Rock.Blocks.Group
             }
             else if ( sourceAndDestinationEntityKeys.PlacementMode == PlacementMode.TemplateMode || sourceAndDestinationEntityKeys.PlacementMode == PlacementMode.InstanceMode )
             {
+                // Gets a list of Registrant entities for our source registrants.
                 var sourceRegistrants = sourceAndDestinationEntityKeys.SourceRegistrants.Select( r => {
                     var registrantId = IdHasher.Instance.GetId( r.RegistrantIdKey );
                     var registrationTemplateId = IdHasher.Instance.GetId( r.RegistrationTemplateIdKey );
@@ -2152,11 +2257,13 @@ namespace Rock.Blocks.Group
 
                 if ( displayedSourceAttributeIds != null )
                 {
+                    // Load the attributes for the source registrants based on the displayed attribute IDs.
                     sourceRegistrants.LoadFilteredAttributes( a => displayedSourceAttributeIds.Contains( a.Id ) );
                 }
 
                 foreach ( var sourceRegistrant in sourceRegistrants )
                 {
+                    // Create a new AttributeDataBag for each source registrant.
                     resultBag.SourceEntityAttributes[sourceRegistrant.IdKey] = new AttributeDataBag()
                     {
                         Attributes = sourceRegistrant.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) ),
@@ -2165,6 +2272,7 @@ namespace Rock.Blocks.Group
                 }
             }
 
+            // Gets a list of Group Member entities for our destination group members.
             var destinationGroupMembers = sourceAndDestinationEntityKeys.DestinationGroupMembers.Select( gm => {
                 var groupMemberId = IdHasher.Instance.GetId( gm.GroupMemberIdKey );
                 var groupId = IdHasher.Instance.GetId( gm.GroupIdKey );
@@ -2188,11 +2296,13 @@ namespace Rock.Blocks.Group
 
             if ( displayedDestinationGroupMemberAttributeIds != null )
             {
+                // Load the attributes for the destination group members based on the displayed attribute IDs.
                 destinationGroupMembers.LoadFilteredAttributes( a => displayedDestinationGroupMemberAttributeIds.Contains( a.Id ) );
             }
 
             foreach ( var destinationGroupMember in destinationGroupMembers )
             {
+                // Create a new AttributeDataBag for each destination group member.
                 resultBag.DestinationEntityAttributes[destinationGroupMember.IdKey] = new AttributeDataBag()
                 {
                     Attributes = destinationGroupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedDestinationGroupMemberAttributeIds.Contains( a.Id ) ),
@@ -2201,31 +2311,6 @@ namespace Rock.Blocks.Group
             }
 
             return ActionOk( resultBag );
-        }
-
-        [BlockAction]
-        public BlockActionResult LoadRegistrationTemplatePlacement( string registrationTemplateIdKey )
-        {
-            var registrationTemplateId = IdHasher.Instance.GetId( registrationTemplateIdKey );
-
-            if ( !registrationTemplateId.HasValue )
-            {
-                return ActionBadRequest( "The specified Registration Template Id was not found." );
-            }
-
-            if ( !FallbackRegistrationTemplatePlacement.HasValue )
-            {
-                return ActionBadRequest( "The specified Registration Template Placement Id was not found." );
-            }
-
-            var fallbackRegistrationTemplatePlacement = new RegistrationTemplatePlacementService( RockContext ).Get( FallbackRegistrationTemplatePlacement.Value );
-
-            if ( fallbackRegistrationTemplatePlacement.RegistrationTemplateId == registrationTemplateId )
-            {
-                return ActionOk( fallbackRegistrationTemplatePlacement.GroupType.IdKey );
-            }
-
-            return ActionBadRequest( "The specified Registration Template Placement Id was invalid" );
         }
 
         #endregion Block Actions

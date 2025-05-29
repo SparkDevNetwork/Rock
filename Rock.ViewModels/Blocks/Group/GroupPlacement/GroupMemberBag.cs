@@ -18,30 +18,49 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
+    /// <summary>
+    /// Represents a group member with associated role, attributes, person details, and metadata for placement and UI purposes.
+    /// </summary>
     public class GroupMemberBag
     {
         /// <summary>
-        /// Gets or sets the group member unique identifier. (TODO: Remove
-        /// this when Group Member Detail is converted to Obsidian.)
+        /// Gets or sets the group member unique identifier.
+        /// (TODO: Remove this when Group Member Detail is converted to Obsidian.)
         /// </summary>
         public int GroupMemberId { get; set; }
 
-        // TODO - verfiy that this can be nullable.
+        /// <summary>
+        /// The encrypted identifier key for the group member.
+        /// </summary>
         public string GroupMemberIdKey { get; set; }
 
+        /// <summary>
+        /// The encrypted identifier key for the group role assigned to the member.
+        /// </summary>
         public string GroupRoleIdKey { get; set; }
 
+        /// <summary>
+        /// The collection of public attribute metadata for this group member.
+        /// </summary>
         public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
 
+        /// <summary>
+        /// The collection of attribute values associated with this group member.
+        /// </summary>
         public Dictionary<string, string> AttributeValues { get; set; }
 
+        /// <summary>
+        /// The person associated with this group member.
+        /// </summary>
         public PersonBag Person { get; set; }
 
+        /// <summary>
+        /// The date and time when the group member record was created, if available.
+        /// </summary>
         public DateTimeOffset? CreatedDateTime { get; set; }
     }
 }

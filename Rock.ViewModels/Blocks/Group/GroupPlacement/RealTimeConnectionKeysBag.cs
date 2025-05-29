@@ -18,18 +18,32 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.ViewModels.Utility;
-
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
+    /// <summary>
+    /// A bag of keys used to subscribe a client to real-time group placement updates.
+    /// </summary>
     public class RealTimeConnectionKeysBag
     {
+        /// <summary>
+        /// The connection ID.
+        /// </summary>
         public string ConnectionId { get; set; }
 
+        /// <summary>
+        /// The group GUIDs.
+        /// </summary>
         public List<Guid> GroupGuids { get; set; }
 
+        /// <summary>
+        /// The registration instance GUID.
+        /// </summary>
         public Guid? RegistrationInstanceGuid { get; set; }
 
+        /// <summary>
+        /// The registration template GUID.
+        /// </summary>
         public Guid? RegistrationTemplateGuid { get; set; }
     }
+
 }

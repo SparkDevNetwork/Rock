@@ -31,7 +31,6 @@ using Rock.Web.Cache;
 
 using Microsoft.Extensions.Logging;
 using Rock.ViewModels.Event.RegistrationEntry;
-using DocumentFormat.OpenXml.Office.CoverPageProps;
 using Z.EntityFramework.Plus;
 using Rock.ViewModels.Utility;
 
@@ -492,7 +491,7 @@ namespace Rock.Model
                             PersonIdKey = person.IdKey,
                             FirstName = person.FirstName,
                             LastName = person.LastName,
-                            Nickname = person.NickName,
+                            NickName = person.NickName,
                             Gender = person.Gender,
                             PhotoUrl = $"{publicApplicationRoot}{person.PhotoUrl.TrimStart( '~', '/' )}"
                         },

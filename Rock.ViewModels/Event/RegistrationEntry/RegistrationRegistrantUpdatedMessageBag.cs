@@ -42,18 +42,46 @@ namespace Rock.ViewModels.Event.RegistrationEntry
         /// <value>The registrant encrypted identifier.</value>
         public string RegistrantIdKey { get; set; }
 
+        /// <summary>
+        /// Gets or sets the registration instance encrypted identifier.
+        /// </summary>
+        /// <value>The registration instance ID key.</value>
         public string RegistrationInstanceIdKey { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the registration instance.
+        /// </summary>
+        /// <value>The registration instance name.</value>
         public string RegistrationInstanceName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the GUID of the registration instance.
+        /// </summary>
+        /// <value>The registration instance GUID.</value>
         public Guid? RegistrationInstanceGuid { get; set; }
 
+        /// <summary>
+        /// Gets or sets the registration template encrypted identifier.
+        /// </summary>
+        /// <value>The registration template ID key.</value>
         public string RegistrationTemplateIdKey { get; set; }
 
+        /// <summary>
+        /// Gets or sets the GUID of the registration template.
+        /// </summary>
+        /// <value>The registration template GUID.</value>
         public Guid? RegistrationTemplateGuid { get; set; }
 
+        /// <summary>
+        /// Gets or sets the person associated with the registrant.
+        /// </summary>
+        /// <value>The person data.</value>
         public PersonBag Person { get; set; }
 
+        /// <summary>
+        /// Gets or sets the list of fees associated with the registrant.
+        /// </summary>
+        /// <value>The registrant's fees.</value>
         public Dictionary<string, ListItemBag> Fees { get; set; }
     }
 }

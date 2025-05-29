@@ -26,12 +26,17 @@ import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement
 import { GroupPlacementKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementKeysBag";
 import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
 
+/** Represents the data required to add one or more people to a group during the placement process. */
 export type AddGroupMembersBag = {
+    /** Contextual keys that define the placement scope, such as registration template or instance information. */
     groupPlacementKeys?: GroupPlacementKeysBag | null;
 
+    /** A list of pending group members to be added, including person details, role, and attribute data. */
     pendingGroupMembers?: GroupMemberBag[] | null;
 
+    /** Indicates the mode of placement being performed (e.g., based on registration template, instance, or group). */
     placementMode: PlacementMode;
 
+    /** The group to which the members should be added, including metadata such as name, ID, and capacity. */
     targetGroup?: PlacementGroupBag | null;
 };

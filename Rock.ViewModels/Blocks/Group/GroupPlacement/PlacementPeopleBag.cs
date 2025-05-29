@@ -19,10 +19,20 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
+    /// <summary>
+    /// A bag containing temporary groups and people available for placement.
+    /// </summary>
     public class PlacementPeopleBag
     {
+        /// <summary>
+        /// The temporary groups.
+        /// </summary>
         public List<PlacementGroupBag> TempGroups { get; set; }
 
+        /// <summary>
+        /// The people to place.
+        /// </summary>
         public List<PersonBag> PeopleToPlace { get; set; }
     }
+
 }

@@ -25,33 +25,41 @@ import { Guid } from "@Obsidian/Types";
 import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-/** The SMS Conversations Initialization Box */
+/** A bag of data representing a group in the placement process. */
 export type PlacementGroupBag = {
+    /** The group attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
+    /** The group attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /** The group capacity. */
     groupCapacity?: number | null;
 
+    /** The group GUID. */
     groupGuid: Guid;
 
-    /**
-     * Gets or sets the group unique identifier. (TODO: Remove
-     * this when Group Details is converted to Obsidian.)
-     */
+    /** The group ID. */
     groupId: number;
 
+    /** The group ID key. */
     groupIdKey?: string | null;
 
+    /** The group members. */
     groupMembers?: GroupMemberBag[] | null;
 
+    /** The group name. */
     groupName?: string | null;
 
+    /** The group order. */
     groupOrder: number;
 
+    /** The group type ID key. */
     groupTypeIdKey?: string | null;
 
+    /** Whether the group is shared. */
     isShared: boolean;
 
+    /** The registration instance ID key. */
     registrationInstanceIdKey?: string | null;
 };

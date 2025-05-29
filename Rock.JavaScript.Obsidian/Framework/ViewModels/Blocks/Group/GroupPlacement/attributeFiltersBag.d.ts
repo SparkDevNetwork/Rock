@@ -24,12 +24,17 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/** Represents a collection of available attributes and fee items that can be used to filter placement data. */
 export type AttributeFiltersBag = {
+    /** The set of public group-level attributes available for filtering destination groups. */
     destinationGroupAttributesForFilter?: Record<string, PublicAttributeBag> | null;
 
+    /** The set of public attributes available for filtering destination group members. */
     destinationGroupMemberAttributesForFilter?: Record<string, PublicAttributeBag> | null;
 
+    /** A list of fee item options that can be used to filter registrants based on what fees they selected. */
     registrantFeeItemsForFilter?: ListItemBag[] | null;
 
+    /** The set of public attributes available for filtering based on registrant or source group member data. */
     sourceAttributesForFilter?: Record<string, PublicAttributeBag> | null;
 };

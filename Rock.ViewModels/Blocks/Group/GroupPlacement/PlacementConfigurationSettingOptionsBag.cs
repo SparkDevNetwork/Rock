@@ -22,16 +22,30 @@ using Rock.ViewModels.Utility;
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
     /// <summary>
-    /// 
+    /// Represents configurable options available for group placement settings,
+    /// including attribute filters and registration instance selections.
     /// </summary>
     public class PlacementConfigurationSettingOptionsBag
     {
+        /// <summary>
+        /// A list of selectable source-side attributes that can be used for filtering or display.
+        /// </summary>
         public List<ListItemBag> SourceAttributes { get; set; }
 
+        /// <summary>
+        /// A list of selectable attributes available on destination groups that can be used for filtering or configuration.
+        /// </summary>
         public List<ListItemBag> DestinationGroupAttributes { get; set; }
 
+        /// <summary>
+        /// A list of selectable attributes available on destination group members for filtering or display purposes.
+        /// </summary>
         public List<ListItemBag> DestinationGroupMemberAttributes { get; set; }
 
+        /// <summary>
+        /// A list of registration instances available for selection in placement scenarios using template-based modes.
+        /// </summary>
         public List<ListItemBag> RegistrationInstances { get; set; }
     }
+
 }

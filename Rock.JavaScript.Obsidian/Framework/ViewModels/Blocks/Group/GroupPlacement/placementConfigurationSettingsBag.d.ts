@@ -23,6 +23,10 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/**
+ * Represents the configuration settings used to control various display and filtering behaviors 
+ * in the group placement block.
+ */
 export type PlacementConfigurationSettingsBag = {
     /** Gets or sets a value indicating whether [show fees]. */
     areFeesDisplayed: boolean;
@@ -30,6 +34,10 @@ export type PlacementConfigurationSettingsBag = {
     /** Gets or sets a value indicating whether [hide full groups]. */
     areFullGroupsHidden: boolean;
 
+    /**
+     * Gets or sets a value indicating whether source attributes should also be displayed 
+     * on destination group members for comparison or reference.
+     */
     areSourceAttributesDisplayedOnDestinationGroupMembers: boolean;
 
     /** Gets or sets the displayed group attribute ids. */

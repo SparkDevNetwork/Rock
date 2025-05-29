@@ -18,18 +18,33 @@
 using System.Collections.Generic;
 
 using Rock.Model;
-using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
+    /// <summary>
+    /// Represents the data required to add one or more people to a group during the placement process.
+    /// </summary>
     public class AddGroupMembersBag
     {
+        /// <summary>
+        /// A list of pending group members to be added, including person details, role, and attribute data.
+        /// </summary>
         public List<GroupMemberBag> PendingGroupMembers { get; set; }
 
+        /// <summary>
+        /// The group to which the members should be added, including metadata such as name, ID, and capacity.
+        /// </summary>
         public PlacementGroupBag TargetGroup { get; set; }
 
+        /// <summary>
+        /// Contextual keys that define the placement scope, such as registration template or instance information.
+        /// </summary>
         public GroupPlacementKeysBag GroupPlacementKeys { get; set; }
 
+        /// <summary>
+        /// Indicates the mode of placement being performed (e.g., based on registration template, instance, or group).
+        /// </summary>
         public PlacementMode PlacementMode { get; set; }
     }
+
 }

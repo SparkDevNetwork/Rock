@@ -128,18 +128,18 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, computed, nextTick, } from "vue";
-    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
-    import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
-    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
-    import { toGuidOrNull } from "@Obsidian/Utility/guid";
-    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
     import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
-    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { addTooltipIfOverflow } from "./types.partial";
     import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
+    import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { addTooltipIfOverflow } from "./types.partial";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { PropType, computed } from "vue";
 
     const props = defineProps({
         person: {
@@ -182,6 +182,8 @@
     };
 
     const isGroupOrEntityMode = props.placementMode === PlacementMode.GroupMode || props.placementMode === PlacementMode.EntitySetMode;
+
+    // #region Computed Values
 
     const destinationGroupMemberAttributes = computed((): Record<string, PublicAttributeBag> => {
         if (!props.groupMember?.attributes) {
@@ -235,6 +237,10 @@
             return hasAttributes;
         });
     });
+
+    // #endregion
+
+    // #region Functions
 
     function getAttributeValueText(attributeValues: Record<string, string> | null, attribute: PublicAttributeBag, key: string): string {
         const fieldTypeGuid = toGuidOrNull(attribute.fieldTypeGuid);
@@ -318,4 +324,6 @@
 
         return validFees;
     }
+
+    // #endregion
 </script>

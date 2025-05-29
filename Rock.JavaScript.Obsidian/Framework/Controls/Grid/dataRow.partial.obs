@@ -137,7 +137,6 @@
 
     onMounted(() => {
         if (typeof ResizeObserver !== "undefined" && element.value) {
-
             resizeObserver = new ResizeObserver(() => {
                 const rowKey = props.grid.getRowKey(props.row);
 

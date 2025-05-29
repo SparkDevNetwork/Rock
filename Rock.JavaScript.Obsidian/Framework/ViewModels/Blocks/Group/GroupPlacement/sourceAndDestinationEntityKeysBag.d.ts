@@ -26,14 +26,20 @@ import { GroupPlacementKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPl
 import { RegistrationRegistrantUpdatedMessageBag } from "@Obsidian/ViewModels/Event/RegistrationEntry/registrationRegistrantUpdatedMessageBag";
 import { GroupMemberUpdatedMessageBag } from "@Obsidian/ViewModels/Group/GroupMember/groupMemberUpdatedMessageBag";
 
+/** A bag containing source and destination entity keys used in the placement process. */
 export type SourceAndDestinationEntityKeysBag = {
+    /** The destination group members. */
     destinationGroupMembers?: GroupMemberUpdatedMessageBag[] | null;
 
+    /** The group placement keys bag. */
     groupPlacementKeysBag?: GroupPlacementKeysBag | null;
 
+    /** The placement mode. */
     placementMode: PlacementMode;
 
+    /** The source group members. */
     sourceGroupMembers?: GroupMemberUpdatedMessageBag[] | null;
 
+    /** The source registrants. */
     sourceRegistrants?: RegistrationRegistrantUpdatedMessageBag[] | null;
 };

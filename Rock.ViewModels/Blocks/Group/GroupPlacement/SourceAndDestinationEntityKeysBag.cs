@@ -15,26 +15,43 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 
 using Rock.Model;
 using Rock.ViewModels.Event.RegistrationEntry;
 using Rock.ViewModels.Group.GroupMember;
-using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
+    /// <summary>
+    /// A bag containing source and destination entity keys used in the placement process.
+    /// </summary>
     public class SourceAndDestinationEntityKeysBag
     {
+        /// <summary>
+        /// The source registrants.
+        /// </summary>
         public List<RegistrationRegistrantUpdatedMessageBag> SourceRegistrants { get; set; }
 
+        /// <summary>
+        /// The source group members.
+        /// </summary>
         public List<GroupMemberUpdatedMessageBag> SourceGroupMembers { get; set; }
 
+        /// <summary>
+        /// The destination group members.
+        /// </summary>
         public List<GroupMemberUpdatedMessageBag> DestinationGroupMembers { get; set; }
 
+        /// <summary>
+        /// The placement mode.
+        /// </summary>
         public PlacementMode PlacementMode { get; set; }
 
+        /// <summary>
+        /// The group placement keys bag.
+        /// </summary>
         public GroupPlacementKeysBag GroupPlacementKeysBag { get; set; }
     }
+
 }

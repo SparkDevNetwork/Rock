@@ -17,14 +17,29 @@
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
+    /// <summary>
+    /// Represents a role within a destination group type, including its display name and member count constraints.
+    /// </summary>
     public class DestinationGroupTypeRoleBag
     {
+        /// <summary>
+        /// The encrypted identifier key for the group role.
+        /// </summary>
         public string IdKey { get; set; }
 
+        /// <summary>
+        /// The display name of the group role.
+        /// </summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// The optional maximum number of people allowed in this role within the group.
+        /// </summary>
         public int? MaxCount { get; set; }
 
+        /// <summary>
+        /// The optional minimum number of people required in this role within the group.
+        /// </summary>
         public int? MinCount { get; set; }
     }
 }

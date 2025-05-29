@@ -24,18 +24,26 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/** A bag containing registrant details for use in placement. */
 export type RegistrantBag = {
+    /** The attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
+    /** The attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /** The created date and time. */
     createdDateTime?: string | null;
 
+    /** The fees. */
     fees?: Record<string, ListItemBag> | null;
 
+    /** The registrant ID key. */
     registrantIdKey?: string | null;
 
+    /** The registration instance ID key. */
     registrationInstanceIdKey?: string | null;
 
+    /** The registration instance name. */
     registrationInstanceName?: string | null;
 };

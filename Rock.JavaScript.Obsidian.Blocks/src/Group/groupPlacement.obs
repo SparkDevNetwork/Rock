@@ -8,13 +8,16 @@
            panelBodyCssClass="overflow-hidden"
            class="styled-scroll">
         <template #title>
-            <div class="d-flex align-items-center">
-                <span v-if="!isNullOrWhiteSpace(box.backPageUrl)" class="clickable text-sm mr-3" @click="onBack">
+            <div class="d-flex align-items-center gap-3">
+                <span v-if="!isNullOrWhiteSpace(box.backPageUrl)" class="clickable text-sm" @click="onBack">
                     <i class="fa fa-chevron-left d-block"></i>
                 </span>
                 <h1 class="panel-title">
                     {{ box.title }}
                 </h1>
+                <HighlightLabel v-if="placementConfigurationSettings.displayedCampus" labelType="campus">
+                    {{ placementConfigurationSettings.displayedCampus.text }}
+                </HighlightLabel>
             </div>
         </template>
 
@@ -34,7 +37,9 @@
                         <i class="fa fa-sort"></i>
                     </RockButton>
                     <ul class="dropdown-menu dropdown-menu-right">
-                        <li v-for="[key, label] in sortOptions" :key="key" :class="{ 'selected': currentSortOrder === key }">
+                        <li v-for="[key, label] in sortOptions"
+                            :key="key"
+                            :class="{ 'selected': currentSortOrder === key }">
                             <a href="#" @click.prevent="changeSort(key)">
                                 {{ label }}
                             </a>
@@ -256,7 +261,9 @@
                                           :groupTypeRoles="box.destinationGroupTypeRoles ?? []"
                                           :dragTargetId="personDragSourceOptions.id"
                                           :groupMemberDragOptions="groupMemberDragSourceOptions"
+                                          :getGroupError="getGroupError"
                                           :getGroupRoleError="getGroupRoleError"
+                                          :clearGroupError="clearGroupError"
                                           :clearGroupRoleError="clearGroupRoleError"
                                           :currentSortOrder="currentSortOrder"
                                           :isGenderHighlighting="isGenderHighlighting"
@@ -376,7 +383,6 @@
 .gu-transit.multi-hover-preview {
     border: 1px solid var(--color-primary) !important;
     background-color: var(--interface-softest);
-    /* padding: 10px; */
     color: var(--color-primary) !important;
     border-radius: 4px;
     opacity: 0.7;
@@ -387,13 +393,6 @@
     z-index: 2;
     min-height: 50px;
 }
-
-/* .multi-card-preview i {
-    opacity: 1;
-    color: var(--color-primary);
-    font-size: 1.4rem;
-    z-index: 3;
-} */
 
 .multi-card-preview i {
     font-size: 1.2rem;
@@ -417,7 +416,6 @@
     flex-direction: column;
     align-items: center;
     height: 100%;
-    /* background-color: rgba(245, 245, 245, 0.4); */
     background-color: var(--color-interface-softer);
 }
 
@@ -470,57 +468,57 @@
 
 <script setup lang="ts">
     import { useConfigurationValues, usePersonPreferences, useInvokeBlockAction, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
-    import { GroupPlacementInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementInitializationBox";
+    import { SourceAndDestinationEntityAttributesBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/sourceAndDestinationEntityAttributesBag";
+    import { RegistrationRegistrantUpdatedMessageBag } from "@Obsidian/ViewModels/Event/RegistrationEntry/registrationRegistrantUpdatedMessageBag";
     import { PlacementConfigurationSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingsBag";
+    import { SourceAndDestinationEntityKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/sourceAndDestinationEntityKeysBag";
+    import { GroupPlacementInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementInitializationBox";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
+    import { RealTimeConnectionKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/realTimeConnectionKeysBag";
+    import { PreferenceKey, SortTypes, NavigationUrlKey, IGroupPlacementFunctions } from "./GroupPlacement/types.partial";
+    import { GroupMemberUpdatedMessageBag } from "@Obsidian/ViewModels/Group/GroupMember/groupMemberUpdatedMessageBag";
+    import { AttributeFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/attributeFiltersBag";
+    import { AddGroupMembersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupMembersBag";
+    import { PlacementPeopleBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementPeopleBag";
     import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
-    import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
+    import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
+    import { DetachGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/detachGroupBag";
+    import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
+    import { AddGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupBag";
     import { onMounted, ref, nextTick, computed, watch, onBeforeUnmount, toRaw } from "vue";
+    import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { getTopic, ITopic, ServerFunctions } from "@Obsidian/Utility/realTime";
+    import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { tooltip } from "@Obsidian/Utility/tooltip";
-    import { PreferenceKey, SortTypes, NavigationUrlKey, IGroupPlacementFunctions } from "./GroupPlacement/types.partial";
-    import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { Guid } from "@Obsidian/Types";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-    import PersonCard from "./GroupPlacement/personCard.partial.obs";
-    import DestinationGroup from "./GroupPlacement/destinationGroup.partial.obs";
-    import PlacementConfigurationModal from "./GroupPlacement/placementConfigurationModal.partial.obs";
-    import AddGroupModal from "./GroupPlacement/addGroupModal.partial.obs";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
-    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-    import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
-    import { AddGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupBag";
-    import { PlacementPeopleBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementPeopleBag";
-    import Loading from "@Obsidian/Controls/loading.obs";
-    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
-    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
-    import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
-    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
-    import { DetachGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/detachGroupBag";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import PersonCard from "./GroupPlacement/personCard.partial.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
-    import { AddGroupMembersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupMembersBag";
-    import { AttributeFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/attributeFiltersBag";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
-    import { Guid } from "@Obsidian/Types";
-    import { getTopic, ITopic, ServerFunctions } from "@Obsidian/Utility/realTime";
-    import { RealTimeConnectionKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/realTimeConnectionKeysBag";
-    import { GroupMemberUpdatedMessageBag } from "@Obsidian/ViewModels/Group/GroupMember/groupMemberUpdatedMessageBag";
-    import { RegistrationRegistrantUpdatedMessageBag } from "@Obsidian/ViewModels/Event/RegistrationEntry/registrationRegistrantUpdatedMessageBag";
-    import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
-    import { SourceAndDestinationEntityKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/sourceAndDestinationEntityKeysBag";
-    import { SourceAndDestinationEntityAttributesBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/sourceAndDestinationEntityAttributesBag";
-    import { debounce } from "@Obsidian/Utility/util";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AddGroupModal from "./GroupPlacement/addGroupModal.partial.obs";
+    import DestinationGroup from "./GroupPlacement/destinationGroup.partial.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import PlacementConfigurationModal from "./GroupPlacement/placementConfigurationModal.partial.obs";
 
 
     type GroupPlacementTopic = ITopic<ServerFunctions<IGroupPlacementFunctions>> & {
@@ -529,65 +527,86 @@
         registrationTemplateGuid: Guid,
     };
 
-    // #region Values
     const box = useConfigurationValues<GroupPlacementInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
     const reloadBlock = useReloadBlock();
-
     const populateAttributesDebounce = debounce(() => populateAttributes(), undefined, false);
 
-    const realTimetopic = ref<GroupPlacementTopic | null>();
+    const personDragSourceOptions = getPersonDragSourceOptions();
+    const groupMemberDragSourceOptions = getGroupMemberDragSourceOptions();
 
-    const initializationError = ref<string>(box.errorMessage ?? "");
-    const dataRetrievalError = ref<string>();
-
-    const arePersonCardsExpanded = ref(false);
-    const areAllPeopleSelected = ref(false);
-    const selectionInfoElement = ref<HTMLElement | undefined>();
-    const isPlacementConfigModalVisible = ref(false);
-    const isAddGroupModalVisible = ref(false);
-    // const placementGroups = ref<PlacementGroupBag[]>(box.placementGroups ?? []);
-    // const peopleToPlace = ref<PersonBag[]>(box.peopleToPlace ?? []);
     const placementGroups = ref<PlacementGroupBag[]>([]);
     const peopleToPlace = ref<PersonBag[]>([]);
-
-    const fallbackRegistrationTemplatePlacement = ref(preferences.getValue(PreferenceKey.FallbackRegistrationTemplatePlacement));
-
     const areGroupsLoading = ref<boolean>(true);
     const arePeopleLoading = ref<boolean>(true);
 
+    // #region Realtime Values
+
+    const realTimetopic = ref<GroupPlacementTopic | null>();
+    const pendingSourceRegistrants = ref<RegistrationRegistrantUpdatedMessageBag[]>([]);
+    const pendingSourceGroupMembers = ref<GroupMemberUpdatedMessageBag[]>([]);
+    const pendingDestinationGroupMembers = ref<GroupMemberUpdatedMessageBag[]>([]);
+
+    // #endregion
+
+    // #region Error Values
+
+    const initializationError = ref<string>(box.errorMessage ?? "");
+    const dataRetrievalError = ref<string>();
+    const groupErrors = ref<Record<string, string>>({});
+    const groupRoleErrors = ref<Record<string, Record<string, string>>>({});
+    const addGroupModalErrorText = ref<string>();
+
+    // #endregion
+
+    // #region UI Customization Values
+
+    const arePersonCardsExpanded = ref(false);
+    const areAllPeopleSelected = ref(false);
     const selectedPersonIdKeys = ref<Set<string>>(new Set());
+    const selectionInfoElement = ref<HTMLElement | undefined>();
+    const isGroupMemberFilterDisplayed = ref<boolean>(false);
+    const isPersonSearchVisible = ref<boolean>(false);
+    const areGroupsExpanded = ref(false);
+    const isNoPeopleLabelHidden = ref(false);
+    const isGenderHighlighting = ref<boolean>(asBooleanOrNull(preferences.getValue(getIsGenderHighlightingKey())) ?? false);
+    const currentSortOrder = ref<SortTypes>(toNumberOrNull(preferences.getValue(getSortOrderKey())) as SortTypes ?? SortTypes.SortByLastName);
+    const isCtrlKeyHeld = ref<boolean>(false);
+    const isPersonCardHovered = ref<boolean>(false);
+
+    // #endregion
+
+    // #region Filter Values
 
     const sourceAttributesForFilter = ref<Record<string, PublicAttributeBag>>({});
-    const sourceAttributeValuesForFilter = ref(preferences.getValue(getPersonAttributeFilterKey()) ? JSON.parse(preferences.getValue(getPersonAttributeFilterKey())) : {});
     const registrantFeeItemsForFilter = ref<ListItemBag[]>([]);
-    const pendingRegistrantFeeItemValuesForFilter = ref(preferences.getValue(getRegistrantFeeItemValuesFilterKey()) ? JSON.parse(preferences.getValue(getRegistrantFeeItemValuesFilterKey())) : {});
-    const registrantFeeItemValuesForFilter = ref(preferences.getValue(getRegistrantFeeItemValuesFilterKey()) ? JSON.parse(preferences.getValue(getRegistrantFeeItemValuesFilterKey())) : {});
-
     const destinationGroupAttributesForFilter = ref<Record<string, PublicAttributeBag>>({});
-    const destinationAttributeValuesForFilter = ref(preferences.getValue(getGroupAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupAttributeFilterKey())) : {});
     const destinationGroupMemberAttributesForFilter = ref<Record<string, PublicAttributeBag>>({});
+    const sourceAttributeValuesForFilter = ref(preferences.getValue(getPersonAttributeFilterKey()) ? JSON.parse(preferences.getValue(getPersonAttributeFilterKey())) : {});
+    const registrantFeeItemValuesForFilter = ref(preferences.getValue(getRegistrantFeeItemValuesFilterKey()) ? JSON.parse(preferences.getValue(getRegistrantFeeItemValuesFilterKey())) : {});
+    const destinationAttributeValuesForFilter = ref(preferences.getValue(getGroupAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupAttributeFilterKey())) : {});
     const destinationMemberAttributeValuesForFilter = ref(preferences.getValue(getGroupMemberAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupMemberAttributeFilterKey())) : {});
-
-    const isGroupMemberFilterDisplayed = ref<boolean>(false);
-
     const pendingSourceAttributeValuesForFilter = ref(preferences.getValue(getPersonAttributeFilterKey()) ? JSON.parse(preferences.getValue(getPersonAttributeFilterKey())) : {});
+    const pendingRegistrantFeeItemValuesForFilter = ref(preferences.getValue(getRegistrantFeeItemValuesFilterKey()) ? JSON.parse(preferences.getValue(getRegistrantFeeItemValuesFilterKey())) : {});
     const pendingDestinationGroupAttributeValuesForFilter = ref(preferences.getValue(getGroupAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupAttributeFilterKey())) : {});
     const pendingDestinationGroupMemberAttributeValuesForFilter = ref(preferences.getValue(getGroupMemberAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupMemberAttributeFilterKey())) : {});
-
-    const isPersonSearchVisible = ref<boolean>(false);
+    const sourcePerson = ref<PersonBag | null | undefined>(box.sourcePerson);
     const personSearchText = ref<string>("");
     const personSearchContainerElement = ref<HTMLElement>();
 
-    const areGroupsExpanded = ref(false);
-    const isNoPeopleLabelHidden = ref(false);
+    // #endregion
 
-    const groupRoleErrors = ref<Record<number, Record<number, string>>>({});
+    // #region Configuration Values
 
-    const sourcePerson = ref<PersonBag | null | undefined>(box.sourcePerson);
+    const addGroupModalElement = ref<InstanceType<typeof AddGroupModal>>();
+    const placementConfigurationSettings = ref<PlacementConfigurationSettingsBag>(preferences.getValue(getPlacementConfigurationSettingsKey()) ? JSON.parse(preferences.getValue(getPlacementConfigurationSettingsKey())) : {} as PlacementConfigurationSettingsBag);
+    const isPlacementConfigModalVisible = ref(false);
+    const isAddGroupModalVisible = ref(false);
+    const fallbackRegistrationTemplatePlacement = ref(preferences.getValue(PreferenceKey.FallbackRegistrationTemplatePlacement));
 
-    const currentSortOrder = ref<SortTypes>(toNumberOrNull(preferences.getValue(getSortOrderKey())) as SortTypes ?? SortTypes.SortByLastName);
+    // #endregion
+
     const sortOptions: Array<[SortTypes, string]> = [
         [SortTypes.SortByLastName, "Last Name, First Name (Default)"],
         [SortTypes.SortByFirstName, "First Name Last Name"],
@@ -595,27 +614,8 @@
         [SortTypes.SortByDateAddedDesc, "Date Added (Newest First)"]
     ];
 
-    const addGroupModalElement = ref<InstanceType<typeof AddGroupModal>>();
-    const addGroupModalErrorText = ref<string>();
-
-    const isGenderHighlighting = ref<boolean>(asBooleanOrNull(preferences.getValue(getIsGenderHighlightingKey())) ?? false);
-
-    const pendingSourceRegistrants = ref<RegistrationRegistrantUpdatedMessageBag[]>([]);
-    const pendingSourceGroupMembers = ref<GroupMemberUpdatedMessageBag[]>([]);
-    const pendingDestinationGroupMembers = ref<GroupMemberUpdatedMessageBag[]>([]);
-
-    const personDragSourceOptions = getPersonDragSourceOptions();
-    const groupMemberDragSourceOptions = getGroupMemberDragSourceOptions();
-
-    const placementConfigurationSettings = ref<PlacementConfigurationSettingsBag>(preferences.getValue(getPlacementConfigurationSettingsKey()) ? JSON.parse(preferences.getValue(getPlacementConfigurationSettingsKey())) : {} as PlacementConfigurationSettingsBag);
-
-    const isCtrlKeyHeld = ref<boolean>(false);
-    const isPersonCardHovered = ref<boolean>(false);
-
     console.log("GroupPlacementInitializationBox", box);
     console.log("placement config settings: ", placementConfigurationSettings.value);
-
-    // #endregion
 
     // #region Computed Values
 
@@ -629,6 +629,10 @@
         return isGroupMemberFilterDisplayed.value ? "fa fa-chevron-up" : "fa fa-chevron-down";
     });
 
+    /**
+     * Computed property used to filter and sort the values in the peopleToPlace ref
+     * based on the selected filters and the current sort order.
+     */
     const filteredAndSortedPeopleToPlace = computed(() => {
         const filteredPeople = peopleToPlace.value.filter(p => {
             if (sourcePerson.value && p.personIdKey !== sourcePerson.value.personIdKey) {
@@ -636,8 +640,8 @@
             }
 
             const matchesSearchText = personSearchText.value
-                ? p.nickname?.toLowerCase().includes(personSearchText.value.toLowerCase()) ||
-                p.lastName?.toLowerCase().includes(personSearchText.value.toLowerCase())
+                ? p.nickName?.toLowerCase().includes(personSearchText.value.toLowerCase())
+                || p.lastName?.toLowerCase().includes(personSearchText.value.toLowerCase())
                 : true;
 
             if (box.placementMode === PlacementMode.TemplateMode || box.placementMode === PlacementMode.InstanceMode) {
@@ -668,8 +672,11 @@
         return getSortedPeople(filteredPeople);
     });
 
+    /**
+     * Computed property used to filter and sort the values in the placementGroups ref
+     * based on the selected filters and the current sort order.
+     */
     const filteredAndSortedGroups = computed(() => {
-        // TODO - Phone Number Filter seems to be broken
         const filteredPlacementGroups = placementGroups.value.filter(g => {
             if (placementConfigurationSettings.value.areFullGroupsHidden && g.groupCapacity && g.groupMembers && g.groupMembers.length >= g.groupCapacity) {
                 return false;
@@ -682,38 +689,49 @@
         });
 
         return filteredPlacementGroups.map(group => {
-            // const validGroupMembers = (group.groupMembers ?? []).filter(m => m?.person);
             if (!group.groupMembers) {
                 group.groupMembers = [];
             }
 
+            // Filter out invalid group members.
             const validGroupMembers = group.groupMembers.filter(m => {
                 if (!m.person) {
                     return false;
                 }
+
+                // If no filter is applied or no attribute values exist, include the member.
                 if (!destinationGroupMemberAttributesForFilter.value || !m.attributeValues) {
                     return true;
                 }
+
+                // Otherwise, apply attribute-based filtering logic.
                 return areAttributeFiltersMet(destinationGroupMemberAttributesForFilter.value, destinationMemberAttributeValuesForFilter.value, m.attributeValues);
             });
 
+            // Sort people associated with the filtered group members.
             const sortedPeople = getSortedPeople(validGroupMembers.map(m => m.person!));
 
+            // Map each personIdKey to their associated group members.
             const memberMap = new Map<string, GroupMemberBag[]>();
 
             for (const m of validGroupMembers) {
                 const key = m.person?.personIdKey;
                 if (!key || !m.groupMemberIdKey) continue;
 
+                // Initialize the list if this is the first time seeing the personIdKey.
                 if (!memberMap.has(key)) {
                     memberMap.set(key, []);
                 }
 
+                // Add the group member to the corresponding person's list.
                 memberMap.get(key)!.push(m);
             }
 
+            // Keep track of already included group member IDs to avoid duplicates.
             const seenGroupMemberIds = new Set<string>();
 
+            // Flatten the list of group members by following the sorted people order
+            // and ensure each group member is only included once.
             const sortedGroupMembers = sortedPeople.flatMap(p => {
                 const members = memberMap.get(p.personIdKey ?? "") ?? [];
                 return members.filter(m => {
@@ -724,6 +742,7 @@
                 });
             });
 
+            // Return the updated group object with its sorted and filtered group members.
             return {
                 ...group,
                 groupMembers: sortedGroupMembers
@@ -731,6 +750,9 @@
         });
     });
 
+    /**
+     * Computed property used to get a list of placement group guids along with the source group guid if provided.
+     */
     const computedGroupGuids = computed(() => {
         const groupGuids = placementGroups.value.map(g => g.groupGuid);
 
@@ -746,6 +768,14 @@
 
     // #region Functions
 
+    /**
+     * Checks if all attribute filters match the entity's values.
+     *
+     * @param attributes Attribute definitions.
+     * @param attributeValuesFromFilter Filter values.
+     * @param attributeValuesFromEntity Entity values to check.
+     * @returns True if all filters are matched.
+     */
     function areAttributeFiltersMet(attributes: Record<string, PublicAttributeBag>, attributeValuesFromFilter: Record<string, string>, attributeValuesFromEntity: Record<string, string>): boolean {
         return Object.keys(attributeValuesFromFilter).every(attributeKey => {
             console.log("Here: ", attributes[attributeKey]);
@@ -776,6 +806,12 @@
         });
     }
 
+    /**
+     * Returns a sorted copy of the people list based on the current sort order.
+     *
+     * @param people The list of people to sort.
+     * @returns The sorted list of people.
+     */
     function getSortedPeople(people: PersonBag[]): PersonBag[] {
         return [...people].sort((a, b) => {
             switch (currentSortOrder.value) {
@@ -863,6 +899,23 @@
         });
     }
 
+    /**
+     * Sets a validation error message for a specific group.
+     *
+     * @param groupIdKey The group ID key.
+     * @param message The error message to set.
+     */
+    function setGroupError(groupIdKey: string, message: string): void {
+        groupErrors.value[groupIdKey] = message;
+    }
+
+    /**
+     * Sets a validation error message for a specific group role.
+     *
+     * @param groupIdKey The group ID key.
+     * @param roleIdKey The role ID key.
+     * @param message The error message to set.
+     */
     function setGroupRoleError(groupIdKey: string, roleIdKey: string, message: string): void {
         if (!groupRoleErrors.value[groupIdKey]) {
             groupRoleErrors.value[groupIdKey] = {};
@@ -871,6 +924,21 @@
         groupRoleErrors.value[groupIdKey][roleIdKey] = message;
     }
 
+    /**
+    * Clears the error message for a specific group.
+    *
+    * @param groupIdKey The group ID key.
+    */
+    function clearGroupError(groupIdKey: string): void {
+        delete groupErrors.value[groupIdKey];
+    }
+
+    /**
+    * Clears the error message for a specific group role.
+    *
+    * @param groupIdKey The group ID key.
+    * @param roleIdKey The role ID key.
+    */
     function clearGroupRoleError(groupIdKey: string, roleIdKey: string): void {
         const roleMap = groupRoleErrors.value[groupIdKey];
 
@@ -884,15 +952,37 @@
         }
     }
 
+    /**
+     * Gets the error message for a specific group.
+     *
+     * @param groupIdKey The group ID key.
+     * @returns The error message, or null if none exists.
+     */
+    function getGroupError(groupIdKey: string): string | null {
+        return groupErrors.value[groupIdKey] ?? null;
+    }
+
+    /**
+     * Gets the error message for a specific group role.
+     *
+     * @param groupIdKey The group ID key.
+     * @param roleIdKey The role ID key.
+     * @returns The error message, or null if none exists.
+     */
     function getGroupRoleError(groupIdKey: string, roleIdKey: string): string | null {
         return groupRoleErrors.value[groupIdKey]?.[roleIdKey] ?? null;
     }
 
+    /**
+     * Returns drag-and-drop options for person cards, including custom previews and placement logic.
+     *
+     * @returns Drag source configuration for group placement.
+     */
     function getPersonDragSourceOptions(): IDragSourceOptions {
         return {
             id: newGuid(),
             copyElement: true,
-            dragBegin(operation) {
+            dragBegin() {
                 if (selectedPersonIdKeys.value.size > 1) {
                     nextTick(() => {
                         const mirror = document.querySelector(".gu-mirror") as HTMLElement;
@@ -934,7 +1024,6 @@
                         if (!transit) return;
 
                         transit.style.display = "none";
-                        // transit.style = "display: none";
                     });
                 }
                 else if (selectedPersonIdKeys.value.size > 1) {
@@ -1022,15 +1111,18 @@
                     placementGroup.groupMembers = [];
                 }
 
-                // TODO - what happens on error?
-                var newGroupMembers = await addGroupMembersToGroup(pendingGroupMembers, placementGroup);
-                console.log("New group members: ", newGroupMembers);
+                await addGroupMembersToGroup(pendingGroupMembers, placementGroup);
 
                 selectedPersonIdKeys.value.clear();
             }
         };
     }
 
+    /**
+     * Returns drag-and-drop options for group member cards, including visual highlights and removal logic.
+     *
+     * @returns Drag source configuration for removing group members.
+     */
     function getGroupMemberDragSourceOptions(): IDragSourceOptions {
         return {
             id: newGuid(),
@@ -1040,7 +1132,6 @@
                     isNoPeopleLabelHidden.value = true;
                 }
                 if (operation.targetContainer && operation.targetContainer instanceof HTMLElement) {
-                    // TODO - ask UI team if they want this.
                     operation.targetContainer.closest(".people-to-place-card-container")?.classList.add("highlight");
                 }
             },
@@ -1049,7 +1140,7 @@
                     operation.targetContainer.closest(".people-to-place-card-container")?.classList.remove("highlight");
                 }
             },
-            dragCancel(operation) {
+            dragCancel() {
                 isNoPeopleLabelHidden.value = false;
             },
             async dragDrop(operation) {
@@ -1064,6 +1155,12 @@
         };
     }
 
+    /**
+     * Removes a group member from the specified group.
+     *
+     * @param groupIdKey The group ID key.
+     * @param groupMemberIdKey The group member ID key.
+     */
     async function removeGroupMember(groupIdKey: string | undefined, groupMemberIdKey: string | undefined): Promise<void> {
         const placementGroup = placementGroups.value.find(g => g.groupIdKey === groupIdKey);
         if (!placementGroup?.groupMembers || !groupMemberIdKey || !placementGroup.groupIdKey) {
@@ -1081,18 +1178,34 @@
         }
     }
 
+    /**
+     * Navigates to the group detail page for the given group key.
+     *
+     * @param key The group ID key.
+     */
     function editGroup(key: string): void {
         if (box.navigationUrls?.[NavigationUrlKey.GroupDetailPage]) {
             window.location.href = box.navigationUrls[NavigationUrlKey.GroupDetailPage].replace("((Key))", key.toString());
         }
     }
 
+    /**
+     * Navigates to the group member detail page for the given group key.
+     *
+     * @param key The group member ID key.
+     */
     function editGroupMember(key: string): void {
         if (box.navigationUrls?.[NavigationUrlKey.GroupMemberDetailPage]) {
             window.location.href = box.navigationUrls[NavigationUrlKey.GroupMemberDetailPage].replace("((Key))", key.toString());
         }
     }
 
+    /**
+     * Determines if a person should be shown in the people-to-place list.
+     *
+     * @param groupMember The group member to evaluate.
+     * @returns True if the person should be displayed.
+     */
     const shouldPersonBeDisplayed = (groupMember: GroupMemberBag): boolean => {
         let shouldBeDisplayed: boolean = true;
 
@@ -1138,7 +1251,12 @@
         return shouldBeDisplayed;
     };
 
-    function handleOutsideClick(event: MouseEvent) {
+    /**
+     * Clears selected person IDs if the click occurred outside a person card.
+     *
+     * @param event The mouse click event.
+     */
+    function handleOutsideClick(event: MouseEvent): void {
         const clickedEl = event.target as HTMLElement;
 
         // Only clear if clicked outside a .person-card
@@ -1147,11 +1265,21 @@
         }
     }
 
+    /**
+     * Sets whether a person card is currently hovered.
+     *
+     * @param value True if hovered; otherwise, false.
+     */
     function togglePersonCardHovered(value: boolean): void {
         isPersonCardHovered.value = value;
     }
 
-    function toggleSelection(personIdKey: string) {
+    /**
+     * Toggles the selection state of a person by ID key.
+     *
+     * @param personIdKey The person's ID key.
+     */
+    function toggleSelection(personIdKey: string): void {
         if (selectedPersonIdKeys.value.has(personIdKey)) {
             selectedPersonIdKeys.value.delete(personIdKey);
         }
@@ -1160,11 +1288,21 @@
         }
     }
 
+    /**
+     * Checks if a person is currently selected.
+     *
+     * @param personIdKey The person's ID key.
+     * @returns True if selected; otherwise, false.
+     */
     function isSelected(personIdKey: string): boolean {
         return selectedPersonIdKeys.value.has(personIdKey);
     }
 
-    function toggleSelectAllCheckbox() {
+
+    /**
+     * Toggles selection of all people in the filtered list.
+     */
+    function toggleSelectAllCheckbox(): void {
         if (areAllPeopleSelected.value) {
             selectedPersonIdKeys.value.clear();
         }
@@ -1177,28 +1315,41 @@
         }
     }
 
+    /**
+     * Navigates to the back page URL
+     */
     function onBack(): void {
         if (box.backPageUrl) {
             window.location.href = box.backPageUrl;
         }
-        // window.history.back();
     }
 
+    /**
+     * Updates the current sort order.
+     *
+     * @param sortType The selected sort type.
+     */
     function changeSort(sortType: SortTypes): void {
         currentSortOrder.value = sortType;
-        // Add logic here to apply the sort
-        console.log("Sort changed to:", sortType);
     }
 
+    /**
+     * Toggles gender-based highlighting.
+     */
     function toggleHighlightGender(): void {
         isGenderHighlighting.value = !isGenderHighlighting.value;
     }
 
+    /**
+     * Opens the placement configuration settings modal.
+     */
     function openPlacementConfigSettings(): void {
-        console.log("Open placement config settings");
         isPlacementConfigModalVisible.value = true;
     }
 
+    /**
+     * Toggles the person search input visibility and focuses the input if shown.
+     */
     function toggleIsPersonSearchVisible(): void {
         isPersonSearchVisible.value = !isPersonSearchVisible.value;
         if (isPersonSearchVisible.value) {
@@ -1212,24 +1363,38 @@
         }
     }
 
+    /**
+     * Opens the modal to add a new group.
+     */
     function openAddGroupModal(): void {
         isAddGroupModalVisible.value = true;
     }
 
+    /**
+     * Toggles the expansion state of all person cards.
+     */
     function toggleCardExpansion(): void {
         arePersonCardsExpanded.value = !arePersonCardsExpanded.value;
-        console.log("Card expansion toggled");
     }
 
+    /**
+     * Toggles the expansion state of all groups.
+     */
     function toggleGroupExpansion(): void {
         areGroupsExpanded.value = !areGroupsExpanded.value;
     }
 
+    /**
+     * Applies pending filters to the people list.
+     */
     function applyPeopleFilter(): void {
         sourceAttributeValuesForFilter.value = pendingSourceAttributeValuesForFilter.value;
         registrantFeeItemValuesForFilter.value = pendingRegistrantFeeItemValuesForFilter.value;
     }
 
+    /**
+     * Clears all people-related filters.
+     */
     function clearPeopleFilters(): void {
         pendingSourceAttributeValuesForFilter.value = {};
         sourceAttributeValuesForFilter.value = {};
@@ -1237,11 +1402,17 @@
         registrantFeeItemValuesForFilter.value = [];
     }
 
+    /**
+     * Applies pending filters to the group list.
+     */
     function applyGroupFilter(): void {
         destinationAttributeValuesForFilter.value = pendingDestinationGroupAttributeValuesForFilter.value;
         destinationMemberAttributeValuesForFilter.value = pendingDestinationGroupMemberAttributeValuesForFilter.value;
     }
 
+    /**
+     * Clears all group-related filters.
+     */
     function clearGroupFilters(): void {
         pendingDestinationGroupAttributeValuesForFilter.value = {};
         pendingDestinationGroupMemberAttributeValuesForFilter.value = {};
@@ -1249,14 +1420,25 @@
         destinationMemberAttributeValuesForFilter.value = {};
     }
 
+    /**
+     * Toggles the visibility of the group member filter section.
+     */
     function toggleIsGroupMemberFilterDisplayed(): void {
         isGroupMemberFilterDisplayed.value = !isGroupMemberFilterDisplayed.value;
     }
 
+    /**
+     * Removes the selected source person.
+     */
     function removeSourcePerson(): void {
         sourcePerson.value = null;
     }
 
+    /**
+     * Gets the preference key for sort order based on placement context.
+     *
+     * @returns The sort order preference key.
+     */
     function getSortOrderKey(): string {
         if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
             return PreferenceKey.SortOrderRegistrationInstanceIdKey.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
@@ -1273,6 +1455,11 @@
         return "";
     }
 
+    /**
+     * Gets the preference key for gender highlighting based on placement context.
+     *
+     * @returns The gender highlighting preference key.
+     */
     function getIsGenderHighlightingKey(): string {
         if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
             return PreferenceKey.IsGenderHighlightingRegistrationInstanceIdKey.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
@@ -1289,6 +1476,11 @@
         return "";
     }
 
+    /**
+     * Gets the preference key for person attribute filters.
+     *
+     * @returns The person attribute filter preference key.
+     */
     function getPersonAttributeFilterKey(): string {
         if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
             return PreferenceKey.PersonAttributeFilterRegistrationInstanceIdKey.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
@@ -1302,6 +1494,11 @@
         return "";
     }
 
+    /**
+     * Gets the preference key for placement configuration settings.
+     *
+     * @returns The placement configuration preference key.
+     */
     function getPlacementConfigurationSettingsKey(): string {
         if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
             return PreferenceKey.PlacementConfigurationJSONRegistrationInstanceIdKey.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
@@ -1318,6 +1515,11 @@
         return "";
     }
 
+    /**
+     * Gets the preference key for registrant fee item filter values.
+     *
+     * @returns The registrant fee item filter preference key.
+     */
     function getRegistrantFeeItemValuesFilterKey(): string {
         if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
             return PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationInstanceIdKey.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
@@ -1328,6 +1530,11 @@
         return "";
     }
 
+    /**
+     * Gets the preference key for group attribute filters.
+     *
+     * @returns The group attribute filter preference key.
+     */
     function getGroupAttributeFilterKey(): string {
         if (box.groupPlacementKeys?.destinationGroupTypeIdKey) {
             return PreferenceKey.GroupAttributeFilterGroupTypeIdKey.replace("{0}", box.groupPlacementKeys.destinationGroupTypeIdKey.toString());
@@ -1335,6 +1542,11 @@
         return "";
     }
 
+    /**
+     * Gets the preference key for group member attribute filters.
+     *
+     * @returns The group member attribute filter preference key.
+     */
     function getGroupMemberAttributeFilterKey(): string {
         if (box.groupPlacementKeys?.destinationGroupTypeIdKey) {
             return PreferenceKey.GroupMemberAttributeFilterGroupTypeIdKey.replace("{0}", box.groupPlacementKeys.destinationGroupTypeIdKey.toString());
@@ -1342,6 +1554,12 @@
         return "";
     }
 
+    /**
+     * Gets the placement group and person associated with the given group member update.
+     *
+     * @param groupMember The updated group member message.
+     * @returns The placement group and the matching person, if found.
+     */
     function getPlacementContext(groupMember: GroupMemberUpdatedMessageBag): {
         placementGroup: PlacementGroupBag | undefined;
         existingPerson: PersonBag | undefined;
@@ -1368,6 +1586,12 @@
         return { placementGroup, existingPerson };
     }
 
+    /**
+     * Finds an existing person by ID key from people to place or from other placement groups.
+     *
+     * @param personIdKey The person's ID key.
+     * @returns The matching person, if found.
+     */
     function getExistingPerson(personIdKey: string): PersonBag | undefined {
         // Try to find the person from peopleToPlace
         let existingPerson = peopleToPlace.value.find(
@@ -1391,7 +1615,14 @@
         return existingPerson;
     }
 
-    function addOrUpdateSourceGroupMemberForPerson(person: PersonBag, groupMember: GroupMemberBag) {
+    // TODO - This is currently only handling adds. We should either rename the function or truly add update functionality
+    /**
+     * Adds a source group member to the person, initializing the list if needed.
+     *
+     * @param person The person to update.
+     * @param groupMember The group member to add.
+     */
+    function addOrUpdateSourceGroupMemberForPerson(person: PersonBag, groupMember: GroupMemberBag): void {
         var newSourceGroupMember = {
             groupMemberIdKey: groupMember.groupMemberIdKey,
         } as GroupMemberBag;
@@ -1403,7 +1634,14 @@
         person.sourceGroupMembers.push(newSourceGroupMember);
     }
 
-    function addOrUpdateRegistrantForPerson(person: PersonBag, registrant: RegistrantBag) {
+    // TODO - This is currently only handling adds. We should either rename the function or truly add update functionality
+    /**
+     * Adds a registrant to the person's list of registrants.
+     *
+     * @param person The person to update.
+     * @param registrant The registrant to add.
+     */
+    function addOrUpdateRegistrantForPerson(person: PersonBag, registrant: RegistrantBag): void {
         var newRegistrant = {
             registrantIdKey: registrant.registrantIdKey,
             registrationInstanceIdKey: registrant.registrationInstanceIdKey,
@@ -1418,6 +1656,9 @@
         person.registrants.push(newRegistrant);
     }
 
+    /**
+     * Loads and initializes placement data, including attribute filters, destination groups, and people to place.
+     */
     async function loadPlacementData(): Promise<void> {
         // If there was an initilization error than skip.
         if (!isNullOrWhiteSpace(initializationError.value)) {
@@ -1487,11 +1728,14 @@
     }
 
 
+    /**
+     * Saves placement configuration settings and reloads placement data.
+     *
+     * @param bag The settings to save.
+     */
     async function savePlacementCofigSettings(bag: PlacementConfigurationSettingsBag): Promise<void> {
-        console.log("Here is my saved bag: ", bag);
         preferences.setValue(getPlacementConfigurationSettingsKey(), JSON.stringify(bag));
 
-        console.log("Saving preferences: ", preferences);
         isPlacementConfigModalVisible.value = false;
 
         await preferences.save();
@@ -1506,15 +1750,12 @@
     async function getGroupPlacementTopic(groupGuids: Guid[], registrationInstanceGuid: Guid | null | undefined, registrationTemplateGuid: Guid | null | undefined): Promise<GroupPlacementTopic> {
         const topic = await getTopic("Rock.RealTime.Topics.GroupPlacementTopic");
 
-        // Add Source Group Guid here...
         const request: RealTimeConnectionKeysBag = {
             connectionId: topic.connectionId,
             groupGuids: groupGuids,
             registrationInstanceGuid: registrationInstanceGuid,
             registrationTemplateGuid: registrationTemplateGuid
         };
-
-        console.log("request: ", request);
 
         await invokeBlockAction("SubscribeToRealTime", {
             realTimeConnectionKeysBag: request
@@ -1538,6 +1779,13 @@
         return topic as GroupPlacementTopic;
     }
 
+    /**
+     * Checks if two lists of GUIDs are equal, regardless of order.
+     *
+     * @param listA The first list of GUIDs.
+     * @param listB The second list of GUIDs.
+     * @returns True if both lists contain the same GUIDs.
+     */
     function areGuidSetsEqual(listA: string[], listB: string[]): boolean {
         if (listA.length !== listB.length) {
             return false;
@@ -1601,6 +1849,11 @@
         await realTimetopic.value.server.joinGroupChannels(groupGuids);
     }
 
+    /**
+     * Handles a real-time update when a group member is added.
+     *
+     * @param groupMember The updated group member message.
+     */
     function onGroupMemberUpdatedFromServer(groupMember: GroupMemberUpdatedMessageBag): void {
         console.log("Realtime update of Group Member: ", groupMember);
 
@@ -1615,7 +1868,6 @@
             let isPersonInPeopleToPlace = false;
             let isPersonInDestinationGroup = false;
 
-            // TODO - Is there ever a scenario where there are duplicate people in peopleToPlace? If not than switch to .find
             peopleToPlace.value.forEach(p => {
                 if (p.personIdKey === groupMember.person?.personIdKey) {
                     addOrUpdateSourceGroupMemberForPerson(p, groupMember);
@@ -1671,6 +1923,12 @@
         populateAttributesDebounce();
     }
 
+    /**
+     * Handles a real-time removal of a group member from either source or destination groups.
+     *
+     * @param _groupMemberGuid The GUID of the removed group member (unused).
+     * @param groupMember The group member details.
+     */
     function onGroupMemberDeletedFromServer(_groupMemberGuid: Guid, groupMember: GroupMemberUpdatedMessageBag): void {
         console.log("Realtime removal of Group Member: ", groupMember);
 
@@ -1718,6 +1976,11 @@
         }
     }
 
+    /**
+     * Handles a real-time update of a registrant and updates or adds them to people to place.
+     *
+     * @param registrant The updated registrant message.
+     */
     function onRegistrantUpdatedFromServer(registrant: RegistrationRegistrantUpdatedMessageBag): void {
         console.log("Realtime update of Registrant: ", registrant);
 
@@ -1730,7 +1993,6 @@
         let isPersonInPeopleToPlace = false;
         let isPersonInDestinationGroup = false;
 
-        // TODO - Is there ever a scenario where there are duplicate people in peopleToPlace? If not than switch .find
         peopleToPlace.value.forEach(p => {
             if (p.personIdKey === registrant.person?.personIdKey) {
                 addOrUpdateRegistrantForPerson(p, registrant);
@@ -1764,6 +2026,12 @@
         populateAttributesDebounce();
     }
 
+    /**
+     * Handles a real-time deletion of a registrant and removes them from people and groups.
+     *
+     * @param _registrantGuid The GUID of the deleted registrant (unused).
+     * @param registrant The registrant details.
+     */
     function onRegistrantDeletedFromServer(_registrantGuid: Guid, registrant: RegistrationRegistrantUpdatedMessageBag): void {
         console.log("Realtime delete of Registrant: ", registrant);
 
@@ -1793,13 +2061,23 @@
         }
     }
 
-    function handleKeyDown(e: KeyboardEvent) {
+    /**
+     * Sets the control key state when a key is pressed.
+     *
+     * @param e The keyboard event.
+     */
+    function handleKeyDown(e: KeyboardEvent): void {
         if (e.ctrlKey || e.metaKey) {
             isCtrlKeyHeld.value = true;
         }
     }
 
-    function handleKeyUp(e: KeyboardEvent) {
+    /**
+     * Clears the control key state when a key is released.
+     *
+     * @param e The keyboard event.
+     */
+    function handleKeyUp(e: KeyboardEvent): void {
         if (!e.ctrlKey && !e.metaKey) {
             isCtrlKeyHeld.value = false;
         }
@@ -1809,6 +2087,11 @@
 
     // #region Block Actions
 
+    /**
+     * Retrieves placement people data from the server.
+     *
+     * @returns A promise resolving to a PlacementPeopleBag.
+     */
     async function getPlacementPeople(): Promise<PlacementPeopleBag> {
         arePeopleLoading.value = true;
 
@@ -1827,6 +2110,11 @@
         return {};
     }
 
+    /**
+     * Retrieves destination groups from the server.
+     *
+     * @returns A promise resolving to a list of PlacementGroupBag items.
+     */
     async function getDestinationGroups(): Promise<PlacementGroupBag[]> {
         areGroupsLoading.value = true;
 
@@ -1844,6 +2132,11 @@
         return [];
     }
 
+    /**
+     * Retrieves attribute filters from the server for placement filtering.
+     *
+     * @returns A promise resolving to an AttributeFiltersBag.
+     */
     async function populateAttributeFilters(): Promise<AttributeFiltersBag> {
         areGroupsLoading.value = true;
 
@@ -1860,6 +2153,13 @@
         return {};
     }
 
+    /**
+     * Adds pending group members to the specified placement group.
+     *
+     * @param pendingGroupMembers The group members to add.
+     * @param placementGroup The target placement group.
+     * @returns A promise resolving to the added group members.
+     */
     async function addGroupMembersToGroup(pendingGroupMembers: GroupMemberBag[], placementGroup: PlacementGroupBag): Promise<GroupMemberBag[]> {
         const result = await invokeBlockAction<GroupMemberBag[]>("AddGroupMembersToGroup", {
             addGroupMembersBag: {
@@ -1881,6 +2181,14 @@
         return [];
     }
 
+    /**
+     * Removes a group member from the specified group.
+     *
+     * @param groupMemberIdKey The ID key of the group member to remove.
+     * @param groupIdKey The ID key of the group.
+     * @param groupRoleIdKey The ID key of the group role (used for error reporting).
+     * @returns A promise resolving to true if successful, false otherwise.
+     */
     async function removeGroupMemberFromGroup(groupMemberIdKey: string, groupIdKey: string, groupRoleIdKey: string): Promise<boolean> {
         const result = await invokeBlockAction<GroupMemberBag[]>("RemoveGroupMemberFromGroup", {
             groupMemberIdKey: groupMemberIdKey,
@@ -1897,6 +2205,11 @@
         return false;
     }
 
+    /**
+     * Adds a new placement group and refreshes placement data if successful.
+     *
+     * @param addGroupBag The data for the group to be added.
+     */
     async function addGroup(addGroupBag: AddGroupBag): Promise<void> {
         if (!box.groupPlacementKeys?.destinationGroupTypeIdKey) {
             addGroupModalErrorText.value = "A Destination Group Type is required to add a group.";
@@ -1921,6 +2234,11 @@
         }
     }
 
+    /**
+     * Detaches a group from the placement context and updates the UI.
+     *
+     * @param groupIdKey The ID key of the group to detach.
+     */
     async function detachPlacementGroup(groupIdKey: string): Promise<void> {
         var groupPlacementKeysCopy = JSON.parse(JSON.stringify(box.groupPlacementKeys));
 
@@ -1943,11 +2261,17 @@
             leaveRealTimeGroupChannel(result.data);
         }
         else {
-            // Need to determine a place for this error message. This should go in a Toast, but we currently don't have the control.
-            console.error(result.errorMessage ?? "An unknown error occurred while trying to detach a group.");
+            // TODO - Need to determine a place for this error message. This should go in a Toast, but we currently don't have the control.
+            // console.error(result.errorMessage ?? "An unknown error occurred while trying to detach a group.");
+            setGroupError(groupIdKey, result.errorMessage ?? "An unknown error occurred while trying to detach a group.");
         }
     }
 
+    /**
+     * Deletes a placement group and reloads placement data.
+     *
+     * @param groupIdKey The ID key of the group to delete.
+     */
     async function deletePlacementGroup(groupIdKey: string): Promise<void> {
         const result = await invokeBlockAction("DeletePlacementGroup", {
             groupIdKey: groupIdKey
@@ -1957,11 +2281,15 @@
             loadPlacementData();
         }
         else {
-            // Need to determine a place for this error message. This should go in a Toast, but we currently don't have the control.
-            console.error(result.errorMessage ?? "An unknown error occurred while trying to delete a group.");
+            // TODO - Need to determine a place for this error message. This should go in a Toast, but we currently don't have the control.
+            // console.error(result.errorMessage ?? "An unknown error occurred while trying to delete a group.");
+            setGroupError(groupIdKey, result.errorMessage ?? "An unknown error occurred while trying to delete a group.");
         }
     }
 
+    /**
+     * Loads and assigns attribute data for source and destination entities based on placement mode.
+     */
     async function populateAttributes(): Promise<void> {
         if (pendingSourceRegistrants.value.length === 0 && pendingSourceGroupMembers.value.length === 0 && pendingDestinationGroupMembers.value.length === 0) {
             return;
@@ -2107,12 +2435,6 @@
             tooltip(element);
         }
     });
-
-    // watch(isPersonSearchVisible, () => {
-    //     if (!isPersonSearchVisible.value) {
-    //         personSearchText.value = "";
-    //     }
-    // });
 
     watch(fallbackRegistrationTemplatePlacement, async () => {
         preferences.setValue(PreferenceKey.FallbackRegistrationTemplatePlacement, fallbackRegistrationTemplatePlacement.value);

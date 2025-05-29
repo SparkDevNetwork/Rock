@@ -15,19 +15,28 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-
 using Rock.Model;
-using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
+    /// <summary>
+    /// Represents the data needed to detach a group from a placement context.
+    /// </summary>
     public class DetachGroupBag
     {
+        /// <summary>
+        /// The encrypted identifier key of the group to be detached.
+        /// </summary>
         public string GroupIdKey { get; set; }
 
+        /// <summary>
+        /// The placement mode indicating the context in which the group is being detached.
+        /// </summary>
         public PlacementMode PlacementMode { get; set; }
 
+        /// <summary>
+        /// Contextual placement keys that define the relationship or linkage of the group within the placement system.
+        /// </summary>
         public GroupPlacementKeysBag GroupPlacementKeys { get; set; }
     }
 }

@@ -113,29 +113,6 @@ namespace Rock.Model
                 {
                     return true;
                 }
-                //else if ( PreSaveState == EntityContextState.Modified )
-                //{
-                //    if ( ( Entity.DidAttend ?? false ) != ( ( ( bool? ) OriginalValues[nameof( Entity.DidAttend )] ) ?? false ) )
-                //    {
-                //        return true;
-                //    }
-                //    else if ( Entity.RSVP != ( RSVP ) OriginalValues[nameof( Entity.RSVP )] )
-                //    {
-                //        return true;
-                //    }
-                //    else if ( Entity.PresentDateTime != ( DateTime? ) OriginalValues[nameof( Entity.PresentDateTime )] )
-                //    {
-                //        return true;
-                //    }
-                //    else if ( Entity.EndDateTime != ( DateTime? ) OriginalValues[nameof( Entity.EndDateTime )] )
-                //    {
-                //        return true;
-                //    }
-                //    else if ( Entity.CheckInStatus != ( CheckInStatus ) OriginalValues[nameof( Entity.CheckInStatus )] )
-                //    {
-                //        return true;
-                //    }
-                //}
                 else if ( PreSaveState == EntityContextState.Deleted )
                 {
                     return true;

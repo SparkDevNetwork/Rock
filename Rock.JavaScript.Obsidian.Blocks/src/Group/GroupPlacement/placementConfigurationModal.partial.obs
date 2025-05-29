@@ -58,19 +58,18 @@
 </template>
 
 <script setup lang="ts">
+    import { PlacementConfigurationSettingOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingOptionsBag";
+    import { PlacementConfigurationSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { PropType, ref, computed, watch, nextTick } from "vue";
+    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { PropType, ref } from "vue";
     import Modal from "@Obsidian/Controls/modal.obs";
-    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
-    // import ListBox from "@Obsidian/Controls/listBox.obs"; - Does not work for enhanced functionality on modal.
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import { PlacementConfigurationSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingsBag";
-    import { PlacementConfigurationSettingOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingOptionsBag";
-    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
 
     const props = defineProps({
         modelValue: {
@@ -123,8 +122,4 @@
 
         emit("save", updatedSettings);
     }
-
-    // function onMessageDismissed(): void {
-    //     emit("dismissMessage");
-    // }
 </script>

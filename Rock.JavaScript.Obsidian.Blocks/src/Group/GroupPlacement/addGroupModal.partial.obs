@@ -67,21 +67,21 @@
 </template>
 
 <script setup lang="ts">
+    import { AddGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { PropType, ref, computed, watch } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
-    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
-    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import Modal from "@Obsidian/Controls/modal.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-    import { AddGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupBag";
+    import { PropType, ref, computed, watch } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
 
     const props = defineProps({
         modelValue: {

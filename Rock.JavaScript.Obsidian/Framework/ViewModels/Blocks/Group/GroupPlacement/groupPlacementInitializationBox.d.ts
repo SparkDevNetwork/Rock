@@ -29,31 +29,44 @@ import { PlacementConfigurationSettingOptionsBag } from "@Obsidian/ViewModels/Bl
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-/** The SMS Conversations Initialization Box */
+/**
+ * Contains all the initialization data needed to configure and display the group placement block,
+ * including placement settings, roles, attributes, context, and navigation.
+ */
 export type GroupPlacementInitializationBox = {
+    /** Attributes that can be applied to new groups added during placement. */
     attributesForGroupAdd?: Record<string, PublicAttributeBag> | null;
 
+    /** The URL of the page to return to when navigating "back" from the placement UI. */
     backPageUrl?: string | null;
 
+    /** A list of group type roles that are available for destination groups during placement. */
     destinationGroupTypeRoles?: DestinationGroupTypeRoleBag[] | null;
 
-    /** Gets or sets the error message, if any. */
+    /** Gets or sets the error message, if any, to be displayed to the user. */
     errorMessage?: string | null;
 
+    /** Contextual keys that define the placement scope. */
     groupPlacementKeys?: GroupPlacementKeysBag | null;
 
+    /** Indicates whether multiple group placements are allowed per person. */
     isPlacementAllowingMultiple: boolean;
 
-    /** Gets or sets the navigation urls. */
+    /** Gets or sets the navigation URLs for common actions like saving, canceling, or navigating to other blocks. */
     navigationUrls?: Record<string, string> | null;
 
+    /** A set of configuration options that influence how placement is performed and displayed. */
     placementConfigurationSettingOptions?: PlacementConfigurationSettingOptionsBag | null;
 
+    /** Indicates the mode of placement. */
     placementMode: PlacementMode;
 
+    /** A list of placement options configured for the current registration template. */
     registrationTemplatePlacements?: ListItemBag[] | null;
 
+    /** The source person passed in by page parameters, typically the registrant or individual being placed. */
     sourcePerson?: PersonBag | null;
 
+    /** The title to be displayed on the placement interface. */
     title?: string | null;
 };

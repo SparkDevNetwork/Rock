@@ -23,8 +23,11 @@
 
 import { AttributeDataBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/attributeDataBag";
 
+/** A bag containing attribute data for both source and destination entities in the placement process. */
 export type SourceAndDestinationEntityAttributesBag = {
+    /** The destination entity attributes. */
     destinationEntityAttributes?: Record<string, AttributeDataBag> | null;
 
+    /** The source entity attributes. */
     sourceEntityAttributes?: Record<string, AttributeDataBag> | null;
 };
