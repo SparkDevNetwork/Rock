@@ -49,6 +49,7 @@
                 <div class="col-md-3">
                     <GroupPicker v-model="existingGroupsToAdd"
                                  label="Groups"
+                                 help="You may select more than one group to add."
                                  :multiple="true" />
                 </div>
             </div>
@@ -57,7 +58,8 @@
             <div class="row">
                 <div class="col-md-3">
                     <GroupPicker v-model="parentGroupForChildren"
-                                 label="Parent Group" />
+                                 label="Parent Group"
+                                 help="Selecting a Parent Group will add all of its child groups." />
                 </div>
             </div>
         </template>

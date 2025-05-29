@@ -37,6 +37,11 @@
                         <i class="fa fa-sort"></i>
                     </RockButton>
                     <ul class="dropdown-menu dropdown-menu-right">
+                        <li>
+                            <span class="dropdown-header">
+                                Sort Person Order
+                            </span>
+                        </li>
                         <li v-for="[key, label] in sortOptions"
                             :key="key"
                             :class="{ 'selected': currentSortOrder === key }">
@@ -49,7 +54,7 @@
                 <RockButton :btnType="BtnType.Default"
                             :btnSize="BtnSize.Small"
                             :isSquare="true"
-                            title="Gender Highlight"
+                            title="Toggle Gender Highlight View"
                             @click="toggleHighlightGender">
                     <i class="fa fa-venus-mars"></i>
                 </RockButton>
@@ -63,7 +68,6 @@
                 <RockButton :btnType="BtnType.Default"
                             :btnSize="BtnSize.Small"
                             :isSquare="true"
-                            title="Settings"
                             @click="openPlacementConfigSettings">
                     <i class="fa fa-cog"></i>
                 </RockButton>
@@ -395,7 +399,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); */
     pointer-events: none;
     z-index: 2;
 }
@@ -486,6 +489,15 @@
     color: var(--color-interface-medium);
     font-size: var(--font-size-small);
     font-weight: var(--font-weight-semibold);
+}
+
+.dropdown-header {
+    padding: 5px 16px;
+    clear: both;
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.5;
+    color: var(--color-interface-medium);
+    white-space: nowrap;
 }
 
 :deep(.highlight) {
@@ -646,9 +658,6 @@
         [SortTypes.SortByDateAddedAsc, "Date Added (Oldest First)"],
         [SortTypes.SortByDateAddedDesc, "Date Added (Newest First)"]
     ];
-
-    console.log("GroupPlacementInitializationBox", box);
-    console.log("placement config settings: ", placementConfigurationSettings.value);
 
     // #region Computed Values
 
@@ -811,7 +820,6 @@
      */
     function areAttributeFiltersMet(attributes: Record<string, PublicAttributeBag>, attributeValuesFromFilter: Record<string, string>, attributeValuesFromEntity: Record<string, string>): boolean {
         return Object.keys(attributeValuesFromFilter).every(attributeKey => {
-            console.log("Here: ", attributes[attributeKey]);
             // If we can't find the key in attributes, then it is not being displayed and the filter should not be triggered.
             if (!attributes[attributeKey]) {
                 return true;
@@ -833,8 +841,6 @@
             };
 
             var result = fieldType.doesValueMatchFilter(attributeValuesFromEntity[attributeKey], comparisonValue, attributes[attributeKey].configurationValues ?? {});
-
-            console.log("value: ", attributeValuesFromEntity[attributeKey], " filterValue: ", comparisonValue.value, " Attribute Key: ", attributeKey, " RESULT: ", result);
             return result;
         });
     }
@@ -1696,31 +1702,21 @@
             return;
         }
 
-        const startTime = performance.now();
-        console.log("[loadPlacementData] Starting all requests...");
-
         // Start all requests in parallel
         const attributeFiltersPromise = populateAttributeFilters();
         const groupsPromise = getDestinationGroups();
         const placementPeoplePromise = getPlacementPeople();
 
         // Wait for attribute filters
-        console.log("[loadPlacementData] Waiting for attribute filters...");
-        const attrStart = performance.now();
         const attributeFilters = await attributeFiltersPromise;
-        console.log(`[loadPlacementData] Attribute filters received (${(performance.now() - attrStart).toFixed(2)}ms):`, attributeFilters);
 
         sourceAttributesForFilter.value = attributeFilters.sourceAttributesForFilter ?? {};
         registrantFeeItemsForFilter.value = attributeFilters.registrantFeeItemsForFilter ?? [];
         destinationGroupAttributesForFilter.value = attributeFilters.destinationGroupAttributesForFilter ?? {};
         destinationGroupMemberAttributesForFilter.value = attributeFilters.destinationGroupMemberAttributesForFilter ?? {};
-        console.log("[loadPlacementData] Attribute filters assigned.");
 
         // Wait for destination groups
-        console.log("[loadPlacementData] Waiting for destination groups...");
-        const groupsStart = performance.now();
         const groups = await groupsPromise;
-        console.log(`[loadPlacementData] Destination groups received (${(performance.now() - groupsStart).toFixed(2)}ms):`, groups);
 
         placementGroups.value = groups.map(g => ({
             ...g,
@@ -1729,17 +1725,12 @@
 
         areGroupsLoading.value = false;
         areGroupsExpanded.value = groups.length <= 3;
-        console.log("[loadPlacementData] Destination groups processed.");
 
         // Wait for placement people
-        console.log("[loadPlacementData] Waiting for placement people...");
-        const peopleStart = performance.now();
         const placementPeople = await placementPeoplePromise;
-        console.log(`[loadPlacementData] Placement people received (${(performance.now() - peopleStart).toFixed(2)}ms):`, placementPeople);
 
         if (placementPeople.peopleToPlace) {
             peopleToPlace.value = placementPeople.peopleToPlace;
-            console.log("[loadPlacementData] peopleToPlace assigned.");
         }
 
         if (placementPeople.tempGroups) {
@@ -1749,13 +1740,9 @@
                     placementGroup.groupMembers.push(...g.groupMembers);
                 }
             });
-            console.log("[loadPlacementData] tempGroups merged into placementGroups.");
         }
 
         arePeopleLoading.value = false;
-
-        const totalDuration = performance.now() - startTime;
-        console.log(`[loadPlacementData] Finished (${totalDuration.toFixed(2)}ms total).`);
     }
 
 
@@ -2219,7 +2206,6 @@
         });
 
         if (result.isSuccess) {
-            console.log("Remove group member success.");
             return true;
         }
         else {
@@ -2324,14 +2310,11 @@
             destinationGroupMembers: [...pendingDestinationGroupMembers.value]
         };
 
-        console.log("Calling PopulateAttributes with this request: ", request);
-
         const result = await invokeBlockAction<SourceAndDestinationEntityAttributesBag>("PopulateAttributes", {
             sourceAndDestinationEntityKeys: request
         });
 
         if (result.isSuccess && result.data) {
-            console.log("success getting attributes: ", result.data);
             const sourceAttributesMap = result.data.sourceEntityAttributes;
             const destinationAttributesMap = result.data.destinationEntityAttributes;
 
