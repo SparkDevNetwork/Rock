@@ -59,6 +59,11 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         public bool IsPlacementAllowingMultiple { get; set; }
 
         /// <summary>
+        /// Indicates whether the logged in person has edit permissions for the Destination Group Type.
+        /// </summary>
+        public bool IsPersonPermittedToEditGroupType { get; set; }
+
+        /// <summary>
         /// The source person passed in by page parameters, typically the registrant or individual being placed.
         /// </summary>
         public PersonBag SourcePerson { get; set; }

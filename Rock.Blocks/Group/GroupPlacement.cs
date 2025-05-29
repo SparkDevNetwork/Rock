@@ -34,8 +34,6 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.GroupPlacement;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using Rock.Blocks.Types.Mobile.Core;
-using System.Runtime.CompilerServices;
 
 namespace Rock.Blocks.Group
 {
@@ -47,7 +45,7 @@ namespace Rock.Blocks.Group
     [DisplayName( "Group Placement" )]
     [Category( "Group" )]
     [Description( "Block to manage group placements" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -474,6 +472,7 @@ namespace Rock.Blocks.Group
 
             box.PlacementConfigurationSettingOptions.DestinationGroupAttributes = fakeDestinationGroup.GetPublicAttributeListItemsForView( GetCurrentPerson(), true );
             box.AttributesForGroupAdd = fakeDestinationGroup.GetPublicAttributesForEdit( GetCurrentPerson(), true );
+            box.IsPersonPermittedToEditGroupType = fakeDestinationGroup.IsAuthorized( Authorization.EDIT, GetCurrentPerson() );
 
             GroupMember fakeDestinationGroupMember = new GroupMember
             {
@@ -807,7 +806,7 @@ namespace Rock.Blocks.Group
                 return false;
             }
 
-            if ( !group.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+            if ( !group.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) && !group.IsAuthorized( Authorization.MANAGE_MEMBERS, GetCurrentPerson() ) )
             {
                 errorMessage = "You are not authorized to place people in this group.";
                 return false;
@@ -1769,7 +1768,7 @@ namespace Rock.Blocks.Group
 
             var group = new GroupService( RockContext ).Get( groupIdKey );
 
-            if ( !group.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+            if ( !group.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) && !group.IsAuthorized( Authorization.MANAGE_MEMBERS, GetCurrentPerson() ) )
             {
                 return ActionBadRequest( "You are not authorized to remove people from this group." );
             }

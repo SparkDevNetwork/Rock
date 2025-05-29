@@ -77,7 +77,9 @@
             <div class="col-xs-5 col-md-4 col-lg-3 p-0 h-100 helper-height">
                 <Panel type="default"
                        title="People To Place"
-                       panelBodyCssClass="h-100 overflow-hidden">
+                       panelBodyCssClass="h-100 overflow-hidden"
+                       :isDrawerOpen="isPersonFilterDrawerOpen"
+                       @update:isDrawerOpen="isPersonFilterDrawerOpen = !isPersonFilterDrawerOpen">
                     <template #headerActions>
                         <RockButton :btnType="BtnType.Default"
                                     :btnSize="BtnSize.Small"
@@ -102,7 +104,12 @@
                         </transition>
                     </template>
 
-                    <!-- TODO: See about adding "Filter" to drawer. -->
+                    <template #drawerToggle>
+                        <div class="placement-drawer">
+                            Filter <i :class="isPersonFilterDrawerOpen ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"></i>
+                        </div>
+                    </template>
+
                     <template v-if="Object.keys(sourceAttributesForFilter).length > 0 || registrantFeeItemsForFilter.length > 0" #drawer>
                         <AttributeValuesContainer v-model="pendingSourceAttributeValuesForFilter" :attributes="sourceAttributesForFilter" isEditMode :numberOfColumns="1" />
                         <DropDownList v-model="pendingRegistrantFeeItemValuesForFilter"
@@ -184,7 +191,11 @@
             </div>
 
             <div class="col-xs-7 col-md-8 col-lg-9 p-0 h-100 helper-height">
-                <Panel type="default" title="Destination Groups" panelBodyCssClass="h-100 overflow-hidden">
+                <Panel type="default"
+                       title="Destination Groups"
+                       panelBodyCssClass="h-100 overflow-hidden"
+                       :isDrawerOpen="isGroupFilterDrawerOpen"
+                       @update:isDrawerOpen="isGroupFilterDrawerOpen = !isGroupFilterDrawerOpen">
                     <template #headerActions>
                         <div class="d-flex gap-1 mr-3">
                             <RockButton :btnType="BtnType.Default"
@@ -204,8 +215,14 @@
                         </div>
                     </template>
 
-                    <!-- TODO: See about adding "Filter" to drawer. -->
+                    <template #drawerToggle>
+                        <div class="placement-drawer">
+                            Filter <i :class="isGroupFilterDrawerOpen ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"></i>
+                        </div>
+                    </template>
+
                     <template #drawer v-if="Object.keys(destinationGroupAttributesForFilter).length > 0 || Object.keys(destinationGroupMemberAttributesForFilter).length > 0">
+
                         <AttributeValuesContainer v-model="pendingDestinationGroupAttributeValuesForFilter"
                                                   :attributes="destinationGroupAttributesForFilter"
                                                   isEditMode
@@ -242,6 +259,8 @@
                             Clear Filter
                         </RockButton>
                     </template>
+
+
                     <div class="p-3 h-100 group-container">
                         <div v-if="areGroupsLoading" class="d-flex align-items-center justify-content-center">
                             <Loading :isLoading="areGroupsLoading" />
@@ -295,6 +314,7 @@
                    ref="addGroupModalElement"
                    :groupAttributes="box.attributesForGroupAdd ?? {}"
                    :errorMessage="addGroupModalErrorText"
+                   :isPersonPermittedToEditGroupType="box.isPersonPermittedToEditGroupType"
                    @save="addGroup"
                    @dismissMessage="addGroupModalErrorText = ''" />
 </template>
@@ -457,6 +477,17 @@
     cursor: pointer;
 }
 
+.placement-drawer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 6px 12px;
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+}
+
 :deep(.highlight) {
     background-color: var(--color-interface-soft) !important;
 }
@@ -574,6 +605,8 @@
     const currentSortOrder = ref<SortTypes>(toNumberOrNull(preferences.getValue(getSortOrderKey())) as SortTypes ?? SortTypes.SortByLastName);
     const isCtrlKeyHeld = ref<boolean>(false);
     const isPersonCardHovered = ref<boolean>(false);
+    const isPersonFilterDrawerOpen = ref<boolean>(false);
+    const isGroupFilterDrawerOpen = ref<boolean>(false);
 
     // #endregion
 
@@ -1615,14 +1648,13 @@
         return existingPerson;
     }
 
-    // TODO - This is currently only handling adds. We should either rename the function or truly add update functionality
     /**
      * Adds a source group member to the person, initializing the list if needed.
      *
      * @param person The person to update.
      * @param groupMember The group member to add.
      */
-    function addOrUpdateSourceGroupMemberForPerson(person: PersonBag, groupMember: GroupMemberBag): void {
+    function addSourceGroupMemberForPerson(person: PersonBag, groupMember: GroupMemberBag): void {
         var newSourceGroupMember = {
             groupMemberIdKey: groupMember.groupMemberIdKey,
         } as GroupMemberBag;
@@ -1634,14 +1666,13 @@
         person.sourceGroupMembers.push(newSourceGroupMember);
     }
 
-    // TODO - This is currently only handling adds. We should either rename the function or truly add update functionality
     /**
      * Adds a registrant to the person's list of registrants.
      *
      * @param person The person to update.
      * @param registrant The registrant to add.
      */
-    function addOrUpdateRegistrantForPerson(person: PersonBag, registrant: RegistrantBag): void {
+    function addRegistrantForPerson(person: PersonBag, registrant: RegistrantBag): void {
         var newRegistrant = {
             registrantIdKey: registrant.registrantIdKey,
             registrationInstanceIdKey: registrant.registrationInstanceIdKey,
@@ -1855,8 +1886,6 @@
      * @param groupMember The updated group member message.
      */
     function onGroupMemberUpdatedFromServer(groupMember: GroupMemberUpdatedMessageBag): void {
-        console.log("Realtime update of Group Member: ", groupMember);
-
         // If a group member was added to the source group then we add to peopleToPlace
         if (groupMember.groupIdKey === box.groupPlacementKeys?.sourceGroupIdKey) {
             if (isNullOrWhiteSpace(groupMember.person?.personIdKey)) {
@@ -1870,7 +1899,7 @@
 
             peopleToPlace.value.forEach(p => {
                 if (p.personIdKey === groupMember.person?.personIdKey) {
-                    addOrUpdateSourceGroupMemberForPerson(p, groupMember);
+                    addSourceGroupMemberForPerson(p, groupMember);
                     isPersonInPeopleToPlace = true;
                 }
             });
@@ -1879,7 +1908,7 @@
                 if (pg.groupMembers) {
                     pg.groupMembers.forEach(gm => {
                         if (gm.person && gm.person.personIdKey === groupMember.person?.personIdKey) {
-                            addOrUpdateSourceGroupMemberForPerson(gm.person, groupMember);
+                            addSourceGroupMemberForPerson(gm.person, groupMember);
                             isPersonInDestinationGroup = true;
                         }
                     });
@@ -1930,8 +1959,6 @@
      * @param groupMember The group member details.
      */
     function onGroupMemberDeletedFromServer(_groupMemberGuid: Guid, groupMember: GroupMemberUpdatedMessageBag): void {
-        console.log("Realtime removal of Group Member: ", groupMember);
-
         if (groupMember.groupIdKey === box.groupPlacementKeys?.sourceGroupIdKey) {
             const personInPeopleToPlace = peopleToPlace.value.find(p => p.personIdKey === groupMember.person?.personIdKey);
             if (personInPeopleToPlace && personInPeopleToPlace.sourceGroupMembers) {
@@ -1982,8 +2009,6 @@
      * @param registrant The updated registrant message.
      */
     function onRegistrantUpdatedFromServer(registrant: RegistrationRegistrantUpdatedMessageBag): void {
-        console.log("Realtime update of Registrant: ", registrant);
-
         if (isNullOrWhiteSpace(registrant.person?.personIdKey)) {
             return;
         }
@@ -1995,7 +2020,7 @@
 
         peopleToPlace.value.forEach(p => {
             if (p.personIdKey === registrant.person?.personIdKey) {
-                addOrUpdateRegistrantForPerson(p, registrant);
+                addRegistrantForPerson(p, registrant);
                 isPersonInPeopleToPlace = true;
             }
         });
@@ -2004,7 +2029,7 @@
             if (pg.groupMembers) {
                 pg.groupMembers.forEach(gm => {
                     if (gm.person && gm.person.personIdKey === registrant.person?.personIdKey) {
-                        addOrUpdateRegistrantForPerson(gm.person, registrant);
+                        addRegistrantForPerson(gm.person, registrant);
                         isPersonInDestinationGroup = true;
                     }
                 });
@@ -2033,8 +2058,6 @@
      * @param registrant The registrant details.
      */
     function onRegistrantDeletedFromServer(_registrantGuid: Guid, registrant: RegistrationRegistrantUpdatedMessageBag): void {
-        console.log("Realtime delete of Registrant: ", registrant);
-
         const personInPeopleToPlace = peopleToPlace.value.find(p => p.personIdKey === registrant.person?.personIdKey);
         if (personInPeopleToPlace && personInPeopleToPlace.registrants) {
             personInPeopleToPlace.registrants = personInPeopleToPlace.registrants.filter(
@@ -2261,8 +2284,7 @@
             leaveRealTimeGroupChannel(result.data);
         }
         else {
-            // TODO - Need to determine a place for this error message. This should go in a Toast, but we currently don't have the control.
-            // console.error(result.errorMessage ?? "An unknown error occurred while trying to detach a group.");
+            // TODO - This should be converted to a Toast message when we add Toast messages to Rock.
             setGroupError(groupIdKey, result.errorMessage ?? "An unknown error occurred while trying to detach a group.");
         }
     }
@@ -2281,8 +2303,7 @@
             loadPlacementData();
         }
         else {
-            // TODO - Need to determine a place for this error message. This should go in a Toast, but we currently don't have the control.
-            // console.error(result.errorMessage ?? "An unknown error occurred while trying to delete a group.");
+            // TODO - This should be converted to a Toast message when we add Toast messages to Rock.
             setGroupError(groupIdKey, result.errorMessage ?? "An unknown error occurred while trying to delete a group.");
         }
     }

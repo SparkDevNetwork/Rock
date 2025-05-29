@@ -20,10 +20,6 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { nextTick } from "vue";
 import { tooltip } from "@Obsidian/Utility/tooltip";
 
-// export const enum NavigationUrlKey {
-//     DetailPage = "DetailPage"
-// }
-
 export const enum PreferenceKey {
     PlacementConfigurationJSONRegistrationInstanceIdKey = "PlacementConfigurationJSON_RegistrationInstanceIdKey_{0}",
     PlacementConfigurationJSONRegistrationTemplateIdKey = "PlacementConfigurationJSON_RegistrationTemplateIdKey_{0}",

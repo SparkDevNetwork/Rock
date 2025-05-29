@@ -49,6 +49,9 @@ export type GroupPlacementInitializationBox = {
     /** Contextual keys that define the placement scope. */
     groupPlacementKeys?: GroupPlacementKeysBag | null;
 
+    /** Indicates whether the logged in person has edit permissions for the Destination Group Type. */
+    isPersonPermittedToEditGroupType: boolean;
+
     /** Indicates whether multiple group placements are allowed per person. */
     isPlacementAllowingMultiple: boolean;
 

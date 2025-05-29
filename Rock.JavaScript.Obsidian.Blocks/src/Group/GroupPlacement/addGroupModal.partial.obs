@@ -20,7 +20,6 @@
         <template v-if="selectedGroupOption === 'Add New Group'">
             <div class="row">
                 <div class="col-md-3">
-                    <!-- TODO - notification box -->
                     <GroupPicker v-model="parentGroupForNewGroup"
                                  label="Parent Group" />
                 </div>
@@ -35,7 +34,6 @@
             </div>
             <div class="row">
                 <div class="col-md-6">
-                    <!-- TODO - nullable or not? -->
                     <NumberBox v-model="groupCapacity" label="Group Capacity" :minimumValue="0" />
                 </div>
             </div>
@@ -95,6 +93,10 @@
         errorMessage: {
             type: String as PropType<string>,
             required: false
+        },
+        isPersonPermittedToEditGroupType: {
+            type: Boolean as PropType<boolean>,
+            required: true
         }
     });
 
@@ -109,8 +111,6 @@
     });
 
     const isVisible = useVModelPassthrough(props, "modelValue", emit);
-    const selectedGroupOption = ref<string>("Add New Group");
-
     const errorMessage = computed(() => props.errorMessage);
 
     // Add New Group refs
@@ -127,7 +127,7 @@
     // Add All Child Groups refs
     const parentGroupForChildren = ref<ListItemBag>();
 
-    const addGroupOptions = [
+    const rawAddGroupOptions = [
         {
             text: "Add New Group",
             value: "Add New Group"
@@ -141,6 +141,10 @@
             value: "Add All Child Groups"
         }
     ];
+
+    const addGroupOptions = computed(() => props.isPersonPermittedToEditGroupType ? rawAddGroupOptions : rawAddGroupOptions.slice(1));
+
+    const selectedGroupOption = ref<string>(addGroupOptions.value[0].value);
 
     function onSave(): void {
         const addGroupBag: AddGroupBag = {
