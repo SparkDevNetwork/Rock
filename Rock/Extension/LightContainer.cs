@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -32,9 +34,13 @@ namespace Rock.Extension
     /// support <see cref="Security.ISecured"/> if the component base class
     /// implements the interface itself.
     /// </summary>
+    /// <remarks>
+    /// Containers must be registered with DI in order to be used as they
+    /// can use additional services from our DI provider.
+    /// </remarks>
     /// <typeparam name="TComponent">The type of components that will be handled by this container.</typeparam>
-    internal class EntityTypeContainer<TComponent>
-        where TComponent : class
+    internal class LightContainer<TComponent>
+        where TComponent : LightComponent
     {
         #region Fields
 
@@ -44,6 +50,24 @@ namespace Rock.Extension
         /// to this running instance.
         /// </summary>
         private readonly Lazy<IReadOnlyDictionary<Guid, Type>> _typesByGuid = new Lazy<IReadOnlyDictionary<Guid, Type>>( LoadTypes );
+
+        /// <summary>
+        /// The service provider that will be used when constructing components.
+        /// </summary>
+        private readonly IServiceProvider _serviceProvider;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LightContainer{TComponent}"/> class.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider that will be used when constructing components.</param>
+        public LightContainer( IServiceProvider serviceProvider )
+        {
+            _serviceProvider = serviceProvider;
+        }
 
         #endregion
 
@@ -98,7 +122,7 @@ namespace Rock.Extension
                 return default;
             }
 
-            return Activator.CreateInstance( type ) as TComponent;
+            return ActivatorUtilities.CreateInstance( _serviceProvider, type ) as TComponent;
         }
 
         /// <summary>

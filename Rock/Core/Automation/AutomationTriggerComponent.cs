@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 
 using Rock.Data;
+using Rock.Extension;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
@@ -32,7 +33,7 @@ namespace Rock.Core.Automation
     /// provide UI and logic for a specific trigger type in the automation
     /// system.
     /// </summary>
-    internal abstract class AutomationTriggerComponent
+    internal abstract class AutomationTriggerComponent : LightComponent
     {
         #region Properties
 

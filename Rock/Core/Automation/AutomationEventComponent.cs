@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 
 using Rock.Data;
+using Rock.Extension;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
@@ -30,7 +31,7 @@ namespace Rock.Core.Automation
     /// provide UI and logic for a specific event type in the automation
     /// system.
     /// </summary>
-    internal abstract class AutomationEventComponent
+    internal abstract class AutomationEventComponent : LightComponent
     {
         #region Properties
 

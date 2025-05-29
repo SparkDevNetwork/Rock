@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
@@ -24,8 +26,21 @@ namespace Rock.Core.Automation
     /// <summary>
     /// The container for automation components.
     /// </summary>
-    internal class AutomationTriggerContainer : EntityTypeContainer<AutomationTriggerComponent>
+    internal class AutomationTriggerContainer : LightContainer<AutomationTriggerComponent>
     {
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AutomationTriggerContainer"/> class.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider that will be used to construct component instances.</param>
+        public AutomationTriggerContainer( IServiceProvider serviceProvider )
+            : base( serviceProvider )
+        {
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>

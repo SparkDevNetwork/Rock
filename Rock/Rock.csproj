@@ -804,7 +804,8 @@
     <Compile Include="Core\EntitySearch\EntitySearchSystemQuery.cs" />
     <Compile Include="Core\EntitySearch\IdKeyExpressionVisitor.cs" />
     <Compile Include="Communication\Chat\ChatConfiguration.cs" />
-    <Compile Include="Extension\EntityTypeContainer.cs" />
+    <Compile Include="Extension\LightComponent.cs" />
+    <Compile Include="Extension\LightContainer.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171PopulateAttendanceRootGroupType.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV18DeleteGroupLocationHistoricalSchedule.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV18UpdateCommunicationRecipientIndex.cs" />
