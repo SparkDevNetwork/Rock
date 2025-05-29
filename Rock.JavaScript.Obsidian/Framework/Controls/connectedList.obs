@@ -1,0 +1,116 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="connected-list">
+        <template v-for="(entry, index) in decoratedChildren" :key="index">
+            <div class="connected-list-item">
+                <div v-if="index > 0"
+                     :class="[
+                        'connected-list-connector',
+                        entry.showConnectorTip ? 'connected-list-connector-tip' : '',
+                        hideConnectors ? 'connected-list-connector-transparent' : ''
+                    ]"></div>
+
+                <component :is="entry.vnode" />
+            </div>
+        </template>
+    </div>
+</template>
+
+<style scoped>
+.connected-list-connector {
+    width: 2px;
+    height: var(--spacing-medium);
+    background-color: var(--color-interface-soft);
+    margin: 0 auto;
+    position: relative;
+}
+
+.connected-list-connector-tip::after {
+    content: "";
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
+    border-bottom: 2px solid var(--color-interface-soft);
+    border-right: 2px solid var(--color-interface-soft);
+    background: transparent;
+}
+
+.connected-list-connector-transparent,
+.connected-list-connector-transparent::after {
+    border-color: transparent;
+    background-color: transparent;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, useSlots, VNode, VNodeTypes } from "vue";
+    import ConnectedListButton from "./connectedListButton.obs";
+    import ConnectedListAddButton from "./connectedListAddButton.obs";
+
+    type DecoratedChild = {
+        vnode: VNode;
+        showConnectorTip: boolean;
+    };
+
+    const slots = useSlots();
+    const baseTippableConnectorTargets: VNodeTypes[] = [ConnectedListButton, ConnectedListAddButton];
+
+    const props = defineProps({
+        tippableConnectorTargets: {
+            type: Array as PropType<VNodeTypes[] | null | undefined>,
+            required: false
+        },
+
+        hideConnectors: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    // #region Computed Values
+
+    const decoratedChildren = computed<DecoratedChild[]>(() => {
+        const children = (slots.default?.() || []).filter(isRenderableVNode);
+
+        let isAtLeastSecondTippableConnector = false;
+
+        return children.map((vnode): DecoratedChild => {
+            const isTippableTarget = isTippableConnectorTarget(vnode);
+            let showConnectorTip = false;
+
+            if (isTippableTarget) {
+                if (isAtLeastSecondTippableConnector) {
+                    showConnectorTip = true;
+                }
+                else {
+                    isAtLeastSecondTippableConnector = true;
+                }
+            }
+
+            return { vnode, showConnectorTip };
+        });
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function isTippableConnectorTarget(child: VNode): boolean {
+        return [...baseTippableConnectorTargets, ...(props.tippableConnectorTargets ?? [])].includes(child.type);
+    }
+
+    function isRenderableVNode(vnode: VNode): boolean {
+        // Exclude empty text, comment, and v-if false virtual nodes
+        const type = vnode.type;
+
+        return (
+            typeof type === "object" || // Component
+            typeof type === "string"    // Native element, like 'div'
+        );
+    }
+
+    // #endregion Functions
+</script>
