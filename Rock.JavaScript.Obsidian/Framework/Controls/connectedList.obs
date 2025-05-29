@@ -73,25 +73,42 @@
     // #region Computed Values
 
     const decoratedChildren = computed<DecoratedChild[]>(() => {
-        const children = (slots.default?.() || []).filter(isRenderableVNode);
+        const rawChildren = slots.default?.() || [];
+        // Used to track if we've seen at least one tippable connector target.
+        // The connector tips (arrows) will only be shown after the first tippable target is encountered.
+        let hasSeenFirstTippable = false;
 
-        let isAtLeastSecondTippableConnector = false;
+        function flattenAndDecorate(nodes: VNode[]): DecoratedChild[] {
+            const result: DecoratedChild[] = [];
 
-        return children.map((vnode): DecoratedChild => {
-            const isTippableTarget = isTippableConnectorTarget(vnode);
-            let showConnectorTip = false;
-
-            if (isTippableTarget) {
-                if (isAtLeastSecondTippableConnector) {
-                    showConnectorTip = true;
+            function processNode(vnode: VNode): void {
+                if (
+                    typeof vnode.type === "symbol" &&
+                    vnode.type.description === "v-fgt" &&
+                    Array.isArray(vnode.children)
+                ) {
+                    // Recurse into fragment children
+                    for (const child of vnode.children as VNode[]) {
+                        processNode(child);
+                    }
                 }
-                else {
-                    isAtLeastSecondTippableConnector = true;
+                else if (isRenderableVNode(vnode)) {
+                    const isTippable = isTippableConnectorTarget(vnode);
+                    const showConnectorTip = isTippable && hasSeenFirstTippable;
+                    hasSeenFirstTippable = hasSeenFirstTippable || isTippable;
+
+                    result.push({ vnode, showConnectorTip });
                 }
             }
 
-            return { vnode, showConnectorTip };
-        });
+            for (const node of nodes) {
+                processNode(node);
+            }
+
+            return result;
+        }
+
+        return flattenAndDecorate(rawChildren);
     });
 
     // #endregion Computed Values
@@ -108,7 +125,8 @@
 
         return (
             typeof type === "object" || // Component
-            typeof type === "string"    // Native element, like 'div'
+            typeof type === "string" || // Native element, like 'div'
+            (typeof type === "symbol" && type.description === "v-fgt")
         );
     }
 
