@@ -30,6 +30,7 @@ using Rock.Enums.Reporting;
 using Rock.Field;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Reporting;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -70,12 +71,18 @@ namespace Rock.Reporting.DataFilter.Step
             get { return "Additional Filters"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Steps/stepsAttributeValuesFilter.obs";
-
         #endregion
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Steps/stepsAttributeValuesFilter.obs" )
+            };
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )

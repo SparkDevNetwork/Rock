@@ -26,7 +26,11 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Security;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -64,12 +68,18 @@ namespace Rock.Reporting.DataFilter.Person
             get { return "Additional Filters"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/inGroupFilter.obs";
-
         #endregion
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/inGroupFilter.obs" )
+            };
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
@@ -184,6 +194,30 @@ namespace Rock.Reporting.DataFilter.Person
             selections.Add( data.GetValueOrDefault( "lastAttendance", string.Empty ).Replace( '|', ',' ) );
 
             return selections.JoinStrings( "|" );
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> ExecuteComponentRequest( Dictionary<string, string> request, SecurityGrant securityGrant, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var action = request.GetValueOrNull( "action" );
+            var options = request.GetValueOrNull( "options" )?.FromJsonOrNull<InGroupFilterGetGroupRolesForGroupsOptionsBag>();
+
+            if ( action == "GetGroupRolesForGroups" && options != null )
+            {
+                var groupIds = GroupCache.GetMany( options.GroupGuids ).Select( gc => gc.Id ).ToList();
+
+                var groupRoles = GetGroupTypeRolesForSelectedGroups(
+                        groupIds,
+                        options.IncludeChildGroups,
+                        options.IncludeSelectedGroups,
+                        options.IncludeAllDescendants,
+                        options.IncludeInactiveGroups,
+                        rockContext
+                    );
+
+                return new Dictionary<string, string> { { "groupRoles", groupRoles.ToCamelCaseJson( false, true ) } };
+            }
+            return null;
         }
 
         #endregion
