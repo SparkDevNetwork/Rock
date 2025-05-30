@@ -776,7 +776,7 @@ namespace Rock.Communication
                 if ( emailMessage.CssInliningEnabled )
                 {
                     // move styles inline to help it be compatible with more email clients
-                    body = body.ConvertHtmlStylesToInlineAttributes( true );
+                    body = body.ConvertHtmlStylesToInlineAttributes();
                 }
             }
 
@@ -935,7 +935,7 @@ namespace Rock.Communication
                 if ( emailMessage.CssInliningEnabled )
                 {
                     // move styles inline to help it be compatible with more email clients
-                    htmlBody = htmlBody.ConvertHtmlStylesToInlineAttributes( true );
+                    htmlBody = htmlBody.ConvertHtmlStylesToInlineAttributes();
                 }
 
                 // add the main Html content to the email

@@ -15,12 +15,14 @@
 // </copyright>
 //
 import { App, Component, createApp, defineComponent, Directive, h, markRaw, onMounted, provide, reactive, ref, VNode } from "vue";
+import DynamicComponent from "@Obsidian/Controls/dynamicComponent.obs";
 import RockBlock from "./rockBlock.partial";
 import { useStore } from "@Obsidian/PageState";
 import "@Obsidian/ValidationRules";
 import "@Obsidian/FieldTypes/index";
 import { DebugTiming } from "@Obsidian/ViewModels/Utility/debugTiming";
 import { ObsidianBlockConfigBag } from "@Obsidian/ViewModels/Cms/obsidianBlockConfigBag";
+import { DynamicComponentDefinitionBag } from "@Obsidian/ViewModels/Controls/dynamicComponentDefinitionBag";
 import { FormError, FormState, provideFormState } from "@Obsidian/Utility/form";
 import { PageConfig } from "@Obsidian/Utility/page";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -30,6 +32,8 @@ import { HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/T
 import { doApiCall, provideHttp } from "@Obsidian/Utility/http";
 import { createInvokeBlockAction, provideBlockBrowserBus, provideBlockGuid, provideBlockTypeGuid } from "@Obsidian/Utility/block";
 import { useBrowserBus } from "@Obsidian/Utility/browserBus";
+import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+import { Guid } from "@Obsidian/Types";
 
 type DebugTimingConfig = {
     elementId: string;
@@ -290,18 +294,32 @@ export function showShortLink(url: string): void {
 
 /**
  * This is an internal method that will be removed in the future. It serves the
- * ObsidianDataComponentWrapper WebForms control to initialize an Obsidian
+ * ObsidianDynamicComponentWrapper WebForms control to initialize an Obsidian
  * component inside a WebForms component.
  *
- * @param url The URL of the Obsidian component to load.
  * @param rootElementId The identifier of the DOM node to mount the component on.
+ * @param componentGuid The unique identifier of the component.
+ * @param componentDefinitionId The identifier of the DOM node that contains the component definition bag.
  * @param componentDataId The identifier of the DOM node that contains the component data.
  * @param componentPropertiesId The identifier of the DOM node that contains the additional component properties.
+ * @param pageGuid The unique identifier of the page.
+ * @param blockGuid The unique identifier of the block.
  */
-export async function initializeDataComponentWrapper(url: string, rootElementId: string, componentDataId: string, componentPropertiesId: string | undefined): Promise<void> {
-    const componentUrl = `${url}.js`;
+export async function initializeDynamicComponentWrapper(rootElementId: string, componentGuid: Guid, componentDefinitionId: string, componentDataId: string, componentPropertiesId: string | undefined, pageGuid: string | null, blockGuid: string | null): Promise<void> {
+    let definition: DynamicComponentDefinitionBag | null = null;
     let component: Component | null = null;
     let errorMessage = "";
+
+    if (componentDefinitionId) {
+        const componentDefinitionElement = document.getElementById(componentDefinitionId) as HTMLInputElement;
+
+        try {
+            definition = safeParseJson<DynamicComponentDefinitionBag>(decodeURIComponent(componentDefinitionElement.value)) ?? null;
+        }
+        catch {
+            definition = null;
+        }
+    }
 
     const rootElement = document.getElementById(rootElementId);
 
@@ -310,7 +328,8 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
     }
 
     try {
-        const componentModule = await import(componentUrl);
+
+        const componentModule = await import(`${definition?.url}.js`);
         component = componentModule ?
             (componentModule.default || componentModule) :
             null;
@@ -321,7 +340,7 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
         errorMessage = `${e}`;
     }
 
-    const name = `Root${componentUrl.replace(/\//g, ".")}`;
+    const name = `Root${definition?.url?.replace(/\//g, ".")}`;
 
     // Initialize a fake form state to track errors and proxy them to the
     // WebForms system.
@@ -371,6 +390,9 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
 
     const app = createApp({
         name,
+        components: {
+            DynamicComponent
+        },
         setup() {
             let componentData: Record<string, string> = {};
             let componentProperties: Record<string, unknown> = {};
@@ -409,10 +431,32 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
                 }
             }
 
+            async function onExecuteRequest(request: Record<string, string>, securityGrantToken: string | null): Promise<Record<string, string | null | undefined> | null> {
+                const url = `/api/v2/BlockActions/${pageGuid}/${blockGuid}/ExecuteComponentRequest`;
+                const data = {
+                    componentGuid,
+                    request,
+                    securityGrantToken,
+                };
+
+                const result = await doApiCall<Record<string, string | null | undefined>>("POST", url, undefined, data);
+
+                if (result.isSuccess) {
+                    return result.data ?? null;
+                }
+                else {
+                    console.log(result.errorMessage || "Error executing component request");
+                }
+
+                return null;
+            }
+
             return {
                 component: component ? markRaw(component) : null,
                 componentData,
                 componentProperties,
+                definition,
+                onExecuteRequest,
                 onUpdateComponentData,
                 errorMessage
             };
@@ -426,7 +470,12 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
     <br />
     {{errorMessage}}
 </div>
-<component v-else :is="component" :modelValue="componentData" @update:modelValue="onUpdateComponentData" v-bind="componentProperties" />`
+<DynamicComponent v-else-if="definition"
+        :modelValue="componentData"
+        :definition="definition"
+        :properties="componentProperties"
+        :executeRequest="onExecuteRequest"
+        @update:modelValue="onUpdateComponentData" />`
     });
 
     app.mount(rootElement);

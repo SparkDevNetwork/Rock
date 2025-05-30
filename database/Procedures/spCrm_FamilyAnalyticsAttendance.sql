@@ -211,7 +211,7 @@ BEGIN
 	DROP TABLE #lastAttended
 
 	-- times checkedin
-	DECLARE @TimesAttendedAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = @cATTRIBUTE_TIMES_ATTENDED_IN_DURATION)
+	DECLARE @TimesAttendedAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = @cATTRIBUTE_TIMES_ATTENDED_IN_DURATION);
 
 	WITH
 	  cteIndividual ([PersonId], [GivingGroupId], [FamilyRole])

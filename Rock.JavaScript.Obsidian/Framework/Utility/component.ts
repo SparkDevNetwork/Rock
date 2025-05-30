@@ -389,17 +389,51 @@ export function useStandardAsyncPickerProps(props: ExtractPropTypes<StandardAsyn
 
 // #endregion
 
-// #region Data View Filters
+// #region Dynamic Components
 
-type DataViewFilterProps = {
-    /**
-     * The component data value from the C# component class.
-     */
+export type StandardDynamicComponentProps = {
     modelValue: {
-        type: PropType<Record<string, string | undefined | null>>,
+        type: PropType<Record<string, string | null | undefined>>,
         required: true
     },
 
+    options: {
+        type: PropType<Record<string, string | null | undefined>>,
+        required: true
+    },
+
+    executeRequest: {
+        type: PropType<(request: Record<string, string | null | undefined>) => Promise<Record<string, string | null | undefined> | null>>,
+        required: true
+    }
+};
+
+/**
+ * The standard props that are available to an instantiated component by the
+ * dynamicComponent.obs component.
+ */
+export const standardDynamicComponentProps: StandardDynamicComponentProps = {
+    modelValue: {
+        type: Object as PropType<Record<string, string | null | undefined>>,
+        required: true
+    },
+
+    options: {
+        type: Object as PropType<Record<string, string | null | undefined>>,
+        required: true
+    },
+
+    executeRequest: {
+        type: Function as PropType<(request: Record<string, string | null | undefined>) => Promise<Record<string, string | null | undefined> | null>>,
+        required: true
+    }
+};
+
+// #endregion
+
+// #region Data View Filters
+
+type DataViewFilterProps = StandardDynamicComponentProps & {
     /**
      * The mode this filter is operating in.
      */
@@ -411,10 +445,7 @@ type DataViewFilterProps = {
 
 /** The standard component props that will be passed to DataView Filter components. */
 export const dataViewFilterProps: DataViewFilterProps = {
-    modelValue: {
-        type: Object as PropType<Record<string, string | undefined | null>>,
-        required: true
-    },
+    ...standardDynamicComponentProps,
 
     filterMode: {
         type: Number as PropType<FilterMode>,

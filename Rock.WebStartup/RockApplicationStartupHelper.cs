@@ -28,6 +28,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Web;
 
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Blocks;
@@ -40,6 +41,7 @@ using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net;
 using Rock.Net.Geolocation;
 using Rock.Observability;
 using Rock.Utility.Settings;
@@ -290,6 +292,12 @@ namespace Rock.WebStartup
             Rock.Transactions.RockQueue.StartFastQueue();
             ShowDebugTimingMessage( "Rock Fast Queue" );
 
+            // Start the Automation system.
+            LogStartupMessage( "Starting the Automation System" );
+            AutomationTriggerCache.CreateAllMonitors();
+            AutomationEventCache.CreateAllExecutors();
+            ShowDebugTimingMessage( "Automation System" );
+
             bool anyThemesUpdated = UpdateThemes();
             if ( anyThemesUpdated )
             {
@@ -314,6 +322,17 @@ namespace Rock.WebStartup
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
             sc.AddSingleton<IHostingSettings, HostingSettings>();
             sc.AddSingleton<IChatProvider, StreamChatProvider>();
+            sc.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
+            sc.AddSingleton<IWebHostEnvironment>( provider => new Utility.WebHostEnvironment
+            {
+                WebRootPath = AppDomain.CurrentDomain.BaseDirectory
+            } );
+            sc.AddSingleton<Core.Automation.AutomationTriggerContainer>();
+            sc.AddSingleton<Core.Automation.AutomationEventContainer>();
+
+            sc.AddScoped<RockContext>();
+
+            sc.AddRockLogging();
 
             // Register the class to initialize for InitializationSettings. This
             // is transient so that we always get the current values from the

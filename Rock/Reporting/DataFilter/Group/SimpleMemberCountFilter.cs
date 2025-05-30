@@ -22,6 +22,7 @@ using System.ComponentModel.Composition;
 using Rock.Data;
 
 using Rock.Net;
+using Rock.ViewModels.Controls;
 
 namespace Rock.Reporting.DataFilter.Group
 {
@@ -62,7 +63,13 @@ namespace Rock.Reporting.DataFilter.Group
         }
 
         /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Group/simpleMemberCountFilter.obs";
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/simpleMemberCountFilter.obs" )
+            };
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )

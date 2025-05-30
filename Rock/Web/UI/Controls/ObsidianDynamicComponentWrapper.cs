@@ -19,26 +19,30 @@ using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
+using Rock.ViewModels.Controls;
+
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// Wraps an Obsidian component for use inside a WebForms block. This provides
     /// a basic dictionary of strings for the data.
     /// </summary>
-    public class ObsidianDataComponentWrapper : CompositeControl, INamingContainer, IHasValidationGroup
+    [RockInternal( "18.0", true )]
+    public class ObsidianDynamicComponentWrapper : CompositeControl, INamingContainer, IHasValidationGroup
     {
         /// <summary>
         /// The custom validator is used to trigger validation of Obsidian
         /// controls embedded inside a WebForms control. There is logic in the
-        /// initializeDataComponentWrapper() function that will wire up a
+        /// initializeDynamicComponentWrapper() function that will wire up a
         /// proxy between the Obsidian components and the WebForms validation.
         /// </summary>
         private CustomValidator _validator;
 
         /// <summary>
-        /// The URL to load the Obsidian component from.
+        /// The unique identifier of the component.
         /// </summary>
-        public string ComponentUrl { get; set; }
+        public Guid ComponentGuid { get; set; }
 
         /// <summary>
         /// The data that will be passed to the component, or during postback
@@ -50,7 +54,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
-                return ( ( HiddenField ) Controls[0] ).Value.UnescapeDataString().FromJsonOrNull<Dictionary<string, string>>()
+                return ( ( HiddenField ) Controls[1] ).Value.UnescapeDataString().FromJsonOrNull<Dictionary<string, string>>()
                     ?? new Dictionary<string, string>();
             }
             set
@@ -59,11 +63,38 @@ namespace Rock.Web.UI.Controls
 
                 if ( value != null )
                 {
-                    ( ( HiddenField ) Controls[0] ).Value = value.ToJson().EscapeDataString();
+                    ( ( HiddenField ) Controls[1] ).Value = value.ToJson().EscapeDataString();
                 }
                 else
                 {
-                    ( ( HiddenField ) Controls[0] ).Value = "{}".EscapeDataString();
+                    ( ( HiddenField ) Controls[1] ).Value = "{}".EscapeDataString();
+                }
+            }
+        }
+
+        /// <summary>
+        /// The component definition bag that will be passed to the Obsidian
+        /// control.
+        /// </summary>
+        public DynamicComponentDefinitionBag ComponentDefinition
+        {
+            get
+            {
+                EnsureChildControls();
+
+                return ( ( HiddenField ) Controls[0] ).Value.UnescapeDataString().FromJsonOrNull<DynamicComponentDefinitionBag>();
+            }
+            set
+            {
+                EnsureChildControls();
+
+                if ( value != null )
+                {
+                    ( ( HiddenField ) Controls[0] ).Value = value.ToCamelCaseJson( false, false ).EscapeDataString();
+                }
+                else
+                {
+                    ( ( HiddenField ) Controls[0] ).Value = "null";
                 }
             }
         }
@@ -83,7 +114,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
-                return ( ( HiddenField ) Controls[1] ).Value.UnescapeDataString().FromJsonOrNull<Dictionary<string, object>>()
+                return ( ( HiddenField ) Controls[2] ).Value.UnescapeDataString().FromJsonOrNull<Dictionary<string, object>>()
                     ?? new Dictionary<string, object>();
             }
             set
@@ -92,11 +123,11 @@ namespace Rock.Web.UI.Controls
 
                 if ( value != null )
                 {
-                    ( ( HiddenField ) Controls[1] ).Value = value.ToJson().EscapeDataString();
+                    ( ( HiddenField ) Controls[2] ).Value = value.ToJson().EscapeDataString();
                 }
                 else
                 {
-                    ( ( HiddenField ) Controls[1] ).Value = "{}".EscapeDataString();
+                    ( ( HiddenField ) Controls[2] ).Value = "{}".EscapeDataString();
                 }
             }
         }
@@ -119,7 +150,7 @@ namespace Rock.Web.UI.Controls
         /// <inheritdoc/>
         protected override object SaveViewState()
         {
-            ViewState[nameof( ComponentUrl )] = ComponentUrl;
+            ViewState[nameof( ComponentGuid )] = ComponentGuid;
 
             return base.SaveViewState();
         }
@@ -129,12 +160,18 @@ namespace Rock.Web.UI.Controls
         {
             base.LoadViewState( savedState );
 
-            ComponentUrl = ( string ) ViewState[nameof( ComponentUrl )];
+            ComponentGuid = ( Guid ) ViewState[nameof( ComponentGuid )];
         }
 
         /// <inheritdoc/>
         protected override void CreateChildControls()
         {
+            Controls.Add( new HiddenField
+            {
+                ID = "hfComponentDefinition",
+                Value = "null"
+            } );
+
             Controls.Add( new HiddenField
             {
                 ID = "hfData",
@@ -164,13 +201,18 @@ namespace Rock.Web.UI.Controls
             // other embedded Obsidian components.
             _validator.ClientValidationFunction = $"validator_{ClientID}";
 
-            var script = $@"
+            var block = this.RockBlock();
+
+            if ( block != null && ComponentDefinition?.Url.IsNotNullOrWhiteSpace() == true )
+            {
+                var script = $@"
 Obsidian.onReady(() => {{
     System.import(""@Obsidian/Templates/rockPage.js"").then(module => {{
-        module.initializeDataComponentWrapper(""{ComponentUrl}"", ""{ClientID}"", ""{Controls[0].ClientID}"", ""{Controls[1].ClientID}"");
+        module.initializeDynamicComponentWrapper(""{ClientID}"", ""{ComponentGuid}"", ""{Controls[0].ClientID}"", ""{Controls[1].ClientID}"", ""{Controls[2].ClientID}"", ""{block.PageCache.Guid}"", ""{block.BlockCache.Guid}"");
     }});
 }});";
-            ScriptManager.RegisterStartupScript( this, GetType(), $"init-{ClientID}", script, true );
+                ScriptManager.RegisterStartupScript( this, GetType(), $"init-{ClientID}", script, true );
+            }
 
             base.OnPreRender( e );
         }

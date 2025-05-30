@@ -15,6 +15,11 @@
 }
 
 .list-as-blocks {
+  background-color: var(--color-interface-softer);
+  border-radius:    var(--rounded-medium);
+  border:           1px solid var(--color-interface-soft);
+  margin-bottom:    var(--spacing-huge);
+  
   h3 {
     display:      inline-block;
     width:        100%;
@@ -29,8 +34,7 @@
     display:          flex;
     -ms-flex-wrap:    wrap;
     flex-wrap:        wrap;
-    padding:          0;
-    margin:           calc($grid-gutter-width * 0.5) calc($grid-gutter-width * -.25) calc($grid-gutter-width * -.5);
+    padding:          var(--spacing-large) var(--spacing-medium) 8px var(--spacing-medium);
     list-style:       none;
 
     li {
@@ -88,7 +92,7 @@
         i {
           margin:     var(--spacing-xsmall) 0;
           font-size:  var(--font-size-h3);    /* When switching Rock Core to Tabler icon set make sure to increase the font-size as FontAwesome is bigger than Tabler.*/
-          color:      var(--color-interface-strong);
+          color:      var(--color-interface-medium);
         }
 
         &:hover {

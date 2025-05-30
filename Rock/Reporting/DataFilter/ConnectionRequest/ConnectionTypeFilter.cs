@@ -28,6 +28,7 @@ using System.Linq.Expressions;
 using System.Collections.Generic;
 using Rock.Net;
 using Rock.Web.Cache;
+using Rock.ViewModels.Controls;
 
 namespace Rock.Reporting.DataFilter.ConnectionRequest
 {
@@ -64,12 +65,18 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
             get { return "Additional Filters"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/ConnectionRequest/connectionTypeFilter.obs";
-
         #endregion
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/ConnectionRequest/connectionTypeFilter.obs" )
+            };
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )

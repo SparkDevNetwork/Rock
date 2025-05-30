@@ -36,6 +36,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Cms.Utm;
+using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Lava;
@@ -105,11 +106,6 @@ namespace Rock.Web.UI
         /// The obsidian file watchers.
         /// </summary>
         private static readonly List<FileSystemWatcher> _obsidianFileWatchers = new List<FileSystemWatcher>();
-
-        /// <summary>
-        /// The service provider to use during requests.
-        /// </summary>
-        private static readonly Lazy<IServiceProvider> _lazyServiceProvider = new Lazy<IServiceProvider>( CreateServiceProvider );
 
         /// <summary>
         /// The service scopes that should be disposed.
@@ -2797,31 +2793,12 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
-        /// Creates the service provider that will provides services for all
-        /// requests during the lifetime of this application.
-        /// </summary>
-        /// <returns>A new service provider.</returns>
-        private static IServiceProvider CreateServiceProvider()
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
-            serviceCollection.AddScoped<RockContext>();
-            serviceCollection.AddSingleton<IWebHostEnvironment>( provider => new Utility.WebHostEnvironment
-            {
-                WebRootPath = AppDomain.CurrentDomain.BaseDirectory
-            } );
-            serviceCollection.AddRockLogging();
-
-            return serviceCollection.BuildServiceProvider();
-        }
-
-        /// <summary>
         /// Creates the service scope and initializes any required values.
         /// </summary>
         /// <returns>An new service scope.</returns>
         private IServiceScope CreateServiceScope()
         {
-            var scope = _lazyServiceProvider.Value.CreateScope();
+            var scope = RockApp.Current.CreateScope();
 
             _pageServiceScopes.Add( scope );
 
@@ -5112,7 +5089,7 @@ Sys.Application.add_load(function () {
         {
             RequestContext = new RockRequestContext( context.Request, new RockResponseContext( this ), CurrentUser );
 
-            if ( _lazyServiceProvider.Value.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
+            if ( RockApp.Current.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
             {
                 internalAccessor.RockRequestContext = RequestContext;
             }
@@ -5134,7 +5111,7 @@ Sys.Application.add_load(function () {
         {
             AsyncPageEndProcessRequest( result );
 
-            if ( _lazyServiceProvider.Value.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
+            if ( RockApp.Current.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
             {
                 if ( ReferenceEquals( internalAccessor.RockRequestContext, RequestContext ) )
                 {

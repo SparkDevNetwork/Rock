@@ -1,22 +1,22 @@
-  :root {
+:root {
   // ========================= COLOR =========================
 
   // #region BASE VARIABLE (These are not meant to be used as reference variables)
 
   --logo-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
 
-  --base-interface-strongest: #000000;
+  --base-interface-strongest: #0a0a0a;
   --base-interface-stronger:  #0D1117;
   --base-interface-strong:    #3D444D ;
   --base-interface-medium:    #8B8BA7;
   --base-interface-soft:      #D9D9E3;
   --base-interface-softer:    #F8F8FC;
-  --base-interface-softest:   #FFFFFF;
+  --base-interface-softest:   #fdfdfd;
 
   --base-critical:    #ee7725;
   --base-danger:      #D70015;
-  --base-info:        #007AFF;
-  --base-success:     #32D74B;
+  --base-info:        #005DD7;
+  --base-success:     #01A11E;
 
   --base-primary:     #FF791D;
   --base-warning:     #E58600;
@@ -75,31 +75,31 @@
   --color-secondary-shade:  var(--base-secondary);
 
   @supports (color: color-mix(in srgb, red 50%, white 50%)) {
-    --tint-white-percentage: 100%;
+    --tint-white-percentage: 50%;
     --shade-black-percentage: 15%;
 
     --color-critical-tint:  color-mix(in srgb, var(--base-critical) 50%, transparent var(--tint-white-percentage));
-    --color-critical-soft:  color-mix(in srgb, var(--base-critical) 9%, transparent var(--tint-white-percentage));
+    --color-critical-soft:  color-mix(in srgb, var(--base-critical) 7%, transparent var(--tint-white-percentage));
     --color-critical-shade: color-mix(in srgb, var(--base-critical) 100%, #000 var(--shade-black-percentage));
   
     --color-danger-tint:    color-mix(in srgb, var(--base-danger) 50%, transparent var(--tint-white-percentage));
-    --color-danger-soft:    color-mix(in srgb, var(--base-danger) 9%, transparent var(--tint-white-percentage));
+    --color-danger-soft:    color-mix(in srgb, var(--base-danger) 7%, transparent var(--tint-white-percentage));
     --color-danger-shade:   color-mix(in srgb, var(--base-danger) 100%, #000 var(--shade-black-percentage));
   
     --color-info-tint:      color-mix(in srgb, var(--base-info) 50%, transparent var(--tint-white-percentage));
-    --color-info-soft:      color-mix(in srgb, var(--base-info) 9%, transparent var(--tint-white-percentage));
+    --color-info-soft:      color-mix(in srgb, var(--base-info) 7%, transparent var(--tint-white-percentage));
     --color-info-shade:     color-mix(in srgb, var(--base-info) 100%, #000 var(--shade-black-percentage));
   
     --color-success-tint:   color-mix(in srgb, var(--base-success) 50%, transparent var(--tint-white-percentage));
-    --color-success-soft:   color-mix(in srgb, var(--base-success) 9%, transparent var(--tint-white-percentage));
+    --color-success-soft:   color-mix(in srgb, var(--base-success) 7%, transparent var(--tint-white-percentage));
     --color-success-shade:  color-mix(in srgb, var(--base-success) 100%, #000 var(--shade-black-percentage));
   
     --color-warning-tint:   color-mix(in srgb, var(--base-warning) 50%, transparent var(--tint-white-percentage));
-    --color-warning-soft:   color-mix(in srgb, var(--base-warning) 9%, transparent var(--tint-white-percentage));
+    --color-warning-soft:   color-mix(in srgb, var(--base-warning) 7%, transparent var(--tint-white-percentage));
     --color-warning-shade:  color-mix(in srgb, var(--base-warning) 100%, #000 var(--shade-black-percentage));
   
     --color-primary-tint:   color-mix(in srgb, var(--base-primary) 50%, transparent var(--tint-white-percentage));
-    --color-primary-soft:   color-mix(in srgb, var(--base-primary) 9%, transparent var(--tint-white-percentage));
+    --color-primary-soft:   color-mix(in srgb, var(--base-primary) 7%, transparent var(--tint-white-percentage));
     --color-primary-shade:  color-mix(in srgb, var(--base-primary) 100%, #000 var(--shade-black-percentage));
   
     --color-link-tint:      color-mix(in srgb, var(--base-link) 50%, transparent var(--tint-white-percentage));
@@ -182,7 +182,6 @@
   --font-family-body:         var(--font-family-sans);
   --font-family-segoe:        "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   --font-family-sans:         -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
-  // --font-family-sans:         "Lato", sans-serif;
   --font-family-serif:        Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
   --font-family-monospace:    Menlo, Monaco, Consolas, "Courier New", monospace;
 
@@ -232,6 +231,17 @@
   --focus-state-shadow: var(--input-focus-box-shadow); // it is used by the "Write a note" in someone profile.
   --input-border: var(--color-interface-soft); // it used by CheckinAreas.css. The style is use in page Check-in Configuration in settings.
 
+  // it is used by the range slider (obisidian control gallery "Range Slider").
+  --slider-height: 8px;
+  --slider-bg: var(--color-interface-softer);
+  --slider-progress-bg: var(--color-primary);
+  --slider-handle-offset: 29px;
+  --slider-handle-bg: var(--color-interface-softest);
+  --slider-handle-height: 16px; 
+  --slider-handle-bg--hover: var(--color-interface-softest);
+  --slider-handle-border-color: var(--color-interface-soft);
+  --slider-handle-border-color--hover: var(--color-interface-soft);
+
 
   // Follow the system color.
   @media (prefers-color-scheme: dark) {
@@ -242,24 +252,15 @@
     --color-interface-soft:      var(--base-interface-strong);
     --color-interface-softer:    var(--base-interface-strongest);
     --color-interface-softest:   var(--base-interface-stronger);
-  
+    
+    --color-info-strong:  color-mix(in srgb, var(--base-info) 50%, #fff var(--tint-white-percentage));
+    --color-danger-strong:  color-mix(in srgb, var(--base-danger) 50%, #fff var(--tint-white-percentage));
+    --color-success-strong:  color-mix(in srgb, var(--base-success) 50%, #fff var(--tint-white-percentage));
+    --color-warning-strong:  color-mix(in srgb, var(--base-warning) 50%, #fff var(--tint-white-percentage));
+    --color-critical-strong:  color-mix(in srgb, var(--base-critical) 50%, #fff var(--tint-white-percentage));
+
     --box-shadow:               rgba(145, 158, 171, 0.3) 0px 0px 2px 0px,rgba(145, 158, 171, .04) 0px 12px 24px -4px;
     --popup-box-shadow:         0 1rem 3rem rgba(255, 255, 255,.04);
-
-    // --color-critical-soft:    var(--base-critical);
-    // --color-critical-strong:  color-mix(in srgb, var(--base-critical) 15%, #FFF var(--tint-white-percentage));
-  
-    // --color-danger-soft:      var(--base-danger);
-    // --color-danger-strong:    color-mix(in srgb, var(--base-danger) 15%, #FFF var(--tint-white-percentage));
-  
-    // --color-info-soft:        var(--base-info);
-    // --color-info-strong:      color-mix(in srgb, var(--base-info) 15%, #FFF var(--tint-white-percentage));
-  
-    // --color-success-soft:     var(--base-success);
-    // --color-success-strong:   color-mix(in srgb, var(--base-success) 15%, #FFF var(--tint-white-percentage));
-  
-    // --color-warning-soft:     var(--base-warning);
-    // --color-warning-strong:   color-mix(in srgb, var(--base-warning) 15%, #FFF var(--tint-white-percentage));
   }
 }
 
@@ -271,6 +272,12 @@
   --color-interface-soft:      var(--base-interface-soft);
   --color-interface-softer:    var(--base-interface-softer);
   --color-interface-softest:   var(--base-interface-softest);
+
+  --color-info-strong: var(--base-info);
+  --color-danger-strong: var(--base-danger);
+  --color-success-strong: var(--base-success);
+  --color-warning-strong: var(--base-warning);
+  --color-critical-strong: var(--base-critical);
 
   --box-shadow:               rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
   --popup-box-shadow:         0 1rem 3rem rgba(0,0,0,.175);
@@ -285,21 +292,12 @@
   --color-interface-softer:    var(--base-interface-strongest);
   --color-interface-softest:   var(--base-interface-stronger);
 
+  --color-info-strong:  color-mix(in srgb, var(--base-info) 50%, #fff var(--tint-white-percentage));
+  --color-danger-strong:  color-mix(in srgb, var(--base-danger) 50%, #fff var(--tint-white-percentage));
+  --color-success-strong:  color-mix(in srgb, var(--base-success) 50%, #fff var(--tint-white-percentage));
+  --color-warning-strong:  color-mix(in srgb, var(--base-warning) 50%, #fff var(--tint-white-percentage));
+  --color-critical-strong:  color-mix(in srgb, var(--base-critical) 50%, #fff var(--tint-white-percentage));
+
   --box-shadow:               rgba(145, 158, 171, 0.3) 0px 0px 2px 0px,rgba(145, 158, 171, .04) 0px 12px 24px -4px;
   --popup-box-shadow:         0 1rem 3rem rgba(255, 255, 255,.04);
-
-  // --color-critical-soft:    var(--base-critical);
-  // --color-critical-strong:  color-mix(in srgb, var(--base-critical) 15%, #FFF var(--tint-white-percentage));
-
-  // --color-danger-soft:      var(--base-danger);
-  // --color-danger-strong:    color-mix(in srgb, var(--base-danger) 15%, #FFF var(--tint-white-percentage));
-
-  // --color-info-soft:        var(--base-info);
-  // --color-info-strong:      color-mix(in srgb, var(--base-info) 15%, #FFF var(--tint-white-percentage));
-
-  // --color-success-soft:     var(--base-success);
-  // --color-success-strong:   color-mix(in srgb, var(--base-success) 15%, #FFF var(--tint-white-percentage));
-
-  // --color-warning-soft:     var(--base-warning);
-  // --color-warning-strong:   color-mix(in srgb, var(--base-warning) 15%, #FFF var(--tint-white-percentage));
 }

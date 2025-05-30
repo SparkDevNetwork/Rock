@@ -65,9 +65,7 @@
     import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
     import { dataViewFilterProps } from "@Obsidian/Utility/component";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
-    import { useHttp } from "@Obsidian/Utility/http";
     import { InGroupFilterGetGroupRolesForGroupsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/inGroupFilterGetGroupRolesForGroupsOptionsBag";
-    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { Guid } from "@Obsidian/Types";
 
     const props = defineProps(dataViewFilterProps);
@@ -76,9 +74,6 @@
     }>();
 
     // #region Values
-
-    const http = useHttp();
-    const securityGrantToken = useSecurityGrantToken();
 
     const groups = ref<ListItemBag[]>(safeParseJson(props.modelValue.groups) ?? []);
     const includeChildGroups = ref<boolean>(asBoolean(props.modelValue.includeChildGroups));
@@ -104,16 +99,20 @@
             includeSelectedGroups: includeSelectedGroups.value,
             includeAllDescendants: includeAllDescendants.value,
             includeInactiveGroups: includeInactiveGroups.value,
-            securityGrantToken: securityGrantToken.value
         };
-        const url = "/api/v2/Controls/InGroupFilterGetGroupRolesForGroups";
-        const response = await http.post<ListItemBag[]>(url, undefined, options);
 
-        if (response.isSuccess && response.data) {
-            return response.data;
+        const response = await props.executeRequest({
+            action: "GetGroupRolesForGroups",
+            options: JSON.stringify(options)
+        });
+
+        const groupRoles = safeParseJson<ListItemBag[]>(response?.groupRoles ?? "[]");
+
+        if (Array.isArray(groupRoles)) {
+            return groupRoles;
         }
         else {
-            console.error("Error fetching items from server", response.errorMessage);
+            console.error("Error fetching items from server", response?.Message);
             return [];
         }
     }

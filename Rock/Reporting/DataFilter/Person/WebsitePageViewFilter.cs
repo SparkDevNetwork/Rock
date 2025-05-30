@@ -17,6 +17,7 @@
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -66,12 +67,18 @@ namespace Rock.Reporting.DataFilter.Interaction
             get { return "Additional Filters"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/WebsitePageViewFilter.obs";
-
         #endregion
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/websitePageViewFilter.obs" )
+            };
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
@@ -159,7 +166,7 @@ namespace Rock.Reporting.DataFilter.Interaction
         {
             return @"
 function() {
-  
+
     var result = 'Interactions';
 
     var websiteNames = $('.js-websites', $content).find(':selected');
@@ -528,7 +535,7 @@ console.log(websiteNames);
         }
 
         /// <summary>
-        /// Viewmodel for interaction channels 
+        /// Viewmodel for interaction channels
         /// </summary>
         private sealed class InteractionChannelViewModel
         {

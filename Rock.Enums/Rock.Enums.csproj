@@ -134,6 +134,8 @@
     <Compile Include="Controls\MediaSelectorMode.cs" />
     <Compile Include="Controls\RockCacheabilityType.cs" />
     <Compile Include="Controls\UniversalItemValuePickerDisplayStyle.cs" />
+    <Compile Include="Core\Automation\Triggers\EntityChangeModificationType.cs" />
+    <Compile Include="Core\Automation\Triggers\EntityChangeSimpleChangeType.cs" />
     <Compile Include="Core\BenchmarkRepititionMode.cs" />
     <Compile Include="Core\Grid\BooleanFilterMethod.cs" />
     <Compile Include="Core\Grid\DateFilterMethod.cs" />
