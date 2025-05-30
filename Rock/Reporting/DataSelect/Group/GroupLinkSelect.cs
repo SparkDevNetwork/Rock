@@ -20,10 +20,12 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
 
 namespace Rock.Reporting.DataSelect.Group
 {
@@ -35,7 +37,7 @@ namespace Rock.Reporting.DataSelect.Group
     [ExportMetadata( "ComponentName", "Select Group Name" )]
 
     [BooleanField( "Show As Link", "", true )]
-    [Rock.SystemGuid.EntityTypeGuid( "CACA75F2-29FE-4A52-AD4D-22E7314A35EB")]
+    [Rock.SystemGuid.EntityTypeGuid( "CACA75F2-29FE-4A52-AD4D-22E7314A35EB" )]
     public class GroupLinkSelect : DataSelectComponent
     {
         /// <summary>
@@ -122,10 +124,16 @@ namespace Rock.Reporting.DataSelect.Group
             }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataSelects/Group/groupLinkSelect.obs";
-
         #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Group/groupLinkSelect.obs" )
+            };
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
