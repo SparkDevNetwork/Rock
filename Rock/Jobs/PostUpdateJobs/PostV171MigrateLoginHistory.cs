@@ -26,7 +26,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Run once job for v17.1 to prepare the new HistoryLogin table to record only true login events moving forward.
     /// </summary>
-    [DisplayName( "Rock Update Helper v17.1 - Migrate Login History" )]
+    [DisplayName( "Rock Update Helper v17.1 - Migrate to History Login Table" )]
     [Description( "This job will prepare the new HistoryLogin table to record only true login events moving forward." )]
 
     [IntegerField( "Command Timeout",
@@ -78,13 +78,32 @@ namespace Rock.Jobs
                 Reason: Implement revised strategy for what it means to "migrate" login history.
             */
 
+            // Ensure an index is in place that will significantly improve the performance of this job, as well as
+            // future queries against the History table. It might take a while (several minutes) to add this index for
+            // Rock instances that have millions of records in the History table.
             jobMigration.Sql( @"
--- Remove any preexisting history login records (most Rock instances won't have any).
-TRUNCATE TABLE [HistoryLogin];" );
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE NAME = N'IX_EntityTypeId_Verb' AND object_id = OBJECT_ID('History'))
+BEGIN
+    CREATE NONCLUSTERED INDEX [IX_EntityTypeId_Verb] ON [dbo].[History]
+    (
+        [EntityTypeId] ASC
+        , [Verb] ASC
+        , [RelatedEntityTypeId] ASC
+        , [RelatedEntityId] ASC
+        , [CreatedDateTime] ASC
+    )
+    INCLUDE (
+        [EntityId]
+    );
+
+    -- Remove any preexisting history login records (most Rock instances won't have any).
+    TRUNCATE TABLE [HistoryLogin];
+END" );
 
             // Delete preexisting [History] records in batches of 1500, ensuring the script runs at least once. If any
             // records are deleted within a given batch, we'll try at least once more.
             var shouldContinueDeleting = true;
+            var totalRecordsDeletedCount = 0;
 
             while ( shouldContinueDeleting )
             {
@@ -107,7 +126,10 @@ INNER JOIN LoginHistoryToDelete ON LoginHistoryToDelete.[Id] = h.[Id];
 
 SELECT @@ROWCOUNT AS [RecordsDeletedCount];" );
 
-                    activity?.AddTag( "rock.job.deleted_record_count", recordsDeletedCount );
+                    totalRecordsDeletedCount += recordsDeletedCount;
+
+                    activity?.AddTag( "rock.job.batch_deleted_record_count", recordsDeletedCount );
+                    activity?.AddTag( "rock.job.total_deleted_record_count", totalRecordsDeletedCount );
 
                     // If any records were migrated, check once more.
                     shouldContinueDeleting = recordsDeletedCount > 0;
