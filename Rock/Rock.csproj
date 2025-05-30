@@ -1434,6 +1434,7 @@
     <Compile Include="Model\Connection\ConnectionRequestWorkflow\ConnectionRequestWorkflow.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionStatusAutomation\ConnectionStatusAutomation.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionStatus\ConnectionStatus.Logic.cs" />
+    <Compile Include="Lava\Blocks\SetCultureBlock.cs" />
     <Compile Include="Model\Core\AttributeMatrixItem\AttributeMatrixItem.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeMatrix\AttributeMatrix.Logic.cs" />
     <Compile Include="Model\Core\CampusTopic\CampusTopic.Logic.cs" />
