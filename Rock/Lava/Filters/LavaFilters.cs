@@ -1683,8 +1683,8 @@ namespace Rock.Lava
             }
             else
             {
-                // if the input an integer, decimal, double or anything else that can be parsed as a decimal, format that
-                return inputAsDecimal.FormatAsCurrency();
+                // If the input an integer, decimal, double or anything else that can be parsed as a decimal, format that.
+                return inputAsDecimal.FormatAsCurrency( cultureInfo );
             }
         }
 
@@ -1740,7 +1740,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Minus - Overriding this to change the logic. This one does the math if the input can be parsed as a int
+        /// Minus - Overriding this to change the logic. This one does the math if the input can be parsed as a int.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="operand"></param>
@@ -3952,22 +3952,30 @@ namespace Rock.Lava
         /// Converts the input value to a DateTimeOffset value in Coordinated Universal Time (UTC).
         /// If the input value does not specify an offset, the current Rock time zone is assumed.
         /// </summary>
+        /// <param name="context">The Lava rendering context, used to determine the effective culture (invariant, client, etc).</param>
         /// <param name="input">The input value to be parsed into DateTime form.</param>
         /// <returns>A DateTimeOffset value with an offset of 0, or null if the conversion could not be performed.</returns>
-        public static DateTimeOffset? AsDateTimeUtc( object input )
+        /// <remarks>
+        /// This method honors the Rock "setculture" Lava command to determine the culture for parsing.
+        /// The culture is resolved via <c>context.GetCultureInfo()</c>.
+        /// </remarks>
+        public static DateTimeOffset? AsDateTimeUtc( ILavaRenderContext context, object input )
         {
             DateTimeOffset? utc;
+            CultureInfo cultureInfo = context.GetCultureInfo();
+
             if ( input is DateTime dt )
             {
                 utc = LavaDateTime.ConvertToDateTimeOffset( dt ).ToUniversalTime();
             }
             else if ( input is DateTimeOffset dto )
             {
+                // ToUniversalTime() does not use CultureInfo — and cannot be influenced by it.
                 utc = dto.ToUniversalTime();
             }
             else
             {
-                utc = LavaDateTime.ParseToUtc( input.ToStringSafe() );
+                utc = LavaDateTime.ParseToUtc( input.ToStringSafe(), cultureInfo );
             }
 
             return utc;

@@ -117,7 +117,7 @@ Guess 3 was 0.5 from the target number!<br>
         [DataTestMethod]
         [DataRow( "1234567.89", "#,##0.00", "1,234,567.89", "en-US" )]
         [DataRow( "1234567.89", "#,##0.00", "1,234,567.89", "de-DE" )]
-        public void Format_UsingSetCulture_AsInvariant_UsingValidDotNetCustomFormatString_ProducesValidNumber_AgainstClientCulture( string input, string format, string expectedResult, string clientCulture )
+        public void Format_WithSetCulture_AsInvariant_UsingValidDotNetCustomFormatString_ProducesValidNumber_AgainstClientCulture( string input, string format, string expectedResult, string clientCulture )
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
@@ -132,7 +132,7 @@ Guess 3 was 0.5 from the target number!<br>
         [DataTestMethod]
         [DataRow( "1234567.89", "#,##0.00", "1,234,567.89", "en-US" )]
         [DataRow( "1234567.89", "#,##0.00", "123.456.789,00", "de-DE" )]
-        public void Format_UsingSetCulture_AsClient_UsingValidDotNetCustomFormatString_ProducesValidNumber_AgainstClientCulture( string input, string format, string expectedResult, string clientCulture )
+        public void Format_WithSetCulture_AsClient_UsingValidDotNetCustomFormatString_ProducesValidNumber_AgainstClientCulture( string input, string format, string expectedResult, string clientCulture )
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
@@ -212,58 +212,6 @@ Guess 3 was 0.5 from the target number!<br>
         }
 
         #endregion
-
-
-// TODO Move these to the Rock.Tests.Integration since they rely on GlobalAttributesCache.Value( "CurrencySymbol" )
-
-        //#region FormatAsCurrency
-
-        ///// <summary>
-        ///// The Format filter should format a numeric input using a recognized .NET format string correctly.
-        ///// </summary>
-        //[DataTestMethod]
-        //[DataRow( "1234567.89", "$1,234,567.89", "en-US" )]
-        //[DataRow( "1234567.89", "$123.456.789,00", "de-DE" )]
-        //public void FormatAsCurrency_ProducesValidNumber_AgainstClientCulture( string input, string expectedResult, string clientCulture )
-        //{
-        //    TestConfigurationHelper.ExecuteWithCulture<object>( () =>
-        //    {
-        //        TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input + "' | FormatAsCurrency }}" );
-        //        return null;
-        //    }, clientCulture );
-        //}
-
-        ///// <summary>
-        ///// The Format filter should format a numeric input using a recognized .NET format string correctly.
-        ///// </summary>
-        //[DataTestMethod]
-        //[DataRow( "1234567.89", "$1,234,567.89", "en-US" )]
-        //[DataRow( "1234567.89", "$1,234,567.89", "de-DE" )]
-        //public void FormatAsCurrency_UsingSetCulture_AsInvariant_UsingValidDotNetCustomFormatString_ProducesValidNumber_AgainstClientCulture( string input, string expectedResult, string clientCulture )
-        //{
-        //    TestConfigurationHelper.ExecuteWithCulture<object>( () =>
-        //    {
-        //        TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{{ '" + input + "' | FormatAsCurrency }}{% endsetculture %}" );
-        //        return null;
-        //    }, clientCulture );
-        //}
-
-        ///// <summary>
-        ///// The Format filter should format a numeric input using a recognized .NET format string correctly.
-        ///// </summary>
-        //[DataTestMethod]
-        //[DataRow( "1234567.89", "$1,234,567.89", "en-US" )]
-        //[DataRow( "1234567.89", "$123.456.789,00", "de-DE" )]
-        //public void FormatAsCurrency_UsingSetCulture_AsClient_UsingValidDotNetCustomFormatString_ProducesValidNumber_AgainstClientCulture( string input, string expectedResult, string clientCulture )
-        //{
-        //    TestConfigurationHelper.ExecuteWithCulture<object>( () =>
-        //    {
-        //        TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'client' %}{{ '" + input + "' | FormatAsCurrency }}{% endsetculture %}" );
-        //        return null;
-        //    }, clientCulture );
-        //}
-
-        //#endregion
 
         /// <summary>
         /// Input integer "1" should produce formatted output "1st".
@@ -406,7 +354,7 @@ Guess 3 was 0.5 from the target number!<br>
         [DataRow( "1,234,567.89", 1234567.89, "de-DE" )]
         [DataRow( "-987.65", -987.65, "de-DE" )]
         [DataRow( "0", 0, "de-DE" )]
-        public void AsDecimal_UsingSetCulture_AsInvariant_AgainstClientCulture( string input, double expectedResult, string clientCulture )
+        public void AsDecimal_WithSetCulture_AsInvariant_AgainstClientCulture( string input, double expectedResult, string clientCulture )
         {
             // Note: We need to set expectedResult to a string using InvariantCulture because the thread where the
             // assertion is taking place will be using the client culture of the test.
@@ -427,7 +375,7 @@ Guess 3 was 0.5 from the target number!<br>
         [DataRow( "1.234.567,89", 1234567.89, "de-DE" )]
         [DataRow( "-987,65", -987.65, "de-DE" )]
         [DataRow( "0", 0, "de-DE" )]
-        public void AsDecimal_UsingSetCulture_AsClient_AgainstClientCulture( string input, double expectedResult, string clientCulture )
+        public void AsDecimal_WithSetCulture_AsClient_AgainstClientCulture( string input, double expectedResult, string clientCulture )
         {
             // Note: We need to set expectedResult to a string using InvariantCulture because the thread where the
             // assertion is taking place will be using the client culture of the test.
@@ -500,7 +448,7 @@ Guess 3 was 0.5 from the target number!<br>
         [DataRow( "-987.65", "-987.65", "de-DE" )]
         [DataRow( "0", "0", "en-US" )]
         [DataRow( "0", "0", "de-DE" )]
-        public void AsDouble_UsingSetCulture_AsInvariant_AgainstClientCulture( string input, string expectedResult, string clientCulture )
+        public void AsDouble_WithSetCulture_AsInvariant_AgainstClientCulture( string input, string expectedResult, string clientCulture )
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
@@ -519,7 +467,7 @@ Guess 3 was 0.5 from the target number!<br>
         [DataRow( "1.234.567,89", 1234567.89, "de-DE" )]
         [DataRow( "-987,65", -987.65, "de-DE" )]
         [DataRow( "0", 0, "de-DE" )]
-        public void AsDouble_UsingSetCulture_AsClient_AgainstClientCulture( string input, double expectedResult, string clientCulture )
+        public void AsDouble_WithSetCulture_AsClient_AgainstClientCulture( string input, double expectedResult, string clientCulture )
         {
             // Note: We need to set expectedResult to a string using InvariantCulture because the thread where the
             // assertion is taking place will be using the client culture of the test.
@@ -596,7 +544,7 @@ Guess 3 was 0.5 from the target number!<br>
         [DataRow( "1.234,99", "", "en-US" )] // Not a valid number in invariant culture.
         [DataRow( "1.234,99", "", "de-DE" )] // Not a valid number in invariant culture.
         [DataRow( "1.234.567,99", "", "de-DE" )] // Not a valid number for invariant culture.
-        public void AsInteger_UsingSetCulture_AsInvariant_AgainstClientCulture( string input, string expectedResult, string clientCulture )
+        public void AsInteger_WithSetCulture_AsInvariant_AgainstClientCulture( string input, string expectedResult, string clientCulture )
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
@@ -695,7 +643,7 @@ Guess 3 was 0.5 from the target number!<br>
         [DataRow( "5", "2.0", "3.0", "en-US" )] // should preserve the decimal
         [DataRow( "5", "2.0", "3.0", "de-DE" )] // should preserve the decimal
         [DataRow( "5.0", "2", "3.0", "de-DE" )] // should preserve the decimal
-        public void Minus_UsingSetCulture_AsInvariant_AgainstClientCulture( string input1, string input2, string expectedResult, string clientCulture )
+        public void Minus_WithSetCulture_AsInvariant_AgainstClientCulture( string input1, string input2, string expectedResult, string clientCulture )
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
@@ -715,7 +663,7 @@ Guess 3 was 0.5 from the target number!<br>
         [DataRow( "5", "2.0", "-15", "de-DE" )]  // 2.0 → 20, 5 → 5 → 5-20 = -15
         [DataRow( "5.0", "2", "3.0", "en-US" )]  // should preserve the decimal
         [DataRow( "5.0", "2", "48", "de-DE" )]   // 5.0 → 50, 2 → 2 → 50 - 2 = 48
-        public void Minus_UsingSetCulture_AsClient_AgainstClientCulture( string input1, string input2, string expectedResult, string clientCulture )
+        public void Minus_WithSetCulture_AsClient_AgainstClientCulture( string input1, string input2, string expectedResult, string clientCulture )
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
@@ -832,7 +780,7 @@ Guess 3 was 0.5 from the target number!<br>
         [DataRow( "3.1", "invariant", "de-DE", "3" )]
         //[DataRow( "3.1", "server", "en-US", "3" )] // We can't do this because we're not sure what the server culture is.
         //[DataRow( "3.1", "server", "de-DE", "3" )] // We can't do this because we're not sure what the server culture is.
-        public void Floor_UsingSetCulture_AsDecimal_ProducesCorrectValue( string input, string setCulture, string runAsClientCulture, string expectedResult )
+        public void Floor_WithSetCulture_AsDecimal_ProducesCorrectValue( string input, string setCulture, string runAsClientCulture, string expectedResult )
         {
             var template = @"{% setculture culture:'" + setCulture + "' %}{{ '" + input + "' | AsDecimal | Floor }}{% endsetculture %}";
 

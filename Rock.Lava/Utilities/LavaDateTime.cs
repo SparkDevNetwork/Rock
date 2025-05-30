@@ -291,13 +291,27 @@ namespace Rock.Lava
 
         /// <summary>
         /// Parse an input date string to a UTC date. If the timezone is not specified, the Rock organization timezone is assumed.
+        /// Will also pass the CultureInfo.CurrentCulture to the parsing function.
         /// </summary>
         /// <param name="input">A string of text to be parsed.</param>
         /// <param name="defaultValue">The value returned if the input string does not represent a valid date/time.</param>
-        /// <returns></returns>
+        /// <returns>A UTC DateTime or default value if parsing fails.</returns>
         public static DateTime? ParseToUtc( string input, DateTime? defaultValue = null )
         {
-            var dtoParsed = ParseToOffset( input, defaultValue );
+            return ParseToUtc( input, CultureInfo.CurrentCulture, defaultValue );
+        }
+
+        /// <summary>
+        /// Parse an input date string to a UTC date using a specified culture. 
+        /// If the timezone is not specified, the Rock organization timezone is assumed.
+        /// </summary>
+        /// <param name="input">A string of text to be parsed.</param>
+        /// <param name="cultureInfo">The culture info used for parsing.</param>
+        /// <param name="defaultValue">The value returned if the input string does not represent a valid date/time.</param>
+        /// <returns>A UTC DateTime or default value if parsing fails.</returns>
+        public static DateTime? ParseToUtc( string input, CultureInfo cultureInfo, DateTime? defaultValue = null )
+        {
+            var dtoParsed = ParseToOffset( input, cultureInfo, defaultValue );
             if ( dtoParsed == null )
             {
                 return defaultValue;
@@ -413,7 +427,10 @@ namespace Rock.Lava
             {
                 // Parsing with the additional timezone information failed, so assume that the input string is either invalid
                 // or already specifies a timezone.
-                isParsed = DateTimeOffset.TryParse( stringValue, out dto );
+                isParsed = DateTimeOffset.TryParse( stringValue,
+                    cultureInfo,
+                    DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeLocal,
+                    out dto );
             }
 
             if ( isParsed )
