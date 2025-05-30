@@ -142,6 +142,8 @@ namespace Rock.Lava.Blocks
             context.SetInternalField( "rock_culture", cultureInfo );
             var lavaResults = MergeLava( _blockMarkup.ToString(), context );
             result.Write( lavaResults );
+            // Lastly, reset back to the original culture.
+            context.SetInternalField( "rock_culture", CultureInfo.CurrentCulture );
         }
 
         internal static LavaElementAttributes GetAttributesFromMarkup( string markup, ILavaRenderContext context )

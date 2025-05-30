@@ -340,7 +340,7 @@ namespace Rock.Lava
         /// <remarks>
         /// We're introducing this method overload to allow the caller to specify a CultureInfo for parsing.
         /// </remarks>
-        public static DateTimeOffset? ParseToOffset( string input, CultureInfo cultureInfo, DateTimeOffset? defaultValue = null )
+        internal static DateTimeOffset? ParseToOffset( string input, CultureInfo cultureInfo, DateTimeOffset? defaultValue = null )
         {
             var rockTimeZone = RockDateTime.OrgTimeZoneInfo;
 

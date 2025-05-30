@@ -479,6 +479,29 @@ Guess 3 was 0.5 from the target number!<br>
         }
 
         /// <summary>
+        /// Representations of double values should return the double when using
+        /// the setculture Lava command with input that is in the client culture and
+        /// it should reset back to the client culture automatically after using the setculture command.
+        ///
+        /// NOTE: If we create a place for our custom Lava commands, we can move this particular one there
+        ///       since it's really about testing the functionality of the setculture command to reset the culture
+        ///       back to the original client culture after the setculture command is used.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "1.1", "1.1 and 1.1", "en-US" )]
+        [DataRow( "1.1", "1.1 and 11", "de-DE" )]
+        public void AsDouble_WithSetCulture_AsInvariant_AgainstClientCulture_AndBackToClient( string input, string expectedResult, string clientCulture )
+        {
+            // Note: We need to set expectedResult to a string using InvariantCulture because the thread where the
+            // assertion is taking place will be using the client culture of the test.
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{{ '" + input + "' | AsDouble }}{% endsetculture %} and {{ '" + input + "' | AsDouble }}" );
+                return null;
+            }, clientCulture );
+        }
+
+        /// <summary>
         /// Common text representations of integer values should return an integer.
         /// </summary>
         [DataTestMethod]
