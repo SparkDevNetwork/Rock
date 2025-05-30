@@ -122,24 +122,23 @@ namespace Rock.Lava.Blocks
             }
 
             /*
-                    //// We could also allow setting the culture explicitly.  So, instead of "client" we could allow
-                    //// setting this to a specific culture (e.g., "en-GB", "de-DE", etc.).  That could allow
-                    //// someone to capture the client's culture at the time the input was collected so that it uses
-                    //// that culture later when the Lava is processed (such as in the ProcessWorkflows job).
+                5/30/2025 - N.A.
 
-                    //// Otherwise, we're doing it like this which impacts the entire thread (any/all Lava).
-                    //// Run and return the Lava
-                    //ExecuteWithCulture( () =>
-                    //{
-                    //    var lavaResults = MergeLava( _blockMarkup.ToString(), context );
-                    //    result.Write( lavaResults );
-                    //}
-                    //, cultureInfo );
-            */
+                We could have done something like this, but it would impact the entire thread (any/all Lava):
+            
+                   // ExecuteWithCulture( () =>
+                   // {
+                   //    var lavaResults = MergeLava( _blockMarkup.ToString(), context );
+                   //    result.Write( lavaResults );
+                   // }
+                   // , cultureInfo );
+            
+             */
 
-            // Alternatively, if we'd rather not have such a wide reaching culture impact, we will just set
-            // an internal field on the Lava context to hold the culture info. Then, we would need to use
-            // that inside a limited list of specific filters (such as AsInteger, AsDecimal, AsDateTime, etc.).
+            // For now, we'd rather not have such a wide reaching culture impact (by running the entire
+            // thread as a particular culture), so we will just set an internal field on the Lava context
+            // to hold the culture info. Then, we would need to use that inside a limited list of
+            // specific filters (such as AsInteger, AsDecimal, AsDateTime, etc.).
             context.SetInternalField( "rock_culture", cultureInfo );
             var lavaResults = MergeLava( _blockMarkup.ToString(), context );
             result.Write( lavaResults );
