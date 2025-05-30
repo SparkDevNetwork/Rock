@@ -1438,16 +1438,6 @@ namespace Rock
         }
 
         /// <summary>
-        ///  Attempts to convert string to double.  Returns null if unsuccessful.
-        /// </summary>
-        /// <param name="str">The string to convert.</param>
-        /// <returns>Nullable double value or null.</returns>
-        public static double? AsDoubleInvariantCultureOrNull( this string str )
-        {
-            return str.AsDoubleWithCultureOrNull( CultureInfo.InvariantCulture );
-        }
-
-        /// <summary>
         /// Attempts to convert a string to a decimal using a specific CultureInfo. Returns null if unsuccessful.
         /// </summary>
         /// <param name="str">The string to convert.</param>
