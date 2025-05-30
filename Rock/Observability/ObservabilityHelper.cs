@@ -187,7 +187,8 @@ namespace Rock.Observability
                     } )
 
                    // Other configuration, like adding an exporter and setting resources
-                   .AddSource( serviceName )  // Be sure to update this in RockActivitySource.cs also!!!    
+                   .AddSource( serviceName )  // Be sure to update this in RockActivitySource.cs also!!!
+                   .AddSource( "Microsoft.SemanticKernel*" )
 
                    .SetResourceBuilder(
                        ResourceBuilder.CreateDefault()
@@ -233,6 +234,7 @@ namespace Rock.Observability
                 _currentMeterProvider = Sdk.CreateMeterProviderBuilder()
                     .SetResourceBuilder( ResourceBuilder.CreateDefault().AddService( serviceName: serviceName, serviceVersion: "1.0.0", serviceInstanceId: GetServiceInstanceId() ) )
                     .AddMeter( serviceName )
+                    .AddMeter( "Microsoft.SemanticKernel*" )
                     .AddOtlpExporter( o =>
                     {
                         o.Endpoint = endpointUri;

@@ -1833,6 +1833,30 @@ namespace Rock
             return !string.IsNullOrEmpty( value ) && value.Length == 1 && specialCharacters.Contains( value );
         }
 
+        /// <summary>
+        /// Regular expression for the <see cref="NormalizeWhiteSpace(string)"/> method.
+        /// </summary>
+        private static readonly Regex _normalizeWhiteSpaceRegex = new Regex( @"\s+", RegexOptions.Compiled );
+
+        /// <summary>
+        /// Normalizes all whitespace in the string by replacing any sequence of whitespace characters
+        /// (spaces, tabs, newlines, etc.) with a single space, and trims leading and trailing whitespace.
+        /// Returns an empty string if the input is null or consists only of whitespace.
+        /// </summary>
+        /// <param name="str">The input string to normalize.</param>
+        /// <returns>
+        /// A string with normalized whitespace, or an empty string if the input is null or whitespace.
+        /// </returns>
+        public static string NormalizeWhiteSpace( this string str )
+        {
+            if ( str.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            return _normalizeWhiteSpaceRegex.Replace( str, " " ).Trim();
+        }
+
         #endregion String Extensions
     }
 }

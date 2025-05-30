@@ -1,0 +1,59 @@
+<template>
+    <div class="well">
+        <div v-for="(message, index) in messages" :key="index" class="message">
+            <span class="message-text">{{ message }}</span>
+        </div>
+    </div>
+
+    <div>
+        <RockForm @submit="onSubmit">
+            <TextBox v-model="message"
+                     label="Message"
+                     placeholder="Type your message here..."
+                     rules="required" />
+            <RockButton type="submit" btnType="primary" text="Send" :disabled="isSending">Send</RockButton>
+        </RockForm>
+    </div>
+</template>
+
+<style scoped>
+.message {
+    margin-bottom: var(--spacing-small);
+}
+</style>
+
+<script setup lang="ts">
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ref } from "vue";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const messages = ref<string[]>([]);
+    const message = ref("");
+    const isSending = ref(false);
+
+    async function onSubmit(): Promise<void> {
+        var msg = message.value;
+
+        message.value = "";
+        messages.value = [...messages.value, `>>> ${msg}`];
+
+        isSending.value = true;
+        try {
+            const response = await invokeBlockAction<string>("SendMessage", { message: msg });
+
+            if (response.isSuccess && response.data) {
+                messages.value = [...messages.value, `<<< ${response.data}`];
+            }
+            else {
+                messages.value = [...messages.value, `<<< Error: ${response.errorMessage || "Unknown error"}`];
+            }
+        }
+        finally {
+            isSending.value = false;
+        }
+    }
+</script>

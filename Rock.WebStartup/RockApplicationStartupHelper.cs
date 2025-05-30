@@ -31,6 +31,7 @@ using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
+using Rock.AI.Agent;
 using Rock.Blocks;
 using Rock.Bus;
 using Rock.Communication.Chat;
@@ -317,29 +318,41 @@ namespace Rock.WebStartup
         {
             var sc = new ServiceCollection();
 
+            // Register basic hosting services.
             sc.AddSingleton<IConnectionStringProvider, WebFormsConnectionStringProvider>();
             sc.AddSingleton<IInitializationSettings, WebFormsInitializationSettings>();
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
             sc.AddSingleton<IHostingSettings, HostingSettings>();
-            sc.AddSingleton<IChatProvider, StreamChatProvider>();
             sc.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
             sc.AddSingleton<IWebHostEnvironment>( provider => new Utility.WebHostEnvironment
             {
                 WebRootPath = AppDomain.CurrentDomain.BaseDirectory
             } );
-            sc.AddSingleton<Core.Automation.AutomationTriggerContainer>();
-            sc.AddSingleton<Core.Automation.AutomationEventContainer>();
-
-            sc.AddScoped<RockContext>();
-
-            sc.AddRockLogging();
-
             // Register the class to initialize for InitializationSettings. This
             // is transient so that we always get the current values from the
             // source.
             sc.AddTransient<InitializationSettings, WebFormsInitializationSettings>();
 
-            RockApp.Current = new RockApp( sc.BuildServiceProvider() );
+            // Register functionality providers.
+            sc.AddRockLogging();
+            sc.AddSingleton<IChatProvider, StreamChatProvider>();
+            sc.AddChatAgent();
+
+            // Register Light Containers.
+            sc.AddSingleton<Core.Automation.AutomationTriggerContainer>();
+            sc.AddSingleton<Core.Automation.AutomationEventContainer>();
+
+            sc.AddScoped<RockContext>();
+
+            // If we are running under Visual Studio then turn on scope validation
+            // to help catch misconfigurations.
+            var serviceOptions = new ServiceProviderOptions
+            {
+                ValidateOnBuild = System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment,
+                ValidateScopes = System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment
+            };
+
+            RockApp.Current = new RockApp( sc.BuildServiceProvider( serviceOptions ) );
         }
 
         /// <summary>
