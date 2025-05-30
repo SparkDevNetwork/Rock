@@ -14,10 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Globalization;
 using System.Web;
 using Rock.Utility;
-using System;
 using Rock.Web.Cache;
 
 namespace Rock
@@ -127,7 +127,6 @@ namespace Rock
         /// <param name="value">The nullable decimal value.</param>
         /// <param name="cultureInfo">The culture information used to format the number.</param>
         /// <returns>A formatted currency string or an empty string if the value is null.</returns>
-        /// 
         public static string FormatAsCurrency( this decimal? value, CultureInfo cultureInfo )
         {
             if ( value.HasValue )

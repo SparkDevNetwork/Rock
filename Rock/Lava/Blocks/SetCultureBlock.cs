@@ -175,62 +175,75 @@ namespace Rock.Lava.Blocks
             return result.Text;
         }
 
-        /// <summary>
-        /// Executes an action within a thread that has a specific <see cref="System.Globalization.CultureInfo"/>.
-        /// Captures and rethrows any exceptions that occur inside the action to preserve test behavior.
-        /// </summary>
-        /// <param name="action">The action to execute.</param>
-        /// <param name="cultureInfo">The culture info to apply (e.g., "en-US", "de-DE").</param>
-        /// <exception cref="Exception">
-        /// Rethrows any exception that occurs inside the thread. Stack trace is preserved if possible.
-        /// </exception>
-        /// <remarks>
-        /// This overload is intended for void-returning methods such as assertions or operations with side effects.
-        /// It ensures that the culture context does not affect other tests by running in an isolated thread.
-        /// </remarks>
-        public static void ExecuteWithCulture( Action action, CultureInfo cultureInfo )
-        {
-            Exception caughtException = null;
+        /*
+            5/30/2025 - N.A.
 
-            var thread = new System.Threading.Thread( () =>
-            {
-                try
-                {
-                    action();
-                }
-                catch ( Exception ex )
-                {
-                    caughtException = ex;
-                }
-            } );
+           See Engineering Note above.
 
-            // We MUST preserve the original CurrentCulture otherwise
-            // this thread will infect the pool and other tests will fail.
-            var originalCulture = thread.CurrentCulture;
+               // ExecuteWithCulture( () =>
+               // {
+               //    var lavaResults = MergeLava( _blockMarkup.ToString(), context );
+               //    result.Write( lavaResults );
+               // }
+               // , cultureInfo );
+        */
 
-            try
-            {
-                thread.CurrentCulture = cultureInfo;
-                thread.Start();
-                thread.Join();
+        ///// <summary>
+        ///// Executes an action within a thread that has a specific <see cref="System.Globalization.CultureInfo"/>.
+        ///// Captures and rethrows any exceptions that occur inside the action to preserve test behavior.
+        ///// </summary>
+        ///// <param name="action">The action to execute.</param>
+        ///// <param name="cultureInfo">The culture info to apply (e.g., "en-US", "de-DE").</param>
+        ///// <exception cref="Exception">
+        ///// Rethrows any exception that occurs inside the thread. Stack trace is preserved if possible.
+        ///// </exception>
+        ///// <remarks>
+        ///// This overload is intended for void-returning methods such as assertions or operations with side effects.
+        ///// It ensures that the culture context does not affect other tests by running in an isolated thread.
+        ///// </remarks>
+        //private static void ExecuteWithCulture( Action action, CultureInfo cultureInfo )
+        //{
+        //    Exception caughtException = null;
 
-                if ( caughtException != null )
-                {
-                    throw new Exception( "Exception occurred in culture-specific thread.", caughtException );
-                }
+        //    var thread = new System.Threading.Thread( () =>
+        //    {
+        //        try
+        //        {
+        //            action();
+        //        }
+        //        catch ( Exception ex )
+        //        {
+        //            caughtException = ex;
+        //        }
+        //    } );
 
-                // Any exceptions thrown from the filter method are wrapped in a TargetInvocationException by the .NET framework.
-                // Rethrow the actual exception thrown by the filter, where possible.
-                if ( caughtException != null )
-                {
-                    ExceptionDispatchInfo.Capture( caughtException ).Throw();
-                }
-            }
-            finally
-            {
-                thread.CurrentCulture = originalCulture;
-            }
-        }
+        //    // We MUST preserve the original CurrentCulture otherwise
+        //    // this thread will infect the pool and other tests will fail.
+        //    var originalCulture = thread.CurrentCulture;
+
+        //    try
+        //    {
+        //        thread.CurrentCulture = cultureInfo;
+        //        thread.Start();
+        //        thread.Join();
+
+        //        if ( caughtException != null )
+        //        {
+        //            throw new Exception( "Exception occurred in culture-specific thread.", caughtException );
+        //        }
+
+        //        // Any exceptions thrown from the filter method are wrapped in a TargetInvocationException by the .NET framework.
+        //        // Rethrow the actual exception thrown by the filter, where possible.
+        //        if ( caughtException != null )
+        //        {
+        //            ExceptionDispatchInfo.Capture( caughtException ).Throw();
+        //        }
+        //    }
+        //    finally
+        //    {
+        //        thread.CurrentCulture = originalCulture;
+        //    }
+        //}
     }
 }
 

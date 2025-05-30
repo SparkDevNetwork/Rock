@@ -3849,7 +3849,6 @@ namespace Rock.Lava
             CultureInfo cultureInfo = context.GetCultureInfo();
 
             return ( int? ) input.ToString().AsDecimalWithCultureOrNull( cultureInfo );
-
         }
 
         /// <summary>
