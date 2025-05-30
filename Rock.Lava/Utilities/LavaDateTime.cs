@@ -328,45 +328,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static DateTimeOffset? ParseToOffset( string input, DateTimeOffset? defaultValue = null )
         {
-            var rockTimeZone = RockDateTime.OrgTimeZoneInfo;
-
-            // Try to parse a datetime offset from the input string.
-            DateTimeOffset dto;
-            bool isParsed;
-
-            var stringValue = input;
-
-            // First, try to parse the datetime string by appending the default Rock timezone offset.
-            // There is no simple method of detecting if a valid datetime string includes timezone information,
-            // but we can be sure the parse attempt will fail if multiple offsets are specified.
-            var nowRockTime = TimeZoneInfo.ConvertTime( DateTimeOffset.UtcNow, rockTimeZone );
-
-            isParsed = DateTimeOffset.TryParse( stringValue + " " + nowRockTime.ToString( "zzz" ), out dto );
-
-            if ( isParsed )
-            {
-                // If the input string parsed correctly with the default timezone, check if it should be adjusted for DST.
-                if ( rockTimeZone.SupportsDaylightSavingTime )
-                {
-                    var utcOffset = rockTimeZone.GetUtcOffset( dto );
-                    var dstOffsetString = ( utcOffset.Hours < 0 ? "-" : "+" ) + ( utcOffset.Hours > 9 ? "" : "0" ) + Math.Abs( utcOffset.Hours ) + ":" + ( utcOffset.Minutes > 9 ? "" : "0" ) + Math.Abs( utcOffset.Minutes );
-
-                    isParsed = DateTimeOffset.TryParse( stringValue + " " + dstOffsetString, out dto );
-                }
-            }
-            else
-            {
-                // Parsing with the additional timezone information failed, so assume that the input string is either invalid
-                // or already specifies a timezone.
-                isParsed = DateTimeOffset.TryParse( stringValue, out dto );
-            }
-
-            if ( isParsed )
-            {
-                return dto;
-            }
-
-            return defaultValue;
+            return ParseToOffset( input, CultureInfo.CurrentCulture, defaultValue );
         }
 
         /// <summary>
@@ -375,6 +337,9 @@ namespace Rock.Lava
         /// <param name="input">A string representing a valid date/time.</param>
         /// <param name="defaultValue">The value returned if the input string does not represent a valid date/time.</param>
         /// <returns></returns>
+        /// <remarks>
+        /// We're introducing this method overload to allow the caller to specify a CultureInfo for parsing.
+        /// </remarks>
         public static DateTimeOffset? ParseToOffset( string input, CultureInfo cultureInfo, DateTimeOffset? defaultValue = null )
         {
             var rockTimeZone = RockDateTime.OrgTimeZoneInfo;
@@ -396,21 +361,16 @@ namespace Rock.Lava
                 Shopify's Liquid does not rely on the browser's client culture when interpreting strings into
                 dates, so parsing behavior must be explicitly handled.
 
-                Here we've updated the DateTimeOffset parsing to explicitly use the given culture when parsing
-                however, to ensure consistent behavior across different locales, you would really need to pass
-                in the CultureInfo.InvariantCulture.
+                Here we've updated the DateTimeOffset parsing to explicitly use the given culture when parsing.
+                However, to ensure consistent behavior across different locales, one would really need to pass
+                in the CultureInfo.InvariantCulture or use the new corresponding SetCulture tag in the template.
 
                 See also https://github.com/sebastienros/fluid?tab=readme-ov-file#localization
 
                 Reason: This partially addresses an issue where date parsing would fail in non-US
                         locales. (Partial fix for #4100)
             */
-            isParsed = DateTimeOffset.TryParse(
-                stringValue + " " + nowRockTime.ToString( "zzz", cultureInfo ),
-                cultureInfo,
-                DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeLocal,
-                out dto
-            );
+            isParsed = DateTimeOffset.TryParse( stringValue + " " + nowRockTime.ToString( "zzz", cultureInfo ), cultureInfo, DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeLocal, out dto );
 
             if ( isParsed )
             {
@@ -427,10 +387,7 @@ namespace Rock.Lava
             {
                 // Parsing with the additional timezone information failed, so assume that the input string is either invalid
                 // or already specifies a timezone.
-                isParsed = DateTimeOffset.TryParse( stringValue,
-                    cultureInfo,
-                    DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeLocal,
-                    out dto );
+                isParsed = DateTimeOffset.TryParse( stringValue, cultureInfo, DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeLocal, out dto );
             }
 
             if ( isParsed )
