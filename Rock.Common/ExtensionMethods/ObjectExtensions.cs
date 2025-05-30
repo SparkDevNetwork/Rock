@@ -17,7 +17,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -215,123 +214,6 @@ namespace Rock
             var attrType = typeof( T );
             var property = instance.GetType().GetProperty( propertyName );
             return ( T ) property.GetCustomAttributes( attrType, false ).First();
-        }
-
-        /// <summary>
-        /// Converts an object to a string using InvariantCulture and then attempts to parse it to the specified type.
-        /// This method helps ensure consistent parsing results across different cultures. 
-        /// 
-        /// Standard TryParse methods may ignore the supplied CultureInfo.InvariantCulture if the input is an object,
-        /// because the object's string representation is generated using the current culture by default.
-        /// </summary>
-        /// <typeparam name="TOut">The target type to parse to.</typeparam>
-        /// <param name="input">The input object to parse.</param>
-        /// <param name="output">When this method returns, contains the parsed value if successful, or the default value of <typeparamref name="TOut"/>.</param>
-        /// <returns><c>true</c> if parsing was successful; otherwise, <c>false</c>.</returns>
-        public static bool TryParseInvariant<TOut>( this object input, out TOut output )
-        {
-            return input.TryParseWithCulture( CultureInfo.InvariantCulture, out output, default( TOut ) );
-        }
-
-        /// <summary>
-        /// Converts an object to a string using the given CultureInfo and then attempts to parse it to the specified type.
-        /// This method helps ensure consistent parsing results across different cultures.  This method
-        /// also works well with CultureInfo.InvariantCulture.
-        /// 
-        /// Standard TryParse methods may ignore the supplied CultureInfo.InvariantCulture if the input is an object,
-        /// because the object's string representation is generated using the current culture by default.
-        ///
-        /// Additional explanation:
-        ///    We need to convert the string properly too. Otherwise an input object
-        ///    of "1.5" that is converted to a string using intput.ToString() will
-        ///    be later considered a string from the Client Culture from where it came
-        ///    when it is TryParsed into an int/decimal* regardless* of passing
-        ///    CultureInfo.InvariantCulture to the TryParse! (#shocking)
-        ///    This would mean a browser using de-DE passing "1.5" and "1" to the Plus() will
-        ///    consider that as a 15 + 1, and 16 will be returned instead of 2.5.
-        ///    
-        ///    For example, for Client Culture de-DE, "1.5" x and y are both 15 here: 
-        ///    int.TryParse( input.ToString(), NumberStyles.Number, CultureInfo.InvariantCulture, out x );
-        ///    decimal.TryParse( input.ToString(), NumberStyles.Number, CultureInfo.InvariantCulture, out y );
-        /// </summary>
-        /// <typeparam name="TOut">The target type to parse to.</typeparam>
-        /// <param name="input">The input object to parse.</param>
-        /// <param name="output">When this method returns, contains the parsed value if successful, or the default value of <typeparamref name="TOut"/>.</param>
-        /// <returns><c>true</c> if parsing was successful; otherwise, <c>false</c>.</returns>
-        public static bool TryParseWithCulture<TOut>( this object input, CultureInfo cultureInfo, out TOut output )
-        {
-            return input.TryParseWithCulture( cultureInfo, out output, default( TOut ) );
-        }
-
-        /// <summary>
-        /// Converts an object to a string using the given CultureInfo and then attempts to parse it to the specified type.
-        /// This method helps ensure consistent parsing results across different cultures.  This method
-        /// also works well with CultureInfo.InvariantCulture.
-        /// 
-        /// Standard TryParse methods may ignore the supplied CultureInfo.InvariantCulture if the input is an object,
-        /// because the object's string representation is generated using the current culture by default.
-        ///
-        /// Additional explanation:
-        ///    We need to convert the string properly too. Otherwise an input object
-        ///    of "1.5" that is converted to a string using intput.ToString() will
-        ///    be later considered a string from the Client Culture from where it came
-        ///    when it is TryParsed into an int/decimal* regardless* of passing
-        ///    CultureInfo.InvariantCulture to the TryParse! (#shocking)
-        ///    This would mean a browser using de-DE passing "1.5" and "1" to the Plus() will
-        ///    consider that as a 15 + 1, and 16 will be returned instead of 2.5.
-        ///    
-        ///    For example, for Client Culture de-DE, "1.5" x and y are both 15 here: 
-        ///    int.TryParse( input.ToString(), NumberStyles.Number, CultureInfo.InvariantCulture, out x );
-        ///    decimal.TryParse( input.ToString(), NumberStyles.Number, CultureInfo.InvariantCulture, out y );
-        /// </summary>
-        /// <typeparam name="TOut">The target type to parse to.</typeparam>
-        /// <param name="input">The input object to parse.</param>
-        /// <param name="output">When this method returns, contains the parsed value if successful, or the specified default value.</param>
-        /// <param name="defaultValue">The value to assign to <paramref name="output"/> if parsing fails.</param>
-        /// <returns><c>true</c> if parsing was successful; otherwise, <c>false</c>.</returns>
-        public static bool TryParseWithCulture<TOut>( this object input, CultureInfo cultureInfo, out TOut output, TOut defaultValue )
-        {
-            output = defaultValue;
-
-            if ( cultureInfo == null  )
-            {
-                cultureInfo = CultureInfo.CurrentCulture;
-            }
-
-            // We need to convert the object to a string properly, using the given culture.
-            // Otherwise, attempting to use TryParse will used the current thread's culture-dependent object-string
-            // and ignore the culture we're passing to the TryParse.
-            var inputString = Convert.ToString( input, cultureInfo );
-
-            Type type = typeof( TOut );
-            // Get the four parameter signature of the TryParse:
-            // {type}.TryParse( string, NumberStyles, IFormatProvider, out TOut )
-            MethodInfo parseMethod = type.GetMethod(
-                "TryParse",
-                new Type[] { typeof( string ), typeof( NumberStyles ), typeof( IFormatProvider ), typeof( TOut ).MakeByRefType() } );
-
-            if ( parseMethod != null )
-            {
-                var numberStyle = NumberStyles.Number;
-                if ( type == typeof( int ) )
-                {
-                    numberStyle = NumberStyles.Integer;
-                }
-
-                object[] parameters = new object[] { inputString, numberStyle, cultureInfo, output };
-                var value = parseMethod.Invoke( null, parameters );
-
-                if ( value is bool )
-                {
-                    bool successful = ( bool ) value;
-                    if ( successful )
-                    {
-                        output = ( TOut ) parameters[3];
-                        return true;
-                    }
-                }
-            }
-            return false;
         }
 
         #endregion
