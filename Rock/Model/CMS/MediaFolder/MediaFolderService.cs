@@ -28,13 +28,14 @@ namespace Rock.Model
     /// </summary>
     public partial class MediaFolderService
     {
-        /// <summary>
-        /// Adds the missing synced content channel items for all <see cref="MediaElement"/>
-        /// items in the folder.
-        /// PA: Extracted the contents of this method to a new method  <see cref="MediaFolderService.AddMissingSyncedContentChannelItem"/> to add the functionality to return the number of
-        /// content channels updated while not affecting the existing functionality
-        /// </summary>
-        /// <param name="mediaFolderId">The media folder identifier.</param>
+        /// <summary>  
+        /// Adds the missing synced content channel items for all <see cref="MediaElement"/>  
+        /// items in the folder.  
+        /// PA: Extracted the contents of this method to a new method  
+        /// <see cref="M:Rock.Model.MediaFolderService.AddMissingSyncedContentChannelItem(System.Int32,System.Collections.Generic.List{System.Int32})"/>  
+        /// to add the functionality to return the number of content channels updated while not affecting the existing functionality  
+        /// </summary>  
+        /// <param name="mediaFolderId">The media folder identifier.</param>  
         [Obsolete( "Use the AddMissingSyncedContentChannelItem that takes int and List<int>" )]
         [RockObsolete( "17.2" )]
         public static void AddMissingSyncedContentChannelItems( int mediaFolderId )
