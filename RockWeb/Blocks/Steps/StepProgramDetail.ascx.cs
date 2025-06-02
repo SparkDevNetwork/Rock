@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Steps
 
         #region Properties
 
-        private List<StepStatus> StatusesState { get; set; }
+        private List<Rock.Model.StepStatus> StatusesState { get; set; }
 
         private List<StepWorkflowTriggerViewModel> WorkflowsState { get; set; }
 
@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Steps
 
         #region Private Variables
 
-        private StepProgram _program = null;
+        private Rock.Model.StepProgram _program = null;
         private int _stepProgramId = 0;
 
         #endregion Private Variables
@@ -146,9 +146,9 @@ namespace RockWeb.Blocks.Steps
 
             json = ViewState["StatusesState"] as string ?? string.Empty;
 
-            this.StatusesState = JsonConvert.DeserializeObject<List<StepStatus>>( json );
+            this.StatusesState = JsonConvert.DeserializeObject<List<Rock.Model.StepStatus>>( json );
 
-            this.StatusesState = this.StatusesState ?? new List<StepStatus>();
+            this.StatusesState = this.StatusesState ?? new List<Rock.Model.StepStatus>();
 
             json = ViewState["WorkflowsState"] as string ?? string.Empty;
 
@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Steps
             // Create a custom contract resolver to specifically ignore some complex properties that add significant amounts of unnecessary ViewState data.
             var resolver = new Rock.Utility.DynamicPropertyMapContractResolver();
 
-            resolver.IgnoreProperty( typeof( StepStatus ), "StepProgram", "Steps", "UrlEncodedKey" );
+            resolver.IgnoreProperty( typeof( Rock.Model.StepStatus ), "StepProgram", "Steps", "UrlEncodedKey" );
 
             var jsonSetting = new JsonSerializerSettings
             {
@@ -292,7 +292,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void InitializeActionButtons()
         {
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'All associated Step Types and Step Participants will also be deleted!');", StepProgram.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'All associated Step Types and Step Participants will also be deleted!');", Rock.Model.StepProgram.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.StepProgram ) ).Id;
         }
 
@@ -404,7 +404,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddStepStatus_Click( object sender, EventArgs e )
         {
-            StepStatus stepStatus = null;
+            Rock.Model.StepStatus stepStatus = null;
 
             var guid = hfStepProgramAddStepStatusGuid.Value.AsGuid();
 
@@ -415,7 +415,7 @@ namespace RockWeb.Blocks.Steps
 
             if ( stepStatus == null )
             {
-                stepStatus = new StepStatus();
+                stepStatus = new Rock.Model.StepStatus();
             }
 
             stepStatus.Name = tbStepStatusName.Text;
@@ -940,7 +940,7 @@ namespace RockWeb.Blocks.Steps
         /// <returns></returns>
         private void SaveRecord()
         {
-            StepProgram stepProgram;
+            Rock.Model.StepProgram stepProgram;
 
             var rockContext = GetDataContext();
 
@@ -953,7 +953,7 @@ namespace RockWeb.Blocks.Steps
 
             if ( stepProgramId == 0 )
             {
-                stepProgram = new StepProgram();
+                stepProgram = new Rock.Model.StepProgram();
 
                 stepProgramService.Add( stepProgram );
             }
@@ -963,7 +963,6 @@ namespace RockWeb.Blocks.Steps
                                                 .Include( x => x.StepTypes )
                                                 .Include( x => x.StepStatuses )
                                                 .Include( x => x.StepWorkflowTriggers )
-                                                .Where( c => c.Id == stepProgramId )
                                                 .FirstOrDefault();
             }
 
@@ -985,7 +984,7 @@ namespace RockWeb.Blocks.Steps
 
                 if ( stepStatus == null )
                 {
-                    stepStatus = new StepStatus();
+                    stepStatus = new Rock.Model.StepStatus();
                     stepProgram.StepStatuses.Add( stepStatus );
                 }
 
@@ -1045,7 +1044,7 @@ namespace RockWeb.Blocks.Steps
 
             stepProgram.CategoryId = cpCategory.SelectedValueAsInt();
 
-            stepProgram.DefaultListView = rblDefaultListView.SelectedValue.ConvertToEnum<StepProgram.ViewMode>( StepProgram.ViewMode.Cards );
+            stepProgram.DefaultListView = rblDefaultListView.SelectedValue.ConvertToEnum<Rock.Model.StepProgram.ViewMode>( Rock.Model.StepProgram.ViewMode.Cards );
 
             if ( !stepProgram.IsValid )
             {
@@ -1057,7 +1056,7 @@ namespace RockWeb.Blocks.Steps
             {
                 rockContext.SaveChanges();
 
-                Helper.SaveAttributeEdits( AttributesState, new StepType().TypeId, "StepProgramId", stepProgram.Id.ToString(), rockContext );
+                Helper.SaveAttributeEdits( AttributesState, new Rock.Model.StepType().TypeId, "StepProgramId", stepProgram.Id.ToString(), rockContext );
 
                 stepProgram = stepProgramService.Get( stepProgram.Id );
 
@@ -1109,7 +1108,7 @@ namespace RockWeb.Blocks.Steps
 
             pnlDetails.Visible = false;
 
-            StepProgram stepProgram = null;
+            Rock.Model.StepProgram stepProgram = null;
 
             var dataContext = GetDataContext();
 
@@ -1121,7 +1120,7 @@ namespace RockWeb.Blocks.Steps
 
             if ( stepProgram == null )
             {
-                stepProgram = new StepProgram { Id = 0 };
+                stepProgram = new Rock.Model.StepProgram { Id = 0 };
 
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
@@ -1144,12 +1143,12 @@ namespace RockWeb.Blocks.Steps
                 if ( !editAllowed )
                 {
                     readOnly = true;
-                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( StepProgram.FriendlyTypeName );
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Rock.Model.StepProgram.FriendlyTypeName );
                 }
 
                 rblDefaultListView.Items.Clear();
-                rblDefaultListView.Items.Add( new ListItem( "Cards", StepProgram.ViewMode.Cards.ToString() ) );
-                rblDefaultListView.Items.Add( new ListItem( "Grid", StepProgram.ViewMode.Grid.ToString() ) );
+                rblDefaultListView.Items.Add( new ListItem( "Cards", Rock.Model.StepProgram.ViewMode.Cards.ToString() ) );
+                rblDefaultListView.Items.Add( new ListItem( "Grid", Rock.Model.StepProgram.ViewMode.Grid.ToString() ) );
 
                 if ( readOnly )
                 {
@@ -1191,17 +1190,17 @@ namespace RockWeb.Blocks.Steps
         /// Shows the edit details.
         /// </summary>
         /// <param name="stepProgram">The target entity.</param>
-        private void ShowEditDetails( StepProgram stepProgram )
+        private void ShowEditDetails( Rock.Model.StepProgram stepProgram )
         {
             if ( stepProgram == null )
             {
-                stepProgram = new StepProgram();
+                stepProgram = new Rock.Model.StepProgram();
                 stepProgram.IconCssClass = "fa fa-compress";
             }
 
             if ( stepProgram.Id == 0 )
             {
-                lReadOnlyTitle.Text = ActionTitle.Add( StepProgram.FriendlyTypeName ).FormatAsHtmlTitle();
+                lReadOnlyTitle.Text = ActionTitle.Add( Rock.Model.StepProgram.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
@@ -1225,7 +1224,7 @@ namespace RockWeb.Blocks.Steps
             // Step Statuses
             StatusesState = stepProgram.StepStatuses.ToList();
 
-            LoadAttributeDefinitions( new StepType().TypeId, "StepProgramId", stepProgram.Id );
+            LoadAttributeDefinitions( new Rock.Model.StepType().TypeId, "StepProgramId", stepProgram.Id );
 
             BindStepStatusesGrid();
             BindAttributesGrid();
@@ -1250,7 +1249,7 @@ namespace RockWeb.Blocks.Steps
         /// Shows the readonly details.
         /// </summary>
         /// <param name="stepProgram">The target entity.</param>
-        private void ShowReadonlyDetails( StepProgram stepProgram )
+        private void ShowReadonlyDetails( Rock.Model.StepProgram stepProgram )
         {
             SetEditMode( false );
 
@@ -1478,7 +1477,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="stepProgramId">The step program identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private StepProgram GetStepProgram( int? stepProgramId = null, RockContext rockContext = null )
+        private Rock.Model.StepProgram GetStepProgram( int? stepProgramId = null, RockContext rockContext = null )
         {
             if ( stepProgramId == null )
             {
@@ -1487,7 +1486,7 @@ namespace RockWeb.Blocks.Steps
 
             string key = string.Format( "StepProgram:{0}", stepProgramId );
 
-            var stepProgram = RockPage.GetSharedItem( key ) as StepProgram;
+            var stepProgram = RockPage.GetSharedItem( key ) as Rock.Model.StepProgram;
 
             if ( stepProgram == null )
             {
@@ -1680,7 +1679,7 @@ namespace RockWeb.Blocks.Steps
         /// Gets a configured factory that creates the data required for the chart.
         /// </summary>
         /// <returns></returns>
-        private ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( StepProgram program, TimePeriod reportPeriod )
+        private ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( Rock.Model.StepProgram program, TimePeriod reportPeriod )
         {
             var rockContext = new RockContext();
             var programId = GetActiveStepProgramId();
@@ -2063,7 +2062,7 @@ namespace RockWeb.Blocks.Steps
         /// <returns></returns>
         private Type GetAttributeParentEntityType()
         {
-            return typeof( StepProgram );
+            return typeof( Rock.Model.StepProgram );
         }
 
         /// <summary>
