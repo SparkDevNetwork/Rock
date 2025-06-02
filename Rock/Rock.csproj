@@ -1971,6 +1971,9 @@
     <Compile Include="Security\SecurityGrantRules\EmailEditorSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
     <Compile Include="SystemGuid\EmailSection.cs" />
+    <Compile Include="SystemGuid\StepStatus.cs" />
+    <Compile Include="SystemGuid\StepProgram.cs" />
+    <Compile Include="SystemGuid\StepType.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />
     <Compile Include="SystemKey\GlobalAttributeKey.cs" />
     <Compile Include="Tasks\UpdatePersonAliasPersonalizationData.cs" />

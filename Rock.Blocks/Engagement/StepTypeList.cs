@@ -246,7 +246,8 @@ namespace Rock.Blocks.Engagement
                 .AddField( "allowMultiple", a => a.AllowMultiple )
                 .AddField( "startedCount", a => startedStepsQry.Count( s => s.StepTypeId == a.Id ) )
                 .AddField( "completedCount", a => completedStepsQry.Count( s => s.StepTypeId == a.Id ) )
-                .AddField( "isSecurityDisabled", _ => !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+                .AddField( "isSecurityDisabled", _ => !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "isSystem", a => a.IsSystem );
         }
 
         /// <summary>

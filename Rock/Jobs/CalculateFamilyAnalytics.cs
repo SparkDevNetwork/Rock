@@ -108,6 +108,11 @@ namespace Rock.Jobs
             var eraAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() );
             var eraStartAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_START_DATE.AsGuid() );
             var eraEndAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_END_DATE.AsGuid() );
+            var eraStepType = StepTypeCache.Get( SystemGuid.StepType.ERA.AsGuid() );
+
+            var stepStatusService = new StepStatusService( resultContext );
+            var inProgressStepStatus = stepStatusService.Get( SystemGuid.StepStatus.IN_PROGRESS.AsGuid() );
+            var completeStepStatus = stepStatusService.Get( SystemGuid.StepStatus.COMPLETE.AsGuid() );
 
             if ( eraAttribute == null || eraStartAttribute == null || eraEndAttribute == null )
             {
@@ -137,6 +142,7 @@ namespace Rock.Jobs
                 updateContext.Database.CommandTimeout = commandTimeout;
                 var attributeValueService = new AttributeValueService( updateContext );
                 var historyService = new HistoryService( updateContext );
+                var stepService = new StepService( updateContext );
 
                 // If era ensure it still meets requirements
                 if ( result.IsEra )
@@ -190,6 +196,25 @@ namespace Rock.Jobs
                                     historyRecord.RelatedEntityId = eraAttributeId;
                                     historyRecord.CategoryId = personAnalyticsCategoryId;
                                     historyRecord.SourceOfChange = SOURCE_OF_CHANGE;
+                                }
+
+
+                                // Update the Step Record
+                                if ( eraStepType != null && inProgressStepStatus != null && completeStepStatus != null && person.PrimaryAliasId.HasValue )
+                                {
+                                    Step step = stepService.Queryable()
+                                        .Where( s =>
+                                            s.StepTypeId == eraStepType.Id &&
+                                            s.PersonAliasId == person.PrimaryAliasId.Value &&
+                                            s.StepStatusId == inProgressStepStatus.Id )
+                                        .FirstOrDefault(); // TODO - talk with PO about the potentail of using ToList() to cleanup outlier Steps from Migration.
+
+                                    if ( step != null )
+                                    {
+                                        step.StepStatusId = completeStepStatus.Id;
+                                        step.EndDateTime = RockDateTime.Now;
+                                        step.CompletedDateTime = RockDateTime.Now;
+                                    }
                                 }
 
                                 updateContext.SaveChanges();
@@ -283,6 +308,19 @@ namespace Rock.Jobs
                                 historyRecord.RelatedEntityId = eraAttributeId;
                                 historyRecord.CategoryId = personAnalyticsCategoryId;
                                 historyRecord.SourceOfChange = SOURCE_OF_CHANGE;
+                            }
+
+                            // Add a new Step Record
+                            if ( eraStepType != null && inProgressStepStatus != null && completeStepStatus != null && person.PrimaryAliasId.HasValue )
+                            {
+                                Step stepRecord = new Step();
+                                stepService.Add( stepRecord );
+                                stepRecord.StepTypeId = eraStepType.Id;
+                                stepRecord.PersonAliasId = person.PrimaryAliasId.Value;
+                                stepRecord.StepStatusId = inProgressStepStatus.Id;
+                                stepRecord.StartDateTime = RockDateTime.Now;
+                                //stepRecord.StartDateKey = RockDateTime.Now.ToString( "yyyyMMdd" ).AsInteger();
+                                stepRecord.CreatedDateTime = RockDateTime.Now;
                             }
 
                             updateContext.SaveChanges();

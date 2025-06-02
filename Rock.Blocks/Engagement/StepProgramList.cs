@@ -194,6 +194,7 @@ namespace Rock.Blocks.Engagement
                 .AddField( "stepType", a => a.StepTypes.Count( m => m.IsActive ) )
                 .AddField( "stepsTaken", a => completedStepsQry.Count( y => y.StepType.StepProgramId == a.Id ) )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "isSystem", a => a.IsSystem )
                 .AddAttributeFields( GetGridAttributes() );
         }
 
