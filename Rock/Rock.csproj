@@ -713,6 +713,7 @@
     <Compile Include="Attribute\ColorSelectorFieldAttribute.cs" />
     <Compile Include="Attribute\CustomSettingsBlockTypeAttribute.cs" />
     <Compile Include="Attribute\AIProviderFieldAttribute.cs" />
+    <Compile Include="Attribute\DeviceFieldAttribute.cs" />
     <Compile Include="Attribute\ImageFieldAttribute.cs" />
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
     <Compile Include="Bus\Message\AutomationUpdatedMessage.cs" />
@@ -806,6 +807,7 @@
     <Compile Include="Communication\Chat\ChatConfiguration.cs" />
     <Compile Include="Extension\LightComponent.cs" />
     <Compile Include="Extension\LightContainer.cs" />
+    <Compile Include="Field\Types\DeviceFieldType.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171PopulateAttendanceRootGroupType.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV18DeleteGroupLocationHistoricalSchedule.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV18UpdateCommunicationRecipientIndex.cs" />
@@ -4876,6 +4878,7 @@
     <Compile Include="Workflow\Action\CheckIn\LoadSchedules.cs" />
     <Compile Include="Workflow\Action\CheckIn\ParseZebraLabel.cs" />
     <Compile Include="Workflow\Action\CheckIn\PreSelectRecentAttendance.cs" />
+    <Compile Include="Workflow\Action\CheckIn\PrintLabels.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyGroups.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyGroupTypes.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyLocations.cs" />
