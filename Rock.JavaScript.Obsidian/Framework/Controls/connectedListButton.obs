@@ -2,10 +2,14 @@
 <template>
     <div class="connected-list-button"
          :class="{
-            'is-hovering': isHovering
+            'is-hovering': isHovering,
+            'clickable': !!props.onClick
         }"
          @mouseenter="isHovering = true"
-         @mouseleave="isHovering = false">
+         @mouseleave="isHovering = false"
+         @click="onMainClick">
+        <slot name="prepend" />
+
         <div v-if="badgeText" class="connected-list-button-badge">
             <Badge badgeType="success">{{ badgeText }}</Badge>
         </div>
@@ -29,7 +33,7 @@
         <div v-if="primaryActions?.length || secondaryActions?.length" class="connected-list-button-actions">
             <div v-if="primaryActions?.length" class="connected-list-button-primary-actions">
                 <template v-for="action in primaryActions" :key="`${action.title}${action.iconCssClass}`">
-                    <RockButton v-if="action.iconCssClass" isSquare btnSize="sm" :tooltip="action.title" @click.stop="action.handler">
+                    <RockButton v-if="action.iconCssClass" isSquare btnSize="sm" :btnType="action.type" :tooltip="action.title" @click.stop="action.handler">
                         <i :class="action.iconCssClass"></i>
                     </RockButton>
 
@@ -60,7 +64,6 @@
     padding: var(--spacing-large);
     border-radius: var(--border-radius-base);
     border: 1px solid var(--color-interface-medium);
-    cursor: pointer;
     transition: background-color .15s ease-in-out;
 }
 
@@ -145,7 +148,7 @@
     import RockButton from "./rockButton.obs";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
 
-    defineProps({
+    const props = defineProps({
         aside: {
             type: String as PropType<string | null | undefined>,
             required: false
@@ -184,6 +187,15 @@
         title: {
             type: String as PropType<string | null | undefined>,
             required: false
+        },
+
+        /**
+         * Optional click handler that will be called when the main button
+         * is clicked.
+         */
+        onClick: {
+            type: Function as PropType<() => void>,
+            required: false
         }
     });
 
@@ -192,4 +204,19 @@
     const isHovering = ref<boolean>(false);
 
     // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Handles the click event on the main button. This will simply call the
+     * onClick function if it is defined. This is used so that we can detect
+     * when a click handler is defined and apply the "clickable" class.
+     */
+    function onMainClick(): void {
+        if (props.onClick) {
+            props.onClick();
+        }
+    }
+
+    // #endregion
 </script>
