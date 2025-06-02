@@ -362,9 +362,9 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets a list of attribute metadata (as <see cref="ListItemBag"/>) that can be sent to public devices,
-        /// based on the entity's attributes and the current person's view permissions.
-        /// Each item will include the attribute's name as the text and the attribute's GUID as the value.
+        /// Gets a list of attribute metadata (as <see cref="ListItemBag"/>) based on the entity's attributes
+        /// and the current person's view permissions. Each item will include the attribute's name as the text
+        /// and the attribute's GUID as the value.
         /// </summary>
         /// <param name="entity">The entity that contains the attributes.</param>
         /// <param name="currentPerson">The person for whom security permissions will be evaluated.</param>
@@ -373,7 +373,7 @@ namespace Rock
         /// <returns>
         /// A list of <see cref="ListItemBag"/> objects representing authorized attributes with their name and GUID.
         /// </returns>
-        public static List<ListItemBag> GetPublicAttributeListItemsForView( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true, Func<AttributeCache, bool> attributeFilter = null )
+        public static List<ListItemBag> GetAttributeListItemsForView( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true, Func<AttributeCache, bool> attributeFilter = null )
         {
             if ( entity == null || entity.Attributes == null )
             {

@@ -335,6 +335,10 @@
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
     const props = defineProps({
         destinationGroup: {
@@ -428,9 +432,45 @@
     ];
 
     const hasNonEmptyGroupAttributeValue = computed(() => {
-        const values = props.destinationGroup.attributeValues ?? {};
-        return Object.values(values).some(v => !!v && v !== "");
+        if (!props.destinationGroup.attributes || !props.destinationGroup.attributeValues) {
+            return false;
+        }
+
+        for (const [key, attribute] of Object.entries(props.destinationGroup.attributes)) {
+            // Skip if attribute name is empty
+            if (isNullOrWhiteSpace(attribute.name)) {
+                continue;
+            }
+
+            const rawValue = props.destinationGroup.attributeValues[key];
+
+            // Skip if the raw value is empty
+            if (isNullOrWhiteSpace(rawValue)) {
+                continue;
+            }
+
+            const formatted = getAttributeValueText(props.destinationGroup.attributeValues, attribute, key);
+
+            // Skip if formatted value is empty too
+            if (isNullOrWhiteSpace(formatted)) {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     });
+
+    function getAttributeValueText(attributeValues: Record<string, string> | null, attribute: PublicAttributeBag, key: string): string {
+        const fieldTypeGuid = toGuidOrNull(attribute.fieldTypeGuid);
+        const fieldType = getFieldType(fieldTypeGuid ?? FieldType.Text);
+
+        const rawValue = attributeValues?.[key] ?? "";
+        const configValues = attribute.configurationValues ?? {};
+
+        return fieldType?.getTextValue?.(rawValue, configValues) ?? rawValue;
+    }
 
     const capacityStatusClass = computed(() => {
         if (!destinationGroup.value.groupCapacity) {

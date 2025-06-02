@@ -17,7 +17,7 @@
 
 using System.Collections.Generic;
 
-using Rock.Model;
+using Rock.Enums.Group;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement

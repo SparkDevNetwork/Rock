@@ -83,11 +83,6 @@
     padding: 10px;
 }
 
-/* .person-row.expanded {
-    border-bottom: 1px solid var(--color-interface-soft);
-    box-shadow: 0 1px 0 #3321140D;
-} */
-
 .person-card.selected {
     border-color: var(--color-primary) !important;
     background-color: var(--color-interface-softest) !important;

@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-using Rock.Model;
+using Rock.Enums.Group;
 
 namespace Rock.ViewModels.Blocks.Group.GroupPlacement
 {
@@ -38,5 +38,10 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         /// Contextual placement keys that define the relationship or linkage of the group within the placement system.
         /// </summary>
         public GroupPlacementKeysBag GroupPlacementKeys { get; set; }
+
+        /// <summary>
+        /// The realtime connection ID.
+        /// </summary>
+        public string ConnectionId { get; set; }
     }
 }

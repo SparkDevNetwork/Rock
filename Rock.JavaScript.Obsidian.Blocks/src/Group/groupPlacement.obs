@@ -242,7 +242,6 @@
                             <TransitionVerticalCollapse>
                                 <div v-show="isGroupMemberFilterDisplayed">
                                     <AttributeValuesContainer v-model="pendingDestinationGroupMemberAttributeValuesForFilter"
-
                                                               :attributes="destinationGroupMemberAttributesForFilter"
                                                               isEditMode
                                                               :numberOfColumns="3"
@@ -518,7 +517,7 @@
     import { GroupPlacementInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementInitializationBox";
     import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
     import { RealTimeConnectionKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/realTimeConnectionKeysBag";
-    import { PreferenceKey, SortTypes, NavigationUrlKey, IGroupPlacementFunctions } from "./GroupPlacement/types.partial";
+    import { PreferenceKey, SortTypes, NavigationUrlKey } from "./GroupPlacement/types.partial";
     import { GroupMemberUpdatedMessageBag } from "@Obsidian/ViewModels/Group/GroupMember/groupMemberUpdatedMessageBag";
     import { AttributeFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/attributeFiltersBag";
     import { AddGroupMembersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupMembersBag";
@@ -564,7 +563,7 @@
     import PlacementConfigurationModal from "./GroupPlacement/placementConfigurationModal.partial.obs";
 
 
-    type GroupPlacementTopic = ITopic<ServerFunctions<IGroupPlacementFunctions>> & {
+    type GroupPlacementTopic = ITopic<ServerFunctions<unknown>> & {
         groupGuids: Guid[],
         registrationInstanceGuid: Guid,
         registrationTemplateGuid: Guid,
@@ -575,6 +574,7 @@
     const preferences = usePersonPreferences().blockPreferences;
     const reloadBlock = useReloadBlock();
     const populateAttributesDebounce = debounce(() => populateAttributes(), undefined, false);
+    var realTimeTopic: GroupPlacementTopic;
 
     const personDragSourceOptions = getPersonDragSourceOptions();
     const groupMemberDragSourceOptions = getGroupMemberDragSourceOptions();
@@ -586,7 +586,7 @@
 
     // #region Realtime Values
 
-    const realTimetopic = ref<GroupPlacementTopic | null>();
+    // const realTimetopic = ref<GroupPlacementTopic | null>();
     const pendingSourceRegistrants = ref<RegistrationRegistrantUpdatedMessageBag[]>([]);
     const pendingSourceGroupMembers = ref<GroupMemberUpdatedMessageBag[]>([]);
     const pendingDestinationGroupMembers = ref<GroupMemberUpdatedMessageBag[]>([]);
@@ -1798,73 +1798,27 @@
     }
 
     /**
-     * Checks if two lists of GUIDs are equal, regardless of order.
-     *
-     * @param listA The first list of GUIDs.
-     * @param listB The second list of GUIDs.
-     * @returns True if both lists contain the same GUIDs.
-     */
-    function areGuidSetsEqual(listA: string[], listB: string[]): boolean {
-        if (listA.length !== listB.length) {
-            return false;
-        }
-
-        return listA.every(guidA =>
-            listB.some(guidB => areEqual(guidA, guidB))
-        );
-    }
-
-    /**
      * Subscribes to the topic using the current Group and AttendanceOccurrence unique identifiers.
      */
     async function startRealTime(): Promise<void> {
         const registrationInstanceGuid = box.groupPlacementKeys?.registrationInstanceGuid;
         const registrationTemplateGuid = box.groupPlacementKeys?.registrationTemplateGuid;
 
-        if (realTimetopic.value && areGuidSetsEqual(toRaw(realTimetopic.value.groupGuids), toRaw(computedGroupGuids.value))
-            && areEqual(realTimetopic.value.registrationTemplateGuid, registrationTemplateGuid)
-            && areEqual(realTimetopic.value.registrationInstanceGuid, registrationInstanceGuid)) {
-            // Skip if already subscribed.
-            return;
-        }
-
         if (!computedGroupGuids.value && !registrationTemplateGuid && !registrationInstanceGuid) {
             throw "Unable to start real-time";
         }
 
-        const topic = await getGroupPlacementTopic(computedGroupGuids.value, registrationInstanceGuid, registrationTemplateGuid);
-        topic.onDisconnected(async () => {
+        realTimeTopic = await getGroupPlacementTopic(computedGroupGuids.value, registrationInstanceGuid, registrationTemplateGuid);
+        realTimeTopic.onDisconnected(async () => {
             await startRealTime();
         });
 
-        topic.on("groupMemberUpdated", onGroupMemberUpdatedFromServer);
-        topic.on("groupMemberDeleted", onGroupMemberDeletedFromServer);
-        topic.on("registrantUpdated", onRegistrantUpdatedFromServer);
-        topic.on("registrantDeleted", onRegistrantDeletedFromServer);
+        realTimeTopic.on("groupMemberUpdated", onGroupMemberUpdatedFromServer);
+        realTimeTopic.on("groupMemberDeleted", onGroupMemberDeletedFromServer);
+        realTimeTopic.on("registrantUpdated", onRegistrantUpdatedFromServer);
+        realTimeTopic.on("registrantDeleted", onRegistrantDeletedFromServer);
 
-        realTimetopic.value = topic;
-    }
-
-    /**
-     * Leaves the real-time channel for the given group GUID.
-     * @param groupGuid - The GUID of the group to leave the channel.
-     */
-    async function leaveRealTimeGroupChannel(groupGuid: Guid): Promise<void> {
-        if (!realTimetopic.value) {
-            return;
-        }
-        await realTimetopic.value.server.leaveGroupChannel(groupGuid);
-    }
-
-    /**
-     * Joins the real-time channel for the given group GUIDs.
-     * @param groupGuids - The GUIDs of the groups to join the channels.
-     */
-    async function joinRealTimeGroupChannels(groupGuids: Guid[]): Promise<void> {
-        if (!realTimetopic.value) {
-            return;
-        }
-        await realTimetopic.value.server.joinGroupChannels(groupGuids);
+        realTimeTopic;
     }
 
     /**
@@ -2227,16 +2181,16 @@
 
         addGroupBag.groupPlacementKeys = box.groupPlacementKeys;
         addGroupBag.groupTypeIdKey = box.groupPlacementKeys.destinationGroupTypeIdKey;
+        addGroupBag.connectionId = realTimeTopic?.connectionId;
 
         const result = await invokeBlockAction<Guid[]>("AddPlacementGroup", {
             addGroupBag
         });
 
-        if (result.isSuccess && result.data) {
+        if (result.isSuccess) {
             addGroupModalElement.value?.resetForm();
             isAddGroupModalVisible.value = false;
             loadPlacementData();
-            joinRealTimeGroupChannels(result.data);
         }
         else {
             addGroupModalErrorText.value = result.errorMessage ?? "An unknown error occurred while adding a group.";
@@ -2261,13 +2215,13 @@
             detachGroupBag: {
                 groupIdKey: groupIdKey,
                 groupPlacementKeys: groupPlacementKeysCopy,
-                placementMode: box.placementMode
+                placementMode: box.placementMode,
+                connectionId: realTimeTopic?.connectionId
             } as DetachGroupBag
         });
 
-        if (result.isSuccess && result.data) {
+        if (result.isSuccess) {
             loadPlacementData();
-            leaveRealTimeGroupChannel(result.data);
         }
         else {
             // TODO - This should be converted to a Toast message when we add Toast messages to Rock.

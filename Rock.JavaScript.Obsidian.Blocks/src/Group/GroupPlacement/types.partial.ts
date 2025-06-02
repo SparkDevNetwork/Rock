@@ -61,11 +61,6 @@ export enum SortTypes {
     SortByDateAddedDesc = 3
 }
 
-export interface IGroupPlacementFunctions {
-    joinGroupChannels(groupGuids: Guid[]): Promise<void>;
-    leaveGroupChannel(groupGuid: Guid): Promise<void>;
-}
-
 function isTextOverflowing(el: HTMLElement): boolean {
     return el.scrollWidth > el.clientWidth;
 }

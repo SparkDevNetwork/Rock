@@ -26,6 +26,9 @@ import { GroupPlacementKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPl
 
 /** Represents the data needed to detach a group from a placement context. */
 export type DetachGroupBag = {
+    /** The realtime connection ID. */
+    connectionId?: string | null;
+
     /** The encrypted identifier key of the group to be detached. */
     groupIdKey?: string | null;
 

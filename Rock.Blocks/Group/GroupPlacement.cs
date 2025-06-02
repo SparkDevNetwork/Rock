@@ -34,6 +34,7 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.GroupPlacement;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Enums.Group;
 
 namespace Rock.Blocks.Group
 {
@@ -141,201 +142,6 @@ namespace Rock.Blocks.Group
 
         #endregion Properties
 
-        #region Classes
-
-        /// <summary>
-        /// Represents the result of the destination group query, including group details and registration context.
-        /// </summary>
-        private class DestinationGroupResult
-        {
-            /// <summary>
-            /// Gets or sets the unique identifier for the group.
-            /// </summary>
-            public int GroupId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the display name of the group.
-            /// </summary>
-            public string GroupName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the globally unique identifier (GUID) for the group.
-            /// </summary>
-            public Guid GroupGuid { get; set; }
-
-            /// <summary>
-            /// Gets or sets the optional capacity limit for the group.
-            /// </summary>
-            public int? GroupCapacity { get; set; }
-
-            /// <summary>
-            /// Gets or sets the identifier for the group type.
-            /// </summary>
-            public int GroupTypeId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the order or priority of the group within a list.
-            /// </summary>
-            public int GroupOrder { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether the group is shared across contexts.
-            /// </summary>
-            public bool IsShared { get; set; }
-
-            /// <summary>
-            /// Gets or sets the optional identifier for the associated registration instance.
-            /// </summary>
-            public int? RegistrationInstanceId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the optional identifier of the parent group, if this group is nested.
-            /// </summary>
-            public int? ParentGroupId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the optional identifier for the associated campus.
-            /// </summary>
-            public int? CampusId { get; set; }
-        }
-
-
-        /// <summary>
-        /// Represents the result of a group placement people query, including person, group membership, and registration fee details.
-        /// </summary>
-        private class PlacementPeopleResult
-        {
-            #region Group Member Info
-
-            /// <summary>
-            /// Gets or sets the identifier of the group the person is associated with.
-            /// </summary>
-            public int? GroupId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the type identifier of the group.
-            /// </summary>
-            public int? GroupTypeId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the identifier of the group member record.
-            /// </summary>
-            public int? GroupMemberId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the role identifier within the group.
-            /// </summary>
-            public int? GroupRoleId { get; set; }
-
-            #endregion
-
-            #region Person Info
-
-            /// <summary>
-            /// Gets or sets the identifier of the person.
-            /// </summary>
-            public int PersonId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the first name of the person.
-            /// </summary>
-            public string FirstName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the nickname of the person.
-            /// </summary>
-            public string NickName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the last name of the person.
-            /// </summary>
-            public string LastName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the gender of the person.
-            /// </summary>
-            public Gender Gender { get; set; }
-
-            /// <summary>
-            /// Gets or sets the photo ID associated with the person's profile picture.
-            /// </summary>
-            public int? PhotoId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the age of the person.
-            /// </summary>
-            public int? Age { get; set; }
-
-            /// <summary>
-            /// Gets or sets the record type value ID, used for differentiating record types (e.g., person vs. business).
-            /// </summary>
-            public int? RecordTypeValueId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the age classification of the person (e.g., child, adult).
-            /// </summary>
-            public AgeClassification AgeClassification { get; set; }
-
-            #endregion
-
-            #region Registrant Info
-
-            /// <summary>
-            /// Gets or sets the identifier of the registrant.
-            /// </summary>
-            public int? RegistrantId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the name of the registration instance.
-            /// </summary>
-            public string RegistrationInstanceName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the identifier of the registration instance.
-            /// </summary>
-            public int? RegistrationInstanceId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the date and time the registration or record was created.
-            /// </summary>
-            public DateTime? CreatedDateTime { get; set; }
-
-            /// <summary>
-            /// Gets or sets the name of the fee associated with the registration.
-            /// </summary>
-            public string FeeName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the selected option or value for the fee.
-            /// </summary>
-            public string Option { get; set; }
-
-            /// <summary>
-            /// Gets or sets the quantity selected for the fee option.
-            /// </summary>
-            public int? Quantity { get; set; }
-
-            /// <summary>
-            /// Gets or sets the cost associated with the fee selection.
-            /// </summary>
-            public decimal? Cost { get; set; }
-
-            /// <summary>
-            /// Gets or sets the type of fee (e.g., per person, per item).
-            /// </summary>
-            public RegistrationFeeType? FeeType { get; set; }
-
-            /// <summary>
-            /// Gets or sets the identifier of the selected fee item.
-            /// </summary>
-            public int? FeeItemId { get; set; }
-
-            #endregion
-        }
-
-
-        #endregion
-
         #region Methods
 
         /// <inheritdoc/>
@@ -409,7 +215,7 @@ namespace Rock.Blocks.Group
 
                     fakeSourceGroupMember.LoadAttributes();
 
-                    box.PlacementConfigurationSettingOptions.SourceAttributes = fakeSourceGroupMember.GetPublicAttributeListItemsForView( GetCurrentPerson(), true );
+                    box.PlacementConfigurationSettingOptions.SourceAttributes = fakeSourceGroupMember.GetAttributeListItemsForView( GetCurrentPerson(), true );
                     box.Title = $"Group Placement - {sourceGroup.Name}";
                     box.GroupPlacementKeys.SourceGroupIdKey = IdHasher.Instance.GetHash( sourceGroupId.Value );
                     box.GroupPlacementKeys.SourceGroupTypeIdKey = IdHasher.Instance.GetHash( sourceGroup.GroupTypeId );
@@ -470,7 +276,7 @@ namespace Rock.Blocks.Group
 
             fakeDestinationGroup.LoadAttributes();
 
-            box.PlacementConfigurationSettingOptions.DestinationGroupAttributes = fakeDestinationGroup.GetPublicAttributeListItemsForView( GetCurrentPerson(), true );
+            box.PlacementConfigurationSettingOptions.DestinationGroupAttributes = fakeDestinationGroup.GetAttributeListItemsForView( GetCurrentPerson(), true );
             box.AttributesForGroupAdd = fakeDestinationGroup.GetPublicAttributesForEdit( GetCurrentPerson(), true );
             box.IsPersonPermittedToEditGroupType = fakeDestinationGroup.IsAuthorized( Authorization.EDIT, GetCurrentPerson() );
 
@@ -481,7 +287,7 @@ namespace Rock.Blocks.Group
 
             fakeDestinationGroupMember.LoadAttributes();
 
-            box.PlacementConfigurationSettingOptions.DestinationGroupMemberAttributes = fakeDestinationGroupMember.GetPublicAttributeListItemsForView( GetCurrentPerson(), true );
+            box.PlacementConfigurationSettingOptions.DestinationGroupMemberAttributes = fakeDestinationGroupMember.GetAttributeListItemsForView( GetCurrentPerson(), true );
 
             return box;
         }
@@ -983,7 +789,7 @@ namespace Rock.Blocks.Group
             int? registrationTemplateId,
             int? sourceGroupId,
             bool isFetchingDestinationGroupMembers,
-            HashSet<int> displayedAttributeIds )
+            List<int> displayedAttributeIds )
             where T : IEntity
         {
             List<T> entitiesWithLoadedAttributes = new List<T>();
@@ -1086,32 +892,23 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Converts a list of attribute GUID strings to a HashSet of attribute IDs,
+        /// Converts a list of attribute GUID strings to a List of attribute IDs,
         /// skipping any invalid or non-existent GUIDs.
         /// </summary>
         /// <param name="attributeGuids">A collection of attribute GUID strings.</param>
-        /// <returns>A HashSet of attribute IDs corresponding to the provided GUIDs.</returns>
-        public static HashSet<int> GetAttributeIdsFromGuids( IEnumerable<string> attributeGuids )
+        /// <returns>A List of attribute IDs corresponding to the provided GUIDs.</returns>
+        internal List<int> GetAttributeIdsFromGuids( IEnumerable<string> attributeGuidStrings )
         {
-            if ( attributeGuids == null )
+            if ( attributeGuidStrings == null )
             {
-                return new HashSet<int>();
+                return new List<int>();
             }
 
-            return attributeGuids
-                .Select( guidString =>
-                {
-                    if ( Guid.TryParse( guidString, out var guid ) )
-                    {
-                        var attribute = AttributeCache.Get( guid );
-                        return attribute?.Id;
-                    }
+            List<Guid> attributeGuids = attributeGuidStrings.Select( a => a.AsGuid() ).ToList();
 
-                    return null;
-                } )
-                .Where( id => id.HasValue )
-                .Select( id => id.Value )
-                .ToHashSet();
+            var attributes = AttributeCache.GetMany( attributeGuids, RockContext );
+
+            return attributes.Select( a => a.Id ).ToList();
         }
 
         #endregion Helper Methods
@@ -1300,8 +1097,8 @@ namespace Rock.Blocks.Group
                 new SqlParameter( nameof( registrationInstancePurposeKey ), registrationInstancePurposeKey )
             ).ToList();
 
-            HashSet<int> displayedSourceAttributeIds = null;
-            HashSet<int> displayedDestinationGroupMemberAttributeIds = null;
+            List<int> displayedSourceAttributeIds = null;
+            List<int> displayedDestinationGroupMemberAttributeIds = null;
 
             if ( placementConfiguration.SourceAttributesToDisplay?.Any() == true )
             {
@@ -1604,7 +1401,7 @@ namespace Rock.Blocks.Group
                 new SqlParameter( nameof( registrationInstancePurposeKey ), registrationInstancePurposeKey )
             ).ToList();
 
-            HashSet<int> displayedGroupAttributeIds = new HashSet<int>();
+            List<int> displayedGroupAttributeIds = new List<int>();
             List<Rock.Model.Group> groups = new List<Rock.Model.Group>();
 
             if ( placementConfiguration.DestinationGroupAttributesToDisplay?.Any() == true )
@@ -1905,7 +1702,7 @@ namespace Rock.Blocks.Group
 
             var registrationInstanceService = new RegistrationInstanceService( RockContext );
             var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( RockContext );
-            List<Guid> addedGroupGuids = new List<Guid>();
+            var topicChannels = RealTimeHelper.GetTopicContext<IGroupPlacement>().Channels;
 
             // Loop through our added placement groups and attempt to add them to Related Entities.
             foreach ( var placementGroup in placementGroups )
@@ -1917,7 +1714,7 @@ namespace Rock.Blocks.Group
 
                     if ( registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup, registrationTemplatePlacementId.Value ) )
                     {
-                        addedGroupGuids.Add( placementGroup.Guid );
+                        topicChannels.AddToChannelAsync( addGroupBag.ConnectionId, GroupPlacementTopic.GetGroupMemberChannelForGroup( placementGroup.Guid ) );
                     }
 
                 }
@@ -1926,7 +1723,7 @@ namespace Rock.Blocks.Group
                     var registrationTemplatePlacement = registrationTemplatePlacementService.Get( registrationTemplatePlacementId.Value );
                     if ( registrationTemplatePlacementService.AddRegistrationTemplatePlacementPlacementGroup( registrationTemplatePlacement, placementGroup ) )
                     {
-                        addedGroupGuids.Add( placementGroup.Guid );
+                        topicChannels.AddToChannelAsync( addGroupBag.ConnectionId, GroupPlacementTopic.GetGroupMemberChannelForGroup( placementGroup.Guid ) );
                     }
                 }
                 else if ( sourceGroupId.HasValue && placementGroup.Id != sourceGroupId.Value ) // Added logic to skip adding placement group if it is the current source group.
@@ -1935,7 +1732,7 @@ namespace Rock.Blocks.Group
                     
                     if ( groupService.AddGroupPlacementPlacementGroup( sourceGroup, placementGroup ) )
                     {
-                        addedGroupGuids.Add( placementGroup.Guid );
+                        topicChannels.AddToChannelAsync( addGroupBag.ConnectionId, GroupPlacementTopic.GetGroupMemberChannelForGroup( placementGroup.Guid ) );
                     }
                 }
                 else if ( entitySetId.HasValue )
@@ -1945,14 +1742,14 @@ namespace Rock.Blocks.Group
 
                     if ( entitySetService.AddEntitySetPlacementGroup( entitySet, placementGroup ) )
                     {
-                        addedGroupGuids.Add( placementGroup.Guid );
+                        topicChannels.AddToChannelAsync( addGroupBag.ConnectionId, GroupPlacementTopic.GetGroupMemberChannelForGroup( placementGroup.Guid ) );
                     }
                 }
             }
 
             RockContext.SaveChanges();
 
-            return ActionOk( addedGroupGuids );
+            return ActionOk();
         }
 
         /// <summary>
@@ -2027,12 +1824,15 @@ namespace Rock.Blocks.Group
                     return ActionNotFound( "Specified Entity Set not found." );
                 }
 
-                entitySetService.DetachDestinationGroupFromEntitySet( entitySet, group );                
+                entitySetService.DetachDestinationGroupFromEntitySet( entitySet, group );            
             }
 
             RockContext.SaveChanges();
 
-            return ActionOk( group.Guid );
+            var topicChannels = RealTimeHelper.GetTopicContext<IGroupPlacement>().Channels;
+            topicChannels.RemoveFromChannelAsync( detachGroupBag.ConnectionId, GroupPlacementTopic.GetGroupMemberChannelForGroup( group.Guid ) );
+
+            return ActionOk();
         }
 
         /// <summary>
@@ -2075,9 +1875,9 @@ namespace Rock.Blocks.Group
         public BlockActionResult PopulateAttributeFilters( GroupPlacementKeysBag groupPlacementKeys )
         {
             var placementConfiguration = GetPlacementConfiguration( groupPlacementKeys );
-            HashSet<int> displayedSourceAttributeIds = new HashSet<int>();
-            HashSet<int> groupAttributeIds = new HashSet<int>();
-            HashSet<int> groupMemberAttributeIds = new HashSet<int>();
+            List<int> displayedSourceAttributeIds = new List<int>();
+            List<int> groupAttributeIds = new List<int>();
+            List<int> groupMemberAttributeIds = new List<int>();
             AttributeFiltersBag attributeFiltersBag = new AttributeFiltersBag();
 
             var sourceGroupId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.SourceGroupIdKey );
@@ -2181,8 +1981,8 @@ namespace Rock.Blocks.Group
 
             var placementConfiguration = GetPlacementConfiguration( sourceAndDestinationEntityKeys.GroupPlacementKeysBag );
 
-            HashSet<int> displayedSourceAttributeIds = null;
-            HashSet<int> displayedDestinationGroupMemberAttributeIds = null;
+            List<int> displayedSourceAttributeIds = null;
+            List<int> displayedDestinationGroupMemberAttributeIds = null;
 
             if ( placementConfiguration.SourceAttributesToDisplay?.Any() == true )
             {
@@ -2313,5 +2113,199 @@ namespace Rock.Blocks.Group
         }
 
         #endregion Block Actions
+
+        #region Classes
+
+        /// <summary>
+        /// Represents the result of the destination group query, including group details and registration context.
+        /// </summary>
+        private class DestinationGroupResult
+        {
+            /// <summary>
+            /// Gets or sets the unique identifier for the group.
+            /// </summary>
+            public int GroupId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the display name of the group.
+            /// </summary>
+            public string GroupName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the globally unique identifier (GUID) for the group.
+            /// </summary>
+            public Guid GroupGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the optional capacity limit for the group.
+            /// </summary>
+            public int? GroupCapacity { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier for the group type.
+            /// </summary>
+            public int GroupTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the order or priority of the group within a list.
+            /// </summary>
+            public int GroupOrder { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether the group is shared across contexts.
+            /// </summary>
+            public bool IsShared { get; set; }
+
+            /// <summary>
+            /// Gets or sets the optional identifier for the associated registration instance.
+            /// </summary>
+            public int? RegistrationInstanceId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the optional identifier of the parent group, if this group is nested.
+            /// </summary>
+            public int? ParentGroupId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the optional identifier for the associated campus.
+            /// </summary>
+            public int? CampusId { get; set; }
+        }
+
+
+        /// <summary>
+        /// Represents the result of a group placement people query, including person, group membership, and registration fee details.
+        /// </summary>
+        private class PlacementPeopleResult
+        {
+            #region Group Member Info
+
+            /// <summary>
+            /// Gets or sets the identifier of the group the person is associated with.
+            /// </summary>
+            public int? GroupId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the type identifier of the group.
+            /// </summary>
+            public int? GroupTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier of the group member record.
+            /// </summary>
+            public int? GroupMemberId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the role identifier within the group.
+            /// </summary>
+            public int? GroupRoleId { get; set; }
+
+            #endregion
+
+            #region Person Info
+
+            /// <summary>
+            /// Gets or sets the identifier of the person.
+            /// </summary>
+            public int PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the first name of the person.
+            /// </summary>
+            public string FirstName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the nickname of the person.
+            /// </summary>
+            public string NickName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the last name of the person.
+            /// </summary>
+            public string LastName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the gender of the person.
+            /// </summary>
+            public Gender Gender { get; set; }
+
+            /// <summary>
+            /// Gets or sets the photo ID associated with the person's profile picture.
+            /// </summary>
+            public int? PhotoId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the age of the person.
+            /// </summary>
+            public int? Age { get; set; }
+
+            /// <summary>
+            /// Gets or sets the record type value ID, used for differentiating record types (e.g., person vs. business).
+            /// </summary>
+            public int? RecordTypeValueId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the age classification of the person (e.g., child, adult).
+            /// </summary>
+            public AgeClassification AgeClassification { get; set; }
+
+            #endregion Person Info
+
+            #region Registrant Info
+
+            /// <summary>
+            /// Gets or sets the identifier of the registrant.
+            /// </summary>
+            public int? RegistrantId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the registration instance.
+            /// </summary>
+            public string RegistrationInstanceName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier of the registration instance.
+            /// </summary>
+            public int? RegistrationInstanceId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the date and time the registration or record was created.
+            /// </summary>
+            public DateTime? CreatedDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the fee associated with the registration.
+            /// </summary>
+            public string FeeName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the selected option or value for the fee.
+            /// </summary>
+            public string Option { get; set; }
+
+            /// <summary>
+            /// Gets or sets the quantity selected for the fee option.
+            /// </summary>
+            public int? Quantity { get; set; }
+
+            /// <summary>
+            /// Gets or sets the cost associated with the fee selection.
+            /// </summary>
+            public decimal? Cost { get; set; }
+
+            /// <summary>
+            /// Gets or sets the type of fee (e.g., per person, per item).
+            /// </summary>
+            public RegistrationFeeType? FeeType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier of the selected fee item.
+            /// </summary>
+            public int? FeeItemId { get; set; }
+
+            #endregion Registrant Info
+        }
+
+        #endregion Classes
     }
 }

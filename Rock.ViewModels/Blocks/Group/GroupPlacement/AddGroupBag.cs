@@ -80,6 +80,10 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         /// The selected parent group of the placement groups we are adding.
         /// </summary>
         public ListItemBag ParentGroupForChildren { get; set; }
-    }
 
+        /// <summary>
+        /// The realtime connection ID.
+        /// </summary>
+        public string ConnectionId { get; set; }
+    }
 }

@@ -26,6 +26,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Represents the data used when adding a new group or selecting existing groups for placement. */
 export type AddGroupBag = {
+    /** The realtime connection ID. */
+    connectionId?: string | null;
+
     /** A list of existing groups selected for adding members or associating with placements. */
     existingGroupsToAdd?: ListItemBag[] | null;
 

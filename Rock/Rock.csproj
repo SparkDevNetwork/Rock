@@ -1795,6 +1795,7 @@
     <Compile Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks.cs" />
     <Compile Include="Plugin\HotFixes\225_ImprovePeerNetworkCalculations.cs" />
     <Compile Include="Plugin\HotFixes\229_PeerNetworkFitNFinish.cs" />
+    <Compile Include="Plugin\HotFixes\241_AddObsidianGroupPlacement.cs" />
     <Compile Include="Plugin\HotFixes\240_FixBlankPreviewCommunicationTemplateVersion.cs" />
     <Compile Include="Plugin\HotFixes\234_MigrationRollupsForV16_10_1.cs" />
     <Compile Include="Plugin\HotFixes\233_UpdateAppleDeviceList.cs" />
@@ -4422,9 +4423,7 @@
     <Compile Include="Web\UI\Controls\Pickers\WorkflowActionTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
     <Compile Include="Web\UI\Controls\RangeSlider.cs" />
-    <Compile Include="Security\Authentication\Facebook.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Security\Authentication\Facebook.cs" />
     <Compile Include="Search\Person\Email.cs" />
     <Compile Include="Search\Person\Name.cs" />
     <Compile Include="Search\Person\Phone.cs" />
@@ -5093,6 +5092,8 @@
     <Content Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateFollowing.sql" />
     <Content Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateGroupConnections.sql" />
     <Content Include="Plugin\HotFixes\225_ImprovePeerNetworkCalculations_spPeerNetwork_UpdateGroupConnections.sql" />
+    <Content Include="Plugin\HotFixes\241_AddObsidianGroupPlacement_spGetDestinationGroups.sql" />
+    <Content Include="Plugin\HotFixes\241_AddObsidianGroupPlacement_spGetGroupPlacementPeople.sql" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">

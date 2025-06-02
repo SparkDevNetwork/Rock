@@ -17,7 +17,7 @@
 
 using System.Collections.Generic;
 
-using Rock.Model;
+using Rock.Enums.Group;
 using Rock.ViewModels.Event.RegistrationEntry;
 using Rock.ViewModels.Group.GroupMember;
 

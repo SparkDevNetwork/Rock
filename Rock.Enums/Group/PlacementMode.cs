@@ -15,12 +15,11 @@
 // </copyright>
 //
 
-namespace Rock.Model
+namespace Rock.Enums.Group
 {
     /// <summary>
     /// Represents the different Group Placement modes.
     /// </summary>
-    [Enums.EnumDomain( "Group" )]
     public enum PlacementMode
     {
         /// <summary>
