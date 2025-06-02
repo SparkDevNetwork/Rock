@@ -1375,25 +1375,32 @@ namespace Rock
         /// <summary>
         /// Attempts to convert string to decimal with invariant culture. Returns null if unsuccessful.
         /// </summary>
-        /// <param name="str">The string.</param>
+        /// <param name="str">The string to convert.</param>
         /// <returns></returns>
         public static decimal? AsDecimalInvariantCultureOrNull( this string str )
         {
+            return str.AsDecimalWithCultureOrNull( CultureInfo.InvariantCulture );
+        }
+
+        /// <summary>
+        /// Attempts to convert a string to a decimal using a specific CultureInfo. Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string to convert.</param>
+        /// <param name="cultureInfo">The culture info to use for parsing.</param>
+        /// <returns>Nullable decimal value or null.</returns>
+        public static decimal? AsDecimalWithCultureOrNull( this string str, CultureInfo cultureInfo )
+        {
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
-                // strip off non numeric and characters at the beginning of the line (currency symbols)
                 str = Regex.Replace( str, @"^[^0-9\.-]", string.Empty );
             }
 
-            decimal value;
-            if ( decimal.TryParse( str, NumberStyles.Number, CultureInfo.InvariantCulture, out value ) )
+            if ( decimal.TryParse( str, NumberStyles.Number, cultureInfo, out var value ) )
             {
                 return value;
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         /// <summary>
@@ -1421,6 +1428,30 @@ namespace Rock
 
             double value;
             if ( double.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to convert a string to a decimal using a specific CultureInfo. Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string to convert.</param>
+        /// <param name="cultureInfo">The culture info to use for parsing.</param>
+        /// <returns>Nullable double value or null.</returns>
+        public static double? AsDoubleWithCultureOrNull( this string str, CultureInfo cultureInfo )
+        {
+            if ( !string.IsNullOrWhiteSpace( str ) )
+            {
+                str = Regex.Replace( str, @"^[^0-9\.-]", string.Empty );
+            }
+
+            double value;
+            if ( double.TryParse( str, NumberStyles.Number, cultureInfo, out value ) )
             {
                 return value;
             }

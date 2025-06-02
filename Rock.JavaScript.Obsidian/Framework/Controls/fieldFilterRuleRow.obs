@@ -245,7 +245,7 @@
             sourceType: isAttribute ? FieldFilterSourceType.Attribute : FieldFilterSourceType.Property,
             path: path,
             comparisonType: compareType,
-            value: compareType == 0 || compareType == ComparisonType.IsBlank || compareType == ComparisonType.IsNotBlank ? "" : comparisonValue.value.value
+            value: compareType == ComparisonType.IsBlank || compareType == ComparisonType.IsNotBlank ? "" : comparisonValue.value.value
         };
 
         emit("update:modelValue", newValue);

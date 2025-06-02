@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 using Rock.Data;
 
 using Rock.Extension;
@@ -25,8 +27,21 @@ namespace Rock.Core.Automation
     /// <summary>
     /// The container for automation components.
     /// </summary>
-    internal sealed class AutomationEventContainer : EntityTypeContainer<AutomationEventComponent>
+    internal sealed class AutomationEventContainer : LightContainer<AutomationEventComponent>
     {
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AutomationEventContainer"/> class.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider that will be used to construct component instances.</param>
+        public AutomationEventContainer( IServiceProvider serviceProvider )
+            : base( serviceProvider )
+        {
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>

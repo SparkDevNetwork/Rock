@@ -16,9 +16,9 @@
     }>();
 
     const campus = ref<ListItemBag | ListItemBag[] | undefined>(safeParseJson(props.modelValue.campus));
-    const multiple = ref<boolean>(asBoolean(props.modelValue.multiple));
-    const includeInactive = ref<boolean>(asBoolean(props.modelValue.includeInactive));
-    const label = ref<string>(props.modelValue.label ?? "");
+    const multiple = ref<boolean>(asBoolean(props.options.multiple));
+    const includeInactive = ref<boolean>(asBoolean(props.options.includeInactive));
+    const label = ref<string>(props.options.label ?? "");
 
     watch([campus], () => {
         const newData = { ...props.modelValue };

@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Data.Entity;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -1653,39 +1654,53 @@ namespace Rock.Lava
         /// <summary>
         /// Formats the specified input as currency using the CurrencySymbol from Global Attributes
         /// </summary>
+        /// <param name="context">The Lava rendering context, used to determine the effective culture (invariant, client, etc).</param>
         /// <param name="input">The input.</param>
         /// <returns></returns>
-        public static string FormatAsCurrency( object input )
+        /// <remarks>
+        /// <remarks>
+        /// This method honors the Rock "setculture" Lava command to determine the culture for parsing.
+        /// The culture is resolved via <c>context.GetCultureInfo()</c>.
+        /// </remarks>
+        /// </remarks>
+        public static string FormatAsCurrency( ILavaRenderContext context, object input )
         {
             if ( input == null )
             {
                 return null;
             }
 
-            var inputAsDecimal = input.ToString().AsDecimalOrNull();
+            CultureInfo cultureInfo = context.GetCultureInfo();
+
+            var inputAsDecimal = input.ToString().AsDecimalWithCultureOrNull( cultureInfo );
 
             if ( inputAsDecimal == null
                  && input is string )
             {
                 // if the input is a string, just append the currency symbol to the front, even if it can't be converted to a number
                 var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
-                return string.Format( "{0}{1}", currencySymbol, input );
+                return string.Format( cultureInfo, "{0}{1}", currencySymbol, input );
             }
             else
             {
-                // if the input an integer, decimal, double or anything else that can be parsed as a decimal, format that
-                return inputAsDecimal.FormatAsCurrency();
+                // If the input an integer, decimal, double or anything else that can be parsed as a decimal, format that.
+                return inputAsDecimal.FormatAsCurrency( cultureInfo );
             }
         }
 
         /// <summary>
-        /// Addition - Overriding this to change the logic. The default filter will concat if the type is
-        /// string. This one does the math if the input can be parsed as a int
+        /// Adds two values, performing numeric addition if the inputs can be parsed as integers or decimals.
+        /// If both inputs are integers, returns an <see cref="int"/>.
+        /// If either input is a decimal, returns a <see cref="decimal"/>.
+        /// If neither input is numeric, concatenates the values as strings.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="operand"></param>
-        /// <returns></returns>
-        public static object Plus( object input, object operand )
+        /// <param name="context">The Lava rendering context, used to determine the effective culture (invariant, client, etc).</param>
+        /// <param name="input">The first value to add. Can be a number or a string containing a number.</param>
+        /// <param name="operand">The second value to add. Can be a number or a string containing a number.</param>
+        /// <returns>
+        /// The numeric sum if both values can be parsed as numbers; otherwise, a string concatenation of the two values.
+        /// </returns>
+        public static object Plus( ILavaRenderContext context, object input, object operand )
         {
             if ( input == null || operand == null )
             {
@@ -1694,17 +1709,29 @@ namespace Rock.Lava
 
             int intInput = -1;
             int intOperand = -1;
-            decimal iInput = -1;
-            decimal iOperand = -1;
+            decimal decimalInput = -1;
+            decimal decimalOperand = -1;
+
+            /*
+                 5/23/2025 - NA
+
+                 In the future, if we want to utilize our setculture lava command, we would swap TryParse with our
+                 own TryParseWithCulture method like this:
+
+                    CultureInfo cultureInfo = context.GetCultureInfo();
+
+                    if ( input.TryParseWithCulture( cultureInfo, out intInput ) && operand.TryParseWithCulture( cultureInfo, out intOperand ) )
+                    ...
+            */
 
             // If both input and operand are INTs keep the return an int.
             if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
             {
                 return intInput + intOperand;
             }
-            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            else if ( decimal.TryParse( input.ToString(), out decimalInput ) && decimal.TryParse( operand.ToString(), out decimalOperand ) )
             {
-                return iInput + iOperand;
+                return decimalInput + decimalOperand;
             }
             else
             {
@@ -1713,7 +1740,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Minus - Overriding this to change the logic. This one does the math if the input can be parsed as a int
+        /// Minus - Overriding this to change the logic. This one does the math if the input can be parsed as a int.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="operand"></param>
@@ -1727,17 +1754,17 @@ namespace Rock.Lava
 
             int intInput = -1;
             int intOperand = -1;
-            decimal iInput = -1;
-            decimal iOperand = -1;
+            decimal decimalInput = -1;
+            decimal decimalOperand = -1;
 
             // If both input and operand are INTs keep the return an int.
             if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
             {
                 return intInput - intOperand;
             }
-            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            else if ( decimal.TryParse( input.ToString(), out decimalInput ) && decimal.TryParse( operand.ToString(), out decimalOperand ) )
             {
-                return iInput - iOperand;
+                return decimalInput - decimalOperand;
             }
             else
             {
@@ -1760,17 +1787,17 @@ namespace Rock.Lava
 
             int intInput = -1;
             int intOperand = -1;
-            decimal iInput = -1;
-            decimal iOperand = -1;
+            decimal decimalInput = -1;
+            decimal decimalOperand = -1;
 
             // If both input and operand are INTs keep the return an int.
             if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
             {
                 return intInput * intOperand;
             }
-            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            else if ( decimal.TryParse( input.ToString(), out decimalInput ) && decimal.TryParse( operand.ToString(), out decimalOperand ) )
             {
-                return iInput * iOperand;
+                return decimalInput * decimalOperand;
             }
             else
             {
@@ -1779,11 +1806,11 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Divideds the by.
+        /// Divides the specified input by the operand.
         /// </summary>
         /// <param name="input">The input.</param>
         /// <param name="operand">The operand.</param>
-        /// <param name="precision">The precision.</param>
+        /// <param name="precision">The precision (default is 2).</param>
         /// <returns></returns>
         public static object DividedBy( object input, object operand, int precision = 2 )
         {
@@ -3805,45 +3832,67 @@ namespace Rock.Lava
         /// <summary>
         /// Casts the input as an integer value.
         /// </summary>
+        /// <param name="context">The Lava rendering context, used to determine the effective culture (invariant, client, etc).</param>
         /// <param name="input">The input value to be parsed into integer form.</param>
         /// <returns>An integer value or null if the cast could not be performed.</returns>
-        public static int? AsInteger( object input )
+        /// <remarks>
+        /// This method honors the Rock "setculture" Lava command to determine the culture for parsing.
+        /// The culture is resolved via <c>context.GetCultureInfo()</c>.
+        /// </remarks>
+        public static int? AsInteger( ILavaRenderContext context, object input )
         {
             if ( input == null )
             {
                 return null;
             }
-            return ( int? ) input.ToString().AsDecimalOrNull();
+
+            CultureInfo cultureInfo = context.GetCultureInfo();
+
+            return ( int? ) input.ToString().AsDecimalWithCultureOrNull( cultureInfo );
         }
 
         /// <summary>
         /// Casts the input as a decimal value.
         /// </summary>
+        /// <param name="context">The Lava rendering context, used to determine the effective culture (invariant, client, etc).</param>
         /// <param name="input">The input value to be parsed into decimal form.</param>
         /// <returns>A decimal value or null if the cast could not be performed.</returns>
-        public static decimal? AsDecimal( object input )
+        /// <remarks>
+        /// This method honors the Rock "setculture" Lava command to determine the culture for parsing.
+        /// The culture is resolved via <c>context.GetCultureInfo()</c>.
+        /// </remarks>
+        public static decimal? AsDecimal( ILavaRenderContext context, object input )
         {
             if ( input == null )
             {
                 return null;
             }
 
-            return input.ToString().AsDecimalOrNull();
+            CultureInfo cultureInfo = context.GetCultureInfo();
+
+            return input.ToString().AsDecimalWithCultureOrNull( cultureInfo );
         }
 
         /// <summary>
         /// Casts the input as a double value.
         /// </summary>
+        /// <param name="context">The Lava rendering context, used to determine the effective culture (invariant, client, etc).</param>
         /// <param name="input">The input value to be parsed into double form.</param>
         /// <returns>A double value or null if the cast could not be performed.</returns>
-        public static double? AsDouble( object input )
+        /// <remarks>
+        /// This method honors the Rock "setculture" Lava command to determine the culture for parsing.
+        /// The culture is resolved via <c>context.GetCultureInfo()</c>.
+        /// </remarks>
+        public static double? AsDouble( ILavaRenderContext context, object input )
         {
             if ( input == null )
             {
                 return null;
             }
 
-            return input.ToString().AsDoubleOrNull();
+            CultureInfo cultureInfo = context.GetCultureInfo();
+
+            return input.ToString().AsDoubleWithCultureOrNull( cultureInfo );
         }
 
         /// <summary>
@@ -3864,9 +3913,14 @@ namespace Rock.Lava
         /// <summary>
         /// Casts the input as a DateTime value.
         /// </summary>
+        /// <param name="context">The Lava rendering context, used to determine the effective culture (invariant, client, etc).</param>
         /// <param name="input">The input value to be parsed into DateTime form.</param>
         /// <returns>A DateTime value or null if the cast could not be performed.</returns>
-        public static DateTimeOffset? AsDateTime( object input )
+        /// <remarks>
+        /// This method honors the Rock "setculture" Lava command to determine the culture for parsing.
+        /// The culture is resolved via <c>context.GetCultureInfo()</c>.
+        /// </remarks>
+        public static DateTimeOffset? AsDateTime( ILavaRenderContext context, object input )
         {
             if ( input == null )
             {
@@ -3885,8 +3939,10 @@ namespace Rock.Lava
                 return dto;
             }
 
+            CultureInfo cultureInfo = context.GetCultureInfo();
+
             // Parse the input to a DateTime.
-            var rockDateTime = LavaDateTime.ParseToOffset( input.ToString() );
+            var rockDateTime = LavaDateTime.ParseToOffset( input.ToString(), cultureInfo );
 
             return rockDateTime;
         }
@@ -3895,22 +3951,30 @@ namespace Rock.Lava
         /// Converts the input value to a DateTimeOffset value in Coordinated Universal Time (UTC).
         /// If the input value does not specify an offset, the current Rock time zone is assumed.
         /// </summary>
+        /// <param name="context">The Lava rendering context, used to determine the effective culture (invariant, client, etc).</param>
         /// <param name="input">The input value to be parsed into DateTime form.</param>
         /// <returns>A DateTimeOffset value with an offset of 0, or null if the conversion could not be performed.</returns>
-        public static DateTimeOffset? AsDateTimeUtc( object input )
+        /// <remarks>
+        /// This method honors the Rock "setculture" Lava command to determine the culture for parsing.
+        /// The culture is resolved via <c>context.GetCultureInfo()</c>.
+        /// </remarks>
+        public static DateTimeOffset? AsDateTimeUtc( ILavaRenderContext context, object input )
         {
             DateTimeOffset? utc;
+            CultureInfo cultureInfo = context.GetCultureInfo();
+
             if ( input is DateTime dt )
             {
                 utc = LavaDateTime.ConvertToDateTimeOffset( dt ).ToUniversalTime();
             }
             else if ( input is DateTimeOffset dto )
             {
+                // ToUniversalTime() does not use CultureInfo — and cannot be influenced by it.
                 utc = dto.ToUniversalTime();
             }
             else
             {
-                utc = LavaDateTime.ParseToUtc( input.ToStringSafe() );
+                utc = LavaDateTime.ParseToUtc( input.ToStringSafe(), cultureInfo );
             }
 
             return utc;

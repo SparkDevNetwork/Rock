@@ -19,7 +19,6 @@ using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Constants;
 using Rock.Data;
-using Rock.Extension;
 using Rock.Model;
 using Rock.Net;
 using Rock.Reporting;
@@ -36,8 +35,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
-using static Rock.Model.StepProgram;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -428,7 +425,7 @@ namespace RockWeb.Blocks.Reporting
 
                     11/30/2022 - CWR
                     If there is a dataview for the report, use its DbContext.  This null check is necessary because a report does not require a dataview.
-                    
+
                  */
                 if ( report.DataView != null )
                 {
@@ -1582,7 +1579,7 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean() )
                     {
-                        var requestContext = this.RockBlock()?.RockPage?.RequestContext;
+                        var requestContext = RockPage?.RequestContext;
                         var reportEntityType = EntityTypeCache.Get( etpEntityType.SelectedEntityTypeId.Value, rockContext ).GetEntityType();
 
                         var definition = dataSelectComponent.GetComponentDefinition( reportEntityType, string.Empty, rockContext, requestContext );

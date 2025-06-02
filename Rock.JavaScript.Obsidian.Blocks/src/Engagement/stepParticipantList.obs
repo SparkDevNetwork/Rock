@@ -16,6 +16,7 @@
           :showBulkUpdate="true"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
+
         <SelectColumn />
 
         <Column name="id"
@@ -33,24 +34,8 @@
                 visiblePriority="xs"
                 width="25%">
             <template #format="{ row }">
-                <div class="photo-icon-container position-relative">
-                    <div class="photo-icon photo-round photo-round-xs pull-left margin-r-sm"
-                         @mouseenter="(e) => showPopover(row.personId, e)"
-                         @mouseleave="hidePopoverWithDelay(row.personId)"
-                         :data-original="`${photoUrl(row)}&w=50`"
-                         :style="`background-image: url( ${photoUrl(row)} ); background-size: cover; background-repeat: no-repeat;`">
-                    </div>
-                    <div v-if="activePopovers[row.personId]"
-                         class="profile-popover"
-                         :class="{ visible: popoverContents[row.personId] }"
-                         :data-person-id="row.personId"
-                         @mouseenter="clearHideTimer(row.personId)"
-                         @mouseleave="hidePopover(row.personId)">
-                        <div class="popover-arrow"></div>
-                        <div class="popover-content" v-html="popoverContents[row.personId] || loadingTemplate"></div>
-                    </div>
-                </div>
-                <span class="mr-1">{{ `${row.fullName ?? ""}` }}</span>
+                <PersonAvatar :personIdKey="row.personIdKey" :photoUrl="photoUrl(row)" photoSize="xs" marginRight="sm" enableHoverInfo />
+                <span class="mr-1">{{ row.fullName }}</span>
                 <span v-if="row.signalMarkup" class="mr-1" v-html="row.signalMarkup"></span>
                 <span v-if="config.options?.isNoteColumnVisible && row.note" class='js-member-note' data-toggle='tooltip' data-placement='top' :title='`${row.note}`'>
                     <i class='fa fa-file-text-o text-info'></i>
@@ -142,62 +127,24 @@
 .title-right .grid-column-title {
     text-align: right;
 }
-
-.photo-icon-container {
-    position: relative;
-    display: inline-block;
-}
-
-.profile-popover {
-    position: fixed;
-    z-index: 100000;
-    background-color: #fff;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 6px;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-    padding: 10px;
-    max-width: 300px;
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-}
-
-.profile-popover.visible {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.popover-arrow {
-    position: absolute;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    left: -10px;
-    top: 50%;
-    transform: translateY(-50%);
-    border-width: 10px 10px 10px 0;
-    border-color: transparent #fff transparent transparent;
-}
 </style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
     import Grid, { AttributeColumns, pickExistingValueFilter, dateValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, DateColumn, ButtonColumn, Column } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { StepParticipantListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepParticipantList/stepParticipantListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./StepParticipantList/types.partial";
-    import { computed, reactive, ref, nextTick } from "vue";
+    import { computed, reactive, ref } from "vue";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
-    import { useHttp } from "@Obsidian/Utility/http";
     import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<StepParticipantListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-
-    const http = useHttp();
 
     // #region Values
 
@@ -205,12 +152,6 @@
     let gridData: GridDataBag | undefined;
 
     const stepStatusBackgroundColors = config.options?.stepStatusBackgroundColors ?? {};
-
-    // Popover state
-    const activePopovers = reactive<Record<string, boolean>>({});
-    const popoverContents = reactive<Record<string, string>>({});
-    const popoverTimers = reactive<Record<string, number>>({});
-    const loadingTemplate = '<i class="fas fa-spinner fa-pulse"></i>';
 
     // #endregion
 
@@ -226,11 +167,6 @@
     const itemTerm = computed((): string => {
         return config.options?.stepType?.text ? `${config.options.stepType.text} Step Participants` : "Step Participants";
     });
-
-    /* eslint-disable @typescript-eslint/naming-convention */
-    interface PickerItemDetailsResponse {
-        PickerItemDetailsHtml: string;
-    }
 
     // #endregion
 
@@ -248,104 +184,6 @@
         }
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
-        }
-    }
-
-    /**
-     * Shows the popover for the specified person ID
-     */
-    function showPopover(personId: string, event: MouseEvent): void {
-        if (!personId) return;
-
-        activePopovers[personId] = true;
-
-        nextTick(() => {
-            const popover = document.querySelector(`.profile-popover[data-person-id="${personId}"]`) as HTMLElement;
-            if (popover) {
-                const photoElement = event.target as HTMLElement;
-                const rect = photoElement.getBoundingClientRect();
-                const offset = 15;
-
-                const top = rect.top + (rect.height / 2);
-                popover.style.top = `${top}px`;
-                popover.style.transform = "translateY(-50%)";
-                popover.style.left = `${rect.right + offset}px`;
-
-                const popoverRect = popover.getBoundingClientRect();
-                const viewportWidth = window.innerWidth;
-                const viewportHeight = window.innerHeight;
-
-                if (popoverRect.right > viewportWidth) {
-                    popover.style.left = `${rect.left - popoverRect.width - offset}px`;
-                }
-
-                if (popoverRect.top < 0) {
-                    popover.style.top = "0px";
-                    popover.style.transform = "none";
-                }
-                else if (popoverRect.bottom > viewportHeight) {
-                    popover.style.top = `${viewportHeight - popoverRect.height}px`;
-                    popover.style.transform = "none";
-                }
-            }
-
-            if (!popoverContents[personId]) {
-                loadPopoverContent(personId);
-            }
-        });
-    }
-
-    /**
-     * Hides the popover for the specified person ID with a delay
-     */
-    function hidePopoverWithDelay(personId: string): void {
-        if (!personId) return;
-
-        clearHideTimer(personId);
-
-        popoverTimers[personId] = window.setTimeout(() => {
-            hidePopover(personId);
-        }, 100);
-    }
-
-    /**
-     * Immediately hides the popover for the specified person ID
-     */
-    function hidePopover(personId: string): void {
-        if (!personId) return;
-
-        activePopovers[personId] = false;
-    }
-
-    /**
-     * Clears the hide timer for the specified person ID
-     */
-    function clearHideTimer(personId: string): void {
-        if (!personId || !popoverTimers[personId]) return;
-
-        window.clearTimeout(popoverTimers[personId]);
-        delete popoverTimers[personId];
-    }
-
-    /**
-     * Loads the popover content for the specified person ID
-     */
-    async function loadPopoverContent(personId: string): Promise<void> {
-        if (!personId) return;
-
-        try {
-            const dataUrl = `/api/People/PopupHtml/${personId}/false`;
-            const response = await http.get<PickerItemDetailsResponse>(dataUrl);
-
-            if (response.data?.PickerItemDetailsHtml) {
-                popoverContents[personId] = response.data.PickerItemDetailsHtml;
-            }
-            else {
-                popoverContents[personId] = "<div>No information available</div>";
-            }
-        }
-        catch (error) {
-            popoverContents[personId] = '<div class="text-danger">Error loading information</div>';
         }
     }
 
