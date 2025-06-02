@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -24,48 +23,6 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Rock.AI.Agent
 {
-    internal class AgentConfiguration
-    {
-        public IAiAgentProvider Provider { get; }
-
-        public string CoreSystemPrompt { get; }
-
-        public IReadOnlyCollection<Type> NativeSkills { get; }
-
-        public IReadOnlyCollection<SkillConfiguration> Skills { get; }
-
-        public AgentConfiguration( IAiAgentProvider provider, string coreSystemPrompt, IReadOnlyCollection<Type> nativeSkills, IReadOnlyList<SkillConfiguration> skills )
-        {
-            Provider = provider;
-            CoreSystemPrompt = coreSystemPrompt ?? string.Empty;
-            NativeSkills = nativeSkills ?? new List<Type>();
-            Skills = skills ?? new List<SkillConfiguration>();
-        }
-    }
-
-    internal class SkillConfiguration
-    {
-        public string Name { get; }
-
-        public string Key => Name.Replace( " ", string.Empty );
-
-        public string UsageHint { get; }
-
-        public List<AgentFunction> Functions { get; set; }
-
-        public SkillConfiguration( string name, string usageHint, List<AgentFunction> functions )
-        {
-            Name = name;
-            UsageHint = usageHint;
-            Functions = functions ?? new List<AgentFunction>();
-        }
-    }
-
-    internal interface IRockAiSkill
-    {
-        List<AgentFunction> GetSemanticFunctions();
-    }
-
     public class AgentRequestContext
     {
         private bool _chatHistoryDirty = true;
@@ -87,11 +44,6 @@ namespace Rock.AI.Agent
         }
 
         public List<ContextAnchor> ContextAnchors { get; set; } = new List<ContextAnchor>();
-
-
-        public AgentRequestContext()
-        {
-        }
 
         public void AddOrUpdateContextAnchor( int entityTypeId, int entityId, string entityName, string entityMetadata = null )
         {

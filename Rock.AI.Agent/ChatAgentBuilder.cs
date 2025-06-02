@@ -18,15 +18,14 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text.Json;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using Rock.Data;
 using Rock.Enums.AI.Agent;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent
 {
@@ -36,8 +35,6 @@ namespace Rock.AI.Agent
 
         private readonly RockContext _rockContext;
 
-        private readonly ConcurrentDictionary<int, ChatAgentFactory> _factories = new ConcurrentDictionary<int, ChatAgentFactory>();
-
         public ChatAgentBuilder( IServiceProvider serviceProvider, RockContext rockContext )
         {
             _serviceProvider = serviceProvider;
@@ -46,16 +43,18 @@ namespace Rock.AI.Agent
 
         public IChatAgent Build( int agentId )
         {
-            var factory = _factories.GetOrAdd( agentId, ( id, ctx ) => new ChatAgentFactory( id, ctx, _serviceProvider.GetService<ILoggerFactory>() ), _rockContext );
+            var factories = ( ConcurrentDictionary<int, ChatAgentFactory> ) RockCache.GetOrAddExisting( "Rock.AI.Agent.ChatAgentBuilder.Factories",
+                () => new ConcurrentDictionary<int, ChatAgentFactory>() );
+
+            var factory = factories.GetOrAdd( agentId, ( id, ctx ) => new ChatAgentFactory( id, ctx, _serviceProvider.GetService<ILoggerFactory>() ), _rockContext );
 
             return factory.Build( _serviceProvider );
         }
 
         internal void FlushCache()
         {
-            _factories.Clear();
+            RockCache.Remove( "Rock.AI.Agent.ChatAgentBuilder.Factories" );
         }
-
     }
 
     internal class AiSkill
@@ -109,150 +108,5 @@ namespace Rock.AI.Agent
         /// Listing of Lava functions for the skill.
         /// </summary>
         public List<AgentFunction> LavaFunctions { get; set; } = new List<AgentFunction>();
-    }
-
-    /// <summary>  
-    /// This is the base provider for those that are OpenAI compatible (OpenAI and AzureOpenAI)  
-    /// </summary>  
-    internal abstract class OpenAiBase : IAiAgentProvider
-    {
-        /// <summary>
-        /// Registers a chat completion service with the kernel builder. This will be implemented in the derived classes.
-        /// </summary>
-        /// <param name="role"></param>
-        /// <param name="builder"></param>
-        /// <exception cref="NotImplementedException"></exception>
-        public abstract void AddChatCompletion( ModelServiceRole role, IServiceCollection serviceCollection );
-
-        /// <summary>
-        /// Gets the usage metric from the result metadata.
-        /// </summary>
-        /// <param name="resultMetadata"></param>
-        /// <returns></returns>
-        public virtual UsageMetric GetMetricUsageFromResult( ChatMessageContent result )
-        {
-            var resultMetadata = result?.Metadata;
-
-            if ( resultMetadata == null || !resultMetadata.ContainsKey( "Usage" ) || resultMetadata["Usage"] == null )
-            {
-                return null;
-            }
-
-            if ( !( resultMetadata["Usage"] is OpenAI.Chat.ChatTokenUsage usage ) )
-            {
-                return null;
-            }
-
-            return new UsageMetric
-            {
-                InputTokenCount = usage.InputTokenCount,
-                OutputTokenCount = usage.OutputTokenCount,
-                TotalTokenCount = usage.TotalTokenCount
-            };
-        }
-
-        /// <summary>
-        /// Gets the prompt execution settings for a specific role for use with a function call.
-        /// </summary>
-        /// <param name="role"></param>
-        /// <param name="temperature"></param>
-        /// <param name="maxTokens"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public abstract PromptExecutionSettings GetFunctionPromptExecutionSettingsForRole( ModelServiceRole role, double? temperature = null, int? maxTokens = null );
-
-        /// <summary>
-        /// Gets the prompt execution settings for a chat completion.
-        /// </summary>
-        /// <returns></returns>
-        public PromptExecutionSettings GetChatCompletionPromptExecutionSettings()
-        {
-            return new OpenAIPromptExecutionSettings()
-            {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
-            };
-        }
-
-        /// <summary>
-        /// Converts a function to a schema object. This only used for estimating the size of the function schema.
-        /// </summary>
-        /// <param name="function"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public object ToFunctionSchema( KernelFunction function )
-        {
-            if ( function == null )
-            {
-                return null;
-            }
-
-            var metadata = function.Metadata;
-
-            var parameters = new Dictionary<string, object>();
-            var required = new List<string>();
-
-            foreach ( var param in metadata.Parameters )
-            {
-                var paramSchema = new Dictionary<string, object>
-                {
-                    ["type"] = InferJsonType( param.ParameterType ),
-                };
-
-                if ( !string.IsNullOrWhiteSpace( param.Description ) )
-                {
-                    paramSchema["description"] = param.Description;
-                }
-
-                if ( param.Schema is KernelJsonSchema complexSchema )
-                {
-                    // Merge nested schema
-                    foreach ( var kv in JsonSerializer.Deserialize<Dictionary<string, object>>( complexSchema.ToString() ) )
-                    {
-                        paramSchema[kv.Key] = kv.Value;
-                    }
-                }
-
-                parameters[param.Name] = paramSchema;
-
-                if ( param.IsRequired )
-                {
-                    required.Add( param.Name );
-                }
-            }
-
-            var schema = new
-            {
-                name = metadata.Name,
-                description = metadata.Description ?? "",
-                parameters = new
-                {
-                    type = "object",
-                    properties = parameters,
-                    required = required.Count > 0 ? required : null
-                }
-            };
-
-            return schema;
-        }
-
-        private static string InferJsonType( Type type )
-        {
-            if ( type == null )
-            {
-                return "object";
-            }
-
-            if ( type == typeof( string ) )
-                return "string";
-            if ( type == typeof( int ) || type == typeof( long ) )
-                return "integer";
-            if ( type == typeof( float ) || type == typeof( double ) || type == typeof( decimal ) )
-                return "number";
-            if ( type == typeof( bool ) )
-                return "boolean";
-            if ( type.IsArray || ( typeof( IEnumerable<> ).IsAssignableFrom( type ) ) )
-                return "array";
-            return "object";
-        }
     }
 }

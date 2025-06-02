@@ -699,12 +699,17 @@
     <Compile Include="Address\SmartyStreets.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\VerificationContainer.cs" />
+    <Compile Include="AI\Agent\AgentConfiguration.cs" />
     <Compile Include="AI\Agent\AgentFunction.cs" />
+    <Compile Include="AI\Agent\AgentProviderComponent.cs" />
+    <Compile Include="AI\Agent\AgentProviderContainer.cs" />
     <Compile Include="AI\Agent\AgentRequestContext.cs" />
     <Compile Include="AI\Agent\ContextAnchor.cs" />
     <Compile Include="AI\Agent\IAiAgentProvider.cs" />
     <Compile Include="AI\Agent\IChatAgent.cs" />
     <Compile Include="AI\Agent\IChatAgentBuilder.cs" />
+    <Compile Include="AI\Agent\IRockAiSkill.cs" />
+    <Compile Include="AI\Agent\SkillConfiguration.cs" />
     <Compile Include="AI\Agent\UsageMetric.cs" />
     <Compile Include="AI\Automations\AIAutomation.cs" />
     <Compile Include="AI\Automations\PrayerRequestAnalyzerResponse.cs" />

@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text.Json;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -43,13 +42,16 @@ namespace Rock.AI.Agent
 
         private readonly ILoggerFactory _loggerFactory;
 
+        private readonly ILogger _logger;
+
         public ChatAgentFactory( int agentId, RockContext rockContext, ILoggerFactory loggerFactory )
         {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             _agentId = agentId;
             _loggerFactory = loggerFactory;
 
             // Get a AI Agent Provider
-            var provider = new AzureOpenAiAgent();// TODO: this should be configurable
+            var provider = AgentProviderContainer.GetComponent( "Rock.AI.Agent.Providers.AzureOpenAiAgentProvider" );// TODO: this should be configurable from agentId
 
             // Register the ModelServiceRoles
             var kernelBuilder = Kernel.CreateBuilder();
@@ -63,15 +65,33 @@ namespace Rock.AI.Agent
 
             _kernelBuilder = kernelBuilder;
 
-            _agentConfiguration = new AgentConfiguration( provider, string.Empty, new List<Type>(), GetMockAiSkills() );
+            _agentConfiguration = new AgentConfiguration( provider, string.Empty, GetMockAiSkills() );
             _virtualPlugins = LoadVirtualSkills();
+            _logger = loggerFactory.CreateLogger<ChatAgentFactory>();
+            sw.Stop();
+
+            _logger.LogInformation( "Initialized factory in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentId );
         }
 
         public IChatAgent Build( IServiceProvider serviceProvider )
         {
-            var kernel = _kernelBuilder.Build();
+            //for ( int i = 0; i < 10_000; i++ )
+            //{
+            //    var kernel2 = _kernelBuilder.Build();
+            //    LoadPluginsForAgent( kernel2, serviceProvider );
+            //}
 
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var kernel = _kernelBuilder.Build();
+            sw.Stop();
+
+            _logger.LogInformation( "Kernel built in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentId );
+
+            sw.Restart();
             LoadPluginsForAgent( kernel, serviceProvider );
+            sw.Stop();
+
+            _logger.LogInformation( "Plugins loaded in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentId );
 
             return new ChatAgent( kernel, _agentConfiguration.Provider );
         }
@@ -84,7 +104,8 @@ namespace Rock.AI.Agent
         {
             LoadNativeSkills( kernel.Plugins, serviceProvider );
 
-            kernel.Plugins.AddRange( _virtualPlugins );
+            var x = LoadVirtualSkills();
+            kernel.Plugins.AddRange( x );
         }
 
         /// <summary>
@@ -95,36 +116,16 @@ namespace Rock.AI.Agent
         private void LoadNativeSkills( KernelPluginCollection pluginCollection, IServiceProvider serviceProvider )
         {
             // Register native skills
-            var skillTypes = Assembly.GetExecutingAssembly()
-                .GetTypes()
-                .Where( t => typeof( IRockAiSkill ).IsAssignableFrom( t ) && t.IsClass && !t.IsAbstract );
-
-            // We will need to register the skills with the kernel using AddFromType so that our AgentRequestContext
-            // is passed in. Using AddFromObject will not work as it will not pass in the context. Since AddFromType
-            // is a generic method we need to use reflection to call it.
-
-            // Find the generic AddFromType<T>() method
-            var addFromTypeMethod = typeof( KernelExtensions )
-                .GetMethods()
-                .Where( t => t.Name == nameof( KernelExtensions.AddFromType ) && t.GetParameters().Length == 3 )
-                .Where( t => t.GetParameters()[1].ParameterType == typeof( string ) && t.GetParameters()[2].ParameterType == typeof( IServiceProvider ) )
-                .FirstOrDefault();
-
-            if ( addFromTypeMethod == null )
-            {
-                throw new InvalidOperationException( "Could not find AddFromType<T>() method." );
-            }
+            var skillTypes = _agentConfiguration.Skills.Where( s => s.NativeType != null ).Select( s => s.NativeType ).ToList();
 
             foreach ( var type in skillTypes )
             {
-                var genericMethod = addFromTypeMethod.MakeGenericMethod( type );
-                genericMethod.Invoke( null, new object[] { pluginCollection, type.Name, serviceProvider } );
-
                 // Get Semantic Functions
-                var instance = Activator.CreateInstance( type );
+                var skill = ( IRockAiSkill ) ActivatorUtilities.CreateInstance( serviceProvider, type );
+
+                var plugin = KernelPluginFactory.CreateFromObject( skill, type.Name, _loggerFactory );
 
                 // Register dynamic functions
-                var skill = ( IRockAiSkill ) instance;
                 var skillFunctions = skill.GetSemanticFunctions();
 
                 // Check if the skill has any semantic functions to register
@@ -134,7 +135,7 @@ namespace Rock.AI.Agent
                 }
 
                 // Get the existing plug-in functions
-                var pluginFunctions = pluginCollection[type.Name]
+                var pluginFunctions = plugin//Collection[type.Name]
                     .Select( kf => new KeyValuePair<string, KernelFunction>( kf.Name, kf ) )
                     .ToDictionary( x => x.Key, x => x.Value );
 
@@ -152,8 +153,8 @@ namespace Rock.AI.Agent
                 }
 
                 // Re-register the plug-in with the new semantic functions added
-                pluginCollection.Remove( pluginCollection[type.Name] );
-                var plugin = KernelPluginFactory.CreateFromFunctions( type.Name, pluginFunctions.Values );
+                //pluginCollection.Remove( pluginCollection[type.Name] );
+                plugin = KernelPluginFactory.CreateFromFunctions( type.Name, pluginFunctions.Values );
                 pluginCollection.Add( plugin );
             }
         }
@@ -164,12 +165,26 @@ namespace Rock.AI.Agent
         /// <param name="kernel"></param>
         private List<KernelPlugin> LoadVirtualSkills()
         {
-            // Get mock skills. These will eventually be loaded from the database.
             var plugins = new List<KernelPlugin>();
 
             foreach ( var skill in _agentConfiguration.Skills )
             {
+                if ( skill.Functions == null )
+                {
+                    continue;
+                }
+
                 var pluginFunctions = new Dictionary<string, KernelFunction>();
+
+                // The properties for KernelParameterMetadata are init-only, which is
+                // not supported on C# 7.3. So we can't set them directly and are
+                // required to use reflection.
+                //
+                // Report here: https://github.com/microsoft/semantic-kernel/issues/12297
+                var parameterType = typeof( KernelParameterMetadata );
+                var descriptionProperty = parameterType.GetProperty( nameof( KernelParameterMetadata.Description ) );
+                var isRequiredProperty = parameterType.GetProperty( nameof( KernelParameterMetadata.IsRequired ) );
+                var schemaProperty = parameterType.GetProperty( nameof( KernelParameterMetadata.Schema ) );
 
                 // Register functions
                 foreach ( var function in skill.Functions )
@@ -190,18 +205,7 @@ namespace Rock.AI.Agent
                     else if ( function.FunctionType == FunctionType.ExecuteLava )
                     {
                         var functionParameters = new List<KernelParameterMetadata>();
-
                         var parameter = new KernelParameterMetadata( "promptAsJson" );
-
-                        // The properties for KernelParameterMetadata are init-only, which is
-                        // not supported on C# 7.3. So we can't set them directly and are
-                        // required to use reflection.
-                        //
-                        // Report here: https://github.com/microsoft/semantic-kernel/issues/12297
-                        var parameterType = parameter.GetType();
-                        var descriptionProperty = parameterType.GetProperty( nameof( parameter.Description ) );
-                        var isRequiredProperty = parameterType.GetProperty( nameof( parameter.IsRequired ) );
-                        var schemaProperty = parameterType.GetProperty( nameof( parameter.Schema ) );
 
                         descriptionProperty.SetValue( parameter, "A JSON object with the information to register for the event." );
                         isRequiredProperty.SetValue( parameter, true );
@@ -260,6 +264,8 @@ namespace Rock.AI.Agent
         {
             return new List<SkillConfiguration>
             {
+                new SkillConfiguration( typeof( Skills.GroupManagerSkill ) ),
+
                 new SkillConfiguration(
                     "Knowledge Base",
                     "Use only for internal organizational data, such as staff directories, event details, or ministry-specific content. The knowledge here is limited to the content from the organization.",
@@ -275,6 +281,7 @@ namespace Rock.AI.Agent
                         }
                     }
                 ),
+
                 new SkillConfiguration(
                     "Individual Updates",
                     "Used for updating information about a person.",
@@ -307,6 +314,7 @@ namespace Rock.AI.Agent
                         },
                     }
                 ),
+
                 new SkillConfiguration(
                     "Ministry Tasks",
                     "Used for completing various ministry tasks like scheduling a baptism, wedding or funeral.",
