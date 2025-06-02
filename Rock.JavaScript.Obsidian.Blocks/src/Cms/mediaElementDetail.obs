@@ -15,6 +15,11 @@
                 </template>
             </div>
         </template>
+        <template #preBody v-if="panelMode != DetailPanelMode.Add">
+            <div class="bg-body">
+                <TabbedBar :tabs="tabs" v-model="selectedTab" selectedTabQueryParameterKey="tab" />
+            </div>
+        </template>
         <template #default>
             <!-- Show Edit Panel without tabs when in Add mode -->
             <RockForm v-if="panelMode === DetailPanelMode.Add" ref="editForm" @submit="onSaveSubmit">
@@ -24,144 +29,142 @@
             </RockForm>
 
             <!-- Show tabbed interface when not in Add mode -->
-            <TabbedContent v-else :tabs="tabs" v-model:selectedTab="selectedTab" selectedTabQueryParameterKey="tab">
-                <template #tabpane="{ item }">
-                    <div v-if="item === 'Overview'">
-                        <div class="row">
-                            <div v-if="defaultFileUrl || defaultThumbnailUrl" class="col-md-6 position-relative">
-                                <div class="video-container">
-                                    <MediaPlayer
-                                                 v-if="defaultFileUrl"
-                                                 :key="playerKey"
-                                                 ref="mediaPlayer"
-                                                 :mediaUrl="defaultFileUrl"
-                                                 :thumbnailUrl="defaultThumbnailUrl"
-                                                 :disableClickToPlay="true"
-                                                 :muted="true"
-                                                 :playerControls="[]" />
-                                    <div v-else-if="defaultThumbnailUrl" class="thumbnail-container">
-                                        <img :src="defaultThumbnailUrl" alt="Media thumbnail" class="img-fluid" />
-                                    </div>
-
-                                    <div v-if="videoEngagementData" class="chart-container">
-                                        <canvas ref="watchedChartCanvas" class="chart-canvas"></canvas>
-                                    </div>
+            <div v-else>
+                <div v-if="selectedTab === 'Overview'">
+                    <div class="row">
+                        <div v-if="defaultFileUrl || defaultThumbnailUrl" class="col-md-6 position-relative">
+                            <div class="video-container">
+                                <MediaPlayer
+                                             v-if="defaultFileUrl"
+                                             :key="playerKey"
+                                             ref="mediaPlayer"
+                                             :mediaUrl="defaultFileUrl"
+                                             :thumbnailUrl="defaultThumbnailUrl"
+                                             :disableClickToPlay="true"
+                                             :muted="true"
+                                             :playerControls="[]" />
+                                <div v-else-if="defaultThumbnailUrl" class="thumbnail-container">
+                                    <img :src="defaultThumbnailUrl" alt="Media thumbnail" class="img-fluid" />
                                 </div>
-                            </div>
-                            <div :class="{ 'col-md-6': defaultFileUrl || defaultThumbnailUrl }">
-                                <div v-if="!showNoStatsMessage">
-                                    <h5 class="mb-2">Rock Media Analytics</h5>
-                                    <Kpi :value="engagementValue" label="Engagement" :tooltip="`The total minutes played divided by the length of the video times the total number of plays.`" iconCssClass="fa fa-broadcast-tower" color="blue" isCard />
-                                    <Kpi :value="playCount" label="Plays" :tooltip="`This video was played ${playCount} times.`" iconCssClass="fa fa-play-circle" color="green" isCard />
-                                    <Kpi :value="minutesWatched" label="Minutes Watched" :tooltip="`A total of ${minutesWatched} minutes were watched.`" iconCssClass="fa fa-clock" color="orange" isCard />
+
+                                <div v-if="videoEngagementData" class="chart-container">
+                                    <canvas ref="watchedChartCanvas" class="chart-canvas"></canvas>
                                 </div>
                             </div>
                         </div>
-
-                        <hr v-if="!showNoStatsMessage" class="my-3">
-
-                        <div v-if="!showNoStatsMessage" class="row">
-                            <div class="col-md-12">
-                                <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5>{{ selectedTimePeriod === "90" ? "Plays Per Day" : "Plays Per Week" }}</h5>
-                                    <DropDownList v-model="selectedTimePeriod"
-                                                  :items="timePeriodOptions"
-                                                  :showBlankItem="false"
-                                                  inputClasses="input-width-lg" />
-                                </div>
-                                <div>
-                                    <ul class="trend-chart">
-                                        <li v-for="(item, index) in chartData.formattedItems"
-                                            :key="index"
-                                            ref="chartItems"
-                                            :title="item.tooltip">
-                                            <span :style="{ height: item.heightPercent }"></span>
-                                            <div class="hover-area"></div>
-                                        </li>
-                                    </ul>
-                                </div>
+                        <div :class="{ 'col-md-6': defaultFileUrl || defaultThumbnailUrl }">
+                            <div v-if="!showNoStatsMessage">
+                                <h5 class="mb-2">Rock Media Analytics</h5>
+                                <Kpi :value="engagementValue" label="Engagement" :tooltip="`The total minutes played divided by the length of the video times the total number of plays.`" iconCssClass="fa fa-broadcast-tower" color="blue" isCard />
+                                <Kpi :value="playCount" label="Plays" :tooltip="`This video was played ${playCount} times.`" iconCssClass="fa fa-play-circle" color="green" isCard />
+                                <Kpi :value="minutesWatched" label="Minutes Watched" :tooltip="`A total of ${minutesWatched} minutes were watched.`" iconCssClass="fa fa-clock" color="orange" isCard />
                             </div>
                         </div>
-                        <div v-else class="alert alert-info mt-4">
-                            No statistical data is available yet.
+                    </div>
+
+                    <hr v-if="!showNoStatsMessage" class="my-3">
+
+                    <div v-if="!showNoStatsMessage" class="row">
+                        <div class="col-md-12">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5>{{ selectedTimePeriod === "90" ? "Plays Per Day" : "Plays Per Week" }}</h5>
+                                <DropDownList v-model="selectedTimePeriod"
+                                              :items="timePeriodOptions"
+                                              :showBlankItem="false"
+                                              inputClasses="input-width-lg" />
+                            </div>
+                            <div>
+                                <ul class="trend-chart">
+                                    <li v-for="(item, index) in chartData.formattedItems"
+                                        :key="index"
+                                        ref="chartItems"
+                                        :title="item.tooltip">
+                                        <span :style="{ height: item.heightPercent }"></span>
+                                        <div class="hover-area"></div>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
+                    </div>
+                    <div v-else class="alert alert-info mt-4">
+                        No statistical data is available yet.
+                    </div>
 
-                        <hr v-if="!showNoStatsMessage" class="my-3">
+                    <hr v-if="!showNoStatsMessage" class="my-3">
 
-                        <div v-if="!showNoStatsMessage" class="row">
-                            <div class="col-md-12">
-                                <h5>Individual Plays</h5>
-                                <div id="individualPlaysContainer">
-                                    <div v-if="individualPlaysData && individualPlaysData.items.length > 0">
-                                        <div v-for="(item, index) in individualPlaysData.items" :key="index" class="individual-play-row">
-                                            <div class="individual-play-date">
-                                                <template v-if="shouldShowFullDate(index)">
-                                                    <span>{{ formatPlayDate(item.dateTime, 'weekday') }}</span>
-                                                    <span>{{ formatPlayDate(item.dateTime, 'date') }}</span>
-                                                    <span>{{ formatPlayDate(item.dateTime, 'time') }}</span>
-                                                </template>
-                                                <template v-else>
-                                                    <span>{{ formatPlayDate(item.dateTime, 'time') }}</span>
-                                                </template>
-                                            </div>
-                                            <div class="individual-play-bar">
-                                                <div class="individual-play-person">
-                                                    <div class="individual-play-person-info">
-                                                        <span class="individual-play-person-detail">
-                                                            <div class="photo-icon photo-round photo-round-xs flex-shrink-0 margin-r-sm"
-                                                                 :style="`background-image: url('${item.photoUrl}&w=50'); background-size: cover; background-repeat: no-repeat;`">
-                                                            </div>
-                                                            <span class="text-truncate">{{ item.fullName }}</span>
-                                                        </span>
-                                                        <span class="individual-play-person-location">{{ item.location || '' }}</span>
-                                                    </div>
-                                                    <i :class="`fa fa-${getClientIcon(item.clientType)} fa-lg text-muted o-50 mx-2`" :title="item.clientType"></i>
-                                                    <span class="badge-circle badge-info flex-shrink-0 ml-1" :title="`${item.interactionsCount} Interactions`">{{ item.interactionsCount }}</span>
-                                                </div>
-                                                <div class="position-relative additional-data">
-                                                    <div class="individual-play-interaction">
-                                                        <div class="individual-play-interaction-session">
-                                                            <span>{{ item.isp || '' }}</span>
-                                                            <span>{{ item.operatingSystem }}</span>
-                                                            <span>{{ item.application }}</span>
+                    <div v-if="!showNoStatsMessage" class="row">
+                        <div class="col-md-12">
+                            <h5>Individual Plays</h5>
+                            <div id="individualPlaysContainer">
+                                <div v-if="individualPlaysData && individualPlaysData.items.length > 0">
+                                    <div v-for="(item, index) in individualPlaysData.items" :key="index" class="individual-play-row">
+                                        <div class="individual-play-date">
+                                            <template v-if="shouldShowFullDate(index)">
+                                                <span>{{ formatPlayDate(item.dateTime, 'weekday') }}</span>
+                                                <span>{{ formatPlayDate(item.dateTime, 'date') }}</span>
+                                                <span>{{ formatPlayDate(item.dateTime, 'time') }}</span>
+                                            </template>
+                                            <template v-else>
+                                                <span>{{ formatPlayDate(item.dateTime, 'time') }}</span>
+                                            </template>
+                                        </div>
+                                        <div class="individual-play-bar">
+                                            <div class="individual-play-person">
+                                                <div class="individual-play-person-info">
+                                                    <span class="individual-play-person-detail">
+                                                        <div class="photo-icon photo-round photo-round-xs flex-shrink-0 margin-r-sm"
+                                                             :style="`background-image: url('${item.photoUrl}&w=50'); background-size: cover; background-repeat: no-repeat;`">
                                                         </div>
-                                                        <div class="expander" name="expander"><i class="fa fa-chevron-right text-muted o-50"></i></div>
-                                                    </div>
+                                                        <span class="text-truncate">{{ item.fullName }}</span>
+                                                    </span>
+                                                    <span class="individual-play-person-location">{{ item.location || '' }}</span>
                                                 </div>
-                                                <div class="individual-play-chart">
-                                                    <div ref="heatMapContainer" :data-watchmap="item.data.watchMap"></div>
-                                                </div>
-                                                <div class="individual-play-percent">{{ Math.floor(item.data.watchedPercentage) }}%</div>
+                                                <i :class="`fa fa-${getClientIcon(item.clientType)} fa-lg text-muted o-50 mx-2`" :title="item.clientType"></i>
+                                                <span class="badge-circle badge-info flex-shrink-0 ml-1" :title="`${item.interactionsCount} Interactions`">{{ item.interactionsCount }}</span>
                                             </div>
-                                        </div>
-                                        <div class="mt-3" v-if="shouldDisplayLoadMoreButton">
-                                            <RockButton class="js-load-more btn btn-primary mt-2" :btnType="BtnType.Primary" @click="loadMoreIndividualPlays">
-                                                Load More
-                                            </RockButton>
+                                            <div class="position-relative additional-data">
+                                                <div class="individual-play-interaction">
+                                                    <div class="individual-play-interaction-session">
+                                                        <span>{{ item.isp || '' }}</span>
+                                                        <span>{{ item.operatingSystem }}</span>
+                                                        <span>{{ item.application }}</span>
+                                                    </div>
+                                                    <div class="expander" name="expander"><i class="fa fa-chevron-right text-muted o-50"></i></div>
+                                                </div>
+                                            </div>
+                                            <div class="individual-play-chart">
+                                                <div ref="heatMapContainer" :data-watchmap="item.data.watchMap"></div>
+                                            </div>
+                                            <div class="individual-play-percent">{{ Math.floor(item.data.watchedPercentage) }}%</div>
                                         </div>
                                     </div>
-                                    <div v-else class="alert alert-info">
-                                        No individual play data available.
+                                    <div class="mt-3" v-if="shouldDisplayLoadMoreButton">
+                                        <RockButton class="js-load-more btn btn-primary mt-2" :btnType="BtnType.Primary" @click="loadMoreIndividualPlays">
+                                            Load More
+                                        </RockButton>
                                     </div>
+                                </div>
+                                <div v-else class="alert alert-info">
+                                    No individual play data available.
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div v-else-if="item === 'Media Assets'">
-                        <ViewPanel v-if="panelMode === DetailPanelMode.View"
-                                   :modelValue="mediaElementViewBag ?? undefined"
+                </div>
+                <div v-else-if="selectedTab === 'Media Assets'">
+                    <ViewPanel v-if="panelMode === DetailPanelMode.View"
+                               :modelValue="mediaElementViewBag ?? undefined"
+                               :options="options" />
+                    <RockForm v-else ref="editForm" @submit="onSaveSubmit">
+                        <EditPanel
+                                   v-model="mediaElementEditBag"
                                    :options="options" />
-                        <RockForm v-else ref="editForm" @submit="onSaveSubmit">
-                            <EditPanel
-                                       v-model="mediaElementEditBag"
-                                       :options="options" />
-                        </RockForm>
-                    </div>
-                    <div v-else-if="item === 'Transcription'">
-                        <TextBox v-model="text" label="Transcription Text" textMode="multiline" size="large" :rows="25" />
-                    </div>
-                </template>
-            </TabbedContent>
+                    </RockForm>
+                </div>
+                <div v-else-if="selectedTab === 'Transcription'">
+                    <TextBox v-model="text" label="Transcription Text" textMode="multiline" size="large" :rows="25" />
+                </div>
+            </div>
 
             <Modal v-model="showAuditDetailsModal" title="Audit Details">
                 <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
@@ -253,7 +256,6 @@
     import { MediaElementBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementBag";
     import { MediaElementDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
     import { NavigationUrlKey } from "./MediaElementDetail/types.partial";
     import MediaPlayer from "@Obsidian/Controls/mediaPlayer.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -267,6 +269,7 @@
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { Chart, ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
 
     // Video engagement data type
     type VideoEngagementData = {
