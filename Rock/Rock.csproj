@@ -823,6 +823,8 @@
     <Compile Include="Lava\Blocks\RenderLavaEndpoint.cs" />
     <Compile Include="Lava\Blocks\RockEntityDeleteBlock.cs" />
     <Compile Include="Lava\Blocks\RockEntityModifyBlock.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\IRockLavaBlock.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\RockLavaBlockBase.cs" />
     <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="Model\CMS\LavaApplication\LavaApplication.cs" />
     <Compile Include="Model\CMS\LavaApplication\LavaApplication.Logic.cs" />
