@@ -36,7 +36,7 @@ namespace Rock.Migrations
             Sql( $@"
 -- Set the ChatPushNotificationMode to 'Mentions and Replies' for chat shared channels.
 UPDATE [GroupType]
-SET [ChatPushNotificationMode] = {ChatNotificationMode.MentionsAndReplies.ConvertToInt()}
+SET [ChatPushNotificationMode] = {ChatNotificationMode.Mentions.ConvertToInt()}
 WHERE [Guid] = '{Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_SHARED_CHANNEL}';
 
 -- Get the 'Avatar Image' Group Type > Group [Attribute].[Id].
