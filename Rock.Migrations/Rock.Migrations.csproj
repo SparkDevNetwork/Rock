@@ -64,6 +64,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\202506031720332_Rollup_20250603.cs" />
+    <Compile Include="Migrations\202506031720332_Rollup_20250603.Designer.cs">
+      <DependentUpon>202506031720332_Rollup_20250603.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.1\202504071505457_AddBluetoothBeaconIdentifiers.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.1\202504071505457_AddBluetoothBeaconIdentifiers.Designer.cs">
       <DependentUpon>202504071505457_AddBluetoothBeaconIdentifiers.cs</DependentUpon>
@@ -2655,6 +2659,9 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202506031720332_Rollup_20250603.resx">
+      <DependentUpon>202506031720332_Rollup_20250603.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.1\202504071505457_AddBluetoothBeaconIdentifiers.resx">
       <DependentUpon>202504071505457_AddBluetoothBeaconIdentifiers.cs</DependentUpon>
     </EmbeddedResource>
