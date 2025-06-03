@@ -203,6 +203,14 @@ namespace Rock.Model
                     .ToList();
 
                 var anyCompletionRecord = completionDetails.FirstOrDefault();
+
+                // If there are no completion records then there's nothing to do.
+                // This situation can/will happen if a student is being removed from a class.
+                if ( anyCompletionRecord == null )
+                {
+                    return;
+                }
+
                 var participant = anyCompletionRecord.Student;
                 var isClassOver = anyCompletionRecord.ClassEndDate.HasValue && anyCompletionRecord.ClassEndDate.Value.IsPast();
                 var hasIncompleteAssignments = completionDetails.Any( a => !a.IsStudentOrFacilitatorCompleted );

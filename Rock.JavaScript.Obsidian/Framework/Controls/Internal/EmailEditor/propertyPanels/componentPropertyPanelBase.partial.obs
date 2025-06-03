@@ -7,7 +7,7 @@
                         :isSquare="true"
                         title="Back"
                         @click="$emit('complete')">
-                <i class="fa fa-chevron-left"></i>
+                <i class="fa fa-chevron-right"></i>
             </RockButton>
         </template>
 
@@ -28,7 +28,7 @@
                             :isSquare="true"
                             title="Clone"
                             @click="$emit('clone')">
-                    <i class="far fa-clone"></i>
+                    <i class="fa fa-clone"></i>
                 </RockButton>
 
                 <RockButton btnType="link"

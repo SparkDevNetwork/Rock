@@ -16,7 +16,8 @@
                     <TextBox v-model="internalName"
                              label="Internal Name"
                              rules="required"
-                             help="The internal page name to use when administering this page" />
+                             help="The internal page name to use when administering this page"
+                             @blur="handleInternalNameBlur" />
 
                     <TextBox v-model="pageTitle"
                              label="Page Title"
@@ -398,6 +399,18 @@
         updateRefValue(blockContexts, props.modelValue.bag?.blockContexts?.map(context => ({ ...context, text: context.text ?? "" })) ?? []);
         updateRefValue(breadCrumbDisplayIcon, props.modelValue.bag?.breadCrumbDisplayIcon ?? false);
     });
+
+    // Handle the blur event on the Internal Name field so that we can auto-fill pageTitle and browserTitle textboxes.
+    function handleInternalNameBlur(): void {
+        if (internalName.value) {
+            if (!pageTitle.value || pageTitle.value.trim() === "") {
+                pageTitle.value = internalName.value;
+            }
+            if (!browserTitle.value || browserTitle.value.trim() === "") {
+                browserTitle.value = internalName.value;
+            }
+        }
+    }
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.

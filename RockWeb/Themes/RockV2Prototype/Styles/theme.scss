@@ -1041,7 +1041,7 @@ a.rock-bookmark {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  padding: 5px 18px;
+  padding: var(--spacing-small) 18px;
   margin: -16px;
   margin-top: 18px;
   border-top: 1px solid var(--color-interface-soft);
@@ -1263,13 +1263,6 @@ a.rock-bookmark {
   .rockbadge {
     margin: 0;
   }
-}
-
-// splash screen
-.splash-form-btn {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 }
 
 #splash {

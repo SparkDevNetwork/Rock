@@ -1,0 +1,188 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="triggerType"
+                              label="Trigger Type"
+                              :items="options.triggerTypeItems ?? []"
+                              rules="required"
+                              :disabled="isTriggerTypeDisabled" />
+            </div>
+        </div>
+
+        <DynamicComponent v-if="componentDefinition"
+                          v-model="componentData"
+                          :definition="componentDefinition"
+                          :executeRequest="onExecuteComponentRequest" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DynamicComponent from "@Obsidian/Controls/dynamicComponent.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { AutomationTriggerBag } from "@Obsidian/ViewModels/Blocks/Core/AutomationTriggerDetail/automationTriggerBag";
+    import { AutomationTriggerDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AutomationTriggerDetail/automationTriggerDetailOptionsBag";
+    import { GetComponentDefinitionResponseBag } from "@Obsidian/ViewModels/Blocks/Core/AutomationTriggerDetail/getComponentDefinitionResponseBag";
+    import { DynamicComponentDefinitionBag } from "@Obsidian/ViewModels/Controls/dynamicComponentDefinitionBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        /**
+         * The automation trigger data that will be edited.
+         */
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<AutomationTriggerBag>>,
+            required: true
+        },
+
+        /**
+         * The options that provide any additional data we need.
+         */
+        options: {
+            type: Object as PropType<AutomationTriggerDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<AutomationTriggerBag>): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const triggerType = propertyRef(props.modelValue.bag?.triggerType?.value ?? "", "ComponentEntityTypeId");
+
+    const componentDefinition = ref<DynamicComponentDefinitionBag | null>(props.modelValue.bag?.componentDefinition ?? null);
+    const componentData = ref<Record<string, string>>(props.modelValue.bag?.componentConfiguration ?? {});
+
+    const isLoadingTriggerType = ref(false);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, triggerType];
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Determines if the trigger type is disabled. This is true if the trigger
+     * has previously been saved or if we are currently loading the event type.
+     */
+    const isTriggerTypeDisabled = computed((): boolean => {
+        return isLoadingTriggerType.value || !!props.modelValue.bag?.idKey;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Updates the component definition and data based on the selected trigger
+     * type.
+     */
+    async function updateTriggerType(): Promise<void> {
+        componentDefinition.value = null;
+        componentData.value = {};
+
+        if (!triggerType.value) {
+            return;
+        }
+
+        isLoadingTriggerType.value = true;
+
+        const result = await invokeBlockAction<GetComponentDefinitionResponseBag>("GetComponentDefinition", {
+            componentGuid: triggerType.value
+        });
+
+        if (result.isSuccess && result.data) {
+            componentDefinition.value = result.data.componentDefinition ?? null;
+            componentData.value = result.data.componentConfiguration ?? {};
+        }
+
+        isLoadingTriggerType.value = false;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Sends a request to the server to be executed for the component.
+     *
+     * @param request The request to send to the server.
+     * @param securityGrantToken The security grant in use by the dynamic component.
+     * @returns The response from the server or null if there was an error.
+     */
+    async function onExecuteComponentRequest(request: Record<string, string>, securityGrantToken: string | null): Promise<Record<string, string> | null> {
+        const result = await invokeBlockAction<Record<string, string>>("ExecuteComponentRequest", {
+            componentGuid: triggerType.value,
+            request,
+            securityGrantToken
+        });
+
+        if (result.isSuccess) {
+            return result.data;
+        }
+        else {
+            return null;
+        }
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(triggerType, props.modelValue.bag?.triggerType?.value ?? "");
+        updateRefValue(componentData, props.modelValue.bag?.componentConfiguration ?? {});
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs, componentData], () => {
+        const newValue: ValidPropertiesBox<AutomationTriggerBag> = {
+            bag: { ...props.modelValue.bag } as AutomationTriggerBag
+        };
+
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "triggerType", { value: triggerType.value });
+        setPropertiesBoxValue(newValue, "componentConfiguration", componentData.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    watch(triggerType, () => updateTriggerType());
+</script>

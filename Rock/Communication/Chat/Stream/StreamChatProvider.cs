@@ -77,7 +77,6 @@ namespace Rock.Communication.Chat
             public const string IsPublic = "rock_public";
             public const string IsAlwaysShown = "rock_always_shown";
             public const string CampusId = "rock_campus_id";
-            public const string NotificationMode = "rock_notification_mode";
         }
 
         /// <summary>
@@ -735,6 +734,12 @@ namespace Rock.Communication.Chat
                     WebhookEvent.UserUnbanned,
 
                     WebhookEvent.UserDeleted
+                },
+
+                // Push version should be to set to v3. 
+                PushConfig = new PushConfigRequest
+                {
+                    Version = "v3"
                 }
             };
 
@@ -780,6 +785,21 @@ namespace Rock.Communication.Chat
 
                     await RetryAsync(
                         async () => await AppClient.UpsertPushProviderAsync( pushProviderRequest ),
+                        operationName
+                    );
+
+                    // For v3 push configuration, opt-in for the "message.new" event push template.
+                    var pushTemplateRequest = new PushTemplateRequest
+                    {
+                        EnablePush = true,
+                        EventType = "message.new",
+                        PushProviderName = pushProviderName,
+                        PushProviderType = PushProviderType.Firebase,
+                        Template = string.Empty
+                    };
+
+                    await RetryAsync(
+                        async () => await AppClient.UpsertPushTemplateAsync( pushTemplateRequest ),
                         operationName
                     );
                 }
@@ -1864,6 +1884,14 @@ namespace Rock.Communication.Chat
                             }
                         }
                     }
+
+                    // Update member push preferences. Always do this no matter what.
+                    // We are not tracking the result of this operation, just the exceptions.
+                    var pushPreferenceResult = await UpdateChatChannelMemberPushPreferencesAsync( chatChannelMembers );
+                    if ( pushPreferenceResult?.HasException == true )
+                    {
+                        exceptions.Add( pushPreferenceResult.Exception );
+                    }
                 }
                 catch ( Exception ex )
                 {
@@ -2024,6 +2052,15 @@ namespace Rock.Communication.Chat
                 }
             }
 
+            // --------------------------------------------------------
+            // 4) Update member push preferences. Always do this no matter what.
+            // We are not tracking the result of this operation, just the exceptions.
+            var pushPreferenceResult = await UpdateChatChannelMemberPushPreferencesAsync( chatChannelMembers.Select( kvp => kvp.Value ).ToList() );
+            if( pushPreferenceResult?.HasException == true )
+            {
+                exceptions.Add( pushPreferenceResult.Exception );
+            }
+
             if ( exceptions.Any() )
             {
                 result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
@@ -2087,6 +2124,68 @@ namespace Rock.Communication.Chat
                             chatChannelKey,
                             assignRoleRequest
                         ),
+                        operationName
+                    );
+
+                    result.Updated.UnionWith( batchedAssignments.Select( a => a.Key ) );
+                }
+                catch ( Exception ex )
+                {
+                    exceptions.Add( ex );
+                }
+                finally
+                {
+                    offset += pageSize;
+                }
+            }
+
+            if ( exceptions.Any() )
+            {
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<ChatSyncCrudResult> UpdateChatChannelMemberPushPreferencesAsync( List<ChatChannelMember> chatChannelMembers )
+        {
+            var result = new ChatSyncCrudResult();
+
+            var operationName = nameof( UpdateChatChannelMemberPushPreferencesAsync ).SplitCase();
+
+            var pageSize = 100;
+            var offset = 0;
+            var membersToAssignCount = chatChannelMembers.Count;
+
+            // Don't let individual batch failures cause all to fail.
+            var exceptions = new List<Exception>();
+            while ( offset < membersToAssignCount )
+            {
+                var batchedAssignments = chatChannelMembers
+                    .Skip( offset )
+                    .Take( pageSize )
+                    .ToList();
+
+                var pushPreferenceRequests = new List<PushPreferenceRequest>();
+                batchedAssignments.ForEach( a =>
+                {
+                    var chatLevel = ConvertNotificationModeToPushPreferenceValue( a.PushNotificationMode );
+
+                    var preferenceRequest = new PushPreferenceRequest
+                    {
+                        ChannelCid = $"{a.ChatChannelTypeKey}:{a.ChatChannelKey}",
+                        ChatLevel = chatLevel,
+                        UserId = a.ChatUserKey,
+                    };
+
+                    pushPreferenceRequests.Add( preferenceRequest );
+                } );
+
+                try
+                {
+                    await RetryAsync(
+                        async () => await UserClient.UpsertManyPushPreferencesAsync( pushPreferenceRequests ),
                         operationName
                     );
 
@@ -3461,7 +3560,6 @@ namespace Rock.Communication.Chat
             channelRequest.SetData( ChannelDataKey.IsLeavingAllowed, chatChannel.IsLeavingAllowed );
             channelRequest.SetData( ChannelDataKey.IsPublic, chatChannel.IsPublic );
             channelRequest.SetData( ChannelDataKey.IsAlwaysShown, chatChannel.IsAlwaysShown );
-            channelRequest.SetData( ChannelDataKey.NotificationMode, chatChannel.ChatNotificationMode );
             channelRequest.SetData( ChannelDataKey.Disabled, !chatChannel.IsActive );
 
             return channelRequest;
@@ -3549,7 +3647,6 @@ namespace Rock.Communication.Chat
                 IsLeavingAllowed = channel.GetDataOrDefault( ChannelDataKey.IsLeavingAllowed, false ),
                 IsPublic = channel.GetDataOrDefault( ChannelDataKey.IsPublic, false ),
                 IsAlwaysShown = channel.GetDataOrDefault( ChannelDataKey.IsAlwaysShown, false ),
-                ChatNotificationMode = channel.GetDataOrDefault( ChannelDataKey.NotificationMode, ChatNotificationMode.AllMessages ),
                 IsActive = !isChannelDisabled
             };
         }
@@ -3963,6 +4060,34 @@ namespace Rock.Communication.Chat
         }
 
         #endregion Converters: From Stream Webhook Payload To Sync Commands
+
+        #region Utilities
+
+        /// <summary>
+        /// Converts a <see cref="ChatNotificationMode"/> to the corresponding Stream Chat push preference value.
+        /// </summary>
+        /// <param name="notificationMode">The notification mode to convert.</param>
+        /// <returns>
+        /// A string representing the Stream push preference value:
+        /// <c>"all"</c> for all messages, <c>"mentions"</c> for mentions only, <c>"none"</c> for silent mode.
+        /// Returns an empty string if the mode is unrecognized.
+        /// </returns>
+        private string ConvertNotificationModeToPushPreferenceValue( ChatNotificationMode notificationMode )
+        {
+            switch ( notificationMode )
+            {
+                case ChatNotificationMode.AllMessages:
+                    return "all";
+                case ChatNotificationMode.Silent:
+                    return "none";
+                case ChatNotificationMode.Mentions:
+                    return "mentions";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        #endregion
 
         #endregion Private Methods
 

@@ -733,53 +733,26 @@ namespace RockWeb.Blocks.Reporting
                             return;
                         }
 
-                        if ( LavaService.RockLiquidIsEnabled )
+                        foreach ( DataTable dataTable in dataSet.Tables )
                         {
-                            foreach ( DataTable dataTable in dataSet.Tables )
+                            var lavaRows = new List<DataRowLavaData>();
+                            foreach ( DataRow row in dataTable.Rows )
                             {
-                                var lavaRows = new List<DataRowDrop>();
-                                foreach ( DataRow row in dataTable.Rows )
-                                {
-                                    lavaRows.Add( new DataRowDrop( row ) );
-                                }
-
-                                if ( dataSet.Tables.Count > 1 )
-                                {
-                                    var tableField = new Dictionary<string, object>();
-                                    tableField.Add( "rows", lavaRows );
-                                    mergeFields.Add( "table" + i.ToString(), tableField );
-                                }
-                                else
-                                {
-                                    mergeFields.Add( "rows", lavaRows );
-                                }
-
-                                i++;
+                                lavaRows.Add( new DataRowLavaData( row ) );
                             }
-                        }
-                        else
-                        {
-                            foreach ( DataTable dataTable in dataSet.Tables )
+
+                            if ( dataSet.Tables.Count > 1 )
                             {
-                                var lavaRows = new List<DataRowLavaData>();
-                                foreach ( DataRow row in dataTable.Rows )
-                                {
-                                    lavaRows.Add( new DataRowLavaData( row ) );
-                                }
-
-                                if ( dataSet.Tables.Count > 1 )
-                                {
-                                    var tableField = new Dictionary<string, object>();
-                                    tableField.Add( "rows", lavaRows );
-                                    mergeFields.Add( "table" + i.ToString(), tableField );
-                                }
-                                else
-                                {
-                                    mergeFields.Add( "rows", lavaRows );
-                                }
-
-                                i++;
+                                var tableField = new Dictionary<string, object>();
+                                tableField.Add( "rows", lavaRows );
+                                mergeFields.Add( "table" + i.ToString(), tableField );
                             }
+                            else
+                            {
+                                mergeFields.Add( "rows", lavaRows );
+                            }
+
+                            i++;
                         }
                     }
 
@@ -1376,63 +1349,5 @@ namespace RockWeb.Blocks.Reporting
                 return false;
             }
         }
-
-        #region RockLiquid Lava implementation
-
-        /// <summary>
-        ///
-        /// </summary>
-        private class DataRowDrop : DotLiquid.Drop, ILavaDataDictionary
-        {
-            private readonly DataRow _dataRow;
-
-            public DataRowDrop( DataRow dataRow )
-            {
-                _dataRow = dataRow;
-            }
-
-            public override object BeforeMethod( string method )
-            {
-                if ( _dataRow.Table.Columns.Contains( method ) )
-                {
-                    return _dataRow[method];
-                }
-
-                return null;
-            }
-
-            #region ILavaDataDictionary
-
-            public List<string> AvailableKeys
-            {
-                get
-                {
-                    var keys = new List<string>();
-                    foreach ( DataColumn column in _dataRow.Table.Columns )
-                    {
-                        keys.Add( column.ColumnName );
-                    }
-                    return keys;
-                }
-            }
-
-            public bool ContainsKey( string key )
-            {
-                return _dataRow.Table.Columns.Contains( key );
-            }
-
-            public object GetValue( string key )
-            {
-                if ( _dataRow.Table.Columns.Contains( key ) )
-                {
-                    return _dataRow[key];
-                }
-                return null;
-            }
-
-            #endregion
-        }
-
-        #endregion
     }
 }

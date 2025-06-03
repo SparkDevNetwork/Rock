@@ -440,23 +440,30 @@ const securityGrantSymbol = Symbol();
  * useSecurityGrant() function instead.
  *
  * @param token The token provided by the server.
+ * @param renewTokenCallback An optional function that overrides the default token renewal callback.
  *
  * @returns A reference to the security grant that will be updated automatically when it has been renewed.
  */
-export function getSecurityGrant(token: string | null | undefined): SecurityGrant {
+export function getSecurityGrant(token: string | null | undefined, renewTokenCallback?: (() => Promise<string | null> | string | null)): SecurityGrant {
     // Use || so that an empty string gets converted to null.
     const tokenRef = ref(token || null);
-    const invokeBlockAction = useInvokeBlockAction();
+    const invokeBlockAction = !renewTokenCallback ? useInvokeBlockAction() : null;
     let renewalTimeout: NodeJS.Timeout | null = null;
 
     // Internal function to renew the token and re-schedule renewal.
     const renewToken = async (): Promise<void> => {
-        const result = await invokeBlockAction<string>("RenewSecurityGrantToken");
-
-        if (result.isSuccess && result.data) {
-            tokenRef.value = result.data;
-
+        if (renewTokenCallback) {
+            tokenRef.value = await renewTokenCallback();
             scheduleRenewal();
+        }
+        else if (invokeBlockAction) {
+            const result = await invokeBlockAction<string>("RenewSecurityGrantToken");
+
+            if (result.isSuccess && result.data) {
+                tokenRef.value = result.data;
+
+                scheduleRenewal();
+            }
         }
     };
 

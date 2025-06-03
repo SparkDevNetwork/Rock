@@ -1,0 +1,138 @@
+<template>
+    <DropDownList v-model="property"
+                  label="Property"
+                  :items="propertyItems"
+                  rules="required" />
+
+    <RadioButtonList v-model="changeType"
+                     label="Change Type"
+                     :items="changeTypeItems" />
+
+    <TransitionVerticalCollapse>
+        <div v-if="hasOriginalValue || hasUpdatedValue || hasValue" class="row">
+            <div v-if="hasOriginalValue" class="col-md-6">
+                <TextBox v-model="originalValue"
+                         label="Original Value"
+                         rules="required" />
+            </div>
+
+            <div v-if="hasUpdatedValue" class="col-md-6">
+                <TextBox v-model="updatedValue"
+                         label="Updated Value"
+                         rules="required" />
+            </div>
+
+            <div v-if="hasValue" class="col-md-6">
+                <TextBox v-model="updatedValue"
+                         label="Value"
+                         rules="required" />
+            </div>
+        </div>
+    </TransitionVerticalCollapse>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { computed, PropType, ref, watch } from "vue";
+    import { EntityChangeSimpleChangeType } from "@Obsidian/Enums/Core/Automation/Triggers/entityChangeSimpleChangeType";
+    import { EntityChangeSimpleCriteriaRuleBag } from "@Obsidian/ViewModels/Core/Automation/Triggers/entityChangeSimpleCriteriaRuleBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps({
+        /**
+         * The single rule to be edited by this component.
+         */
+        modelValue: {
+            type: Object as PropType<EntityChangeSimpleCriteriaRuleBag | null>,
+            required: false
+        },
+
+        /**
+         * The list of properties that can be used in the rule.
+         */
+        properties: {
+            type: Array as PropType<string[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: EntityChangeSimpleCriteriaRuleBag): void
+    }>();
+
+    // #region Values
+
+    const property = ref(props.modelValue?.property ?? "");
+    const changeType = ref(props.modelValue?.changeType.toString() ?? "0");
+    const originalValue = ref(props.modelValue?.originalValue ?? "");
+    const updatedValue = ref(props.modelValue?.updatedValue ?? "");
+
+    const changeTypeItems: ListItemBag[] = [
+        { text: "Any Change", value: "0" },
+        { text: "Has Specific Value", value: "1" },
+        { text: "Changed From Specific Value", value: "2" },
+        { text: "Changed To Specific Value", value: "3" },
+        { text: "Changed From One Value to Another", value: "4" },
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The list of properties that can be used in the rule.
+     */
+    const propertyItems = computed(() => {
+        return props.properties.map(property => ({
+            text: property,
+            value: property
+        }));
+    });
+
+    /**
+     * Determines if the "Value" input should be visible.
+     */
+    const hasValue = computed((): boolean => {
+        return changeType.value === "1";
+    });
+
+    /**
+     * Determines if the "Original Value" input should be visible.
+     */
+    const hasOriginalValue = computed((): boolean => {
+        return changeType.value === "2" || changeType.value === "4";
+    });
+
+    /**
+     * Determines if the "Updated Value" input should be visible.
+     */
+    const hasUpdatedValue = computed((): boolean => {
+        return changeType.value === "3" || changeType.value === "4";
+    });
+
+    // #endregion
+
+    watch([property, changeType, originalValue, updatedValue], () => {
+        const newValue: EntityChangeSimpleCriteriaRuleBag = {
+            guid: props.modelValue?.guid ?? newGuid(),
+            property: property.value,
+            changeType: toNumber(changeType.value) as EntityChangeSimpleChangeType,
+            originalValue: originalValue.value,
+            updatedValue: updatedValue.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    watch(() => props.modelValue, () => {
+        property.value = props.modelValue?.property ?? "";
+        changeType.value = props.modelValue?.changeType.toString() ?? "0";
+        originalValue.value = props.modelValue?.originalValue ?? "";
+        updatedValue.value = props.modelValue?.updatedValue ?? "";
+    });
+</script>

@@ -9,27 +9,27 @@ import { RockMessageActionList } from "./RockMessageActionList";
 
 interface WrappedChannelProps {
     children: ReactNode;
-    cid?: string;
+    channelId?: string;
     jumpToMessageId?: string;
 }
 
-export const WrappedChannel: React.FC<WrappedChannelProps> = ({ children, cid, jumpToMessageId }) => {
+export const WrappedChannel: React.FC<WrappedChannelProps> = ({ children, channelId, jumpToMessageId }) => {
     const { client, setActiveChannel } = useChatContext();
     const [channelReady, setChannelReady] = useState(false);
 
     useEffect(() => {
         const loadChannel = async () => {
-            if (cid) {
+            if (channelId) {
                 try {
-                    const [channel] = await client.queryChannels({ cid }, { last_message_at: -1 }, { limit: 1 });
+                    const [channel] = await client.queryChannels({ cid: channelId }, { last_message_at: -1 }, { limit: 1 });
                     if (channel) {
                         setActiveChannel(channel);
                         setChannelReady(true);
                     } else {
-                        console.warn(`Channel with CID ${cid} not found.`);
+                        console.warn(`Channel with CID ${channelId} not found.`);
                     }
                 } catch (error) {
-                    console.error(`Error loading channel with CID ${cid}:`, error);
+                    console.error(`Error loading channel with CID ${channelId}:`, error);
                 }
             }
             else {
@@ -38,7 +38,7 @@ export const WrappedChannel: React.FC<WrappedChannelProps> = ({ children, cid, j
         };
 
         loadChannel();
-    }, [cid, client, setActiveChannel]);
+    }, [channelId, client, setActiveChannel]);
 
     if (!channelReady) return null;
 

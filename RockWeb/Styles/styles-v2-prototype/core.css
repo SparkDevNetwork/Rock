@@ -226,17 +226,17 @@ th {
 /* ===================== VARIABLES =================== */
 :root {
   --logo-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
-  --base-interface-strongest: #000000;
+  --base-interface-strongest: #0a0a0a;
   --base-interface-stronger: #0D1117;
   --base-interface-strong: #3D444D ;
   --base-interface-medium: #8B8BA7;
   --base-interface-soft: #D9D9E3;
   --base-interface-softer: #F8F8FC;
-  --base-interface-softest: #FFFFFF;
+  --base-interface-softest: #fdfdfd;
   --base-critical: #ee7725;
   --base-danger: #D70015;
-  --base-info: #007AFF;
-  --base-success: #248A3D;
+  --base-info: #005DD7;
+  --base-success: #01A11E;
   --base-primary: #FF791D;
   --base-warning: #E58600;
   --base-link: #006DCC;
@@ -309,8 +309,10 @@ th {
   --color-sequential-9: #AFEECB;
   --color-sequential-10: #C9F4DC;
   --color-sequential-11: #E4F9ED;
-  --color-code: #c7254e;
-  --color-code-bg: #f9f2f4;
+  --kpi-col-lg: var(--color-interface-soft)
+  // ========================= END COLOR ==========================
+  // ========================= TYPOGRAPHY =========================
+  // FONT SIZES
   --font-size-xsmall: 12px;
   --font-size-small: 14px;
   --font-size-regular: 16px;
@@ -361,28 +363,37 @@ th {
   --focus-state-border: 1px solid var(--color-primary);
   --focus-state-shadow: var(--input-focus-box-shadow);
   --input-border: var(--color-interface-soft);
+  --slider-height: 8px;
+  --slider-bg: var(--color-interface-softer);
+  --slider-progress-bg: var(--color-primary);
+  --slider-handle-offset: 29px;
+  --slider-handle-bg: var(--color-interface-softest);
+  --slider-handle-height: 16px;
+  --slider-handle-bg--hover: var(--color-interface-softest);
+  --slider-handle-border-color: var(--color-interface-soft);
+  --slider-handle-border-color--hover: var(--color-interface-soft);
 }
 @supports (color: color-mix(in srgb, red 50%, white 50%)) {
   :root {
-    --tint-white-percentage: 100%;
+    --tint-white-percentage: 50%;
     --shade-black-percentage: 15%;
     --color-critical-tint: color-mix(in srgb, var(--base-critical) 50%, transparent var(--tint-white-percentage));
-    --color-critical-soft: color-mix(in srgb, var(--base-critical) 15%, transparent var(--tint-white-percentage));
+    --color-critical-soft: color-mix(in srgb, var(--base-critical) 7%, transparent var(--tint-white-percentage));
     --color-critical-shade: color-mix(in srgb, var(--base-critical) 100%, #000 var(--shade-black-percentage));
     --color-danger-tint: color-mix(in srgb, var(--base-danger) 50%, transparent var(--tint-white-percentage));
-    --color-danger-soft: color-mix(in srgb, var(--base-danger) 15%, transparent var(--tint-white-percentage));
+    --color-danger-soft: color-mix(in srgb, var(--base-danger) 7%, transparent var(--tint-white-percentage));
     --color-danger-shade: color-mix(in srgb, var(--base-danger) 100%, #000 var(--shade-black-percentage));
     --color-info-tint: color-mix(in srgb, var(--base-info) 50%, transparent var(--tint-white-percentage));
-    --color-info-soft: color-mix(in srgb, var(--base-info) 15%, transparent var(--tint-white-percentage));
+    --color-info-soft: color-mix(in srgb, var(--base-info) 7%, transparent var(--tint-white-percentage));
     --color-info-shade: color-mix(in srgb, var(--base-info) 100%, #000 var(--shade-black-percentage));
     --color-success-tint: color-mix(in srgb, var(--base-success) 50%, transparent var(--tint-white-percentage));
-    --color-success-soft: color-mix(in srgb, var(--base-success) 15%, transparent var(--tint-white-percentage));
+    --color-success-soft: color-mix(in srgb, var(--base-success) 7%, transparent var(--tint-white-percentage));
     --color-success-shade: color-mix(in srgb, var(--base-success) 100%, #000 var(--shade-black-percentage));
     --color-warning-tint: color-mix(in srgb, var(--base-warning) 50%, transparent var(--tint-white-percentage));
-    --color-warning-soft: color-mix(in srgb, var(--base-warning) 15%, transparent var(--tint-white-percentage));
+    --color-warning-soft: color-mix(in srgb, var(--base-warning) 7%, transparent var(--tint-white-percentage));
     --color-warning-shade: color-mix(in srgb, var(--base-warning) 100%, #000 var(--shade-black-percentage));
     --color-primary-tint: color-mix(in srgb, var(--base-primary) 50%, transparent var(--tint-white-percentage));
-    --color-primary-soft: color-mix(in srgb, var(--base-primary) 15%, transparent var(--tint-white-percentage));
+    --color-primary-soft: color-mix(in srgb, var(--base-primary) 7%, transparent var(--tint-white-percentage));
     --color-primary-shade: color-mix(in srgb, var(--base-primary) 100%, #000 var(--shade-black-percentage));
     --color-link-tint: color-mix(in srgb, var(--base-link) 50%, transparent var(--tint-white-percentage));
     --color-link-shade: color-mix(in srgb, var(--base-link) 100%, #000 var(--shade-black-percentage));
@@ -399,6 +410,11 @@ th {
     --color-interface-soft: var(--base-interface-strong);
     --color-interface-softer: var(--base-interface-strongest);
     --color-interface-softest: var(--base-interface-stronger);
+    --color-info-strong: color-mix(in srgb, var(--base-info) 50%, #fff var(--tint-white-percentage));
+    --color-danger-strong: color-mix(in srgb, var(--base-danger) 50%, #fff var(--tint-white-percentage));
+    --color-success-strong: color-mix(in srgb, var(--base-success) 50%, #fff var(--tint-white-percentage));
+    --color-warning-strong: color-mix(in srgb, var(--base-warning) 50%, #fff var(--tint-white-percentage));
+    --color-critical-strong: color-mix(in srgb, var(--base-critical) 50%, #fff var(--tint-white-percentage));
     --box-shadow: rgba(145, 158, 171, 0.3) 0px 0px 2px 0px,rgba(145, 158, 171, .04) 0px 12px 24px -4px;
     --popup-box-shadow: 0 1rem 3rem rgba(255, 255, 255,.04);
   }
@@ -412,6 +428,11 @@ th {
   --color-interface-soft: var(--base-interface-soft);
   --color-interface-softer: var(--base-interface-softer);
   --color-interface-softest: var(--base-interface-softest);
+  --color-info-strong: var(--base-info);
+  --color-danger-strong: var(--base-danger);
+  --color-success-strong: var(--base-success);
+  --color-warning-strong: var(--base-warning);
+  --color-critical-strong: var(--base-critical);
   --box-shadow: rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
   --popup-box-shadow: 0 1rem 3rem rgba(0,0,0,.175);
 }
@@ -424,6 +445,11 @@ th {
   --color-interface-soft: var(--base-interface-strong);
   --color-interface-softer: var(--base-interface-strongest);
   --color-interface-softest: var(--base-interface-stronger);
+  --color-info-strong: color-mix(in srgb, var(--base-info) 50%, #fff var(--tint-white-percentage));
+  --color-danger-strong: color-mix(in srgb, var(--base-danger) 50%, #fff var(--tint-white-percentage));
+  --color-success-strong: color-mix(in srgb, var(--base-success) 50%, #fff var(--tint-white-percentage));
+  --color-warning-strong: color-mix(in srgb, var(--base-warning) 50%, #fff var(--tint-white-percentage));
+  --color-critical-strong: color-mix(in srgb, var(--base-critical) 50%, #fff var(--tint-white-percentage));
   --box-shadow: rgba(145, 158, 171, 0.3) 0px 0px 2px 0px,rgba(145, 158, 171, .04) 0px 12px 24px -4px;
   --popup-box-shadow: 0 1rem 3rem rgba(255, 255, 255,.04);
 }
@@ -2301,7 +2327,7 @@ th {
 
 .alert-default {
   color: var(--color-interface-strong);
-  background-color: var(--color-interface-soft);
+  background-color: var(--color-interface-softer);
   border-color: var(--color-interface-strong);
 }
 .alert-default hr {
@@ -2470,6 +2496,10 @@ th {
   background-color: var(--color-interface-softest);
   border-color: var(--color-interface-soft);
 }
+.btn-authentication::before {
+  content: " ";
+  width: 2em;
+}
 .btn-authentication.facebook, .btn-authentication.google, .btn-authentication.twitter {
   background-color: var(--color-interface-softest);
   border-color: var(--color-interface-soft);
@@ -2488,6 +2518,15 @@ th {
   --btn-hover-bg: #3B5998;
   --social-icon: "";
 }
+.btn-authentication.facebook:before {
+  background-image: url("/Assets/Icons/Facebook_logo.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 1.2em;
+  height: 1.2em;
+  content: "  ";
+}
 .btn-authentication.google {
   color: var(--color-interface-strong);
 }
@@ -2496,8 +2535,8 @@ th {
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  width: 1em;
-  height: 1em;
+  width: 1.1em;
+  height: 1.1em;
   content: "  ";
 }
 .btn-authentication.twitter {
@@ -2568,14 +2607,14 @@ th {
 }
 .btn-default:active, .btn-default.active, .open > .dropdown-toggle .btn-default {
   color: var(--color-interface-stronger);
-  background-color: var(--color-interface-soft);
+  background-color: var(--color-interface-softer);
   border-color: var(--color-interface-soft);
   background-image: none;
 }
 .btn-default:active:hover, .btn-default:active:focus, .btn-default:active.focus, .btn-default.active:hover, .btn-default.active:focus, .btn-default.active.focus, .open > .dropdown-toggle .btn-default:hover, .open > .dropdown-toggle .btn-default:focus, .open > .dropdown-toggle .btn-default.focus {
   color: var(--color-interface-stronger);
   background-color: var(--color-interface-soft);
-  border-color: var(--color-interface-soft);
+  border-color: var(--color-interface-medium);
 }
 .btn-default.disabled:hover, .btn-default.disabled:focus, .btn-default.disabled.focus, .btn-default[disabled]:hover, .btn-default[disabled]:focus, .btn-default[disabled].focus, fieldset[disabled] .btn-default:hover, fieldset[disabled] .btn-default:focus, fieldset[disabled] .btn-default.focus {
   background-color: var(--color-interface-softest);
@@ -2663,28 +2702,28 @@ th {
 }
 
 .btn.btn-info {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-info-strong);
   border-color: var(--color-info-strong);
 }
 .btn.btn-info:focus, .btn.btn-info.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-info-strong);
   border-color: var(--color-info-strong);
 }
 .btn.btn-info:hover {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-info-shade);
   border-color: var(--color-info-shade);
 }
 .btn.btn-info:active, .btn.btn-info.active, .open > .dropdown-toggle .btn.btn-info {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-info-strong);
   border-color: var(--color-info-strong);
   background-image: none;
 }
 .btn.btn-info:active:hover, .btn.btn-info:active:focus, .btn.btn-info:active.focus, .btn.btn-info.active:hover, .btn.btn-info.active:focus, .btn.btn-info.active.focus, .open > .dropdown-toggle .btn.btn-info:hover, .open > .dropdown-toggle .btn.btn-info:focus, .open > .dropdown-toggle .btn.btn-info.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-info-shade);
   border-color: var(--color-info-shade);
 }
@@ -2701,28 +2740,28 @@ th {
 }
 
 .btn.btn-warning {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-warning-strong);
   border-color: var(--color-warning-strong);
 }
 .btn.btn-warning:focus, .btn.btn-warning.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-warning-strong);
   border-color: var(--color-warning-strong);
 }
 .btn.btn-warning:hover {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-warning-shade);
   border-color: var(--color-warning-shade);
 }
 .btn.btn-warning:active, .btn.btn-warning.active, .open > .dropdown-toggle .btn.btn-warning {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-interface-softest);
   border-color: var(--color-warning-strong);
   background-image: none;
 }
 .btn.btn-warning:active:hover, .btn.btn-warning:active:focus, .btn.btn-warning:active.focus, .btn.btn-warning.active:hover, .btn.btn-warning.active:focus, .btn.btn-warning.active.focus, .open > .dropdown-toggle .btn.btn-warning:hover, .open > .dropdown-toggle .btn.btn-warning:focus, .open > .dropdown-toggle .btn.btn-warning.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-warning-shade);
   border-color: var(--color-warning-shade);
 }
@@ -2734,26 +2773,26 @@ th {
   box-shadow: 0 0 0 3px var(--color-warning-tint);
 }
 .btn.btn-warning .badge {
-  color: var(--color-warning-strong);
+  color: var(--base-warning-strong);
   background-color: var(--color-warning-strong);
 }
 
 .btn.btn-danger,
 .btn-danger-solid {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-danger-strong);
   border-color: var(--color-danger-strong);
 }
 .btn.btn-danger:focus, .btn.btn-danger.focus,
 .btn-danger-solid:focus,
 .btn-danger-solid.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-danger-strong);
   border-color: var(--color-danger-strong);
 }
 .btn.btn-danger:hover,
 .btn-danger-solid:hover {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-danger-shade);
   border-color: var(--color-danger-shade);
 }
@@ -2761,7 +2800,7 @@ th {
 .btn-danger-solid:active,
 .btn-danger-solid.active,
 .open > .dropdown-toggle .btn-danger-solid {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-interface-softest);
   background-image: none;
   border-color: var(--color-danger-strong);
@@ -2776,7 +2815,7 @@ th {
 .open > .dropdown-toggle .btn-danger-solid:hover,
 .open > .dropdown-toggle .btn-danger-solid:focus,
 .open > .dropdown-toggle .btn-danger-solid.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-danger-shade);
   border-color: var(--color-danger-shade);
 }
@@ -2800,33 +2839,33 @@ fieldset[disabled] .btn-danger-solid.focus {
 }
 .btn.btn-danger .badge,
 .btn-danger-solid .badge {
-  color: var(--color-danger-strong);
+  color: var(--base-danger-strong);
   background-color: var(--color-danger-strong);
 }
 
 .btn-action {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-interface-medium);
   border-color: var(--color-interface-medium);
 }
 .btn-action:focus, .btn-action.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-interface-strong);
   border-color: var(--color-interface-strong);
 }
 .btn-action:hover {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-interface-strong);
   border-color: var(--color-interface-strong);
 }
 .btn-action:active, .btn-action.active, .open > .dropdown-toggle .btn-action {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-interface-strong);
   background-image: none;
   border-color: var(--color-interface-strong);
 }
 .btn-action:active:hover, .btn-action:active:focus, .btn-action:active.focus, .btn-action.active:hover, .btn-action.active:focus, .btn-action.active.focus, .open > .dropdown-toggle .btn-action:hover, .open > .dropdown-toggle .btn-action:focus, .open > .dropdown-toggle .btn-action.focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-interface-strong);
   border-color: var(--color-interface-strong);
 }
@@ -2835,7 +2874,7 @@ fieldset[disabled] .btn-danger-solid.focus {
   border-color: var(--color-interface-strong);
 }
 .btn-action .badge {
-  color: var(--color-interface-stronger);
+  color: var(--base-interface-stronger);
   background-color: var(--color-interface-softest);
 }
 
@@ -2980,8 +3019,8 @@ fieldset[disabled] .btn-danger-solid.focus {
   border-color: var(--color-primary);
 }
 .btn-outline-primary:hover {
-  color: var(--color-interface-softest);
-  background-color: var(--color-primary);
+  color: var(--color-primary);
+  background-color: var(--color-primary-soft);
   border-color: var(--color-primary);
 }
 .btn-outline-primary:focus, .btn-outline-primary.focus {
@@ -3139,16 +3178,13 @@ input[type=button].btn-block {
 }
 .theme-toggle:hover {
   color: var(--color-interface-stronger);
-  background-color: var(--color-interface-soft);
 }
 .theme-toggle:focus {
   color: var(--color-interface-stronger);
-  border-color: var(--color-interface-stronger);
 }
 .theme-toggle:focus:active {
-  color: var(--color-interface-stronger);
-  background-color: var(--color-interface-soft);
-  border-color: var(--color-interface-stronger);
+  color: var(--color-primary);
+  box-shadow: var(--input-focus-box-shadow);
 }
 
 [theme=dark] .theme-toggle .ti.theme-mode-icon:before {
@@ -3856,7 +3892,7 @@ input[type=button].btn-block {
   border-radius: 0.25em;
 }
 a .label:hover, a .label:focus {
-  color: var(--color-interface-softest);
+  color: var(--color-interface-stronger);
   text-decoration: none;
   cursor: pointer;
 }
@@ -3877,8 +3913,9 @@ a .label:hover, a .label:focus {
 }
 
 .label-default {
-  background-color: var(--color-interface-soft);
-  color: var(--color-interface-stronger);
+  background-color: var(--color-interface-softer);
+  color: var(--color-interface-strong);
+  border: 1px solid var(--color-interface-soft);
 }
 .label-default[href]:hover, .label-default[href]:focus {
   background-color: var(--color-interface-medium);
@@ -3968,8 +4005,8 @@ samp {
 code {
   padding: calc(var(--spacing-xsmall) / 2) var(--spacing-xsmall);
   font-size: 90%;
-  color: var(--code-color);
-  background-color: var(--color-code-bg);
+  color: #e83e8c;
+  background-color: transparent;
   border-radius: var(--rounded-small);
 }
 
@@ -4267,7 +4304,7 @@ button.close {
 .list-group-item {
   position: relative;
   display: block;
-  padding: var(--spacing-xsmall) var(--spacing-medium);
+  padding: var(--spacing-small) var(--spacing-medium);
   margin-bottom: -1px;
   background-color: var(--color-interface-softest);
   border: 1px solid var(--color-interface-soft);
@@ -4308,7 +4345,7 @@ button.close {
 }
 .list-group-item.active, .list-group-item.active:hover, .list-group-item.active:focus {
   z-index: 2;
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-primary);
   border-color: var(--color-primary);
 }
@@ -4532,6 +4569,7 @@ body.modal-open,
 
 .modal-title {
   margin: 0;
+  color: var(--base-interface-softest);
   line-height: var(--line-height-normal);
 }
 
@@ -5162,7 +5200,7 @@ output {
   font-size: var(--font-size-regular);
   line-height: var(--line-height-normal);
   color: var(--color-interface-stronger);
-  background-color: var(--color-interface-softest);
+  background-color: var(--color-interface-softest) !important;
   background-image: none;
   border: 1px solid var(--color-interface-soft);
   border-radius: var(--rounded-xsmall);
@@ -6634,7 +6672,7 @@ td.grid-actions {
 
 .panel-section .table-light > tfoot > tr > td,
 .well .table-light > tfoot > tr > td {
-  background-color: var(--color-interface-soft);
+  background-color: var(--color-interface-softer);
 }
 
 .grid-select-field .checkbox,
@@ -6853,7 +6891,7 @@ td.grid-actions {
 }
 
 .input-group-btn > .btn {
-  padding: 6px var(--spacing-medium);
+  padding: var(--spacing-xsmall) var(--spacing-medium);
 }
 
 .input-group-addon,
@@ -6929,6 +6967,7 @@ td.grid-actions {
 
 .input-group-addon:last-child {
   border-left: 0;
+  box-shadow: var(--input-box-shadow);
 }
 
 .input-group-btn {
@@ -7714,7 +7753,7 @@ ul ul, ol ul, ul ol, ol ol {
 }
 .panel .panel-title i {
   margin-right: var(--spacing-tiny);
-  color: var(--color-interface-soft);
+  color: var(--color-interface-medium);
 }
 
 .panel-body {
@@ -8195,7 +8234,7 @@ ul ul, ol ul, ul ol, ol ol {
   color: var(--color-interface-strong);
 }
 .panel-widget > .panel-body {
-  border-top: 1px solid var(--color-interface-softer);
+  border-top: 1px solid var(--color-interface-soft);
 }
 
 .panel-persondetails {
@@ -8501,6 +8540,9 @@ ul ul, ol ul, ul ol, ol ol {
   margin-left: var(--spacing-tiny);
 }
 
+.panel .panel-heading .panel-header-actions {
+  margin-right: 1rem !important;
+}
 .panel .panel-heading .panel-title small {
   color: var(--color-interface-medium);
 }
@@ -9112,7 +9154,7 @@ ul ul, ol ul, ul ol, ol ol {
   margin-left: 2px;
 }
 .nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-primary);
   border-color: var(--color-primary);
 }
@@ -10237,7 +10279,7 @@ ul ul, ol ul, ul ol, ol ol {
 }
 
 .ace_line {
-  color: var(--color-interface-strong);
+  color: var(--color-interface-strongest);
 }
 
 .ace_editor .ace_marker-layer .ace_selection {
@@ -10322,13 +10364,13 @@ ul ul, ol ul, ul ol, ol ol {
 }
 
 .label-campus {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-secondary);
 }
 
 .label-type {
-  color: var(--color-interface-softest);
-  background-color: var(--color-interface-soft);
+  color: var(--base-interface-softest);
+  background-color: var(--color-interface-medium);
 }
 
 .label-communicationstatus-approved {
@@ -10355,6 +10397,12 @@ ul ul, ol ul, ul ol, ol ol {
   margin: 0 0 6.7px;
 }
 
+.list-as-blocks {
+  background-color: var(--color-interface-softer);
+  border-radius: var(--rounded-medium);
+  border: 1px solid var(--color-interface-soft);
+  margin-bottom: var(--spacing-huge);
+}
 .list-as-blocks h3 {
   display: inline-block;
   width: 100%;
@@ -10368,8 +10416,7 @@ ul ul, ol ul, ul ol, ol ol {
   display: flex;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
-  padding: 0;
-  margin: 15px -7.5px -15px;
+  padding: var(--spacing-large) var(--spacing-medium) 8px var(--spacing-medium);
   list-style: none;
 }
 .list-as-blocks ul li {
@@ -10430,7 +10477,7 @@ ul ul, ol ul, ul ol, ol ol {
 .list-as-blocks ul li a i {
   margin: var(--spacing-xsmall) 0;
   font-size: var(--font-size-h3); /* When switching Rock Core to Tabler icon set make sure to increase the font-size as FontAwesome is bigger than Tabler.*/
-  color: var(--color-interface-strong);
+  color: var(--color-interface-medium);
 }
 .list-as-blocks ul li a:hover {
   color: var(--color-interface-stronger);
@@ -12142,6 +12189,12 @@ div.aspNetDisabled {
   text-align: left;
 }
 
+.splash-form-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .nav .open > a, .nav .open > a:hover, .nav .open > a:focus {
   background-color: transparent;
 }
@@ -12620,7 +12673,7 @@ ul.list-group-panel .list-group-item:first-child,
 }
 .datepicker table tr td.day:hover, .datepicker table tr td.focused {
   cursor: pointer;
-  background: var(--color-interface-soft);
+  background: var(--color-interface-softer);
 }
 .datepicker table tr td.disabled, .datepicker table tr td.disabled:hover {
   color: var(--color-interface-medium);
@@ -12640,22 +12693,22 @@ ul.list-group-panel .list-group-item:first-child,
   background: var(--color-info-soft);
 }
 .datepicker table tr td.today {
-  color: var(--color-interface-strongest);
-  background-color: var(--color-critical-soft);
+  color: var(--base-interface-softest);
+  background-color: var(--color-primary);
 }
 .datepicker table tr td.today:hover, .datepicker table tr td.today:focus {
-  background: var(--color-critical-strong);
+  background: var(--color-primary-shade);
 }
 .datepicker table tr td.today.focused {
-  background: var(--color-critical-strong);
+  background: var(--color-primary-shade);
 }
 .datepicker table tr td.today.disabled, .datepicker table tr td.today.disabled:active {
   color: var(--color-interface-medium);
-  background: var(--color-critical-soft);
+  background: var(--color-primary);
 }
 .datepicker table tr td.range {
   color: var(--color-interface-strongest);
-  background: var(--color-interface-softer);
+  background: var(--color-primary-tint);
   border-radius: 0;
 }
 .datepicker table tr td.range.focused, .datepicker table tr td.range:hover {
@@ -12686,7 +12739,8 @@ ul.list-group-panel .list-group-item:first-child,
 }
 .datepicker table tr td.range.today {
   color: var(--color-interface-strongest);
-  background: var(--color-interface-soft);
+  background: var(--color-primary-tint);
+  border: 1px solid var(--color-primary);
 }
 .datepicker table tr td.range.today:hover {
   background: var(--color-interface-soft);
@@ -12698,10 +12752,10 @@ ul.list-group-panel .list-group-item:first-child,
 .datepicker table tr td.selected, .datepicker table tr td.selected.highlighted {
   color: var(--color-interface-softest);
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-  background: var(--color-interface-medium);
+  background: var(--color-primary);
 }
 .datepicker table tr td.selected:hover, .datepicker table tr td.selected.highlighted:hover {
-  background: var(--color-interface-medium);
+  background: var(--color-primary);
 }
 .datepicker table tr td.active, .datepicker table tr td.active.highlighted {
   color: var(--color-interface-softest);
@@ -12974,7 +13028,7 @@ ul.list-group-panel .list-group-item:first-child,
 
 @media (min-width: 992px) {
   .grid-loader {
-    --uib-size: 140px !important;
+    --uib-size: 120px !important;
   }
   .updateprogress-status {
     padding: var(--spacing-xlarge) var(--spacing-xlarge);
@@ -14137,7 +14191,7 @@ body.rock-modal .modal-content {
 .rock-modal .modal-content .modal-header small {
   display: block;
   margin-top: var(--spacing-xsmall);
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
 }
 @media screen and (min-width: 768px) {
   .modal-content.rock-modal .modal-header h3,
@@ -15750,7 +15804,7 @@ textarea:focus,
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.active {
   background-color: var(--color-interface-soft);
-  color: var(--color-interface-medium);
+  color: var(--color-interface-stronger);
 }
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.btn-add {
@@ -15790,7 +15844,7 @@ textarea:focus,
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter.active > .btn-grid-action {
   background-color: var(--color-interface-soft);
-  color: var(--color-interface-medium);
+  color: var(--color-interface-stronger);
 }
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper {
@@ -16948,13 +17002,13 @@ iframe.file-browser {
 }
 
 .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
-  background-color: var(--color-interface-soft);
+  background-color: var(--color-interface-softer);
 }
 
 .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
-  color: var(--color-interface-softest);
+  color: var(--color-interface-strong);
   font-weight: var(--font-weight-semibold);
-  background-color: var(--color-interface-medium);
+  background-color: var(--color-interface-soft);
 }
 
 .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .ant-select-item-option-state {
@@ -18242,6 +18296,30 @@ iframe.file-browser {
   background: rgba(94, 94, 94, 0.6);
 }
 
+.workflow-activity {
+  position: relative;
+  margin: 0 0 8px;
+}
+.workflow-activity > .panel-heading {
+  background: var(--color-interface-softest);
+  border-bottom: 0;
+}
+.workflow-activity > .panel-heading:hover {
+  background: var(--color-interface-softer);
+}
+.workflow-activity > .panel-heading > .pull-right {
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+.workflow-activity .btn-action.add-action {
+  color: var(--color-interface-strong);
+  background-color: var(--color-interface-softest);
+  border-color: var(--color-interface-soft);
+}
+.workflow-activity:last-of-type {
+  margin-bottom: 0;
+}
+
 /* ===================== BLOCK =================== */
 /*
   Used to manage styles for specific blocks.
@@ -18357,8 +18435,8 @@ iframe.file-browser {
 }
 .panel-note > .panel-heading {
   color: var(--color-interface-strongest);
-  background-color: var(--color-interface-softer);
-  border-color: var(--color-interface-softer);
+  background-color: var(--color-interface-softest);
+  border-color: var(--color-interface-soft);
 }
 .panel-note > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: var(--color-interface-soft);
@@ -18843,7 +18921,7 @@ iframe.file-browser {
   width: 6px;
   content: "";
   background: var(--color-info-strong);
-  border-radius: var(--color-interface-soft) -radius 0 0 var(--color-interface-soft) -radius;
+  border-radius: var(--rounded-xsmall) 0 0 var(--rounded-xsmall);
 }
 .panel.workflow-activity h3.panel-title {
   display: flex;
@@ -18893,7 +18971,7 @@ iframe.file-browser {
 }
 @media (min-width: 992px) {
   .panel.workflow-activity > .panel-body {
-    padding-left: var(--spacing-medium)36px;
+    padding-left: calc(var(--spacing-medium) + 36px);
   }
 }
 
@@ -28741,7 +28819,7 @@ a .bg-danger:hover, a .bg-danger:focus {
 ul,
 ol {
   margin-top: 0;
-  margin-bottom: calc(var(--font-size-regular) * var(--line-height-normal) / 2);
+  margin-bottom: 0;
 }
 ul ul,
 ul ol,

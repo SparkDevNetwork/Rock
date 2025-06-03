@@ -473,7 +473,8 @@
       <HintPath>..\packages\SixLabors.ImageSharp.Drawing.1.0.0-beta15\lib\net472\SixLabors.ImageSharp.Drawing.dll</HintPath>
     </Reference>
     <Reference Include="stream-chat-net, Version=2.10.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\stream-chat-net.2.10.0\lib\net47\stream-chat-net.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\StreamChat\stream-chat-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -713,8 +714,10 @@
     <Compile Include="Attribute\ColorSelectorFieldAttribute.cs" />
     <Compile Include="Attribute\CustomSettingsBlockTypeAttribute.cs" />
     <Compile Include="Attribute\AIProviderFieldAttribute.cs" />
+    <Compile Include="Attribute\DeviceFieldAttribute.cs" />
     <Compile Include="Attribute\ImageFieldAttribute.cs" />
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
+    <Compile Include="Bus\Message\AutomationUpdatedMessage.cs" />
     <Compile Include="Bus\Message\RestrictedCountriesWereUpdatedMessage.cs" />
     <Compile Include="Bus\Queue\IpGeolocationEventQueue.cs" />
     <Compile Include="CheckIn\v2\Labels\Renderers\Zebra64.cs" />
@@ -779,6 +782,23 @@
     <Compile Include="Communication\Chat\DTO\ChatUser.cs" />
     <Compile Include="Communication\Chat\IChatProvider.cs" />
     <Compile Include="Communication\Chat\Stream\StreamChatProvider.cs" />
+    <Compile Include="Core\Automation\AutomationEventComponent.cs" />
+    <Compile Include="Core\Automation\AutomationEventContainer.cs" />
+    <Compile Include="Core\Automation\AutomationEventExecutor.cs" />
+    <Compile Include="Core\Automation\AutomationRequest.cs" />
+    <Compile Include="Core\Automation\AutomationTriggerComponent.cs" />
+    <Compile Include="Core\Automation\AutomationTriggerContainer.cs" />
+    <Compile Include="Core\Automation\AutomationValueDefinition.cs" />
+    <Compile Include="Core\Automation\Events\LaunchWorkflowExecutor.cs" />
+    <Compile Include="Core\Automation\Events\LavaEvent.cs" />
+    <Compile Include="Core\Automation\Events\LavaEventExecutor.cs" />
+    <Compile Include="Core\Automation\Events\LogMessage.cs" />
+    <Compile Include="Core\Automation\Events\LaunchWorkflow.cs" />
+    <Compile Include="Core\Automation\Events\LogMessageExecutor.cs" />
+    <Compile Include="Core\Automation\Triggers\EntityChange.cs" />
+    <Compile Include="Core\Automation\Triggers\EntityChangeCriteria.cs" />
+    <Compile Include="Core\Automation\Triggers\EntityChangeCriteriaRule.cs" />
+    <Compile Include="Core\Automation\Triggers\EntityChangeMonitor.cs" />
     <Compile Include="Core\EntitySearch\CustomExtensionMethodsExpressionVisitor.cs" />
     <Compile Include="Core\EntitySearch\DynamicLinqCustomTypeProvider.cs" />
     <Compile Include="Core\EntitySearch\DynamicLinqQueryExtensionMethods.cs" />
@@ -786,6 +806,9 @@
     <Compile Include="Core\EntitySearch\EntitySearchSystemQuery.cs" />
     <Compile Include="Core\EntitySearch\IdKeyExpressionVisitor.cs" />
     <Compile Include="Communication\Chat\ChatConfiguration.cs" />
+    <Compile Include="Extension\LightComponent.cs" />
+    <Compile Include="Extension\LightContainer.cs" />
+    <Compile Include="Field\Types\DeviceFieldType.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171PopulateAttendanceRootGroupType.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV18DeleteGroupLocationHistoricalSchedule.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV18UpdateCommunicationRecipientIndex.cs" />
@@ -801,6 +824,9 @@
     <Compile Include="Lava\Blocks\RenderLavaEndpoint.cs" />
     <Compile Include="Lava\Blocks\RockEntityDeleteBlock.cs" />
     <Compile Include="Lava\Blocks\RockEntityModifyBlock.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\IRockLavaBlock.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\RockLavaBlockBase.cs" />
+    <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="Model\CMS\LavaApplication\LavaApplication.cs" />
     <Compile Include="Model\CMS\LavaApplication\LavaApplication.Logic.cs" />
     <Compile Include="Model\CMS\LavaApplication\LavaApplication.SaveHook.cs" />
@@ -808,9 +834,17 @@
     <Compile Include="Model\CMS\LavaEndpoint\LavaEndpoint.cs" />
     <Compile Include="Model\CMS\LavaEndpoint\LavaEndpoint.Logic.cs" />
     <Compile Include="Model\CMS\LavaEndpoint\LavaEndpointService.cs" />
+    <Compile Include="Model\CodeGenerated\AutomationEventService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\AutomationTriggerService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\LavaApplicationService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\LavaEndpointService.CodeGenerated.cs" />
     <Compile Include="Jobs\RunLava.cs" />
+    <Compile Include="Model\Core\AutomationEvent\AutomationEvent.cs" />
+    <Compile Include="Model\Core\AutomationEvent\AutomationEvent.Logic.cs" />
+    <Compile Include="Model\Core\AutomationEvent\AutomationEvent.SaveHook.cs" />
+    <Compile Include="Model\Core\AutomationTrigger\AutomationTrigger.cs" />
+    <Compile Include="Model\Core\AutomationTrigger\AutomationTrigger.Logic.cs" />
+    <Compile Include="Model\Core\AutomationTrigger\AutomationTrigger.SaveHook.cs" />
     <Compile Include="Model\CRM\UserLogin\UpdateLastLoginArgs.cs" />
     <Compile Include="Data\AttributeValueExpressionVisitor.cs" />
     <Compile Include="Data\EnableAttributeQualificationAttribute.cs" />
@@ -1405,6 +1439,7 @@
     <Compile Include="Model\Connection\ConnectionRequestWorkflow\ConnectionRequestWorkflow.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionStatusAutomation\ConnectionStatusAutomation.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionStatus\ConnectionStatus.Logic.cs" />
+    <Compile Include="Lava\Blocks\SetCultureBlock.cs" />
     <Compile Include="Model\Core\AttributeMatrixItem\AttributeMatrixItem.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeMatrix\AttributeMatrix.Logic.cs" />
     <Compile Include="Model\Core\CampusTopic\CampusTopic.Logic.cs" />
@@ -1568,7 +1603,6 @@
     <Compile Include="Lava\Blocks\PersonalizeBlock.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Personalization.cs" />
     <Compile Include="Lava\Helpers\LavaPersonalizationHelper.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Personalize.cs" />
     <Compile Include="Model\CMS\PersonalizationSegment\PersonalizationSegment.SaveHook.cs" />
     <Compile Include="Model\CMS\PersonalizationSegment\PersonalizationSegmentService.cs" />
     <Compile Include="Model\CMS\RequestFilter\RequestFilterService.cs" />
@@ -1790,6 +1824,7 @@
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
     <Compile Include="Plugin\HotFixes\226_UpdateIndexesForV16_8.cs" />
+    <Compile Include="Plugin\HotFixes\250_AddDuplicateCommunicationRecipientHandling.cs" />
     <Compile Include="Plugin\HotFixes\242_UpdateFileAssetManagerDefaultValues.cs" />
     <Compile Include="Plugin\HotFixes\241_ChatBackendSyncAdditions.cs" />
     <Compile Include="Plugin\HotFixes\239_AddLoginHistoryPageAndBlocks.cs" />
@@ -1836,8 +1871,11 @@
     <Compile Include="Plugin\HotFixes\243_AddDefaultAllowedGroupTypesToMobileGroupRegistration.cs" />
     <Compile Include="Plugin\HotFixes\245_UpdateMergeFieldAttributeDescription.cs" />
     <Compile Include="Plugin\HotFixes\246_AddProximityCheckInAttribute.cs" />
+    <Compile Include="Plugin\HotFixes\249_Fix_spCrm_FamilyAnalyticsAttendance.cs" />
     <Compile Include="Plugin\HotFixes\248_MigrationRollupsForV17_1_2.cs" />
     <Compile Include="Plugin\HotFixes\247_UpdateLayoutBlockListNamingObsidian.cs" />
+    <Compile Include="Plugin\HotFixes\252_MigrationRollupsForV17_2_0.cs" />
+    <Compile Include="Plugin\HotFixes\251_MigrationRollupsForV17_1.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1990,7 +2028,6 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV14DataMigrationsAddMissingMediaElementInteractions.cs" />
     <Compile Include="Jobs\ProcessElevatedSecurity.cs" />
     <Compile Include="Lava\Blocks\ReturnTag.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Return.cs" />
     <Compile Include="Mobile\MobileNavigationAction.cs" />
     <Compile Include="Model\CMS\PersonalLinkSectionOrder\PersonalLinkSectionOrder.Logic.cs" />
     <Compile Include="Model\CMS\PersonalLinkSection\PersonalLinkSection.Logic.cs" />
@@ -2302,37 +2339,8 @@
     <Compile Include="Financial\TestRedirectionGateway.cs" />
     <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
     <Compile Include="Lava\LavaService.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\MediaPlayer.cs" />
     <Compile Include="Lava\Shortcodes\MediaPlayerShortcode.cs" />
     <Compile Include="Jobs\GroupAttendanceReporting.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Cache.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\CalendarEvents.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\EventScheduledInstance.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Execute.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\InteractionContentChannelItemWrite.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\InteractionWrite.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\IRockLavaBlock.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Javascript.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\JsonProperty.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\RockEntity.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\RockLavaBlockBase.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Search.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Sql.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\Stylesheet.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\TagList.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\WebRequest.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\WorkflowActivate.cs" />
-    <Compile Include="Lava\RockLiquid\LavaFileSystem.cs" />
-    <Compile Include="Lava\RockLiquid\RockFilters.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\BootstrapAlert.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\DynamicShortcodeBlock.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\DynamicShortcodeInline.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\IRockShortcode.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\RockLavaShortcodeBase.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\RockLavaShortcodeBlockBase.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\ScheduledContent.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\Scripturize.cs" />
     <Compile Include="Lava\WebsiteLavaFileSystem.cs" />
     <Compile Include="Lava\WebsiteLavaShortcodeProvider.cs" />
     <Compile Include="Lava\WebsiteLavaTemplateCache.cs" />
@@ -2795,11 +2803,14 @@
     <Compile Include="Blocks\BreadCrumbResult.cs" />
     <Compile Include="Web\BreadCrumbLink.cs" />
     <Compile Include="Web\Cache\AlternateIdListCache.cs" />
+    <Compile Include="Web\Cache\AutomationUpdatedConsumer.cs" />
     <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
     <Compile Include="Web\Cache\Entities\AdaptiveMessageAdaptationCache.cs" />
     <Compile Include="Web\Cache\Entities\AdaptiveMessageCache.cs" />
     <Compile Include="Web\Cache\Entities\AIProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\AssetStorageProviderCache.cs" />
+    <Compile Include="Web\Cache\Entities\AutomationEventCache.cs" />
+    <Compile Include="Web\Cache\Entities\AutomationTriggerCache.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\EntityIntentCache.cs" />
     <Compile Include="Web\Cache\Entities\GroupCache.cs" />
@@ -2870,7 +2881,7 @@
     <Compile Include="Web\UI\Controls\MediaPlayer.cs" />
     <Compile Include="Web\UI\Controls\MediaSelector.cs" />
     <Compile Include="Web\UI\Controls\MobileNavigationActionEditor.cs" />
-    <Compile Include="Web\UI\Controls\ObsidianDataComponentWrapper.cs" />
+    <Compile Include="Web\UI\Controls\ObsidianDynamicComponentWrapper.cs" />
     <Compile Include="Web\UI\Controls\PageNavButtons.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
     <Compile Include="Web\UI\Controls\LocationList.cs" />
@@ -3273,7 +3284,6 @@
     <Compile Include="Web\Cache\Entities\SiteCache.cs" />
     <Compile Include="Web\Cache\NonEntities\AttributeValueCache.cs" />
     <Compile Include="Web\Cache\NonEntities\GlobalAttributesCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\LavaTemplateCache.cs" />
     <Compile Include="Web\Cache\NonEntities\RoleCache.cs" />
     <Compile Include="Chart\ChartGroupBy.cs" />
     <Compile Include="Chart\IChartData.cs" />
@@ -4872,6 +4882,7 @@
     <Compile Include="Workflow\Action\CheckIn\LoadSchedules.cs" />
     <Compile Include="Workflow\Action\CheckIn\ParseZebraLabel.cs" />
     <Compile Include="Workflow\Action\CheckIn\PreSelectRecentAttendance.cs" />
+    <Compile Include="Workflow\Action\CheckIn\PrintLabels.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyGroups.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyGroupTypes.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyLocations.cs" />
@@ -5135,6 +5146,7 @@
     <Content Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateFollowing.sql" />
     <Content Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateGroupConnections.sql" />
     <Content Include="Plugin\HotFixes\225_ImprovePeerNetworkCalculations_spPeerNetwork_UpdateGroupConnections.sql" />
+    <Content Include="Plugin\HotFixes\250_AddDuplicateCommunicationRecipientHandling_spCommunicationRecipientDetails.sql" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">
@@ -5185,10 +5197,6 @@
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
       <Project>{61dece2b-0434-435e-8d65-49a4fdf98365}</Project>
       <Name>Rock.Enums</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj">
-      <Project>{79aa470a-dc63-4cb4-b0b6-77285f60c69b}</Project>
-      <Name>Rock.Lava.DotLiquid</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj">
       <Project>{afce6f84-bf3a-4182-a816-8fb47afc0305}</Project>

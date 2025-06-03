@@ -239,7 +239,6 @@
     <Compile Include="Core\Lava\Shortcodes\ScheduledContentTests.cs" />
     <Compile Include="Core\Lava\Shortcodes\KpiShortcodeTests.cs" />
     <Compile Include="Core\Lava\Shortcodes\GoogleMapShortcodeTests.cs" />
-    <Compile Include="Core\MergeTemplateTests.cs" />
     <Compile Include="Core\Jobs\ProcessBiAnalyticsJobTests.cs" />
     <Compile Include="Core\Lava\Commands\CacheTests.cs" />
     <Compile Include="Core\Model\PageShortLinkTests.cs" />

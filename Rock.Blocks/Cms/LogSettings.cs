@@ -250,6 +250,8 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag();
 
+            RockLogger.ReloadConfiguration();
+
             return ActionOk( new ValidPropertiesBox<LogSettingsBag>
             {
                 Bag = bag,

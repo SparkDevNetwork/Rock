@@ -24,7 +24,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using DotLiquid;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
@@ -602,106 +602,9 @@ namespace Rock
                     mergeObjects = new Dictionary<string, object>();
                 }
 
-                if ( LavaService.RockLiquidIsEnabled )
-                {
-                    // If RockLiquid mode is enabled, try to render uncached templates using the current Lava engine and record any errors that occur.
-                    // Render the final output using the RockLiquid legacy code.
-                    var engine = LavaService.GetCurrentEngine();
+                var result = ResolveMergeFieldsWithCurrentLavaEngine( content, mergeObjects, currentPersonOverride, enabledLavaCommands, encodeStrings );
 
-                    string lavaEngineOutput = null;
-                    string rockLiquidOutput;
-
-                    if ( engine != null )
-                    {
-                        var isCached = false;
-                        string cacheKey = null;
-                        if ( engine.TemplateCacheService != null )
-                        {
-                            cacheKey = engine.TemplateCacheService.GetCacheKeyForTemplate( content );
-                            isCached = engine.TemplateCacheService.ContainsKey( cacheKey );
-                        }
-
-                        if ( !isCached )
-                        {
-                            bool addCachePlaceholder = false;
-
-                            // Verify the template, unless it contains tokens that are non-idempotent.
-                            // These templates cause non-repeatable state change, so multiple executions may produce unwanted results.
-                            var canVerify = !_nonIdempotentLavaTokens.IsMatch( content );
-                            if ( canVerify )
-                            {
-                                // Verify the Lava template using the current LavaEngine.
-                                // Although it would improve performance, we can't execute this task on a background thread because some Lava filters require access to the current HttpRequest.
-                                try
-                                {
-                                    var result = ResolveMergeFieldsWithCurrentLavaEngine( content, mergeObjects, currentPersonOverride, enabledLavaCommands, encodeStrings );
-
-                                    // If an exception occurred during the render process, make sure it will be caught and logged.
-                                    if ( result.HasErrors
-                                         && engine.ExceptionHandlingStrategy != ExceptionHandlingStrategySpecifier.Throw )
-                                    {
-                                        throw result.Error;
-                                    }
-
-                                    lavaEngineOutput = result.Text;
-                                }
-                                catch ( System.Threading.ThreadAbortException )
-                                {
-                                    // Ignore abort error caused by Lava PageRedirect filter.
-                                }
-                                catch ( Exception ex )
-                                {
-                                    // Log the exception and continue, because the final render will be performed by RockLiquid.
-                                    ExceptionLogService.LogException( new LavaException( "Lava Verification Error: Parse template failed.", ex ), System.Web.HttpContext.Current );
-                                    addCachePlaceholder = true;
-                                }
-                            }
-                            else
-                            {
-                                addCachePlaceholder = true;
-                            }
-
-                            if ( addCachePlaceholder )
-                            {
-                                if ( engine.TemplateCacheService != null )
-                                {
-                                    // Add a placeholder in the cache to prevent this template from being recompiled.
-                                    var emptyTemplate = engine.ParseTemplate( string.Empty ).Template;
-                                    engine.TemplateCacheService.AddTemplate( emptyTemplate, cacheKey );
-                                }
-                            }
-                        }
-                    }
-
-#pragma warning disable CS0618 // Type or member is obsolete
-                    rockLiquidOutput = ResolveMergeFieldsForRockLiquid( content, mergeObjects, currentPersonOverride, enabledLavaCommands, encodeStrings, throwExceptionOnErrors );
-#pragma warning restore CS0618 // Type or member is obsolete
-
-                    if ( lavaEngineOutput != null )
-                    {
-                        // Compare output to check for a possible mismatch, ignoring whitespace.
-                        // This is a simplified content check, but we can't require an exact match because output may contain unique Guid and DateTime values.
-                        var compareRockLiquid = _regexRemoveWhitespace.Replace( rockLiquidOutput, string.Empty );
-                        var compareLavaEngine = _regexRemoveWhitespace.Replace( lavaEngineOutput, string.Empty );
-
-                        if ( compareLavaEngine.Length != compareRockLiquid.Length )
-                        {
-                            // The LavaEngine has produced different output from RockLiquid.
-                            // Log the exception, with a simple top-level exception containing a warning message.
-                            var renderException = new LavaRenderException( LavaService.CurrentEngineName, content, $"Lava engine render output is unexpected.\n[Expected={rockLiquidOutput},\nActual={lavaEngineOutput}]" );
-
-                            ExceptionLogService.LogException( new LavaException( "Lava Verification Warning: Render output mismatch.", renderException ), System.Web.HttpContext.Current );
-                        }
-                    }
-
-                    return rockLiquidOutput;
-                }
-                else
-                {
-                    var result = ResolveMergeFieldsWithCurrentLavaEngine( content, mergeObjects, currentPersonOverride, enabledLavaCommands, encodeStrings );
-
-                    return result.Text;
-                }
+                return result.Text;
             }
             catch ( System.Threading.ThreadAbortException )
             {
@@ -717,65 +620,9 @@ namespace Rock
                 else
                 {
                     ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
-                    return "Error resolving Lava merge fields: " + ex.Message + "\n[Engine: DotLiquid]";
+                    return "Error resolving Lava merge fields: " + ex.Message;
                 }
             }
-        }
-
-        [RockObsolete( "1.13" )]
-        [Obsolete( "This method is only required for the DotLiquid Lava implementation." )]
-        private static string ResolveMergeFieldsForRockLiquid( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride, string enabledLavaCommands, bool encodeStrings = false, bool throwExceptionOnErrors = false )
-        {
-            var template = GetTemplate( content );
-
-            string result;
-            List<Exception> errors;
-
-            var renderParameters = new RenderParameters();
-            renderParameters.LocalVariables = Hash.FromDictionary( mergeObjects );
-            renderParameters.Registers = new Hash();
-
-            if ( string.IsNullOrWhiteSpace( enabledLavaCommands ) )
-            {
-                if ( template.Registers.ContainsKey( "EnabledCommands" ) )
-                {
-                    renderParameters.Registers.AddOrReplace( "EnabledCommands", template.Registers["EnabledCommands"].ToStringSafe() );
-                }
-            }
-            else
-            {
-                renderParameters.Registers.AddOrReplace( "EnabledCommands", enabledLavaCommands );
-            }
-            if ( currentPersonOverride != null )
-            {
-                renderParameters.Registers.AddOrReplace( "CurrentPerson", currentPersonOverride );
-            }
-
-            if ( encodeStrings )
-            {
-                renderParameters.ValueTypeTransformers = new Dictionary<Type, Func<object, object>>();
-                renderParameters.ValueTypeTransformers[typeof( string )] = EncodeStringTransformer;
-            }
-
-            using ( TextWriter writer = new StringWriter() )
-            {
-                template.Render( writer, renderParameters, out errors );
-                result = writer.ToString();
-            }
-
-            if ( throwExceptionOnErrors && errors.Any() )
-            {
-                if ( errors.Count == 1 )
-                {
-                    throw errors[0];
-                }
-                else
-                {
-                    throw new AggregateException( errors );
-                }
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -996,48 +843,5 @@ namespace Rock
         }
 
         #endregion Dictionary<string, object> (liquid) extension methods
-
-        #region Lava Legacy code
-
-        /// <summary>
-        /// Create a parsed Lava template or retrieve it from the cache.
-        /// </summary>
-        /// <param name="content">The content of the template.</param>
-        /// <returns></returns>
-        [RockObsolete("1.13")]
-        [Obsolete("This method is only required for the DotLiquid Lava implementation.")]
-        private static Template GetTemplate( string content )
-        {
-            const int hashLength = 10;
-            string templateKey;
-
-            if ( string.IsNullOrEmpty( content ) )
-            {
-                /* [2020-08-01] DJL - Cache the null template specifically, but process other whitespace templates individually
-                 * to ensure that the format of the final output is preserved.
-                 */
-                templateKey = string.Empty;
-            }
-            else if ( content.Length <= hashLength )
-            {
-                // If the content is less than the size of the MD5 hash,
-                // simply use the content as the key to save processing time.
-                templateKey = content;
-            }
-            else
-            {
-                // Calculate a hash of the content using xxHash.
-                templateKey = content.XxHash();
-            }
-
-            var template = LavaTemplateCache.Get( templateKey, content ).Template as Template;
-
-            // Clear any previous errors from the template.
-            template.Errors.Clear();
-
-            return template;
-        }
-
-        #endregion
     }
 }

@@ -23,7 +23,7 @@
                     </template>
 
                     <template v-else>
-                        <template v-for="(columns, index, sfd) in columnValues" :key="'column-' + index">
+                        <template v-for="(columns, index) in columnValues" :key="'column-' + index">
                             <div :class="['column', selectedColumnElement === columnElements[index] ? 'selected' : '']"
                                  :style="{ flexBasis: getColumnPercentage(columns) }"
                                  @click="$emit('select', columnElements[index])">

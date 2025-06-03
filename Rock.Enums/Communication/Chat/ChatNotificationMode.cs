@@ -27,9 +27,9 @@ namespace Rock.Enums.Communication.Chat
         AllMessages = 0,
 
         /// <summary>
-        /// Only sends a notification when an individual is mentioned or someone replies in a thread they're a part of.
+        /// Only sends a notification when an individual is mentioned.
         /// </summary>
-        MentionsAndReplies = 1,
+        Mentions = 1,
 
         /// <summary>
         /// Disables all notifications for the chat channel.

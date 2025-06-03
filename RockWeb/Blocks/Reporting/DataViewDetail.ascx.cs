@@ -23,9 +23,11 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Reporting;
 using Rock.Security;
 using Rock.Utility;
@@ -87,7 +89,7 @@ namespace RockWeb.Blocks.Reporting
         Category = "Advanced" )]
 
     [Rock.SystemGuid.BlockTypeGuid( "EB279DF9-D817-4905-B6AC-D9883F0DA2E4" )]
-    public partial class DataViewDetail : RockBlock
+    public partial class DataViewDetail : RockBlock, IRockBlockType
     {
         #region Attribute Keys
 
@@ -127,6 +129,28 @@ namespace RockWeb.Blocks.Reporting
         }
 
         #endregion ViewStateKey
+
+        #region IRockBlockType
+
+        /// <inheritdoc/>
+        int IRockBlockType.BlockId => ( ( IRockBlockType ) this ).BlockCache.Id;
+
+        /// <inheritdoc/>
+        BlockCache IRockBlockType.BlockCache { get; set; }
+
+        /// <inheritdoc/>
+        PageCache IRockBlockType.PageCache { get; set; }
+
+        /// <inheritdoc/>
+        RockRequestContext IRockBlockType.RequestContext { get; set; }
+
+        /// <inheritdoc/>
+        System.Threading.Tasks.Task<object> IRockBlockType.GetBlockInitializationAsync( RockClientType clientType )
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
 
         #region Control Methods
 
@@ -1739,6 +1763,34 @@ $(document).ready(function() {
         {
             Unique = 0,
             NamedSchedule = 1
+        }
+
+        #endregion
+
+        #region Block Actions
+
+        /// <summary>
+        /// Executes a request from the UI component to be processed by the
+        /// server component. This is used to load additional information after
+        /// the component has been initialized.
+        /// </summary>
+        /// <param name="componentGuid">The unique identifier of the component that will handle the request.</param>
+        /// <param name="request">The object that describes the parameters of the request.</param>
+        /// <param name="securityGrantToken">The security grant token that was created when the component was initialized.</param>
+        /// <returns>The response from the server component.</returns>
+        [BlockAction]
+        public BlockActionResult ExecuteComponentRequest( Guid componentGuid, Dictionary<string, string> request, string securityGrantToken )
+        {
+            var securityGrant = SecurityGrant.FromToken( securityGrantToken ) ?? new SecurityGrant();
+            var filterEntityType = EntityTypeCache.Get( componentGuid );
+            var component = Rock.Reporting.DataFilterContainer.GetComponent( filterEntityType?.GetEntityType()?.FullName );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var result = component?.ExecuteComponentRequest( request, securityGrant, rockContext, RequestContext );
+
+                return new BlockActionResult( System.Net.HttpStatusCode.OK, result );
+            }
         }
 
         #endregion

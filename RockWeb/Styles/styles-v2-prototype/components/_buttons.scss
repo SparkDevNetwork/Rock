@@ -103,6 +103,11 @@
   background-color: var(--color-interface-softest);
   border-color:     var(--color-interface-soft);
 
+  &::before {
+    content: " ";
+    width: 2em;
+  }
+
   &.facebook,
   &.google,
   &.twitter {
@@ -124,6 +129,15 @@
     --btn-bg:       #{$brand-facebook};
     --btn-hover-bg: #{$brand-facebook}; // TODO darken by 10% when available
     --social-icon:  "\f39e";
+    &:before {
+      background-image:     url("/Assets/Icons/Facebook_logo.svg");
+      background-size:      contain;
+      background-repeat:    no-repeat;
+      background-position:  center;
+      width:                1.2em;
+      height:               1.2em;
+      content: "  ";
+    }
   }
 
   &.google {
@@ -133,8 +147,8 @@
       background-size:      contain;
       background-repeat:    no-repeat;
       background-position:  center;
-      width:                1em;
-      height:               1em;
+      width:                1.1em;
+      height:               1.1em;
       content: "  ";
     }
   }
@@ -221,7 +235,7 @@
   &.active,
   .open > .dropdown-toggle & {
     color:            var(--color-interface-stronger);
-    background-color: var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
     border-color:     var(--color-interface-soft);
     background-image: none;
  
@@ -230,7 +244,7 @@
     &.focus {
       color:            var(--color-interface-stronger);
       background-color: var(--color-interface-soft);
-      border-color:     var(--color-interface-soft);
+      border-color:     var(--color-interface-medium);
     }
   }
   &.disabled,
@@ -362,25 +376,25 @@
 }
 
 .btn.btn-info{
-  color:            var(--color-interface-softest);
+  color:            var(--base-interface-softest);
   background-color: var(--color-info-strong);
   border-color:     var(--color-info-strong);
 
   &:focus,
   &.focus {
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       background-color: var(--color-info-strong);
       border-color:     var(--color-info-strong);
   }
   &:hover {
-    color:            var(--color-interface-softest);
+    color:            var(--base-interface-softest);
     background-color: var(--color-info-shade);
     border-color:     var(--color-info-shade);
   }
   &:active,
   &.active,
   .open > .dropdown-toggle & {
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       background-color: var(--color-info-strong);
       border-color:     var(--color-info-strong); 
       background-image: none;
@@ -388,7 +402,7 @@
       &:hover,
       &:focus,
       &.focus {
-        color:            var(--color-interface-softest);
+        color:            var(--base-interface-softest);
         background-color: var(--color-info-shade);
         border-color:     var(--color-info-shade);
       }
@@ -416,25 +430,25 @@
 }
 
 .btn.btn-warning{
-  color:            var(--color-interface-softest);
+  color:            var(--base-interface-softest);
   background-color: var(--color-warning-strong);
   border-color:     var(--color-warning-strong);
 
   &:focus,
   &.focus {
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       background-color: var(--color-warning-strong);
       border-color:     var(--color-warning-strong);
   }
   &:hover {
-    color:            var(--color-interface-softest);
+    color:            var(--base-interface-softest);
     background-color: var(--color-warning-shade);
     border-color:     var(--color-warning-shade);
   }
   &:active,
   &.active,
   .open > .dropdown-toggle & {
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       background-color: var(--color-interface-softest);
       border-color:     var(--color-warning-strong);
       background-image: none;
@@ -442,7 +456,7 @@
       &:hover,
       &:focus,
       &.focus {
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       background-color: var(--color-warning-shade);
       border-color:     var(--color-warning-shade);
       }
@@ -464,32 +478,32 @@
   }
 
   .badge {
-      color:            var(--color-warning-strong);
+      color:            var(--base-warning-strong);
       background-color: var(--color-warning-strong);
   }
 }
 
 .btn.btn-danger,
 .btn-danger-solid {
-  color:            var(--color-interface-softest);
+  color:            var(--base-interface-softest);
   background-color: var(--color-danger-strong);
   border-color:     var(--color-danger-strong);
 
   &:focus,
   &.focus {
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       background-color: var(--color-danger-strong);
       border-color:     var(--color-danger-strong);
   }
   &:hover {
-    color:            var(--color-interface-softest);
+    color:            var(--base-interface-softest);
     background-color: var(--color-danger-shade);
     border-color:     var(--color-danger-shade);
   }
   &:active,
   &.active,
   .open > .dropdown-toggle &{
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       background-color: var(--color-interface-softest);
       background-image: none;
       border-color:     var(--color-danger-strong);
@@ -497,7 +511,7 @@
       &:hover,
       &:focus,
       &.focus {
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       background-color: var(--color-danger-shade);
       border-color:     var(--color-danger-shade);
       }
@@ -519,31 +533,31 @@
   }
 
   .badge {
-      color:            var(--color-danger-strong);
+      color:            var(--base-danger-strong);
       background-color: var(--color-danger-strong);
   }
 }
 
 .btn-action{
-  color:            var(--color-interface-softest);
+  color:            var(--base-interface-softest);
   background-color: var(--color-interface-medium);
   border-color:     var(--color-interface-medium);
 
   &:focus,
   &.focus {
-    color:              var(--color-interface-softest);
+    color:              var(--base-interface-softest);
     background-color:   var(--color-interface-strong);
     border-color:       var(--color-interface-strong);
   }
   &:hover {
-    color:            var(--color-interface-softest);
+    color:            var(--base-interface-softest);
     background-color: var(--color-interface-strong);
     border-color:     var(--color-interface-strong);
   }
   &:active,
   &.active,
   .open > .dropdown-toggle & {
-    color:              var(--color-interface-softest);
+    color:              var(--base-interface-softest);
     background-color:   var(--color-interface-strong);
     background-image:   none;
     border-color:        var(--color-interface-strong);
@@ -551,7 +565,7 @@
     &:hover,
     &:focus,
     &.focus {
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       background-color: var(--color-interface-strong);
       border-color:     var(--color-interface-strong)
     }
@@ -568,7 +582,7 @@
   }
 
   .badge {
-    color: var(--color-interface-stronger);
+    color: var(--base-interface-stronger);
     background-color: var(--color-interface-softest);
   }
 }
@@ -761,8 +775,8 @@
   border-color:       var(--color-primary); // TODO: darken by 5% when available
   
   &:hover {
-    color:            var(--color-interface-softest);
-    background-color: var(--color-primary);
+    color:            var(--color-primary);
+    background-color: var(--color-primary-soft);
     border-color:     var(--color-primary);
   }
   
@@ -971,19 +985,15 @@ input[type="button"] {
 
   &:hover {
     color: var(--color-interface-stronger);
-    background-color: var(--color-interface-soft);
   }
   
   &:focus {
     color: var(--color-interface-stronger);
-    border-color: var(--color-interface-stronger);
   }
   
   &:focus:active {
-    color: var(--color-interface-stronger);
-    background-color: var(--color-interface-soft);
-    border-color: var(--color-interface-stronger);
-
+    color: var(--color-primary);
+    box-shadow: var(--input-focus-box-shadow) 
   }
 }
 

@@ -65,14 +65,14 @@
                     "name": "Info Color",
                     "variable": "base-info",
                     "description": "The info color used to paint alert, label, badges.",
-                    "default": "#007AFF"
+                    "default": "#005DD7"
                 },
                 {
                     "type": "color",
                     "name": "Success Color",
                     "variable": "base-success",
                     "description": "The success color used to paint alert, label, badges.",
-                    "default": "#248A3D"
+                    "default": "#01A11E"
                 },
                 {
                     "type": "color",
@@ -93,7 +93,7 @@
                     "name": "Interface Color Strongest",
                     "variable": "base-interface-strongest",
                     "description": "The strongest color used throughout the UI",
-                    "default": "#000000"
+                    "default": "#0a0a0a"
                 },
                 {
                     "type": "color",
@@ -135,7 +135,7 @@
                     "name": "Interface Color Softest",
                     "variable": "base-interface-softest",
                     "description": "The softest color used throughout the UI",
-                    "default": "#FFFFFF"
+                    "default": "#fdfdfd"
                 }
             ]
         },

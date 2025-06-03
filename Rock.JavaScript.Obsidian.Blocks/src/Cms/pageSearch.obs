@@ -32,7 +32,7 @@
                     <div v-if="category.children && category.children.length > 0 && filteredSettings(category).length > 0">
                         <h4>{{ category.title }}</h4>
                         <div class="list-as-blocks">
-                            <ul class="mb-5">
+                            <ul>
                                 <li v-for="(setting, index) in filteredSettings(category)" :key="index">
                                     <a :href="setting.url ?? parentUrl" :title="getTitle(setting)">
                                         <i v-if="setting.icon !== ''" :class="setting.icon"></i>

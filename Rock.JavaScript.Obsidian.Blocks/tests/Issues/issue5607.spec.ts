@@ -444,7 +444,7 @@ const addressControlConfiguration = {
             "disabled": null
         },
         {
-            "value": "------------------------",
+            "value": "",
             "text": "------------------------",
             "category": null,
             "disabled": null

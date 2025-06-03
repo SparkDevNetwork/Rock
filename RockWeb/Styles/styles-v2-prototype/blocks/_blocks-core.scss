@@ -173,8 +173,8 @@
 
   & > .panel-heading {
     color:            var(--color-interface-strongest);
-    background-color: var(--color-interface-softer);
-    border-color:     var(--color-interface-softer);
+    background-color: var(--color-interface-softest);
+    border-color:     var(--color-interface-soft);
 
     + .panel-collapse > .panel-body {
       border-top-color: var(--color-interface-soft);
@@ -791,7 +791,7 @@
     width:          6px;
     content:        "";
     background:     var(--color-info-strong);
-    border-radius:  var(--color-interface-soft)-radius 0 0 var(--color-interface-soft)-radius;
+    border-radius:  var(--rounded-xsmall) 0 0 var(--rounded-xsmall);
   }
 
   h3.panel-title {
@@ -855,7 +855,7 @@
 
   @media (min-width: $screen-medium) {
     > .panel-body {
-      padding-left: (var(--spacing-medium) + 36px);
+      padding-left: calc(var(--spacing-medium) + 36px);
     }
   }
 }

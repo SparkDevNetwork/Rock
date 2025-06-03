@@ -30,6 +30,7 @@ using Rock.Enums.Reporting;
 using Rock.Field;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Reporting;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -70,12 +71,18 @@ namespace Rock.Reporting.DataFilter.Person
             get { return "Additional Filters"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/stepParticipantsByAttributeValueFilter.obs";
-
         #endregion
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/stepParticipantsByAttributeValueFilter.obs" )
+            };
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
@@ -287,7 +294,7 @@ namespace Rock.Reporting.DataFilter.Person
             // First value is StepProgram Guid, second value is StepType Guid, third value is Attribute,
             // remaining values are the field type's filter values
             var values = JsonConvert.DeserializeObject<List<string>>( selection );
-            if ( values.Count >= 2 )
+            if ( values.Count >= 3 )
             {
                 var stepProgram = GetStepProgram( values[0].AsGuid() );
                 var stepType = GetStepType( values[1].AsGuid() );

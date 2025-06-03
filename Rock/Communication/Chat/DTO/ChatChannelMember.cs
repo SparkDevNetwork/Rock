@@ -54,5 +54,10 @@ namespace Rock.Communication.Chat.DTO
         /// <see cref="ChatHelper.GetChatChannelMemberKey(string, string)"/>
         /// </value>
         public string Key => ChatHelper.GetChatChannelMemberKey( this.ChatChannelKey, this.ChatUserKey );
+
+        /// <summary>
+        /// The push preference for this chat channel member.
+        /// </summary>
+        public ChatNotificationMode PushNotificationMode { get; set; }
     }
 }

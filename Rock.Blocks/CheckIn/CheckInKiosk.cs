@@ -656,7 +656,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         private async Task<PrintResponseBag> PrintLabelsForAttendanceId( CheckInDirector director, DeviceCache kiosk, DeviceCache printer, int attendanceId )
         {
             // Use the new label format for re-printing.
-            var labels = director.LabelProvider.RenderLabels( new List<int> { attendanceId }, kiosk, false );
+            var labels = director.LabelProvider.RenderLabels( new List<int> { attendanceId }, kiosk, printer, false );
 
             var errorMessages = labels.Where( l => l.Error.IsNotNullOrWhiteSpace() )
                 .Select( l => l.Error )
@@ -668,14 +668,6 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             }
 
             labels = labels.Where( l => l.Error.IsNullOrWhiteSpace() ).ToList();
-
-            if ( printer != null )
-            {
-                foreach ( var label in labels )
-                {
-                    label.PrintTo = printer;
-                }
-            }
 
             // Print the labels with a 5 second timeout.
             var cts = new CancellationTokenSource( 5_000 );
@@ -1032,7 +1024,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
         /// <summary>
         /// Verifies that the PIN code is valid and can be used. This is used
-        /// by the UI to perform the initial login step to the admins creen.
+        /// by the UI to perform the initial login step to the admins screen.
         /// </summary>
         /// <param name="pinCode">The PIN code to validate.</param>
         /// <returns>A 200-OK status if the PIN code was valid.</returns>
@@ -1041,7 +1033,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         {
             var director = new CheckInDirector( RockContext );
 
-            if ( !director.TryAuthenticatePin( pinCode, out var errorMessage ) )
+            if ( !director.TryAuthenticatePin( pinCode, out var errorMessage, true ) )
             {
                 return ActionBadRequest( errorMessage );
             }

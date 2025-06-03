@@ -27,7 +27,7 @@
   a & {
     &:hover,
     &:focus {
-      color:            var(--color-interface-softest);
+      color:            var(--color-interface-stronger);
       text-decoration:  none;
       cursor:           pointer;
     }
@@ -60,8 +60,9 @@
 
 // ======================== ALTERNATIVE STYLE ========================
 .label-default{
-  background-color:   var(--color-interface-soft);
-  color:              var(--color-interface-stronger);
+  background-color:   var(--color-interface-softer);
+  color:              var(--color-interface-strong);
+  border:             1px solid var(--color-interface-soft);
 
   &[href] {
     &:hover,

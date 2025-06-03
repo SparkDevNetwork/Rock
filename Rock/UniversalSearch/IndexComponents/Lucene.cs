@@ -545,7 +545,6 @@ namespace Rock.UniversalSearch.IndexComponents
 
             using ( RockContext rockContext = new RockContext() )
             {
-                var entityTypeService = new EntityTypeService( rockContext );
                 if ( entities == null || entities.Count == 0 )
                 {
                     // add all entities
@@ -561,7 +560,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 foreach ( var entityId in entities )
                 {
                     // get entities search model name
-                    var entityType = entityTypeService.GetNoTracking( entityId );
+                    var entityType = EntityTypeCache.Get( entityId, rockContext );
                     var entityRelatedIndexes = IndexHelper.GetRelatedIndexes( entityType.IndexModelType );
 
                     indexModelTypes.AddRange( entityRelatedIndexes );

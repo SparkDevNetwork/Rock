@@ -548,13 +548,6 @@ namespace RockWeb.Blocks.Core
                 {
                     var cacheKey = string.Format( "Rock:PageMenu:{0}", block.Id );
 
-                    if ( LavaService.RockLiquidIsEnabled )
-                    {
-#pragma warning disable CS0618 // Type or member is obsolete
-                        LavaTemplateCache.Remove( cacheKey );
-#pragma warning restore CS0618 // Type or member is obsolete
-                    }
-
                     LavaService.RemoveTemplateCacheEntry( cacheKey );
                 }
 

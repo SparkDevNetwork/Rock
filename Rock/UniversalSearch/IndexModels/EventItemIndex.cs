@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
 using Rock.Utility;
@@ -255,6 +256,14 @@ namespace Rock.UniversalSearch.IndexModels
                 result.IsViewAllowed = false;
                 return result;
             }
+        }
+
+        /// <inheritdoc/>
+        public override bool IsViewAllowed( Person person, RockContext rockContext )
+        {
+            var eventItem = new EventItemService( rockContext ).Get( ( int ) this.Id );
+
+            return eventItem?.IsAuthorized( Security.Authorization.VIEW, person ) ?? false;
         }
     }
 

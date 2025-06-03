@@ -23,6 +23,13 @@
   }
 }
 
+// splash screen
+.splash-form-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 // Override the default ul/ol background-color 
 .nav {
   .open > a {

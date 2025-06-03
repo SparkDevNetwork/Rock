@@ -18,8 +18,6 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 
-using DotLiquid;
-
 using Microsoft.Extensions.Logging;
 
 using Quartz;
@@ -96,7 +94,13 @@ namespace Rock.Jobs
             // get job type id
             int jobId = context.JobDetail.Description.AsInteger();
 
-            Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job is about to be executed.", jobId, context.JobDetail?.Key );
+            Logger.LogDebug(
+                "Job ID: {jobId} (App PID: {processId}-{domainId}), Job Key: {jobKey}, Job is about to be executed.",
+                jobId,
+                Rock.WebFarm.RockWebFarm.ProcessId,
+                AppDomain.CurrentDomain.Id,
+                context.JobDetail?.Key
+            );
 
             // load job
             var rockContext = new RockContext();
@@ -160,7 +164,17 @@ namespace Rock.Jobs
         /// <seealso cref="M:Quartz.IJobListener.JobToBeExecuted(Quartz.IJobExecutionContext,System.Threading.CancellationToken)" />
         public virtual void JobExecutionVetoed( IJobExecutionContext context )
         {
-            Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job was vetoed.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
+            var jobId = context.JobDetail?.Description.AsIntegerOrNull();
+            var jobKey = context.JobDetail?.Key;
+
+            Logger.LogDebug(
+                "Job ID: {jobId} (App PID: {processId}-{domainId}), Job Key: {jobKey}, Job was vetoed.",
+                jobId,
+                Rock.WebFarm.RockWebFarm.ProcessId,
+                AppDomain.CurrentDomain.Id,
+                jobKey
+            );
+
         }
 
         /// <summary>
@@ -179,6 +193,7 @@ namespace Rock.Jobs
 #pragma warning restore CS0612 // Type or member is obsolete
 
             var rockJobInstance = context.JobInstance as RockJob;
+            var jobKey = context.JobDetail?.Key;
 
             // Complete the observability if this is a legacy job.
             if ( !( context.JobInstance is RockJob ) )
@@ -197,7 +212,13 @@ namespace Rock.Jobs
             if ( job == null )
             {
                 // if job was deleted or wasn't found, just exit
-                Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job was not found.", jobId, context.JobDetail?.Key );
+                Logger.LogDebug(
+                    "Job ID: {jobId} (App PID: {processId}-{domainId}), Job Key: {jobKey}, Job was not found.",
+                    jobId,
+                    Rock.WebFarm.RockWebFarm.ProcessId,
+                    AppDomain.CurrentDomain.Id,
+                    jobKey
+                );
                 return;
             }
 
@@ -228,7 +249,13 @@ namespace Rock.Jobs
                     sendMessage = true;
                 }
 
-                Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job was executed.", jobId, context.JobDetail?.Key );
+                Logger.LogDebug(
+                    "Job ID: {jobId} (App PID: {processId}-{domainId}), Job Key: {jobKey}, Job was executed.",
+                    jobId,
+                    Rock.WebFarm.RockWebFarm.ProcessId,
+                    AppDomain.CurrentDomain.Id,
+                    jobKey
+                );
             }
             else
             {
@@ -267,7 +294,14 @@ namespace Rock.Jobs
                     sendMessage = true;
                 }
 
-                Logger.LogDebug( exceptionToLog, "Job ID: {jobId}, Job Key: {jobKey}, Job was executed with an exception.", jobId, context.JobDetail?.Key );
+                Logger.LogDebug(
+                    exceptionToLog,
+                    "Job ID: {jobId} (App PID: {processId}-{domainId}), Job Key: {jobKey}, Job was executed with an exception.",
+                    jobId,
+                    Rock.WebFarm.RockWebFarm.ProcessId,
+                    AppDomain.CurrentDomain.Id,
+                    jobKey
+                );
             }
 
             rockContext.SaveChanges();
@@ -299,14 +333,7 @@ namespace Rock.Jobs
             {
                 if ( jobException != null )
                 {
-                    if ( LavaService.RockLiquidIsEnabled )
-                    {
-                        mergeFields.Add( "Exception", Hash.FromAnonymousObject( jobException ) );
-                    }
-                    else
-                    {
-                        mergeFields.Add( "Exception", LavaDataObject.FromAnonymousObject( jobException ) );
-                    }
+                    mergeFields.Add( "Exception", LavaDataObject.FromAnonymousObject( jobException ) );
                 }
 
             }

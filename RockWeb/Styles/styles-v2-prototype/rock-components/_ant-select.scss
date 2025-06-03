@@ -668,13 +668,13 @@
 }
 
 .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
-  background-color: var(--color-interface-soft);
+  background-color: var(--color-interface-softer);
 }
 
 .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
-  color: var(--color-interface-softest);
+  color: var(--color-interface-strong);
   font-weight: var(--font-weight-semibold);
-  background-color: var(--color-interface-medium);
+  background-color: var(--color-interface-soft);
 }
 
 .ant-select-item-option-selected:not(.ant-select-item-option-disabled) .ant-select-item-option-state {
