@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Microsoft.SemanticKernel;
 
 using Rock.Enums.AI.Agent;
@@ -23,6 +25,12 @@ namespace Rock.AI.Agent
 {
     internal class AgentFunction
     {
+        /// <summary>
+        /// The unique identifier of this function. If this is not filled in
+        /// with a valid value then the function will be ignored.
+        /// </summary>
+        public Guid Guid { get; set; }
+
         /// <summary>
         /// The unique name used to identify this semantic function within the plugin.
         /// This name is how the function is called from Semantic Kernel or other orchestrations.

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
@@ -14,6 +15,10 @@ namespace Rock.AI.Agent.Skills
     internal class GroupManagerSkill : IAgentSkill
     {
         private AgentRequestContext _requestContext;
+
+        public GroupManagerSkill()
+        {
+        }
 
         public GroupManagerSkill( AgentRequestContext requestContext )
         {
@@ -73,6 +78,7 @@ namespace Rock.AI.Agent.Skills
         {
             return new List<AgentFunction> {
                 new AgentFunction {
+                    Guid = new Guid( "12bb5ce5-ad04-45e1-8b8f-823e2a221f4e" ),
                     Name = "GetGroupInsights",
                     UsageHint = "Describes the group",
                     Prompt = "Say it's cool.",
@@ -81,6 +87,7 @@ namespace Rock.AI.Agent.Skills
                     EnableLavaPreRendering = true
                 },
                 new AgentFunction {
+                    Guid = new Guid( "ee706f7b-3ea3-4176-83d9-089eb348117a" ),
                     Name = "GetEmojiForGroup",
                     UsageHint = "Returns an emoji for the group.",
                     Prompt = "Return an emoji related to the group name.",

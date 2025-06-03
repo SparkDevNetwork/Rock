@@ -22,6 +22,7 @@ using System.Reflection;
 
 using Microsoft.SemanticKernel;
 
+using Rock.AI.Agent;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.SystemGuid;
@@ -52,6 +53,29 @@ namespace Rock.Model
             {
                 RegisterFunction( skillId, method, existingFunctions, rockContext );
             }
+
+            if ( skillType.GetConstructor( Type.EmptyTypes ) != null )
+            {
+                IAgentSkill instance;
+
+                try
+                {
+                    instance = ( IAgentSkill ) Activator.CreateInstance( skillType );
+                }
+                catch
+                {
+                    // Intentionally ignore any exceptions that occur when
+                    // trying to create an instance of the skill for registration.
+                    return;
+                }
+
+                var semanticFunctions = instance.GetSemanticFunctions();
+
+                foreach ( var semanticFunction in semanticFunctions )
+                {
+                    RegisterSemanticFunction( skillId, semanticFunction, existingFunctions, rockContext );
+                }
+            }
         }
 
         /// <summary>
@@ -59,7 +83,7 @@ namespace Rock.Model
         /// updating the existing function if it already exists in
         /// <paramref name="existingFunctions"/>.
         /// </summary>
-        /// <param name="skillId">The identifier of the AI skill that this function is associated with.</param></param>
+        /// <param name="skillId">The identifier of the AI skill that this function is associated with.</param>
         /// <param name="method">The C# method that represents the function to register.</param>
         /// <param name="existingFunctions">The existing functions in the database for this skill.</param>
         /// <param name="rockContext">The context to use when saving changes to the database.</param>
@@ -121,6 +145,82 @@ namespace Rock.Model
                 if ( function.FunctionType != FunctionType.ExecuteCode )
                 {
                     function.FunctionType = FunctionType.ExecuteCode;
+                    needSave = true;
+                }
+            }
+
+            if ( needSave )
+            {
+                if ( function.Id == 0 )
+                {
+                    function.CreatedDateTime = RockDateTime.Now;
+                }
+
+                function.ModifiedDateTime = RockDateTime.Now;
+
+                rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
+            }
+        }
+
+        /// <summary>
+        /// Registers a single AI function by adding it to the database or
+        /// updating the existing function if it already exists in
+        /// <paramref name="existingFunctions"/>.
+        /// </summary>
+        /// <param name="skillId">The identifier of the AI skill that this function is associated with.</param>
+        /// <param name="semanticFunction">The semantic function to register.</param>
+        /// <param name="existingFunctions">The existing functions in the database for this skill.</param>
+        /// <param name="rockContext">The context to use when saving changes to the database.</param>
+        private static void RegisterSemanticFunction( int skillId, AgentFunction semanticFunction, List<AISkillFunction> existingFunctions, RockContext rockContext )
+        {
+            if ( semanticFunction.Guid == Guid.Empty )
+            {
+                return;
+            }
+
+            var function = existingFunctions.FirstOrDefault( f => f.Guid == semanticFunction.Guid );
+            var name = semanticFunction.Name.SplitCase();
+            var description = semanticFunction.UsageHint;
+            var needSave = false;
+
+            if ( function == null )
+            {
+                function = rockContext.Set<AISkillFunction>().Create();
+
+                function.Guid = semanticFunction.Guid;
+                function.AISkillId = skillId;
+                function.Name = name;
+                function.Description = description;
+                function.UsageHint = description;
+                function.FunctionType = semanticFunction.FunctionType;
+
+                new AISkillFunctionService( rockContext ).Add( function );
+
+                needSave = true;
+            }
+            else
+            {
+                if ( function.Name != name )
+                {
+                    function.Name = name;
+                    needSave = true;
+                }
+
+                if ( function.Description != description )
+                {
+                    function.Description = description;
+                    needSave = true;
+                }
+
+                if ( function.UsageHint != description )
+                {
+                    function.UsageHint = description;
+                    needSave = true;
+                }
+
+                if ( function.FunctionType != semanticFunction.FunctionType )
+                {
+                    function.FunctionType = semanticFunction.FunctionType;
                     needSave = true;
                 }
             }
