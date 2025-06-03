@@ -27,13 +27,13 @@ namespace Rock.AI.Agent
 {
     internal class ChatAgent : IChatAgent
     {
-        private readonly IAiAgentProvider _agentProvider;
+        private readonly IAgentProvider _agentProvider;
 
         private readonly Kernel _kernel;
 
         public AgentRequestContext Context { get; }
 
-        public ChatAgent( Kernel kernel, IAiAgentProvider agentProvider )
+        public ChatAgent( Kernel kernel, IAgentProvider agentProvider )
         {
             _kernel = kernel;
             _agentProvider = agentProvider;

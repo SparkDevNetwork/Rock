@@ -25,48 +25,34 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using Rock.Attribute;
 using Rock.Enums.AI.Agent;
+using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Providers
 {
     [Description( "Provider to use Azure Open AI for use in Rock." )]
     [Export( typeof( AgentProviderComponent ) )]
     [ExportMetadata( "ComponentName", "Azure Open AI" )]
+    [EntityTypeGuid( "8a9518d6-7ae6-470a-8bdf-15965e95a80b" )]
 
     [TextField( "Azure OpenAI API Key",
         Description = "The API key for the Azure OpenAI service.",
         IsRequired = true,
-        Order = 0,
+        Order = 10,
         Key = "ApiKey" )]
 
     [TextField( "Azure OpenAI Endpoint",
         Description = "The endpoint for the Azure OpenAI service.",
         IsRequired = true,
-        Order = 1,
+        Order = 11,
         Key = "Endpoint" )]
-    internal class AzureOpenAiAgentProvider : AgentProviderComponent
+    internal class AzureOpenAIProvider : AgentProviderComponent
     {
-        //private readonly string _azureEndpoint = string.Empty;
-        //private readonly string _azureApiKey = string.Empty;
-
         private readonly Dictionary<ModelServiceRole, string> _modelToRoleMap = new Dictionary<ModelServiceRole, string>
         {
             { ModelServiceRole.Default, "gpt-4o-mini" },
             { ModelServiceRole.Code, "gpt-4o-mini" },
             { ModelServiceRole.Research, "gpt-4o-mini" }
         };
-
-        public AzureOpenAiAgentProvider()
-        {
-            //_azureApiKey = Environment.GetEnvironmentVariable( "AZURE_OPENAI_API_KEY" );
-            //_azureEndpoint = Environment.GetEnvironmentVariable( "AZURE_OPENAI_ENDPOINT" );
-
-            //// Ensure credentials are set
-            //if ( string.IsNullOrWhiteSpace( _azureApiKey ) || string.IsNullOrWhiteSpace( _azureEndpoint ) )
-            //{
-            //    Console.WriteLine( "❌ AZURE_OPENAI_API_KEY and/or AZURE_OPENAI_ENDPOINT is not set." );
-            //    return;
-            //}
-        }
 
         public override PromptExecutionSettings GetFunctionPromptExecutionSettingsForRole( ModelServiceRole role, double? temperature = null, int? maxTokens = null )
         {

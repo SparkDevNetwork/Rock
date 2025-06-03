@@ -13,22 +13,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-namespace Rock.SystemGuid
+//
+
+using System.Linq;
+
+namespace Rock.AI.Agent
 {
-    /// <summary>
-    /// Rock Guid attribute to be used to specify the unique identifier of
-    /// an AI skill.
-    /// </summary>
-    [System.AttributeUsage( System.AttributeTargets.Class, Inherited = true, AllowMultiple = false )]
-    public class AiSkillGuidAttribute : RockGuidAttribute
+    internal class ProxyFunction
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AiSkillGuidAttribute"/> class.
-        /// </summary>
-        /// <param name="guid">The unique identifier.</param>
-        public AiSkillGuidAttribute( string guid )
-            : base( guid )
+        private readonly AgentRequestContext _requestContext;
+
+        public ProxyFunction( AgentRequestContext requestContext )
         {
+            _requestContext = requestContext;
+        }
+
+        public string RunLavaFromJson( string promptAsJson, string template ) // template would be some kind of key or id in the future.
+        {
+            var test = _requestContext.ChatHistory.FirstOrDefault().Content;
+
+            // Be sure to add the request context as a Lava merge field.
+
+            return $"Lava skill called with template: {template}";
         }
     }
 }

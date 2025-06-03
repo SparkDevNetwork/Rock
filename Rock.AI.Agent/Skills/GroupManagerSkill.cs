@@ -10,8 +10,8 @@ using Rock.SystemGuid;
 namespace Rock.AI.Agent.Skills
 {
     [Description( "Used for managing groups, such as adding or removing members, and getting group information." )]
-    [AiSkillGuid( "489e96d7-c66c-4683-b76b-92fbfda372f4" )]
-    internal class GroupManagerSkill : IRockAiSkill
+    [AgentSkillGuid( "489e96d7-c66c-4683-b76b-92fbfda372f4" )]
+    internal class GroupManagerSkill : IAgentSkill
     {
         private AgentRequestContext _requestContext;
 
@@ -24,7 +24,7 @@ namespace Rock.AI.Agent.Skills
 
         [KernelFunction( "GetGroupInformation" )]
         [Description( "Gets information for a specific type of group." )]
-        [AiFunctionGuid( "14e9d63d-4c37-4b1d-a400-3a4aca79be2b" )]
+        [AgentFunctionGuid( "14e9d63d-4c37-4b1d-a400-3a4aca79be2b" )]
         public string GetGroupData( string input )
         {
             // Very basic logic for demo purposes
@@ -38,7 +38,7 @@ namespace Rock.AI.Agent.Skills
 
         [KernelFunction( "GroupMemberOperations" )]
         [Description( "Adds, modifies or removes a person from a group." )]
-        [AiFunctionGuid( "468688c4-86ad-401f-ab46-ac0875de2452" )]
+        [AgentFunctionGuid( "468688c4-86ad-401f-ab46-ac0875de2452" )]
         public string GroupMemberOperations( Kernel kernel, int personId, int groupId,
             [Description( "The operation to preform (Add|Update|Delete)." )] GroupMemberOperation operation, int groupMemberRole = 0 )
         {
@@ -49,7 +49,7 @@ namespace Rock.AI.Agent.Skills
 
         [KernelFunction( "DescribeGroup" )]
         [Description( "Describes a group." )]
-        [AiFunctionGuid( "3e1d8c57-8599-48d2-a5dd-a037bc194c00" )]
+        [AgentFunctionGuid( "3e1d8c57-8599-48d2-a5dd-a037bc194c00" )]
         public string DescribeGroup( KernelArguments args, string promptSummary )
         {
             return $"You have been {promptSummary}.";
@@ -57,7 +57,7 @@ namespace Rock.AI.Agent.Skills
 
         [KernelFunction( "GetGroup" )]
         [Description( "Gets the group information." )]
-        [AiFunctionGuid( "fc857adf-1db7-4eb3-9486-f19c00e4663e" )]
+        [AgentFunctionGuid( "fc857adf-1db7-4eb3-9486-f19c00e4663e" )]
         public string GetGroup( string input )
         {
             return "Please provide the group id.";

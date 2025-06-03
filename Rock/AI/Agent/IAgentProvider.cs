@@ -22,7 +22,7 @@ using Rock.Enums.AI.Agent;
 
 namespace Rock.AI.Agent
 {
-    internal interface IAiAgentProvider
+    internal interface IAgentProvider
     {
         /// <summary>
         /// Registers a chat completion service with the kernel builder.

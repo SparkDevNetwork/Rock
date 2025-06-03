@@ -28,7 +28,7 @@ namespace Rock.AI.Agent
     /// <summary>  
     /// This is the base provider for those that are OpenAI compatible (OpenAI and AzureOpenAI)  
     /// </summary>  
-    internal abstract class AgentProviderComponent : Component, IAiAgentProvider
+    internal abstract class AgentProviderComponent : Component, IAgentProvider
     {
         /// <summary>
         /// Registers a chat completion service with the kernel builder. This will be implemented in the derived classes.

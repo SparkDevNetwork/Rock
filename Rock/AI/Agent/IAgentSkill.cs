@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 namespace Rock.AI.Agent
 {
-    internal interface IRockAiSkill
+    internal interface IAgentSkill
     {
         List<AgentFunction> GetSemanticFunctions();
     }

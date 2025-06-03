@@ -109,7 +109,7 @@ namespace Rock.AI.Agent
         /// Gets the prompt execution settings for this function.
         /// </summary>
         /// <param name="agentProvider">The provider that will be executing this function.</param>
-        public PromptExecutionSettings GetExecutionSettings( IAiAgentProvider agentProvider )
+        public PromptExecutionSettings GetExecutionSettings( IAgentProvider agentProvider )
         {
             return agentProvider.GetFunctionPromptExecutionSettingsForRole( Role, Temperature, MaxTokens );
         }

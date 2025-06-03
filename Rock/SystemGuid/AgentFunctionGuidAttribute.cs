@@ -17,16 +17,16 @@ namespace Rock.SystemGuid
 {
     /// <summary>
     /// Rock Guid attribute to be used to specify the unique identifier of
-    /// an AI function.
+    /// an AI agent function.
     /// </summary>
     [System.AttributeUsage( System.AttributeTargets.Method, Inherited = true, AllowMultiple = false )]
-    public class AiFunctionGuidAttribute : RockGuidAttribute
+    internal class AgentFunctionGuidAttribute : RockGuidAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AiSkillGuidAttribute"/> class.
+        /// Initializes a new instance of the <see cref="AgentSkillGuidAttribute"/> class.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
-        public AiFunctionGuidAttribute( string guid )
+        public AgentFunctionGuidAttribute( string guid )
             : base( guid )
         {
         }

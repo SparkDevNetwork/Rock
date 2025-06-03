@@ -148,14 +148,14 @@ namespace Rock.AI.Agent
 
             foreach ( var type in skillTypes )
             {
-                var skillGuid = type.GetCustomAttribute<AiSkillGuidAttribute>()?.Guid;
+                var skillGuid = type.GetCustomAttribute<AgentSkillGuidAttribute>()?.Guid;
 
                 if ( !skillGuid.HasValue )
                 {
                     continue;
                 }
 
-                var skill = ( IRockAiSkill ) ActivatorUtilities.CreateInstance( serviceProvider, type );
+                var skill = ( IAgentSkill ) ActivatorUtilities.CreateInstance( serviceProvider, type );
                 var skillDescription = type.GetCustomAttribute<DescriptionAttribute>( inherit: true )?.Description;
                 var methods = type.GetMethods( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static );
                 var pluginFunctions = new List<KernelFunction>();
@@ -168,7 +168,7 @@ namespace Rock.AI.Agent
                         continue;
                     }
 
-                    var functionGuid = method.GetCustomAttribute<AiFunctionGuidAttribute>()?.Guid;
+                    var functionGuid = method.GetCustomAttribute<AgentFunctionGuidAttribute>()?.Guid;
 
                     if ( !functionGuid.HasValue )
                     {
@@ -253,7 +253,7 @@ namespace Rock.AI.Agent
                         ( Func<Kernel, string, string> ) ( ( Kernel kernel, string promptAsJson ) =>
                         {
                             // Create a LavaSkill instance that will be used to run the function.
-                            var proxySkill = new AiProxySkill( kernel.Services.GetRequiredService<AgentRequestContext>() );
+                            var proxySkill = new ProxyFunction( kernel.Services.GetRequiredService<AgentRequestContext>() );
                             return proxySkill.RunLavaFromJson( promptAsJson, function.Prompt );
                         } ),
                         functionName: function.Name,
