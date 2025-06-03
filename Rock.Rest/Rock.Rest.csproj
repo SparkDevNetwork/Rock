@@ -173,7 +173,11 @@
     <Compile Include="Controllers\CodeGenerated\AdaptiveMessageAdaptationSegmentsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\AdaptiveMessageCategoriesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\AdaptiveMessagesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\AIAgentsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\AIAgentSkillsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\AIProvidersController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\AISkillFunctionsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\AISkillsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\AuthAuditLogsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceTypesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceWorkflowsController.CodeGenerated.cs" />
@@ -239,7 +243,11 @@
     <Compile Include="v2\Models\CodeGenerated\AdaptiveMessageAdaptationSegmentsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\AdaptiveMessageCategoriesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\AdaptiveMessagesController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\AIAgentsController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\AIAgentSkillsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\AIProvidersController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\AISkillFunctionsController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\AISkillsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\AnalyticsDimCampusesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\AnalyticsDimFamilyCurrentsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\AnalyticsDimFamilyHeadOfHouseholdsController.CodeGenerated.cs" />

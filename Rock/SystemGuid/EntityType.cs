@@ -2060,5 +2060,25 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.AutomationTrigger"/> 
         /// </summary>
         public const string AUTOMATION_TRIGGER = "89ABFA37-68E5-41B7-B43C-A0CF823DEA61";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AIAgent"/> 
+        /// </summary>
+        public const string AI_AGENT = "EE3FE609-5C7C-492E-B0E9-5461045FC825";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AIAgentSkill"/> 
+        /// </summary>
+        public const string AI_AGENT_SKILL = "36DEDA2F-75BD-4BEE-AC36-46D20DCD1331";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AISkill"/> 
+        /// </summary>
+        public const string AI_SKILL = "D953AB34-4AB6-47C6-857B-53044A99ED75";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AISkillFunction"/> 
+        /// </summary>
+        public const string AI_SKILL_FUNCTION = "357D2625-FDCA-41F8-AB8D-1CF2CE0ABEED";
     }
 }
