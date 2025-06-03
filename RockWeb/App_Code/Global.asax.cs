@@ -27,13 +27,14 @@ using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
-
+using Microsoft.Extensions.Logging;
 using Rock;
 using Rock.Blocks;
 using Rock.Communication;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Observability;
 using Rock.Security;
@@ -43,6 +44,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.WebStartup;
 
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Global" )]
 namespace RockWeb
 {
     /// <summary>
@@ -235,7 +237,7 @@ namespace RockWeb
 
                 SetError66();
                 var startupException = new RockStartupException( "Error occurred during application startup", ex );
-                LogError( startupException, null );
+                LogException( startupException, null );
                 throw startupException;
             }
 
@@ -358,7 +360,7 @@ namespace RockWeb
                 }
                 catch ( Exception ex )
                 {
-                    LogError( ex, null );
+                    LogException( ex, null );
                 }
             } ).Start();
         }
@@ -1194,8 +1196,33 @@ namespace RockWeb
             if ( !Global.QueueInUse )
             {
                 Global.QueueInUse = true;
-                RockQueue.Drain( ( ex ) => LogError( ex, null ) );
+                RockQueue.Drain( ( ex ) => WriteErrorToRockLog( ex, "Rock.Transactions", null ) );
                 Global.QueueInUse = false;
+            }
+        }
+
+        /// <summary>
+        /// A handler for Rock Logging exception messages via Rock Logger.
+        /// If a message is provided, it will log that message otherwise
+        /// it will log the exception message.
+        /// </summary>
+        /// <param name="ex"></param>
+        private static void WriteErrorToRockLog( Exception ex, string loggerCategory, string message )
+        {
+            if ( string.IsNullOrWhiteSpace( loggerCategory ) )
+            {
+                loggerCategory = "RockWeb.Global";
+            }
+
+            var logger = RockLogger.LoggerFactory.CreateLogger( loggerCategory );
+
+            if ( !string.IsNullOrWhiteSpace( message ) )
+            {
+                logger.LogError( ex, message );
+            }
+            else
+            {
+                logger.LogError( ex.Message );
             }
         }
 
@@ -1204,7 +1231,7 @@ namespace RockWeb
         /// </summary>
         /// <param name="ex">The ex.</param>
         /// <param name="context">The context.</param>
-        private static void LogError( Exception ex, HttpContext context )
+        private static void LogException( Exception ex, HttpContext context )
         {
             int? pageId;
             int? siteId;
@@ -1278,7 +1305,7 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
-                LogError( ex, null );
+                LogException( ex, null );
             }
         }
 
@@ -1308,7 +1335,7 @@ namespace RockWeb
                 }
                 catch ( Exception ex )
                 {
-                    LogError( new Exception( "Error doing KeepAlive request.", ex ), null );
+                    LogException( new Exception( "Error doing KeepAlive request.", ex ), null );
                 }
             }
         }
