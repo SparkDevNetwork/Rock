@@ -1291,7 +1291,7 @@ namespace Rock.Communication.Chat
                                     }
 
                                     // If the chat notification mode has changed, we need to re-sync all of the members.
-                                    if( HasChatNotificationModeChanged( existingChannel, channel ) )
+                                    if ( HasChatNotificationModeChanged( existingChannel, channel ) )
                                     {
                                         channelsToTriggerGroupMemberSync.Add( channel );
                                     }
@@ -2419,7 +2419,7 @@ namespace Rock.Communication.Chat
                                 || existingUser.IsProfileVisible != chatUser.IsProfileVisible
                                 || existingUser.IsOpenDirectMessageAllowed != chatUser.IsOpenDirectMessageAllowed
                                 || existingUser.CampusId != chatUser.CampusId;
-                            
+
                             if ( !shouldUpdate )
                             {
                                 // Only compare badges as a last resort, if no other props already forced an update.
@@ -3536,13 +3536,13 @@ namespace Rock.Communication.Chat
         /// </remarks>
         internal string GetQueryableChatChannelKey( string channelIdentifier, bool allowIntegerIdentifier = false )
         {
-            if( channelIdentifier.IsNullOrWhiteSpace() )
+            if ( channelIdentifier.IsNullOrWhiteSpace() )
             {
                 return string.Empty;
             }
 
             var groupId = GroupCache.Get( channelIdentifier, allowIntegerIdentifier )?.Id;
-            if( groupId.HasValue )
+            if ( groupId.HasValue )
             {
                 return GetQueryableChatChannelKey( groupId.Value );
             }
@@ -3676,9 +3676,6 @@ namespace Rock.Communication.Chat
                         gm.IsArchived,
                         IsGroupActive = gm.Group.IsActive,
                         IsGroupArchived = gm.Group.IsArchived,
-
-                        // For now, hard code this based on the group type.
-                        GroupChatNotificationMode = gm.Group.GroupTypeId == ChatSharedChannelGroupTypeId ? ChatNotificationMode.Mentions : ChatNotificationMode.AllMessages
                     } )
                     .GroupBy( gm => new
                     {
@@ -3692,7 +3689,11 @@ namespace Rock.Communication.Chat
                         g.Key.PersonId,
                         GroupMembers = g.ToList()
                     } )
-                    .ToDictionary( g => $"{g.GroupId}|{g.PersonId}", g => g.GroupMembers );
+                    .ToDictionary( g => $"{g.GroupId}|{g.PersonId}", g => new
+                    {
+                        g.GroupMembers,
+                        g.GroupId
+                    } );
 
                 var rockChatGroupMembers = new List<RockChatGroupMember>();
 
@@ -3721,14 +3722,14 @@ namespace Rock.Communication.Chat
                     rockChatGroupMembers.Add( rockChatChannelMember );
 
                     // Find all member records for this group & person combination.
-                    if ( !membersByGroupAndPerson.TryGetValue( groupAndPersonKey, out var members ) || !members.Any() )
+                    if ( !membersByGroupAndPerson.TryGetValue( groupAndPersonKey, out var members ) || !members.GroupMembers.Any() )
                     {
                         // This person is not currently a member of this group.
                         rockChatChannelMember.ShouldDelete = true;
                         continue;
                     }
 
-                    var memberToSync = members
+                    var memberToSync = members.GroupMembers
                         .OrderBy( gm => gm.IsArchived ) // Prefer non-archived.
                         .ThenByDescending( gm => gm.GroupMemberStatus == GroupMemberStatus.Active ) // Prefer active.
                         .ThenBy( gm => gm.GroupRoleOrder )
@@ -3759,7 +3760,10 @@ namespace Rock.Communication.Chat
                         rockChatChannelMember.IsDeceased = memberToSync.IsDeceased;
                         rockChatChannelMember.ShouldDelete = false;
                         rockChatChannelMember.ShouldIgnore = false;
-                        rockChatChannelMember.PushNotificationMode = memberToSync.GroupChatNotificationMode;
+
+                        // BC TODO: In the future, we can probably pass this from the command instead
+                        // of re-fetching the group from cache.
+                        rockChatChannelMember.PushNotificationMode = GroupCache.Get( members.GroupId ).GetChatPushNotificationMode();
                     }
                 }
 
