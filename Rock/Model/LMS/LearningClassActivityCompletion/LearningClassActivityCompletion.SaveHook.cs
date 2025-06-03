@@ -258,7 +258,7 @@ namespace Rock.Model
                 RockContext.SaveChanges();
 
                 var wasCourseCompleted = participant.LearningCompletionStatus != Enums.Lms.LearningCompletionStatus.Incomplete;
-                var currentPersonAliasId = DbContext.GetCurrentPersonAlias()?.Id;
+                var currentPersonAliasId = DbContext.GetCurrentPersonAliasId();
 
                 // If it was determined that the activity was completed and should launch a workflow
                 // then launch that workflow before the Course completion workflow (if any).
