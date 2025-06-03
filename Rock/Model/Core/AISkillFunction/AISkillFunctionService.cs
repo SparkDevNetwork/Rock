@@ -14,9 +14,128 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
+
+using Microsoft.SemanticKernel;
+
+using Rock.Data;
+using Rock.Enums.AI.Agent;
+using Rock.SystemGuid;
+
 namespace Rock.Model
 {
     public partial class AISkillFunctionService
     {
+        /// <summary>
+        /// Registers all AI skill functions defined on <paramref name="skillType"/>.
+        /// New functions are added to the database. Existing fuinctions are
+        /// updated if necessary. Funcations that no longer exist are not
+        /// currently deleted from the database.
+        /// </summary>
+        /// <param name="skillId">The identifier of the AI skill that these functions are associated with.</param>
+        /// <param name="skillType">The C# type that represents the skill containing the functions to register.</param>
+        /// <param name="rockContext">The context to use when saving changes to the database.</param>
+        internal static void RegisterFunctions( int skillId, Type skillType, RockContext rockContext )
+        {
+            var existingFunctions = new AISkillFunctionService( rockContext )
+                .Queryable()
+                .Where( f => f.AISkillId == skillId )
+                .ToList();
+
+            var methods = skillType.GetMethods( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static );
+
+            foreach ( var method in methods )
+            {
+                RegisterFunction( skillId, method, existingFunctions, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Registers a single AI function by adding it to the database or
+        /// updating the existing function if it already exists in
+        /// <paramref name="existingFunctions"/>.
+        /// </summary>
+        /// <param name="skillId">The identifier of the AI skill that this function is associated with.</param></param>
+        /// <param name="method">The C# method that represents the function to register.</param>
+        /// <param name="existingFunctions">The existing functions in the database for this skill.</param>
+        /// <param name="rockContext">The context to use when saving changes to the database.</param>
+        private static void RegisterFunction( int skillId, MethodInfo method, List<AISkillFunction> existingFunctions, RockContext rockContext )
+        {
+            var kernelFunction = method.GetCustomAttribute<KernelFunctionAttribute>();
+            var functionGuid = method.GetCustomAttribute<AgentFunctionGuidAttribute>()?.Guid;
+
+            if ( !functionGuid.HasValue )
+            {
+                return;
+            }
+
+            if ( kernelFunction == null )
+            {
+                return;
+            }
+
+            var function = existingFunctions.FirstOrDefault( f => f.Guid == functionGuid.Value );
+            var name = kernelFunction.Name ?? method.Name.SplitCase();
+            var description = method.GetCustomAttribute<DescriptionAttribute>()?.Description;
+            var needSave = false;
+
+            if ( function == null )
+            {
+                function = rockContext.Set<AISkillFunction>().Create();
+
+                function.Guid = functionGuid.Value;
+                function.AISkillId = skillId;
+                function.Name = name;
+                function.Description = description;
+                function.UsageHint = description;
+                function.FunctionType = FunctionType.ExecuteCode;
+
+                new AISkillFunctionService( rockContext ).Add( function );
+
+                needSave = true;
+            }
+            else
+            {
+                if ( function.Name != name )
+                {
+                    function.Name = name;
+                    needSave = true;
+                }
+
+                if ( function.Description != description )
+                {
+                    function.Description = description;
+                    needSave = true;
+                }
+
+                if ( function.UsageHint != description )
+                {
+                    function.UsageHint = description;
+                    needSave = true;
+                }
+
+                if ( function.FunctionType != FunctionType.ExecuteCode )
+                {
+                    function.FunctionType = FunctionType.ExecuteCode;
+                    needSave = true;
+                }
+            }
+
+            if ( needSave )
+            {
+                if ( function.Id == 0 )
+                {
+                    function.CreatedDateTime = RockDateTime.Now;
+                }
+
+                function.ModifiedDateTime = RockDateTime.Now;
+
+                rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
+            }
+        }
     }
 }

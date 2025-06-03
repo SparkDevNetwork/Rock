@@ -294,6 +294,11 @@ namespace Rock.WebStartup
             ShowDebugTimingMessage( "Rock Fast Queue" );
 
             // Start the Automation system.
+            LogStartupMessage( "Registering AI Skills" );
+            AISkillService.RegisterSkills();
+            ShowDebugTimingMessage( "AI Skills" );
+
+            // Start the Automation system.
             LogStartupMessage( "Starting the Automation System" );
             AutomationTriggerCache.CreateAllMonitors();
             AutomationEventCache.CreateAllExecutors();
