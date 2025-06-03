@@ -16,15 +16,11 @@
 //
 
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 
 using Rock.Data;
-using Rock.Enums.AI.Agent;
 using Rock.Web.Cache;
 
 namespace Rock.AI.Agent
@@ -43,70 +39,21 @@ namespace Rock.AI.Agent
 
         public IChatAgent Build( int agentId )
         {
-            var factories = ( ConcurrentDictionary<int, ChatAgentFactory> ) RockCache.GetOrAddExisting( "Rock.AI.Agent.ChatAgentBuilder.Factories",
-                () => new ConcurrentDictionary<int, ChatAgentFactory>() );
+            // Disabled cache for now since we need to be able to respond to
+            // configuration changes on the provider.
 
-            var factory = factories.GetOrAdd( agentId, ( id, ctx ) => new ChatAgentFactory( id, ctx, _serviceProvider.GetService<ILoggerFactory>() ), _rockContext );
+            //var factories = ( ConcurrentDictionary<int, ChatAgentFactory> ) RockCache.GetOrAddExisting( "Rock.AI.Agent.ChatAgentBuilder.Factories",
+            //    () => new ConcurrentDictionary<int, ChatAgentFactory>() );
+
+            //var factory = factories.GetOrAdd( agentId, ( id, ctx ) => new ChatAgentFactory( id, ctx, _serviceProvider.GetService<ILoggerFactory>() ), _rockContext );
+            var factory = new ChatAgentFactory( agentId, _rockContext, _serviceProvider.GetService<ILoggerFactory>() );
 
             return factory.Build( _serviceProvider );
         }
 
-        internal void FlushCache()
-        {
-            RockCache.Remove( "Rock.AI.Agent.ChatAgentBuilder.Factories" );
-        }
-    }
-
-    internal class AiSkill
-    {
-        /// <summary>
-        /// A short, descriptive name for this AI Skill. This name helps identify the purpose of the skill 
-        /// (e.g., "Guest Follow-Up Generator", "Giving Insights Summary"). It will appear in the UI, logs, and 
-        /// will also be used to help determine how and when the skill is selected for inclusion into the AI 
-        /// kernel. Choose a name that clearly conveys the skill’s function.
-        /// Should be short, descriptive, and use PascalCase.
-        /// </summary>
-        public string Name { get; set; } = string.Empty;
-
-        /// <summary>
-        /// The key name derived from the name.
-        /// </summary>
-        public string Key
-        {
-            get
-            {
-                return Name.Replace( " ", "" );
-            }
-        }
-
-        /// <summary>
-        /// The type of skill that reflects the source of the logic. Code for native code skills or Extended for virtual
-        /// skills stored in the database.
-        /// </summary>
-        public SkillType SkillType { get; set; } = SkillType.Code;
-
-        /// <summary>
-        /// A brief description or prompt that explains how this skill is intended to be used. This provides context to 
-        /// users and automation systems when deciding whether to activate this skill (e.g., "Use after a guest attends 
-        /// for the first time", or "Run weekly to summarize giving trends"). This hint helps guide appropriate usage 
-        /// during AI-driven task selection.
-        /// Leave blank when the name provides enough context.
-        /// </summary>
-        public string UsageHint { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Listing of semantic functions for the skill.
-        /// </summary>
-        public List<AgentFunction> AiPromptFunctions { get; set; } = new List<AgentFunction>();
-
-        /// <summary>
-        /// Listing of code functions for the skill.
-        /// </summary>
-        public KernelPluginCollection CodeFunctions { get; set; } = new KernelPluginCollection();
-
-        /// <summary>
-        /// Listing of Lava functions for the skill.
-        /// </summary>
-        public List<AgentFunction> LavaFunctions { get; set; } = new List<AgentFunction>();
+        //internal void FlushCache()
+        //{
+        //    RockCache.Remove( "Rock.AI.Agent.ChatAgentBuilder.Factories" );
+        //}
     }
 }

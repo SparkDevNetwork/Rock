@@ -17,7 +17,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +29,7 @@ using Microsoft.SemanticKernel;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Logging;
+using Rock.SystemGuid;
 
 namespace Rock.AI.Agent
 {
@@ -36,13 +39,39 @@ namespace Rock.AI.Agent
 
         private readonly AgentConfiguration _agentConfiguration;
 
-        private readonly List<KernelPlugin> _virtualPlugins;
-
         private readonly IKernelBuilder _kernelBuilder;
 
         private readonly ILoggerFactory _loggerFactory;
 
         private readonly ILogger _logger;
+
+        private static readonly PropertyInfo _parameterDescriptionProperty;
+
+        private static readonly PropertyInfo _parameterIsRequiredProperty;
+
+        private static readonly PropertyInfo _parameterSchemaProperty;
+
+        static ChatAgentFactory()
+        {
+            try
+            {
+                // The properties for KernelParameterMetadata are init-only, which is
+                // not supported on C# 7.3. So we can't set them directly and are
+                // required to use reflection.
+                //
+                // Report here: https://github.com/microsoft/semantic-kernel/issues/12297
+                var parameterType = typeof( KernelParameterMetadata );
+                _parameterDescriptionProperty = parameterType.GetProperty( nameof( KernelParameterMetadata.Description ) );
+                _parameterIsRequiredProperty = parameterType.GetProperty( nameof( KernelParameterMetadata.IsRequired ) );
+                _parameterSchemaProperty = parameterType.GetProperty( nameof( KernelParameterMetadata.Schema ) );
+            }
+            catch
+            {
+                // Intentionally ignore, this will help prevent a crash too early
+                // to be seen by the user. We'll get an error later when we try
+                // to actually build an agent.
+            }
+        }
 
         public ChatAgentFactory( int agentId, RockContext rockContext, ILoggerFactory loggerFactory )
         {
@@ -50,12 +79,11 @@ namespace Rock.AI.Agent
             _agentId = agentId;
             _loggerFactory = loggerFactory;
 
-            // Get a AI Agent Provider
-            var provider = AgentProviderContainer.GetComponent( "Rock.AI.Agent.Providers.AzureOpenAiAgentProvider" );// TODO: this should be configurable from agentId
+            var provider = AgentProviderContainer.GetActiveComponent();
 
             // Register the ModelServiceRoles
             var kernelBuilder = Kernel.CreateBuilder();
-            kernelBuilder.Services.AddScoped<AgentRequestContext>();
+            kernelBuilder.Services.AddSingleton<AgentRequestContext>();
             kernelBuilder.Services.AddRockLogging();
 
             foreach ( ModelServiceRole role in Enum.GetValues( typeof( ModelServiceRole ) ) )
@@ -65,8 +93,7 @@ namespace Rock.AI.Agent
 
             _kernelBuilder = kernelBuilder;
 
-            _agentConfiguration = new AgentConfiguration( provider, string.Empty, GetMockAiSkills() );
-            _virtualPlugins = LoadVirtualSkills();
+            _agentConfiguration = new AgentConfiguration( provider, string.Empty, _mockSkills );
             _logger = loggerFactory.CreateLogger<ChatAgentFactory>();
             sw.Stop();
 
@@ -103,9 +130,7 @@ namespace Rock.AI.Agent
         private void LoadPluginsForAgent( Kernel kernel, IServiceProvider serviceProvider )
         {
             LoadNativeSkills( kernel.Plugins, serviceProvider );
-
-            var x = LoadVirtualSkills();
-            kernel.Plugins.AddRange( x );
+            LoadVirtualSkills( kernel.Plugins );
         }
 
         /// <summary>
@@ -116,45 +141,57 @@ namespace Rock.AI.Agent
         private void LoadNativeSkills( KernelPluginCollection pluginCollection, IServiceProvider serviceProvider )
         {
             // Register native skills
-            var skillTypes = _agentConfiguration.Skills.Where( s => s.NativeType != null ).Select( s => s.NativeType ).ToList();
+            var skillTypes = _agentConfiguration.Skills
+                .Select( s => s.NativeType )
+                .Where( t => t != null )
+                .ToList();
 
             foreach ( var type in skillTypes )
             {
-                // Get Semantic Functions
-                var skill = ( IRockAiSkill ) ActivatorUtilities.CreateInstance( serviceProvider, type );
+                var skillGuid = type.GetCustomAttribute<AiSkillGuidAttribute>()?.Guid;
 
-                var plugin = KernelPluginFactory.CreateFromObject( skill, type.Name, _loggerFactory );
-
-                // Register dynamic functions
-                var skillFunctions = skill.GetSemanticFunctions();
-
-                // Check if the skill has any semantic functions to register
-                if ( skillFunctions == null || skillFunctions.Count == 0 )
+                if ( !skillGuid.HasValue )
                 {
                     continue;
                 }
 
-                // Get the existing plug-in functions
-                var pluginFunctions = plugin//Collection[type.Name]
-                    .Select( kf => new KeyValuePair<string, KernelFunction>( kf.Name, kf ) )
-                    .ToDictionary( x => x.Key, x => x.Value );
+                var skill = ( IRockAiSkill ) ActivatorUtilities.CreateInstance( serviceProvider, type );
+                var skillDescription = type.GetCustomAttribute<DescriptionAttribute>( inherit: true )?.Description;
+                var methods = type.GetMethods( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static );
+                var pluginFunctions = new List<KernelFunction>();
 
-                foreach ( var skillFunction in skillFunctions )
+                // Register the C# method functions.
+                foreach ( var method in methods )
                 {
-                    var semanticFunction = KernelFunctionFactory.CreateFromPrompt(
-                        promptTemplate: skillFunction.Prompt, // TODO: process Lava if needed.
-                        functionName: skillFunction.Name,
-                        description: skillFunction.UsageHint,
-                        executionSettings: skillFunction.GetExecutionSettings( _agentConfiguration.Provider ),
-                        loggerFactory: _loggerFactory
-                    );
+                    if ( method.GetCustomAttribute<KernelFunctionAttribute>() == null )
+                    {
+                        continue;
+                    }
 
-                    pluginFunctions[skillFunction.Name] = semanticFunction;
+                    var functionGuid = method.GetCustomAttribute<AiFunctionGuidAttribute>()?.Guid;
+
+                    if ( !functionGuid.HasValue )
+                    {
+                        continue;
+                    }
+
+                    pluginFunctions.Add( KernelFunctionFactory.CreateFromMethod( method, skill, loggerFactory: _loggerFactory ) );
                 }
 
-                // Re-register the plug-in with the new semantic functions added
-                //pluginCollection.Remove( pluginCollection[type.Name] );
-                plugin = KernelPluginFactory.CreateFromFunctions( type.Name, pluginFunctions.Values );
+                // Register dynamic functions
+                var virtualFunctions = GetVirtualSkillFunctions( skill.GetSemanticFunctions() );
+                pluginFunctions.AddRange( virtualFunctions );
+
+                if ( pluginFunctions.Count == 0 )
+                {
+                    continue;
+                }
+
+                var distinctFunctions = pluginFunctions
+                    .DistinctBy( kf => kf.Name );
+
+                // Register the plug-in with the native and semantic functions.
+                var plugin = KernelPluginFactory.CreateFromFunctions( type.Name, skillDescription, distinctFunctions );
                 pluginCollection.Add( plugin );
             }
         }
@@ -163,78 +200,73 @@ namespace Rock.AI.Agent
         /// Loads the virtual skills. These are skills that are not native to the system but are defined in the database.
         /// </summary>
         /// <param name="kernel"></param>
-        private List<KernelPlugin> LoadVirtualSkills()
+        private void LoadVirtualSkills( KernelPluginCollection pluginCollection )
         {
-            var plugins = new List<KernelPlugin>();
-
             foreach ( var skill in _agentConfiguration.Skills )
             {
-                if ( skill.Functions == null )
+                var pluginFunctions = GetVirtualSkillFunctions( skill.Functions );
+
+                if ( pluginFunctions.Count > 0 )
                 {
-                    continue;
+                    var plugin = KernelPluginFactory.CreateFromFunctions( skill.Key, skill.UsageHint, pluginFunctions );
+                    pluginCollection.Add( plugin );
                 }
+            }
+        }
 
-                var pluginFunctions = new Dictionary<string, KernelFunction>();
+        private ICollection<KernelFunction> GetVirtualSkillFunctions( List<AgentFunction> functions )
+        {
+            var pluginFunctions = new Dictionary<string, KernelFunction>();
 
-                // The properties for KernelParameterMetadata are init-only, which is
-                // not supported on C# 7.3. So we can't set them directly and are
-                // required to use reflection.
-                //
-                // Report here: https://github.com/microsoft/semantic-kernel/issues/12297
-                var parameterType = typeof( KernelParameterMetadata );
-                var descriptionProperty = parameterType.GetProperty( nameof( KernelParameterMetadata.Description ) );
-                var isRequiredProperty = parameterType.GetProperty( nameof( KernelParameterMetadata.IsRequired ) );
-                var schemaProperty = parameterType.GetProperty( nameof( KernelParameterMetadata.Schema ) );
-
-                // Register functions
-                foreach ( var function in skill.Functions )
-                {
-                    if ( function.FunctionType == FunctionType.AiPrompt )
-                    {
-                        var semanticFunction = KernelFunctionFactory.CreateFromPrompt(
-                            promptTemplate: function.Prompt, // TODO: process Lava if needed.
-                            functionName: function.Key,
-                            description: function.UsageHint,
-                            executionSettings: function.GetExecutionSettings( _agentConfiguration.Provider ),
-                            loggerFactory: _loggerFactory
-                        );
-
-                        pluginFunctions[function.Key] = semanticFunction;
-                    }
-
-                    else if ( function.FunctionType == FunctionType.ExecuteLava )
-                    {
-                        var functionParameters = new List<KernelParameterMetadata>();
-                        var parameter = new KernelParameterMetadata( "promptAsJson" );
-
-                        descriptionProperty.SetValue( parameter, "A JSON object with the information to register for the event." );
-                        isRequiredProperty.SetValue( parameter, true );
-                        schemaProperty.SetValue( parameter, ParseSchema( function.InputSchema ) );
-
-                        functionParameters.Add( parameter );
-
-                        var proxyFunction = KernelFunctionFactory.CreateFromMethod(
-                            ( Func<Kernel, string, string> ) ( ( Kernel kernel, string promptAsJson ) =>
-                            {
-                                // Create a LavaSkill instance that will be used to run the function.
-                                var proxySkill = new AiProxySkill( kernel.Services.GetRequiredService<AgentRequestContext>() );
-                                return proxySkill.RunLavaFromJson( promptAsJson, function.Prompt );
-                            } ),
-                            functionName: function.Name,
-                            description: function.UsageHint,
-                            parameters: functionParameters,
-                            loggerFactory: _loggerFactory
-                        );
-
-                        pluginFunctions[function.Name] = proxyFunction;
-                    }
-                }
-
-                var plugin = KernelPluginFactory.CreateFromFunctions( skill.Key, pluginFunctions.Values );
-                plugins.Add( plugin );
+            if ( functions == null )
+            {
+                return Array.Empty<KernelFunction>();
             }
 
-            return plugins;
+            foreach ( var function in functions )
+            {
+                if ( function.FunctionType == FunctionType.AiPrompt )
+                {
+                    var semanticFunction = KernelFunctionFactory.CreateFromPrompt(
+                        promptTemplate: function.Prompt, // TODO: process Lava if needed.
+                        functionName: function.Key,
+                        description: function.UsageHint,
+                        executionSettings: function.GetExecutionSettings( _agentConfiguration.Provider ),
+                        loggerFactory: _loggerFactory
+                    );
+
+                    pluginFunctions[function.Key] = semanticFunction;
+                }
+
+                else if ( function.FunctionType == FunctionType.ExecuteLava )
+                {
+                    var functionParameters = new List<KernelParameterMetadata>();
+                    var parameter = new KernelParameterMetadata( "promptAsJson" );
+
+                    _parameterDescriptionProperty.SetValue( parameter, "A JSON object with the information to register for the event." );
+                    _parameterIsRequiredProperty.SetValue( parameter, true );
+                    _parameterSchemaProperty.SetValue( parameter, ParseSchema( function.InputSchema ) );
+
+                    functionParameters.Add( parameter );
+
+                    var proxyFunction = KernelFunctionFactory.CreateFromMethod(
+                        ( Func<Kernel, string, string> ) ( ( Kernel kernel, string promptAsJson ) =>
+                        {
+                            // Create a LavaSkill instance that will be used to run the function.
+                            var proxySkill = new AiProxySkill( kernel.Services.GetRequiredService<AgentRequestContext>() );
+                            return proxySkill.RunLavaFromJson( promptAsJson, function.Prompt );
+                        } ),
+                        functionName: function.Name,
+                        description: function.UsageHint,
+                        parameters: functionParameters,
+                        loggerFactory: _loggerFactory
+                    );
+
+                    pluginFunctions[function.Name] = proxyFunction;
+                }
+            }
+
+            return pluginFunctions.Values;
         }
 
         /// <summary>
@@ -259,6 +291,8 @@ namespace Rock.AI.Agent
                 return null;
             }
         }
+
+        private static List<SkillConfiguration> _mockSkills = GetMockAiSkills();
 
         private static List<SkillConfiguration> GetMockAiSkills()
         {

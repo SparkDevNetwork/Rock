@@ -2000,6 +2000,8 @@
     <Compile Include="Security\SecurityGrantRules\ConnectionRequestPickerSecurityGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\EmailEditorSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
+    <Compile Include="SystemGuid\AiFunctionGuidAttribute.cs" />
+    <Compile Include="SystemGuid\AiSkillGuidAttribute.cs" />
     <Compile Include="SystemGuid\EmailSection.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />
     <Compile Include="SystemKey\GlobalAttributeKey.cs" />

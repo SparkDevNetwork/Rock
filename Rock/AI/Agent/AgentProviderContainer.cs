@@ -18,7 +18,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 
+using Rock.AI.Provider;
 using Rock.Extension;
 
 namespace Rock.AI.Agent
@@ -57,6 +59,15 @@ namespace Rock.AI.Agent
         public static string GetComponentName( string entityType )
         {
             return Instance.GetComponentNameByEntity( entityType );
+        }
+
+        /// <summary>
+        /// Returns the active component that will be used by the system.
+        /// </summary>
+        /// <returns>The instance of <see cref="AgentProviderComponent"/> that should be used by the system or <c>null</c> if no provider is configured.</returns>
+        public static AgentProviderComponent GetActiveComponent()
+        {
+            return instance.Value.Components.Select( c => c.Value.Value ).Where( c => c.IsActive ).FirstOrDefault();
         }
 
         /// <inheritdoc/>
