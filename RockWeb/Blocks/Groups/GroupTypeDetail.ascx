@@ -536,7 +536,7 @@
                                 <Rock:RockCheckBox ID="cbIsChatChannelAlwaysShown" runat="server" Label="Always Show Channel" Help="If enabled, chat channels of this type are always shown in the channel list even if the person has not joined the channel. This also implies that the channel may be joined by any person via the chat application." />
                                 <Rock:RockDropDownList ID="ddlChatPushNotificationMode" runat="server" CssClass="input-width-xl" Label="Push Notification Mode" Help="Controls how push notifications are sent for chat channels of this type.">
                                     <asp:ListItem Value="0" Text="All Messages" />
-                                    <asp:ListItem Value="1" Text="Mentions And Replies" />
+                                    <asp:ListItem Value="1" Text="Mentions" />
                                     <asp:ListItem Value="2" Text="Silent" />
                                 </Rock:RockDropDownList>
                             </div>
