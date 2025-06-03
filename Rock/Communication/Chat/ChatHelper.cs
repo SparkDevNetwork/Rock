@@ -1253,6 +1253,11 @@ namespace Rock.Communication.Chat
                             || lastSyncedChannel.CampusId != currentChannel.CampusId;
                     }
 
+                    bool HasChatNotificationModeChanged( ChatChannel lastSyncedChannel, ChatChannel currentChannel )
+                    {
+                        return lastSyncedChannel.ChatNotificationMode != currentChannel.ChatNotificationMode;
+                    }
+
                     foreach ( var rockChatGroup in rockChatGroups )
                     {
                         var channel = TryConvertToChatChannel( rockChatGroup );
@@ -1293,6 +1298,12 @@ namespace Rock.Communication.Chat
 
                                     // If this channel was previously inactive and is now being reactivated, trigger a group member sync.
                                     if ( !existingChannel.IsActive && channel.IsActive )
+                                    {
+                                        channelsToTriggerGroupMemberSync.Add( channel );
+                                    }
+
+                                    // If the chat notification mode has changed, we need to re-sync all of the members.
+                                    if( HasChatNotificationModeChanged( existingChannel, channel ) )
                                     {
                                         channelsToTriggerGroupMemberSync.Add( channel );
                                     }
@@ -2420,7 +2431,7 @@ namespace Rock.Communication.Chat
                                 || existingUser.IsProfileVisible != chatUser.IsProfileVisible
                                 || existingUser.IsOpenDirectMessageAllowed != chatUser.IsOpenDirectMessageAllowed
                                 || existingUser.CampusId != chatUser.CampusId;
-
+                            
                             if ( !shouldUpdate )
                             {
                                 // Only compare badges as a last resort, if no other props already forced an update.
@@ -3668,7 +3679,10 @@ namespace Rock.Communication.Chat
                         gm.Person.IsDeceased,
                         gm.IsArchived,
                         IsGroupActive = gm.Group.IsActive,
-                        IsGroupArchived = gm.Group.IsArchived
+                        IsGroupArchived = gm.Group.IsArchived,
+
+                        // For now, hard code this based on the group type.
+                        GroupChatNotificationMode = gm.Group.GroupTypeId == ChatSharedChannelGroupTypeId ? ChatNotificationMode.Mentions : ChatNotificationMode.AllMessages
                     } )
                     .GroupBy( gm => new
                     {
@@ -3749,6 +3763,7 @@ namespace Rock.Communication.Chat
                         rockChatChannelMember.IsDeceased = memberToSync.IsDeceased;
                         rockChatChannelMember.ShouldDelete = false;
                         rockChatChannelMember.ShouldIgnore = false;
+                        rockChatChannelMember.PushNotificationMode = memberToSync.GroupChatNotificationMode;
                     }
                 }
 
@@ -3802,7 +3817,7 @@ namespace Rock.Communication.Chat
             // Hard-code chat notification mode based on the parent group type.
             // We'll improve this logic in a future version of Rock.
             var chatNotificationMode = rockChatGroup.GroupTypeId == ChatSharedChannelGroupTypeId
-                ? ChatNotificationMode.MentionsAndReplies
+                ? ChatNotificationMode.Mentions
                 : ChatNotificationMode.AllMessages;
 
             return new ChatChannel
@@ -3848,7 +3863,8 @@ namespace Rock.Communication.Chat
                 ChatUserKey = chatUserKey,
                 Role = rockChatChannelMember.ChatRole.GetDescription(),
                 IsChatMuted = rockChatChannelMember.IsChatMuted,
-                IsChatBanned = rockChatChannelMember.IsChatBanned
+                IsChatBanned = rockChatChannelMember.IsChatBanned,
+                PushNotificationMode = rockChatChannelMember.PushNotificationMode
             };
         }
 
