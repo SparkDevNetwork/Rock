@@ -132,6 +132,7 @@
     <Compile Include="Communication\CommunicationEntry\ValidationContext.cs" />
     <Compile Include="Communication\CommunicationEntry\ValidationContextExtensions.cs" />
     <Compile Include="Cms\LogSettings.cs" />
+    <Compile Include="Communication\CommunicationSaturationReport.cs" />
     <Compile Include="Communication\SmsConversations.cs" />
     <Compile Include="Communication\CommunicationTemplateDetail.cs" />
     <Compile Include="Core\AutomationTriggerDetail.cs" />

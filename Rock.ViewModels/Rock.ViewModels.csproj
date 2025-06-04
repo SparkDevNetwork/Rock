@@ -151,6 +151,10 @@
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySaveMetricsReminderRequestBag.cs" />
     <Compile Include="Blocks\Cms\LogSettings\LogSettingsBag.cs" />
     <Compile Include="Blocks\Cms\LogSettings\LogSettingsDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationSaturationReport\CommunicationSaturationReportBlockBox.cs" />
+    <Compile Include="Blocks\Communication\CommunicationSaturationReport\CommunicationSaturationReportChartDataBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationSaturationReport\CommunicationSaturationReportBlockDataBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationSaturationReport\CommunicationSaturationReportFiltersBag.cs" />
     <Compile Include="Blocks\Communication\SmsConversations\ConversationBag.cs" />
     <Compile Include="Blocks\Communication\SmsConversations\ResponseListingStatusBag.cs" />
     <Compile Include="Blocks\Communication\SmsConversations\SendMessageBag.cs" />
