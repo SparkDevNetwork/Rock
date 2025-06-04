@@ -2198,7 +2198,7 @@ namespace Rock.Blocks.Event
             switch ( field.PersonFieldType )
             {
                 case RegistrationPersonFieldType.FirstName:
-                    return person.NickName.IsNullOrWhiteSpace() ? person.FirstName : person.NickName;
+                    return person.FirstName;
 
                 case RegistrationPersonFieldType.LastName:
                     return person.LastName;
