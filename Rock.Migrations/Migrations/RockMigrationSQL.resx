@@ -385,4 +385,7 @@
   <data name="_202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport_GenerateWorkflowTypeSlugs" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport_GenerateWorkflowTypeSlugs.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_202506042042400_AddCommunicationSaturationReport_spCommunication_SaturationReport" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202506042042400_AddCommunicationSaturationReport_spCommunication_SaturationReport.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>
