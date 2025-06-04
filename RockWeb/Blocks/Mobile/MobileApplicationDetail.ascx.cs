@@ -1358,7 +1358,7 @@ namespace RockWeb.Blocks.Mobile
         /// </summary>
         /// <remarks>
         /// "async void" is not normal, but WebForms has special logic to deal with
-        /// it that allows await to be used and ensures HttpContext is propogated
+        /// it that allows await to be used and ensures HttpContext is propagated
         /// along the async call chain.
         /// </remarks>
         /// <param name="sender">The source of the event.</param>
