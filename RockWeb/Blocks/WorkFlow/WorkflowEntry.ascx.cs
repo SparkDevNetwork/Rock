@@ -2291,6 +2291,28 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( workflowType.IsPersisted == false && workflowType.IsFormBuilder )
             {
+                /*
+                    06/04/2025 - JMH
+
+                    Before saving the WorkflowAction, ensure that the Workflow.InitiatorPersonAlias is set or is tracked by _workflowRockContext.
+                    This guarantees that the saved WorkflowAction correctly associates the tracked PersonAlias with the Workflow.InitiatorPersonAlias navigation property.
+                    This association is necessary because the InitiatorPersonAlias is used in downstream Lava within the NotificationEmail System Communication.
+
+                    Reason: To ensure the correct PersonAlias is available for Lava in system emails.
+                */
+                var initiatorPersonAlias = _action?.Activity?.Workflow?.InitiatorPersonAlias;
+                var initiatorPersonAliasId = _action?.Activity?.Workflow?.InitiatorPersonAliasId;
+
+                if ( initiatorPersonAliasId.HasValue
+                    && initiatorPersonAlias == null
+                    && !_workflowRockContext.ChangeTracker
+                        .Entries<PersonAlias>()
+                        .Any( pa => pa.Entity.Id == initiatorPersonAliasId.Value ) )
+                {
+                    // Set the InitiatorPersonAlias manually as saving the WorkflowAction will not automatically set it.
+                    _action.Activity.Workflow.InitiatorPersonAlias = new PersonAliasService( _workflowRockContext ).Get( initiatorPersonAliasId.Value );
+                }
+
                 /* 3/14/2022 MP
                  If this is a FormBuilder workflow, the WorkflowType probably has _workflowType.IsPersisted == false.
                  This is because we don't want to persist the workflow until they have submitted.
@@ -2580,7 +2602,9 @@ namespace RockWeb.Blocks.WorkFlow
                     return;
                 }
 
-                recipients.Add( new RockEmailMessageRecipient( recipientPerson, workflowMergeFields ) );
+                var recipient = new RockEmailMessageRecipient( recipientPerson, workflowMergeFields );
+                recipient.MergeFields.AddOrReplace( recipient.PersonMergeFieldKey, recipientPerson );
+                recipients.Add( recipient );
             }
             else if ( formNotificationEmailDestination == FormNotificationEmailDestination.CampusTopic
                 && notificationEmailSettings.CampusTopicValueId.HasValue )
