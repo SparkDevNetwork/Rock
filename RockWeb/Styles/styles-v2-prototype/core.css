@@ -3102,6 +3102,10 @@ fieldset[disabled] .btn-danger-solid.focus {
   border-radius: var(--rounded-xsmall);
 }
 
+.splash-form .btn-link {
+  font-weight: var(--font-weight-semibold);
+}
+
 .btn-link {
   font-weight: var(--font-weight-regular);
   color: var(--color-primary);
