@@ -25,6 +25,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Group
@@ -35,7 +38,7 @@ namespace Rock.Reporting.DataFilter.Group
     [Description( "Filter groups on whether they exist in a specified group branch" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Branch Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "A1D53B49-EDB6-4644-BA31-93C0F2E22368")]
+    [Rock.SystemGuid.EntityTypeGuid( "A1D53B49-EDB6-4644-BA31-93C0F2E22368" )]
     public class GroupBranchFilter : DataFilterComponent
     {
         private enum IncludedGroupsSpecifier
@@ -43,7 +46,7 @@ namespace Rock.Reporting.DataFilter.Group
             EntireBranch = 0,
             DescendantsOnly = 1
         }
-        
+
 
         #region Properties
 
@@ -68,6 +71,64 @@ namespace Rock.Reporting.DataFilter.Group
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/groupBranchFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = selection.Split( '|' );
+            var branchType = string.Empty;
+
+            ListItemBag group = new ListItemBag();
+
+            if ( selectionValues.Length > 1 )
+            {
+                var groupGuid = selectionValues[0].AsGuidOrNull();
+
+                if ( groupGuid.HasValue )
+                {
+                    group = new GroupService( rockContext )
+                        .Get( groupGuid.Value )
+                        ?.ToListItemBag()
+                        ?? new ListItemBag();
+                }
+
+                branchType = selectionValues[1];
+            }
+
+            return new Dictionary<string, string>
+            {
+                { "group", group.ToCamelCaseJson( false, false ) },
+                { "branchType", branchType },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var groupJson = data.GetValueOrDefault( "group", string.Empty );
+            var group = string.Empty;
+            var branchType = data.GetValueOrDefault( "branchType", string.Empty );
+
+            if ( groupJson.IsNotNullOrWhiteSpace() )
+            {
+                group = groupJson.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
+            }
+
+            return group + "|" + branchType;
         }
 
         #endregion
@@ -195,11 +256,11 @@ function()
         {
             var settings = new GroupBranchFilterSettings();
 
-            settings.ParentGroupId = ( (GroupPicker)controls[0] ).SelectedValueAsInt() ?? 0;
+            settings.ParentGroupId = ( ( GroupPicker ) controls[0] ).SelectedValueAsInt() ?? 0;
 
             IncludedGroupsSpecifier includedGroups;
 
-            Enum.TryParse( ( (RockDropDownList)controls[1] ).SelectedValue, true, out includedGroups );
+            Enum.TryParse( ( ( RockDropDownList ) controls[1] ).SelectedValue, true, out includedGroups );
 
             settings.IncludedGroups = includedGroups;
 
@@ -218,10 +279,10 @@ function()
 
             // Parent Group
             if ( settings.ParentGroupId > 0 )
-                ( (GroupPicker)controls[0] ).SetValue( settings.ParentGroupId );
+                ( ( GroupPicker ) controls[0] ).SetValue( settings.ParentGroupId );
 
             // Included Groups
-            var ctlIncludedGroups = (RockDropDownList)controls[1];
+            var ctlIncludedGroups = ( RockDropDownList ) controls[1];
 
             ctlIncludedGroups.SelectedValue = settings.IncludedGroups.ToString();
         }
@@ -274,7 +335,7 @@ function()
                 return null;
             }
 
-            var groupService = new GroupService( (RockContext)serviceInstance.Context );
+            var groupService = new GroupService( ( RockContext ) serviceInstance.Context );
 
             // Get the qualifying Groups.
             var parentGroup = groupService.Get( settings.ParentGroupId );
@@ -363,7 +424,7 @@ function()
                     groupGuid = group.Guid.ToString();
                 }
 
-                return groupGuid + "|" + ( (int)IncludedGroups );
+                return groupGuid + "|" + ( ( int ) IncludedGroups );
             }
         }
 

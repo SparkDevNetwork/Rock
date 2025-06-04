@@ -104,6 +104,15 @@ namespace Rock.Model
                 try
                 {
                     /*
+                        05/02/2025 - DSH
+
+                        Additional research shows that internally the BuildManager.GetCompiledType
+                        method uses a lock to prevent concurrent compilation. Meaning, only one
+                        .ascx file can be compiled at a time. So there isn't much we can do to
+                        speed that up. One optimization we could do is to split the work between
+                        Obsidian blocks and WebForms blocks and let those two processes run concurrently.
+                    */
+                    /*
                         02/09/2024 - JSC
 
                         During Rock startup this method is called to pre-compile
@@ -530,7 +539,7 @@ namespace Rock.Model
         /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
         /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
         /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
-        [RockObsolete( "1.17.1" )]
+        [RockObsolete( "17.1" )]
         [Obsolete( "This method is deprecated and will be removed in a future version. Please use the overload without the System.Web.UI.Page parameter." )]
         public static void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, bool refreshAll = false )
         {

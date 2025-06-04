@@ -1,0 +1,63 @@
+<template>
+    <div class="row">
+        <div class="col-md-4">
+            <DataViewPicker v-model="dataView"
+                            label="Has Group Memberships in this Data View"
+                            help="A Group Member Data View that provides the set of possible Group Members."
+                            :entityTypeGuid="EntityType.GroupMember"
+                            showBlankItem />
+        </div>
+    </div>
+    <div class="row form-row field-criteria d-flex flex-wrap align-items-end">
+        <div class="col-xs-12 col-md-4">
+            <DropDownList v-model="comparisonType"
+                          :items="comparisonItems"
+                          showBlankItem
+                          label="where the number of matching Group Memberships is" />
+        </div>
+        <div class="col-xs-12 col-md-8">
+            <NumberBox v-model="count" disableLabel />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const dataView = ref<ListItemBag[]>(safeParseJson(props.modelValue.dataView) ?? []);
+    const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
+    const count = ref<number | null>(toNumberOrNull(props.modelValue.count));
+
+    const comparisonItems = getFilteredComparisonTypeOptions(
+        ComparisonType.EqualTo,
+        ComparisonType.NotEqualTo,
+        ComparisonType.GreaterThan,
+        ComparisonType.GreaterThanOrEqualTo,
+        ComparisonType.LessThan,
+        ComparisonType.LessThanOrEqualTo
+    );
+
+    watch([dataView, comparisonType, count], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            dataView: JSON.stringify(dataView.value),
+            comparisonType: comparisonType.value,
+            count: `${count.value ?? ""}`,
+        });
+    });
+</script>

@@ -74,7 +74,7 @@ namespace Rock.Logging
         /// <inheritdoc/>
         public void Log<TState>( LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter )
         {
-            var prefix = new StringBuilder( $"Job ID: {JobId}" );
+            var prefix = new StringBuilder( $"Job ID: {JobId} (App PID: {Rock.WebFarm.RockWebFarm.ProcessId}-{AppDomain.CurrentDomain.Id})" );
 
             if ( JobName.IsNotNullOrWhiteSpace() )
             {

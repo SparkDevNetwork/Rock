@@ -610,16 +610,13 @@ namespace Rock.Communication
 
             templateRockEmailMessage.FromPersonId = emailMessage.FromPersonId;
 
-            var fromAddress = GetFromAddress( emailMessage, mergeFields, globalAttributes );
-            var fromName = GetFromName( emailMessage, mergeFields, globalAttributes );
+            templateRockEmailMessage.FromEmail = emailMessage.FromEmail.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationEmail" ) : emailMessage.FromEmail;
+            templateRockEmailMessage.FromName = emailMessage.FromName;
 
-            if ( fromAddress.IsNullOrWhiteSpace() )
+            if ( templateRockEmailMessage.FromEmail.IsNullOrWhiteSpace() )
             {
                 return null;
             }
-
-            templateRockEmailMessage.FromEmail = fromAddress;
-            templateRockEmailMessage.FromName = fromName;
 
             // CC
             templateRockEmailMessage.CCEmails = emailMessage.CCEmails;
@@ -675,12 +672,6 @@ namespace Rock.Communication
             resultEmailMessage.EnabledLavaCommands = communication.EnabledLavaCommands;
             resultEmailMessage.FromEmail = communication.FromEmail;
             resultEmailMessage.FromName = communication.FromName;
-
-            var fromAddress = GetFromAddress( resultEmailMessage, mergeFields, globalAttributes );
-            var fromName = GetFromName( resultEmailMessage, mergeFields, globalAttributes );
-
-            resultEmailMessage.FromEmail = fromAddress;
-            resultEmailMessage.FromName = fromName;
 
             // Reply To
             var replyToEmail = string.Empty;
@@ -745,7 +736,12 @@ namespace Rock.Communication
 
             recipientEmail.SetRecipients( new List<RockEmailMessageRecipient> { toEmailAddress } );
 
-            var fromMailAddress = new MailAddress( emailMessage.FromEmail, emailMessage.FromName );
+            var globalAttributes = GlobalAttributesCache.Get();
+
+            var fromEmail = GetFromAddress( emailMessage, rockMessageRecipient.MergeFields, globalAttributes );
+            var fromName = GetFromName( emailMessage, rockMessageRecipient.MergeFields, globalAttributes );
+
+            var fromMailAddress = new MailAddress( fromEmail, fromName );
             var checkResult = CheckSafeSender( new List<string> { toEmailAddress.EmailAddress }, fromMailAddress, organizationEmail );
 
             // Reply To
@@ -780,7 +776,7 @@ namespace Rock.Communication
                 if ( emailMessage.CssInliningEnabled )
                 {
                     // move styles inline to help it be compatible with more email clients
-                    body = body.ConvertHtmlStylesToInlineAttributes( true );
+                    body = body.ConvertHtmlStylesToInlineAttributes();
                 }
             }
 
@@ -855,7 +851,12 @@ namespace Rock.Communication
 
             recipientEmail.SetRecipients( new List<RockEmailMessageRecipient> { toEmailAddress } );
 
-            var fromMailAddress = new MailAddress( emailMessage.FromEmail, emailMessage.FromName );
+            var globalAttributes = GlobalAttributesCache.Get();
+
+            var fromEmail = GetFromAddress( emailMessage, mergeFields, globalAttributes );
+            var fromName = GetFromName( emailMessage, mergeFields, globalAttributes );
+
+            var fromMailAddress = new MailAddress( fromEmail, fromName );
             var checkResult = CheckSafeSender( new List<string> { toEmailAddress.EmailAddress }, fromMailAddress, organizationEmail );
 
             // Reply To
@@ -934,15 +935,12 @@ namespace Rock.Communication
                 if ( emailMessage.CssInliningEnabled )
                 {
                     // move styles inline to help it be compatible with more email clients
-                    htmlBody = htmlBody.ConvertHtmlStylesToInlineAttributes( true );
+                    htmlBody = htmlBody.ConvertHtmlStylesToInlineAttributes();
                 }
 
                 // add the main Html content to the email
                 recipientEmail.Message = htmlBody;
             }
-
-            // Headers
-            var globalAttributes = GlobalAttributesCache.Get();
 
             // communication_recipient_guid
             recipientEmail.MessageMetaData["communication_recipient_guid"] = communicationRecipient.Guid.ToString();

@@ -1024,15 +1024,7 @@ namespace RockWeb.Blocks.Connection
                 viewModel.IsUnassigned
             };
 
-            if ( LavaService.RockLiquidIsEnabled )
-            {
-                mergeFields.Add( "ConnectionRequestStatusIcons", DotLiquid.Hash.FromAnonymousObject( connectionRequestStatusIcons ) );
-            }
-            else
-            {
-                mergeFields.Add( "ConnectionRequestStatusIcons", LavaDataObject.FromAnonymousObject( connectionRequestStatusIcons ) );
-            }
-
+            mergeFields.Add( "ConnectionRequestStatusIcons", LavaDataObject.FromAnonymousObject( connectionRequestStatusIcons ) );
             mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", daysUntilRequestIdle ) );
             return connectionRequestStatusIconTemplate.ResolveMergeFields( mergeFields );
         }
@@ -3548,14 +3540,6 @@ namespace RockWeb.Blocks.Connection
             // Clear previous results
             cblRequestModalViewModeManualRequirements.Items.Clear();
             lRequestModalViewModeRequirementsLabels.Text = string.Empty;
-
-            // If the connect button will not be shown, then there is no need to show the requirements
-            if ( !request.CanConnect )
-            {
-                cblRequestModalViewModeManualRequirements.Visible = false;
-                rcwRequestModalViewModeRequirements.Visible = false;
-                return;
-            }
 
             // Get the requirements
             var requirementsResults = GetGroupRequirementStatuses( request );

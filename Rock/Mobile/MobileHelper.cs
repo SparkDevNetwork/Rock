@@ -510,8 +510,25 @@ namespace Rock.Mobile
                 Auth0ClientDomain = additionalSettings.Auth0Domain,
                 EntraTenantId = additionalSettings.EntraTenantId,
                 EntraClientId = additionalSettings.EntraClientId,
-                OrganizationName = organizationName
+                OrganizationBeaconGuid = Rock.Web.SystemSettings.GetRockInstanceId(),
+                OrganizationName = organizationName,
             };
+
+            if( ChatHelper.IsChatEnabled )
+            {
+                var sharedChannelGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_SHARED_CHANNEL.AsGuid() );
+                var directMessagingChannelGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE.AsGuid() );
+                var sharedChannelGroupStreamKey = ChatHelper.GetChatChannelTypeKey( sharedChannelGroupTypeId.Value );
+                var directMessagingChannelStreamKey = ChatHelper.GetChatChannelTypeKey( directMessagingChannelGroupTypeId.Value );
+
+                package.ChatConfiguration = new Common.Mobile.ChatConfiguration
+                {
+                    DirectMessageChannelTypeKey = directMessagingChannelStreamKey,
+                    SharedChannelTypeKey = sharedChannelGroupStreamKey,
+                    PublicApiKey = ChatHelper.GetChatConfiguration().ApiKey,
+                    ChatPageGuid = additionalSettings.ChatPageId.HasValue ? PageCache.Get( additionalSettings.ChatPageId.Value )?.Guid : null
+                };
+            }
 
             var useLegacyStyles = additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Legacy || additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Blended;
             var useStandardStyles = additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Standard || additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Blended;
@@ -772,8 +789,6 @@ namespace Rock.Mobile
 
                 package.Campuses.Add( mobileCampus );
             }
-
-            package.ChatPublicApiKey = ChatHelper.GetChatConfiguration()?.ApiKey;
 
             return package;
         }
@@ -1041,6 +1056,11 @@ namespace Rock.Mobile
         /// </returns>
         public static string GetEditAttributesXaml( IHasAttributes entity, List<AttributeCache> attributes = null, Dictionary<string, string> postbackParameters = null, bool includeHeader = true, Person person = null )
         {
+            if ( entity == null )
+            {
+                return string.Empty;
+            }
+
             if ( entity.Attributes == null )
             {
                 entity.LoadAttributes();

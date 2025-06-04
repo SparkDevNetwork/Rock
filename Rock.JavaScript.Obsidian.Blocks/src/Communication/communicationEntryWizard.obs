@@ -17,6 +17,7 @@
                              v-model:recipients="recipients"
                              v-model:segmentCriteria="segmentCriteria"
                              :allowedMediums="allowedMediums"
+                             :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                              :communicationId="communicationId"
                              :communicationListGroups="config.communicationListGroups ?? []"
                              :communicationTopicValues="config.communicationTopicValues ?? []"
@@ -46,6 +47,7 @@
             <ChooseTemplateStep v-else-if="step === 'Choose Template'"
                                 v-model:communicationTemplateGuid="communicationTemplateGuid"
                                 :allowedMediums="allowedMediums"
+                                :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                                 :communicationTemplateDetail="communicationTemplateDetail"
                                 :communicationTemplates="communicationTemplates"
                                 :communicationType="communicationType"
@@ -65,6 +67,7 @@
                                v-model:message="message"
                                v-model:replyToEmail="replyToEmail"
                                v-model:subject="subject"
+                               :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                                :attachmentBinaryFileTypeGuid="config.attachmentBinaryFileTypeGuid"
                                :nextStepTitle="nextStep"
                                :title="step"
@@ -75,6 +78,7 @@
                              v-model:communicationTemplateGuid="communicationTemplateGuid"
                              v-model:message="message"
                              v-model:testEmailAddress="testEmailAddress"
+                             :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                              :communicationTemplates="communicationTemplateListItems"
                              :imageComponentBinaryFileTypeGuid="config.imageComponentBinaryFileTypeGuid"
                              :isFetchingRecipients="isFetchingRecipients"
@@ -83,6 +87,10 @@
                              :previewHtmlProcessor="previewHtmlProcessor"
                              :recipientPersonIds="emailRecipients.map(e => e.personId)"
                              :recipientsLabel="emailRecipientsLabel"
+                             :shortLinkCheckToken="onShortLinkCheckToken"
+                             :shortLinkGetPageId="onShortLinkGetPageId"
+                             :shortLinkSites="config.shortLinkSites"
+                             :shortLinkTokenMinLength="config.minimumShortLinkTokenLength"
                              :title="step"
                              :videoProviderNames="config.videoProviderNames"
                              @nextStep="onNextStepClicked"
@@ -96,11 +104,16 @@
                            v-model:smsAttachmentBinaryFiles="smsAttachmentBinaryFiles"
                            v-model:smsFromSystemPhoneNumberGuid="smsFromSystemPhoneNumberGuid"
                            v-model:testSmsPhoneNumber="testSmsPhoneNumber"
+                           :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                            :attachmentBinaryFileTypeGuid="config.attachmentBinaryFileTypeGuid"
                            :maxImageWidth="config.maxSmsImageWidth"
                            :mergeFields="config.mergeFields ?? undefined"
                            :nextStepTitle="nextStep"
                            :recipientsLabel="smsRecipientsLabel"
+                           :shortLinkCheckToken="onShortLinkCheckToken"
+                           :shortLinkGetPageId="onShortLinkGetPageId"
+                           :shortLinkSites="config.shortLinkSites"
+                           :shortLinkTokenMinLength="config.minimumShortLinkTokenLength"
                            :smsAcceptedMimeTypes="config.smsAcceptedMimeTypes"
                            :smsAttachmentLinks="smsAttachmentLinks"
                            :smsFromNumberName="smsFromNumberName"
@@ -120,6 +133,7 @@
                                         v-model:pushOpenMessageJson="pushOpenMessageJson"
                                         v-model:pushTitle="pushTitle"
                                         :applications="config.pushApplications ?? []"
+                                        :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                                         :isUsingRockMobilePushTransport="config.isUsingRockMobilePushTransport"
                                         :mergeFields="config.mergeFields ?? undefined"
                                         :nextStepTitle="nextStep"
@@ -131,6 +145,7 @@
 
             <ConfirmationStep v-else-if="step === 'Review & Confirm'"
                               :allowedMediums="allowedMediums"
+                              :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                               :bccEmails="bccEmails"
                               :ccEmails="ccEmails"
                               :communicationListGroupName="communicationListGroupName"
@@ -139,9 +154,12 @@
                               :communicationType="communicationType"
                               :emailAttachmentNames="emailAttachmentNames"
                               :emailTo="emailTo"
+                              :fromAddress="fromEmail"
+                              :fromName="fromName"
                               :futureSendDateTime="futureSendDateTime"
                               :isBulkCommunication="isBulkCommunication"
                               :message="message"
+                              :previewHtmlProcessor="previewHtmlProcessor"
                               :pushMessage="pushMessage"
                               :pushTitle="pushTitle"
                               :recipientsLabel="selectedMediumRecipientsLabel"
@@ -180,6 +198,7 @@
 
             <SaveCommunicationTemplateModal v-if="saveAsCommunicationTemplateDetail"
                                             v-model="isSaveCommunicationTemplateModalShown"
+                                            :api="saveAsCommunicationTemplateApi"
                                             :communicationTemplate="saveAsCommunicationTemplateDetail"
                                             :bodyWidth="saveAsCommunicationTemplateBodyWidth"
                                             @save="onOverwriteExistingCommunicationTemplate"
@@ -189,7 +208,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, nextTick, onMounted, ref, watch } from "vue";
+    import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from "vue";
     import BreakpointObserver from "./CommunicationEntryWizard/breakpointObserver.partial.obs";
     import ChooseTemplateStep from "./CommunicationEntryWizard/chooseTemplateStep.partial.obs";
     import ConfirmationStep from "./CommunicationEntryWizard/confirmationStep.partial.obs";
@@ -202,10 +221,10 @@
     import SentStep from "./CommunicationEntryWizard/sentStep.partial.obs";
     import SmsEditorStep from "./CommunicationEntryWizard/smsEditorStep.partial.obs";
     import { BinaryFileAttachment, BlockActionCallbacks } from "./CommunicationEntryWizard/types.partial";
-    import { useInvokeBlockActionHelper, usePersonPreferencesHelper } from "./CommunicationEntryWizard/utils.partial";
+    import { useCache, useInvokeBlockActionHelper, usePersonPreferencesHelper } from "./CommunicationEntryWizard/utils.partial";
     import WizardStartStep from "./CommunicationEntryWizard/wizardStartStep.partial.obs";
-    import { GetHtmlResponse } from "@Obsidian/Controls/emailEditor";
-    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
+    import { EmailEditorApi, GetHtmlResponse } from "@Obsidian/Controls/emailEditor";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { PushOpenAction } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/pushOpenAction";
     import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
     import { SegmentCriteria } from "@Obsidian/Enums/Communication/segmentCriteria";
@@ -216,10 +235,11 @@
     import { areEqual, emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { HttpResult } from "@Obsidian/Types/Utility/http";
     import { getTopic } from "@Obsidian/Utility/realTime";
-    import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
+    import { createHashSha256, isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
     import { debounceAsync, isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationEntryWizardCheckShortLinkTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCheckShortLinkTokenBag";
     import { CommunicationEntryWizardCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationBag";
-    import { CommunicationEntryWizardCommunicationTemplateBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateBag";
+    import { CommunicationEntryWizardCommunicationTemplateListItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateListItemBag";
     import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
     import { CommunicationEntryWizardInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardInitializationBox";
     import { CommunicationEntryWizardPushNotificationOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardPushNotificationOptionsBag";
@@ -310,10 +330,14 @@
         "Communication Saved": () => null
     };
 
+    // Cache the last 10 resolved email messages to reduce
+    // the number of roundtrips to the server.
+    const messagePreviewCache = useCache<string | null | undefined>({ maxSize: 10 });
+
     // #region Values
 
     // Stepper state.
-    const steps = JSON.parse(new URLSearchParams(window.location.search).get("step") ?? "[]") as Step[];
+    const steps: Step[] = [];
     const previousSteps: Step[] = steps.length > 1 ? steps.slice(0, steps.length - 1) : [];
     const step = ref<Step>(steps.length ? steps[steps.length - 1] : "Configure Communication");
 
@@ -327,6 +351,7 @@
     const communicationTemplateDetail = ref<CommunicationEntryWizardCommunicationTemplateDetailBag | null | undefined>(config.communicationTemplateDetail);
     const saveAsCommunicationTemplateDetail = ref<CommunicationEntryWizardCommunicationTemplateDetailBag | null | undefined>(config.communicationTemplateDetail);
     const saveAsCommunicationTemplateBodyWidth = ref<number | null | undefined>();
+    const saveAsCommunicationTemplateApi = shallowRef<EmailEditorApi | null | undefined>(null);
     const hasDetailBlockOnCurrentPage = ref<boolean>(config.hasDetailBlockOnCurrentPage);
     const finalMessage = ref<string>("");
     const finalMessageAlertType = ref<AlertType>(AlertType.Default);
@@ -335,7 +360,7 @@
     const reviewAndConfirmNextAction = ref<"send" | "save">("send");
     const wasCommunicationTemplateChanged = ref<boolean>(false);
     const isSaveCommunicationTemplateModalShown = ref<boolean>(false);
-    const communicationTemplates = ref<CommunicationEntryWizardCommunicationTemplateBag[]>(config.templates ?? []);
+    const communicationTemplates = ref<CommunicationEntryWizardCommunicationTemplateListItemBag[]>(config.templates ?? []);
 
     // Communication state.
     const bccEmails = ref<string>(config.communication?.bccEmails ?? "");
@@ -792,6 +817,33 @@
 
     // #region Event Handlers
 
+    async function onShortLinkCheckToken(token: string, siteId: number): Promise<string> {
+        const bag: CommunicationEntryWizardCheckShortLinkTokenBag = {
+            siteId,
+            token
+        };
+        const result = await invokeBlockAction.checkShortLinkToken(bag);
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            // Something went wrong so just return the original token.
+            return token;
+        }
+    }
+
+    async function onShortLinkGetPageId(pageGuid: Guid): Promise<number | null | undefined> {
+        const result = await invokeBlockAction.getShortLinkPageId(pageGuid);
+
+        if (result.isSuccess) {
+            return result.data;
+        }
+        else {
+            return null;
+        }
+    }
+
     async function onOverwriteExistingCommunicationTemplate(bag: CommunicationEntryWizardCommunicationTemplateDetailBag, blockActionCallbacks: BlockActionCallbacks): Promise<void> {
         const result = await invokeBlockAction.saveCommunicationTemplate(bag);
 
@@ -885,11 +937,12 @@
         }
     }
 
-    function onSaveAsTemplate({ html, bodyWidth }: GetHtmlResponse): void {
+    function onSaveAsTemplate({ html, bodyWidth }: GetHtmlResponse, api: EmailEditorApi): void {
         if (!communicationTemplateDetail.value) {
             throw new Error("The source template is required.");
         }
 
+        saveAsCommunicationTemplateApi.value = api;
         saveAsCommunicationTemplateBodyWidth.value = bodyWidth;
         saveAsCommunicationTemplateDetail.value = {
             ...communicationTemplateDetail.value,
@@ -913,26 +966,36 @@
             callbacks.onSuccess();
         }
         else {
-            console.error(result?.errorMessage ?? "The test communication failed to send.");
-            callbacks.onError();
+            const errorMessage = result?.errorMessage ?? "The test communication failed to send.";
+            console.error(errorMessage);
+            callbacks.onError(errorMessage);
         }
     }
 
     async function previewHtmlProcessor(previewHtml: string): Promise<string | null | undefined> {
-        message.value = previewHtml;
-        const result = await invokeBlockAction.getEmailPreviewHtml(getCommunicationBag());
-
-        if (result.isSuccess && result.data) {
-            // Keep the browser communication up-to-date with the server communication.
-            if (result.data.communication) {
-                updateFieldsFromCommunicationBag(result.data.communication);
-            }
-
-            return result.data.previewHtml;
+        const hash = await createHashSha256(previewHtml);
+        console.log(hash);
+        if (messagePreviewCache.has(hash)) {
+            return messagePreviewCache.get(hash);
         }
         else {
-            console.error(result.errorMessage ?? "An error occurred.");
-            return (result.errorMessage ?? "An error occurred.");
+            message.value = previewHtml;
+            const result = await invokeBlockAction.getEmailPreviewHtml(getCommunicationBag());
+
+            if (result.isSuccess && result.data) {
+                // Keep the browser communication up-to-date with the server communication.
+                if (result.data.communication) {
+                    updateFieldsFromCommunicationBag(result.data.communication);
+                }
+
+                messagePreviewCache.set(hash, result.data.previewHtml);
+                return result.data.previewHtml;
+            }
+            else {
+                messagePreviewCache.remove(hash);
+                console.error(result.errorMessage ?? "An error occurred.");
+                return (result.errorMessage ?? "An error occurred.");
+            }
         }
     }
 
@@ -1226,5 +1289,9 @@
                 }
             }
         }
+    });
+
+    onUnmounted(() => {
+        messagePreviewCache.clear();
     });
 </script>

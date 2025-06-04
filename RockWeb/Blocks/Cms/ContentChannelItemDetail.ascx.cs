@@ -218,6 +218,18 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         protected DefinedTypeCache InteractionIntentDefinedTypeCache => DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.INTERACTION_INTENT ) );
 
+        private string ContentItemIdState
+        {
+            get { return ViewState["ContentItemIdState"] as string; }
+            set { ViewState["ContentItemIdState"] = value; }
+        }
+
+        private string ContentChannelIdState
+        {
+            get { return ViewState["ContentChannelIdState"] as string; }
+            set { ViewState["ContentChannelIdState"] = value; }
+        }
+
         #endregion
 
         #region Control Methods
@@ -268,6 +280,16 @@ namespace RockWeb.Blocks.Cms
             ScriptManager.RegisterStartupScript( pnlStatus, pnlStatus.GetType(), "status-script-" + this.BlockId.ToString(), script, true );
         }
 
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            ContentChannelItem item = GetContentItem();
+            item.LoadAttributes();
+            phAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( item, phAttributes, false, BlockValidationGroup, 2 );
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -294,8 +316,6 @@ namespace RockWeb.Blocks.Cms
                 ContentChannelItem item = GetContentItem();
                 item.LoadAttributes();
 
-                phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( item, phAttributes, false, BlockValidationGroup, 2 );
                 ShowApproval( item , true );
                 BindSlugs( item );
 
@@ -896,7 +916,7 @@ namespace RockWeb.Blocks.Cms
             var contentItemService = new ContentChannelItemService( rockContext );
             ContentChannelItem contentItem = null;
 
-            int contentItemId = hfId.Value.AsInteger();
+            int contentItemId = ContentItemIdState.AsInteger();
             if ( contentItemId != 0 )
             {
                 contentItem = contentItemService
@@ -907,7 +927,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( contentItem == null )
             {
-                var contentChannel = new ContentChannelService( rockContext ).Get( hfChannelId.Value.AsInteger() );
+                var contentChannel = new ContentChannelService( rockContext ).Get( ContentChannelIdState.AsInteger() );
                 if ( contentChannel != null )
                 {
                     contentItem = new ContentChannelItem
@@ -968,7 +988,9 @@ namespace RockWeb.Blocks.Cms
 
         public void ShowDetail( int contentItemId, int? contentChannelId )
         {
+            ContentItemIdState = contentItemId.ToString();
             hfId.Value = contentItemId.ToString();
+            ContentChannelIdState = contentChannelId.HasValue ? contentChannelId.Value.ToString() : string.Empty;
             hfChannelId.Value = contentChannelId.HasValue ? contentChannelId.Value.ToString() : string.Empty;
 
             ContentChannelItem contentItem = GetContentItem();
@@ -1015,7 +1037,9 @@ namespace RockWeb.Blocks.Cms
                 // show/hide the delete button
                 lbDelete.Visible = GetAttributeValue( AttributeKey.ShowDeleteButton ).AsBoolean() && contentItem.Id != 0;
 
+                ContentItemIdState = contentItem.Id.ToString();
                 hfId.Value = contentItem.Id.ToString();
+                ContentChannelIdState = contentItem.ContentChannelId.ToString();
                 hfChannelId.Value = contentItem.ContentChannelId.ToString();
 
                 string cssIcon = contentItem.ContentChannel.IconCssClass;
@@ -1078,7 +1102,23 @@ namespace RockWeb.Blocks.Cms
                 sceContent.Visible = false;
                 if ( !contentItem.ContentChannelType.DisableContentField )
                 {
-                    if ( contentItem.ContentChannel.IsStructuredContent )
+                    var useStructuredContent = contentItem.ContentChannel.IsStructuredContent;
+
+                    // If the content channel is set to structured content but
+                    // the item they are editing already exists and is in HTML
+                    // mode then do not use the structured editor. This allows
+                    // Admins to switch a Content Channel to use the structured
+                    // editor for new items but not break existing ones.
+                    if ( useStructuredContent && contentItem.Id != 0 && contentItem.StructuredContent.IsNullOrWhiteSpace() )
+                    {
+                        useStructuredContent = false;
+                    }
+                    else if ( !useStructuredContent && contentItem.Id != 0 && contentItem.StructuredContent.IsNotNullOrWhiteSpace() )
+                    {
+                        useStructuredContent = true;
+                    }
+
+                    if ( useStructuredContent )
                     {
                         sceContent.StructuredContent = contentItem.StructuredContent;
                         sceContent.StructuredContentToolValueId = contentItem.ContentChannel.StructuredContentToolValueId;

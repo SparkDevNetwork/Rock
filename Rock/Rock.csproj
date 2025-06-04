@@ -78,7 +78,6 @@
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.9" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta15" />
-    <PackageReference Include="stream-chat-net" Version="2.10.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.7.0" />
     <PackageReference Include="System.Interactive.Async" Version="3.2.0" />
@@ -100,7 +99,6 @@
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
     <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.csproj" />
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />
-    <ProjectReference Include="..\Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj" />
     <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj" />
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
     <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj" />
@@ -139,6 +137,10 @@
     <Reference Include="Rock.Common.Tv, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\Rock.Common.Tv\Rock.Common.Tv.dll</HintPath>
+    </Reference>
+    <Reference Include="stream-chat-net, Version=2.10.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\StreamChat\stream-chat-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />

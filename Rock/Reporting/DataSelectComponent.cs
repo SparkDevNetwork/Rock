@@ -27,6 +27,8 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Net;
+using Rock.Security;
+using Rock.ViewModels.Controls;
 
 namespace Rock.Reporting
 {
@@ -107,6 +109,37 @@ namespace Rock.Reporting
         #endregion
 
         #region Configuration
+
+        /// <summary>
+        /// Gets the definition of the Obsidian component that will be used to
+        /// render the UI for editing the data select.
+        /// </summary>
+        /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
+        /// <param name="selection">The selection string from the database.</param>
+        /// <param name="rockContext">The context to use for any database access that is required.</param>
+        /// <param name="requestContext">The context describing the current request.</param>
+        /// <returns>An instance of <see cref="DynamicComponentDefinitionBag"/> that describes how to render the UI.</returns>
+        [RockInternal( "17.0" )]
+        public virtual DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Executes a request that is sent from the UI component to the server
+        /// component. This is used to handle any dynamic updates that are
+        /// required by the UI in order to operate correctly.
+        /// </summary>
+        /// <param name="request">The request object from the UI component.</param>
+        /// <param name="securityGrant">The security grant that is providing additional authorization to this request.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="requestContext">The context that describes the current network request being processed.</param>
+        /// <returns>A dictionary of values that will be returned to the UI component.</returns>
+        [RockInternal( "17.0" )]
+        public virtual Dictionary<string, string> ExecuteComponentRequest( Dictionary<string, string> request, SecurityGrant securityGrant, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return null;
+        }
 
         /// <summary>
         /// Gets the component data that will be provided to the Obsidian component

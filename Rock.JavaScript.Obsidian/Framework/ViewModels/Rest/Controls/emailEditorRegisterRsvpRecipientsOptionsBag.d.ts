@@ -28,4 +28,10 @@ export type EmailEditorRegisterRsvpRecipientsOptionsBag = {
 
     /** Gets or sets the collection of person identifiers. */
     personIds?: number[] | null;
+
+    /**
+     * Gets or sets the security grant token to use when performing
+     * authorization checks.
+     */
+    securityGrantToken?: string | null;
 };

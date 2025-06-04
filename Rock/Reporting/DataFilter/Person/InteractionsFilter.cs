@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -24,17 +25,20 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Description( "Filter people basaed on Interactions" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Interactions Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "FA4ADD22-C2E7-4A52-A98B-DEA592F75020")]
+    [Rock.SystemGuid.EntityTypeGuid( "FA4ADD22-C2E7-4A52-A98B-DEA592F75020" )]
     public class InteractionsFilter : DataFilterComponent
     {
         #region Properties
@@ -63,6 +67,94 @@ namespace Rock.Reporting.DataFilter.Person
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/interactionsFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var channelsWithComponents = new InteractionComponentService( rockContext ).Queryable()
+                .Select( icomp => icomp.InteractionChannel.Guid )
+                .Distinct()
+                .ToList();
+
+            var data = new Dictionary<string, string>
+            {
+                { "channelsWithComponents", channelsWithComponents.ToJson() }
+            };
+
+            string[] selectionValues = selection.Split( '|' );
+            if ( selection.IsNullOrWhiteSpace() || selectionValues[0].IsNullOrWhiteSpace() )
+            {
+                return data;
+            }
+
+            Guid interactionChannelGuid = selectionValues[0].AsGuid();
+            var channel = new InteractionChannelService( rockContext ).Get( interactionChannelGuid );
+            ListItemBag channelBag = null;
+            if ( channel != null )
+            {
+                channelBag = new ListItemBag
+                {
+                    Value = channel.Guid.ToString(),
+                    Text = channel.ChannelTypeMediumValue.Value.IsNullOrWhiteSpace() ? channel.Name : $"{channel.Name} ({channel.ChannelTypeMediumValue.Value})",
+                };
+            }
+            data.AddOrReplace( "interactionChannel", channelBag?.ToCamelCaseJson( false, true ) );
+
+            if ( selectionValues.Length >= 2 )
+            {
+                var interactionComponentGuid = selectionValues[1].AsGuidOrNull();
+                if ( interactionComponentGuid.HasValue )
+                {
+                    var component = new InteractionComponentService( rockContext ).Get( interactionComponentGuid.Value );
+                    ListItemBag componentBag = null;
+                    if ( component != null )
+                    {
+                        componentBag = new ListItemBag
+                        {
+                            Value = component.Guid.ToString(),
+                            Text = component.Name,
+                        };
+                    }
+                    data.AddOrReplace( "interactionComponent", componentBag?.ToCamelCaseJson( false, true ) );
+                }
+            }
+
+            if ( selectionValues.Length >= 3 )
+            {
+                data.AddOrReplace( "operation", selectionValues[2] );
+            }
+
+            if ( selectionValues.Length >= 4 )
+            {
+                data.AddOrReplace( "dateRange", selectionValues[3].Replace( ',', '|' ) );
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var interactionChannelGuid = data.GetValueOrNull( "interactionChannel" )?.FromJsonOrNull<ListItemBag>()?.Value;
+            var interactionComponentGuid = data.GetValueOrNull( "interactionComponent" )?.FromJsonOrNull<ListItemBag>()?.Value;
+            var operation = data.GetValueOrNull( "operation" );
+            var dateRange = data.GetValueOrDefault( "dateRange", "" ).Replace( '|', ',' );
+
+            return $"{interactionChannelGuid}|{interactionComponentGuid}|{operation}|{dateRange}";
+        }
+
+        #endregion
+
         #region Public Methods
 
         /// <summary>
@@ -81,7 +173,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
         /// <value>
@@ -91,7 +183,7 @@ namespace Rock.Reporting.DataFilter.Person
         {
             return @"
 function() {
-  
+
   var result = 'Interactions';
 
   var interactionChannel = $('.js-interaction-channel option:selected', $content).text();
@@ -266,7 +358,7 @@ function() {
             var ddlInteractionChannel = filterField.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.HasCssClass( "js-interaction-channel" ) );
             var ddlInteractionComponent = filterField.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.HasCssClass( "js-interaction-component" ) );
 
-            int ? interactionChannelId = ddlInteractionChannel.SelectedValueAsId();
+            int? interactionChannelId = ddlInteractionChannel.SelectedValueAsId();
             PopulateInteractionComponent( interactionChannelId, ddlInteractionComponent );
         }
 

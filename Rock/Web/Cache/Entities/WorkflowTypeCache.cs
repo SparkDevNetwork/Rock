@@ -304,6 +304,13 @@ namespace Rock.Web.Cache
             }
         }
         private List<int> _activityTypeIds;
+        
+        /// <summary>
+        /// </summary>
+        /// <value>
+        /// </value>
+        [DataMember]
+        public string Slug { get; private set; }
 
         #endregion
 
@@ -347,6 +354,7 @@ namespace Rock.Web.Cache
             FormEndDateTime = workflowType.FormEndDateTime;
             WorkflowExpireDateTime = workflowType.WorkflowExpireDateTime;
             IsLoginRequired = workflowType.IsLoginRequired;
+            Slug = workflowType.Slug;
 
             // set activityTypeIds to null so it load them all at once on demand
             _activityTypeIds = null;
@@ -383,6 +391,27 @@ namespace Rock.Web.Cache
             }
 
             Remove( id.ToString() );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="slug"></param>
+        /// <returns></returns>
+        public static WorkflowTypeCache GetBySlug( string slug )
+        {
+            return GetBySlug( slug, null );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="slug"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        public static WorkflowTypeCache GetBySlug( string slug, RockContext rockContext )
+        {
+            return All().FirstOrDefault( workflowType => workflowType.Slug == slug );
         }
 
         #endregion

@@ -25,6 +25,7 @@ using System.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+using Rock.Communication.Chat;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -33,9 +34,6 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 
 using UAParser;
-
-using Context = DotLiquid.Context;
-using Template = DotLiquid.Template;
 
 namespace Rock.Lava
 {
@@ -213,6 +211,8 @@ namespace Rock.Lava
                 mergeFields.Add( "Geolocation", rockPage.RequestContext?.ClientInformation?.Geolocation );
             }
 
+            mergeFields.Add( "IsChatEnabled", ChatHelper.IsChatEnabled );
+
             return mergeFields;
         }
 
@@ -226,38 +226,16 @@ namespace Rock.Lava
 
             try
             {
-                if ( LavaService.RockLiquidIsEnabled )
+                var commandTypes = Rock.Reflection.FindTypes( typeof( Rock.Lava.ILavaSecured ) );
+
+                foreach ( var kvp in commandTypes )
                 {
-                    /*
-                        7/6/2020 - JH
-                        Some Lava Commands don't require a closing tag, and therefore inherit from DotLiquid.Tag instead of RockLavaBlockBase.
-                        In order to include these self-closing Lava Commands in the returned list, a new interface - IRockLavaBlock - was introduced.
-                        We'll also leave the RockLavaBlockBase check in place below, in case any plugins have been developed that add Commands
-                        inheriting from the RockLavaBlockBase class.
-                    */
-                    foreach ( var blockType in Rock.Reflection.FindTypes( typeof( Rock.Lava.Blocks.IRockLavaBlock ) )
-                        .Union( Rock.Reflection.FindTypes( typeof( Rock.Lava.Blocks.RockLavaBlockBase ) ) )
-                        .Select( a => a.Value )
-                        .OrderBy( a => a.Name )
-                        .ToList() )
-                    {
-                        lavaCommands.Add( blockType.Name );
-                        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                    }
+                    var component = Activator.CreateInstance( kvp.Value ) as ILavaSecured;
+
+                    lavaCommands.Add( component.RequiredPermissionKey );
                 }
-                else
-                {
-                    var commandTypes = Rock.Reflection.FindTypes( typeof( Rock.Lava.ILavaSecured ) );
 
-                    foreach ( var kvp in commandTypes )
-                    {
-                        var component = Activator.CreateInstance( kvp.Value ) as ILavaSecured;
-
-                        lavaCommands.Add( component.RequiredPermissionKey );
-                    }
-
-                    lavaCommands.Sort();
-                }
+                lavaCommands.Sort();
             }
             catch { }
 
@@ -626,11 +604,6 @@ namespace Rock.Lava
                 return false;
             }
 
-            if ( LavaService.RockLiquidIsEnabled )
-            {
-                return obj != null && obj is Rock.Lava.ILiquidizable;
-            }
-
             if ( obj is ILavaDataDictionary || obj is ILavaDataDictionarySource )
             {
                 return true;
@@ -913,19 +886,11 @@ namespace Rock.Lava
         /// <returns>
         ///   <c>true</c> if the specified command is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public static bool IsAuthorized( Context context, string command )
+        [Obsolete( "This method was for DotLiquid which is no longer supported." )]
+        [RockObsolete( "18.0" )]
+        public static bool IsAuthorized( DotLiquid.Context context, string command )
         {
-            if ( context?.Registers?.ContainsKey( "EnabledCommands" ) == true && command.IsNotNullOrWhiteSpace() )
-            {
-                var enabledCommands = context.Registers["EnabledCommands"].ToString().Split( ',' ).ToList();
-
-                if ( enabledCommands.Contains( "All", StringComparer.OrdinalIgnoreCase ) || enabledCommands.Contains( command, StringComparer.OrdinalIgnoreCase ) )
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            throw new NotSupportedException( "DotLiquid is no longer supported." );
         }
 
         /// <summary>
@@ -934,38 +899,11 @@ namespace Rock.Lava
         /// <param name="context">The context.</param>
         /// <returns>The current person or null if not found.</returns>
         /// <exception cref="ArgumentNullException">context</exception>
-        public static Person GetCurrentPerson( Context context )
+        [Obsolete( "This method was for DotLiquid which is no longer supported." )]
+        [RockObsolete( "18.0" )]
+        public static Person GetCurrentPerson( DotLiquid.Context context )
         {
-            if ( context == null )
-            {
-                throw new ArgumentNullException( nameof( context ) );
-            }
-
-            string currentPersonKey = "CurrentPerson";
-            Person currentPerson = null;
-
-            // First, check for a person override value included in the lava context.
-            if ( context.Scopes != null )
-            {
-                foreach ( var scope in context.Scopes )
-                {
-                    if ( scope.ContainsKey( currentPersonKey ) )
-                    {
-                        currentPerson = scope[currentPersonKey] as Person;
-                    }
-                }
-            }
-
-            if ( currentPerson == null )
-            {
-                var httpContext = HttpContext.Current;
-                if ( httpContext != null && httpContext.Items.Contains( currentPersonKey ) )
-                {
-                    currentPerson = httpContext.Items[currentPersonKey] as Person;
-                }
-            }
-
-            return currentPerson;
+            throw new NotSupportedException( "DotLiquid is no longer supported." );
         }
 
         /// <summary>
@@ -983,111 +921,22 @@ namespace Rock.Lava
         /// you can always choose to not use this helper method and instead roll your own implementation.
         /// </para>
         /// </param>
-        public static void ParseCommandMarkup( string markup, Context context, Dictionary<string, string> parms )
+        [Obsolete( "This method was for DotLiquid which is no longer supported." )]
+        [RockObsolete( "18.0" )]
+        public static void ParseCommandMarkup( string markup, DotLiquid.Context context, Dictionary<string, string> parms )
         {
-            if ( markup == null )
-            {
-                return;
-            }
-
-            if ( context == null )
-            {
-                throw new ArgumentNullException( nameof( context ) );
-            }
-
-            if ( parms == null )
-            {
-                throw new ArgumentNullException( nameof( parms ) );
-            }
-
-            var mergeFields = new Dictionary<string, object>();
-
-            // Get variables defined in the lava context.
-            foreach ( var scope in context.Scopes )
-            {
-                foreach ( var item in scope )
-                {
-                    mergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-
-            // Get merge fields loaded by the block or container.
-            foreach ( var environment in context.Environments )
-            {
-                foreach ( var item in environment )
-                {
-                    mergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-
-            // Resolve merge fields.
-            var resolvedMarkup = markup.ResolveMergeFields( mergeFields );
-
-            // Harvest parameters.
-            var markupParms = Regex.Matches( resolvedMarkup, @"\S+:('[^']+'|\d+)" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            foreach ( var parm in markupParms )
-            {
-                var itemParts = parm.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    var key = itemParts[0].Trim().ToLower();
-                    var value = itemParts[1].Trim();
-
-                    if ( value[0] == '\'' )
-                    {
-                        // key:'value'
-                        parms.AddOrReplace( key, value.Substring( 1, value.Length - 2 ) );
-                    }
-                    else
-                    {
-                        // key:integer
-                        parms.AddOrReplace( key, value );
-                    }
-                }
-            }
+            throw new NotSupportedException( "DotLiquid is no longer supported." );
         }
 
         /// <summary>
         /// Parse the provided Lava template using the current Lava engine, and write any errors to the exception log.
         /// </summary>
         /// <param name="content"></param>
+        [Obsolete( "This method was for DotLiquid which is no longer supported." )]
+        [RockObsolete( "18.0" )]
         public static void VerifyParseTemplateForCurrentEngine( string content )
         {
-            // If RockLiquid mode is enabled, try to render uncached templates using the current Lava engine and record any errors that occur.
-            // Render the final output using the RockLiquid legacy code.
-            var engine = LavaService.GetCurrentEngine();
-
-            if ( engine == null )
-            {
-                return;
-            }
-
-            var cacheKey = engine.TemplateCacheService.GetCacheKeyForTemplate( content );
-            var isCached = engine.TemplateCacheService.ContainsKey( cacheKey );
-
-            if ( !isCached )
-            {
-                // Verify the Lava template using the current LavaEngine.
-                // Although it would improve performance, we can't execute this task on a background thread because some Lava filters require access to the current HttpRequest.
-                try
-                {
-                    var result = engine.ParseTemplate( content );
-
-                    if ( result.HasErrors )
-                    {
-                        throw result.GetLavaException();
-                    }
-                }
-                catch ( Exception ex )
-                {
-                    // Log the exception and continue, because the final render will be performed by RockLiquid.
-                    ExceptionLogService.LogException( ConvertToLavaException( ex ), System.Web.HttpContext.Current );
-                }
-            }
+            throw new NotSupportedException( "DotLiquid is no longer supported." );
         }
 
         /// <summary>
@@ -1095,16 +944,11 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="ex"></param>
         /// <returns></returns>
+        [Obsolete( "This method was for DotLiquid which is no longer supported." )]
+        [RockObsolete( "18.0" )]
         public static LavaException ConvertToLavaException( Exception ex )
         {
-            if ( ex is LavaException lex )
-            {
-                return lex;
-            }
-            else
-            {
-                return new LavaException( "Lava Processing Error.", ex );
-            }
+            throw new NotSupportedException( "DotLiquid is no longer supported." );
         }
 
         /// <summary>
@@ -1112,13 +956,11 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="templateString"></param>
         /// <returns></returns>
-        public static Template CreateDotLiquidTemplate( string templateString )
+        [Obsolete( "This method was for DotLiquid which is no longer supported." )]
+        [RockObsolete( "18.0" )]
+        public static DotLiquid.Template CreateDotLiquidTemplate( string templateString )
         {
-            // Strip out Lava comments before parsing the template because they are not recognized by standard Liquid syntax.
-            templateString = LavaHelper.RemoveLavaComments( templateString );
-
-            var template = Template.Parse( templateString );
-            return template;
+            throw new NotSupportedException( "DotLiquid is no longer supported." );
         }
 
         #endregion

@@ -293,6 +293,28 @@ namespace Rock
 
         /// <summary>
         /// Gets the <see cref="IEntity"/> that corresponds to the entity type and
+        /// identifier key specified.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="key">The key that identifies the entity.</param>
+        /// <param name="allowIntegerIdentifier">if set to <c>true</c> integer identifiers will be allowed; otherwise <c>null</c> will be returned if an integer identifier is provided.</param>
+        /// <param name="dbContext">The database context to use when accessing the database.</param>
+        /// <returns>An instance of the entity or null if not found.</returns>
+        public static Rock.Data.IEntity GetIEntityForEntityType( Type entityType, string key, bool allowIntegerIdentifier, Data.DbContext dbContext = null )
+        {
+            Rock.Data.IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
+
+            if ( serviceInstance != null )
+            {
+                System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( string ), typeof( bool ) } );
+                return getMethod.Invoke( serviceInstance, new object[] { key, allowIntegerIdentifier } ) as Rock.Data.IEntity;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IEntity"/> that corresponds to the entity type and
         /// identifier specified.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
@@ -977,7 +999,17 @@ namespace Rock
             string pluginsFolder = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Plugins" );
 
             // blacklist of files that would never have Rock MEF components or Rock types
-            string[] ignoredFileStart = { "Lucene.", "Microsoft.", "msvcr100.", "System.", "JavaScriptEngineSwitcher.", "React.", "CacheManager." };
+            string[] ignoredFileStart = {
+                "Lucene.",
+                "Microsoft.",
+                "msvcr100.",
+                "System.",
+                "JavaScriptEngineSwitcher.",
+                "React.",
+                "CacheManager.",
+                // This was moved into core in v18.0, it can be removed in v19.0
+                "tech.triumph.Lava.Helix.dll"
+            };
 
             // get all *.dll in the bin and plugin directories except for blacklisted ones
             var assemblyFileNames = Directory.EnumerateFiles( binDirectory, "*.dll", SearchOption.AllDirectories ).ToList();

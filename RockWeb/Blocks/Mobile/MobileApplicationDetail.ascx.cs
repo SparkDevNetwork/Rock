@@ -536,6 +536,8 @@ namespace RockWeb.Blocks.Mobile
             ppEditLoginPage.SetValue( site.LoginPageId );
             ppEditProfilePage.SetValue( additionalSettings.ProfilePageId );
             ppEditInteractiveExperiencePage.SetValue( additionalSettings.InteractiveExperiencePageId );
+            ppEditChatPage.SetValue( additionalSettings.ChatPageId );
+
             ppCommunicationViewPage.SetValue( additionalSettings.CommunicationViewPageId );
             ppEditSmsConversationPage.SetValue( additionalSettings.SmsConversationPageId );
 
@@ -734,7 +736,11 @@ namespace RockWeb.Blocks.Mobile
 
                     // Add the person to the default mobile rest security group.
                     var groupMember = new GroupMember();
-                    groupMember.PersonId = restPerson.Id;
+                    // GroupMember validation needs access to the full Person record to determine if the individual is a RESTUSER RecordType.
+                    // This check is important because RESTUSERs are allowed to bypass group requirements validation.
+                    // However, during the GroupMember save process, the restPerson.Id is still 0.
+                    // Because of this, we CANNOT set `groupMember.PersonId = restPerson.Id` at this point.
+                    groupMember.Person = restPerson;
                     groupMember.GroupId = mobileApplicationUsersGroup.Id;
                     groupMember.GroupRoleId = groupRoleId.Value;
 
@@ -1000,9 +1006,7 @@ namespace RockWeb.Blocks.Mobile
             var binaryFileService = new BinaryFileService( rockContext );
             var userLoginService = new UserLoginService( rockContext );
 
-            //
             // Find the site or if we are creating a new one, bootstrap it.
-            //
             var site = siteService.Get( PageParameter( "SiteId" ).AsInteger() );
             if ( site == null )
             {
@@ -1013,9 +1017,7 @@ namespace RockWeb.Blocks.Mobile
                 siteService.Add( site );
             }
 
-            //
             // Save the basic settings.
-            //
             site.Name = tbEditName.Text;
             site.IsActive = cbEditActive.Checked;
             site.Description = tbEditDescription.Text;
@@ -1061,14 +1063,13 @@ namespace RockWeb.Blocks.Mobile
             }
             additionalSettings.DownhillSettings.Platform = DownhillPlatform.Mobile;
 
-            //
             // Save the additional settings.
-            //
             additionalSettings.ShellType = rblEditApplicationType.SelectedValueAsEnum<ShellType>();
             additionalSettings.TabLocation = rblEditAndroidTabLocation.SelectedValueAsEnum<TabLocation>();
 
             additionalSettings.PersonAttributeCategories = cpEditPersonAttributeCategories.SelectedValues.AsIntegerList();
             additionalSettings.ProfilePageId = ppEditProfilePage.PageId;
+            additionalSettings.ChatPageId = ppEditChatPage.PageId;
             additionalSettings.InteractiveExperiencePageId = ppEditInteractiveExperiencePage.PageId;
             additionalSettings.CommunicationViewPageId = ppCommunicationViewPage.PageId;
             additionalSettings.SmsConversationPageId = ppEditSmsConversationPage.PageId;
@@ -1094,14 +1095,10 @@ namespace RockWeb.Blocks.Mobile
                 additionalSettings.EntraAuthenticationComponent = compEntraAuthComponent.SelectedValueAsGuid().Value;
             }
 
-            //
             // Save the image.
-            //
             site.ThumbnailBinaryFileId = imgEditPreviewThumbnail.BinaryFileId;
 
-            //
             // Ensure the images are persisted.
-            //
             if ( site.SiteLogoBinaryFileId.HasValue )
             {
                 binaryFileService.Get( site.SiteLogoBinaryFileId.Value ).IsTemporary = false;
@@ -1118,9 +1115,7 @@ namespace RockWeb.Blocks.Mobile
                 {
                     rockContext.SaveChanges();
 
-                    //
                     // Save the API Key.
-                    //
                     additionalSettings.ApiKeyId = SaveApiKey( additionalSettings.ApiKeyId, tbEditApiKey.Text, string.Format( "mobile_application_{0}", site.Id ), rockContext );
                     site.AdditionalSettings = additionalSettings.ToJson();
 
@@ -1162,9 +1157,7 @@ namespace RockWeb.Blocks.Mobile
             }
             else
             {
-                //
                 // Save the API Key.
-                //
                 additionalSettings.ApiKeyId = SaveApiKey( additionalSettings.ApiKeyId, tbEditApiKey.Text, string.Format( "mobile_application_{0}", site.Id ), rockContext );
                 additionalSettings.DownhillSettings.Platform = Rock.DownhillCss.DownhillPlatform.Mobile;
                 site.AdditionalSettings = additionalSettings.ToJson();
@@ -1173,16 +1166,13 @@ namespace RockWeb.Blocks.Mobile
             }
 
             avcAttributes.GetEditValues( site );
-            // only save if everything saves:
             rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
                 site.SaveAttributeValues();
             } );
 
-            //
             // Create the default interaction channel for this site, and set the Retention Duration.
-            //
             var interactionChannelService = new InteractionChannelService( rockContext );
             int channelMediumWebsiteValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
             var interactionChannelForSite = interactionChannelService.Queryable()

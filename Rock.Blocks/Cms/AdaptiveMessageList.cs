@@ -21,8 +21,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using DotLiquid.Tags;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;

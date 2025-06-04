@@ -25,6 +25,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -36,7 +39,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based on the zipcode of their family." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Postal Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "618E7407-63CE-46D4-B3A4-35BFBBFCD8AB")]
+    [Rock.SystemGuid.EntityTypeGuid( "618E7407-63CE-46D4-B3A4-35BFBBFCD8AB" )]
     public class PostalCodeFilter : DataFilterComponent
     {
         #region Properties
@@ -61,6 +64,55 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/postalCodeFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = selection.Split( '|' );
+            var data = new Dictionary<string, string>();
+
+            if ( selectionValues.Length > 1 )
+            {
+                data.Add( "comparisonType", selectionValues[0] );
+                data.Add( "postalCode", selectionValues[1] );
+            }
+            if ( selectionValues.Length >= 3 )
+            {
+                var groupLocationType = DefinedTypeCache.Get( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
+                        .DefinedValues.FirstOrDefault( dv => dv.Id == selectionValues[2].ToIntSafe() );
+                data.Add( "locationType", groupLocationType.ToListItemBag().ToCamelCaseJson( false, true ) );
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var comparisonType = data.GetValueOrDefault( "comparisonType", string.Empty );
+            var postalCode = data.GetValueOrDefault( "postalCode", string.Empty );
+            var locationTypeGuid = data.GetValueOrNull( "locationType" )?.FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+
+            var locationTypeId = locationTypeGuid.HasValue
+                ? DefinedTypeCache.Get( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
+                    .DefinedValues.FirstOrDefault( dv => dv.Guid == locationTypeGuid.Value )?.Id.ToString()
+                : string.Empty;
+
+            return $"{comparisonType}|{postalCode}|{locationTypeId}";
         }
 
         #endregion

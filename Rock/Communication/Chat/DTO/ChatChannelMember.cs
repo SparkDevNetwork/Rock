@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Enums.Communication.Chat;
 using Rock.Model;
 
 namespace Rock.Communication.Chat.DTO
@@ -23,19 +24,20 @@ namespace Rock.Communication.Chat.DTO
     /// </summary>
     internal class ChatChannelMember
     {
-        /// <summary>
-        /// Gets or sets the chat user key.
-        /// </summary>
-        /// <value>
-        /// "rock_user_{PersonAlias.Id}"
-        /// </value>
+        /// <inheritdoc cref="ChatChannelType.Key"/>
+        public string ChatChannelTypeKey { get; set; }
+
+        /// <inheritdoc cref="ChatChannel.Key"/>
+        public string ChatChannelKey { get; set; }
+
+        /// <inheritdoc cref="ChatUser.Key"/>
         public string ChatUserKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the chat member's role within the channel.
+        /// Gets or sets the member's role within the channel.
         /// </summary>
         /// <value>
-        /// <see cref="GroupTypeRole.ChatRole"/>
+        /// The <see langword="string"/> representation of a <see cref="ChatRole"/>.
         /// </value>
         public string Role { get; set; }
 
@@ -44,5 +46,18 @@ namespace Rock.Communication.Chat.DTO
 
         /// <inheritdoc cref="GroupMember.IsChatBanned"/>
         public bool IsChatBanned { get; set; }
+
+        /// <summary>
+        /// Gets the runtime key for this <see cref="ChatChannelMember"/> (not saved in Rock or the external chat system).
+        /// </summary>
+        /// <value>
+        /// <see cref="ChatHelper.GetChatChannelMemberKey(string, string)"/>
+        /// </value>
+        public string Key => ChatHelper.GetChatChannelMemberKey( this.ChatChannelKey, this.ChatUserKey );
+
+        /// <summary>
+        /// The push preference for this chat channel member.
+        /// </summary>
+        public ChatNotificationMode PushNotificationMode { get; set; }
     }
 }

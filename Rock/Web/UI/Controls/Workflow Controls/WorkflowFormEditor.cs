@@ -48,6 +48,7 @@ namespace Rock.Web.UI.Controls
         {
             public const string ValidationGroup = "ValidationGroup";
             public const string EditingAttributeRowGuid = "EditingAttributeRowGuid";
+            public const string ModalManagerId = "ModalManagerId";
         }
 
         #region PersonEntry related
@@ -74,6 +75,7 @@ namespace Rock.Web.UI.Controls
         private RockTextBox _tbPersonEntrySpouseLabel;
         private DefinedValuePicker _dvpPersonEntryConnectionStatus;
         private DefinedValuePicker _dvpPersonEntryRecordStatus;
+        private DefinedValuePicker _dvpPersonEntryRecordSource;
         private DefinedValuePicker _dvpPersonEntryGroupLocationType;
         private DefinedValuePicker _dvpPersonEntryCampusStatus;
         private DefinedValuePicker _dvpPersonEntryCampusType;
@@ -129,6 +131,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Specifies the modal manager (update panel) that the form editor
+        /// should use when closing modals. This fixes an issue where a modal
+        /// is closed by C# code but the "modal-open" CSS class is not removed.
+        /// This causes drop down controls to be clipped.
+        /// </summary>
+        public string ModalManagerId
+        {
+            get => ViewState[ViewStateKey.ModalManagerId] as string;
+            set => ViewState[ViewStateKey.ModalManagerId] = value;
+        }
+
+        /// <summary>
         /// Gets or sets the form.
         /// </summary>
         /// <value>
@@ -175,6 +189,7 @@ namespace Rock.Web.UI.Controls
             form.PersonEntrySpouseLabel = _tbPersonEntrySpouseLabel.Text;
             form.PersonEntryConnectionStatusValueId = _dvpPersonEntryConnectionStatus.SelectedDefinedValueId;
             form.PersonEntryRecordStatusValueId = _dvpPersonEntryRecordStatus.SelectedDefinedValueId;
+            form.PersonEntryRecordSourceValueId = _dvpPersonEntryRecordSource.SelectedDefinedValueId;
             form.PersonEntryGroupLocationTypeValueId = _dvpPersonEntryGroupLocationType.SelectedDefinedValueId;
             form.PersonEntryCampusStatusValueId = _dvpPersonEntryCampusStatus.SelectedDefinedValueId;
             form.PersonEntryCampusTypeValueId = _dvpPersonEntryCampusType.SelectedDefinedValueId;
@@ -263,6 +278,7 @@ namespace Rock.Web.UI.Controls
             _tbPersonEntrySpouseLabel.Text = workflowActionForm.PersonEntrySpouseLabel;
             _dvpPersonEntryConnectionStatus.SetValue( workflowActionForm.PersonEntryConnectionStatusValueId );
             _dvpPersonEntryRecordStatus.SetValue( workflowActionForm.PersonEntryRecordStatusValueId );
+            _dvpPersonEntryRecordSource.SetValue( workflowActionForm.PersonEntryRecordSourceValueId );
             _dvpPersonEntryGroupLocationType.SetValue( workflowActionForm.PersonEntryGroupLocationTypeValueId );
 
             _dvpPersonEntryCampusStatus.Visible = workflowActionForm.PersonEntryCampusIsVisible;
@@ -396,6 +412,7 @@ namespace Rock.Web.UI.Controls
             target.PersonEntrySpouseLabel = source.PersonEntrySpouseLabel;
             target.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
             target.PersonEntryRecordStatusValueId = source.PersonEntryRecordStatusValueId;
+            target.PersonEntryRecordSourceValueId = source.PersonEntryRecordSourceValueId;
             target.PersonEntryGroupLocationTypeValueId = source.PersonEntryGroupLocationTypeValueId;
             target.PersonEntryRaceEntryOption = source.PersonEntryRaceEntryOption;
             target.PersonEntryEthnicityEntryOption = source.PersonEntryEthnicityEntryOption;
@@ -710,6 +727,14 @@ namespace Rock.Web.UI.Controls
                 DefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() )
             };
 
+            _dvpPersonEntryRecordSource = new DefinedValuePicker
+            {
+                ID = "_dvpPersonEntryRecordSource",
+                Label = "Record Source",
+                Required = true,
+                DefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )
+            };
+
             _dvpPersonEntryGroupLocationType = new DefinedValuePicker
             {
                 ID = "_dvpPersonEntryGroupLocationType",
@@ -821,8 +846,9 @@ namespace Rock.Web.UI.Controls
             pnlPersonEntryRow1.Controls.Add( pnlPersonEntryRow1Col3 );
             pnlPersonEntryRow1.Controls.Add( pnlPersonEntryRow1Col4 );
             pnlPersonEntryRow1Col1.Controls.Add( _cbPersonEntryAutofillCurrentPerson );
-            pnlPersonEntryRow1Col2.Controls.Add( _cbPersonEntryHideIfCurrentPersonKnown );
-            pnlPersonEntryRow1Col3.Controls.Add( _dvpPersonEntryRecordStatus );
+            pnlPersonEntryRow1Col1.Controls.Add( _cbPersonEntryHideIfCurrentPersonKnown );
+            pnlPersonEntryRow1Col2.Controls.Add( _dvpPersonEntryRecordStatus );
+            pnlPersonEntryRow1Col3.Controls.Add( _dvpPersonEntryRecordSource );
             pnlPersonEntryRow1Col4.Controls.Add( _dvpPersonEntryConnectionStatus );
 
             /* Person Entry - Row 2*/
@@ -1113,7 +1139,7 @@ namespace Rock.Web.UI.Controls
             }
 
             attributeRow.VisibilityRules = fvre.GetFieldVisibilityRules();
-            _mdFieldVisibilityRules.Hide();
+            _mdFieldVisibilityRules.Hide( ModalManagerId );
         }
 
         /// <summary>

@@ -18,7 +18,7 @@
 namespace Rock.Enums.Blocks.Communication.CommunicationEntryWizard
 {
     /// <summary>
-    /// The Push Open Action used by the Communication Entry block.
+    /// The Push Open Action used by the Communication Entry Wizard block.
     /// </summary>
     public enum PushOpenAction
     {

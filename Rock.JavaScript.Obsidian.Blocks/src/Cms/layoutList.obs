@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Grid v-if="isVisible"
-        :definition="config.gridDefinition ?? undefined"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Layout"
@@ -47,7 +47,7 @@
                        width="80px"
                        :itemClass="'d-flex justify-content-center align-items-center'" />
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'name'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
 
@@ -124,7 +124,7 @@
                      :dismissible="false"
                      :class="'mt-4'"
                      heading="Note">
-           {{ note }}
+        {{ note }}
     </NotificationBox>
 </template>
 

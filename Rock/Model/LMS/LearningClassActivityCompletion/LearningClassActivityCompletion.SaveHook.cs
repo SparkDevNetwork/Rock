@@ -192,6 +192,9 @@ namespace Rock.Model
                         // The course completion workflow type id (if any).
                         CourseCompletionWorkflowTypeId = a.LearningClassActivity.LearningClass.LearningCourse.CompletionWorkflowTypeId,
 
+                        // The learning course Guid (for passing to workflow)
+                        LearningCourseGuid = a.LearningClassActivity.LearningClass.LearningCourse.Guid,
+
                         // Some activities (assessment) may not clearly indicate if the Facilitator must
                         // grade the activity before it can be considered complete.
                         // Therefore; we are always evaluating grades until the class is considered over.
@@ -200,6 +203,14 @@ namespace Rock.Model
                     .ToList();
 
                 var anyCompletionRecord = completionDetails.FirstOrDefault();
+
+                // If there are no completion records then there's nothing to do.
+                // This situation can/will happen if a student is being removed from a class.
+                if ( anyCompletionRecord == null )
+                {
+                    return;
+                }
+
                 var participant = anyCompletionRecord.Student;
                 var isClassOver = anyCompletionRecord.ClassEndDate.HasValue && anyCompletionRecord.ClassEndDate.Value.IsPast();
                 var hasIncompleteAssignments = completionDetails.Any( a => !a.IsStudentOrFacilitatorCompleted );
@@ -247,7 +258,7 @@ namespace Rock.Model
                 RockContext.SaveChanges();
 
                 var wasCourseCompleted = participant.LearningCompletionStatus != Enums.Lms.LearningCompletionStatus.Incomplete;
-                var currentPersonAliasId = DbContext.GetCurrentPersonAlias()?.Id;
+                var currentPersonAliasId = DbContext.GetCurrentPersonAliasId();
 
                 // If it was determined that the activity was completed and should launch a workflow
                 // then launch that workflow before the Course completion workflow (if any).
@@ -267,7 +278,9 @@ namespace Rock.Model
                 {
                     var workflowAttributes = new Dictionary<string, string>
                     {
-                        {"Student", participant.ToJson()}
+                        {"Student", participant.ToJson()},
+                        {"Person", participant.Person.PrimaryAliasGuid.ToStringSafe()},
+                        {"LearningCourse", anyCompletionRecord.LearningCourseGuid.ToStringSafe()}
                     };
 
                     var workflow = WorkflowTypeCache.Get( ( int ) anyCompletionRecord.CourseCompletionWorkflowTypeId );

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
@@ -89,13 +90,61 @@ namespace Rock
         }
 
         /// <summary>
-        /// URLs the encode.
+        /// Encodes for use in a URL.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
         public static string UrlEncode( this string str )
         {
             return Uri.EscapeDataString( str );
+        }
+
+        /// <summary>
+        /// Escapes a string using System.Uri.EscapeDataString, working around its limit of 32766 characters.
+        /// </summary>
+        /// <remarks>
+        /// This method of escaping the string matches up with the JavaScript encodeURIComponent function. Both of them
+        /// will escape all characters except RFC 2396 Unreserved characters (https://www.rfc-editor.org/rfc/rfc2396#section-2.3),
+        /// which are alphanumeric, "-", "_", ".", "!", "~", "*", "'", "(", ")".
+        /// </remarks>
+        /// <param name="str">The string.</param>
+        /// <returns>Escaped string</returns>
+        public static string EscapeDataString( this string str )
+        {
+            var maxLength = 32766; // per https://docs.microsoft.com/en-us/dotnet/api/system.uri.escapedatastring?view=net-5.0
+
+            if ( str.Length <= maxLength )
+            {
+                return Uri.EscapeDataString( str );
+            }
+
+            var iterations = str.Length / maxLength;
+
+            var sb = new StringBuilder();
+            for ( int i = 0; i <= iterations; i++ )
+            {
+                sb.Append( Uri.EscapeDataString( i < iterations
+                    ? str.Substring( maxLength * i, maxLength )
+                    : str.Substring( maxLength * i ) ) );
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Unescapes a string using System.Uri.UnescapeDataString.
+        /// </summary>
+        /// <remarks>
+        /// This decodes the escaped sequences from a string that was escaped by System.Uri.EscapeDataString
+        /// which matches up with the JavaScript encodeURIComponent function. Both of them
+        /// will escape all characters except RFC 2396 Unreserved characters (https://www.rfc-editor.org/rfc/rfc2396#section-2.3),
+        /// which are alphanumeric, "-", "_", ".", "!", "~", "*", "'", "(", ")".
+        /// </remarks>
+        /// <param name="str"></param>
+        /// <returns>Unescaped string</returns>
+        public static string UnescapeDataString( this string str )
+        {
+            return Uri.UnescapeDataString( str );
         }
 
         /// <summary>

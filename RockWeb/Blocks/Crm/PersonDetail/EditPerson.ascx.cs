@@ -25,6 +25,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication.Chat;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -192,6 +193,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ).Id;
             dvpRecordStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ).Id;
             dvpReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ).Id;
+            dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE ) ).Id;
 
             pnlGivingGroup.Visible = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditFinancials );
 
@@ -202,6 +204,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditRecordStatus );
             dvpRecordStatus.Visible = canEditRecordStatus;
             lRecordStatusReadOnly.Visible = !canEditRecordStatus;
+
+            bool canEditRecordSource = UserCanAdministrate;
+            dvpRecordSource.Visible = canEditRecordSource;
+            lRecordSourceReadOnly.Visible = !canEditRecordSource;
 
             this.CanEditSmsStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditSMS );
 
@@ -492,6 +498,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         person.AnniversaryDate = person.MaritalStatusValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id ? dpAnniversaryDate.SelectedDate : null;
                         person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
                         person.ConnectionStatusValueId = dvpConnectionStatus.SelectedValueAsInt();
+                        person.RecordSourceValueId = dvpRecordSource.SelectedValueAsInt();
 
                         if ( rpRace.Visible )
                         {
@@ -592,6 +599,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 nbCommunicationPreferenceWarning.Visible = true;
                                 return false;
                             }
+                        }
+
+                        if ( ChatHelper.IsChatEnabled && Person.HasChatAlias )
+                        {
+                            person.IsChatProfilePublic = ddlIsChatProfilePublic.SelectedValue.AsBooleanOrNull();
+                            person.IsChatOpenDirectMessageAllowed = ddlIsChatOpenDirectMessageAllowed.SelectedValue.AsBooleanOrNull();
                         }
 
                         person.GivingGroupId = ddlGivingGroup.SelectedValueAsId();
@@ -931,12 +944,34 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ShowAnniversaryDate();
             dvpConnectionStatus.SetValue( Person.ConnectionStatusValueId );
             lConnectionStatusReadOnly.Text = Person.ConnectionStatusValueId.HasValue ? Person.ConnectionStatusValue.Value : string.Empty;
+            dvpRecordSource.SetValue( Person.RecordSourceValueId );
+            lRecordSourceReadOnly.Text = Person.RecordSourceValueId.HasValue ? Person.RecordSourceValue.Value : string.Empty;
 
             tbEmail.Text = Person.Email;
             cbIsEmailActive.Checked = Person.IsEmailActive;
             rblEmailPreference.SelectedValue = Person.EmailPreference.ConvertToString( false );
             rblCommunicationPreference.SetValue( Person.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
             nbCommunicationPreferenceWarning.Visible = false;
+
+            if ( ChatHelper.IsChatEnabled && Person.HasChatAlias )
+            {
+                var isChatProfilePublic = Person.IsChatProfilePublic.HasValue
+                    ? Person.IsChatProfilePublic.Value ? "y" : "n"
+                    : string.Empty;
+
+                var isChatOpenDirectMessageAllowed = Person.IsChatOpenDirectMessageAllowed.HasValue
+                    ? Person.IsChatOpenDirectMessageAllowed.Value ? "y" : "n"
+                    : string.Empty;
+
+                ddlIsChatProfilePublic.SetValue( isChatProfilePublic );
+                ddlIsChatOpenDirectMessageAllowed.SetValue( isChatOpenDirectMessageAllowed );
+
+                pnlChatPreferences.Visible = true;
+            }
+            else
+            {
+                pnlChatPreferences.Visible = false;
+            }
 
             dvpRecordStatus.SetValue( Person.RecordStatusValueId );
             lRecordStatusReadOnly.Text = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValue.Value : string.Empty;

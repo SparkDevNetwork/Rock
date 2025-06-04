@@ -1,157 +1,170 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ComponentPropertyPanelBase :componentElement="componentElement"
+                                :componentMigrationHelper="imageComponentHelper"
                                 title="Image"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
-                                @delete="$emit('delete')">
-        <AccordionGroup>
-            <Accordion title="Settings">
-                <div class="form-group">
-                    <ButtonGroup v-model="imageSourceType"
-                                 :items="imageSourceTypes"
-                                 @update:modelValue="onImageSourceTypeUpdated" />
-                </div>
-
-                <template v-if="imageSourceType === 'image'">
-                    <ImageUploader v-model="imageGuidAndName"
-                                   :binaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
-                                   label="Choose Image"
-                                   :uploadAsTemporary="false"
-                                   @update:modelValue="onImageUpdated" />
-
-                    <p class="text-sm text-muted">
-                        *For best results, use static images ~600px wide, &lt;1MB. Avoid text overlays, patterns, or animations; they may not display correctly in some email clients.
-                    </p>
-                </template>
-
-                <div v-else-if="imageSourceType === 'asset'">
-                    <AssetPicker v-model="fileAsset"
-                                 label="Choose Asset"
-                                 @update:modelValue="onAssetUpdated" />
-                </div>
-
-                <div class="row">
-                    <div class="col-sm-12">
-                        <TextBox v-model="anchorHref"
-                                 help="Add the URL that the image will direct the recipient to."
-                                 label="Link"
-                                 @update:modelValue="onAnchorHrefUpdated">
-                            <template #inputGroupPrepend>
-                                <span class="input-group-addon">
-                                    <i class="fa fa-link"></i>
-                                </span>
-                            </template>
-                        </TextBox>
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)">
+        <template v-if="componentHelper">
+            <AccordionGroup>
+                <Accordion title="Settings">
+                    <div class="form-group">
+                        <ButtonGroup v-model="imageSourceType"
+                                     :items="imageSourceTypes"
+                                     @update:modelValue="onImageSourceTypeUpdated" />
                     </div>
 
-                    <div v-if="imageElement" class="col-sm-12">
-                        <AltAttributeProperty :element="imageElement"
-                                              help="Provide a brief description of the image or for better accessibility. Keep it concise and relevant."
-                                              label="Alt Text"
-                                              placeholder="Add image description..." />
-                    </div>
-                </div>
+                    <template v-if="imageSourceType === 'image'">
+                        <ImageUploader v-model="imageGuidAndName"
+                                       :binaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
+                                       label="Choose Image"
+                                       :uploadAsTemporary="false"
+                                       @update:modelValue="onImageUpdated" />
 
-                <div class="row" v-show="imageSourceType === 'image'">
-                    <div class="col-sm-6">
-                        <DropDownList v-model="imageSize"
-                                      help="Choose how the image is displayed:  Original keeps its size, Scale resizes proportionally, and Crop trims to fit specific dimensions."
-                                      :items="imageSizeItems"
-                                      label="Image Size"
-                                      :showBlankItem="false"
-                                      @update:modelValue="onImageSizeUpdated" />
-                    </div>
-                </div>
+                        <p class="text-sm text-muted">
+                            *For best results, use static images ~600px wide, &lt;1MB. Avoid text overlays, patterns, or animations; they may not display correctly in some email clients.
+                        </p>
+                    </template>
 
-                <div v-if="imageSize === 'scale'" class="row">
-                    <div class="col-sm-12">
-                        <!-- <RangeSliderProperty v-model="imageWidth" :min="5" :max="100" /> -->
-                        <RangeSlider v-model="scaleImageWidth"
-                                     label="Image Width"
-                                     :min="5"
-                                     :max="100"
-                                     :showValueBar="true"
-                                     valueSuffix="%"
-                                     @update:modelValue="onScaleWidthUpdated" />
-                    </div>
-                </div>
-
-                <template v-else-if="imageSize === 'crop'">
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <NumberBox v-model="imageWidth"
-                                       label="Width"
-                                       @update:modelValue="onCropWidthUpdated">
-                                <template #inputGroupAppend>
-                                    <span class="input-group-addon">px</span>
-                                </template>
-                            </NumberBox>
-                        </div>
-
-                        <div class="col-sm-6">
-                            <NumberBox v-model="imageHeight"
-                                       label="Height"
-                                       @update:modelValue="onCropHeightUpdated">
-                                <template #inputGroupAppend>
-                                    <span class="input-group-addon">px</span>
-                                </template>
-                            </NumberBox>
-                        </div>
+                    <div v-else-if="imageSourceType === 'asset'">
+                        <AssetPicker v-model="fileAsset"
+                                     label="Choose Asset"
+                                     @update:modelValue="onAssetUpdated" />
                     </div>
 
                     <div class="row">
                         <div class="col-sm-12">
-                            <Switch v-model="isHighResEnabled"
-                                    text="Enable High-Res Images"
-                                    @update:modelValue="onIsHighResEnabledUpdated" />
+                            <TextBox v-model="anchorHref"
+                                     help="Add the URL that the image will direct the recipient to."
+                                     label="Link"
+                                     @update:modelValue="onAnchorHrefUpdated">
+                                <template #inputGroupPrepend>
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-link"></i>
+                                    </span>
+                                </template>
+                            </TextBox>
+                        </div>
+
+                        <div v-if="imageElement" class="col-sm-12">
+                            <AltAttributeProperty :element="imageElement"
+                                                  help="Provide a brief description of the image or for better accessibility. Keep it concise and relevant."
+                                                  label="Alt Text"
+                                                  placeholder="Add image description..." />
                         </div>
                     </div>
+
+                    <div class="row" v-show="imageSourceType === 'image'">
+                        <div class="col-sm-6">
+                            <DropDownList v-model="imageSize"
+                                          help="Choose how the image is displayed:  Responsive fills the available space, Fixed trims to fit specific dimensions, and Original keeps its size."
+                                          :items="imageSizeItems"
+                                          label="Image Size"
+                                          :showBlankItem="false"
+                                          @update:modelValue="onImageSizeUpdated" />
+                        </div>
+                    </div>
+
+                    <div v-if="imageSize === 'scale'" class="row">
+                        <div class="col-sm-12">
+                            <!-- <RangeSliderProperty v-model="imageWidth" :min="5" :max="100" /> -->
+                            <RangeSlider v-model="scaleImageWidth"
+                                         label="Image Width"
+                                         :min="5"
+                                         :max="100"
+                                         :showValueBar="true"
+                                         valueSuffix="%"
+                                         @update:modelValue="onScaleWidthUpdated" />
+                        </div>
+                    </div>
+
+                    <template v-else-if="imageSize === 'responsive'">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <Switch v-model="isHighResEnabled"
+                                        text="Enable High-Res Images"
+                                        @update:modelValue="onIsHighResEnabledUpdated" />
+                            </div>
+                        </div>
+                    </template>
+
+                    <template v-else-if="imageSize === 'fixed'">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <NumberBox v-model="imageWidth"
+                                           label="Width"
+                                           @update:modelValue="onFixedWidthUpdated">
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">px</span>
+                                    </template>
+                                </NumberBox>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <NumberBox v-model="imageHeight"
+                                           label="Height"
+                                           @update:modelValue="onFixedHeightUpdated">
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">px</span>
+                                    </template>
+                                </NumberBox>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <Switch v-model="isHighResEnabled"
+                                        text="Enable High-Res Images"
+                                        @update:modelValue="onIsHighResEnabledUpdated" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <DropDownList v-model="resizeMode"
+                                              help="Select how the image fits its container:  Cover fills it by cropping, Contain fits it without cropping, and Stretch scales the image to fill."
+                                              :items="resizeModeItems"
+                                              label="Resize Mode"
+                                              :showBlankItem="false"
+                                              @update:modelValue="onResizeModeUpdated" />
+                            </div>
+                        </div>
+                    </template>
 
                     <div class="row">
-                        <div class="col-sm-6">
-                            <DropDownList v-model="resizeMode"
-                                          help="Select how the image fits its container:  Cover fills it by cropping, Contain fits it without cropping, and Stretch scales the image to fill."
-                                          :items="resizeModeItems"
-                                          label="Resize Mode"
-                                          :showBlankItem="false"
-                                          @update:modelValue="onResizeModeUpdated" />
+                        <div class="col-sm-12">
+                            <HorizontalAlignmentTextAlignProperty :element="componentElement"
+                                                                  :hooks="{
+                                                                    onSourceValueUpdated: onHorizontalAlignmentUpdated
+                                                                }" />
                         </div>
                     </div>
-                </template>
 
-                <div class="row">
-                    <div class="col-sm-12">
-                        <HorizontalAlignmentTextAlignProperty :element="componentElement"
-                                                              :hooks="{
-                                                                  onSourceValueUpdated: onHorizontalAlignmentUpdated
-                                                              }" />
+                    <div v-if="imageElement"
+                         class="row">
+                        <div class="col-sm-12">
+                            <BorderRadiusProperty :element="imageElement"
+                                                  :copyToElements="[componentHelper.marginWrapper.borderWrapper.td]" />
+                        </div>
                     </div>
-                </div>
+                </Accordion>
 
-                <div v-if="imageElement"
-                     class="row">
-                    <div class="col-sm-12">
-                        <BorderRadiusProperty :element="imageElement" />
+                <Accordion title="Spacing">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <PaddingProperty :element="componentHelper.marginWrapper.td"
+                                             label="Margin" />
+                        </div>
                     </div>
-                </div>
-            </Accordion>
+                </Accordion>
 
-            <Accordion title="Spacing">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <MarginProperty :element="componentElement" />
-                    </div>
-                </div>
-            </Accordion>
-
-            <Accordion title="Border">
-                <template v-if="imageElement">
-                    <BorderPropertyGroup :element="imageElement"
-                                         @update:isBorderShown="onIsBorderShownUpdated" />
-                </template>
-            </Accordion>
-        </AccordionGroup>
+                <Accordion v-if="imageElement" title="Border">
+                    <BorderPropertyGroup :element="imageElement" />
+                </Accordion>
+            </AccordionGroup>
+        </template>
     </ComponentPropertyPanelBase>
 </template>
 
@@ -164,9 +177,9 @@
     import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
     import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
     import HorizontalAlignmentTextAlignProperty from "../properties/horizontalAlignmentTextAlignProperty.partial.obs";
-    import MarginProperty from "../properties/marginProperty.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
     import { HorizontalAlignment } from "../types.partial";
-    import { EmailContentCssClass, get, pixelConverter } from "../utils.partial";
+    import { get, getImageComponentHelper, getPaddingWrapperCellSelector, numberToStringConverter, pixelConverter } from "../utils.partial";
     import AssetPicker from "@Obsidian/Controls/Internal/assetPicker.obs";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -182,8 +195,9 @@
     import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
     import { isNullish } from "@Obsidian/Utility/util";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { getGlobalBodyWidthProvider } from "../providers.partial";
 
-    type ImageSize = "original" | "crop" | "scale";
+    type ImageSize = "original" | "fixed" | "scale" | "responsive";
 
     const props = defineProps({
         componentElement: {
@@ -201,6 +215,7 @@
         (e: "clone"): void;
         (e: "complete"): void;
         (e: "delete"): void;
+        (e: "migrate", value: Element): void;
     }>();
 
     const imageSourceTypes = [
@@ -224,6 +239,7 @@
         imgCssWidth: "imgcsswidth",
         imageResizemode: "imageResizemode",
         imageHighRes: "imageHighRes",
+        imageSize: "imageSize",
 
         // Asset keys
         imageAssetstorageproviderid: "imageAssetstorageproviderid",
@@ -238,17 +254,21 @@
         if (imageSourceType.value === "image") {
             return [
                 {
+                    text: "Responsive",
+                    value: get<ImageSize>("responsive")
+                },
+                // {
+                //     text: "Scale",
+                //     value: get<ImageSize>("scale")
+                // },
+                {
+                    text: "Fixed",
+                    value: get<ImageSize>("fixed")
+                },
+                {
                     text: "Original",
                     value: get<ImageSize>("original")
                 },
-                {
-                    text: "Crop",
-                    value: get<ImageSize>("crop")
-                },
-                {
-                    text: "Scale",
-                    value: get<ImageSize>("scale")
-                }
             ];
         }
         else {
@@ -279,9 +299,11 @@
     type ImageSourceType = "image" | "asset";
 
     const placeholderImageSrc = "/Assets/Images/image-placeholder.jpg";
+    const imageComponentHelper = getImageComponentHelper();
 
     // #region Values
 
+    const componentHelper = ref(imageComponentHelper.getElements(props.componentElement));
     const imageElement = ref<HTMLImageElement | null | undefined>(props.componentElement?.querySelector("img"));
     const anchorElement = ref<HTMLAnchorElement | null | undefined>(imageElement.value?.closest("a") === imageElement.value?.parentElement ? imageElement.value?.parentElement as HTMLAnchorElement : null);
     const anchorHref = ref<string>(anchorElement.value?.getAttribute("href") ?? "");
@@ -289,14 +311,22 @@
     const fileAsset = ref<FileAsset | undefined>(getAssetFromComponent());
     const imageSourceType = ref<ImageSourceType>(fileAsset.value ? "asset" : "image");
     const resizeMode = ref<ResizeMode>((props.componentElement?.dataset[dataAttributeKey.imageResizemode] as ResizeMode) ?? "");
-    const imageWidth = ref<number | null>(props.componentElement?.dataset[dataAttributeKey.imageWidth] ? parseInt(props.componentElement.dataset[dataAttributeKey.imageWidth] ?? "0") : null);
-    const imageHeight = ref<number | null>(props.componentElement?.dataset[dataAttributeKey.imageHeight] ? parseInt(props.componentElement.dataset[dataAttributeKey.imageHeight] ?? "0") : null);
+    const imageWidth = ref<number | null>(numberToStringConverter.toSource(props.componentElement?.dataset[dataAttributeKey.imageWidth] ?? null) ?? null);
+    const imageHeight = ref<number | null>(numberToStringConverter.toSource(props.componentElement?.dataset[dataAttributeKey.imageHeight] ?? null) ?? null);
     const imageSize = ref<ImageSize>(getImageOrAssetSizeFromComponent());
     const scaleImageWidth = ref<number>(getScaleWidthFromComponent());
     const isHighResEnabled = ref<boolean>(getIsHighResEnabledFromComponent());
     const emailContentTd = ref<HTMLTableCellElement | null | undefined>(getEmailContentTdFromComponent());
 
-    // #endregion
+    // #endregion Values
+
+    // #region Computed Values
+
+    const globalBodyWidth = computed<number | null | undefined>(() => {
+        return getGlobalBodyWidthProvider(props.componentElement.ownerDocument).value;
+    });
+
+    // #endregion Computed Values
 
     // #region Commands
 
@@ -433,13 +463,16 @@
                     // Clear placeholder first.
                     applyPlaceholderCommand.undo();
 
+                    // Reapply the size since the placeholder command could clear it.
+                    activeSetSizeCommand.execute();
+
                     // Set image src.
                     const params = new URLSearchParams();
                     params.set("isBinaryFile", "T");
                     params.set("guid", fileGuid);
                     params.set("fileName", fileName);
 
-                    if (imageSize.value === "crop") {
+                    if (imageSize.value === "fixed") {
                         const resolutionFactor = isHighResEnabled.value ? 2 : 1;
 
                         if (imageWidth.value) {
@@ -455,6 +488,16 @@
                         }
 
                         params.set("scale", "both");
+                    }
+                    else if (imageSize.value === "responsive") {
+                        const resolutionFactor = isHighResEnabled.value ? 2 : 1;
+
+                        const rowSpecificBodyWidth = numberToStringConverter.toSource(((props.componentElement.closest("[data-component-body-width='true']") ?? null) as HTMLElement | null)?.getAttribute("width") ?? null);
+                        const bodyWidth = rowSpecificBodyWidth ?? globalBodyWidth.value ?? 0;
+
+                        if (bodyWidth) {
+                            params.set("width", `${bodyWidth * resolutionFactor}`);
+                        }
                     }
                     else if (imageSize.value === "scale" && scaleImageWidth.value <= 100) {
                         if (scaleImageWidth.value === 100) {
@@ -560,6 +603,9 @@
                     // Clear placeholder first.
                     applyPlaceholderCommand.undo();
 
+                    // Reapply the size since the placeholder command could clear it.
+                    activeSetSizeCommand.execute();
+
                     imageElement.value.src = assetUrl;
 
                     // Assets always have a width of auto.
@@ -598,12 +644,12 @@
 
     // #endregion Asset Commands
 
-    // Image Size - Crop
+    // Image Size - Fixed
 
-    const setImageSizeCropCommand: Command = {
+    const setImageSizeFixedCommand: Command = {
         execute() {
-            setImageCropWidthCommand.execute();
-            setImageCropHeightCommand.execute();
+            setImageFixedWidthCommand.execute();
+            setImageFixedHeightCommand.execute();
             setImageHighResCommand.execute();
             setImageResizeModeCommand.execute();
         },
@@ -614,17 +660,17 @@
             resizeMode.value = "crop";
 
             // Reset component.
-            setImageCropWidthCommand.undo();
-            setImageCropHeightCommand.undo();
+            setImageFixedWidthCommand.undo();
+            setImageFixedHeightCommand.undo();
             setImageHighResCommand.undo();
             setImageResizeModeCommand.undo();
         }
     };
 
-    const setAssetSizeCropCommand: Command = {
+    const setAssetSizeFixedCommand: Command = {
         execute() {
-            setAssetCropWidthCommand.execute();
-            setAssetCropHeightCommand.execute();
+            setAssetFixedWidthCommand.execute();
+            setAssetFixedHeightCommand.execute();
             setAssetResizeModeCommand.execute();
         },
         undo() {
@@ -634,17 +680,17 @@
             resizeMode.value = "crop";
 
             // Reset component.
-            setAssetCropWidthCommand.undo();
-            setAssetCropHeightCommand.undo();
+            setAssetFixedWidthCommand.undo();
+            setAssetFixedHeightCommand.undo();
             setAssetResizeModeCommand.undo();
         }
     };
 
-    // Image Size - Crop - Width
+    // Image Size - Fixed - Width
 
-    const setImageCropWidthCommand: Command = {
+    const setImageFixedWidthCommand: Command = {
         execute() {
-            props.componentElement.dataset[dataAttributeKey.imageWidth] = `${imageWidth.value}`;
+            props.componentElement.dataset[dataAttributeKey.imageWidth] = numberToStringConverter.toTarget(imageWidth.value) ?? "";
 
             // Set the width inline style on the image element.
             // Previously, the image width was determined by the image's natural width.
@@ -675,9 +721,9 @@
         }
     };
 
-    const setAssetCropWidthCommand: Command = {
+    const setAssetFixedWidthCommand: Command = {
         execute() {
-            props.componentElement.dataset[dataAttributeKey.imageWidth] = `${imageWidth.value}`;
+            props.componentElement.dataset[dataAttributeKey.imageWidth] = numberToStringConverter.toTarget(imageWidth.value) ?? "";
 
             if (imageElement.value) {
                 imageElement.value.style.width = pixelConverter.toTarget(imageWidth.value) ?? "";
@@ -693,11 +739,11 @@
         }
     };
 
-    // Image Size - Crop - Height
+    // Image Size - Fixed - Height
 
-    const setImageCropHeightCommand: Command = {
+    const setImageFixedHeightCommand: Command = {
         execute() {
-            props.componentElement.dataset[dataAttributeKey.imageHeight] = `${imageHeight.value}`;
+            props.componentElement.dataset[dataAttributeKey.imageHeight] = numberToStringConverter.toTarget(imageHeight.value) ?? "";
 
             // Set the height inline style on the image element.
             // Previously, the image height was determined by the image's natural height.
@@ -728,9 +774,9 @@
         }
     };
 
-    const setAssetCropHeightCommand: Command = {
+    const setAssetFixedHeightCommand: Command = {
         execute() {
-            props.componentElement.dataset[dataAttributeKey.imageHeight] = `${imageHeight.value}`;
+            props.componentElement.dataset[dataAttributeKey.imageHeight] = numberToStringConverter.toTarget(imageHeight.value) ?? "";
 
             if (imageElement.value) {
                 imageElement.value.style.height = pixelConverter.toTarget(imageHeight.value) ?? "";
@@ -746,7 +792,7 @@
         }
     };
 
-    // Image Size - Crop - High-Res
+    // Image Size - Fixed - High-Res
 
     const setImageHighResCommand: Command = {
         execute() {
@@ -762,7 +808,7 @@
         }
     };
 
-    // Image Size - Crop - Resize Mode
+    // Image Size - Fixed - Resize Mode
 
     const setImageResizeModeCommand: Command = {
         execute() {
@@ -848,6 +894,23 @@
         }
     };
 
+    const setResponsiveWidthCommand: Command = {
+        execute: function (): void {
+            props.componentElement.dataset[dataAttributeKey.imageSize] = "responsive";
+
+            if (imageElement.value) {
+                imageElement.value.style.setProperty("width", "100%");
+            }
+        },
+        undo: function (): void {
+            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageSize);
+
+            if (imageElement.value) {
+                imageElement.value.style.removeProperty("width");
+            }
+        }
+    };
+
     // #endregion Commands
 
     // #region Functions
@@ -856,7 +919,7 @@
      * Gets the table.email-content td from the component if set.
      */
     function getEmailContentTdFromComponent(): HTMLTableCellElement | null | undefined {
-        const td = props.componentElement.querySelector(`.${EmailContentCssClass} > tbody > tr > td, .${EmailContentCssClass} > tr > td`);
+        const td = props.componentElement.querySelector(getPaddingWrapperCellSelector("image"));
 
         if (td) {
             return td as HTMLTableCellElement;
@@ -922,14 +985,25 @@
     function getImageOrAssetSizeFromComponent(): ImageSize {
         if (props.componentElement.dataset[dataAttributeKey.imageResizemode]) {
             // If there is any resize mode (Cover "crop", Contain "pad", Stretch "stretch"),
-            // then return "crop".
-            return "crop";
+            // then return "fixed".
+            return "fixed";
         }
-        else if (imageElement.value?.src.includes("zoom=") || props.componentElement.dataset[dataAttributeKey.imageScale]) {
-            return "scale";
+        // else if (imageElement.value?.src.includes("zoom=") || props.componentElement.dataset[dataAttributeKey.imageScale]) {
+        //     return "scale";
+        // }
+        else if (imageElement.value?.style.width === "100%") {
+            return "responsive";
+        }
+        else if (imageElement.value?.src
+            && !imageElement.value.src.includes("width=")
+            && !imageElement.value.src.includes("height=")) {
+            // If there is no width or height specified in the URL,
+            // then this is an original-sized image.
+            return "original";
         }
         else {
-            return "original";
+            // Responsive should be the fallback.
+            return "responsive";
         }
     }
 
@@ -1043,13 +1117,6 @@
         applyAssetCommand.execute();
     }
 
-    function onIsBorderShownUpdated(value: boolean): void {
-        if (value && imageElement.value) {
-            // When there is a border, the image element must use box-sizing: border-box so that the border is included in the image's size.
-            imageElement.value.style.boxSizing = "border-box";
-        }
-    }
-
     function onImageSizeUpdated(): void {
         // Undo the old size.
         activeSetSizeCommand.undo();
@@ -1112,22 +1179,26 @@
     function getActiveSetSizeCommand(): Command {
         if (imageSourceType.value === "image") {
             switch (imageSize.value) {
-                case "crop":
-                    return setImageSizeCropCommand;
+                case "fixed":
+                    return setImageSizeFixedCommand;
                 case "scale":
                     return refreshImageMetadataCommand; // Treat as size command
                 case "original":
                     return refreshImageMetadataCommand;
+                case "responsive":
+                    return setResponsiveWidthCommand;
             }
         }
         else if (imageSourceType.value === "asset") {
             switch (imageSize.value) {
-                case "crop":
-                    return setAssetSizeCropCommand;
+                case "fixed":
+                    return setAssetSizeFixedCommand;
                 case "scale":
                     return setAssetScaleWidthCommand; // Treat as size command
                 case "original":
                     return nullCommand;
+                case "responsive":
+                    return setResponsiveWidthCommand;
             }
         }
 
@@ -1159,23 +1230,23 @@
         activeApplyCommand.execute();
     }
 
-    function getCropWidthCommand(): Command {
+    function getFixedWidthCommand(): Command {
         if (imageSourceType.value === "image") {
-            return setImageCropWidthCommand;
+            return setImageFixedWidthCommand;
         }
         else if (imageSourceType.value === "asset") {
-            return setAssetCropWidthCommand;
+            return setAssetFixedWidthCommand;
         }
 
         return nullCommand;
     }
 
-    function getCropHeightCommand(): Command {
+    function getFixedHeightCommand(): Command {
         if (imageSourceType.value === "image") {
-            return setImageCropHeightCommand;
+            return setImageFixedHeightCommand;
         }
         else if (imageSourceType.value === "asset") {
-            return setAssetCropHeightCommand;
+            return setAssetFixedHeightCommand;
         }
 
         return nullCommand;
@@ -1192,13 +1263,13 @@
         return nullCommand;
     }
 
-    function onCropWidthUpdated(): void {
-        getCropWidthCommand().execute();
+    function onFixedWidthUpdated(): void {
+        getFixedWidthCommand().execute();
         renderImageCommand.execute();
     }
 
-    function onCropHeightUpdated(): void {
-        getCropHeightCommand().execute();
+    function onFixedHeightUpdated(): void {
+        getFixedHeightCommand().execute();
         renderImageCommand.execute();
     }
 
@@ -1224,13 +1295,14 @@
     // #region Watchers
 
     watch(() => props.componentElement, () => {
+        componentHelper.value = imageComponentHelper.getElements(props.componentElement);
         imageElement.value = props.componentElement?.querySelector("img");
         imageGuidAndName.value = getImageFromComponent();
         fileAsset.value = getAssetFromComponent();
         imageSourceType.value = fileAsset.value ? "asset" : "image";
         resizeMode.value = (props.componentElement?.dataset[dataAttributeKey.imageResizemode] as ResizeMode) ?? "";
-        imageWidth.value = props.componentElement?.dataset[dataAttributeKey.imageWidth] ? parseInt(props.componentElement.dataset[dataAttributeKey.imageWidth] ?? "0") : null;
-        imageHeight.value = props.componentElement?.dataset[dataAttributeKey.imageHeight] ? parseInt(props.componentElement.dataset[dataAttributeKey.imageHeight] ?? "0") : null;
+        imageWidth.value = numberToStringConverter.toSource(props.componentElement?.dataset[dataAttributeKey.imageWidth] ?? null) ?? null;
+        imageHeight.value = numberToStringConverter.toSource(props.componentElement?.dataset[dataAttributeKey.imageHeight] ?? null) ?? null;
         imageSize.value = getImageOrAssetSizeFromComponent();
         scaleImageWidth.value = getScaleWidthFromComponent();
         isHighResEnabled.value = getIsHighResEnabledFromComponent();
@@ -1238,19 +1310,6 @@
 
         activeSetSizeCommand = getActiveSetSizeCommand();
         activeApplyCommand = getActiveApplyCommand();
-        // When the selected image component changes,
-        // its assumed to be a valid image already
-        // given the loaded settings, so there is no need
-        // to execute any commands.
-        // if (imageSourceType.value === "image") {
-        //     applyImageCommand.execute();
-        // }
-        // else if (imageSourceType.value === "asset") {
-        //     applyAssetCommand.execute();
-        // }
-        // else {
-        //     applyPlaceholderCommand.execute();
-        // }
     });
 
     // #endregion Watchers

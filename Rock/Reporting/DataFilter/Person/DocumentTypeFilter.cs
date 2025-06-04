@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
@@ -26,8 +27,11 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+
 using static Rock.Web.UI.Controls.SlidingDateRangePicker;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -38,7 +42,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based on their document types within a specific date range" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Document Type Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "E9FE74C5-2AA1-49B1-9982-6DE75D230E29")]
+    [Rock.SystemGuid.EntityTypeGuid( "E9FE74C5-2AA1-49B1-9982-6DE75D230E29" )]
     public class DocumentTypeFilter : DataFilterComponent
     {
         #region Properties
@@ -54,7 +58,64 @@ namespace Rock.Reporting.DataFilter.Person
             get { return typeof( Rock.Model.Person ).FullName; }
         }
 
-        #endregion Properties
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/documentTypeFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
+            var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
+            var documentTypesOptions = DocumentTypeCache.All()
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => a.ToListItemBag() )
+                .ToList();
+
+            var documentTypes = DocumentTypeCache.Get( config.DocumentTypeId )?.Guid;
+
+            var data = new Dictionary<string, string>
+            {
+                { "documentTypeOptions", documentTypesOptions.ToCamelCaseJson(false, true) },
+                { "documentType", documentTypes.ToString() },
+                { "dateRange", config?.SlidingDateRangePickerDelimitedValues },
+            };
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var documentType = data.GetValueOrNull( "documentType" )?.AsGuidOrNull();
+            var documentTypeId = 0;
+
+            if ( documentType.HasValue )
+            {
+                documentTypeId = DocumentTypeCache.Get( documentType.Value )?.Id ?? 0;
+            }
+
+            var selectionConfig = new SelectionConfig
+            {
+                DocumentTypeId = documentTypeId,
+                SlidingDateRangePickerDelimitedValues = data.GetValueOrNull( "dateRange" ),
+            };
+
+            return selectionConfig.ToJson();
+        }
+
+        #endregion
 
         #region Public Methods
         /// <summary>
@@ -380,7 +441,7 @@ function() {
                     }
                     else
                     {
-                        // If there are not at least one value in the selection string then it is not valid.
+                        // If there is not at least one value in the selection string then it is not valid.
                         return null;
                     }
 

@@ -1,0 +1,30 @@
+<template>
+    <CampusPicker v-model="campus" :multiple="multiple" :includeInactive="includeInactive" :label="label" :disableLabel="!label" showBlankItem />
+</template>
+
+<script setup lang="ts">
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, watch } from "vue";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/jsonUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const campus = ref<ListItemBag | ListItemBag[] | undefined>(safeParseJson(props.modelValue.campus));
+    const multiple = ref<boolean>(asBoolean(props.options.multiple));
+    const includeInactive = ref<boolean>(asBoolean(props.options.includeInactive));
+    const label = ref<string>(props.options.label ?? "");
+
+    watch([campus], () => {
+        const newData = { ...props.modelValue };
+
+        newData.campus = JSON.stringify(campus.value);
+
+        emit("update:modelValue", newData);
+    });
+</script>

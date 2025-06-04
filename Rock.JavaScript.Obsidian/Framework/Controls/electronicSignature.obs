@@ -44,12 +44,22 @@
                          label="Please enter your legal name"
                          rules="required" />
 
+                <RockLiteral v-else-if="showNameOnCompletion"
+                             label="Legal Name">
+                    {{ signedByName }}
+                </RockLiteral>
+
                 <EmailBox v-model="signedByEmail"
                           :label="signedByEmailLabel"
                           rules="required" />
 
                 <div class="text-right">
-                    <RockButton type="submit" btnType="primary" btnSize="xs">Complete</RockButton>
+                    <RockButton type="submit"
+                                btnType="primary"
+                                btnSize="xs"
+                                :disabled="disableButton">
+                        Complete
+                    </RockButton>
                 </div>
             </RockForm>
         </div>
@@ -84,6 +94,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import RockButton from "./rockButton.obs";
+    import RockLiteral from "./rockLiteral.obs";
     import TextBox from "./textBox.obs";
     import EmailBox from "./emailBox.obs";
     import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
@@ -106,12 +117,35 @@
         documentTerm: {
             type: String as PropType<string>,
             default: "document"
+        },
+
+        /**
+         * If specified then the e-mail label will not give any indication
+         * that they will receive a copy of the signed document.
+         */
+        noCopyEmail: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * If specified and not in drawn signature mode then the name from the
+         * signing step will be displayed as read-only on the completion step.
+         */
+        showNameOnCompletion: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The callback when the signature has been completed. */
+        onSigned: {
+            type: Function as PropType<() => void | Promise<void>>,
+            required: false
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", data: ElectronicSignatureValue): void;
-        (e: "signed"): void;
     }>();
 
     // #region Values
@@ -125,6 +159,7 @@
     const signatureCanvas = ref<HTMLCanvasElement | null>(null);
     const signatureCanvasContainer = ref<HTMLElement | null>(null);
     const isSigning = ref(true);
+    const disableButton = ref(false);
 
     let signaturePad: SignaturePad | null = null;
 
@@ -133,7 +168,11 @@
     // #region Computed Values
 
     const signedByEmailLabel = computed((): string => {
-        return `Please enter an email address below where we can send a copy of the ${props.documentTerm.toLowerCase()} to.`;
+        if (props.noCopyEmail) {
+            return "Please enter an e-mail address";
+        }
+
+        return `Please enter an e-mail address below where we can send a copy of the ${props.documentTerm.toLowerCase()} to`;
     });
 
     // #endregion
@@ -178,17 +217,17 @@
     /**
      * Event handler for when the individual clicks the clear button.
      */
-    const onClearClick = (): void => {
+    function onClearClick(): void {
         // Clear the signature contents out of the UI.
         signatureData.value = "";
         signaturePad?.clear();
-    };
+    }
 
     /**
      * Event handler for when the form has validated and can be submitted.
      * This is called indirectly in response to the "sign" and "complete" buttons.
      */
-    const onSubmit = (): void => {
+    async function onSubmit(): Promise<void> {
         if (isSigning.value) {
             // "sign" was clicked, move to the complete stage.
             isSigning.value = false;
@@ -206,9 +245,18 @@
             };
 
             emit("update:modelValue", newValue);
-            emit("signed");
+
+            disableButton.value = true;
+            try {
+                if (props.onSigned) {
+                    await props.onSigned();
+                }
+            }
+            finally {
+                disableButton.value = false;
+            }
         }
-    };
+    }
 
     // #endregion
 

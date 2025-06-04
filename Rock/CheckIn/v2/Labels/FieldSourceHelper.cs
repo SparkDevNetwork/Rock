@@ -1601,6 +1601,10 @@ namespace Rock.CheckIn.v2.Labels
                 {
                     type = typeof( CheckoutLabelData );
                 }
+                else if ( labelType == LabelType.PersonLocation )
+                {
+                    type = typeof( PersonLocationLabelData );
+                }
 
                 // This could also check a whitelist of allowed paths to make sure
                 // they are not building filters to things they shouldn't, but since
@@ -1625,11 +1629,18 @@ namespace Rock.CheckIn.v2.Labels
 
                 var entityField = EntityHelper.GetEntityFieldForProperty( property );
 
+                // Do some special checks for property types that are supported
+                // by the CheckInFieldFilterBuilder that aren't supported
+                // normally. Map to the best field type so we can build the UI.
                 if ( entityField.FieldType == null )
                 {
                     if ( typeof( ICollection<string> ).IsAssignableFrom( property.PropertyType ) )
                     {
                         entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.TEXT );
+                    }
+                    else if ( typeof( ICollection<int> ).IsAssignableFrom( property.PropertyType ) )
+                    {
+                        entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.INTEGER );
                     }
                     else if ( property.PropertyType == typeof( double ) || property.PropertyType == typeof( double? ) )
                     {

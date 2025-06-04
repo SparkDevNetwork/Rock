@@ -122,5 +122,25 @@ namespace Rock.SystemGuid
         /// The Chat Administrators group guid
         /// </summary>
         public const string GROUP_CHAT_ADMINISTRATORS = "B06096FC-5E98-4DC9-A1EA-7FED844B65C5";
+
+        /// <summary>
+        /// The group used to identify people who are globally banned from chat
+        /// </summary>
+        public const string GROUP_CHAT_BAN_LIST = "C9E3A59F-3B5E-43B1-9D97-191EF82D73C4";
+
+        /// <summary>
+        /// The parent group for all shared chat channels.
+        /// </summary>
+        public const string GROUP_CHAT_SHARED_CHANNELS = "FE7ED8BF-CA24-471B-A509-E595A17E1B0E";
+
+        /// <summary>
+        /// The parent group for all chat direct messages.
+        /// </summary>
+        public const string GROUP_CHAT_DIRECT_MESSAGES = "79C99867-5244-43E7-A3BF-625186A77D20";
+
+        /// <summary>
+        /// Role for individuals allowed to develop Lava Applications.
+        /// </summary>
+        public const string GROUP_LAVA_APPLICATION_DEVELOPERS = "F88EC798-2DCC-119C-4459-CF0F304CC036";
     }
 }

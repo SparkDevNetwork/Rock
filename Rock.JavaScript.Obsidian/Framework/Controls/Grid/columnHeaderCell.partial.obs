@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div ref="columnHeaderElement" class="grid-column-header" :class="additionalHeaderClass" :style="additionalHeaderStyle">
+    <div ref="columnHeaderElement" class="grid-column-header" :class="[additionalHeaderClass, columnTypeClass]" :style="additionalHeaderStyle">
         <component v-if="column.headerComponent" :is="column.headerComponent" :column="column" :grid="grid" />
         <span v-else-if="column.title" :class="titleClass" @click.prevent="onSortClick">{{ column.title }}</span>
 
@@ -105,6 +105,10 @@
     // #endregion
 
     // #region Computed Values
+
+    const columnTypeClass = computed((): string => {
+        return `grid-column-header-${props.column.columnType}`;
+    });
 
     /** Will be `true` if we have a filter and it should be visible. */
     const isFilterVisible = computed((): boolean => {

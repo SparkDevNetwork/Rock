@@ -36,6 +36,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{E43
 		{D6B19C0D-DA5E-4F75-8001-04DED86B741F} = {D6B19C0D-DA5E-4F75-8001-04DED86B741F}
 		{E8C5F154-201F-4C67-BCDC-34787DEFFEAE} = {E8C5F154-201F-4C67-BCDC-34787DEFFEAE}
 		{F3692909-952D-4C4A-B2D2-D90D0083CF53} = {F3692909-952D-4C4A-B2D2-D90D0083CF53}
+		{DEBE3E84-BE02-4840-9699-F1AEDEF26D49} = {DEBE3E84-BE02-4840-9699-F1AEDEF26D49}
 		{F4F169A8-34C5-4628-B33E-CE4697629EAB} = {F4F169A8-34C5-4628-B33E-CE4697629EAB}
 	EndProjectSection
 	ProjectSection(WebsiteProperties) = preProject
@@ -98,6 +99,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
+		.github\copilot-instructions.md = .github\copilot-instructions.md
 		Rock.sln.vsspell = Rock.sln.vsspell
 	EndProjectSection
 EndProject
@@ -126,8 +128,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Update", "Rock.Update\Rock.Update.csproj", "{B62B27C8-1F77-43CF-8EE7-30DE7F93FACD}"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Rock.JavaScript.EditorJs", "Rock.JavaScript.EditorJs\Rock.JavaScript.EditorJs.esproj", "{DEBE3E84-BE02-4840-9699-F1AEDEF26D49}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava.DotLiquid", "Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj", "{79AA470A-DC63-4CB4-B0B6-77285F60C69B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava.Fluid", "Rock.Lava.Fluid\Rock.Lava.Fluid.csproj", "{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}"
 EndProject
@@ -289,10 +289,6 @@ Global
 		{DEBE3E84-BE02-4840-9699-F1AEDEF26D49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DEBE3E84-BE02-4840-9699-F1AEDEF26D49}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DEBE3E84-BE02-4840-9699-F1AEDEF26D49}.Release|Any CPU.Build.0 = Release|Any CPU
-		{79AA470A-DC63-4CB4-B0B6-77285F60C69B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{79AA470A-DC63-4CB4-B0B6-77285F60C69B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{79AA470A-DC63-4CB4-B0B6-77285F60C69B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{79AA470A-DC63-4CB4-B0B6-77285F60C69B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}.Release|Any CPU.ActiveCfg = Release|Any CPU

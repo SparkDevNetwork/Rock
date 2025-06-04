@@ -89,13 +89,14 @@ namespace Rock.Lms
             {
                 var instructions = componentData.GetValueOrNull( SettingKey.Instructions );
                 var rubric = componentData.GetValueOrNull( SettingKey.Rubric );
+                var mergeFields = requestContext.GetCommonMergeFields();
 
                 var instructionsHtml = instructions.IsNotNullOrWhiteSpace()
-                    ? new StructuredContentHelper( instructions ).Render()
+                    ? new StructuredContentHelper( instructions ).Render().ResolveMergeFields( mergeFields )
                     : string.Empty;
 
                 var rubricHtml = instructions.IsNotNullOrWhiteSpace()
-                    ? new StructuredContentHelper( rubric ).Render()
+                    ? new StructuredContentHelper( rubric ).Render().ResolveMergeFields( mergeFields )
                     : string.Empty;
 
                 return new Dictionary<string, string>

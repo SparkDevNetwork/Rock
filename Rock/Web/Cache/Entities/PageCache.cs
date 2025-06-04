@@ -26,6 +26,7 @@ using System.Web;
 using System.Xml.Linq;
 
 using Rock.Attribute;
+using Rock.Cms;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -746,6 +747,67 @@ namespace Rock.Web.Cache
         }
 
         private List<int> _interactionIntentValueIds;
+
+        /// <summary>
+        /// Gets the <see cref="Cms.PageAdditionalSettings"/> from <see cref="AdditionalSettingsJson"/>.
+        /// </summary>
+        private PageAdditionalSettings PageAdditionalSettings
+        {
+            get
+            {
+                if ( _pageAdditionalSettings == null )
+                {
+                    _pageAdditionalSettings = this.GetAdditionalSettings<PageAdditionalSettings>();
+                }
+
+                return _pageAdditionalSettings;
+            }
+        }
+
+        private PageAdditionalSettings _pageAdditionalSettings;
+
+        /// <summary>
+        /// Gets the list of country codes for countries whose access to this page should be restricted.
+        /// </summary>
+        /// <remarks>
+        /// This is an internal API that supports the Rock infrastructure and not
+        /// subject to the same compatibility standards as public APIs. It may be
+        /// changed or removed without notice in any release. You should only use
+        /// it directly in your code with extreme caution and knowing that doing so
+        /// can result in application failures when updating to a new Rock release.
+        /// </remarks>
+        [RockInternal( "18.0" )]
+        [DataMember]
+        public HashSet<string> RestrictedCountryCodes
+        {
+            get
+            {
+                if ( _restrictedCountryCodes == null )
+                {
+                    var pageRestrictedCountryGuids = this.PageAdditionalSettings.CountriesRestrictedFromAccessing;
+
+                    if ( pageRestrictedCountryGuids?.Any() != true )
+                    {
+                        _restrictedCountryCodes = new HashSet<string>();
+                    }
+                    else
+                    {
+                        _restrictedCountryCodes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES )
+                            .DefinedValues
+                            .Where( dv =>
+                                dv.Value.IsNotNullOrWhiteSpace()
+                                && pageRestrictedCountryGuids.Contains( dv.Guid )
+                            )
+                            .Select( dv => dv.Value.ToUpper() )
+                            .ToHashSet();
+                    }
+                }
+
+                return _restrictedCountryCodes;
+            }
+        }
+
+        private HashSet<string> _restrictedCountryCodes;
 
         #endregion
 

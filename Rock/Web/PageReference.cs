@@ -23,7 +23,10 @@ using System.Web;
 using System.Web.Routing;
 using System.Web.Security.AntiXss;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Blocks;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -885,8 +888,10 @@ namespace Rock.Web
             }
 
             var currentParentPages = initialPage.GetPageHierarchy();
-            using (var rockContext = new RockContext() )
+            using ( var scope = RockApp.Current.CreateScope() )
             {
+                var rockContext = scope.ServiceProvider.GetService<RockContext>();
+
                 foreach ( PageCache page in currentParentPages )
                 {
                     var pageBlocks = page.Blocks.Where( b => b.BlockLocation == BlockLocation.Page );
@@ -904,16 +909,19 @@ namespace Rock.Web
                             continue;
                         }
 
-                        var instance = ( IBreadCrumbBlock ) Activator.CreateInstance( compiledType );
+                        var instance = ( IBreadCrumbBlock ) ActivatorUtilities.CreateInstance( scope.ServiceProvider, compiledType );
 
                         // If the instance is a RockBlockType then we'll want to set the RockContext for use by the IBreadCrumb.GetBreadCrumbs.
-                        var instanceAsRockBlockType = instance as RockBlockType;
-                        if ( instanceAsRockBlockType != null )
+                        if ( instance is RockBlockType instanceAsRockBlockType )
                         {
                             // Use the shared RockContext we created earlier.
                             instanceAsRockBlockType.RockContext = rockContext;
                             instanceAsRockBlockType.BlockCache = block;
                             instanceAsRockBlockType.PageCache = page;
+                        }
+                        else if ( instance is RockBlock instanceAsRockBlock )
+                        {
+                            instanceAsRockBlock.SetBlock( page, block, false, false );
                         }
 
                         /*

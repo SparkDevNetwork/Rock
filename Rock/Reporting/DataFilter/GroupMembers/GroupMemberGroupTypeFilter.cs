@@ -16,10 +16,15 @@
 //
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
+
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -59,6 +64,41 @@ namespace Rock.Reporting.DataFilter.GroupMembers
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/GroupMember/groupMemberGroupTypeFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            ListItemBag groupType = GroupTypeCache
+                .Get( selection.AsGuidOrNull() ?? Guid.Empty )
+                ?.ToListItemBag();
+
+            return new Dictionary<string, string>
+            {
+                ["groupType"] = groupType?.ToCamelCaseJson( false, true )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var groupTypeJson = data.GetValueOrDefault( "groupType", string.Empty );
+            var groupType = groupTypeJson.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
+
+            return groupType;
         }
 
         #endregion

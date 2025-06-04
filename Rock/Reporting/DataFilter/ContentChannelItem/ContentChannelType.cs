@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -24,6 +25,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.ContentChannelItem
@@ -34,7 +38,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
     [Description( "Filter Content Channel Items by Content Channel Type" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Content Channel Type Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "6FF3488F-9AAE-484E-A4CC-D3B3D3A2C4A6")]
+    [Rock.SystemGuid.EntityTypeGuid( "6FF3488F-9AAE-484E-A4CC-D3B3D3A2C4A6" )]
     public class ContentChannelType : DataFilterComponent
     {
         #region Properties
@@ -59,6 +63,40 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/ContentChannelItem/contentChannelTypeFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var contentChannelTypeOptions = new ContentChannelTypeService( rockContext ).Queryable()
+                .OrderBy( a => a.Name )
+                .Select( a => new ListItemBag { Value = a.Guid.ToString(), Text = a.Name } )
+                .ToList();
+
+            return new Dictionary<string, string>
+            {
+                ["contentChannelType"] = selection,
+                ["contentChannelTypeOptions"] = contentChannelTypeOptions.ToCamelCaseJson( false, true )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return data.GetValueOrDefault( "contentChannelType", "" );
         }
 
         #endregion
@@ -215,7 +253,7 @@ function() {
                     contentChannelTypeId = contentChannelType.Id;
                 }
 
-                var qry = new ContentChannelItemService( (RockContext)serviceInstance.Context ).Queryable()
+                var qry = new ContentChannelItemService( ( RockContext ) serviceInstance.Context ).Queryable()
                     .Where( p => p.ContentChannelTypeId == contentChannelTypeId );
 
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.ContentChannelItem>( qry, parameterExpression, "p" );

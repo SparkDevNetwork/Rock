@@ -23,8 +23,10 @@ using System.Threading.Tasks;
 using System.Web.Http;
 
 using Rock.Common.Mobile;
+using Rock.Common.Mobile.Blocks.Communication.Chat;
 using Rock.Common.Mobile.Enums;
 using Rock.Communication.Chat;
+using Rock.Enums.Mobile;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -37,8 +39,8 @@ namespace Rock.Rest.Controllers
     /// Provides API interfaces for mobile applications to use when communicating with Rock.
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
-    [Rock.SystemGuid.RestControllerGuid( "EE29C4BA-5B17-48BB-8309-29BBB29464D0")]
-    public class MobileController : ApiControllerBase 
+    [Rock.SystemGuid.RestControllerGuid( "EE29C4BA-5B17-48BB-8309-29BBB29464D0" )]
+    public class MobileController : ApiControllerBase
     {
         /// <summary>
         /// Gets the communication interaction channel identifier.
@@ -127,18 +129,31 @@ namespace Rock.Rest.Controllers
                 launchPacket.CurrentPerson = MobileHelper.GetMobilePerson( person, site );
                 launchPacket.CurrentPerson.AuthToken = MobileHelper.GetAuthenticationToken( principal.Identity.Name );
 
-                using( var chatHelper = new ChatHelper() )
+                if ( ChatHelper.IsChatEnabled )
                 {
-                    var chatAuth = await chatHelper.GetChatUserAuthenticationAsync( person.Id );
-
-                    launchPacket.ChatPerson = new ChatPersonBag
+                    using ( var chatHelper = new ChatHelper() )
                     {
-                        Token = chatAuth.Token,
-                        UserId = chatAuth.ChatUserKey
-                    };
+                        var chatAuth = await chatHelper.GetChatUserAuthenticationAsync( person.Id, false );
+
+                        if ( chatAuth != null )
+                        {
+                            launchPacket.ChatPerson = new ChatPersonBag
+                            {
+                                Token = chatAuth.Token,
+                                UserId = chatAuth.ChatUserKey
+                            };
+                        }
+                    }
                 }
 
-                UserLoginService.UpdateLastLogin( principal.Identity.Name );
+                UserLoginService.UpdateLastLogin(
+                    new UpdateLastLoginArgs
+                    {
+                        UserName = principal.Identity.Name,
+                        SourceSiteIdOverride = site.Id,
+                        ShouldSkipWritingHistoryLog = true
+                    }
+                );
             }
 
             // Get or create the personal device.
@@ -520,6 +535,62 @@ namespace Rock.Rest.Controllers
                 mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( loginParameters.Username );
 
                 return Ok( mobilePerson );
+            }
+        }
+
+        
+        [System.Web.Http.Route( "api/mobile/UpdateLocationPermission" )]
+        [HttpPut]
+        [Rock.SystemGuid.RestActionGuid( "DF6065C9-A5F8-4549-AD00-F2C0823C9E0D" )]
+        public IHttpActionResult UpdateLocationPermission( [FromBody] LocationPermissionOptions locationPermissionOptions, bool isBeaconMonitoringEnabled )
+        {
+            if ( locationPermissionOptions == null )
+            {
+                return BadRequest( "LocationPermissionOptions is null." );
+            }
+
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                if ( locationPermissionOptions.PersonalDeviceGuid == null )
+                {
+                    return BadRequest( "PersonalDeviceGuid is null." );
+                }
+
+                if ( locationPermissionOptions.LocationPermissionInfo == null )
+                {
+                    return BadRequest( "LocationPermissionInfoBag is null." );
+                }
+
+                var personalDeviceService = new PersonalDeviceService( rockContext );
+                var personalDevice = personalDeviceService.Get( locationPermissionOptions.PersonalDeviceGuid.Value );
+
+                if ( personalDevice == null )
+                {
+                    return NotFound();
+                }
+
+                var locationPermissionInfo = locationPermissionOptions.LocationPermissionInfo;
+
+                var locationPreviouslyGranted = personalDevice.LocationPermissionStatus == LocationPermissionStatus.Always && personalDevice.IsPreciseLocationEnabled == true;
+                var isLocationPermissionDisabled = locationPermissionInfo.LocationPermission.ToNative() != LocationPermissionStatus.Always || locationPermissionInfo.IsPrecise != true;
+
+                // Update the date time only when the person is switching to/from "Always" Permission and "Precise" On.
+                if ( locationPreviouslyGranted && isLocationPermissionDisabled )
+                {
+                    personalDevice.LocationPermissionDisabledDateTime = RockDateTime.Now;
+                }
+                else if ( !isLocationPermissionDisabled )
+                {
+                    personalDevice.LocationPermissionDisabledDateTime = null;
+                }
+
+                personalDevice.LocationPermissionStatus = locationPermissionInfo.LocationPermission.ToNative();
+                personalDevice.IsPreciseLocationEnabled = locationPermissionInfo.IsPrecise;
+                personalDevice.IsBeaconMonitoringEnabled = isBeaconMonitoringEnabled;
+
+                rockContext.SaveChanges();
+
+                return Ok();
             }
         }
 

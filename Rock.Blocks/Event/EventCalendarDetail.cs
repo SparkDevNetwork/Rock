@@ -212,7 +212,7 @@ namespace Rock.Blocks.Event
             var eventAttributes = GetEventAttributes( entity.Id.ToString() );
             bag.EventAttributes = eventAttributes.ConvertAll( e => new EventAttributeBag()
             {
-                Attribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( e ),
+                Attribute = PublicAttributeHelper.GetPublicEditableAttribute( e ),
                 FieldType = FieldTypeCache.Get( e.FieldTypeId )?.Name,
             } );
 
@@ -557,7 +557,7 @@ namespace Rock.Blocks.Event
             else
             {
                 var attribute = attributes.Find( a => a.Guid == attributeGuid );
-                editableAttribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute );
+                editableAttribute = PublicAttributeHelper.GetPublicEditableAttribute( attribute );
             }
 
             var reservedKeyNames = new List<string>();

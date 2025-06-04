@@ -199,8 +199,16 @@ namespace Rock.CheckIn.v2
             // Apply any age restriction filtering.
             if ( TemplateConfiguration.AgeRestriction == AgeRestrictionMode.HideAdults )
             {
+                var thisYear = RockDateTime.Now.Year;
+
+                // If we are hiding adults then we want to hide anyone that has
+                // been classified as an adult. Except if they have a future
+                // graduation date since that probably means they are a
+                // high-schooler that is 18+. While technically an adult, we
+                // would want to include them when allowing check-in of kids.
                 groupMemberQry = groupMemberQry
-                    .Where( gm => gm.Person.AgeClassification != AgeClassification.Adult );
+                    .Where( gm => gm.Person.AgeClassification != AgeClassification.Adult
+                        || ( gm.Person.GraduationYear.HasValue && gm.Person.GraduationYear >= thisYear ) );
             }
             else if ( TemplateConfiguration.AgeRestriction == AgeRestrictionMode.HideChildren )
             {
@@ -286,7 +294,14 @@ namespace Rock.CheckIn.v2
             {
                 activity?.AddTag( "rock.checkin.conversion_provider", Director.ConversionProvider.GetType().FullName );
 
-                return Director.ConversionProvider.GetFamilyMemberBags( familyId, groupMembers );
+                return Director.ConversionProvider.GetFamilyMemberBags( familyId, groupMembers )
+                    .OrderBy( member => member.RoleOrder )
+                    .ThenBy( member => member.Person.BirthYear )
+                    .ThenBy( member => member.Person.BirthMonth )
+                    .ThenBy( member => member.Person.BirthDay )
+                    .ThenBy( member => member.Person.Gender )
+                    .ThenBy( member => member.Person.NickName )
+                    .ToList();
             }
         }
 
@@ -296,11 +311,6 @@ namespace Rock.CheckIn.v2
         /// <param name="attendee">The attendee whose opportunities will be filtered.</param>
         public void FilterPersonOpportunities( Attendee attendee )
         {
-            if ( IsOverrideEnabled )
-            {
-                return;
-            }
-
             using ( var activity = ObservabilityHelper.StartActivity( $"Filter Opportunities For {attendee.Person.NickName}" ) )
             {
                 activity?.AddTag( "rock.checkin.opportunity_filter_provider", OpportunityFilterProvider.GetType().FullName );
@@ -424,6 +434,7 @@ namespace Rock.CheckIn.v2
                 {
                     var activeAttendances = attendee.RecentAttendances
                         .Where( a => a.StartDateTime >= today
+                            && a.DidAttend
                             && !a.EndDateTime.HasValue )
                         .ToList();
 

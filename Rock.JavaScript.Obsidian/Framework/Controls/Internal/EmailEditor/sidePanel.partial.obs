@@ -1,13 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="side-panel">
-        <div class="side-panel-menu">
+        <div v-if="ltr" class="side-panel-menu">
             <div v-for="sidePanelMenuItem in sidePanelMenuItems"
                  :key="sidePanelMenuItem.type"
                  :class="[
-                     'side-panel-menu-item',
-                     selectedSidePanelMenuItem === sidePanelMenuItem.type ? 'selected' : ''
-                 ]"
+                    'side-panel-menu-item',
+                    selectedSidePanelMenuItem === sidePanelMenuItem.type ? 'selected' : ''
+                ]"
                  @click="onSidePanelButtonClicked(sidePanelMenuItem.type)">
                 <i :class="sidePanelMenuItem.iconCssClass"></i>
                 <span class="side-panel-menu-item-text">{{ sidePanelMenuItem.title }}</span>
@@ -21,11 +21,16 @@
                                         :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
                                         :mergeFields="mergeFields"
                                         :recipientPersonIds="recipientPersonIds"
+                                        :shortLinkCheckToken="shortLinkCheckToken"
+                                        :shortLinkGetPageId="shortLinkGetPageId"
+                                        :shortLinkSites="shortLinkSites"
+                                        :shortLinkTokenMinLength="shortLinkTokenMinLength"
                                         :videoProviderNames="videoProviderNames"
                                         @clone="onCloneComponent"
                                         @complete="onCompleteComponent"
                                         @delete="onDeleteComponent"
-                                        @emailSectionSaved="addEmailSectionToList" />
+                                        @emailSectionSaved="addEmailSectionToList"
+                                        @migrate="onMigrateComponent" />
 
                 <FlatPanel v-else
                            :hasPaddedBody="true"
@@ -102,7 +107,8 @@
                                     {{ emailSection.name }}
                                 </h5>
 
-                                <DropDownMenu anchorButtonCssClass="btn-xs email-section-menu-button"
+                                <DropDownMenu align="right"
+                                              anchorButtonCssClass="btn-xs email-section-menu-button"
                                               :items="getEmailSectionMenuItems(emailSection)"
                                               @mousedown.stop />
                             </header>
@@ -132,6 +138,19 @@
                                      :communicationTemplates="communicationTemplates"
                                      :hasScrollableBody="true" />
             </template>
+        </div>
+
+        <div v-if="!ltr" class="side-panel-menu">
+            <div v-for="sidePanelMenuItem in sidePanelMenuItems"
+                 :key="sidePanelMenuItem.type"
+                 :class="[
+                    'side-panel-menu-item',
+                    selectedSidePanelMenuItem === sidePanelMenuItem.type ? 'selected' : ''
+                ]"
+                 @click="onSidePanelButtonClicked(sidePanelMenuItem.type)">
+                <i :class="sidePanelMenuItem.iconCssClass"></i>
+                <span class="side-panel-menu-item-text">{{ sidePanelMenuItem.title }}</span>
+            </div>
         </div>
     </div>
 
@@ -186,7 +205,7 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    min-width: 320px;
+    min-width: 340px;
     max-width: 620px;
     border-right: 1px solid var(--color-interface-soft);
 }
@@ -249,7 +268,7 @@
 }
 
 .email-section {
-    width: 290px;
+    width: 300px;
     border: 1px solid var(--color-interface-soft);
     border-radius: var(--border-radius-base);
 }
@@ -305,7 +324,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, onMounted, PropType, ref, watch } from "vue";
     import ComponentPropertyPanel from "./componentPropertyPanel.partial.obs";
     import EmailSectionModal from "./emailSectionModal.partial.obs";
     import FlatPanel from "./flatPanel.partial.obs";
@@ -318,7 +337,7 @@
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { EmailEditorEmailSectionBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorEmailSectionBag";
     import { EmailEditorDeleteEmailSectionOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorDeleteEmailSectionOptionsBag";
-    import { CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, DeleteComponentRequest, EditorComponentTypeName } from "./types.partial";
+    import { CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, DeleteComponentRequest, EditorComponentTypeName, ReplaceComponentRequest } from "./types.partial";
     import { getComponentIconHtml, getComponentTitle } from "./utils.partial";
     import { Category } from "@Obsidian/SystemGuids/category";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -327,7 +346,7 @@
     import { areEqual, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { destroyTooltip, showTooltip } from "@Obsidian/Utility/tooltip";
-    import { createEmailSection, createStarterSections, deleteEmailSection, getAllEmailSections } from "./api";
+    import { useApi } from "./api";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
 
     // #region Types
@@ -369,18 +388,39 @@
             required: true
         },
 
+        ltr: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         mergeFields: {
             type: Object as PropType<string[] | undefined>,
             required: true
         },
 
-        recipientPersonIds: {
-            type: Object as PropType<number[] | null | undefined>,
+        selectedComponentElement: {
+            type: Object as PropType<HTMLElement | null | undefined>,
             required: true
         },
 
-        selectedComponentElement: {
-            type: Object as PropType<HTMLElement | null | undefined>,
+        shortLinkCheckToken: {
+            type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>
+        },
+
+        shortLinkGetPageId: {
+            type: Object as PropType<((pageGuid: Guid) => Promise<number | null | undefined>) | null | undefined>
+        },
+
+        shortLinkSites: {
+            type: Array as PropType<ListItemBag[] | null | undefined>
+        },
+
+        shortLinkTokenMinLength: {
+            type: Number as PropType<number | null | undefined>
+        },
+
+        recipientPersonIds: {
+            type: Object as PropType<number[] | null | undefined>,
             required: true
         },
 
@@ -396,6 +436,7 @@
         (e: "componentTypeDragStart", value: ComponentTypeDragStartRequest): void;
         (e: "componentTypeDragEnd", value: ComponentTypeDragEndRequest): void;
         (e: "deleteComponent", value: DeleteComponentRequest): void;
+        (e: "replaceComponent", value: ReplaceComponentRequest): void;
         (e: "update:selectedComponentElement", value: HTMLElement | null | undefined): void;
         (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
     }>();
@@ -444,6 +485,8 @@
     // #endregion Constants
 
     // #region Values
+
+    const api = useApi();
 
     const selectedSidePanelMenuItem = ref<SidePanelMenuItemType>("blocks");
     const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
@@ -651,7 +694,7 @@
     }
 
     async function loadEmailSections(): Promise<void> {
-        const result = await getAllEmailSections();
+        const result = await api.getAllEmailSections();
 
         if (result.isSuccess && result.data) {
             emailSections.value = result.data;
@@ -669,6 +712,14 @@
         if (internalSelectedComponentElement.value) {
             emit("cloneComponent", {
                 componentElement: internalSelectedComponentElement.value
+            });
+        }
+    }
+
+    function onMigrateComponent(newComponentElement: Element): void {
+        if (isHTMLElement(newComponentElement)) {
+            emit("replaceComponent", {
+                newComponentElement
             });
         }
     }
@@ -787,7 +838,8 @@
             dragCopy.style.boxShadow = `${keyLightShadow}, ${ambientLightShadow}`;
 
             // Ensure the dragging element is above elements added to body like drop downs, etc.
-            dragCopy.style.zIndex = "1000";
+            // Use default for dropdowns, modals, and full-screen panels (1060).
+            dragCopy.style.zIndex = "1060";
 
             document.body.appendChild(dragCopy);
 
@@ -852,7 +904,7 @@
             sourceMarkup: emailSection.sourceMarkup?.replace(emailSection.guid, guid)
         };
 
-        const result = await createEmailSection(bag);
+        const result = await api.createEmailSection(bag);
 
         if (result?.isSuccess && result.data) {
             addEmailSectionToList(result.data, { after: emailSection });
@@ -881,7 +933,7 @@
                 emailSectionGuid: emailSectionToDelete.value.guid
             };
 
-            const result = await deleteEmailSection(bag);
+            const result = await api.deleteEmailSection(bag);
 
             if (result?.isSuccess) {
                 removeEmailSectionFromList(emailSectionToDelete.value);
@@ -955,26 +1007,35 @@
         }
     });
 
-    watch(() => props.emailDocument, async (newValue) => {
-        if (newValue) {
-            if (emailSections.value.length === 0) {
-                await loadEmailSections();
+    async function loadEmailSectionsIfNotLoaded(document: Document): Promise<void> {
+        // Load the email sections if they are not already loaded.
+        if (emailSections.value.length === 0) {
+            await loadEmailSections();
 
-                if (emailSections.value.length === 0) {
-                    // Generate starter sections.
-                    const document = props.emailDocument ?? props.selectedComponentElement?.ownerDocument;
-                    if (document) {
-                        const result = await createStarterSections(document);
-                        if (result.isSuccess && result.data) {
-                            result.data.forEach(emailSection => {
-                                addEmailSectionToList(emailSection);
-                            });
-                        }
+            // If no email sections are loaded, then create starter sections.
+            if (emailSections.value.length === 0) {
+                api.createStarterSections(document).then(result => {
+                    if (result.isSuccess && result.data) {
+                        result.data.forEach(emailSection => {
+                            addEmailSectionToList(emailSection);
+                        });
                     }
-                }
+                });
             }
+        }
+    }
+
+    watch(() => props.emailDocument, async (doc) => {
+        if (doc) {
+            await loadEmailSectionsIfNotLoaded(doc);
         }
     });
 
     // #endregion Watchers
+
+    onMounted(() => {
+        if (props.emailDocument) {
+            loadEmailSectionsIfNotLoaded(props.emailDocument);
+        }
+    });
 </script>

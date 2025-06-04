@@ -239,7 +239,7 @@ namespace Rock.Transactions
                 }
                 catch ( Exception ex )
                 {
-                    errorHandler( new Exception( $"Exception in RockQueue.Drain(): {transaction.GetType().Name}", ex ) );
+                    errorHandler( new Exception( $"Unhandled exception in RockQueue.Drain(): {transaction.GetType().Name} {transaction.ToJson()}", ex ) );
                 }
             }
         }

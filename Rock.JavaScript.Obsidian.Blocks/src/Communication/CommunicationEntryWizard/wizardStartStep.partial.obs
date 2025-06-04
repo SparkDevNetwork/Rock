@@ -3,7 +3,7 @@
     <div ref="wizardStartStepElement" class="wizard-start-step">
         <Panel :title="title" type="block" panelBodyCssClass="panel-body-wizard">
             <template #headerActions>
-                <div class="mr-3">
+                <div>
                     <HighlightLabel labelType="info">
                         <template v-if="isFetchingRecipients"><i class="fas fa-spinner fa-pulse"></i> Recipients</template>
                         <template v-else>{{ recipientsLabel }}</template>
@@ -79,7 +79,7 @@
                                                               @update:modelValue="onListGroupGuidUpdated" />
                                             </div>
                                             <div class="form-group">
-                                                <RockLabel v-if="breakpointHelper.isSmOrLarger">&nbsp;</RockLabel>
+                                                <RockLabel>&nbsp;</RockLabel>
                                                 <div class="control-wrapper">
                                                     <RockButton btnSize="sm"
                                                                 :disabled="isFetchingRecipients"
@@ -105,6 +105,7 @@
                                     <div class="col-sm-5">
                                         <ConditionalWell class="segments-section">
                                             <DropDownList v-model="personalizationSegmentIdsAsStrings"
+                                                          enhanceForLongLists
                                                           :items="personalizationSegments"
                                                           label="Select Segments"
                                                           :multiple="true" />
@@ -213,15 +214,15 @@
                                     <div class="col-sm-5">
                                         <RadioButtonList v-model="selectedSendTimePreference"
                                                          :items="[
-                                                             {
-                                                                 value: 'now',
-                                                                 text: 'Now'
-                                                             },
-                                                             {
-                                                                 value: 'later',
-                                                                 text: 'Later'
-                                                             }
-                                                         ]"
+                                                            {
+                                                                value: 'now',
+                                                                text: 'Now'
+                                                            },
+                                                            {
+                                                                value: 'later',
+                                                                text: 'Later'
+                                                            }
+                                                        ]"
                                                          :horizontal="true"
                                                          label="When to Send"
                                                          rules="required"
@@ -243,7 +244,8 @@
             </template>
 
             <template #footerSecondaryActions>
-                <RockButton btnType="primary"
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowRight'"
+                            btnType="primary"
                             :form="formId"
                             type="submit">{{ nextStepTitle ? `Next: ${nextStepTitle}` : 'Next' }}</RockButton>
             </template>
@@ -305,6 +307,10 @@
     margin: 0;
 }
 
+.medium-content i {
+    color: var(--color-interface-strong);
+}
+
 .medium .fa-dot-circle-o {
     color: var(--color-primary);
 }
@@ -343,7 +349,7 @@
 <script setup lang="ts">
     import { computed, nextTick, PropType, Ref, ref, watch } from "vue";
     import RecipientModal from "./recipientModal.partial.obs";
-    import { get, useBreakpointHelper } from "./utils.partial";
+    import { get } from "./utils.partial";
     import { SendTimePreference } from "./types.partial";
     import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
@@ -358,7 +364,8 @@
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
-    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
+    import { vShortcut } from "@Obsidian/Directives/shortcut";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { SegmentCriteria, SegmentCriteriaDescription } from "@Obsidian/Enums/Communication/segmentCriteria";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -372,6 +379,11 @@
     const props = defineProps({
         allowedMediums: {
             type: Object as PropType<CommunicationType[]>,
+            required: true
+        },
+
+        areNavigationShortcutsDisabled: {
+            type: Boolean as PropType<boolean>,
             required: true
         },
 
@@ -558,7 +570,6 @@
         }
     ];
 
-    const breakpointHelper = useBreakpointHelper();
     const manualRecipientList = "manual" as const;
 
     // #region Values
@@ -771,6 +782,12 @@
 
         if (isNullish(internalIndividualRecipientPersonAliasGuids.value) && selectedCommunicationListGuidOrManualOrEmptyString.value !== value) {
             selectedCommunicationListGuidOrManualOrEmptyString.value = value;
+        }
+    });
+
+    watch(() => props.recipientCount, value => {
+        if (value > 0) {
+            isNoRecipientsNotificationShown.value = false;
         }
     });
 

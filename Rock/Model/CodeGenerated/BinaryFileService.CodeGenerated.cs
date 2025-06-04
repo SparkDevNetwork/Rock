@@ -145,6 +145,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<Group>( Context ).Queryable().Any( a => a.ChatChannelAvatarBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Group.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<InteractiveExperience>( Context ).Queryable().Any( a => a.ActionBackgroundImageBinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, InteractiveExperience.FriendlyTypeName );

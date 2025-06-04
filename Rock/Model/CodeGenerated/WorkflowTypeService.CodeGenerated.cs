@@ -248,6 +248,7 @@ namespace Rock.Model
             target.NoActionMessage = source.NoActionMessage;
             target.Order = source.Order;
             target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
+            target.Slug = source.Slug;
             target.SummaryViewText = source.SummaryViewText;
             target.WorkflowExpireDateTime = source.WorkflowExpireDateTime;
             target.WorkflowIdPrefix = source.WorkflowIdPrefix;

@@ -195,8 +195,8 @@ namespace Rock.Blocks.Cms
                 ShowInChannelList = entity.ShowInChannelList
             };
 
-            bag.ItemAttributes = GetAttributes( rockContext, entity.Id, new ContentChannelItem().TypeId ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttributeViewModel( a ) );
-            bag.ChannelAttributes = GetAttributes( rockContext, entity.Id, new ContentChannel().TypeId ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttributeViewModel( a ) );
+            bag.ItemAttributes = GetAttributes( rockContext, entity.Id, new ContentChannelItem().TypeId ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttribute( a ) );
+            bag.ChannelAttributes = GetAttributes( rockContext, entity.Id, new ContentChannel().TypeId ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttribute( a ) );
 
             return bag;
         }

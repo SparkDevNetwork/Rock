@@ -88,14 +88,6 @@ namespace Rock.Jobs
             var completionService = new LearningProgramCompletionService( rockContext );
             var courseService = new LearningCourseService( rockContext );
 
-            // Find all courses that belong to programs which are being
-            // tracked. We don't filter by active because we still want
-            // to process records if the admin just turned the course
-            // off today.
-            var trackedCourseIdQry = courseService.Queryable()
-                .Where( c => c.LearningProgram.IsCompletionStatusTracked )
-                .Select( c => c.Id );
-
             // A query that includes all completed programs and the person
             // that completed it.
             var completedProgramQry = completionService.Queryable()
@@ -106,12 +98,12 @@ namespace Rock.Jobs
                     lpc.LearningProgramId
                 } );
 
-            // Find all participants and associated programs that have not
-            // already been completed.
+            // Find all participants and associated programs that have missing or
+            // pending program completion records.
             var activeParticipantsAndPrograms = participantService.Queryable()
-                .Where( p => trackedCourseIdQry.Contains( p.LearningClass.LearningCourseId )
+                .Where( p => p.LearningClass.LearningCourse.LearningProgram.IsCompletionStatusTracked
                     && p.Person.PrimaryAliasId.HasValue
-                    && !completedProgramQry.Any( c => c.PersonId == p.PersonId && c.LearningProgramId == p.LearningClass.LearningCourse.LearningProgramId ) )
+                    && ( !p.LearningProgramCompletionId.HasValue || p.LearningProgramCompletion.CompletionStatus == CompletionStatus.Pending ) )
                 .Select( p => new ParticipantAndProgram
                 {
                     PersonId = p.Person.Id,
@@ -138,7 +130,12 @@ namespace Rock.Jobs
                 .GroupBy( lc => lc.LearningProgramId )
                 .ToDictionary( grp => grp.Key, grp => grp.Select( g => g.Id ).ToList() );
 
-            return new JobState( activeParticipantsAndPrograms, activeCourseIdLookup );
+            // Load all the course equivalent records. This is a dictionary of
+            // courses and the list of other course ids that are considered
+            // equivalent - including recursive equivalents.
+            var courseEquivalentIdLookup = GetCourseEquivalentIds( rockContext );
+
+            return new JobState( activeParticipantsAndPrograms, activeCourseIdLookup, courseEquivalentIdLookup );
         }
 
         /// <summary>
@@ -152,54 +149,27 @@ namespace Rock.Jobs
         {
             var programCompletionService = new LearningProgramCompletionService( rockContext );
 
-            // Look for an existing program completion record.
-            var programCompletion = programCompletionService
+            // Look for existing program completion records that are pending
+            // for this person and program.
+            var programCompletions = programCompletionService
                 .Queryable()
-                .Where( lpc => lpc.CompletionStatus == CompletionStatus.Pending )
-                .FirstOrDefault( lpc => lpc.PersonAlias.PersonId == participantAndProgram.PersonId
-                    && lpc.LearningProgramId == participantAndProgram.LearningProgramId );
+                .Where( lpc => lpc.CompletionStatus == CompletionStatus.Pending
+                    && lpc.PersonAlias.PersonId == participantAndProgram.PersonId
+                    && lpc.LearningProgramId == participantAndProgram.LearningProgramId )
+                .ToList();
+            var firstProgramCompletion = programCompletions.FirstOrDefault();
 
-            // This shouldn't happen. If it does, we want to throw an error so
-            // it will be seen and fixed. If a person has a program completion
-            // record for this program with a status of "Completed" then we should
-            // be skipping their participant records already.
-            if ( programCompletion != null && programCompletion.CompletionStatus == CompletionStatus.Completed )
-            {
-                throw new InvalidOperationException( $"Attempt to update already complete record Id #{programCompletion.Id}." );
-            }
-
-            // Find all participant records for this person and program.
+            // Find all participant records for this person across all programs.
             var participation = new LearningParticipantService( rockContext )
                 .Queryable()
                 .Include( lp => lp.LearningClass )
-                .Where( lp => lp.LearningClass.LearningCourse.LearningProgramId == participantAndProgram.LearningProgramId
-                    && lp.Person.Id == participantAndProgram.PersonId )
+                .Where( lp => lp.Person.Id == participantAndProgram.PersonId )
                 .ToList();
 
-            // If there is not an existing completion record then create a
-            // new one.
-            if ( programCompletion == null )
-            {
-                programCompletion = new LearningProgramCompletion
-                {
-                    LearningProgramId = participantAndProgram.LearningProgramId,
-                    PersonAliasId = participantAndProgram.PrimaryAliasId,
-                    StartDate = participation.Min( lp => lp.CreatedDateTime ) ?? RockDateTime.Now,
-                    CompletionStatus = CompletionStatus.Pending
-                };
-
-                programCompletionService.Add( programCompletion );
-                state.ProgramsStarted++;
-            }
-
-            // Set the campus if we don't already have a campus value.
-            if ( !programCompletion.CampusId.HasValue )
-            {
-                programCompletion.CampusId = participation
-                    .OrderBy( p => p.CreatedDateTime )
-                    .FirstOrDefault( p => p.LearningClass.CampusId.HasValue )
-                    ?.LearningClass.CampusId;
-            }
+            // Filter that down to those participant records for this program.
+            var programParticipation = participation
+                .Where( lp => lp.LearningClass.LearningCourse.LearningProgramId == participantAndProgram.LearningProgramId )
+                .ToList();
 
             // Find all active courses for this program.
             if ( !state.ActiveCourseIdLookup.TryGetValue( participantAndProgram.LearningProgramId, out var activeCourseIds ) )
@@ -208,49 +178,130 @@ namespace Rock.Jobs
                 state.ActiveCourseIdLookup.Add( participantAndProgram.LearningProgramId, activeCourseIds );
             }
 
-            // Find all the course identifiers that they have passed
+            // Find all the course identifiers that they have passed across
+            // any program.
             var passedCourseIds = participation
                 .Where( p => p.LearningCompletionStatus == LearningCompletionStatus.Pass )
                 .Select( p => p.LearningClass.LearningCourseId )
                 .ToList();
 
-            var hasPassedAllCourses = activeCourseIds.All( c => passedCourseIds.Contains( c ) );
+            // Check if they have passed all active courses. This is done by
+            // checking that they either passed the specific course or a course
+            // that is considered equivalent to the course.
+            var hasPassedAllCourses = activeCourseIds.All( courseId =>
+            {
+                if ( passedCourseIds.Contains( courseId ) )
+                {
+                    return true;
+                }
 
-            // If they have passed all courses then mark the record as completed.
+                // Try and get the course identifiers that are considered equivalent
+                // to this course.
+                if ( state.CourseEquivalentIdLookup.TryGetValue( courseId, out var equivalentCourseIds ) )
+                {
+                    // If any of the equivalent courses have been passed then
+                    // courseId is also considered to be passed.
+                    if ( passedCourseIds.Any( passedCourseId => equivalentCourseIds.Contains( passedCourseId ) ) )
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            } );
+
+            // If any participation records do not yet have a program
+            // completion then we need to configure them. This shouldn't
+            // normally happen, but an example where it would is if the
+            // program is initially created without tracking and then
+            // tracking is later turned on.
+            //
+            // Create the program completion record here and we will link it
+            // to the participation records later.
+            if ( programParticipation.Any( p => !p.LearningProgramCompletionId.HasValue ) && firstProgramCompletion == null )
+            {
+                firstProgramCompletion = new LearningProgramCompletion
+                {
+                    LearningProgramId = participantAndProgram.LearningProgramId,
+                    PersonAliasId = participantAndProgram.PrimaryAliasId,
+                    StartDate = programParticipation.Min( lp => lp.CreatedDateTime ) ?? RockDateTime.Now,
+                    CompletionStatus = CompletionStatus.Pending
+                };
+
+                programCompletions.Add( firstProgramCompletion );
+                programCompletionService.Add( firstProgramCompletion );
+            }
+
+            // If they have passed all active courses then mark the pending
+            // completion records as completed.
             if ( hasPassedAllCourses )
             {
-                programCompletion.CompletionStatus = CompletionStatus.Completed;
-                programCompletion.EndDate = participation
-                    .Where( p => p.LearningCompletionDateTime.HasValue )
-                    .Max( p => p.LearningCompletionDateTime );
+                foreach ( var programCompletion in programCompletions )
+                {
+                    programCompletion.CompletionStatus = CompletionStatus.Completed;
+                    programCompletion.EndDate = programParticipation
+                        .Where( p => p.LearningCompletionDateTime.HasValue )
+                        .Max( p => p.LearningCompletionDateTime );
+                }
 
                 state.ProgramsCompleted++;
             }
 
+            // Update the campus for any completion records that don't yet have
+            // an associated campus.
+            var campusId = programParticipation
+                .OrderBy( p => p.CreatedDateTime )
+                .FirstOrDefault( p => p.LearningClass.CampusId.HasValue )
+                ?.LearningClass.CampusId;
+
+            if ( campusId.HasValue )
+            {
+                foreach ( var programCompletion in programCompletions )
+                {
+                    // Set the campus if we don't already have a campus value.
+                    if ( !programCompletion.CampusId.HasValue )
+                    {
+                        programCompletion.CampusId = campusId;
+                    }
+                }
+            }
+
+            // Save everything to the database.
             rockContext.WrapTransaction( () =>
             {
-                // First save so we get a completion Id.
-                rockContext.SaveChanges();
-
-                // Update all participation records to point to this completion
-                // unless they already have a completion.
-                foreach ( var participant in participation.Where( p => !p.LearningProgramCompletionId.HasValue ) )
+                if ( firstProgramCompletion != null )
                 {
-                    participant.LearningProgramCompletionId = programCompletion.Id;
+                    if ( firstProgramCompletion.Id == 0 )
+                    {
+                        // First save so we get a completion Id.
+                        rockContext.SaveChanges();
+                    }
+
+                    // Update all participation records that are not yet
+                    // associated with a completion record to point to the
+                    // same completion record.
+                    foreach ( var participant in programParticipation.Where( p => !p.LearningProgramCompletionId.HasValue ) )
+                    {
+                        participant.LearningProgramCompletionId = firstProgramCompletion.Id;
+                    }
                 }
 
                 rockContext.SaveChanges();
             } );
 
-            if ( programCompletion.CompletionStatus == CompletionStatus.Completed )
+            // Launch workflows for all completions that were marked as completed.
+            foreach ( var programCompletion in programCompletions )
             {
-                // TODO: Add cache for LMS to make this faster.
-                var program = new LearningProgramService( rockContext ).Get( participantAndProgram.LearningProgramId );
-
-                if ( program?.CompletionWorkflowTypeId != null )
+                if ( programCompletion.CompletionStatus == CompletionStatus.Completed )
                 {
-                    LaunchCompletionWorkflow( programCompletion, program, rockContext );
-                    state.CompletionWorkflowsLaunched++;
+                    // TODO: Add cache for LMS to make this faster.
+                    var program = new LearningProgramService( rockContext ).Get( participantAndProgram.LearningProgramId );
+
+                    if ( program?.CompletionWorkflowTypeId != null )
+                    {
+                        LaunchCompletionWorkflow( programCompletion, program, rockContext );
+                        state.CompletionWorkflowsLaunched++;
+                    }
                 }
             }
         }
@@ -270,7 +321,8 @@ namespace Rock.Jobs
 
             var workflowAttributes = new Dictionary<string, string>
             {
-                ["Person"] = personAliasGuid.ToString()
+                ["Person"] = personAliasGuid.ToString(),
+                ["LearningProgram"] = program.Guid.ToString()
             };
 
             var workflowType = WorkflowTypeCache.Get( program.CompletionWorkflowTypeId.Value, rockContext );
@@ -285,28 +337,18 @@ namespace Rock.Jobs
         private static string GetJobResultText( JobState state )
         {
             var completedProgramsText = "program".PluralizeIf( state.ProgramsCompleted != 1 );
-            var newProgramsText = "program".PluralizeIf( state.ProgramsStarted != 1 );
             var completedWasOrWere = state.ProgramsCompleted == 1 ? "was" : "were";
-            var newProgramsWasOrWere = state.ProgramsStarted == 1 ? "was" : "were";
             var workflowsText = "workflow".PluralizeIf( state.CompletionWorkflowsLaunched != 1 );
             var results = new StringBuilder();
 
             // Set the job result text.
-            if ( state.ProgramsCompleted > 0 && state.ProgramsStarted > 0 )
-            {
-                results.AppendLine( $"{state.ProgramsCompleted} {completedProgramsText} {completedWasOrWere} completed and {state.ProgramsStarted} {newProgramsText} {newProgramsWasOrWere} started." );
-            }
-            else if ( state.ProgramsCompleted > 0 )
+            if ( state.ProgramsCompleted > 0 )
             {
                 results.AppendLine( $"{state.ProgramsCompleted} {completedProgramsText} {completedWasOrWere} completed." );
             }
-            else if ( state.ProgramsStarted > 0 )
-            {
-                results.AppendLine( $"{state.ProgramsStarted} {newProgramsText} {newProgramsWasOrWere} started." );
-            }
             else
             {
-                results.AppendLine( "No completions to add or update." );
+                results.AppendLine( "No completions needed to be updated." );
             }
 
             results.AppendLine( $"{state.CompletionWorkflowsLaunched} completion {workflowsText} launched." );
@@ -327,6 +369,67 @@ namespace Rock.Jobs
             return rockContext;
         }
 
+        /// <summary>
+        /// Load all course equivalent records and create a lookup table
+        /// that represents the primary course identifier and then a list of
+        /// other courses that are considered equivalent to this course.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A dictionary whose key is a course identifier and value is a list of equivalent course identifiers.</returns>
+        private static Dictionary<int, List<int>> GetCourseEquivalentIds( RockContext rockContext )
+        {
+            var lookupTable = new Dictionary<int, List<int>>();
+
+            var courseEquivalents = new LearningCourseRequirementService( rockContext )
+                .Queryable()
+                .Where( lcr => lcr.RequirementType == RequirementType.Equivalent )
+                .Select( lcr => new
+                {
+                    PrimaryCourseId = lcr.LearningCourseId,
+                    EquivalentCourseId = lcr.RequiredLearningCourseId
+                } )
+                .ToList()
+                .Select( e => (e.PrimaryCourseId, e.EquivalentCourseId) )
+                .ToList();
+
+            foreach ( var courseId in courseEquivalents.Select( c => c.PrimaryCourseId ).Distinct() )
+            {
+                lookupTable.Add( courseId, GetRecursiveEquivalentCourseIds( courseEquivalents, courseId ) );
+            }
+
+            return lookupTable;
+        }
+
+        /// <summary>
+        /// Get all course identifiers that are considered equivalent to the
+        /// <paramref name="primaryCourseId"/>. This method is recursive and
+        /// will handle cases of A => B => C => D => A. If "A" is passed as
+        /// the <paramref name="primaryCourseId"/> then "B", "C", and "D" will
+        /// be returned.
+        /// </summary>
+        /// <param name="courseEquivalents"></param>
+        /// <param name="primaryCourseId"></param>
+        /// <param name="equivalentCourseIds"></param>
+        /// <returns></returns>
+        private static List<int> GetRecursiveEquivalentCourseIds( List<(int PrimaryCourseId, int EquivalentCourseId)> courseEquivalents, int primaryCourseId, List<int> equivalentCourseIds = null )
+        {
+            if ( equivalentCourseIds == null )
+            {
+                equivalentCourseIds = new List<int>();
+            }
+
+            foreach ( var id in courseEquivalents.Where( ce => ce.PrimaryCourseId == primaryCourseId ).Select( ce => ce.EquivalentCourseId ) )
+            {
+                if ( !equivalentCourseIds.Contains( id ) && id != primaryCourseId )
+                {
+                    equivalentCourseIds.Add( id );
+                    GetRecursiveEquivalentCourseIds( courseEquivalents, id, equivalentCourseIds );
+                }
+            }
+
+            return equivalentCourseIds;
+        }
+
         #region Support Classes
 
         private class ParticipantAndProgram
@@ -344,16 +447,17 @@ namespace Rock.Jobs
 
             public int ProgramsCompleted { get; set; }
 
-            public int ProgramsStarted { get; set; }
-
             public int CompletionWorkflowsLaunched { get; set; }
 
             public Dictionary<int, List<int>> ActiveCourseIdLookup { get; }
 
-            public JobState( List<ParticipantAndProgram> activeParticipantsAndPrograms, Dictionary<int, List<int>> activeCourseIdLookup )
+            public Dictionary<int, List<int>> CourseEquivalentIdLookup { get; }
+
+            public JobState( List<ParticipantAndProgram> activeParticipantsAndPrograms, Dictionary<int, List<int>> activeCourseIdLookup, Dictionary<int, List<int>> courseEquivalentIdLookup )
             {
                 ActiveParticipantsAndPrograms = activeParticipantsAndPrograms;
                 ActiveCourseIdLookup = activeCourseIdLookup;
+                CourseEquivalentIdLookup = courseEquivalentIdLookup;
             }
         }
 

@@ -696,8 +696,8 @@
     import { ConversationMessageBag } from "@Obsidian/ViewModels/Communication/conversationMessageBag";
     import { IConversationParticipantTopic, PreferenceKey } from "./SmsConversations/types.partial";
     import { PersonBasicEditorBag } from "@Obsidian/ViewModels/Rest/Controls/personBasicEditorBag";
-    import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/saveNoteRequestBag";
-    import { NoteEditBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteEditBag";
+    import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Controls/saveNoteRequestBag";
+    import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
     import { formatPhoneNumber, stripPhoneNumber } from "@Obsidian/Utility/phone";
     import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";

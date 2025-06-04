@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Rock.Model;
+using Rock.Utilities;
 
 namespace Rock.Communication.Chat.DTO
 {
@@ -23,6 +24,21 @@ namespace Rock.Communication.Chat.DTO
     /// </summary>
     internal class ChatBadge
     {
+        /*
+            5/8/2025 - JPH
+
+            If any properties are added here, make sure you also add them to the local `GetChatBadgeHash()` function
+            within the `ChatHelper.CreateOrUpdateChatUsersAsync()` method. We used to have a runtime property within
+            this class to build the hash:
+
+            public string BadgeHash => $"{Key}|{Name}|{IconCssClass}|{BackgroundColor}|{ForegroundColor}";
+
+            But this is problematic, as the object ends up getting serialized to JSON and sent to the external chat
+            provider - including this hash property - which unnecessarily increases the payload size.
+
+            Reason: Ensure proper badge comparison while preventing sending noisy data to the external chat provider.
+        */
+
         /// <summary>
         /// Gets or sets the badge key.
         /// </summary>
@@ -46,5 +62,21 @@ namespace Rock.Communication.Chat.DTO
         /// The corresponding <see cref="DataView.IconCssClass"/>.
         /// </value>
         public string IconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the badge background color.
+        /// </summary>
+        /// <value>
+        /// The <see cref="ColorPair.BackgroundColor"/> from the corresponding <see cref="DataView.HighlightColor"/>.
+        /// </value>
+        public string BackgroundColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the badge foreground color.
+        /// </summary>
+        /// <value>
+        /// The <see cref="ColorPair.ForegroundColor"/> from the corresponding <see cref="DataView.HighlightColor"/>.
+        /// </value>
+        public string ForegroundColor { get; set; }
     }
 }

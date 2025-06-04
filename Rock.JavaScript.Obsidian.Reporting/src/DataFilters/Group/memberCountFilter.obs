@@ -1,0 +1,72 @@
+<template>
+    <DropDownList v-model="memberStatus" :items="memberStatuses" label="Member Status" showBlankItem />
+    <DropDownList v-model="isLeader" :items="memberTypes" label="Member Type" showBlankItem />
+    <div class="row">
+        <div class="col-md-4">
+            <DropDownList v-model="comparisonType" :items="comparisonItems" disableLabel :showBlankItem="false" />
+        </div>
+        <div class="col-md-8">
+            <NumberBox v-if="showNumberBox" v-model="count" disableLabel />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { computed, ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const memberTypes: ListItemBag[] = [
+        { text: "Leader", value: "true" },
+        { text: "Not Leader", value: "false" },
+    ];
+
+    const memberStatuses = ref<ListItemBag[]>(safeParseJson(props.modelValue.memberStatuses) ?? []);
+
+    const isLeader = ref<string>(props.modelValue.isLeader ?? "");
+    const memberStatus = ref<string>(props.modelValue.memberStatus ?? "");
+    const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
+    const count = ref<number | null>(toNumberOrNull(props.modelValue.count));
+
+    const comparisonItems = getFilteredComparisonTypeOptions(
+        ComparisonType.EqualTo,
+        ComparisonType.NotEqualTo,
+        ComparisonType.IsBlank,
+        ComparisonType.IsNotBlank,
+        ComparisonType.GreaterThan,
+        ComparisonType.GreaterThanOrEqualTo,
+        ComparisonType.LessThan,
+        ComparisonType.LessThanOrEqualTo
+    );
+
+    const showNumberBox = computed(() => {
+        switch (comparisonType.value) {
+            case ComparisonType.IsBlank.toString():
+            case ComparisonType.IsNotBlank.toString():
+                return false;
+            default:
+                return true;
+        }
+    });
+
+    watch([isLeader, memberStatus, comparisonType, count], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            isLeader: isLeader.value,
+            memberStatus: memberStatus.value,
+            comparisonType: comparisonType.value,
+            count: `${count.value ?? ""}`,
+        });
+    });
+</script>

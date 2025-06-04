@@ -208,10 +208,7 @@ namespace Rock.Blocks.CheckIn.Configuration
             }
             else if ( labelType == LabelType.Attendance )
             {
-                var attendance = new LabelAttendanceDetail
-                {
-                    Person = currentPerson
-                };
+                var attendance = new LabelAttendanceDetail( currentPerson );
 
                 return new AttendanceLabelData( attendance,
                     currentPerson.PrimaryFamily,
@@ -220,10 +217,7 @@ namespace Rock.Blocks.CheckIn.Configuration
             }
             else if ( labelType == LabelType.Checkout )
             {
-                var attendance = new LabelAttendanceDetail
-                {
-                    Person = currentPerson
-                };
+                var attendance = new LabelAttendanceDetail( currentPerson );
 
                 return new CheckoutLabelData( attendance,
                     currentPerson.PrimaryFamily,

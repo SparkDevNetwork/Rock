@@ -26,7 +26,7 @@ namespace Rock.IpAddress
     /// <summary>
     /// Internal IP Address Lookup Container
     /// </summary>
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     [Obsolete( "Use IpGeoLookup instead." )]
     public class IpAddressLookupContainer : Container<IpAddressLookupComponent, IComponentData>
     {

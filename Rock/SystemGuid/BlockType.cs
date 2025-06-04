@@ -432,6 +432,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string OBSIDIAN_EXAMPLE_FIELD_TYPE_GALLERY = "B9C209C2-ABB8-4B48-A68E-944572007B03";
 
+        /// <summary>
+        /// Workflow Entry
+        /// </summary>
+        public const string OBSIDIAN_WORKFLOW_ENTRY = "9116AAD8-CF16-4BCE-B0CF-5B4D565710ED";
+
         #endregion Obsidian Block Types
 
         #region Reporting Block Types

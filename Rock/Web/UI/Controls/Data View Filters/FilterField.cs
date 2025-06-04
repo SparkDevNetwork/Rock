@@ -500,16 +500,25 @@ namespace Rock.Web.UI.Controls
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
-                if ( UseObsidian && component.ObsidianFileUrl != null )
+                if ( UseObsidian && filterControls.Length >= 1 && filterControls[0] is ObsidianDynamicComponentWrapper obsidianWrapper )
                 {
-                    if ( component.ObsidianFileUrl.Length > 0 )
-                    {
-                        var obsidianWrapper = ( ObsidianDataComponentWrapper ) filterControls[0];
-                        var requestContext = this.RockBlock()?.RockPage?.RequestContext;
+                    var requestContext = this.RockBlock()?.RockPage?.RequestContext;
 
-                        using ( var rockContext = new RockContext() )
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var definition = component.GetComponentDefinition( FilteredEntityType, value, rockContext, requestContext );
+
+                        if ( definition != null )
                         {
+                            obsidianWrapper.ComponentDefinition = definition;
                             obsidianWrapper.ComponentData = component.GetObsidianComponentData( FilteredEntityType, value, rockContext, requestContext );
+                        }
+                        else if ( component.ObsidianFileUrl != null )
+                        {
+                            if ( component.ObsidianFileUrl.Length > 0 )
+                            {
+                                obsidianWrapper.ComponentData = component.GetObsidianComponentData( FilteredEntityType, value, rockContext, requestContext );
+                            }
                         }
                     }
                 }
@@ -531,17 +540,13 @@ namespace Rock.Web.UI.Controls
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
-                if ( UseObsidian && component.ObsidianFileUrl != null )
+                if ( UseObsidian && filterControls.Length >= 1 && filterControls[0] is ObsidianDynamicComponentWrapper obsidianWrapper )
                 {
-                    if ( component.ObsidianFileUrl.Length > 0 )
-                    {
-                        var obsidianWrapper = ( ObsidianDataComponentWrapper ) filterControls[0];
-                        var requestContext = this.RockBlock()?.RockPage?.RequestContext;
+                    var requestContext = this.RockBlock()?.RockPage?.RequestContext;
 
-                        using ( var rockContext = new RockContext() )
-                        {
-                            return component.GetSelectionFromObsidianComponentData( FilteredEntityType, obsidianWrapper.ComponentData, rockContext, requestContext );
-                        }
+                    using ( var rockContext = new RockContext() )
+                    {
+                        return component.GetSelectionFromObsidianComponentData( FilteredEntityType, obsidianWrapper.ComponentData, rockContext, requestContext );
                     }
                 }
                 else
@@ -561,10 +566,27 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
 
-            var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName ) as IRelatedChildDataView;
-            if ( component != null )
+            var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
+
+            using ( var rockContext = new RockContext() )
             {
-                var relatedDataViewId = component.GetRelatedDataViewId( filterControls );
+                var relatedDataViewId = component.GetRelatedDataViewId( FilteredEntityType, GetSelection(), rockContext );
+
+                if ( relatedDataViewId.HasValue )
+                {
+                    return relatedDataViewId.Value;
+                }
+            }
+
+            if ( component.ObsidianFileUrl != null || ( filterControls.Length >= 1 && filterControls[0] is ObsidianDynamicComponentWrapper ) )
+            {
+                return null;
+            }
+
+            if ( component is IRelatedChildDataView relatedDataViewComponent )
+            {
+                var relatedDataViewId = relatedDataViewComponent.GetRelatedDataViewId( filterControls );
+
                 if ( relatedDataViewId.HasValue && relatedDataViewId > 0 )
                 {
                     return relatedDataViewId;
@@ -598,29 +620,47 @@ namespace Rock.Web.UI.Controls
 #pragma warning disable CS0612 // Type or member is obsolete
                 component.Options = FilterOptions;
 #pragma warning restore CS0612 // Type or member is obsolete
-                if ( UseObsidian && component.ObsidianFileUrl != null )
-                {
-                    if ( component.ObsidianFileUrl.Length > 0 )
-                    {
-                        var obsidianWrapper = new ObsidianDataComponentWrapper
-                        {
-                            ID = $"{ID}_obsidianComponentWrapper",
-                            ComponentUrl = ResolveUrl( component.ObsidianFileUrl ),
-                            ComponentProperties = new Dictionary<string, object>
-                            {
-                                ["filterMode"] = FilterMode
-                            }
-                        };
 
-                        Controls.Add( obsidianWrapper );
-                        filterControls = new Control[1] { obsidianWrapper };
-                    }
-                    else
+                var useWebForms = true;
+
+                if ( UseObsidian )
+                {
+                    var requestContext = this.RockBlock()?.RockPage?.RequestContext;
+
+                    using ( var rockContext = new RockContext() )
                     {
-                        filterControls = new Control[0];
+                        var definition = component.GetComponentDefinition( FilteredEntityType, string.Empty, rockContext, requestContext );
+
+                        if ( definition == null && component.ObsidianFileUrl != null )
+                        {
+                            definition = new ViewModels.Controls.DynamicComponentDefinitionBag
+                            {
+                                Url = ResolveUrl( component.ObsidianFileUrl )
+                            };
+                        }
+
+                        if ( definition != null )
+                        {
+                            var obsidianWrapper = new ObsidianDynamicComponentWrapper
+                            {
+                                ID = $"{ID}_obsidianComponentWrapper",
+                                ComponentGuid = filterEntityType.Guid,
+                                ComponentDefinition = definition,
+                                ComponentProperties = new Dictionary<string, object>
+                                {
+                                    ["filterMode"] = FilterMode
+                                }
+                            };
+
+                            Controls.Add( obsidianWrapper );
+                            filterControls = new Control[1] { obsidianWrapper };
+
+                            useWebForms = false;
+                        }
                     }
                 }
-                else
+
+                if ( useWebForms )
                 {
                     filterControls = component.CreateChildControls( FilteredEntityType, this, this.FilterMode );
                 }
@@ -729,7 +769,7 @@ namespace Rock.Web.UI.Controls
                        string.Format( "if ($(this).find('.filter-view-state').children('i').hasClass('fa-chevron-up')) {{ var $article = $(this).parents('article').first(); var $content = $article.children('div.panel-body'); $article.find('div.filter-item-description').first().html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
                 }
 
-                if ( component?.ObsidianFileUrl != null )
+                if ( filterControls.Length >= 1 && filterControls[0] is ObsidianDynamicComponentWrapper )
                 {
                     var entityTypeGuid = EntityTypeCache.Get( FilteredEntityTypeName )?.Guid;
                     var filterType = EntityTypeCache.Get( FilterEntityTypeName );
@@ -759,7 +799,7 @@ namespace Rock.Web.UI.Controls
     var $content = $article.children('div.panel-body');
     var $description = $article.find('div.filter-item-description').first();
     var $icon = $(this).find('.filter-view-state').children('i');
-    var data = $content.find('input[id$=\'_hfData\']').val();
+    var data = decodeURIComponent($content.find('input[id$=\'_hfData\']').val());
     var json = JSON.stringify({{ securityGrantToken: '{securityGrantToken}', entityTypeGuid: '{entityTypeGuid}', filterTypeGuid: '{filterType.Guid}', componentData: data }});
 
     fetch('/api/v2/controls/DataFilterFormatSelection', {{ method: 'POST', body: json, headers: {{ 'Content-Type': 'application/json'}}}})
@@ -899,12 +939,9 @@ namespace Rock.Web.UI.Controls
                     nbComponentDescription.RenderControl( writer );
                 }
 
-                if ( UseObsidian && component.ObsidianFileUrl != null )
+                if ( UseObsidian && filterControls.Length >= 1 && filterControls[0] is ObsidianDynamicComponentWrapper )
                 {
-                    if ( component.ObsidianFileUrl.Length > 0 )
-                    {
-                        filterControls[0].RenderControl( writer );
-                    }
+                    filterControls[0].RenderControl( writer );
                 }
                 else
                 {
@@ -939,7 +976,7 @@ namespace Rock.Web.UI.Controls
             // If this is an Obsidian control then we need to set the selection
             // so it has a chance to prepare initial values.
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
-            if ( component != null && UseObsidian && component.ObsidianFileUrl != null )
+            if ( component != null && UseObsidian && filterControls.Length >= 1 && filterControls[0] is ObsidianDynamicComponentWrapper )
             {
                 SetSelection( string.Empty );
             }

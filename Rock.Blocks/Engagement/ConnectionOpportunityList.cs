@@ -123,6 +123,13 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <inheritdoc/>
+        protected override List<ConnectionOpportunity> GetListItems( IQueryable<ConnectionOpportunity> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+            return items.Where( co => co.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<ConnectionOpportunity> GetGridBuilder()
         {
             return new GridBuilder<ConnectionOpportunity>()
@@ -134,6 +141,12 @@ namespace Rock.Blocks.Engagement
                 .AddTextField( "publicName", a => a.PublicName )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddAttributeFields( GetGridAttributes() );
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<ConnectionOpportunity> GetOrderedListQueryable( IQueryable<ConnectionOpportunity> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( co => co.Order ).ThenBy( co => co.Name );
         }
 
         #endregion

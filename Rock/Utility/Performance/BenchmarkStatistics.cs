@@ -167,7 +167,7 @@ namespace Rock.Utility.Performance
         /// <returns>The fully qualified type name.</returns>
         public string ToString( bool verbose )
         {
-            var str = verbose ? $"op={Operations:N0}; " : string.Empty;
+            var str = verbose ? $"op={Operations:N0}; time={Duration.TotalMilliseconds:N0}ms; " : string.Empty;
             var timePerOp = GetDurationPerOperation();
 
             if ( timePerOp < 0.001 )

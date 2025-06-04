@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -24,6 +25,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Group
@@ -34,7 +38,7 @@ namespace Rock.Reporting.DataFilter.Group
     [Description( "Filter groups based on the number of members with status or leader criteria" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Member Count (Advanced)" )]
-    [Rock.SystemGuid.EntityTypeGuid( "9972788B-5947-4EE1-AEBD-C9D861D94F02")]
+    [Rock.SystemGuid.EntityTypeGuid( "9972788B-5947-4EE1-AEBD-C9D861D94F02" )]
     public class MemberCountFilter : DataFilterComponent
     {
         #region Properties
@@ -73,6 +77,51 @@ namespace Rock.Reporting.DataFilter.Group
             {
                 return false;
             }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/memberCountFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = selection.Split( '|' );
+
+            var memberStatuses = Enum.GetValues( typeof( GroupMemberStatus ) )
+                .Cast<GroupMemberStatus>()
+                .Select( a => new ListItemBag { Text = a.ConvertToString(), Value = a.ConvertToInt().ToString() } )
+                .ToList();
+
+            var data = new Dictionary<string, string>
+            {
+                { "memberStatuses", memberStatuses.ToCamelCaseJson(false, true) }
+            };
+
+            if ( selectionValues.Length > 3 )
+            {
+                data.AddOrReplace( "comparisonType", selectionValues[0] );
+                data.AddOrReplace( "count", selectionValues[1] );
+                data.AddOrReplace( "isLeader", selectionValues[2] );
+                data.AddOrReplace( "memberStatus", selectionValues[3] );
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return string.Format( "{0}|{1}|{2}|{3}", data.GetValueOrDefault( "comparisonType", "" ), data.GetValueOrDefault( "count", "" ), data.GetValueOrDefault( "isLeader", "" ), data.GetValueOrDefault( "memberStatus", "" ) );
         }
 
         #endregion
@@ -137,7 +186,7 @@ function () {
                 ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
                 int? memberCountValue = values[1].AsIntegerOrNull();
                 bool? isLeader = values[2].AsBooleanOrNull();
-                GroupMemberStatus? memberStatusValue = (GroupMemberStatus?)values[3].AsIntegerOrNull();
+                GroupMemberStatus? memberStatusValue = ( GroupMemberStatus? ) values[3].AsIntegerOrNull();
 
                 result = "Number of";
 
@@ -151,7 +200,7 @@ function () {
                     result += isLeader.Value ? " Leader" : " Not Leader";
                 }
 
-                if (result.Trim() == "Number of")
+                if ( result.Trim() == "Number of" )
                 {
                     result = "Number of members";
                 }
@@ -240,7 +289,7 @@ function () {
             ddlCompare.RenderControl( writer );
             writer.RenderEndTag();
 
-            ComparisonType comparisonType = (ComparisonType)( ddlCompare.SelectedValue.AsInteger() );
+            ComparisonType comparisonType = ( ComparisonType ) ( ddlCompare.SelectedValue.AsInteger() );
             nbValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : string.Empty;
 
             // Comparison Value
@@ -292,7 +341,7 @@ function () {
 
             if ( values.Length >= 4 )
             {
-                ComparisonType comparisonType = (ComparisonType)( values[0].AsInteger() );
+                ComparisonType comparisonType = ( ComparisonType ) ( values[0].AsInteger() );
                 ddlCompare.SelectedValue = comparisonType.ConvertToInt().ToString();
                 nbValue.Text = values[1];
                 ddlLeader.SelectedValue = values[2];
@@ -314,10 +363,10 @@ function () {
 
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
             int? memberCountValue = values[1].AsIntegerOrNull();
-            GroupMemberStatus? memberStatusValue = (GroupMemberStatus?)values[3].AsIntegerOrNull();
+            GroupMemberStatus? memberStatusValue = ( GroupMemberStatus? ) values[3].AsIntegerOrNull();
             bool? isLeader = values[2].AsBooleanOrNull();
 
-            var memberCountQuery = new GroupService( (RockContext)serviceInstance.Context ).Queryable();
+            var memberCountQuery = new GroupService( ( RockContext ) serviceInstance.Context ).Queryable();
             var memberCountEqualQuery = memberCountQuery.Where( p => p.Members.Count( a =>
                             ( !memberStatusValue.HasValue || a.GroupMemberStatus == memberStatusValue )
                             && ( !isLeader.HasValue || ( a.GroupRole.IsLeader == isLeader.Value ) ) )

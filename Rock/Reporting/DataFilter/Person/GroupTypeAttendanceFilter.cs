@@ -24,8 +24,10 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
-using Rock.Logging;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -62,6 +64,85 @@ namespace Rock.Reporting.DataFilter.Person
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/groupTypeAttendanceFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>
+            {
+                { "includeChildGroupTypes", "False" },
+                { "comparisonType", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() },
+                { "attendedCount", "4" },
+                { "dateRange", "All||||" },
+            };
+
+            string[] options = selection.Split( '|' );
+
+            if ( options.Length >= 4 )
+            {
+                var selectedGroupTypeGuids = options[0].Split( ',' ).AsGuidList();
+                var selectedGroupTypeBags = GroupTypeCache.All()
+                    .Where( g => selectedGroupTypeGuids.Contains( g.Guid ) )
+                    .Select( g => g.ToListItemBag() )
+                    .ToList();
+                data.AddOrReplace( "groupTypes", selectedGroupTypeBags.ToCamelCaseJson( false, true ) );
+
+                data.AddOrReplace( "comparisonType", options[1] );
+                data.AddOrReplace( "attendedCount", options[2] );
+
+
+                int? lastXWeeks = options[3].AsIntegerOrNull();
+
+                if ( lastXWeeks.HasValue )
+                {
+                    //// selection was from when it just simply a LastXWeeks instead of Sliding Date Range
+                    // Last X Weeks was treated as "LastXWeeks * 7" days, so we have to convert it to a SlidingDateRange of Days to keep consistent behavior
+                    data.AddOrReplace( "dateRange", $"Last|{7 * lastXWeeks}|Day||" );
+                }
+                else
+                {
+                    // convert from comma-delimited to pipe since we store it as comma delimited so that we can use pipe delimited for the selection values
+                    var dateRangeCommaDelimitedValues = options[3];
+                    string slidingDelimitedValues = dateRangeCommaDelimitedValues.Replace( ',', '|' );
+                    data.AddOrReplace( "dateRange", slidingDelimitedValues );
+                }
+
+                data.AddOrReplace( "includeChildGroupTypes", options.Length >= 5 ? options[4] : "False" );
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var groupGuids = data.GetValueOrDefault( "groupTypes", "[]" )
+                .FromJsonOrNull<List<ListItemBag>>()
+                ?.Select( c => c.Value?.AsGuidOrNull() ?? Guid.Empty )
+                .Where( g => g != Guid.Empty )
+                .ToList()
+                .AsDelimited( "," );
+
+            var includeChildGroupTypes = data.GetValueOrDefault( "includeChildGroupTypes", "False" );
+            var integerCompare = data.GetValueOrDefault( "comparisonType", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() );
+            var attendedCount = data.GetValueOrDefault( "attendedCount", "4" );
+            var slidingDateRange = data.GetValueOrDefault( "dateRange", "All||||" ).Replace( '|', ',' );
+
+            return string.Format( "{0}|{1}|{2}|{3}|{4}", groupGuids, integerCompare, attendedCount, slidingDateRange, includeChildGroupTypes );
+        }
+
+        #endregion
+
         #region Public Methods
 
         /// <inheritdoc/>
@@ -94,7 +175,7 @@ namespace Rock.Reporting.DataFilter.Person
 
                 foreach ( string groupTypeId in listOfGroupTypeIds )
                 {
-                    groupType += $" { GroupTypeCache.Get( groupTypeId.AsGuid() ) },";
+                    groupType += $" {GroupTypeCache.Get( groupTypeId.AsGuid() )},";
                 }
 
                 groupType = groupType.TrimStart( ' ' );
@@ -125,6 +206,8 @@ namespace Rock.Reporting.DataFilter.Person
 
             return filterName;
         }
+
+#if WEBFORMS
 
         /// <inheritdoc/>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
@@ -171,7 +254,7 @@ namespace Rock.Reporting.DataFilter.Person
             var groupValues = string.Empty;
             foreach ( Guid groupTypeOutput in gtpGroupsTypes.SelectedGroupTypeGuids )
             {
-                groupValues += $"{ groupTypeOutput },";
+                groupValues += $"{groupTypeOutput},";
             }
 
             groupValues = groupValues.TrimEnd( ',' );
@@ -250,7 +333,7 @@ namespace Rock.Reporting.DataFilter.Person
             var groupValues = string.Empty;
             foreach ( Guid groupTypeOutput in gtpGroupsTypes.SelectedGroupTypeGuids )
             {
-                groupValues += $"{ groupTypeOutput },";
+                groupValues += $"{groupTypeOutput},";
             }
 
             groupValues = groupValues.TrimEnd( ',' );
@@ -299,6 +382,8 @@ namespace Rock.Reporting.DataFilter.Person
                 }
             }
         }
+
+#endif
 
         /// <inheritdoc/>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )

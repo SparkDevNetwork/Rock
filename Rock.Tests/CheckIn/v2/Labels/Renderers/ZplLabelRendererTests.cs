@@ -2166,11 +2166,11 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
         }
 
         [TestMethod]
-        public void WriteImageField_WithImageData_EncodesDataAsHex()
+        public void WriteImageField_WithImageData_EncodesDataAsZ64()
         {
             var dpi = 300;
             var imageData = Enumerable.Range( 8, 4 ).Select( i => ( byte ) i ).ToArray();
-            var expectedPattern = new Regex( @"\^GFA,[0-9],[0-9],[0-9],08090A0B" );
+            var expectedPattern = new Regex( @"\^GFA,[0-9],[0-9],[0-9],:Z64:eJzj4OTiBgAAXgAn:C9E0" );
 
             var request = new PrintLabelRequest
             {
@@ -2351,11 +2351,11 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
         }
 
         [TestMethod]
-        public void WriteIconField_WithImageData_EncodesDataAsHex()
+        public void WriteIconField_WithImageData_EncodesDataAsZ64()
         {
             var dpi = 300;
             var imageData = Enumerable.Range( 8, 4 ).Select( i => ( byte ) i ).ToArray();
-            var expectedPattern = new Regex( @"\^GFA,[0-9],[0-9],[0-9],08090A0B" );
+            var expectedPattern = new Regex( @"\^GFA,[0-9],[0-9],[0-9],:Z64:eJzj4OTiBgAAXgAn:C9E0" );
 
             var request = new PrintLabelRequest
             {
@@ -2580,11 +2580,11 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
         }
 
         [TestMethod]
-        public void WriteAttendeePhotoField_WithPhotoData_EncodesDataAsHex()
+        public void WriteAttendeePhotoField_WithPhotoData_EncodesDataAsZ64()
         {
             var dpi = 300;
             var imageData = Enumerable.Range( 8, 4 ).Select( i => ( byte ) i ).ToArray();
-            var expectedPattern = new Regex( @"\^GFA,[0-9],[0-9],[0-9],08090A0B" );
+            var expectedPattern = new Regex( @"\^GFA,[0-9],[0-9],[0-9],:Z64:eJzj4OTiBgAAXgAn:C9E0" );
 
             var request = new PrintLabelRequest
             {
@@ -3141,7 +3141,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
         [TestMethod]
         public void WriteBarcodeField_WithQRCodeAndDynamicContent_EmitsCodeData()
         {
-            var expectedPattern = new Regex( @"\^GFA,[0-9]+,[0-9]+,4,000000000000000000000000000000000FEEBF000828A0000BADAE000BA8AE000BA92E000823A0000FEABF00000F000006B72F00080C500006E772000E95DC0007E4F300000E23000FED08000824A2000BAAAA000BA355000BAD76000829DC000FE5760000000000000000000000000000000000\^FS" );
+            var expectedPattern = new Regex( @"\^GFA,[0-9]+,[0-9]+,4,:Z64:eJxjYEAF\/O\/2M3BoLGDgXruOgXsFEK\/UY\+BQXsDA\/2o\/UJKBgW27PgMHTwAD2\/MiBr6pdxjYn3xmYOBTZuB\/y8HAobKIgXvVKgbuxaFA\/WUMHJp3GPifljGgAwBDFRbe:1798\^FS" );
 
             var request = new PrintLabelRequest
             {

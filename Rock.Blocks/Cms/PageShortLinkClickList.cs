@@ -37,7 +37,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Lists clicks for a particular short link." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes(Model.SiteType.Web)]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "aa860dc7-d590-4d0e-bbb3-16990f2cd680" )]
     [Rock.SystemGuid.BlockTypeGuid( "e44cac85-346f-41a4-884b-a6fb5fc64de1" )]
@@ -90,9 +90,7 @@ namespace Rock.Blocks.Cms
                 .Include( i => i.InteractionComponent )
                 .Where( i =>
                    i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == dv.Id &&
-                   i.InteractionComponent.EntityId == shortLinkId )
-                .ToList()
-                .AsQueryable();
+                   i.InteractionComponent.EntityId == shortLinkId );
 
             return interactions;
         }
@@ -102,9 +100,9 @@ namespace Rock.Blocks.Cms
         {
             return new GridBuilder<Interaction>()
                 .WithBlock( this )
-                .AddField("idKey", a => a.InteractionComponent.IdKey )
-                .AddField( "id", a => a.InteractionComponent.EntityId )
-                .AddField( "interactionDateTime", a => a.InteractionDateTime )
+                .AddTextField( "idKey", a => a.IdKey )
+                .AddTextField( "id", a => a.Id.ToString() )
+                .AddDateTimeField( "interactionDateTime", a => a.InteractionDateTime )
                 .AddPersonField( "person", a => a.PersonAlias?.Person )
                 .AddTextField( "application", a => a.InteractionSession.DeviceType.Application )
                 .AddTextField( "clientType", a => a.InteractionSession.DeviceType.ClientType )
@@ -114,6 +112,11 @@ namespace Rock.Blocks.Cms
 
         #endregion
 
+        /// <summary>
+        /// Gets the UTM source name for the given source value ID.
+        /// </summary>
+        /// <param name="sourceValueId">The source value ID.</param>
+        /// <returns>The UTM source name or empty string.</returns>
         private string GetUtmSourceName( int? sourceValueId )
         {
             if ( sourceValueId == null )

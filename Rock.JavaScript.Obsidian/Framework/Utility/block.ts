@@ -92,10 +92,12 @@ export function useBlockActionUrl(): (actionName: string) => string {
  * @param pageGuid The unique identifier of the page.
  * @param blockGuid The unique identifier of the block.
  * @param pageParameters The parameters to include with the block action calls.
+ * @param sessionGuid The unique identifier of the session from the original page request.
+ * @param interactionGuid The unique identifier of the interaction from the original page request.
  *
  * @returns A function that can be used to provide the invoke block action.
  */
-export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, blockGuid: Guid, pageParameters: Record<string, string>, interactionGuid: Guid): InvokeBlockActionFunc {
+export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, blockGuid: Guid, pageParameters: Record<string, string>, sessionGuid: Guid, interactionGuid: Guid): InvokeBlockActionFunc {
     async function invokeBlockAction<T>(actionName: string, data: HttpBodyData | undefined = undefined, actionContext: BlockActionContextBag | undefined = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> {
         let context: BlockActionContextBag = {};
 
@@ -105,6 +107,7 @@ export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, bloc
 
         context.pageParameters = pageParameters;
         context.interactionGuid = interactionGuid;
+        context.sessionGuid = sessionGuid;
 
         return await post<T>(
             `/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`,
@@ -437,23 +440,30 @@ const securityGrantSymbol = Symbol();
  * useSecurityGrant() function instead.
  *
  * @param token The token provided by the server.
+ * @param renewTokenCallback An optional function that overrides the default token renewal callback.
  *
  * @returns A reference to the security grant that will be updated automatically when it has been renewed.
  */
-export function getSecurityGrant(token: string | null | undefined): SecurityGrant {
+export function getSecurityGrant(token: string | null | undefined, renewTokenCallback?: (() => Promise<string | null> | string | null)): SecurityGrant {
     // Use || so that an empty string gets converted to null.
     const tokenRef = ref(token || null);
-    const invokeBlockAction = useInvokeBlockAction();
+    const invokeBlockAction = !renewTokenCallback ? useInvokeBlockAction() : null;
     let renewalTimeout: NodeJS.Timeout | null = null;
 
     // Internal function to renew the token and re-schedule renewal.
     const renewToken = async (): Promise<void> => {
-        const result = await invokeBlockAction<string>("RenewSecurityGrantToken");
-
-        if (result.isSuccess && result.data) {
-            tokenRef.value = result.data;
-
+        if (renewTokenCallback) {
+            tokenRef.value = await renewTokenCallback();
             scheduleRenewal();
+        }
+        else if (invokeBlockAction) {
+            const result = await invokeBlockAction<string>("RenewSecurityGrantToken");
+
+            if (result.isSuccess && result.data) {
+                tokenRef.value = result.data;
+
+                scheduleRenewal();
+            }
         }
     };
 

@@ -26,7 +26,6 @@
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj" />
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />
-    <ProjectReference Include="..\Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj" />
     <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj" />
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
     <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj" />

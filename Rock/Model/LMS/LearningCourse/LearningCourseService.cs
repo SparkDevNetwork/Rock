@@ -94,7 +94,9 @@ namespace Rock.Model
                     Category = c.Category.Name,
                     CategoryColor = c.Category.HighlightColor,
                     CourseCode = c.CourseCode,
-                    CourseRequirements = c.LearningCourseRequirements.ToList(),
+                    CourseRequirements = c.LearningCourseRequirements
+                        .Where( lcr => lcr.RequirementType != RequirementType.Equivalent)
+                        .ToList(),
                     Credits = c.Credits,
                     Description = c.Description,
                     Id = c.Id,
@@ -175,14 +177,18 @@ namespace Rock.Model
 
             if ( semesterStartFrom.HasValue )
             {
+                // Filter by semester Start Date OR if they are enrolled.
                 classesQuery = classesQuery
-                    .Where( c => c.LearningSemester.StartDate.HasValue && c.LearningSemester.StartDate >= semesterStartFrom.Value );
+                    .Where( c => c.LearningSemester.StartDate.HasValue && c.LearningSemester.StartDate >= semesterStartFrom.Value
+                    || c.LearningParticipants.Any( p => p.PersonId == person.Id ) );
             }
 
             if ( semesterStartTo.HasValue )
             {
+                // Filter by semester Start Date OR if they are enrolled.
                 classesQuery = classesQuery
-                    .Where( c => c.LearningSemester.StartDate.HasValue && c.LearningSemester.StartDate <= semesterStartTo.Value );
+                    .Where( c => c.LearningSemester.StartDate.HasValue && c.LearningSemester.StartDate <= semesterStartTo.Value
+                    || c.LearningParticipants.Any( p => p.PersonId == person.Id ) );
             }
 
             var classes = classesQuery.ToList();
@@ -450,37 +456,14 @@ namespace Rock.Model
         /// <returns>A List of <see cref="LearningCourseRequirement"/> records that haven't been completed by the <see cref="Person"/>.</returns>
         public List<LearningCourseRequirement> GetUnmetCourseRequirements( int? personId, IEnumerable<LearningCourseRequirement> courseRequirements )
         {
-            if ( courseRequirements.Any() )
-            {
-                var hasMissingCourseDetails = courseRequirements.Any( cr => cr.RequiredLearningCourse == null || cr.RequiredLearningCourse.Id == 0 );
-                if ( hasMissingCourseDetails )
-                {
-                    // If there were provided LearningCourseRequirements that aren't populated with their
-                    // related RequiredLearningCourse then go get that data.
-                    var requiredCourseIds = courseRequirements.Select( r => r.RequiredLearningCourseId );
-                    var requiredCourses = Queryable().Where( c => requiredCourseIds.Contains( c.Id ) );
+            var completedClasses = personId.HasValue
+                ? new LearningParticipantService( ( RockContext ) Context ).GetClassesForStudent( personId.Value ).ToList()
+                : new List<LearningParticipant>();
 
-                    courseRequirements.ForEach( cr =>
-                    cr.RequiredLearningCourse =
-                        requiredCourses.FirstOrDefault( r => r.Id == cr.RequiredLearningCourseId ) );
-                }
-
-                var completedClasses =
-                    !personId.HasValue ?
-                    default
-                    : new LearningParticipantService( ( RockContext ) Context )
-                    .GetClassesForStudent( personId.Value )
-                    .AsNoTracking();
-
-                // Any Equivalent or PreRequisite classes that aren't already passed.
-                var unmetPrerequisiteTypes = new List<RequirementType> { RequirementType.Prerequisite, RequirementType.Equivalent };
-                return courseRequirements.Where( cr =>
-                    unmetPrerequisiteTypes.Contains( cr.RequirementType ) &&
-                    !completedClasses.Any( c => c.LearningClass.LearningCourseId == cr.RequiredLearningCourseId && c.LearningCompletionStatus == LearningCompletionStatus.Pass )
-                    ).ToList();
-            }
-
-            return new List<LearningCourseRequirement>();
+            return courseRequirements
+                .Where( cr => cr.RequirementType == RequirementType.Prerequisite
+                    && !completedClasses.Any( c => c.LearningClass.LearningCourseId == cr.RequiredLearningCourseId && c.LearningCompletionStatus == LearningCompletionStatus.Pass ) )
+                .ToList();
         }
 
         #region Nested Classes for Lava

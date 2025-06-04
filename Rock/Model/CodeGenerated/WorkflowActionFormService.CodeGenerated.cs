@@ -167,6 +167,7 @@ namespace Rock.Model
             target.PersonEntryPostHtml = source.PersonEntryPostHtml;
             target.PersonEntryPreHtml = source.PersonEntryPreHtml;
             target.PersonEntryRaceEntryOption = source.PersonEntryRaceEntryOption;
+            target.PersonEntryRecordSourceValueId = source.PersonEntryRecordSourceValueId;
             target.PersonEntryRecordStatusValueId = source.PersonEntryRecordStatusValueId;
             target.PersonEntrySectionTypeValueId = source.PersonEntrySectionTypeValueId;
             target.PersonEntryShowHeadingSeparator = source.PersonEntryShowHeadingSeparator;

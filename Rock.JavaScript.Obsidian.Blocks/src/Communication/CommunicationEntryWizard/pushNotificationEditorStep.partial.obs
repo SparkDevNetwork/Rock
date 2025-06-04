@@ -2,9 +2,6 @@
 <template>
     <div class="push-notification-editor-step">
         <Panel :hasFullscreen="true"
-               :headerSecondaryActions="[{
-                   title: 'TBD', type: 'default'
-               }]"
                panelBodyCssClass="panel-body-wizard"
                type="block">
             <template #title>
@@ -128,12 +125,14 @@
             </template>
 
             <template #footerActions>
-                <RockButton :disabled="isSaving || isSendingTest"
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowLeft'"
+                            :disabled="isSaving || isSendingTest"
                             @click="onPreviousClicked()">Previous</RockButton>
             </template>
 
             <template #footerSecondaryActions>
-                <RockButton btnType="primary"
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowRight'"
+                            btnType="primary"
                             :disabled="isSaving || isSendingTest"
                             :form="formId"
                             type="submit">{{ nextStepTitle ? `Next: ${nextStepTitle}` : 'Next' }}</RockButton>
@@ -223,6 +222,7 @@
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
+    import { vShortcut } from "@Obsidian/Directives/shortcut";
     import { PushOpenAction } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/pushOpenAction";
     import { SiteType } from "@Obsidian/Enums/Cms/siteType";
     import { Guid } from "@Obsidian/Types";
@@ -238,6 +238,11 @@
     const props = defineProps({
         applications: {
             type: Object as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        areNavigationShortcutsDisabled: {
+            type: Boolean as PropType<boolean>,
             required: true
         },
 

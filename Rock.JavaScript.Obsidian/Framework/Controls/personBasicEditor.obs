@@ -41,7 +41,6 @@
     import GradePicker from "@Obsidian/Controls/gradePicker.obs";
     import RacePicker from "@Obsidian/Controls/racePicker.obs";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
-    import { Guid } from "@Obsidian/Types";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
 
     const props = defineProps({
@@ -53,12 +52,6 @@
         modelValue: {
             type: Object as PropType<PersonBasicEditorBag>,
             required: true
-        },
-
-        /** If a personGuid is given, this will fetch that person's details from the server and pre-fill the fields */
-        personGuid: {
-            type: String as PropType<Guid>,
-            default: null
         },
 
         /** By default is shown in a 3-column layout. If this is true, it becomes 1 column. */

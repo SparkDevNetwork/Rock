@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Workflow.FormBuilder;
 
 namespace Rock.Web.Cache
@@ -148,6 +149,10 @@ namespace Rock.Web.Cache
         /// <inheritdoc cref="WorkflowActionForm.PersonEntryRecordStatusValueId"/>
         [DataMember]
         public int? PersonEntryRecordStatusValueId { get; private set; }
+
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryRecordSourceValueId"/>
+        [DataMember]
+        public int? PersonEntryRecordSourceValueId { get; private set; }
 
         /// <inheritdoc cref="WorkflowActionForm.PersonEntryGroupLocationTypeValueId"/>
         [DataMember]
@@ -356,6 +361,7 @@ namespace Rock.Web.Cache
                     MobilePhone = actionForm.PersonEntryMobilePhoneEntryOption,
                     SmsOptIn = actionForm.PersonEntrySmsOptInEntryOption,
                     RecordStatusValueId = actionForm.PersonEntryRecordStatusValueId,
+                    RecordSourceValueId = actionForm.PersonEntryRecordSourceValueId,
                     ShowCampus = actionForm.PersonEntryCampusIsVisible,
                     IncludeInactiveCampus = actionForm._personEntryAdditionalSettings?.IncludeInactiveCampus ?? true,
                     SpouseEntry = actionForm.PersonEntrySpouseEntryOption,
@@ -385,6 +391,50 @@ namespace Rock.Web.Cache
             {
                 return this.AllowPersonEntry;
             }
+        }
+
+        /// <summary>
+        /// Gets a list of form actions (buttons) that should be presented
+        /// to the user.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A list of <see cref="ListItemBag"/> objects that represent the buttons.</returns>
+        public List<ListItemBag> GetFormActionButtons( RockContext rockContext )
+        {
+            var buttons = new List<ListItemBag>();
+
+            foreach ( var btn in Actions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                var actionDetails = btn.Split( new char[] { '^' } );
+
+                if ( actionDetails.Length >= 2 )
+                {
+                    DefinedValueCache btnType;
+
+                    if ( !actionDetails[1].IsNullOrWhiteSpace() )
+                    {
+                        btnType = DefinedValueCache.Get( actionDetails[1].AsGuid(), rockContext );
+                    }
+                    else
+                    {
+                        btnType = DefinedTypeCache.Get( SystemGuid.DefinedType.BUTTON_HTML.AsGuid(), rockContext )
+                            .DefinedValues
+                            .OrderBy( a => a.Order )
+                            .FirstOrDefault();
+                    }
+
+                    if ( btnType != null )
+                    {
+                        buttons.Add( new ListItemBag
+                        {
+                            Value = btnType.Value,
+                            Text = actionDetails[0]
+                        } );
+                    }
+                }
+            }
+
+            return buttons;
         }
 
         /// <summary>
@@ -435,6 +485,7 @@ namespace Rock.Web.Cache
             this.PersonEntryPostHtml = workflowActionForm.PersonEntryPostHtml;
             this.PersonEntryPreHtml = workflowActionForm.PersonEntryPreHtml;
             this.PersonEntryRecordStatusValueId = workflowActionForm.PersonEntryRecordStatusValueId;
+            this.PersonEntryRecordSourceValueId = workflowActionForm.PersonEntryRecordSourceValueId;
             this.PersonEntrySpouseAttributeGuid = workflowActionForm.PersonEntrySpouseAttributeGuid;
             this.PersonEntrySpouseEntryOption = workflowActionForm.PersonEntrySpouseEntryOption;
             this.PersonEntrySpouseLabel = workflowActionForm.PersonEntrySpouseLabel;
@@ -474,7 +525,6 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
 
 }

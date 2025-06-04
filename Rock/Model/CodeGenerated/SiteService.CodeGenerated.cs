@@ -59,6 +59,8 @@ namespace Rock.Model
                 return false;
             }
 
+            // ignoring HistoryLogin,SourceSiteId
+
             if ( new Service<NotificationMessageType>( Context ).Queryable().Any( a => a.RelatedMobileApplicationSiteId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Site.FriendlyTypeName, NotificationMessageType.FriendlyTypeName );

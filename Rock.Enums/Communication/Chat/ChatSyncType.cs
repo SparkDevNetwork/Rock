@@ -40,6 +40,26 @@ namespace Rock.Enums.Communication.Chat
         /// <summary>
         /// Delete an existing record.
         /// </summary>
-        Delete = 3
+        Delete = 3,
+
+        /// <summary>
+        /// Mute an existing record.
+        /// </summary>
+        Mute = 4,
+
+        /// <summary>
+        /// Unmute an existing record.
+        /// </summary>
+        Unmute = 5,
+
+        /// <summary>
+        /// Ban an existing record.
+        /// </summary>
+        Ban = 6,
+
+        /// <summary>
+        /// Unban an existing record.
+        /// </summary>
+        Unban = 7
     }
 }

@@ -29,6 +29,7 @@ using Rock.Net;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.ViewModels.Utility;
+using Rock.ViewModels.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
 {
@@ -65,16 +66,27 @@ namespace Rock.Reporting.DataFilter.Person
             get { return "Additional Filters"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/givingAmountFilter.obs";
-
         #endregion
 
         #region Configuration
 
         /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/givingAmountFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
+            if ( selection.IsNullOrWhiteSpace() )
+            {
+                return new Dictionary<string, string>();
+            }
+
             var config = SelectionConfig.Parse( selection );
             var dict = new Dictionary<string, string>
             {

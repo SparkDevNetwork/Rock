@@ -1,0 +1,115 @@
+$zindex-modal:              1050;
+$modal-small:               300px;
+$modal-medium:              600px;
+$modal-large:               900px;
+$zindex-modal-background:   1040;
+$modal-backdrop-opacity:    1;
+$modal-title-padding:       15px;
+
+$modal-shadow:              0 12px 24px 0 rgba(0,0,0,.1);
+
+// Custom Control
+$custom-control-indicator-border-width:     2px;
+$custom-switch-indicator-offset:            2px;
+$custom-switch-indicator-padding:           2px;
+$custom-switch-indicator-size:              12px;
+$custom-switch-width:                       28px;
+$custom-switch-height:                      16px;
+$custom-control-indicator-focus-box-shadow: 0 0 0 1px #fff,0 0 0 3px var(--color-primary-tint);
+$custom-checkbox-indicator-icon-checked:    url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%23ffffff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3E%3C/svg%3E");
+$custom-radio-indicator-icon-checked:       url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='%23ffffff'/%3E%3C/svg%3E");
+
+// Dropdown
+$caret-width-base:          4px;
+$zindex-dropdown:           1050;
+$dropdown-min-width:        160px;
+$dropdown-border:           rgba(0, 0, 0, .15);
+
+// Screen Sizes
+$screen-xsmall:             480px;
+$screen-small:              768px;
+$screen-medium:             992px;
+$screen-large:              1200px;
+
+// Grid Container Sizes
+$container-small:           720px;
+$container-medium:          960px;
+$container-large:           1140px;
+
+// Grid
+$grid-gutter-width:         30px;
+$grid-columns:              12;
+
+// Breadcrumb
+$font-face:                 "FontAwesome";
+$theme-weight:              900;
+
+// Panel
+$panel-options-button-padding:      9px 12px 10px;
+$panel-toolbar-shadow-color:        rgba(21, 27, 38, .15);
+
+//rock panel
+$panel-follow-status-width:         35px;
+$panel-border:                      #143048;
+
+// Carousel
+$carousel-control-width:        15%;
+$carousel-control-font-size:    20px;
+$carousel-text-shadow:          0 1px 2px rgba(0, 0, 0, .6);
+$carousel-control-opacity:      .5;
+$carousel-text-shadow:          0 1px 2px rgba(0,0,0,.6);
+
+// Popover
+$zindex-popover:                1060;
+$popover-max-width:             276px;
+$popover-arrow-outer-width:     10px;
+
+// Tooltip
+$zindex-tooltip:                1070;
+$tooltip-max-width:             200px;
+
+// Nav
+$nav-link-padding:              10px 15px;
+
+// Navbar
+$zindex-navbar-fixed:           1030;
+$zindex-navbar:                 1000;
+$navbar-height:                 50px;
+$navbar-collapse-max-height:    340px;
+
+
+// ROCK COMPONENT
+// Photoframe 
+$photo-border:              #6ca4d5;
+
+//tag
+$ui-autocomplete-bg:        #94bde1;
+$ui-autocomplete-border:    #74a9d8;
+
+
+// Check Box
+$checkbox-columns-width:    130px;
+
+$input-height-base:         34px;
+
+// Smart Search
+$smartsearch-input-padding: 15px 0 15px 34px;
+
+// Date Picker
+$datepicker-selected-text-shadow:   0 -1px 0 rgba(0,0,0,.25);
+$datepicker-active-text-shadow:     0 -1px 0 rgba(0,0,0,.25);
+$datepicker-disabled-text-shadow:   0 -1px 0 rgba(0,0,0,.25);
+
+// Brand Color
+$brand-facebook:    #3B5998;
+$brand-twitter:     #1da1f2;
+
+// Card
+$card-height: "";
+$card-color: "";
+$card-cap-color: "";
+
+$line-height-computed: calc(var(--font-size-regular) * var(--line-height-normal));
+
+// Checkin
+$checkin-keypad-width:  260px;

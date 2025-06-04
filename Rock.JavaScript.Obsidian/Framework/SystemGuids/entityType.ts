@@ -121,6 +121,10 @@ export const EntityType = {
     AuthenticationPasswordless: "2D037783-09BD-48BA-8C1D-626B0BC82495",
     /** The pin authentication provider */
     AuthenticationPin: "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE",
+    /** The EntityType Guid for Rock.Model.AutomationEvent  */
+    AutomationEvent: "905DE2D9-1EA8-4E59-B0CF-E2BAC8383927",
+    /** The EntityType Guid for Rock.Model.AutomationTrigger  */
+    AutomationTrigger: "89ABFA37-68E5-41B7-B43C-A0CF823DEA61",
     /** The EntityType Guid for Rock.Model.BackgroundCheck  */
     BackgroundCheck: "6D3A2293-BA7E-44D9-B5B3-5B85DA0EECAC",
     /** The guid for the Rock.Model.Badge entity */
@@ -329,8 +333,6 @@ export const EntityType = {
     GroupLocation: "26248EE7-09F3-4578-A1D6-47E01D91D6EF",
     /** The EntityType Guid for Rock.Model.GroupLocationHistorical  */
     GroupLocationHistorical: "03128778-5E7D-4FE4-9C7A-929936E06F90",
-    /** The EntityType Guid for Rock.Model.GroupLocationHistoricalSchedule  */
-    GroupLocationHistoricalSchedule: "3BC646E4-CA5E-47D6-BC6D-4BBFAAEDAD8B",
     /** The guid for the Rock.Model.GroupMember entity. */
     GroupMember: "49668B95-FEDC-43DD-8085-D2B0D6343C48",
     /** The EntityType Guid for Rock.Model.GroupMemberAssignment  */
@@ -357,6 +359,8 @@ export const EntityType = {
     GroupTypeRole: "D155C373-9E47-4C6A-BADD-792F31AF5FBA",
     /** The guid for the Rock.Model.History entity. */
     History: "546D5F43-1184-47C9-8265-2D7BF4E1BCA5",
+    /** The guid for the Rock.Model.HistoryLogin entity. */
+    HistoryLogin: "B0C039E1-D2B0-460A-A787-83565BCB665C",
     /** The EntityType Guid for Rock.Model.HtmlContent  */
     HtmlContent: "FB30EC4C-7DCC-41A4-94AB-E728A8CE537B",
     /** The HTTP module component */
@@ -397,6 +401,10 @@ export const EntityType = {
     InteractiveExperienceSchedule: "D23B4DCF-545A-490F-AEAD-BA78A8FB4028",
     /** The EntityType Guid for Rock.Model.InteractiveExperienceScheduleCampus */
     InteractiveExperienceScheduleCampus: "ABEF4137-F25B-4B2E-AF01-2CEFF704FC11",
+    /** The EntityType Guid for Rock.Model.LavaApplication  */
+    LavaApplication: "FFFE0DE1-B410-435E-9AA8-3A0B18AAF0F7",
+    /** The EntityType Guid for Rock.Model.LavaEndpoint  */
+    LavaEndpoint: "F1BBF7D4-CAFD-450D-A89A-B3312C9738A2",
     /** The EntityType Guid for Rock.Model.LavaShortcode (well known as of v14) */
     LavaShortcode: "7574A473-3326-4973-8DF6-C7BF5F64EB36",
     /** The EntityType Guid for LavaShortcodeCategory 'joiner' table Rock.Model.LavaShortcodeConfiguration */
@@ -404,11 +412,13 @@ export const EntityType = {
     /** The EntityType Guid for Rock.Model.Layout */
     Layout: "9DACC861-FED4-47FC-946D-D6A120FF6D56",
     /** The EntityType Guid for Rock.Model.LearningActivity */
-    LearningActivity: "E82F540C-F483-4D4A-898A-3AE7FF76F75A",
-    /** The EntityType Guid for Rock.Model.LearningActivityCompletion */
-    LearningActivityCompletion: "14D1295A-CE9E-4FCB-A63C-6DF04DB5E9B1",
+    LearningActivity: "98B98FA8-A92D-4E10-AA3E-B3082E61976F",
     /** The EntityType Guid for Rock.Model.LearningClass */
     LearningClass: "EB41E4E1-64B1-4AA1-8F66-F0DFD81557D9",
+    /** The EntityType Guid for Rock.Model.LearningClassActivity */
+    LearningClassActivity: "E82F540C-F483-4D4A-898A-3AE7FF76F75A",
+    /** The EntityType Guid for Rock.Model.LearningClassActivityCompletion */
+    LearningClassActivityCompletion: "14D1295A-CE9E-4FCB-A63C-6DF04DB5E9B1",
     /** The EntityType Guid for Rock.Model.LearningClassAnnouncement */
     LearningClassAnnouncement: "D2CE59D3-55E1-4275-9EA1-38C18A05A32B",
     /** The EntityType Guid for Rock.Model.LearningClassContentPage */

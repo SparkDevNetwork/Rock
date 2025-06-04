@@ -194,7 +194,7 @@
             const newSession = await props.session.withFamilySearch(searchValue, props.configuration.template?.familySearchType ?? FamilySearchMode.NameAndPhone);
 
             if (!newSession.families || newSession.families.length === 0) {
-                if (newSession.configuration.kiosk?.isRegistrationModeEnabled) {
+                if (newSession.configuration.kiosk?.isAddingFamiliesEnabled) {
                     const button = await showDialog({
                         message: "There were not any families that match the search criteria.",
                         buttons: [
