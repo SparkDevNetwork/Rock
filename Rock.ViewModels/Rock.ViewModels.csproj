@@ -161,6 +161,9 @@
     <Compile Include="Blocks\Communication\CommunicationTemplateDetail\CommunicationTemplateDetailCommunicationTemplateBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationTemplateDetail\CommunicationTemplateDetailGetPreviewMessageRequestBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationTemplateDetail\CommunicationTemplateDetailInitializationBox.cs" />
+    <Compile Include="Blocks\Core\AISkillDetail\AISkillBag.cs" />
+    <Compile Include="Blocks\Core\AISkillDetail\AISkillDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\AISkillList\AISkillListOptionsBag.cs" />
     <Compile Include="Blocks\Core\AutomationTriggerDetail\AutomationEventBag.cs" />
     <Compile Include="Blocks\Core\AutomationTriggerDetail\AutomationTriggerBag.cs" />
     <Compile Include="Blocks\Core\AutomationTriggerDetail\AutomationTriggerDetailOptionsBag.cs" />

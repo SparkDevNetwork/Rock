@@ -164,6 +164,8 @@
     <Compile Include="Cms\LogSettings.cs" />
     <Compile Include="Communication\SmsConversations.cs" />
     <Compile Include="Communication\CommunicationTemplateDetail.cs" />
+    <Compile Include="Core\AISkillDetail.cs" />
+    <Compile Include="Core\AISkillList.cs" />
     <Compile Include="Core\AutomationTriggerDetail.cs" />
     <Compile Include="Core\AutomationTriggerList.cs" />
     <Compile Include="Core\PersonSuggestionList.cs" />
