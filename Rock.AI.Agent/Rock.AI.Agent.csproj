@@ -162,6 +162,10 @@
       <Project>{61DECE2B-0434-435E-8D65-49A4FDF98365}</Project>
       <Name>Rock.Enums</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
+      <Project>{8820CD93-70EE-496D-B17B-0C4C68DD4957}</Project>
+      <Name>Rock.Lava.Shared</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>
       <Name>Rock</Name>

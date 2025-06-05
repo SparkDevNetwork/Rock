@@ -29,7 +29,9 @@ using Microsoft.SemanticKernel;
 using Rock.Data;
 using Rock.Enums.Core.AI.Agent;
 using Rock.Logging;
+using Rock.Model;
 using Rock.SystemGuid;
+using Rock.Web.Cache.Entities;
 
 namespace Rock.AI.Agent
 {
@@ -93,7 +95,7 @@ namespace Rock.AI.Agent
 
             _kernelBuilder = kernelBuilder;
 
-            _agentConfiguration = new AgentConfiguration( provider, string.Empty, _mockSkills );
+            _agentConfiguration = new AgentConfiguration( provider, string.Empty, GetSkillConfigurations( agentId, rockContext ) );
             _logger = loggerFactory.CreateLogger<ChatAgentFactory>();
             sw.Stop();
 
@@ -256,13 +258,13 @@ namespace Rock.AI.Agent
                             var proxySkill = new ProxyFunction( kernel.Services.GetRequiredService<AgentRequestContext>() );
                             return proxySkill.RunLavaFromJson( promptAsJson, function.Prompt );
                         } ),
-                        functionName: function.Name,
+                        functionName: function.Key,
                         description: function.UsageHint,
                         parameters: functionParameters,
                         loggerFactory: _loggerFactory
                     );
 
-                    pluginFunctions[function.Name] = proxyFunction;
+                    pluginFunctions[function.Key] = proxyFunction;
                 }
             }
 
@@ -290,6 +292,13 @@ namespace Rock.AI.Agent
             {
                 return null;
             }
+        }
+
+        private static List<SkillConfiguration> GetSkillConfigurations( int agentId, RockContext rockContext )
+        {
+            var agent = AIAgentCache.Get( agentId, rockContext );
+
+            return agent.GetSkillConfigurations( rockContext );
         }
 
         private static List<SkillConfiguration> _mockSkills = GetMockAiSkills();

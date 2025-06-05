@@ -16,8 +16,12 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.AI.Agent;
 using Rock.Data;
 using Rock.Model;
 
@@ -73,6 +77,65 @@ namespace Rock.Web.Cache.Entities
             AvatarBinaryFileId = agent.AvatarBinaryFileId;
             Persona = agent.Persona;
             AdditionalSettingsJson = agent.AdditionalSettingsJson;
+        }
+
+        internal List<SkillConfiguration> GetSkillConfigurations( RockContext rockContext )
+        {
+            var skills = new AIAgentSkillService( rockContext )
+                .Queryable()
+                .Where( aa => aa.AIAgentId == Id )
+                .Select( aa => aa.AISkill )
+                .ToList();
+
+            var skillConfigurations = new List<SkillConfiguration>();
+
+            foreach ( var skill in skills )
+            {
+                if ( skill.CodeEntityTypeId.HasValue )
+                {
+                    var entityType = EntityTypeCache.Get( skill.CodeEntityTypeId.Value, rockContext );
+                    var type = entityType?.GetEntityType();
+
+                    if ( type != null )
+                    {
+                        skillConfigurations.Add( new SkillConfiguration( type ) );
+                    }
+                }
+                else
+                {
+                    var functions = new AISkillFunctionService( rockContext )
+                        .Queryable()
+                        .Where( f => f.AISkillId == skill.Id )
+                        .ToList();
+
+                    var skillFunctions = new List<AgentFunction>();
+
+                    foreach ( var function in functions )
+                    {
+                        var prompt = function.GetAdditionalSettings<PromptInformationSettings>();
+
+                        var agentFunction = new AgentFunction
+                        {
+                            Guid = function.Guid,
+                            Name = function.Name,
+                            UsageHint = function.UsageHint,
+                            Role = Enums.Core.AI.Agent.ModelServiceRole.Default, // TODO: Fix this
+                            FunctionType = function.FunctionType,
+                            Prompt = prompt.Prompt ?? string.Empty,
+                            EnableLavaPreRendering = prompt.PreRenderLava,
+                            InputSchema = prompt.PromptParametersSchema,
+                            Temperature = ( double? ) prompt.Temperature,
+                            MaxTokens = prompt.MaxTokens,
+                        };
+
+                        skillFunctions.Add( agentFunction );
+                    }
+
+                    skillConfigurations.Add( new SkillConfiguration( skill.Name, skill.UsageHint, skillFunctions ) );
+                }
+            }
+
+            return skillConfigurations;
         }
 
         /// <inheritdoc/>

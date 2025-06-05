@@ -29,11 +29,17 @@
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { ref } from "vue";
 
+    type ChatMessage = {
+        content: string;
+        isUserMessage: boolean;
+    };
+
     const invokeBlockAction = useInvokeBlockAction();
 
     const messages = ref<string[]>([]);
     const message = ref("");
     const isSending = ref(false);
+    const history: ChatMessage[] = [];
 
     async function onSubmit(): Promise<void> {
         var msg = message.value;
@@ -43,10 +49,20 @@
 
         isSending.value = true;
         try {
-            const response = await invokeBlockAction<string>("SendMessage", { message: msg });
+            const response = await invokeBlockAction<string>("SendMessage", { message: msg, history: history });
 
             if (response.isSuccess && response.data) {
                 messages.value = [...messages.value, `<<< ${response.data}`];
+
+                history.push({
+                    content: msg,
+                    isUserMessage: true
+                });
+
+                history.push({
+                    content: response.data,
+                    isUserMessage: false
+                });
             }
             else {
                 messages.value = [...messages.value, `<<< Error: ${response.errorMessage || "Unknown error"}`];

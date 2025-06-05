@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-using System.Linq;
+using System.Collections.Generic;
 
 namespace Rock.AI.Agent
 {
@@ -30,11 +30,44 @@ namespace Rock.AI.Agent
 
         public string RunLavaFromJson( string promptAsJson, string template ) // template would be some kind of key or id in the future.
         {
-            var test = _requestContext.ChatHistory.FirstOrDefault().Content;
+            var promptAsDictionary = promptAsJson.FromJsonOrNull<Dictionary<string, object>>();
+            var mergeFields = new Dictionary<string, object>
+            {
+                ["AgentContext"] = _requestContext
+            };
 
-            // Be sure to add the request context as a Lava merge field.
+            if ( promptAsDictionary != null )
+            {
+                foreach ( var kvp in promptAsDictionary )
+                {
+                    if ( kvp.Value is string stringValue )
+                    {
+                        mergeFields.TryAdd( kvp.Key, stringValue );
+                    }
+                    else if ( kvp.Value is bool boolValue )
+                    {
+                        mergeFields.TryAdd( kvp.Key, boolValue );
+                    }
+                    else if ( kvp.Value is int intValue )
+                    {
+                        mergeFields.TryAdd( kvp.Key, intValue );
+                    }
+                    else if ( kvp.Value is double doubleValue )
+                    {
+                        mergeFields.TryAdd( kvp.Key, doubleValue );
+                    }
+                    else if ( kvp.Value is null )
+                    {
+                        mergeFields.TryAdd( kvp.Key, null );
+                    }
+                    else
+                    {
+                        mergeFields.TryAdd( kvp.Key, kvp.Value.ToStringSafe() );
+                    }
+                }
+            }
 
-            return $"Lava skill called with template: {template}";
+            return template.ResolveMergeFields( mergeFields );
         }
     }
 }
