@@ -13,11 +13,15 @@
         <TextBox v-model="description"
                  label="Description"
                  textMode="multiline" />
+
+        <TextBox v-model="usageHint"
+                 label="Usage Hint"
+                 textMode="multiline" />
     </fieldset>
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { PropType, watch } from "vue";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -45,10 +49,11 @@
 
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
     const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const usageHint = propertyRef(props.modelValue.bag?.usageHint ?? "", "UsageHint");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, name];
+    const propRefs = [description, name, usageHint];
 
     // #endregion
 
@@ -68,6 +73,7 @@
     watch(() => props.modelValue, () => {
         updateRefValue(description, props.modelValue.bag?.description ?? "");
         updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(usageHint, props.modelValue.bag?.usageHint ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -76,9 +82,10 @@
         const newValue: ValidPropertiesBox<AISkillBag> = {
             bag: { ...props.modelValue.bag } as AISkillBag
         };
-        
-            setPropertiesBoxValue(newValue, "description", description.value);
-            setPropertiesBoxValue(newValue, "name", name.value);
+
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "usageHint", usageHint.value);
 
         emit("update:modelValue", newValue);
     });

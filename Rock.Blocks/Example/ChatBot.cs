@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 using Rock.AI.Agent;
 using Rock.Attribute;
-using Rock.Enums.AI.Agent;
+using Rock.Enums.Core.AI.Agent;
 
 namespace Rock.Blocks.Example
 {

@@ -14,7 +14,7 @@
                  :isDeleteVisible="isDeletable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="true"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -30,22 +30,24 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./AISkillDetail/editPanel.partial.obs";
     import ViewPanel from "./AISkillDetail/viewPanel.partial.obs";
-    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./AISkillDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { AISkillBag } from "@Obsidian/ViewModels/Blocks/Core/AISkillDetail/aiSkillBag";
     import { AISkillDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AISkillDetail/aiSkillDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
     const config = useConfigurationValues<DetailBlockBox<AISkillBag, AISkillDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const browserBus = useBlockBrowserBus();
 
     // All blocks auto reload when changing block settings unless there is an
     // explicit reason not to (like using a custom reload function instead),
@@ -64,7 +66,7 @@
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    const baseBlock = useEntityDetailBlock({
+    useEntityDetailBlock({
         blockConfig: config,
         entity: aiSkillEditBag
     });
@@ -101,7 +103,7 @@
     });
 
     const isEditable = computed((): boolean => {
-        return config.isEditable === true;
+        return config.isEditable === true && !aiSkillViewBag.value?.codeEntityType;
     });
 
     const isDeletable = computed((): boolean => {
@@ -215,6 +217,15 @@
     }
 
     // #endregion
+
+    watch(panelMode, () => {
+        if (panelMode.value === DetailPanelMode.Add || panelMode.value === DetailPanelMode.Edit) {
+            browserBus.publish(BlockMessages.BeginEdit);
+        }
+        else if (panelMode.value === DetailPanelMode.View) {
+            browserBus.publish(BlockMessages.EndEdit);
+        }
+    }, { immediate: true });
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {

@@ -1,0 +1,319 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid v-if="isBlockVisible"
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridData"
+          keyField="idKey"
+          itemTerm="AI Skill Function"
+          :entityTypeGuid="EntityType.AiSkillFunction"
+          stickyHeader
+          liveUpdates
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined">
+        <SelectColumn />
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    width="30%"
+                    visiblePriority="xs" />
+
+        <TextColumn name="description"
+                    title="Description"
+                    field="description"
+                    :filter="textValueFilter"
+                    width="70%"
+                    visiblePriority="xs" />
+
+        <TextColumn name="functionType"
+                    title="Type"
+                    field="functionType"
+                    :filter="pickExistingValueFilter"
+                    width="160px"
+                    visiblePriority="md">
+            <template #format="{ row }">
+                {{ getFunctionTypeName(row.functionType) }}
+            </template>
+        </TextColumn>
+
+        <EditColumn :rowDisabled="row => !!row.isCodeType"
+                    @click="onEditItem" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled"
+                      :rowDisabled="row => !!row.isCodeType"
+                      @click="onDeleteClick" />
+    </Grid>
+
+    <Modal v-model="isEditFunctionVisble"
+           title="Skill Function"
+           @save="onSaveFunction"
+           saveText="Save">
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="editFunctionName"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <DropDownList v-model="editFunctionType"
+                              label="Type"
+                              :items="editFunctionTypeItems"
+                              rules="required" />
+            </div>
+        </div>
+
+        <TextBox v-model="editFunctionDescription"
+                 label="Description"
+                 rules="required"
+                 textMode="multiline" />
+
+        <TextBox v-model="editFunctionUsageHint"
+                 label="Usage Hint"
+                 rules="required"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <NumberBox v-model="editFunctionTemperature"
+                           label="Temperature"
+                           help="The temperature to use when generating the response. A higher value will produce more random results."
+                           rules="required"
+                           :minimumValue="0" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberBox v-model="editFunctionMaxTokens"
+                           label="Max Tokens"
+                           help="The maximum number of tokens to generate in the response."
+                           :minimumValue="1" />
+            </div>
+
+            <div v-if="editFunctionType === FunctionType.AIPrompt.toString()" class="col-md-4">
+                <CheckBox v-model="editFunctionPreRenderLava"
+                          label="Pre-render Lava"
+                          help="Turning this on will render Lava over the prompt before it is processed by the language model." />
+            </div>
+        </div>
+
+        <CodeEditor v-model="editFunctionPrompt"
+                    label="Prompt"
+                    editor="monaco"
+                    :mode="editFunctionPromptMode"
+                    rules="required" />
+
+        <CodeEditor v-model="editFunctionPromptParametersSchema"
+                    label="Parameters Schema"
+                    editor="monaco"
+                    mode="json" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Grid, { pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, EditColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { onConfigurationValuesChanged, setPropertiesBoxValue, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { FunctionType, FunctionTypeDescription } from "@Obsidian/Enums/Core/AI/Agent/functionType";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { AISkillFunctionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AISkillFunctionList/aiSkillFunctionListOptionsBag";
+    import { computed, reactive, ref } from "vue";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { AISkillFunctionBag } from "@Obsidian/ViewModels/Blocks/Core/AISkillFunctionList/aiSkillFunctionBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+
+    const config = useConfigurationValues<ListBlockBox<AISkillFunctionListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const browserBus = useBlockBrowserBus();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const isBlockVisible = ref(true);
+    const gridData = reactive(config.options?.gridData ?? { rows: [] });
+
+    const isEditFunctionVisble = ref(false);
+    let editFunctionKey: string | undefined = undefined;
+    const editFunctionName = ref("");
+    const editFunctionType = ref("");
+    const editFunctionDescription = ref("");
+    const editFunctionUsageHint = ref("");
+    const editFunctionPreRenderLava = ref(false);
+    const editFunctionTemperature = ref(0.7);
+    const editFunctionMaxTokens = ref<number>();
+    const editFunctionPrompt = ref("");
+    const editFunctionPromptParametersSchema = ref("");
+
+    const editFunctionTypeItems = enumToListItemBag(FunctionTypeDescription);
+
+    // They are not allowed to set a function type to C# code.
+    editFunctionTypeItems.splice(editFunctionTypeItems.findIndex(i => i.value === FunctionType.ExecuteCode.toString()), 1);
+    console.log("editFunctionTypeItems", editFunctionTypeItems);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const editFunctionPromptMode = computed((): "text" | "lava" => {
+        if (editFunctionType.value === FunctionType.ExecuteLava.toString()) {
+            return "lava";
+        }
+
+        return editFunctionType.value === FunctionType.AIPrompt.toString()
+            && editFunctionPreRenderLava.value ? "lava" : "text";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function getFunctionTypeName(functionType: unknown): string {
+        if (typeof functionType !== "number") {
+            return "";
+        }
+
+        return FunctionTypeDescription[functionType] ?? "";
+    }
+
+    async function editFunction(key: string): Promise<void> {
+        const result = await invokeBlockAction<ValidPropertiesBox<AISkillFunctionBag>>("Edit", {
+            key
+        });
+
+        if (result.isSuccess && result.data?.bag) {
+            editFunctionKey = result.data.bag.idKey ?? undefined;
+            editFunctionName.value = result.data.bag.name ?? "";
+            editFunctionType.value = result.data.bag.functionType.toString();
+            editFunctionDescription.value = result.data.bag.description ?? "";
+            editFunctionUsageHint.value = result.data.bag.usageHint ?? "";
+            editFunctionPreRenderLava.value = result.data.bag.preRenderLava;
+            editFunctionTemperature.value = result.data.bag.temperature;
+            editFunctionMaxTokens.value = result.data.bag.maxTokens ?? undefined;
+            editFunctionPrompt.value = result.data.bag.prompt ?? "";
+            editFunctionPromptParametersSchema.value = result.data.bag.promptParametersSchema ?? "";
+
+            isEditFunctionVisble.value = true;
+        }
+        else {
+            await alert(result.errorMessage || "Unknown error while trying to load AI skill function for editing.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the edit button on a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    async function onEditItem(key: string): Promise<void> {
+        await editFunction(key);
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete ai skill function.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the individual.
+     */
+    async function onAddItem(): Promise<void> {
+        editFunction("");
+    }
+
+    async function onSaveFunction(): Promise<void> {
+        const box: ValidPropertiesBox<AISkillFunctionBag> = {};
+
+        setPropertiesBoxValue(box, "idKey", editFunctionKey ?? "");
+        setPropertiesBoxValue(box, "name", editFunctionName.value);
+        setPropertiesBoxValue(box, "functionType", <FunctionType>toNumber(editFunctionType.value));
+        setPropertiesBoxValue(box, "description", editFunctionDescription.value);
+        setPropertiesBoxValue(box, "usageHint", editFunctionUsageHint.value);
+        setPropertiesBoxValue(box, "preRenderLava", editFunctionPreRenderLava.value);
+        setPropertiesBoxValue(box, "temperature", editFunctionTemperature.value);
+        setPropertiesBoxValue(box, "maxTokens", editFunctionMaxTokens.value);
+        setPropertiesBoxValue(box, "prompt", editFunctionPrompt.value);
+        setPropertiesBoxValue(box, "promptParametersSchema", editFunctionPromptParametersSchema.value);
+
+        const result = await invokeBlockAction<ValidPropertiesBox<AISkillFunctionBag>>("Save", {
+            box
+        });
+
+        if (result.isSuccess && result.data?.bag) {
+            const idKey = result.data.bag.idKey;
+            const existingRow = gridData.rows?.find(r => r["idKey"] === idKey);
+
+            if (existingRow) {
+                existingRow.name = result.data.bag.name;
+                existingRow.description = result.data.bag.description;
+                existingRow.functionType = result.data.bag.functionType;
+            }
+            else {
+                gridData.rows?.push({
+                    idKey: idKey,
+                    name: result.data.bag.name,
+                    description: result.data.bag.description,
+                    functionType: result.data.bag.functionType,
+                    isCodeType: result.data.bag.functionType === FunctionType.ExecuteCode
+                });
+            }
+
+            isEditFunctionVisble.value = false;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to save skill function.");
+        }
+    }
+
+    /**
+     * Called when the Skill Detail block begins editing.
+     */
+    function onBeginEdit(): void {
+        isBlockVisible.value = false;
+    }
+
+    /**
+     * Called when the Skill Detail block ends editing.
+     */
+    function onEndEdit(): void {
+        isBlockVisible.value = true;
+    }
+
+    // #endregion
+
+    browserBus.subscribeToBlockType(BlockMessages.BeginEdit, "b8b8cee9-c058-45d3-a1c7-647cad96fd1e", onBeginEdit);
+    browserBus.subscribeToBlockType(BlockMessages.EndEdit, "b8b8cee9-c058-45d3-a1c7-647cad96fd1e", onEndEdit);
+</script>

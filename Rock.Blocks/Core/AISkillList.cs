@@ -17,7 +17,6 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -74,7 +73,7 @@ namespace Rock.Blocks.Core
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
             box.ExpectedRowCount = AISkillCache.All( RockContext ).Count;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -100,9 +99,7 @@ namespace Rock.Blocks.Core
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            var entity = new AISkill();
-
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -131,9 +128,7 @@ namespace Rock.Blocks.Core
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "description", a => a.Description )
-                .AddField( "isCodeType", a => a.CodeEntityTypeId.HasValue )
-                .AddField( "isEditDisabled", a => !a.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+                .AddField( "isCodeType", a => a.CodeEntityTypeId.HasValue );
         }
 
         #endregion
@@ -156,7 +151,7 @@ namespace Rock.Blocks.Core
                 return ActionBadRequest( $"{AISkill.FriendlyTypeName} not found." );
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to delete {AISkill.FriendlyTypeName}." );
             }

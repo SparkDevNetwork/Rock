@@ -25,10 +25,8 @@
                     width="70%"
                     visiblePriority="xs" />
 
-        <SecurityColumn />
-
         <DeleteColumn v-if="config.isDeleteEnabled"
-                      :rowDisabled="(row) => !!row.isCodeType || !!row.isEditDisabled"
+                      :rowDisabled="(row) => !!row.isCodeType"
                       @click="onDeleteClick" />
     </Grid>
 </template>
@@ -36,7 +34,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, DeleteColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { AISkillListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AISkillList/aiSkillListOptionsBag";

@@ -120,8 +120,8 @@ namespace Rock.Blocks.Core
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             if ( entity.Id != 0 )
             {
@@ -267,7 +267,7 @@ namespace Rock.Blocks.Core
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${AISkill.FriendlyTypeName}." );
                 return false;
@@ -375,6 +375,11 @@ namespace Rock.Blocks.Core
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
+            }
+
+            if ( entity.CodeEntityTypeId.HasValue )
+            {
+                return ActionBadRequest( "Cannot delete code-based skills." );
             }
 
             entityService.Delete( entity );
