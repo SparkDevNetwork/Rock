@@ -333,6 +333,7 @@ namespace Rock.Blocks.Engagement
                 Name = entity.Name,
                 ShowCountOnBadge = entity.ShowCountOnBadge,
                 IconCssClass = entity.IconCssClass,
+                IsDeletable = !entity.IsSystem
             };
         }
 
@@ -1303,6 +1304,11 @@ namespace Rock.Blocks.Engagement
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )
                 {
                     return ActionBadRequest( errorMessage );
+                }
+
+                if ( entity.IsSystem )
+                {
+                    return ActionBadRequest( "You cannot delete a System Step Type." );
                 }
 
                 entityService.Delete( entity );

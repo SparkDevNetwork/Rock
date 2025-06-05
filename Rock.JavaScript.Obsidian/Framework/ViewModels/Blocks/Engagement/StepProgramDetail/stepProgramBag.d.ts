@@ -63,6 +63,9 @@ export type StepProgramBag = {
     /** Gets or sets a flag indicating if this item is active or not. */
     isActive: boolean;
 
+    /** Gets or sets a value indicating wheter the Step Program can be deleted. */
+    isDeletable: boolean;
+
     /** Gets or sets the kpi. */
     kpi?: string | null;
 

@@ -64,6 +64,16 @@ namespace Rock.Model
         [DataMember]
         public string StatusColor { get; set; }
 
+        /// <summary>
+        /// Gets or sets a flag indicating if this Step Status is part of the Rock core system/framework. This property is required.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Step Status is part of the Rock core system/framework; otherwise <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public bool IsSystem { get; set; }
+
         #endregion Entity Properties
 
         #region IHasActiveFlag

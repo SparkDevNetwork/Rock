@@ -71,5 +71,10 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         /// The unique identifier.
         /// </value>
         public Guid? Guid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value indicating if this is a System Step Status.
+        /// </summary>
+        public bool IsSystem { get; set; }
     }
 }

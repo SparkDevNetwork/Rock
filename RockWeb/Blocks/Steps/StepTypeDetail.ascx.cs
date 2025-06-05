@@ -1403,10 +1403,18 @@ namespace RockWeb.Blocks.Steps
             else
             {
                 btnEdit.Visible = true;
-                btnDelete.Visible = true;
                 btnSecurity.Visible = true;
                 btnSecurity.Title = "Secure " + stepType.Name;
                 btnSecurity.EntityId = stepType.Id;
+
+                if ( stepType.IsSystem )
+                {
+                    btnDelete.Visible = false;
+                }
+                else
+                {
+                    btnDelete.Visible = true;
+                }
 
                 if ( !stepTypeId.Equals( 0 ) )
                 {
@@ -1572,6 +1580,12 @@ namespace RockWeb.Blocks.Steps
                 if ( !stepType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                 {
                     mdDeleteWarning.Show( "You are not authorized to delete this item.", ModalAlertType.Information );
+                    return;
+                }
+
+                if ( stepType.IsSystem )
+                {
+                    mdDeleteWarning.Show( "You cannot delete a System Step Type.", ModalAlertType.Information );
                     return;
                 }
 

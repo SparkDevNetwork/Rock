@@ -808,6 +808,7 @@
     <Compile Include="Extension\LightContainer.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171PopulateAttendanceRootGroupType.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV18DeleteGroupLocationHistoricalSchedule.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV18MigrateERAToCoreSteps.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV18UpdateCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171UpdateCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171AddCommunicationRecipientIndex.cs" />

@@ -500,6 +500,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_180_UPDATE_COMMUNICATIONRECIPIENT_INDEX = "FE519BCE-CCB8-42B7-A14C-1620859F23E8";
 
         /// <summary>
+        /// The job to run Post v18.0 Data Migrations to migrate existing eRA records from the History table to the Steps table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_180_MIGRATE_ERA_DATA_TO_STEPS = "64CB888D-0F81-473B-B200-8FA38337DAED";
+
+        /// <summary>
         /// The job to run Post v18.0 Data Migrations to delete the deprecated GroupLocationHistoricalSchedule table from the database.
         /// </summary>
         public const string DATA_MIGRATIONS_180_DELETE_GROUPLOCATIONHISTORICALSCHEDULE = "6A76B67B-9C25-4C02-8BC6-06B23EC8C7C3";

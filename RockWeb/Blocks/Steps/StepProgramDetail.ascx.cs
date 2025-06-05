@@ -903,6 +903,12 @@ namespace RockWeb.Blocks.Steps
                     return;
                 }
 
+                if ( stepProgram.IsSystem )
+                {
+                    mdDeleteWarning.Show( "You cannot delete a system Step Program.", ModalAlertType.Information );
+                    return;
+                }
+
                 var stepTypes = stepProgram.StepTypes.ToList();
                 var stepTypeService = new StepTypeService( rockContext );
 
@@ -1160,11 +1166,19 @@ namespace RockWeb.Blocks.Steps
                 else
                 {
                     btnEdit.Visible = true;
-                    btnDelete.Visible = true;
                     btnSecurity.Visible = true;
                     btnSecurity.Visible = stepProgram.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
                     btnSecurity.Title = "Secure " + stepProgram.Name;
                     btnSecurity.EntityId = stepProgram.Id;
+
+                    if ( stepProgram.IsSystem )
+                    {
+                        btnDelete.Visible = false;
+                    }
+                    else
+                    {
+                        btnDelete.Visible = true;
+                    }
 
                     if ( !stepProgramId.Equals( 0 ) )
                     {

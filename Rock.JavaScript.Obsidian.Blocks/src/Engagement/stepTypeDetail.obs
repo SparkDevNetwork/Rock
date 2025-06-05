@@ -14,7 +14,7 @@
                  entityTypeName="Step Type"
                  :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="true"
-                 :isDeleteVisible="isEditable"
+                 :isDeleteVisible="isEditable && isDeletable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="!isEditable"
@@ -157,6 +157,10 @@
 
     const isEditable = computed((): boolean => {
         return config.isEditable === true;
+    });
+
+    const isDeletable = computed((): boolean => {
+        return stepTypeViewBag.value?.isDeletable ?? false;
     });
 
     const options = computed((): StepTypeDetailOptionsBag => {
