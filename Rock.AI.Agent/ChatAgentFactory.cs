@@ -30,6 +30,7 @@ using Rock.Data;
 using Rock.Enums.Core.AI.Agent;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net;
 using Rock.SystemGuid;
 using Rock.Web.Cache.Entities;
 
@@ -42,6 +43,8 @@ namespace Rock.AI.Agent
         private readonly AgentConfiguration _agentConfiguration;
 
         private readonly IKernelBuilder _kernelBuilder;
+
+        private readonly IRockRequestContextAccessor _requestContextAccessor;
 
         private readonly ILoggerFactory _loggerFactory;
 
@@ -75,10 +78,11 @@ namespace Rock.AI.Agent
             }
         }
 
-        public ChatAgentFactory( int agentId, RockContext rockContext, ILoggerFactory loggerFactory )
+        public ChatAgentFactory( int agentId, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory )
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             _agentId = agentId;
+            _requestContextAccessor = requestContextAccessor;
             _loggerFactory = loggerFactory;
 
             var provider = AgentProviderContainer.GetActiveComponent();
@@ -225,12 +229,23 @@ namespace Rock.AI.Agent
                 return Array.Empty<KernelFunction>();
             }
 
+            var requestContext = _requestContextAccessor.RockRequestContext;
+            var mergeFields = requestContext.GetCommonMergeFields()
+                ?? new Dictionary<string, object>();
+
             foreach ( var function in functions )
             {
                 if ( function.FunctionType == FunctionType.AIPrompt )
                 {
+                    var prompt = function.Prompt;
+
+                    if ( function.EnableLavaPreRendering )
+                    {
+                        prompt = prompt.ResolveMergeFields( mergeFields );
+                    }
+
                     var semanticFunction = KernelFunctionFactory.CreateFromPrompt(
-                        promptTemplate: function.Prompt, // TODO: process Lava if needed.
+                        promptTemplate: prompt,
                         functionName: function.Key,
                         description: function.UsageHint,
                         executionSettings: function.GetExecutionSettings( _agentConfiguration.Provider ),
@@ -245,7 +260,7 @@ namespace Rock.AI.Agent
                     var functionParameters = new List<KernelParameterMetadata>();
                     var parameter = new KernelParameterMetadata( "promptAsJson" );
 
-                    _parameterDescriptionProperty.SetValue( parameter, "A JSON object with the information to register for the event." );
+                    _parameterDescriptionProperty.SetValue( parameter, "A JSON object with the parameters defined in the schema." );
                     _parameterIsRequiredProperty.SetValue( parameter, true );
                     _parameterSchemaProperty.SetValue( parameter, ParseSchema( function.InputSchema ) );
 
