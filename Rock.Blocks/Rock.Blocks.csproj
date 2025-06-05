@@ -123,6 +123,7 @@
     <Compile Include="Cms\LavaShortcodeList.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaElementDetail.cs" />
+    <Compile Include="Cms\MediaElementList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
     <Compile Include="Cms\PersonalizationSegmentList.cs" />
     <Compile Include="Cms\ThemeDetail.cs" />
