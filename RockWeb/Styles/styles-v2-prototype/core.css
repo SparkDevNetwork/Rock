@@ -29272,22 +29272,26 @@ tbody .collapse.in {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.fa-fw {
+.fa-fw,
+.ti-tw {
   text-align: center;
   width: 1.25em;
 }
 
-.fa-ul {
+.fa-ul,
+.ti-ul {
   list-style-type: none;
   margin-left: 2.5em;
   padding-left: 0px;
 }
 
-.fa-ul > li {
+.fa-ul > li,
+.ti-ul > li {
   position: relative;
 }
 
-.fa-li {
+.fa-li,
+.ti-li {
   left: -2em;
   position: absolute;
   text-align: center;
@@ -29295,53 +29299,65 @@ tbody .collapse.in {
   line-height: inherit;
 }
 
-.fa-lg {
+.fa-lg,
+.ti-lg {
   font-size: 1.3333333333em;
   line-height: 0.75em;
   vertical-align: -0.0667em;
 }
 
-.fa-xs {
+.fa-xs,
+.ti-xs {
   font-size: 0.75em;
 }
 
-.fa-sm {
+.fa-sm,
+.ti-sm {
   font-size: 0.875em;
 }
 
-.fa-2x {
+.fa-2x,
+.ti-2x {
   font-size: 2em;
 }
 
-.fa-3x {
+.fa-3x,
+.ti-3x {
   font-size: 3em;
 }
 
-.fa-4x {
+.fa-4x,
+.ti-4x {
   font-size: 4em;
 }
 
-.fa-5x {
+.fa-5x,
+.ti-5x {
   font-size: 5em;
 }
 
-.fa-6x {
+.fa-6x,
+.ti-6x {
   font-size: 6em;
 }
 
-.fa-7x {
+.fa-7x,
+.ti-7x {
   font-size: 7em;
 }
 
-.fa-8x {
+.fa-8x,
+.ti-8x {
   font-size: 8em;
 }
 
-.fa-9x {
+.fa-9x,
+.ti-9x {
   font-size: 9em;
 }
 
-.fa-10x {
+.fa-10x,
+.ti-10x {
   font-size: 10em;
 }
 
@@ -29393,24 +29409,26 @@ tbody .collapse.in {
   width: auto;
 }
 
-.fa-border {
+.fa-border,
+.ti-border {
   border-radius: 0.1em;
   border: solid 0.08em var(--color-interface-strong);
   padding: 0.2em 0.25em 0.15em;
 }
 
-.fa-pull-left {
+.fa-pull-left,
+.ti-pull-left {
   float: left;
 }
 
-.fa-pull-right {
+.fa-pull-right .ti-pull-right {
   float: right;
 }
 
-.ti.fa-pull-left, .fa.fa-pull-left, .fas.fa-pull-left, .far.fa-pull-left, .fal.fa-pull-left, .fab.fa-pull-left {
+.ti.fa-pull-left, .ti.ti-pull-left, .fa.fa-pull-left, .fa.ti-pull-left, .fas.fa-pull-left, .fas.ti-pull-left, .far.fa-pull-left, .far.ti-pull-left, .fal.fa-pull-left, .fal.ti-pull-left, .fab.fa-pull-left, .fab.ti-pull-left {
   margin-right: 0.3em;
 }
-.ti.fa-pull-right, .fa.fa-pull-right, .fas.fa-pull-right, .far.fa-pull-right, .fal.fa-pull-right, .fab.fa-pull-right {
+.ti.fa-pull-right, .ti.ti-pull-right, .fa.fa-pull-right, .fa.ti-pull-right, .fas.fa-pull-right, .fas.ti-pull-right, .far.fa-pull-right, .far.ti-pull-right, .fal.fa-pull-right, .fal.ti-pull-right, .fab.fa-pull-right, .fab.ti-pull-right {
   margin-left: 0.3em;
 }
 
