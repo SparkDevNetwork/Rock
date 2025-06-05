@@ -7561,7 +7561,7 @@ input[type=text].chosen-focus-input {
 
 .jcrop-holder img, img.jcrop-preview {
   max-width: none;
-} 
+}
 .breadcrumb {
   padding: var(--spacing-xsmall) var(--spacing-medium);
   list-style: none;
@@ -15154,7 +15154,7 @@ textarea:focus,
 }
 
 /*
-    DOCUMENTATION: 
+    DOCUMENTATION:
 
     This is copy from ion.rangeSlider.Rock.css.
     Located: `RockWeb\Scripts\ion.rangeSlider\css\ion.rangeSlider.Rock.css`.
@@ -15165,7 +15165,7 @@ textarea:focus,
 /*
     MODIFICATION MADE:
 
-    We wrap all the style under .form-group { } to win in specificity 
+    We wrap all the style under .form-group { } to win in specificity
     over the ion.rangeSlider.Rock.css stylesheet added by the controls.
 */
 .form-group .irs {
@@ -15382,10 +15382,10 @@ textarea:focus,
   background: var(--color-interface-soft);
 }
 
-/** 
+/**
 *   NOTE:
 *
-*   The `--initial-block-height` value is dynamically 
+*   The `--initial-block-height` value is dynamically
 *   set by a RockBlockType.cs file.
 **/
 .block-content > .obsidian-block-has-placeholder {
@@ -16053,13 +16053,13 @@ textarea:focus,
   min-width: 60px;
 }
 
-.grid-select-field:first-child {
+.grid-obsidian .grid-select-field:first-child {
   align-items: center;
   padding-right: calc(var(--table-cell-padding-x) / 2);
   flex: 0 0 calc(var(--table-cell-padding-x) + 20px) !important;
 }
 
-.grid-columncommand {
+.grid-obsidian .grid-columncommand {
   --table-cell-padding-y: 0;
   display: flex;
   align-items: center;
@@ -16071,7 +16071,7 @@ textarea:focus,
   opacity: 0.4;
 }
 
-.grid-columncommand .btn:hover {
+.grid-obsidian .grid-columncommand .btn:hover {
   opacity: 1;
 }
 
