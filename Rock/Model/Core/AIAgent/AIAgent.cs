@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -59,7 +60,7 @@ namespace Rock.Model
         /// administrative UI and the chat UI to represent the agent visually.
         /// </summary>
         [DataMember]
-        public int AvatarBinaryFileId { get; set; }
+        public int? AvatarBinaryFileId { get; set; }
 
         /// <summary>
         /// The persona of the agent, which is a string that describes how the
@@ -90,7 +91,7 @@ namespace Rock.Model
         /// that represent the skills attached to this agent.
         /// </summary>
         [DataMember]
-        public virtual ICollection<AIAgentSkill> AIAgentSkills { get; set; }
+        public virtual ICollection<AIAgentSkill> AIAgentSkills { get; set; } = new Collection<AIAgentSkill>();
 
         #endregion
 

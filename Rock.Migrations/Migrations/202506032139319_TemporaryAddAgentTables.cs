@@ -53,7 +53,7 @@ namespace Rock.Migrations
                     Id = c.Int( nullable: false, identity: true ),
                     Name = c.String( nullable: false, maxLength: 100 ),
                     Description = c.String(),
-                    AvatarBinaryFileId = c.Int( nullable: false ),
+                    AvatarBinaryFileId = c.Int( nullable: true ),
                     Persona = c.String(),
                     AdditionalSettingsJson = c.String(),
                     CreatedDateTime = c.DateTime(),
