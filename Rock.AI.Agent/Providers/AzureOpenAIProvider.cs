@@ -24,7 +24,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using Rock.Attribute;
-using Rock.Enums.AI.Agent;
+using Rock.Enums.Core.AI.Agent;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Providers

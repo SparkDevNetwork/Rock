@@ -24,7 +24,7 @@ using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent;
 using Rock.Data;
-using Rock.Enums.AI.Agent;
+using Rock.Enums.Core.AI.Agent;
 using Rock.SystemGuid;
 
 namespace Rock.Model

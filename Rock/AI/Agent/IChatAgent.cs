@@ -19,7 +19,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
-using Rock.Enums.AI.Agent;
+using Rock.Enums.Core.AI.Agent;
 
 namespace Rock.AI.Agent
 {

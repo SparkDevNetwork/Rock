@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-namespace Rock.Enums.AI.Agent
+namespace Rock.Enums.Core.AI.Agent
 {
     /// <summary>
     /// The role of the model service in the AI agent's architecture. This is used

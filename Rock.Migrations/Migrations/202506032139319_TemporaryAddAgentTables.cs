@@ -82,7 +82,7 @@ namespace Rock.Migrations
                     Name = c.String( nullable: false, maxLength: 100 ),
                     Description = c.String(),
                     UsageHint = c.String(),
-                    CodeEntityTypeId = c.Int( nullable: false ),
+                    CodeEntityTypeId = c.Int( nullable: true ),
                     AdditionalSettingsJson = c.String(),
                     CreatedDateTime = c.DateTime(),
                     ModifiedDateTime = c.DateTime(),

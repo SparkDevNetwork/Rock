@@ -27,7 +27,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
 using Rock.Data;
-using Rock.Enums.AI.Agent;
+using Rock.Enums.Core.AI.Agent;
 using Rock.Logging;
 using Rock.SystemGuid;
 
@@ -225,7 +225,7 @@ namespace Rock.AI.Agent
 
             foreach ( var function in functions )
             {
-                if ( function.FunctionType == FunctionType.AiPrompt )
+                if ( function.FunctionType == FunctionType.AIPrompt )
                 {
                     var semanticFunction = KernelFunctionFactory.CreateFromPrompt(
                         promptTemplate: function.Prompt, // TODO: process Lava if needed.
@@ -309,7 +309,7 @@ namespace Rock.AI.Agent
                         {
                             Name = "Organization Search",
                             Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.AiPrompt,
+                            FunctionType = FunctionType.AIPrompt,
                             UsageHint = "Performs and AI search of information specific to the organization and it's ministry.",
                             Prompt = "System Prompt:\n{{$system}}\n\nThe organizations phone number is (623) 867-5209"
                         }
@@ -325,7 +325,7 @@ namespace Rock.AI.Agent
                         {
                             Name = "GetNoteTypes",
                             Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.AiPrompt,
+                            FunctionType = FunctionType.AIPrompt,
                             EnableLavaPreRendering = true,
                             UsageHint = "Used to get a list of valid note types.",
                             Prompt = "{ \"NoteTypes\": [{ \"Id\": 1222, \"Name\": \"General Note\"}, {\"Id\": 1322, \"Name\": \"Pastoral Note\"}]}."
@@ -358,7 +358,7 @@ namespace Rock.AI.Agent
                         {
                             Name = "Schedule Baptism",
                             Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.AiPrompt,
+                            FunctionType = FunctionType.AIPrompt,
                             UsageHint = "Used to schedule a baptism for a person.",
                             Prompt = "Input:\n{{$input}}\n\nBaptism has been scheduled."
                         },
@@ -366,7 +366,7 @@ namespace Rock.AI.Agent
                         {
                             Name = "Schedule Wedding",
                             Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.AiPrompt,
+                            FunctionType = FunctionType.AIPrompt,
                             UsageHint = "Used to schedule a wedding for a person based on the date provided.",
                             Prompt = "Input:\n{{$input}}\n\nIf their name is Jon say An issue came up while scheduling, please call the office otherwise say it has been completed."
                         },
@@ -374,7 +374,7 @@ namespace Rock.AI.Agent
                         {
                             Name = "ComposeEmailFromIntent",
                             Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.AiPrompt,
+                            FunctionType = FunctionType.AIPrompt,
                             Prompt = @"You are an assistant that helps draft emails.
 
                                     Based on the user intent of the request, create a professional but warm message.

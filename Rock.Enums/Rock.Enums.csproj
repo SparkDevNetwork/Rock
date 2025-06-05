@@ -46,10 +46,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="AI\Agent\FunctionType.cs" />
-    <Compile Include="AI\Agent\ModelServiceRole.cs" />
-    <Compile Include="AI\Agent\ResponseType.cs" />
-    <Compile Include="AI\Agent\SkillType.cs" />
+    <Compile Include="Core\AI\Agent\FunctionType.cs" />
+    <Compile Include="Core\AI\Agent\ModelServiceRole.cs" />
+    <Compile Include="Core\AI\Agent\ResponseType.cs" />
+    <Compile Include="Core\AI\Agent\SkillType.cs" />
     <Compile Include="AI\ModerationFlags.cs" />
     <Compile Include="AI\ChatMessageRole.cs" />
     <Compile Include="AI\NameRemoval.cs" />

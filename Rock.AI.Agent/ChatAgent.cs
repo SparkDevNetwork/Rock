@@ -21,7 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-using Rock.Enums.AI.Agent;
+using Rock.Enums.Core.AI.Agent;
 
 namespace Rock.AI.Agent
 {

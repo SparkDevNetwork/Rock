@@ -15,10 +15,10 @@
 // </copyright>
 //
 
-namespace Rock.Enums.AI.Agent
+namespace Rock.Enums.Core.AI.Agent
 {
     /// <summary>
-    /// Defines the type of function that can be executed by an AI agent.
+    /// Defines the type of skill that an AI agent can possess.
     /// </summary>
     /// <remarks>
     ///     <para>
@@ -28,10 +28,9 @@ namespace Rock.Enums.AI.Agent
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    public enum FunctionType
+    public enum SkillType
     {
-        ExecuteCode,
-        ExecuteLava,
-        AiPrompt
+        Code,
+        Extended
     }
 }

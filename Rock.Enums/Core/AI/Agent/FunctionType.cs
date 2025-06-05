@@ -15,10 +15,10 @@
 // </copyright>
 //
 
-namespace Rock.Enums.AI.Agent
+namespace Rock.Enums.Core.AI.Agent
 {
     /// <summary>
-    /// Defines the type of response that an AI agent can return.
+    /// Defines the type of function that can be executed by an AI agent.
     /// </summary>
     /// <remarks>
     ///     <para>
@@ -28,10 +28,10 @@ namespace Rock.Enums.AI.Agent
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    public enum ResponseType
+    public enum FunctionType
     {
-        Text,
-        AdaptiveCard,
-        Error
+        ExecuteCode,
+        ExecuteLava,
+        AIPrompt
     }
 }

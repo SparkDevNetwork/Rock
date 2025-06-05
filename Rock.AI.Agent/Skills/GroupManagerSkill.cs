@@ -5,7 +5,7 @@ using System.Linq;
 
 using Microsoft.SemanticKernel;
 
-using Rock.Enums.AI.Agent;
+using Rock.Enums.Core.AI.Agent;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills

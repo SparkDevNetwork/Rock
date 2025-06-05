@@ -20,7 +20,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 
-using Rock.Enums.AI.Agent;
+using Rock.Enums.Core.AI.Agent;
 using Rock.Extension;
 
 namespace Rock.AI.Agent

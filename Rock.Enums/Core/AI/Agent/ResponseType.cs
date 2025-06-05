@@ -15,10 +15,10 @@
 // </copyright>
 //
 
-namespace Rock.Enums.AI.Agent
+namespace Rock.Enums.Core.AI.Agent
 {
     /// <summary>
-    /// Defines the type of skill that an AI agent can possess.
+    /// Defines the type of response that an AI agent can return.
     /// </summary>
     /// <remarks>
     ///     <para>
@@ -28,9 +28,10 @@ namespace Rock.Enums.AI.Agent
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    public enum SkillType
+    public enum ResponseType
     {
-        Code,
-        Extended
+        Text,
+        AdaptiveCard,
+        Error
     }
 }

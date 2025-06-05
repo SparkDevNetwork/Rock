@@ -19,7 +19,7 @@ using System;
 
 using Microsoft.SemanticKernel;
 
-using Rock.Enums.AI.Agent;
+using Rock.Enums.Core.AI.Agent;
 
 namespace Rock.AI.Agent
 {
@@ -58,7 +58,7 @@ namespace Rock.AI.Agent
         /// * ExecuteLava - Lava function
         /// * AiPrompt - Semantic function (AI Prompt)
         /// </summary>
-        public FunctionType FunctionType { get; set; } = FunctionType.AiPrompt;
+        public FunctionType FunctionType { get; set; } = FunctionType.AIPrompt;
 
         /// <summary>
         /// The role helps the agent determine what AI model to use.

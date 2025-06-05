@@ -19,7 +19,7 @@ using System;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Enums.AI.Agent;
+using Rock.Enums.Core.AI.Agent;
 using Rock.Model;
 
 namespace Rock.Web.Cache.Entities
