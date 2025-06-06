@@ -411,8 +411,6 @@ namespace Rock.Jobs
 
             var dataTable = DbService.GetDataTable( qry, System.Data.CommandType.Text, parms, commandTimeoutSeconds );
 
-            var rebuildFillFactorOption = "FILLFACTOR = 100";
-
             var indexInfoList = dataTable.Rows.OfType<DataRow>().Select( row => new
             {
                 SchemaName = row["Schema"].ToString(),
@@ -439,7 +437,15 @@ namespace Rock.Jobs
                 _databaseMaintenanceTaskResults.Add( databaseMaintenanceTaskResult );
 
                 var rebuildSQL = $"ALTER INDEX [{indexInfo.IndexName}] ON [{indexInfo.SchemaName}].[{indexInfo.TableName}]";
-                var shouldExecuteRebuild = ( indexInfo.FragmentationPercent > minimumFragmentationPercentage ) || ( indexInfo.FillFactor == 80 );
+
+                var rebuildFillFactorOption = $"FILLFACTOR = {indexInfo.FillFactor}";
+                var isFillFactorEighty = ( indexInfo.FillFactor == 80 );
+                if ( isFillFactorEighty )
+                {
+                    rebuildFillFactorOption = "FILLFACTOR = 100";
+                }
+
+                var shouldExecuteRebuild = ( indexInfo.FragmentationPercent > minimumFragmentationPercentage ) || isFillFactorEighty;
                 if ( shouldExecuteRebuild )
                 {
                     var commandOption = rebuildFillFactorOption;
