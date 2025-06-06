@@ -1861,6 +1861,10 @@ namespace Rock.Data
                         return modifiedProperties;
                     } );
                 }
+                else
+                {
+                    _lazyModifiedProperties = new Lazy<IReadOnlyList<string>>( () => null );
+                }
             }
         }
     }
