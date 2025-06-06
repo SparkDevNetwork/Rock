@@ -21,7 +21,7 @@ namespace Rock.AI.Agent.Skills
 {
     [Description( "Used for managing groups, such as adding or removing members, and getting group information." )]
     [AgentSkillGuid( "489e96d7-c66c-4683-b76b-92fbfda372f4" )]
-    internal class GroupManagerSkill : IRockAiSkill
+    internal class GroupManagerSkill : IAgentSkill
     {
         private AgentRequestContext _requestContext;
         private RockContext _rockContext;
@@ -229,9 +229,6 @@ Example:
         
 
         #endregion
-
-        
-    
 
         #region Private Methods
 
