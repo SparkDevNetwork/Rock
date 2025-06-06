@@ -93,7 +93,7 @@
     } as const;
 
     // The valid mode types for intellisense.
-    type ModeTypes = keyof typeof modes | typeof modes[keyof typeof modes];
+    type ModeTypes = keyof typeof modes | typeof modes[keyof typeof modes] | "json";
 
     const props = defineProps({
         /** The text value of the code editor. */
@@ -222,6 +222,11 @@
 
         if (theMode === "lava" && props.editor === "monaco") {
             theMode = "liquid";
+        }
+
+        if (theMode === "json" && props.editor !== "monaco") {
+            // ACE does not have a JSON mode, so we use the text mode instead.
+            theMode = "text";
         }
 
         return theMode;

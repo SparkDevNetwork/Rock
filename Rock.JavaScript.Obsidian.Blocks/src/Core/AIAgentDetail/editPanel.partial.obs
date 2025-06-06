@@ -1,0 +1,107 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <TextBox v-model="persona"
+                 label="Persona"
+                 textMode="multiline" />
+
+        <ImageUploader v-model="avatarBinaryFile"
+                       label="Avatar" />
+
+        <CheckBoxList v-model="skills"
+                      label="Skills"
+                      :items="options.availableSkills ?? []" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { PropType, ref, watch } from "vue";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { AIAgentBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/aiAgentBag";
+    import { AIAgentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/aiAgentDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<AIAgentBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<AIAgentDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<AIAgentBag>): void
+    }>();
+
+    // #region Values
+
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const persona = propertyRef(props.modelValue.bag?.persona ?? "", "Persona");
+    const avatarBinaryFile = ref(props.modelValue.bag?.avatarBinaryFile ?? null);
+    const skills = ref(props.modelValue.bag?.skills?.map(s => s.value!) ?? []);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, name, persona];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(persona, props.modelValue.bag?.persona ?? "");
+        updateRefValue(avatarBinaryFile, props.modelValue.bag?.avatarBinaryFile ?? null);
+        updateRefValue(skills, props.modelValue.bag?.skills?.map(s => s.value!) ?? []);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs, avatarBinaryFile, skills], () => {
+        const newValue: ValidPropertiesBox<AIAgentBag> = {
+            bag: { ...props.modelValue.bag } as AIAgentBag
+        };
+
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "persona", persona.value);
+        setPropertiesBoxValue(newValue, "avatarBinaryFile", avatarBinaryFile.value);
+        setPropertiesBoxValue(newValue, "skills", skills.value.map(s => ({ value: s })));
+
+        emit("update:modelValue", newValue);
+    });
+</script>

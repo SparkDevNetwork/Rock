@@ -403,7 +403,7 @@ namespace Rock.Blocks
                 .ToList();
 
             // Filename convention is camelCase.
-            var fileName = $"{type.Name.Substring( 0, 1 ).ToLower()}{type.Name.Substring( 1 )}";
+            var fileName = type.Name.ToCamelCase();
 
             return $"~/Obsidian/Blocks/{namespaces.AsDelimited( "/" )}/{fileName}.obs";
         }

@@ -145,8 +145,8 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="AiProxySkill.cs" />
-    <Compile Include="Providers\AzureOpenAiAgent.cs" />
+    <Compile Include="ProxyFunction.cs" />
+    <Compile Include="Providers\AzureOpenAIProvider.cs" />
     <Compile Include="ChatAgent.cs" />
     <Compile Include="ChatAgentBuilder.cs" />
     <Compile Include="ChatAgentFactory.cs" />

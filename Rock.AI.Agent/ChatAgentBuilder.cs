@@ -21,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Rock.Data;
+using Rock.Net;
 using Rock.Web.Cache;
 
 namespace Rock.AI.Agent
@@ -46,7 +47,7 @@ namespace Rock.AI.Agent
             //    () => new ConcurrentDictionary<int, ChatAgentFactory>() );
 
             //var factory = factories.GetOrAdd( agentId, ( id, ctx ) => new ChatAgentFactory( id, ctx, _serviceProvider.GetService<ILoggerFactory>() ), _rockContext );
-            var factory = new ChatAgentFactory( agentId, _rockContext, _serviceProvider.GetService<ILoggerFactory>() );
+            var factory = new ChatAgentFactory( agentId, _rockContext, _serviceProvider.GetRequiredService<IRockRequestContextAccessor>(), _serviceProvider.GetRequiredService<ILoggerFactory>() );
 
             return factory.Build( _serviceProvider );
         }

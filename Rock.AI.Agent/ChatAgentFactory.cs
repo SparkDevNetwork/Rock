@@ -27,9 +27,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
 using Rock.Data;
-using Rock.Enums.AI.Agent;
+using Rock.Enums.Core.AI.Agent;
 using Rock.Logging;
+using Rock.Model;
+using Rock.Net;
 using Rock.SystemGuid;
+using Rock.Web.Cache.Entities;
 
 namespace Rock.AI.Agent
 {
@@ -40,6 +43,8 @@ namespace Rock.AI.Agent
         private readonly AgentConfiguration _agentConfiguration;
 
         private readonly IKernelBuilder _kernelBuilder;
+
+        private readonly IRockRequestContextAccessor _requestContextAccessor;
 
         private readonly ILoggerFactory _loggerFactory;
 
@@ -73,10 +78,11 @@ namespace Rock.AI.Agent
             }
         }
 
-        public ChatAgentFactory( int agentId, RockContext rockContext, ILoggerFactory loggerFactory )
+        public ChatAgentFactory( int agentId, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory )
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             _agentId = agentId;
+            _requestContextAccessor = requestContextAccessor;
             _loggerFactory = loggerFactory;
 
             var provider = AgentProviderContainer.GetActiveComponent();
@@ -93,7 +99,7 @@ namespace Rock.AI.Agent
 
             _kernelBuilder = kernelBuilder;
 
-            _agentConfiguration = new AgentConfiguration( provider, string.Empty, _mockSkills );
+            _agentConfiguration = new AgentConfiguration( provider, string.Empty, GetSkillConfigurations( agentId, rockContext ) );
             _logger = loggerFactory.CreateLogger<ChatAgentFactory>();
             sw.Stop();
 
@@ -148,14 +154,14 @@ namespace Rock.AI.Agent
 
             foreach ( var type in skillTypes )
             {
-                var skillGuid = type.GetCustomAttribute<AiSkillGuidAttribute>()?.Guid;
+                var skillGuid = type.GetCustomAttribute<AgentSkillGuidAttribute>()?.Guid;
 
                 if ( !skillGuid.HasValue )
                 {
                     continue;
                 }
 
-                var skill = ( IRockAiSkill ) ActivatorUtilities.CreateInstance( serviceProvider, type );
+                var skill = ( IAgentSkill ) ActivatorUtilities.CreateInstance( serviceProvider, type );
                 var skillDescription = type.GetCustomAttribute<DescriptionAttribute>( inherit: true )?.Description;
                 var methods = type.GetMethods( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static );
                 var pluginFunctions = new List<KernelFunction>();
@@ -168,7 +174,7 @@ namespace Rock.AI.Agent
                         continue;
                     }
 
-                    var functionGuid = method.GetCustomAttribute<AiFunctionGuidAttribute>()?.Guid;
+                    var functionGuid = method.GetCustomAttribute<AgentFunctionGuidAttribute>()?.Guid;
 
                     if ( !functionGuid.HasValue )
                     {
@@ -223,12 +229,23 @@ namespace Rock.AI.Agent
                 return Array.Empty<KernelFunction>();
             }
 
+            var requestContext = _requestContextAccessor.RockRequestContext;
+            var mergeFields = requestContext.GetCommonMergeFields()
+                ?? new Dictionary<string, object>();
+
             foreach ( var function in functions )
             {
-                if ( function.FunctionType == FunctionType.AiPrompt )
+                if ( function.FunctionType == FunctionType.AIPrompt )
                 {
+                    var prompt = function.Prompt;
+
+                    if ( function.EnableLavaPreRendering )
+                    {
+                        prompt = prompt.ResolveMergeFields( mergeFields );
+                    }
+
                     var semanticFunction = KernelFunctionFactory.CreateFromPrompt(
-                        promptTemplate: function.Prompt, // TODO: process Lava if needed.
+                        promptTemplate: prompt,
                         functionName: function.Key,
                         description: function.UsageHint,
                         executionSettings: function.GetExecutionSettings( _agentConfiguration.Provider ),
@@ -243,7 +260,7 @@ namespace Rock.AI.Agent
                     var functionParameters = new List<KernelParameterMetadata>();
                     var parameter = new KernelParameterMetadata( "promptAsJson" );
 
-                    _parameterDescriptionProperty.SetValue( parameter, "A JSON object with the information to register for the event." );
+                    _parameterDescriptionProperty.SetValue( parameter, "A JSON object with the parameters defined in the schema." );
                     _parameterIsRequiredProperty.SetValue( parameter, true );
                     _parameterSchemaProperty.SetValue( parameter, ParseSchema( function.InputSchema ) );
 
@@ -253,16 +270,16 @@ namespace Rock.AI.Agent
                         ( Func<Kernel, string, string> ) ( ( Kernel kernel, string promptAsJson ) =>
                         {
                             // Create a LavaSkill instance that will be used to run the function.
-                            var proxySkill = new AiProxySkill( kernel.Services.GetRequiredService<AgentRequestContext>() );
+                            var proxySkill = new ProxyFunction( kernel.Services.GetRequiredService<AgentRequestContext>() );
                             return proxySkill.RunLavaFromJson( promptAsJson, function.Prompt );
                         } ),
-                        functionName: function.Name,
+                        functionName: function.Key,
                         description: function.UsageHint,
                         parameters: functionParameters,
                         loggerFactory: _loggerFactory
                     );
 
-                    pluginFunctions[function.Name] = proxyFunction;
+                    pluginFunctions[function.Key] = proxyFunction;
                 }
             }
 
@@ -292,6 +309,13 @@ namespace Rock.AI.Agent
             }
         }
 
+        private static List<SkillConfiguration> GetSkillConfigurations( int agentId, RockContext rockContext )
+        {
+            var agent = AIAgentCache.Get( agentId, rockContext );
+
+            return agent.GetSkillConfigurations( rockContext );
+        }
+
         private static List<SkillConfiguration> _mockSkills = GetMockAiSkills();
 
         private static List<SkillConfiguration> GetMockAiSkills()
@@ -309,7 +333,7 @@ namespace Rock.AI.Agent
                         {
                             Name = "Organization Search",
                             Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.AiPrompt,
+                            FunctionType = FunctionType.AIPrompt,
                             UsageHint = "Performs and AI search of information specific to the organization and it's ministry.",
                             Prompt = "System Prompt:\n{{$system}}\n\nThe organizations phone number is (623) 867-5209"
                         }
@@ -325,7 +349,7 @@ namespace Rock.AI.Agent
                         {
                             Name = "GetNoteTypes",
                             Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.AiPrompt,
+                            FunctionType = FunctionType.AIPrompt,
                             EnableLavaPreRendering = true,
                             UsageHint = "Used to get a list of valid note types.",
                             Prompt = "{ \"NoteTypes\": [{ \"Id\": 1222, \"Name\": \"General Note\"}, {\"Id\": 1322, \"Name\": \"Pastoral Note\"}]}."
@@ -358,7 +382,7 @@ namespace Rock.AI.Agent
                         {
                             Name = "Schedule Baptism",
                             Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.AiPrompt,
+                            FunctionType = FunctionType.AIPrompt,
                             UsageHint = "Used to schedule a baptism for a person.",
                             Prompt = "Input:\n{{$input}}\n\nBaptism has been scheduled."
                         },
@@ -366,7 +390,7 @@ namespace Rock.AI.Agent
                         {
                             Name = "Schedule Wedding",
                             Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.AiPrompt,
+                            FunctionType = FunctionType.AIPrompt,
                             UsageHint = "Used to schedule a wedding for a person based on the date provided.",
                             Prompt = "Input:\n{{$input}}\n\nIf their name is Jon say An issue came up while scheduling, please call the office otherwise say it has been completed."
                         },
@@ -374,7 +398,7 @@ namespace Rock.AI.Agent
                         {
                             Name = "ComposeEmailFromIntent",
                             Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.AiPrompt,
+                            FunctionType = FunctionType.AIPrompt,
                             Prompt = @"You are an assistant that helps draft emails.
 
                                     Based on the user intent of the request, create a professional but warm message.

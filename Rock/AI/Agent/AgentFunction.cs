@@ -15,14 +15,22 @@
 // </copyright>
 //
 
+using System;
+
 using Microsoft.SemanticKernel;
 
-using Rock.Enums.AI.Agent;
+using Rock.Enums.Core.AI.Agent;
 
 namespace Rock.AI.Agent
 {
     internal class AgentFunction
     {
+        /// <summary>
+        /// The unique identifier of this function. If this is not filled in
+        /// with a valid value then the function will be ignored.
+        /// </summary>
+        public Guid Guid { get; set; }
+
         /// <summary>
         /// The unique name used to identify this semantic function within the plugin.
         /// This name is how the function is called from Semantic Kernel or other orchestrations.
@@ -50,7 +58,7 @@ namespace Rock.AI.Agent
         /// * ExecuteLava - Lava function
         /// * AiPrompt - Semantic function (AI Prompt)
         /// </summary>
-        public FunctionType FunctionType { get; set; } = FunctionType.AiPrompt;
+        public FunctionType FunctionType { get; set; } = FunctionType.AIPrompt;
 
         /// <summary>
         /// The role helps the agent determine what AI model to use.
@@ -109,7 +117,7 @@ namespace Rock.AI.Agent
         /// Gets the prompt execution settings for this function.
         /// </summary>
         /// <param name="agentProvider">The provider that will be executing this function.</param>
-        public PromptExecutionSettings GetExecutionSettings( IAiAgentProvider agentProvider )
+        public PromptExecutionSettings GetExecutionSettings( IAgentProvider agentProvider )
         {
             return agentProvider.GetFunctionPromptExecutionSettingsForRole( Role, Temperature, MaxTokens );
         }

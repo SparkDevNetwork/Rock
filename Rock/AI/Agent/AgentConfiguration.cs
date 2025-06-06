@@ -21,13 +21,13 @@ namespace Rock.AI.Agent
 {
     internal class AgentConfiguration
     {
-        public IAiAgentProvider Provider { get; }
+        public IAgentProvider Provider { get; }
 
         public string CoreSystemPrompt { get; }
 
         public IReadOnlyCollection<SkillConfiguration> Skills { get; }
 
-        public AgentConfiguration( IAiAgentProvider provider, string coreSystemPrompt, IReadOnlyList<SkillConfiguration> skills )
+        public AgentConfiguration( IAgentProvider provider, string coreSystemPrompt, IReadOnlyList<SkillConfiguration> skills )
         {
             Provider = provider;
             CoreSystemPrompt = coreSystemPrompt ?? string.Empty;

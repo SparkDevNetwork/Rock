@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
 using Rock.Data;
-using Rock.Enums.AI.Agent;
+using Rock.Enums.Core.AI.Agent;
 using Rock.Field.Types;
 using Rock.Model;
 using Rock.Net;
@@ -20,7 +20,7 @@ using Person = Rock.Model.Person;
 namespace Rock.AI.Agent.Skills
 {
     [Description( "Used for managing groups, such as adding or removing members, and getting group information." )]
-    [AiSkillGuid( "489e96d7-c66c-4683-b76b-92fbfda372f4" )]
+    [AgentSkillGuid( "489e96d7-c66c-4683-b76b-92fbfda372f4" )]
     internal class GroupManagerSkill : IRockAiSkill
     {
         private AgentRequestContext _requestContext;
@@ -57,7 +57,7 @@ This function is designed to be called multiple times in a progressive flow:
 
 This function may be called 2–3 times per user request and is responsible for guiding the user and the model through the group selection process.
 " )]
-        [AiFunctionGuid( "468688c4-86ad-401f-ab46-ac0875de2452" )]
+        [AgentFunctionGuid( "468688c4-86ad-401f-ab46-ac0875de2452" )]
         public string GroupMemberOperations( Kernel kernel, int personId, int groupId,
             [Description( "The operation to preform (Add|Update|Delete)." )] GroupMemberOperation operation,
             [Description( "The role ID. Pass null if the correct value is not yet known. Do not guess." )] int? groupMemberRoleId = null )
@@ -153,7 +153,7 @@ This function supports a two-phase flow:
 - Do not pass searchFilters or groupTypeId unless they were explicitly provided by the user or returned from this function.
 - If you're unsure about the valid filters or group type, start by calling this function with null values.
 " )]
-        [AiFunctionGuid( "34335be4-bf15-07b2-48c8-fac18be8bc46" )]
+        [AgentFunctionGuid( "34335be4-bf15-07b2-48c8-fac18be8bc46" )]
         public string GroupFinder( int personId, int? groupTypeId = null,
         [Description(
             @"
