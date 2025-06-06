@@ -51,14 +51,14 @@ namespace Rock.Tests.Core.Automation.Triggers
         }
 
         [TestMethod]
-        public void IsMatch_ReturnsFalseWithNullSimpleCriteria()
+        public void IsMatch_ReturnsTrueWithNullSimpleCriteria()
         {
             var entryMock = new Mock<IEntitySaveEntry>();
             var criteria = new EntityChangeCriteria( typeof( Group ), 0, null, null );
 
             var result = criteria.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.That.IsTrue( result );
         }
 
         [TestMethod]
