@@ -91,6 +91,9 @@ namespace Rock.Model
         [DataMember]
         public int? CategoryId { get; set; }
 
+        [DataMember]
+        public bool IsPinned { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

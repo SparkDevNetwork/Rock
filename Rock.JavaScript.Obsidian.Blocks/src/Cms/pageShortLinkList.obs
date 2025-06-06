@@ -29,10 +29,16 @@
                     :filter="textValueFilter"
                     visiblePriority="xs" />
 
+        <NumberColumn name="clickCount"
+                      title="Click Count"
+                      field="clickCount"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs" />
+
         <ButtonColumn name="copy"
-                    iconClass="fa fa-clipboard"
-                    visiblePriority="xs"
-                    @click="onCopyClick" />
+                      iconClass="fa fa-clipboard"
+                      visiblePriority="xs"
+                      @click="onCopyClick" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -41,7 +47,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, DeleteColumn, ButtonColumn, pickExistingValueFilter,  } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn, NumberColumn, numberValueFilter, ButtonColumn, pickExistingValueFilter, } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PageShortLinkListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkList/pageShortLinkListOptionsBag";
@@ -70,6 +76,7 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
+            console.log("grid data: ", result.data);
             return gridData;
         }
         else {

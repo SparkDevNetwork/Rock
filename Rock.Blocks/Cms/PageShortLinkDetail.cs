@@ -101,6 +101,14 @@ namespace Rock.Blocks.Cms
                 box.Options = GetBoxOptions( box.IsEditable );
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<PageShortLink>();
 
+                var defaultSite = box.Options.SiteOptions.FirstOrDefault();
+                var defaultSiteId = SiteCache.GetId( defaultSite?.Value.AsGuid() ?? Guid.Empty ) ?? 0;
+
+                if ( defaultSiteId != 0 && box.Entity.Token.IsNullOrWhiteSpace() )
+                {
+                    box.Entity.Token = new PageShortLinkService( RockContext ).GetUniqueToken( defaultSiteId, _minTokenLength );
+                }
+
                 return box;
             }
         }

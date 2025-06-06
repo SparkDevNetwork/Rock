@@ -50,7 +50,7 @@ namespace Rock.Blocks.Cms
     [Rock.SystemGuid.EntityTypeGuid( "b9825e53-d074-4280-a1a3-e20771e34625" )]
     [Rock.SystemGuid.BlockTypeGuid( "d25ff675-07c8-4e2d-a3fa-38ba3468b4ae" )]
     [CustomizedGrid]
-    public class PageShortLinkList : RockEntityListBlockType<PageShortLink>
+    public class PageShortLinkList : RockListBlockType<PageShortLinkList.PageShortLinkWithClicks>
     {
         #region Keys
 
@@ -65,6 +65,15 @@ namespace Rock.Blocks.Cms
         }
 
         #endregion Keys
+
+        #region Fields
+
+        /// <summary>
+        /// The Short Link attributes that are configured to show on the grid.
+        /// </summary>
+        private readonly Lazy<List<AttributeCache>> _gridAttributes = new Lazy<List<AttributeCache>>( BuildGridAttributes );
+
+        #endregion
 
         #region Methods
 
@@ -120,26 +129,106 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<PageShortLink> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<PageShortLinkWithClicks> GetListQueryable( RockContext rockContext )
         {
-            var queryable = base.GetListQueryable( rockContext )
-                .Include( p => p.Site )
-                .Include( p => p.Site.SiteDomains );
+            var urlShortenerChannelTypeId = DefinedValueCache
+                .Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER )?.Id;
+
+            // Get interaction counts grouped by ShortLink ID
+            var interactionCounts = new InteractionService( rockContext )
+                .Queryable().AsNoTracking()
+                .Where( i =>
+                    i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == urlShortenerChannelTypeId &&
+                    i.InteractionComponent.EntityId.HasValue )
+                .GroupBy( i => i.InteractionComponent.EntityId.Value )
+                .Select( g => new
+                {
+                    ShortLinkId = g.Key,
+                    ClickCount = g.Count()
+                } );
+
+            var pageShortLinkService = new PageShortLinkService( RockContext );
+
+            var queryable = pageShortLinkService.Queryable()
+                .GroupJoin(
+                    interactionCounts,
+                    shortLink => shortLink.Id,
+                    ic => ic.ShortLinkId,
+                    ( shortLink, counts ) => new
+                    {
+                        PageShortLink = shortLink,
+                        ClickCount = counts.Select( c => c.ClickCount ).FirstOrDefault()
+                    } )
+                .Select( x => new PageShortLinkWithClicks
+                {
+                    PageShortLink = x.PageShortLink,
+                    ClickCount = x.ClickCount
+                } );
 
             return queryable;
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<PageShortLink> GetGridBuilder()
+        protected override List<PageShortLinkWithClicks> GetListItems( IQueryable<PageShortLinkWithClicks> queryable, RockContext rockContext )
         {
-            return new GridBuilder<PageShortLink>()
+            // Load all the Short Links into memory.
+            var items = queryable.ToList();
+
+            // Get all SiteIds referenced by the short links
+            var siteIds = items
+                .Select( x => x.PageShortLink.SiteId )
+                .Distinct()
+                .ToList();
+
+            // Now query the Sites by SiteId
+            var sitesById = new SiteService( rockContext )
+                .Queryable()
+                .Include( s => s.SiteDomains )
+                .Where( s => siteIds.Contains( s.Id ) )
+                .ToDictionary( s => s.Id );
+
+            foreach ( var item in items )
+            {
+                if ( sitesById.TryGetValue( item.PageShortLink.SiteId, out var site ) )
+                {
+                    item.PageShortLink.Site = site;
+                }
+            }
+
+            return items;
+        }
+
+        /// <inheritdoc/>
+        protected override GridBuilder<PageShortLinkWithClicks> GetGridBuilder()
+        {
+            return new GridBuilder<PageShortLinkWithClicks>()
                 .WithBlock( this )
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "url", a => a.Url )
-                .AddTextField( "site", a => a.Site?.Name )
-                .AddTextField( "token", a => a.Token )
-                .AddTextField( "shortLink", a => a.ShortLinkUrl )
-                .AddAttributeFields( GetGridAttributes() );
+                .AddTextField( "idKey", a => a.PageShortLink.IdKey )
+                .AddTextField( "url", a => a.PageShortLink.Url )
+                .AddTextField( "site", a => a.PageShortLink.Site?.Name )
+                .AddTextField( "token", a => a.PageShortLink.Token )
+                .AddField( "clickCount", a => a.ClickCount )
+                .AddTextField( "shortLink", a => a.PageShortLink.ShortLinkUrl )
+                .AddAttributeFieldsFrom( a => a.PageShortLink, _gridAttributes.Value );
+        }
+
+        /// <summary>
+        /// Builds the list of grid attributes that should be included on the Grid.
+        /// </summary>
+        /// <remarks>
+        /// The default implementation returns only attributes that are not qualified.
+        /// </remarks>
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        private static List<AttributeCache> BuildGridAttributes()
+        {
+            var entityTypeId = EntityTypeCache.Get<PageShortLink>( false )?.Id;
+
+            if ( entityTypeId.HasValue )
+            {
+                return AttributeCache.GetOrderedGridAttributes( entityTypeId, string.Empty, string.Empty );
+            }
+
+            return new List<AttributeCache>();
         }
 
         #endregion
@@ -176,6 +265,15 @@ namespace Rock.Blocks.Cms
             RockContext.SaveChanges();
 
             return ActionOk();
+        }
+
+        #endregion
+
+        #region Support Classes
+        public class PageShortLinkWithClicks
+        {
+            public PageShortLink PageShortLink { get; set; }
+            public int ClickCount { get; set; }
         }
 
         #endregion
