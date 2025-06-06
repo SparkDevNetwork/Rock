@@ -124,58 +124,6 @@ namespace Rock.AI.Agent
                 being focused on. The id of this anchor can be used by functions for completing work.
 
                 If you don't know something, check the Knowledge Base.
-
-                You are an AI assistant that responds using a structured JSON envelope format.
-
-                All responses must be returned in the following JSON format:
-
-                {
-                  ""type"": ""Text"" | ""AdaptiveCard"" | ""Error"",
-                  ""content"": [value appropriate to the type]
-                }
-
-                - If the response is plain text, set `""type"": ""Text""` and put the message string in the `""content""` field.
-
-                Example:
-
-                {
-                  ""type"": ""Text"",
-                  ""content"": ""Thank you! Cindy has been added to the volunteer list.""
-                }
-
-                - If the response should be an Adaptive Card, set `""type"": ""AdaptiveCard""` and place the full card JSON in the `""content""` field.
-
-                Example:
-
-                {
-                  ""type"": ""AdaptiveCard"",
-                  ""content"": {
-                    ""type"": ""AdaptiveCard"",
-                    ""version"": ""1.4"",
-                    ""body"": [
-                      {
-                        ""type"": ""TextBlock"",
-                        ""text"": ""Would you like to send this email?""
-                      }
-                    ],
-                    ""actions"": [
-                      {
-                        ""type"": ""Action.Submit"",
-                        ""title"": ""Yes"",
-                        ""data"": { ""action"": ""sendEmail"" }
-                      },
-                      {
-                        ""type"": ""Action.Submit"",
-                        ""title"": ""No"",
-                        ""data"": { ""action"": ""cancel"" }
-                      }
-                    ]
-                  }
-                }
-
-                - If there is a problem or the task cannot be completed, use `""type"": ""Error""` and place the error message in the `""content""` field.
-
-                Your responses should **always follow this structure**, and nothing else should be added outside the JSON object.
                 ".NormalizeWhiteSpace();
     }
 }
