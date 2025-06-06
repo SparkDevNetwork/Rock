@@ -14,23 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
+using Rock.Data;
+using Rock.Net;
 
 namespace Rock.Reporting.DataFilter
 {
     /// <summary>
-    /// A DataFilter that implements a function that can update the selection from rockblock page parameters or context
+    /// A DataFilter that implements a function that can update the selection from request parameters
     /// </summary>
-    [RockObsolete( "18.0" )]
-    [Obsolete( "This interface is obsolete and will be removed in a future version of Rock because filters are moving to Obsidian, which cannot use RockBlock. Use IUpdateSelectionFromRockRequestContext instead." )]
-    public interface IUpdateSelectionFromPageParameters
+    public interface IUpdateSelectionFromRockRequestContext
     {
         /// <summary>
-        /// Updates the selection from page parameters.
+        /// Updates the selection from parameters on the request.
         /// </summary>
         /// <param name="selection">The selection.</param>
-        /// <param name="rockBlock">The rock block.</param>
+        /// <param name="requestContext">The rock request context.</param>
+        /// <param name="rockContext">The rock database context.</param>
         /// <returns></returns>
-        string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock );
+        string UpdateSelectionFromRockRequestContext( string selection, RockRequestContext requestContext, RockContext rockContext );
     }
 }

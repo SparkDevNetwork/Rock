@@ -1904,6 +1904,7 @@
     <Compile Include="RealTime\Topics\TestCommunicationTransportTopic.cs" />
     <Compile Include="Reporting\DataFilter\BaseCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\BaseCampusFilter.cs" />
+    <Compile Include="Reporting\DataFilter\IUpdateSelectionFromRockRequestContext.cs" />
     <Compile Include="Reporting\DataFilter\Person\StreakDataViewFilter.cs" />
     <Compile Include="Reporting\FieldFilterPublicConverter.cs" />
     <Compile Include="Reporting\FieldFilterExpressionBuilder.cs" />
