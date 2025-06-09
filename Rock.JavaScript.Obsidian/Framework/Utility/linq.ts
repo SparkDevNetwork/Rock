@@ -521,74 +521,99 @@ export class Enumerable<T> {
     }
 
     /**
-     * Filters the sequence to include only elements that satisfy the predicate.
-     * @param predicate - A function to test each element for a condition.
-     * @returns A new Enumerable containing the filtered elements.
+     * Aggregates the elements of the sequence using a specified accumulator function and seed value.
+     * @param accumulator - A function that accumulates each element.
+     * @param seed - The initial value for the accumulation.
+     * @returns The aggregated value.
      */
-    where(predicate: (item: T) => boolean): Enumerable<T> {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
-        return new Enumerable(function* (): Generator<T, void, unknown> {
-            for (const item of self) {
-                if (predicate(item)) {
-                    yield item;
-                }
-            }
-        });
+    aggregate<U>(accumulator: (acc: U, item: T, index: number) => U, seed: U): U {
+        let result = seed;
+        let index = 0;
+        for (const item of this) {
+            result = accumulator(result, item, index++);
+        }
+        return result;
     }
 
     /**
-     * Projects each element of the sequence into a new form.
-     * @param selector - A function to project each element into a new form.
-     * @returns A new Enumerable with the projected elements.
+     * Determines whether all elements in the sequence satisfy a condition or if the sequence contains any elements.
+     * @param predicate - An optional function to test each element for a condition.
+     * @returns `true` if all elements satisfy the condition; otherwise, `false`.
      */
-    select<U>(selector: (item: T) => U): Enumerable<U> {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
-        return new Enumerable(function* (): Generator<U, void, unknown> {
-            for (const item of self) {
-                yield selector(item);
+    all(predicate: (item: T) => boolean): boolean {
+        for (const item of this) {
+            if (!predicate(item)) {
+                return false;
             }
-        });
+        }
+
+        return true;
     }
 
     /**
-     * Returns a new Enumerable that skips the first `count` elements of the sequence.
-     * @param count - The number of elements to skip.
-     * @returns A new Enumerable that skips the specified number of elements.
+     * Determines whether any elements in the sequence satisfy a condition or if the sequence contains any elements.
+     * @param predicate - An optional function to test each element for a condition.
+     * @returns `true` if any elements satisfy the condition; otherwise, `false`.
      */
-    skip(count: number): Enumerable<T> {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
-        return new Enumerable(function* () {
-            let skipped = 0;
-            for (const item of self) {
-                if (skipped++ >= count) {
-                    yield item;
-                }
+    any(predicate?: (item: T) => boolean): boolean {
+        for (const item of this) {
+            if (!predicate || predicate(item)) {
+                return true;
             }
-        });
+        }
+        return false;
     }
 
     /**
-     * Returns a new Enumerable that contains the first `count` elements of the sequence.
-     * @param count - The number of elements to take.
-     * @returns A new Enumerable containing the taken elements.
+     * Computes the average of the projected numeric values in the sequence.
+     * @param selector - A function that selects the number from each element.
+     * @returns The average of the numbers.
+     * @throws Error if no valid numeric elements are found.
      */
-    take(count: number): Enumerable<T> {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
-        return new Enumerable(function* () {
-            let i = 0;
-            for (const item of self) {
-                if (i++ < count) {
-                    yield item;
-                }
-                else {
-                    break;
-                }
+    average(selector: (item: T) => number): number {
+        let total = 0;
+        let count = 0;
+
+        for (const item of this) {
+            const value = selector(item);
+
+            if (typeof value === "number" && !isNaN(value)) {
+                total += value;
+                count++;
             }
-        });
+        }
+
+        if (count === 0) {
+            return 0;
+        }
+        else {
+            return total / count;
+        }
+    }
+
+    /**
+     * Returns the number of elements in the sequence.
+     * @returns The total number of elements.
+     */
+    count(): number;
+
+    /**
+     * Returns the number of elements in the sequence that satisfy the specified predicate.
+     * @param predicate A function to test each element.
+     * @returns The number of matching elements.
+     */
+    count(predicate: (item: T) => boolean): number;
+
+    count(predicate?: (item: T) => boolean): number {
+        let total = 0;
+
+        for (const item of this) {
+            if (!predicate || predicate(item)) {
+                total++;
+            }
+        }
+
+        return total;
     }
 
     /**
@@ -602,6 +627,48 @@ export class Enumerable<T> {
         }
 
         return defaultValue;
+    }
+
+    /**
+     * Executes a specified action for each element in the sequence.
+     * @param action - A function to execute for each element.
+     */
+    forEach(action: (item: T) => void): void {
+        for (const item of this) {
+            action(item);
+        }
+    }
+
+    /**
+     * Groups the elements of a sequence according to a specified key selector function.
+     * Each grouping is an Enumerable with a `.key` property.
+     *
+     * @param keySelector A function to extract the key for each element.
+     * @returns A new Enumerable of groupings.
+     */
+    groupBy<TKey>(keySelector: (item: T) => TKey): Enumerable<GroupedEnumerable<TKey, T>> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+
+        return new Enumerable(function* () {
+            const map = new Map<TKey, T[]>();
+
+            for (const item of self) {
+                const key = keySelector(item);
+                const group = map.get(key);
+
+                if (group) {
+                    group.push(item);
+                }
+                else {
+                    map.set(key, [item]);
+                }
+            }
+
+            for (const [key, values] of map) {
+                yield new GroupedEnumerable<TKey, T>(key, values);
+            }
+        });
     }
 
     /**
@@ -629,73 +696,56 @@ export class Enumerable<T> {
     }
 
     /**
-     * Aggregates the elements of the sequence using a specified accumulator function and seed value.
-     * @param accumulator - A function that accumulates each element.
-     * @param seed - The initial value for the accumulation.
-     * @returns The aggregated value.
+     * Filters the sequence and asserts that all elements are of the specified type.
+     *
+     * Use with caution as this method does not perform a runtime type check and could cause errors.
+     *
+     * @template U The target assertion type.
+     * @returns A new Enumerable containing elements of type `U`.
+     *
+     * @example
+     * const source = ["hello", null, undefined];
+     * const enumerable = Enumerable
+     *     .from(source)
+     *     .where(item => !isNullish(item))
+     *     .ofType<string>() // assert without a type check
+     *     .select(item => `${item} world!`);
+     *
+     * console.log(enumerable.toArray()); // Outputs: ["hello world!"]
      */
-    aggregate<U>(accumulator: (acc: U, item: T, index: number) => U, seed: U): U {
-        let result = seed;
-        let index = 0;
-        for (const item of this) {
-            result = accumulator(result, item, index++);
-        }
-        return result;
-    }
+    ofType<U extends T>(): Enumerable<U>;
 
     /**
-     * Determines whether any elements in the sequence satisfy a condition or if the sequence contains any elements.
-     * @param predicate - An optional function to test each element for a condition.
-     * @returns `true` if any elements satisfy the condition; otherwise, `false`.
+     * Filters the sequence and returns only elements of the specified type.
+     * @template U The target type to filter by.
+     * @param typeCheck - A runtime check function to validate the type of each element.
+     * @returns A new Enumerable containing elements of type `U`.
+     *
+     * @example
+     * const mixed: Enumerable<unknown> = Enumerable.from([1, "hello", true, 42]);
+     * const numbers = mixed.ofType<number>(item => typeof item === "number");
+     * console.log(numbers.toArray()); // Outputs: [1, 42]
+     *
+     * @example
+     * class Animal {}
+     * class Dog extends Animal {}
+     * const animals: Enumerable<Animal> = Enumerable.from([new Animal(), new Dog()]);
+     * const dogs = animals.ofType<Dog>(item => item instanceof Dog);
+     * console.log(dogs.toArray()); // Outputs: [Dog instance]
      */
-    any(predicate?: (item: T) => boolean): boolean {
-        for (const item of this) {
-            if (!predicate || predicate(item)) {
-                return true;
+    ofType<U extends T>(typeCheck: (item: T) => item is U): Enumerable<U>;
+
+    ofType<U extends T>(typeCheck?: (item: T) => item is U): Enumerable<U> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        const check = typeCheck || assertType<U>;
+        return new Enumerable(function* () {
+            for (const item of self) {
+                if (check(item)) {
+                    yield item;
+                }
             }
-        }
-        return false;
-    }
-
-    /**
-     * Determines whether all elements in the sequence satisfy a condition or if the sequence contains any elements.
-     * @param predicate - An optional function to test each element for a condition.
-     * @returns `true` if all elements satisfy the condition; otherwise, `false`.
-     */
-    all(predicate: (item: T) => boolean): boolean {
-        for (const item of this) {
-            if (!predicate(item)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Executes a specified action for each element in the sequence.
-     * @param action - A function to execute for each element.
-     */
-    forEach(action: (item: T) => void): void {
-        for (const item of this) {
-            action(item);
-        }
-    }
-
-    /**
-     * Converts the sequence into an array.
-     * @returns An array containing all elements in the sequence.
-     */
-    toArray(): T[] {
-        return Array.from(this);
-    }
-
-    /**
-     * Converts the sequence into a List.
-     * @returns An List containing all elements in the sequence.
-     */
-    toList(): List<T> {
-        return new List<T>(this.toArray());
+        });
     }
 
     /**
@@ -729,6 +779,149 @@ export class Enumerable<T> {
     }
 
     /**
+     * Projects each element of the sequence into a new form.
+     * @param selector - A function to project each element into a new form.
+     * @returns A new Enumerable with the projected elements.
+     */
+    select<U>(selector: (item: T) => U): Enumerable<U> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return new Enumerable(function* (): Generator<U, void, unknown> {
+            for (const item of self) {
+                yield selector(item);
+            }
+        });
+    }
+
+    /**
+     * Projects each element of the sequence to an iterable and flattens the resulting sequences into one sequence.
+     * @param collectionSelector A transform function to apply to each element.
+     * @returns A new Enumerable containing the flattened results.
+     */
+    selectMany<U>(collectionSelector: (item: T) => Iterable<U>): Enumerable<U> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+
+        return new Enumerable(function* () {
+            for (const item of self) {
+                const collection = collectionSelector(item);
+                for (const subItem of collection) {
+                    yield subItem;
+                }
+            }
+        });
+    }
+
+    /**
+     * Returns a new Enumerable that skips the first `count` elements of the sequence.
+     * @param count - The number of elements to skip.
+     * @returns A new Enumerable that skips the specified number of elements.
+     */
+    skip(count: number): Enumerable<T> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return new Enumerable(function* () {
+            let skipped = 0;
+            for (const item of self) {
+                if (skipped++ >= count) {
+                    yield item;
+                }
+            }
+        });
+    }
+
+    /**
+     * Computes the sum of the projected numeric values in the list.
+     * @param selector - A function that selects the number from each element.
+     * @returns The sum of the numbers.
+     */
+    sum(selector: (item: T) => number): number {
+        let total = 0;
+
+        for (const item of this) {
+            const value = selector(item);
+
+            if (typeof value === "number" && !isNaN(value)) {
+                total += value;
+            }
+        }
+
+        return total;
+    }
+
+    /**
+     * Returns a new Enumerable that contains the first `count` elements of the sequence.
+     * @param count - The number of elements to take.
+     * @returns A new Enumerable containing the taken elements.
+     */
+    take(count: number): Enumerable<T> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return new Enumerable(function* () {
+            let i = 0;
+            for (const item of self) {
+                if (i++ < count) {
+                    yield item;
+                }
+                else {
+                    break;
+                }
+            }
+        });
+    }
+
+    /**
+     * Converts the sequence into an array.
+     * @returns An array containing all elements in the sequence.
+     */
+    toArray(): T[] {
+        return Array.from(this);
+    }
+
+    /**
+     * Converts the sequence into a Map using a key selector and optional value selector.
+     * @param keySelector - A function to extract the key from each element.
+     * @param valueSelector - A function to extract the value from each element. Defaults to the item itself.
+     * @returns A Map of key-value pairs.
+     */
+    toDictionary<TKey, TValue = T>(
+        keySelector: (item: T) => TKey,
+        valueSelector?: (item: T) => TValue
+    ): Map<TKey, TValue> {
+        return new Map<TKey, TValue>(
+            this.select<[TKey, TValue]>(item => [
+                keySelector(item),
+                valueSelector ? valueSelector(item) : (item as unknown as TValue)
+            ])
+        );
+    }
+
+    /**
+     * Converts the sequence into a List.
+     * @returns An List containing all elements in the sequence.
+     */
+    toList(): List<T> {
+        return new List<T>(this.toArray());
+    }
+
+    /**
+     * Filters the sequence to include only elements that satisfy the predicate.
+     * @param predicate - A function to test each element for a condition.
+     * @returns A new Enumerable containing the filtered elements.
+     */
+    where(predicate: (item: T) => boolean): Enumerable<T> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return new Enumerable(function* (): Generator<T, void, unknown> {
+            for (const item of self) {
+                if (predicate(item)) {
+                    yield item;
+                }
+            }
+        });
+    }
+
+    /**
      * Returns a generator that yields each element of the sequence paired with its index.
      *
      * @generator
@@ -759,36 +952,6 @@ export class Enumerable<T> {
         for (const item of this) {
             yield [item, index++];
         }
-    }
-
-    /**
- * Filters the sequence and returns only elements of the specified type.
- * @template U The target type to filter by.
- * @param typeCheck - A runtime check function to validate the type of each element.
- * @returns A new Enumerable containing elements of type `U`.
- *
- * @example
- * const mixed: Enumerable<unknown> = Enumerable.from([1, "hello", true, 42]);
- * const numbers = mixed.ofType<number>(item => typeof item === "number");
- * console.log(numbers.toArray()); // Outputs: [1, 42]
- *
- * @example
- * class Animal {}
- * class Dog extends Animal {}
- * const animals: Enumerable<Animal> = Enumerable.from([new Animal(), new Dog()]);
- * const dogs = animals.ofType<Dog>(item => item instanceof Dog);
- * console.log(dogs.toArray()); // Outputs: [Dog instance]
- */
-    ofType<U extends T>(typeCheck: (item: T) => item is U): Enumerable<U> {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
-        return new Enumerable(function* () {
-            for (const item of self) {
-                if (typeCheck(item)) {
-                    yield item;
-                }
-            }
-        });
     }
 }
 
@@ -860,4 +1023,18 @@ class OrderedEnumerable<T> extends Enumerable<T> {
         });
         yield* array;
     }
+}
+
+class GroupedEnumerable<TKey, TElement> extends Enumerable<TElement> {
+    constructor(public readonly key: TKey, elements: Iterable<TElement>
+    ) {
+        super(() => elements);
+    }
+}
+
+/**
+ * Blindly asserts that the value is of type T.
+ */
+function assertType<T>(value: unknown): value is T {
+    return true;
 }

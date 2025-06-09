@@ -127,6 +127,10 @@ namespace Rock.Blocks.Finance
         {
             public const string FilterActiveOnly = "filter-active-only";
         }
+        private static class PageParameterKey
+        {
+            public const string Accounts = "Accounts";
+        }
 
         #endregion Keys
 
@@ -225,6 +229,26 @@ namespace Rock.Blocks.Finance
             if ( accountGuids.Any() )
             {
                 query = query.Where( p => accountGuids.Contains( p.Account.Guid ) );
+            }
+
+            var accountIds = new List<int>();
+            foreach ( var accountIdentifier in PageParameter( PageParameterKey.Accounts ).Split( ',' ) )
+            {
+                var accountId = accountIdentifier.AsIntegerOrNull();
+                if ( !accountId.HasValue )
+                {
+                    accountId = FinancialAccountCache.GetByIdKey( accountIdentifier )?.Id;
+                }
+
+                if ( accountId.HasValue )
+                {
+                    accountIds.Add( accountId.Value );
+                }
+            }
+
+            if ( accountIds.Any() )
+            {
+                query = query.Where( p => p.AccountId.HasValue && accountIds.Contains( p.AccountId.Value ) );
             }
 
             // Filter by active pledges only
