@@ -1241,6 +1241,11 @@ namespace Rock.Communication.Chat
                             || lastSyncedChannel.CampusId != currentChannel.CampusId;
                     }
 
+                    bool HasChatNotificationModeChanged( ChatChannel lastSyncedChannel, ChatChannel currentChannel )
+                    {
+                        return lastSyncedChannel.ChatNotificationMode != currentChannel.ChatNotificationMode;
+                    }
+
                     foreach ( var rockChatGroup in rockChatGroups )
                     {
                         var channel = TryConvertToChatChannel( rockChatGroup );
@@ -1281,6 +1286,12 @@ namespace Rock.Communication.Chat
 
                                     // If this channel was previously inactive and is now being reactivated, trigger a group member sync.
                                     if ( !existingChannel.IsActive && channel.IsActive )
+                                    {
+                                        channelsToTriggerGroupMemberSync.Add( channel );
+                                    }
+
+                                    // If the chat notification mode has changed, we need to re-sync all of the members.
+                                    if ( HasChatNotificationModeChanged( existingChannel, channel ) )
                                     {
                                         channelsToTriggerGroupMemberSync.Add( channel );
                                     }
@@ -3525,13 +3536,13 @@ namespace Rock.Communication.Chat
         /// </remarks>
         internal string GetQueryableChatChannelKey( string channelIdentifier, bool allowIntegerIdentifier = false )
         {
-            if( channelIdentifier.IsNullOrWhiteSpace() )
+            if ( channelIdentifier.IsNullOrWhiteSpace() )
             {
                 return string.Empty;
             }
 
             var groupId = GroupCache.Get( channelIdentifier, allowIntegerIdentifier )?.Id;
-            if( groupId.HasValue )
+            if ( groupId.HasValue )
             {
                 return GetQueryableChatChannelKey( groupId.Value );
             }
@@ -3664,7 +3675,7 @@ namespace Rock.Communication.Chat
                         gm.Person.IsDeceased,
                         gm.IsArchived,
                         IsGroupActive = gm.Group.IsActive,
-                        IsGroupArchived = gm.Group.IsArchived
+                        IsGroupArchived = gm.Group.IsArchived,
                     } )
                     .GroupBy( gm => new
                     {
@@ -3678,7 +3689,11 @@ namespace Rock.Communication.Chat
                         g.Key.PersonId,
                         GroupMembers = g.ToList()
                     } )
-                    .ToDictionary( g => $"{g.GroupId}|{g.PersonId}", g => g.GroupMembers );
+                    .ToDictionary( g => $"{g.GroupId}|{g.PersonId}", g => new
+                    {
+                        g.GroupMembers,
+                        g.GroupId
+                    } );
 
                 var rockChatGroupMembers = new List<RockChatGroupMember>();
 
@@ -3707,14 +3722,14 @@ namespace Rock.Communication.Chat
                     rockChatGroupMembers.Add( rockChatChannelMember );
 
                     // Find all member records for this group & person combination.
-                    if ( !membersByGroupAndPerson.TryGetValue( groupAndPersonKey, out var members ) || !members.Any() )
+                    if ( !membersByGroupAndPerson.TryGetValue( groupAndPersonKey, out var members ) || !members.GroupMembers.Any() )
                     {
                         // This person is not currently a member of this group.
                         rockChatChannelMember.ShouldDelete = true;
                         continue;
                     }
 
-                    var memberToSync = members
+                    var memberToSync = members.GroupMembers
                         .OrderBy( gm => gm.IsArchived ) // Prefer non-archived.
                         .ThenByDescending( gm => gm.GroupMemberStatus == GroupMemberStatus.Active ) // Prefer active.
                         .ThenBy( gm => gm.GroupRoleOrder )
@@ -3745,6 +3760,10 @@ namespace Rock.Communication.Chat
                         rockChatChannelMember.IsDeceased = memberToSync.IsDeceased;
                         rockChatChannelMember.ShouldDelete = false;
                         rockChatChannelMember.ShouldIgnore = false;
+
+                        // BC TODO: In the future, we can probably pass this from the command instead
+                        // of re-fetching the group from cache.
+                        rockChatChannelMember.PushNotificationMode = GroupCache.Get( members.GroupId ).GetChatPushNotificationMode();
                     }
                 }
 
@@ -3838,7 +3857,8 @@ namespace Rock.Communication.Chat
                 ChatUserKey = chatUserKey,
                 Role = rockChatChannelMember.ChatRole.GetDescription(),
                 IsChatMuted = rockChatChannelMember.IsChatMuted,
-                IsChatBanned = rockChatChannelMember.IsChatBanned
+                IsChatBanned = rockChatChannelMember.IsChatBanned,
+                PushNotificationMode = rockChatChannelMember.PushNotificationMode
             };
         }
 

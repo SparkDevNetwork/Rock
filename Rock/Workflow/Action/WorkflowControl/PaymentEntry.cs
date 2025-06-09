@@ -352,7 +352,7 @@ namespace Rock.Workflow.Action
                 ObsidianComponent = financialGateway?.GetGatewayComponent() as IObsidianHostedGatewayComponent,
                 EnableAch = GetAttributeValue( action, AttributeKey.EnableAch ).AsBoolean(),
                 EnableCreditCard = GetAttributeValue( action, AttributeKey.EnableCreditCard ).AsBoolean(),
-                EnabledSavedAccounts = authorizedPersonAlias.PersonId == requestContext.CurrentPerson?.Id,
+                EnabledSavedAccounts = authorizedPersonAlias != null && authorizedPersonAlias.PersonId == requestContext.CurrentPerson?.Id,
                 AuthorizedPersonAlias = authorizedPersonAlias,
                 PaymentInformationInstructionsTemplate = GetAttributeValue( action, AttributeKey.PaymentInformationInstructions ),
                 Amount = GetAttributeValue( action, AttributeKey.Amount, true ).AsDecimalOrNull(),

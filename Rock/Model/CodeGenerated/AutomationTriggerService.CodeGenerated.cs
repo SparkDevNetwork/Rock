@@ -52,8 +52,6 @@ namespace Rock.Model
         public bool CanDelete( AutomationTrigger item, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            // ignoring AutomationEvent,AutomationTriggerId
             return true;
         }
     }

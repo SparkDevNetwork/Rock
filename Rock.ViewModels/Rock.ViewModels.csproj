@@ -125,6 +125,7 @@
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaElementDetail\MediaElementBag.cs" />
     <Compile Include="Blocks\Cms\MediaElementDetail\MediaElementDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\MediaElementList\MediaElementListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PersonalizationSegmentList\PersonalizationSegmentListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationBag.cs" />
@@ -151,6 +152,10 @@
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySaveMetricsReminderRequestBag.cs" />
     <Compile Include="Blocks\Cms\LogSettings\LogSettingsBag.cs" />
     <Compile Include="Blocks\Cms\LogSettings\LogSettingsDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationSaturationReport\CommunicationSaturationReportBlockBox.cs" />
+    <Compile Include="Blocks\Communication\CommunicationSaturationReport\CommunicationSaturationReportChartDataBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationSaturationReport\CommunicationSaturationReportBlockDataBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationSaturationReport\CommunicationSaturationReportFiltersBag.cs" />
     <Compile Include="Blocks\Communication\SmsConversations\ConversationBag.cs" />
     <Compile Include="Blocks\Communication\SmsConversations\ResponseListingStatusBag.cs" />
     <Compile Include="Blocks\Communication\SmsConversations\SendMessageBag.cs" />

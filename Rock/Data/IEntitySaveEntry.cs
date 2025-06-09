@@ -51,6 +51,8 @@ namespace Rock.Data
         /// <summary>
         /// Gets the collection of property names that have been modified. This
         /// will include any additional changes made during the PreSave event.
+        /// Only valid if <see cref="PreSaveState"/> has the value
+        /// <see cref="EntityContextState.Modified"/>.
         /// </summary>
         /// <value>A collection of modified property names.</value>
         IReadOnlyList<string> ModifiedProperties { get; }

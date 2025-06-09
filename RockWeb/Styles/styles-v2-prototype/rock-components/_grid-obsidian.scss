@@ -318,13 +318,13 @@
     min-width: 60px;
 }
 
-.grid-select-field:first-child {
+.grid-obsidian .grid-select-field:first-child {
     align-items: center;
     padding-right: calc(var(--table-cell-padding-x) / 2);
     flex: 0 0 calc(var(--table-cell-padding-x) + 20px) !important;
 }
 
-.grid-columncommand {
+.grid-obsidian .grid-columncommand {
     --table-cell-padding-y: 0;
     display: flex;
     align-items: center;
@@ -336,7 +336,7 @@
     opacity: .4;
 }
 
-.grid-columncommand .btn:hover {
+.grid-obsidian .grid-columncommand .btn:hover {
     opacity: 1;
 }
 

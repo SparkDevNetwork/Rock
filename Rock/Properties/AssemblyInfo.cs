@@ -54,6 +54,8 @@ using System.Runtime.InteropServices;
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Financial" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Lava" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Model" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Transactions" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Transactions.RockQueue" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Web" )]
 [assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks" )]
 [assembly: Rock.Logging.RockLoggingCategory( "RockWeb.App_Code.TwilioDefaultResponseAsync" )]

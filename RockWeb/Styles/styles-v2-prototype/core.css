@@ -3102,6 +3102,10 @@ fieldset[disabled] .btn-danger-solid.focus {
   border-radius: var(--rounded-xsmall);
 }
 
+.splash-form .btn-link {
+  font-weight: var(--font-weight-semibold);
+}
+
 .btn-link {
   font-weight: var(--font-weight-regular);
   color: var(--color-primary);
@@ -4304,7 +4308,7 @@ button.close {
 .list-group-item {
   position: relative;
   display: block;
-  padding: var(--spacing-xsmall) var(--spacing-medium);
+  padding: var(--spacing-small) var(--spacing-medium);
   margin-bottom: -1px;
   background-color: var(--color-interface-softest);
   border: 1px solid var(--color-interface-soft);
@@ -4345,7 +4349,7 @@ button.close {
 }
 .list-group-item.active, .list-group-item.active:hover, .list-group-item.active:focus {
   z-index: 2;
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   background-color: var(--color-primary);
   border-color: var(--color-primary);
 }
@@ -7557,7 +7561,7 @@ input[type=text].chosen-focus-input {
 
 .jcrop-holder img, img.jcrop-preview {
   max-width: none;
-} 
+}
 .breadcrumb {
   padding: var(--spacing-xsmall) var(--spacing-medium);
   list-style: none;
@@ -15150,7 +15154,7 @@ textarea:focus,
 }
 
 /*
-    DOCUMENTATION: 
+    DOCUMENTATION:
 
     This is copy from ion.rangeSlider.Rock.css.
     Located: `RockWeb\Scripts\ion.rangeSlider\css\ion.rangeSlider.Rock.css`.
@@ -15161,7 +15165,7 @@ textarea:focus,
 /*
     MODIFICATION MADE:
 
-    We wrap all the style under .form-group { } to win in specificity 
+    We wrap all the style under .form-group { } to win in specificity
     over the ion.rangeSlider.Rock.css stylesheet added by the controls.
 */
 .form-group .irs {
@@ -15378,10 +15382,10 @@ textarea:focus,
   background: var(--color-interface-soft);
 }
 
-/** 
+/**
 *   NOTE:
 *
-*   The `--initial-block-height` value is dynamically 
+*   The `--initial-block-height` value is dynamically
 *   set by a RockBlockType.cs file.
 **/
 .block-content > .obsidian-block-has-placeholder {
@@ -16049,13 +16053,13 @@ textarea:focus,
   min-width: 60px;
 }
 
-.grid-select-field:first-child {
+.grid-obsidian .grid-select-field:first-child {
   align-items: center;
   padding-right: calc(var(--table-cell-padding-x) / 2);
   flex: 0 0 calc(var(--table-cell-padding-x) + 20px) !important;
 }
 
-.grid-columncommand {
+.grid-obsidian .grid-columncommand {
   --table-cell-padding-y: 0;
   display: flex;
   align-items: center;
@@ -16067,7 +16071,7 @@ textarea:focus,
   opacity: 0.4;
 }
 
-.grid-columncommand .btn:hover {
+.grid-obsidian .grid-columncommand .btn:hover {
   opacity: 1;
 }
 
@@ -29268,22 +29272,26 @@ tbody .collapse.in {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.fa-fw {
+.fa-fw,
+.ti-tw {
   text-align: center;
   width: 1.25em;
 }
 
-.fa-ul {
+.fa-ul,
+.ti-ul {
   list-style-type: none;
   margin-left: 2.5em;
   padding-left: 0px;
 }
 
-.fa-ul > li {
+.fa-ul > li,
+.ti-ul > li {
   position: relative;
 }
 
-.fa-li {
+.fa-li,
+.ti-li {
   left: -2em;
   position: absolute;
   text-align: center;
@@ -29291,53 +29299,65 @@ tbody .collapse.in {
   line-height: inherit;
 }
 
-.fa-lg {
+.fa-lg,
+.ti-lg {
   font-size: 1.3333333333em;
   line-height: 0.75em;
   vertical-align: -0.0667em;
 }
 
-.fa-xs {
+.fa-xs,
+.ti-xs {
   font-size: 0.75em;
 }
 
-.fa-sm {
+.fa-sm,
+.ti-sm {
   font-size: 0.875em;
 }
 
-.fa-2x {
+.fa-2x,
+.ti-2x {
   font-size: 2em;
 }
 
-.fa-3x {
+.fa-3x,
+.ti-3x {
   font-size: 3em;
 }
 
-.fa-4x {
+.fa-4x,
+.ti-4x {
   font-size: 4em;
 }
 
-.fa-5x {
+.fa-5x,
+.ti-5x {
   font-size: 5em;
 }
 
-.fa-6x {
+.fa-6x,
+.ti-6x {
   font-size: 6em;
 }
 
-.fa-7x {
+.fa-7x,
+.ti-7x {
   font-size: 7em;
 }
 
-.fa-8x {
+.fa-8x,
+.ti-8x {
   font-size: 8em;
 }
 
-.fa-9x {
+.fa-9x,
+.ti-9x {
   font-size: 9em;
 }
 
-.fa-10x {
+.fa-10x,
+.ti-10x {
   font-size: 10em;
 }
 
@@ -29389,24 +29409,26 @@ tbody .collapse.in {
   width: auto;
 }
 
-.fa-border {
+.fa-border,
+.ti-border {
   border-radius: 0.1em;
   border: solid 0.08em var(--color-interface-strong);
   padding: 0.2em 0.25em 0.15em;
 }
 
-.fa-pull-left {
+.fa-pull-left,
+.ti-pull-left {
   float: left;
 }
 
-.fa-pull-right {
+.fa-pull-right .ti-pull-right {
   float: right;
 }
 
-.ti.fa-pull-left, .fa.fa-pull-left, .fas.fa-pull-left, .far.fa-pull-left, .fal.fa-pull-left, .fab.fa-pull-left {
+.ti.fa-pull-left, .ti.ti-pull-left, .fa.fa-pull-left, .fa.ti-pull-left, .fas.fa-pull-left, .fas.ti-pull-left, .far.fa-pull-left, .far.ti-pull-left, .fal.fa-pull-left, .fal.ti-pull-left, .fab.fa-pull-left, .fab.ti-pull-left {
   margin-right: 0.3em;
 }
-.ti.fa-pull-right, .fa.fa-pull-right, .fas.fa-pull-right, .far.fa-pull-right, .fal.fa-pull-right, .fab.fa-pull-right {
+.ti.fa-pull-right, .ti.ti-pull-right, .fa.fa-pull-right, .fa.ti-pull-right, .fas.fa-pull-right, .fas.ti-pull-right, .far.fa-pull-right, .far.ti-pull-right, .fal.fa-pull-right, .fal.ti-pull-right, .fab.fa-pull-right, .fab.ti-pull-right {
   margin-left: 0.3em;
 }
 

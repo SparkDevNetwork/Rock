@@ -1676,12 +1676,48 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to -- Add a temporary table to track reserved slugs
+        ///CREATE TABLE #UsedSlugs (
+        ///    Slug NVARCHAR(400)
+        ///);
+        ///
+        ///-- Update WorkflowTypes one at a time to ensure unique slugs
+        ///DECLARE @Id INT;
+        ///DECLARE @Name NVARCHAR(400);
+        ///DECLARE @BaseSlug NVARCHAR(400);
+        ///DECLARE @Slug NVARCHAR(400);
+        ///DECLARE @Suffix INT;
+        ///DECLARE @MaxLength INT = 400;
+        ///DECLARE @MaxSlugGenerationAttempts INT = 999;
+        ///DECLARE @SuffixText NVARCHAR(10);
+        ///DECLARE @BaseLength INT;
+        ///
+        ///DECLARE WorkflowCursor CURSOR LOCAL FAST_FORWARD FOR
+        ///    SELECT Id, [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport_GenerateWorkflowTypeSlugs {
             get {
                 return ResourceManager.GetString("_202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport_GenerateWork" +
                         "flowTypeSlugs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*  
+        ///&lt;doc&gt;  
+        ///&lt;summary&gt;  
+        ///This stored procedure returns the data for the communication saturation report.  
+        ///&lt;/summary&gt;  
+        ///&lt;param name=&apos;StartDate&apos; datatype=&apos;date&apos;&gt;The starting date.&lt;/param&gt;  
+        ///&lt;param name=&apos;EndDate&apos; datatype=&apos;date&apos;&gt;The ending date.&lt;/param&gt;  
+        ///&lt;param name=&apos;BucketSize&apos; datatype=&apos;int&apos;&gt;The number of messages in the buckets.&lt;/param&gt;  
+        ///&lt;param name=&apos;CommunicationType&apos; datatype=&apos;int&apos;&gt;The type of communications to filter on (1 = Email, 2 = SMS, 3 = Push).&lt;/param&gt;  
+        ///&lt;param name=&apos;@IncludeNonBulk&apos; d [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202506042042400_AddCommunicationSaturationReport_spCommunication_SaturationReport {
+            get {
+                return ResourceManager.GetString("_202506042042400_AddCommunicationSaturationReport_spCommunication_SaturationRepor" +
+                        "t", resourceCulture);
             }
         }
         

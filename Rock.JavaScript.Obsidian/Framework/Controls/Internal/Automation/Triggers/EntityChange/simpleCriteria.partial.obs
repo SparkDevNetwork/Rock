@@ -190,11 +190,14 @@
      * @param key The key of the criteria rule to delete.
      */
     function onDeleteCriteriaRuleClick(key: string): void {
-        const index = criteriaData.value.findIndex(r => r.guid === key);
+        const newData = [...criteriaData.value];
+        const index = newData.findIndex(r => r.guid === key);
 
         if (index >= 0) {
-            criteriaData.value.splice(index, 1);
+            newData.splice(index, 1);
         }
+
+        criteriaData.value = newData;
     }
 
     // #endregion

@@ -880,6 +880,10 @@
 
 
 // Make a button look and behave like a link
+.splash-form .btn-link {
+  font-weight: var(--font-weight-semibold);
+}
+
 .btn-link {
   font-weight:    var(--font-weight-regular);
   color:          var(--color-primary);

@@ -387,7 +387,7 @@
                                     <Rock:RockDropDownList ID="ddlChatPushNotificationMode" runat="server" CssClass="input-width-xl" Label="Push Notification Mode" Help="Controls how push notifications are sent for this chat channel.">
                                         <asp:ListItem Value="" Text="Inherit from Group Type" />
                                         <asp:ListItem Value="0" Text="All Messages" />
-                                        <asp:ListItem Value="1" Text="Mentions And Replies" />
+                                        <asp:ListItem Value="1" Text="Mentions" />
                                         <asp:ListItem Value="2" Text="Silent" />
                                     </Rock:RockDropDownList>
                                 </div>

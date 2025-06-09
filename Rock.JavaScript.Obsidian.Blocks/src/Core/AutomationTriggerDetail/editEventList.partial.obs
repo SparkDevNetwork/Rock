@@ -1,35 +1,25 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <h4>Events</h4>
-    <Grid :data="gridData"
-          light
-          liveUpdates
-          keyField="idKey"
-          itemTerm="Event"
-          @addItem="onAddEvent">
-        <ReorderColumn @orderChanged="onOrderChanged" />
-        <TextColumn name="name"
-                    field="name"
-                    title="Name"
-                    width="30%">
-            <template #format="{ row }: { row: AutomationEventBag }">
-                <div class="d-flex align-items-center">
-                    <i class="mr-1" :class="row.iconCssClass" />
-                    <span>{{ row.name }}</span>
+    <div class="drag-container"
+         v-dragSource="dragOptions"
+         v-dragTarget="dragOptions">
+        <ConnectedListButton v-for="ev in events"
+                             :key="ev.idKey ?? undefined"
+                             :title="ev.name"
+                             :description="ev.description"
+                             :iconCssClass="ev.iconCssClass"
+                             :aside="ev.eventType?.text"
+                             :primaryActions="getPrimaryActions(ev)">
+            <template #prepend>
+                <div>
+                    <i class="fa fa-bars reorder-handle" style="cursor: grab;"></i>
                 </div>
             </template>
-        </TextColumn>
+        </ConnectedListButton>
+    </div>
 
-        <TextColumn name="description"
-                    field="description"
-                    title="Description"
-                    width="70%"
-                    visiblePriority="md" />
-
-        <EditColumn @click="onEditEvent" />
-
-        <DeleteColumn @click="onDeleteEvent" />
-    </Grid>
+    <ConnectedListAddButton @click="onAddEvent" />
 
     <Modal v-model="isEditVisible"
            title="Event Settings"
@@ -64,20 +54,31 @@
     </Modal>
 </template>
 
+<style scoped>
+.drag-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+    margin-bottom: var(--spacing-medium);
+}
+</style>
+
 <script setup lang="ts">
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ConnectedListAddButton from "@Obsidian/Controls/connectedListAddButton.obs";
+    import ConnectedListButton from "@Obsidian/Controls/connectedListButton.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DynamicComponent from "@Obsidian/Controls/dynamicComponent.obs";
-    import Grid, { DeleteColumn, EditColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { alert } from "@Obsidian/Utility/dialogs";
+    import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
     import { AutomationEventBag } from "@Obsidian/ViewModels/Blocks/Core/AutomationTriggerDetail/automationEventBag";
     import { GetComponentDefinitionResponseBag } from "@Obsidian/ViewModels/Blocks/Core/AutomationTriggerDetail/getComponentDefinitionResponseBag";
     import { AutomationValueDefinitionBag } from "@Obsidian/ViewModels/Core/Automation/automationValueDefinitionBag";
-    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { DynamicComponentDefinitionBag } from "@Obsidian/ViewModels/Controls/dynamicComponentDefinitionBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
@@ -137,13 +138,11 @@
     const editComponentDefinition = ref<DynamicComponentDefinitionBag | null>(null);
     const editComponentData = ref<Record<string, string>>({});
 
+    const dragOptions = useDragReorder(events, onOrderChanged);
+
     // #endregion
 
     // #region Computed Values
-
-    const gridData = computed((): GridDataBag => {
-        return { rows: events.value };
-    });
 
     /**
      * Determines if the event type is disabled. This is true if the event
@@ -168,6 +167,38 @@
     // #endregion
 
     // #region Functions
+
+    /**
+     * Gets the list of primary actions that will be displayed for the event row.
+     *
+     * @param event The automation event that is being displayed.
+     *
+     * @returns A list of {@link MenuAction} objects that will be used to render the actions.
+     */
+    function getPrimaryActions(event: AutomationEventBag): MenuAction[] {
+        const actions: MenuAction[] = [];
+        const idKey = event.idKey;
+
+        if (!idKey) {
+            return actions;
+        }
+
+        actions.push({
+            title: "Edit",
+            iconCssClass: "fa fa-pencil-alt",
+            type: "default",
+            handler: () => onEditEvent(idKey)
+        });
+
+        actions.push({
+            title: "Delete",
+            iconCssClass: "fa fa-times",
+            type: "danger",
+            handler: () => onDeleteEvent(idKey)
+        });
+
+        return actions;
+    }
 
     // #endregion
 
@@ -202,6 +233,10 @@
      * delete request to the server and then removes the item.
      */
     async function onDeleteEvent(key: string): Promise<void> {
+        if (!await confirmDelete("Event")) {
+            return;
+        }
+
         const result = await invokeBlockAction<string>("DeleteEvent", {
             key
         });
@@ -308,10 +343,10 @@
      * @param item The item that has been moved in the list.
      * @param beforeItem The item it has been moved before. This will be null if the item is now at the end of the list.
      */
-    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<void> {
+    async function onOrderChanged(item: AutomationEventBag, beforeItem: AutomationEventBag | null): Promise<void> {
         const result = await invokeBlockAction<string>("ReorderEvent", {
-            key: item["idKey"],
-            beforeKey: beforeItem?.["idKey"] ?? null
+            key: item.idKey,
+            beforeKey: beforeItem?.idKey ?? null
         });
 
         if (result.isSuccess) {

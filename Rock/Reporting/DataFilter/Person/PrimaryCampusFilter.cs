@@ -26,6 +26,7 @@ using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -39,7 +40,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Primary Campus Filter" )]
     [Rock.SystemGuid.EntityTypeGuid( "C75D83A1-CC72-4A58-BB28-5025D30C1A1B" )]
-    public class PrimaryCampusFilter : DataFilterComponent, IUpdateSelectionFromPageParameters
+    public class PrimaryCampusFilter : DataFilterComponent, IUpdateSelectionFromRockRequestContext
     {
         #region Properties
 
@@ -84,12 +85,18 @@ namespace Rock.Reporting.DataFilter.Person
             get { return true; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/primaryCampusFilter.obs";
-
         #endregion
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/primaryCampusFilter.obs" )
+            };
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
@@ -251,20 +258,21 @@ function() {{
         }
 
         /// <summary>
-        /// Updates the selection from page parameters.
+        /// Updates the selection from parameters on the request.
         /// </summary>
         /// <param name="selection">The selection.</param>
-        /// <param name="rockBlock">The rock block.</param>
+        /// <param name="requestContext">The rock request context.</param>
+        /// <param name="rockContext">The rock database context.</param>
         /// <returns></returns>
-        public string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock )
+        public string UpdateSelectionFromRockRequestContext( string selection, Rock.Net.RockRequestContext requestContext, RockContext rockContext )
         {
             string[] selectionValues = selection?.Split( '|' ) ?? new string[] { "" };
             if ( selectionValues.Length >= 1 )
             {
-                var campusId = rockBlock.PageParameter( "CampusId" ).AsIntegerOrNull();
+                var campusId = requestContext.GetPageParameter( "CampusId" ).AsIntegerOrNull();
                 if ( campusId == null )
                 {
-                    var campusEntity = rockBlock.ContextEntity<Campus>();
+                    var campusEntity = requestContext.GetContextEntity<Campus>();
                     if ( campusEntity != null )
                     {
                         campusId = campusEntity.Id;

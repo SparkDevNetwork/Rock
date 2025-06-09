@@ -488,6 +488,11 @@ namespace Rock.Model
         /// <returns>A <c>Queryable</c> of <see cref="Model.LearningClassActivityCompletion"/> - one for each <see cref="LearningClassActivity"/> in the class.</returns>
         private List<LearningClassActivityCompletion> GetStudentLearningPlan( LearningParticipant student )
         {
+            if ( student == null )
+            {
+                return new List<LearningClassActivityCompletion>();
+            }
+
             // Get the activities for this class
             // excluding those created after a student completed.
             var activities = Queryable()

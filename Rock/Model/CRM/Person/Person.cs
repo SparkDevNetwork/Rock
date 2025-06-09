@@ -584,7 +584,7 @@ namespace Rock.Model
         public int? ContributionFinancialAccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets the person's account protection profile, which is used by the duplication detection and merge processes.
+        /// Gets or sets the person's account protection profile, which determines the level of security applied to their account. Higher levels enforce stricter safeguards and limit automated changes.
         /// </summary>
         /// <value>
         /// The account protection profile.

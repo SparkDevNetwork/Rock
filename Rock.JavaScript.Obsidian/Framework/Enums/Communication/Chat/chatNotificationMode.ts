@@ -26,8 +26,8 @@ export const ChatNotificationMode = {
     /** Sends a notification for every new message within the chat channel. */
     AllMessages: 0,
 
-    /** Only sends a notification when an individual is mentioned or someone replies in a thread they're a part of. */
-    MentionsAndReplies: 1,
+    /** Only sends a notification when an individual is mentioned. */
+    Mentions: 1,
 
     /** Disables all notifications for the chat channel. */
     Silent: 2
@@ -37,7 +37,7 @@ export const ChatNotificationMode = {
 export const ChatNotificationModeDescription: Record<number, string> = {
     0: "All Messages",
 
-    1: "Mentions And Replies",
+    1: "Mentions",
 
     2: "Silent"
 };

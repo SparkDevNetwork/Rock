@@ -30,8 +30,8 @@ namespace Rock.Enums.Core.Automation.Triggers
         AnyChange = 0,
 
         /// <summary>
-        /// The critieria rull match if the old value or the new value are
-        /// equal to the UpdatedValue property. The OriginalValue property is
+        /// The critieria will match if the new value is equal to the
+        /// UpdatedValue property. The OriginalValue property is ignored.
         /// ignored. This does not require that the value has changed.
         /// </summary>
         HasSpecificValue = 1,
@@ -39,14 +39,16 @@ namespace Rock.Enums.Core.Automation.Triggers
         /// <summary>
         /// The criteria will match if the old value is equal to the OriginalValue
         /// property and the property has been changed to a different value. The
-        /// UpdatedValue property is ignored.
+        /// UpdatedValue property is ignored. Will not match if the entity is being
+        /// added or deleted.
         /// </summary>
         ChangedFromValue = 2,
 
         /// <summary>
         /// The criteria will match if the new value is equal to the UpdatedValue
         /// property and the property has been changed from a different value. The
-        /// OriginalValue property is ignored.
+        /// OriginalValue property is ignored. Will not match if the entity is being
+        /// added or deleted.
         /// </summary>
         ChangedToValue = 3,
 
@@ -54,7 +56,7 @@ namespace Rock.Enums.Core.Automation.Triggers
         /// The critieria will match if the old value is equal to the OriginalValue
         /// property and the new/current value is equal to the UpdatedValue
         /// property. This requires that the property value has actually been
-        /// changed.
+        /// changed. Will not match if the entity is being added or deleted.
         /// </summary>
         ChangedFromValueToValue = 4,
     }

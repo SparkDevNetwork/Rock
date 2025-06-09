@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.BenevolenceRequest
@@ -94,12 +95,18 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
             return @"'Total Amount ' + $('select', $content).find(':selected').text() + ( $('input', $content).filter(':visible').length ?  (' \'' +  $('input', $content).filter(':visible').val()  + '\'') : '' ) ";
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/BenevolenceRequest/totalBenevolenceFilter.obs";
-
         #endregion
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/BenevolenceRequest/totalBenevolenceFilter.obs" )
+            };
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
