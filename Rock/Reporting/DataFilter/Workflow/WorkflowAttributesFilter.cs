@@ -282,6 +282,11 @@ namespace Rock.Reporting.DataFilter.Workflow
 
             var filterValue = attribute.FieldType.Field.GetPrivateFilterValue( comparisonValue, attribute.ConfigurationValues ).FromJsonOrNull<List<string>>();
 
+            if ( filterValue.Count >= 2 && filterValue[0] == "0" )
+            {
+                filterValue = filterValue.Skip( 1 ).ToList();
+            }
+
             config.AttributeKey = entityField.UniqueName;
             config.AttributeFilterSettings = filterValue;
 
