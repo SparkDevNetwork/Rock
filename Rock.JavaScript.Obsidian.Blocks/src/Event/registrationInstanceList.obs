@@ -1,18 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid v-if="config.options?.canView"
-          :definition="config.gridDefinition ?? undefined"
+    <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
-          :rowClass="getCustomActiveClass"
           keyField="idKey"
-          itemTerm="Instance"
-          :title="itemTerm"
+          :itemTerm="config?.options?.registrationInstanceName + ' Instances'"
           :entityTypeGuid="EntityType.RegistrationInstance"
           stickyHeader
           liveUpdates
-          :showLaunchWorkflow="false"
-          :exportTitle="config.options?.templateName ?? 'Registration Instance'"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :showLaunchWorkflow="false"
           @selectItem="onSelectItem">
 
         <TextColumn name="name"
@@ -22,76 +18,77 @@
                     width="40%"
                     visiblePriority="xs" />
 
-        <DateColumn name="startDateTime"
+        <DateColumn name="startDate"
                     title="Start Date"
-                    field="startDateTime"
+                    field="startDate"
                     :filter="dateValueFilter"
-                    headerClass="title-right"
-                    itemClass="justify-content-end text-right"
                     visiblePriority="xs" />
 
-        <DateColumn name="endDateTime"
+        <DateColumn name="endDate"
                     title="End Date"
-                    field="endDateTime"
+                    field="endDate"
                     :filter="dateValueFilter"
-                    headerClass="title-right"
-                    itemClass="justify-content-end text-right"
                     visiblePriority="xs" />
+
+        <TextColumn name="details"
+                    title="Details"
+                    field="details"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
 
         <NumberColumn name="registrants"
                       title="Registrants"
                       field="registrants"
-                      :filter="numberValueFilter"
                       headerClass="text-left"
                       itemClass="justify-content-start text-left"
-                      visiblePriority="xs" />
+                      :filter="numberValueFilter"
+                      visiblePriority="md" />
 
-        <NumberColumn v-if="config.options?.waitListEnabled"
+        <NumberColumn v-if="shouldShowWaitList()"
                       name="waitList"
                       title="Wait List"
                       field="waitList"
+                      headerClass="text-left"
+                      itemClass="justify-content-start text-left"
                       :filter="numberValueFilter"
-                      headerClass="title-right"
-                      itemClass="justify-content-end text-right"
-                      visiblePriority="xs" />
+                      visiblePriority="md" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
-                       visiblePriority="xs"
                        :filter="booleanValueFilter"
-                       headerClass="title-center"
-                       itemClass="justify-content-center text-center" />
+                       visiblePriority="md" />
 
-        <DeleteColumn v-if="config.isDeleteEnabled" :disableConfirmation="true" @click="onDeleteClick" />
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled && config.isAddEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
 
-<style>
-.title-right .grid-column-title {
-    text-align: right;
-}
-
-.title-center .grid-column-title {
-    text-align: center;
-}
-</style>
-
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, dateValueFilter, numberValueFilter, booleanValueFilter, DeleteColumn, DateColumn, NumberColumn } from "@Obsidian/Controls/grid";
-    import { alert } from "@Obsidian/Utility/dialogs";
+    import Grid, { AttributeColumns, BooleanColumn, booleanValueFilter, DateColumn, dateValueFilter, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { RegistrationInstanceListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceList/registrationInstanceListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./RegistrationInstanceList/types.partial";
-    import { computed, reactive, ref } from "vue";
-    import { confirm } from "@Obsidian/Utility/dialogs";
-    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { reactive, ref } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<RegistrationInstanceListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+
+    /**
+     * Gets whether the wait list should be shown.
+     */
+    function shouldShowWaitList(): boolean {
+        return config.options?.showWaitList ?? false;
+    }
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
 
@@ -117,25 +114,7 @@
         }
     }
 
-    function getCustomActiveClass(row: Record<string, unknown>): string {
-        const isActive = asBoolean(row.isActive);
-
-        if (!isActive) {
-            return "inactive";
-        }
-
-        return "";
-    }
-
     // #endregion
-
-    //# region
-
-    const itemTerm = computed((): string => {
-        return config.options?.templateName ? `${config.options?.templateName} Instances` : "Registration Instance";
-    });
-
-    //# endregion
 
     // #region Event Handlers
 
@@ -155,18 +134,6 @@
      * happens only if they have confirmed the delete action.
      */
     async function onDeleteClick(key: string): Promise<void> {
-        const confirmationResult = await confirm("Are you sure you want to delete this registration instance? All of the registrations and registrants will also be deleted!");
-
-        if (!confirmationResult) {
-            return;
-        }
-
-        const finalConfirmationResult = await confirm("Are you really sure?");
-
-        if (!finalConfirmationResult) {
-            return;
-        }
-
         const result = await invokeBlockAction<string>("Delete", {
             key
         });
@@ -186,7 +153,7 @@
     }
 
     /**
-     * Called when the Add button has been clicked by the indivual.
+     * Called when the Add button has been clicked by the individual.
      */
     function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {

@@ -23,12 +23,13 @@
 
 /** The additional configuration options for the Registration Instance List block. */
 export type RegistrationInstanceListOptionsBag = {
-    /** Gets or sets a value indicating whether the current user can view the block. */
-    canView: boolean;
+    /**
+     * Whether to show the wait list column.
+     */
+    showWaitList?: boolean;
 
-    /** Gets or sets the name of the registration template. */
-    templateName?: string | null;
-
-    /** Gets or sets a value indicating whether wait list is enabled for the Registration Template. */
-    waitListEnabled: boolean;
+    /**
+     * The name of the registration instance to show.
+     */
+    registrationInstanceName?: string;
 };
