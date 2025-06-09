@@ -176,41 +176,8 @@
 
   <Import Project="..\Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems" Label="Shared" />
 
-  <PropertyGroup>
-    <PreBuildEvent>REM Sets vbcscompiler.exe time to live to 10 seconds. Dev environment defaults to 600 secs which can cause issues when switching branches
-REM In a production environment, it will be 10 seconds, even without the VBCSCOMPILER_TTL environment variable
-if "$(ConfigurationName)" == "Debug" (
- echo "setting VBCSCOMPILER_TTL to 10 seconds"
- call "$(ProjectDir)..\Dev Tools\VBCS_Compiler\setVBCSCOMPILER_TTL.bat"
- if Exist "$(ProjectDir)..\.githooks\" (
-  if Exist "$(ProjectDir)..\.git\hooks\" (
-   xcopy "$(ProjectDir)..\.githooks\*" "$(ProjectDir)..\.git\hooks\" /S /Y
-  )
- )
-)
-
-REM delete build artifacts from stuff that is no longer part of Rock (InteractivePreGeneratedViews and React)
-if Exist "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll" del "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll" del "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll" del "$(ProjectDir)..\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\InteractivePreGeneratedViews.dll" del "$(ProjectDir)..\RockWeb\Bin\InteractivePreGeneratedViews.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Core.dll" del "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Core.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Msie.dll" del "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Msie.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.V8.dll" del "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.V8.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\JSPool.dll" del "$(ProjectDir)..\RockWeb\Bin\JSPool.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\MsieJavaScriptEngine.dll" del "$(ProjectDir)..\RockWeb\Bin\MsieJavaScriptEngine.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\React.Core.dll" del "$(ProjectDir)..\RockWeb\Bin\React.Core.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\React.Web.dll" del "$(ProjectDir)..\RockWeb\Bin\React.Web.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\React.Web.Mvc4.dll" del "$(ProjectDir)..\RockWeb\Bin\React.Web.Mvc4.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.Helpers.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.Helpers.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.Mvc.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.Mvc.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.Razor.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.Razor.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Deployment.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Deployment.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Razor.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Razor.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\VroomJs.dll" del "$(ProjectDir)..\RockWeb\Bin\VroomJs.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\WebActivatorEx.dll" del "$(ProjectDir)..\RockWeb\Bin\WebActivatorEx.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll"</PreBuildEvent>
-  </PropertyGroup>
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="REM Sets vbcscompiler.exe time to live to 10 seconds. Dev environment defaults to 600 secs which can cause issues when switching branches&#xD;&#xA;REM In a production environment, it will be 10 seconds, even without the VBCSCOMPILER_TTL environment variable&#xD;&#xA;if &quot;$(ConfigurationName)&quot; == &quot;Debug&quot; (&#xD;&#xA; echo &quot;setting VBCSCOMPILER_TTL to 10 seconds&quot;&#xD;&#xA; call &quot;$(ProjectDir)..\Dev Tools\VBCS_Compiler\setVBCSCOMPILER_TTL.bat&quot;&#xD;&#xA; if Exist &quot;$(ProjectDir)..\.githooks\&quot; (&#xD;&#xA;  if Exist &quot;$(ProjectDir)..\.git\hooks\&quot; (&#xD;&#xA;   xcopy &quot;$(ProjectDir)..\.githooks\*&quot; &quot;$(ProjectDir)..\.git\hooks\&quot; /S /Y&#xD;&#xA;  )&#xD;&#xA; )&#xD;&#xA;)&#xD;&#xA;&#xD;&#xA;REM delete build artifacts from stuff that is no longer part of Rock (InteractivePreGeneratedViews and React)&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\InteractivePreGeneratedViews.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\InteractivePreGeneratedViews.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Core.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Core.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Msie.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Msie.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.V8.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.V8.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\JSPool.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\JSPool.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\MsieJavaScriptEngine.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\MsieJavaScriptEngine.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\React.Core.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\React.Core.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\React.Web.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\React.Web.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\React.Web.Mvc4.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\React.Web.Mvc4.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\System.Web.Helpers.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\System.Web.Helpers.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\System.Web.Mvc.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\System.Web.Mvc.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\System.Web.Razor.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\System.Web.Razor.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Deployment.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Deployment.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Razor.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Razor.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\VroomJs.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\VroomJs.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\WebActivatorEx.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\WebActivatorEx.dll&quot;&#xD;&#xA;if Exist &quot;$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll&quot; del &quot;$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll&quot;" />
+  </Target>
 
 </Project>

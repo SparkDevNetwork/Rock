@@ -42,11 +42,4 @@
     <Reference Include="System.Web" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <PostBuildEvent>IF EXIST "$(ProjectDir)app.ConnectionStrings.config" xcopy "$(ProjectDir)app.ConnectionStrings.config" "$(TargetDir)" /y</PostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PreBuildEvent>IF EXIST "$(SolutionDir)RockWeb\web.ConnectionStrings.config" copy "$(SolutionDir)RockWeb\web.ConnectionStrings.config" "$(ProjectDir)app.ConnectionStrings.config" /y</PreBuildEvent>
-  </PropertyGroup>
-
 </Project>
